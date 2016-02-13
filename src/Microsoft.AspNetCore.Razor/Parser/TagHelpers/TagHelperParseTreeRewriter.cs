@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -14,6 +15,10 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
 {
     public class TagHelperParseTreeRewriter : ISyntaxTreeRewriter
     {
+        // Internal for testing.
+        // Null characters are invalid markup for HTML attribute values.
+        internal static readonly string InvalidAttributeValueMarker = "\0";
+
         // From http://dev.w3.org/html5/spec/Overview.html#elements-0
         private static readonly HashSet<string> VoidElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -35,10 +40,12 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
             "wbr"
         };
 
-        private TagHelperDescriptorProvider _provider;
-        private Stack<TagBlockTracker> _trackerStack;
+        private readonly List<KeyValuePair<string, string>> _htmlAttributeTracker;
+        private readonly StringBuilder _attributeValueBuilder;
+        private readonly TagHelperDescriptorProvider _provider;
+        private readonly Stack<TagBlockTracker> _trackerStack;
+        private readonly Stack<BlockBuilder> _blockStack;
         private TagHelperBlockTracker _currentTagHelperTracker;
-        private Stack<BlockBuilder> _blockStack;
         private BlockBuilder _currentBlock;
         private string _currentParentTagName;
 
@@ -47,6 +54,8 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
             _provider = provider;
             _trackerStack = new Stack<TagBlockTracker>();
             _blockStack = new Stack<BlockBuilder>();
+            _attributeValueBuilder = new StringBuilder();
+            _htmlAttributeTracker = new List<KeyValuePair<string, string>>();
         }
 
         public void Rewrite(RewritingContext context)
@@ -177,7 +186,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
             if (!IsEndTag(tagBlock))
             {
                 // We're now in a start tag block, we first need to see if the tag block is a tag helper.
-                var providedAttributes = GetAttributeNames(tagBlock);
+                var providedAttributes = GetAttributeNameValuePairs(tagBlock);
 
                 descriptors = _provider.GetDescriptors(tagName, providedAttributes, _currentParentTagName);
 
@@ -246,7 +255,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                 {
                     descriptors = _provider.GetDescriptors(
                         tagName,
-                        attributeNames: Enumerable.Empty<string>(),
+                        attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                         parentTagName: _currentParentTagName);
 
                     // If there are not TagHelperDescriptors associated with the end tag block that also have no
@@ -299,7 +308,8 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
             return true;
         }
 
-        private IEnumerable<string> GetAttributeNames(Block tagBlock)
+        // Internal for testing
+        internal IEnumerable<KeyValuePair<string, string>> GetAttributeNameValuePairs(Block tagBlock)
         {
             // Need to calculate how many children we should take that represent the attributes.
             var childrenOffset = IsPartialTag(tagBlock) ? 0 : 1;
@@ -307,32 +317,112 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
 
             if (childCount <= 1)
             {
-                return Enumerable.Empty<string>();
+                return Enumerable.Empty<KeyValuePair<string, string>>();
             }
 
-            var attributeChildren = new List<SyntaxTreeNode>(childCount - 1);
+            _htmlAttributeTracker.Clear();
+
+            var attributes = _htmlAttributeTracker;
+
             for (var i = 1; i < childCount; i++)
             {
-                attributeChildren.Add(tagBlock.Children[i]);
-            }
-            var attributeNames = new List<string>();
-
-            foreach (var child in attributeChildren)
-            {
+                var child = tagBlock.Children[i];
                 Span childSpan;
 
                 if (child.IsBlock)
                 {
-                    childSpan = ((Block)child).FindFirstDescendentSpan();
+                    var childBlock = (Block)child;
+
+                    if (childBlock.Type != BlockType.Markup)
+                    {
+                        // Anything other than markup blocks in the attribute area of tags mangles following attributes.
+                        // It's also not supported by TagHelpers, bail early to avoid creating bad attribute value pairs.
+                        break;
+                    }
+
+                    childSpan = childBlock.FindFirstDescendentSpan();
 
                     if (childSpan == null)
                     {
+                        _attributeValueBuilder.Append(InvalidAttributeValueMarker);
                         continue;
+                    }
+
+                    // We can assume the first span will always contain attributename=" and the last span will always
+                    // contain the final quote. Therefore, if the values not quoted there's no ending quote to skip.
+                    var childOffset = 0;
+                    if (childSpan.Symbols.Count > 0)
+                    {
+                        var potentialQuote = childSpan.Symbols[childSpan.Symbols.Count - 1] as HtmlSymbol;
+                        if (potentialQuote != null &&
+                            (potentialQuote.Type == HtmlSymbolType.DoubleQuote ||
+                            potentialQuote.Type == HtmlSymbolType.SingleQuote))
+                        {
+                            childOffset = 1;
+                        }
+                    }
+
+                    for (var j = 1; j < childBlock.Children.Count - childOffset; j++)
+                    {
+                        var valueChild = childBlock.Children[j];
+                        if (valueChild.IsBlock)
+                        {
+                            _attributeValueBuilder.Append(InvalidAttributeValueMarker);
+                        }
+                        else
+                        {
+                            var valueChildSpan = (Span)valueChild;
+                            for (var k = 0; k < valueChildSpan.Symbols.Count; k++)
+                            {
+                                _attributeValueBuilder.Append(valueChildSpan.Symbols[k].Content);
+                            }
+                        }
                     }
                 }
                 else
                 {
-                    childSpan = child as Span;
+                    childSpan = (Span)child;
+
+                    var afterEquals = false;
+                    var atValue = false;
+                    var endValueMarker = childSpan.Symbols.Count;
+
+                    // Entire attribute is a string
+                    for (var j = 0; j < endValueMarker; j++)
+                    {
+                        var htmlSymbol = (HtmlSymbol)childSpan.Symbols[j];
+
+                        if (!afterEquals)
+                        {
+                            afterEquals = htmlSymbol.Type == HtmlSymbolType.Equals;
+                            continue;
+                        }
+
+                        if (!atValue)
+                        {
+                            atValue = htmlSymbol.Type != HtmlSymbolType.WhiteSpace &&
+                                htmlSymbol.Type != HtmlSymbolType.NewLine;
+
+                            if (atValue)
+                            {
+                                if (htmlSymbol.Type == HtmlSymbolType.DoubleQuote ||
+                                    htmlSymbol.Type == HtmlSymbolType.SingleQuote)
+                                {
+                                    endValueMarker--;
+                                }
+                                else
+                                {
+                                    // Current symbol is considered the value (unquoted). Add its content to the
+                                    // attribute value builder before we move past it.
+                                    _attributeValueBuilder.Append(htmlSymbol.Content);
+                                }
+                            }
+
+                            continue;
+                        }
+
+                        _attributeValueBuilder.Append(htmlSymbol.Content);
+                    }
                 }
 
                 var start = 0;
@@ -344,8 +434,8 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                     }
                 }
 
-                var end = 0;
-                for (end = start; end < childSpan.Content.Length; end++)
+                var end = start;
+                for (; end < childSpan.Content.Length; end++)
                 {
                     if (childSpan.Content[end] == '=')
                     {
@@ -353,10 +443,15 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                     }
                 }
 
-                attributeNames.Add(childSpan.Content.Substring(start, end - start));
+                var attributeName = childSpan.Content.Substring(start, end - start);
+                var attributeValue = _attributeValueBuilder.ToString();
+                var attribute = new KeyValuePair<string, string>(attributeName, attributeValue);
+                attributes.Add(attribute);
+
+                _attributeValueBuilder.Clear();
             }
 
-            return attributeNames;
+            return attributes;
         }
 
         private bool HasAllowedChildren()
@@ -650,7 +745,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
         {
             var child = tagBlock.Children[0];
 
-            if (tagBlock.Type != BlockType.Tag || tagBlock.Children.Count == 0|| !(child is Span))
+            if (tagBlock.Type != BlockType.Tag || tagBlock.Children.Count == 0 || !(child is Span))
             {
                 return null;
             }

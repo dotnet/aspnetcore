@@ -426,6 +426,86 @@ namespace Microsoft.AspNetCore.Razor.Runtime
             return string.Format(CultureInfo.CurrentCulture, GetString("ArgumentMustBeAnInstanceOf"), p0);
         }
 
+        /// <summary>
+        /// Could not find matching ']' for required attribute '{0}'.
+        /// </summary>
+        internal static string TagHelperDescriptorFactory_CouldNotFindMatchingEndBrace
+        {
+            get { return GetString("TagHelperDescriptorFactory_CouldNotFindMatchingEndBrace"); }
+        }
+
+        /// <summary>
+        /// Could not find matching ']' for required attribute '{0}'.
+        /// </summary>
+        internal static string FormatTagHelperDescriptorFactory_CouldNotFindMatchingEndBrace(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_CouldNotFindMatchingEndBrace"), p0);
+        }
+
+        /// <summary>
+        /// Invalid required attribute character '{0}' in required attribute '{1}'. Separate required attributes with commas.
+        /// </summary>
+        internal static string TagHelperDescriptorFactory_InvalidRequiredAttributeCharacter
+        {
+            get { return GetString("TagHelperDescriptorFactory_InvalidRequiredAttributeCharacter"); }
+        }
+
+        /// <summary>
+        /// Invalid required attribute character '{0}' in required attribute '{1}'. Separate required attributes with commas.
+        /// </summary>
+        internal static string FormatTagHelperDescriptorFactory_InvalidRequiredAttributeCharacter(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidRequiredAttributeCharacter"), p0, p1);
+        }
+
+        /// <summary>
+        /// Required attribute '{0}' has mismatched quotes '{1}' around value.
+        /// </summary>
+        internal static string TagHelperDescriptorFactory_InvalidRequiredAttributeMismatchedQuotes
+        {
+            get { return GetString("TagHelperDescriptorFactory_InvalidRequiredAttributeMismatchedQuotes"); }
+        }
+
+        /// <summary>
+        /// Required attribute '{0}' has mismatched quotes '{1}' around value.
+        /// </summary>
+        internal static string FormatTagHelperDescriptorFactory_InvalidRequiredAttributeMismatchedQuotes(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidRequiredAttributeMismatchedQuotes"), p0, p1);
+        }
+
+        /// <summary>
+        /// Required attribute '{0}' has a partial CSS operator. '{1}' must be followed by an equals.
+        /// </summary>
+        internal static string TagHelperDescriptorFactory_PartialRequiredAttributeOperator
+        {
+            get { return GetString("TagHelperDescriptorFactory_PartialRequiredAttributeOperator"); }
+        }
+
+        /// <summary>
+        /// Required attribute '{0}' has a partial CSS operator. '{1}' must be followed by an equals.
+        /// </summary>
+        internal static string FormatTagHelperDescriptorFactory_PartialRequiredAttributeOperator(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_PartialRequiredAttributeOperator"), p0, p1);
+        }
+
+        /// <summary>
+        /// Invalid character '{0}' in required attribute '{1}'. Expected supported CSS operator or ']'.
+        /// </summary>
+        internal static string TagHelperDescriptorFactory_InvalidRequiredAttributeOperator
+        {
+            get { return GetString("TagHelperDescriptorFactory_InvalidRequiredAttributeOperator"); }
+        }
+
+        /// <summary>
+        /// Invalid character '{0}' in required attribute '{1}'. Expected supported CSS operator or ']'.
+        /// </summary>
+        internal static string FormatTagHelperDescriptorFactory_InvalidRequiredAttributeOperator(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidRequiredAttributeOperator"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

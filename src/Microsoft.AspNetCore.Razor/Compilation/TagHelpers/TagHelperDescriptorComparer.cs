@@ -51,9 +51,9 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                     descriptorY.RequiredParent,
                     StringComparison.OrdinalIgnoreCase) &&
                 Enumerable.SequenceEqual(
-                    descriptorX.RequiredAttributes.OrderBy(attribute => attribute, StringComparer.OrdinalIgnoreCase),
-                    descriptorY.RequiredAttributes.OrderBy(attribute => attribute, StringComparer.OrdinalIgnoreCase),
-                    StringComparer.OrdinalIgnoreCase) &&
+                    descriptorX.RequiredAttributes.OrderBy(attribute => attribute.Name, StringComparer.OrdinalIgnoreCase),
+                    descriptorY.RequiredAttributes.OrderBy(attribute => attribute.Name, StringComparer.OrdinalIgnoreCase),
+                    TagHelperRequiredAttributeDescriptorComparer.Default) &&
                 (descriptorX.AllowedChildren == descriptorY.AllowedChildren ||
                 (descriptorX.AllowedChildren != null &&
                 descriptorY.AllowedChildren != null &&
@@ -80,11 +80,11 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
             hashCodeCombiner.Add(descriptor.TagStructure);
 
             var attributes = descriptor.RequiredAttributes.OrderBy(
-                attribute => attribute,
+                attribute => attribute.Name,
                 StringComparer.OrdinalIgnoreCase);
             foreach (var attribute in attributes)
             {
-                hashCodeCombiner.Add(attribute, StringComparer.OrdinalIgnoreCase);
+                hashCodeCombiner.Add(TagHelperRequiredAttributeDescriptorComparer.Default.GetHashCode(attribute));
             }
 
             if (descriptor.AllowedChildren != null)

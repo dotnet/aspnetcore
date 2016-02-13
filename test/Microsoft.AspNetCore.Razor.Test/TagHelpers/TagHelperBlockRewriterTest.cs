@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                             TypeName = typeof(string).FullName
                         },
                     },
-                    RequiredAttributes = new[] { "bound" },
+                    RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "bound" } },
                 },
             };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
@@ -3940,7 +3940,10 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                                 IsStringProperty = true
                             }
                         },
-                        RequiredAttributes = new[] { "unbound-required" }
+                        RequiredAttributes = new[]
+                        {
+                            new TagHelperRequiredAttributeDescriptor { Name = "unbound-required" }
+                        }
                     },
                     new TagHelperDescriptor
                     {
@@ -3957,7 +3960,10 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                                 IsStringProperty = true
                             }
                         },
-                        RequiredAttributes = new[] { "bound-required-string" }
+                        RequiredAttributes = new[]
+                        {
+                            new TagHelperRequiredAttributeDescriptor { Name = "bound-required-string" }
+                        }
                     },
                     new TagHelperDescriptor
                     {
@@ -3973,7 +3979,10 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                                 TypeName = typeof(int).FullName
                             }
                         },
-                        RequiredAttributes = new[] { "bound-required-int" }
+                        RequiredAttributes = new[]
+                        {
+                            new TagHelperRequiredAttributeDescriptor { Name = "bound-required-int" }
+                        }
                     },
                     new TagHelperDescriptor
                     {

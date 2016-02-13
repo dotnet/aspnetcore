@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
         private string _assemblyName;
         private IEnumerable<TagHelperAttributeDescriptor> _attributes =
             Enumerable.Empty<TagHelperAttributeDescriptor>();
-        private IEnumerable<string> _requiredAttributes = Enumerable.Empty<string>();
+        private IEnumerable<TagHelperRequiredAttributeDescriptor> _requiredAttributes = Enumerable.Empty<TagHelperRequiredAttributeDescriptor>();
 
         /// <summary>
         /// Text used as a required prefix when matching HTML start and end tags in the Razor source to available
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
         /// <remarks>
         /// <c>*</c> at the end of an attribute name acts as a prefix match.
         /// </remarks>
-        public IEnumerable<string> RequiredAttributes
+        public IEnumerable<TagHelperRequiredAttributeDescriptor> RequiredAttributes
         {
             get
             {

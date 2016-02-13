@@ -19,6 +19,155 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 
         protected static readonly string AssemblyName = TagHelperDescriptorFactoryTestAssembly.Name;
 
+        public static TheoryData RequiredAttributeParserErrorData
+        {
+            get
+            {
+                Func<string, RazorError> error = (message) => new RazorError(message, SourceLocation.Zero, 0);
+
+                return new TheoryData<string, RazorError>
+                {
+                    { "name,", error(Resources.FormatTagHelperDescriptorFactory_CouldNotFindMatchingEndBrace("name,")) },
+                    { " ", error(Resources.FormatHtmlTargetElementAttribute_NameCannotBeNullOrWhitespace("Attribute")) },
+                    { "n@me", error(Resources.FormatHtmlTargetElementAttribute_InvalidName("attribute", "n@me", '@')) },
+                    { "name extra", error(Resources.FormatTagHelperDescriptorFactory_InvalidRequiredAttributeCharacter('e', "name extra")) },
+                    { "[[ ", error(Resources.FormatTagHelperDescriptorFactory_CouldNotFindMatchingEndBrace("[[ ")) },
+                    { "[ ", error(Resources.FormatTagHelperDescriptorFactory_CouldNotFindMatchingEndBrace("[ ")) },
+                    {
+                        "[name='unended]",
+                        error(Resources.FormatTagHelperDescriptorFactory_InvalidRequiredAttributeMismatchedQuotes("[name='unended]", '\''))
+                    },
+                    {
+                        "[name='unended",
+                        error(Resources.FormatTagHelperDescriptorFactory_InvalidRequiredAttributeMismatchedQuotes("[name='unended", '\''))
+                    },
+                    { "[name", error(Resources.FormatTagHelperDescriptorFactory_CouldNotFindMatchingEndBrace("[name")) },
+                    { "[ ]", error(Resources.FormatHtmlTargetElementAttribute_NameCannotBeNullOrWhitespace("Attribute")) },
+                    { "[n@me]", error(Resources.FormatHtmlTargetElementAttribute_InvalidName("attribute", "n@me", '@')) },
+                    { "[name@]", error(Resources.FormatHtmlTargetElementAttribute_InvalidName("attribute", "name@", '@')) },
+                    { "[name^]", error(Resources.FormatTagHelperDescriptorFactory_PartialRequiredAttributeOperator("[name^]", '^')) },
+                    { "[name='value'", error(Resources.FormatTagHelperDescriptorFactory_CouldNotFindMatchingEndBrace("[name='value'")) },
+                    { "[name ", error(Resources.FormatTagHelperDescriptorFactory_CouldNotFindMatchingEndBrace("[name ")) },
+                    { "[name extra]", error(Resources.FormatTagHelperDescriptorFactory_InvalidRequiredAttributeOperator('e', "[name extra]")) },
+                    { "[name=value ", error(Resources.FormatTagHelperDescriptorFactory_CouldNotFindMatchingEndBrace("[name=value ")) },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(RequiredAttributeParserErrorData))]
+        public void RequiredAttributeParser_ParsesRequiredAttributesAndLogsErrorCorrectly(
+            string requiredAttributes,
+            RazorError expectedError)
+        {
+            // Arrange
+            var parser = new TagHelperDescriptorFactory.RequiredAttributeParser(requiredAttributes);
+            var errorSink = new ErrorSink();
+            IEnumerable<TagHelperRequiredAttributeDescriptor> descriptors;
+
+            // Act
+            var parsedCorrectly = parser.TryParse(errorSink, out descriptors);
+
+            // Assert
+            Assert.False(parsedCorrectly);
+            Assert.Null(descriptors);
+            var error = Assert.Single(errorSink.Errors);
+            Assert.Equal(expectedError, error);
+        }
+
+        public static TheoryData RequiredAttributeParserData
+        {
+            get
+            {
+                Func<string, TagHelperRequiredAttributeNameComparison, TagHelperRequiredAttributeDescriptor> plain =
+                    (name, nameComparison) => new TagHelperRequiredAttributeDescriptor
+                    {
+                        Name = name,
+                        NameComparison = nameComparison
+                    };
+                Func<string, string, TagHelperRequiredAttributeValueComparison, TagHelperRequiredAttributeDescriptor> css =
+                    (name, value, valueComparison) => new TagHelperRequiredAttributeDescriptor
+                    {
+                        Name = name,
+                        NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch,
+                        Value = value,
+                        ValueComparison = valueComparison,
+                    };
+
+                return new TheoryData<string, IEnumerable<TagHelperRequiredAttributeDescriptor>>
+                {
+                    { null, Enumerable.Empty<TagHelperRequiredAttributeDescriptor>() },
+                    { string.Empty, Enumerable.Empty<TagHelperRequiredAttributeDescriptor>() },
+                    { "name", new[] { plain("name", TagHelperRequiredAttributeNameComparison.FullMatch) } },
+                    { "name-*", new[] { plain("name-", TagHelperRequiredAttributeNameComparison.PrefixMatch) } },
+                    { "  name-*   ", new[] { plain("name-", TagHelperRequiredAttributeNameComparison.PrefixMatch) } },
+                    {
+                        "asp-route-*,valid  ,  name-*   ,extra",
+                        new[]
+                        {
+                            plain("asp-route-", TagHelperRequiredAttributeNameComparison.PrefixMatch),
+                            plain("valid", TagHelperRequiredAttributeNameComparison.FullMatch),
+                            plain("name-", TagHelperRequiredAttributeNameComparison.PrefixMatch),
+                            plain("extra", TagHelperRequiredAttributeNameComparison.FullMatch),
+                        }
+                    },
+                    { "[name]", new[] { css("name", "", TagHelperRequiredAttributeValueComparison.None) } },
+                    { "[ name ]", new[] { css("name", "", TagHelperRequiredAttributeValueComparison.None) } },
+                    { " [ name ] ", new[] { css("name", "", TagHelperRequiredAttributeValueComparison.None) } },
+                    { "[name=]", new[] { css("name", "", TagHelperRequiredAttributeValueComparison.FullMatch) } },
+                    { "[name='']", new[] { css("name", "", TagHelperRequiredAttributeValueComparison.FullMatch) } },
+                    { "[name ^=]", new[] { css("name", "", TagHelperRequiredAttributeValueComparison.PrefixMatch) } },
+                    { "[name=hello]", new[] { css("name", "hello", TagHelperRequiredAttributeValueComparison.FullMatch) } },
+                    { "[name= hello]", new[] { css("name", "hello", TagHelperRequiredAttributeValueComparison.FullMatch) } },
+                    { "[name='hello']", new[] { css("name", "hello", TagHelperRequiredAttributeValueComparison.FullMatch) } },
+                    { "[name=\"hello\"]", new[] { css("name", "hello", TagHelperRequiredAttributeValueComparison.FullMatch) } },
+                    { " [ name  $= \" hello\" ]  ", new[] { css("name", " hello", TagHelperRequiredAttributeValueComparison.SuffixMatch) } },
+                    {
+                        "[name=\"hello\"],[other^=something ], [val = 'cool']",
+                        new[]
+                        {
+                            css("name", "hello", TagHelperRequiredAttributeValueComparison.FullMatch),
+                            css("other", "something", TagHelperRequiredAttributeValueComparison.PrefixMatch),
+                            css("val", "cool", TagHelperRequiredAttributeValueComparison.FullMatch) }
+                    },
+                    {
+                        "asp-route-*,[name=\"hello\"],valid  ,[other^=something ],   name-*   ,[val = 'cool'],extra",
+                        new[]
+                        {
+                            plain("asp-route-", TagHelperRequiredAttributeNameComparison.PrefixMatch),
+                            css("name", "hello", TagHelperRequiredAttributeValueComparison.FullMatch),
+                            plain("valid", TagHelperRequiredAttributeNameComparison.FullMatch),
+                            css("other", "something", TagHelperRequiredAttributeValueComparison.PrefixMatch),
+                            plain("name-", TagHelperRequiredAttributeNameComparison.PrefixMatch),
+                            css("val", "cool", TagHelperRequiredAttributeValueComparison.FullMatch),
+                            plain("extra", TagHelperRequiredAttributeNameComparison.FullMatch),
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(RequiredAttributeParserData))]
+        public void RequiredAttributeParser_ParsesRequiredAttributesCorrectly(
+            string requiredAttributes,
+            IEnumerable<TagHelperRequiredAttributeDescriptor> expectedDescriptors)
+        {
+            // Arrange
+            var parser = new TagHelperDescriptorFactory.RequiredAttributeParser(requiredAttributes);
+            var errorSink = new ErrorSink();
+            IEnumerable<TagHelperRequiredAttributeDescriptor> descriptors;
+
+            // Act
+            //System.Diagnostics.Debugger.Launch();
+            var parsedCorrectly = parser.TryParse(errorSink, out descriptors);
+
+            // Assert
+            Assert.True(parsedCorrectly);
+            Assert.Empty(errorSink.Errors);
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperRequiredAttributeDescriptorComparer.Default);
+        }
+
         public static TheoryData IsEnumData
         {
             get
@@ -617,7 +766,10 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                                 typeof(AttributeTargetingTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
-                                requiredAttributes: new[] { "class" })
+                                requiredAttributes: new[]
+                                {
+                                    new TagHelperRequiredAttributeDescriptor { Name = "class" }
+                                })
                         }
                     },
                     {
@@ -629,7 +781,11 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                                 typeof(MultiAttributeTargetingTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
-                                requiredAttributes: new[] { "class", "style" })
+                                requiredAttributes: new[]
+                                {
+                                    new TagHelperRequiredAttributeDescriptor { Name = "class" },
+                                    new TagHelperRequiredAttributeDescriptor { Name = "style" }
+                                })
                         }
                     },
                     {
@@ -641,13 +797,20 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                                 typeof(MultiAttributeAttributeTargetingTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
-                                requiredAttributes: new[] { "custom" }),
+                                requiredAttributes: new[]
+                                {
+                                    new TagHelperRequiredAttributeDescriptor { Name = "custom" }
+                                }),
                             CreateTagHelperDescriptor(
                                 TagHelperDescriptorProvider.ElementCatchAllTarget,
                                 typeof(MultiAttributeAttributeTargetingTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
-                                requiredAttributes: new[] { "class", "style" })
+                                requiredAttributes: new[]
+                                {
+                                    new TagHelperRequiredAttributeDescriptor { Name = "class" },
+                                    new TagHelperRequiredAttributeDescriptor { Name = "style" }
+                                })
                         }
                     },
                     {
@@ -659,7 +822,10 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                                 typeof(InheritedAttributeTargetingTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
-                                requiredAttributes: new[] { "style" })
+                                requiredAttributes: new[]
+                                {
+                                    new TagHelperRequiredAttributeDescriptor { Name = "style" }
+                                })
                         }
                     },
                     {
@@ -671,7 +837,10 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                                 typeof(RequiredAttributeTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
-                                requiredAttributes: new[] { "class" })
+                                requiredAttributes: new[]
+                                {
+                                    new TagHelperRequiredAttributeDescriptor { Name = "class" }
+                                })
                         }
                     },
                     {
@@ -683,7 +852,10 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                                 typeof(InheritedRequiredAttributeTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
-                                requiredAttributes: new[] { "class" })
+                                requiredAttributes: new[]
+                                {
+                                    new TagHelperRequiredAttributeDescriptor { Name = "class" }
+                                })
                         }
                     },
                     {
@@ -695,13 +867,19 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                                 typeof(MultiAttributeRequiredAttributeTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
-                                requiredAttributes: new[] { "class" }),
+                                requiredAttributes: new[]
+                                {
+                                    new TagHelperRequiredAttributeDescriptor { Name = "class" }
+                                }),
                             CreateTagHelperDescriptor(
                                 "input",
                                 typeof(MultiAttributeRequiredAttributeTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
-                                requiredAttributes: new[] { "class" })
+                                requiredAttributes: new[]
+                                {
+                                    new TagHelperRequiredAttributeDescriptor { Name = "class" }
+                                })
                         }
                     },
                     {
@@ -713,13 +891,19 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                                 typeof(MultiAttributeSameTagRequiredAttributeTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
-                                requiredAttributes: new[] { "style" }),
+                                requiredAttributes: new[]
+                                {
+                                    new TagHelperRequiredAttributeDescriptor { Name = "style" }
+                                }),
                             CreateTagHelperDescriptor(
                                 "input",
                                 typeof(MultiAttributeSameTagRequiredAttributeTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
-                                requiredAttributes: new[] { "class" })
+                                requiredAttributes: new[]
+                                {
+                                    new TagHelperRequiredAttributeDescriptor { Name = "class" }
+                                })
                         }
                     },
                     {
@@ -731,7 +915,11 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                                 typeof(MultiRequiredAttributeTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
-                                requiredAttributes: new[] { "class", "style" })
+                                requiredAttributes: new[]
+                                {
+                                    new TagHelperRequiredAttributeDescriptor { Name = "class" },
+                                    new TagHelperRequiredAttributeDescriptor { Name = "style" }
+                                })
                         }
                     },
                     {
@@ -743,13 +931,20 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                                 typeof(MultiTagMultiRequiredAttributeTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
-                                requiredAttributes: new[] { "class", "style" }),
+                                requiredAttributes: new[]
+                                {
+                                    new TagHelperRequiredAttributeDescriptor { Name = "class" },
+                                    new TagHelperRequiredAttributeDescriptor { Name = "style" }
+                                }),
                             CreateTagHelperDescriptor(
                                 "input",
                                 typeof(MultiTagMultiRequiredAttributeTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
-                                requiredAttributes: new[] { "class", "style" }),
+                                requiredAttributes: new[] {
+                                    new TagHelperRequiredAttributeDescriptor { Name = "class" },
+                                    new TagHelperRequiredAttributeDescriptor { Name = "style" }
+                                }),
                         }
                     },
                     {
@@ -761,7 +956,14 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                                 typeof(AttributeWildcardTargetingTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
-                                requiredAttributes: new[] { "class*" })
+                                requiredAttributes: new[]
+                                {
+                                    new TagHelperRequiredAttributeDescriptor
+                                    {
+                                        Name = "class",
+                                        NameComparison = TagHelperRequiredAttributeNameComparison.PrefixMatch,
+                                    }
+                                })
                         }
                     },
                     {
@@ -773,7 +975,19 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                                 typeof(MultiAttributeWildcardTargetingTagHelper).FullName,
                                 AssemblyName,
                                 attributes,
-                                requiredAttributes: new[] { "class*", "style*" })
+                                requiredAttributes: new[]
+                                {
+                                    new TagHelperRequiredAttributeDescriptor
+                                    {
+                                        Name = "class",
+                                        NameComparison = TagHelperRequiredAttributeNameComparison.PrefixMatch,
+                                    },
+                                    new TagHelperRequiredAttributeDescriptor
+                                    {
+                                        Name = "style",
+                                        NameComparison = TagHelperRequiredAttributeNameComparison.PrefixMatch,
+                                    }
+                                    })
                         }
                     },
                 };
@@ -1325,29 +1539,6 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                     { " p , div ", new[] { "p", "div" } },
                 };
             }
-        }
-
-        [Theory]
-        [MemberData(nameof(ValidNameData))]
-        public void GetCommaSeparatedValues_OutputsCommaSeparatedListOfNames(
-            string name,
-            IEnumerable<string> expectedNames)
-        {
-            // Act
-            var result = TagHelperDescriptorFactory.GetCommaSeparatedValues(name);
-
-            // Assert
-            Assert.Equal(expectedNames, result);
-        }
-
-        [Fact]
-        public void GetCommaSeparatedValues_OutputsEmptyArrayForNullValue()
-        {
-            // Act
-            var result = TagHelperDescriptorFactory.GetCommaSeparatedValues(text: null);
-
-            // Assert
-            Assert.Empty(result);
         }
 
         public static TheoryData InvalidTagHelperAttributeDescriptorData
@@ -2293,7 +2484,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             string typeName,
             string assemblyName,
             IEnumerable<TagHelperAttributeDescriptor> attributes = null,
-            IEnumerable<string> requiredAttributes = null)
+            IEnumerable<TagHelperRequiredAttributeDescriptor> requiredAttributes = null)
         {
             return new TagHelperDescriptor
             {
@@ -2301,7 +2492,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 TypeName = typeName,
                 AssemblyName = assemblyName,
                 Attributes = attributes ?? Enumerable.Empty<TagHelperAttributeDescriptor>(),
-                RequiredAttributes = requiredAttributes ?? Enumerable.Empty<string>()
+                RequiredAttributes = requiredAttributes ?? Enumerable.Empty<TagHelperRequiredAttributeDescriptor>()
             };
         }
 

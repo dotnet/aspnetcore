@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Razor.Test.Internal;
 using Xunit;
 
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
 
         [Theory]
         [MemberData(nameof(RequiredParentData))]
-        public void GetDescriptors_ReturnsDescriptorsWithRequiredAttributes(
+        public void GetDescriptors_ReturnsDescriptorsParentTags(
             string tagName,
             string parentTagName,
             IEnumerable<TagHelperDescriptor> availableDescriptors,
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
             // Act
             var resolvedDescriptors = provider.GetDescriptors(
                 tagName,
-                attributeNames: Enumerable.Empty<string>(),
+                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: parentTagName);
 
             // Assert
@@ -101,131 +101,155 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                     TagName = "div",
                     TypeName = "DivTagHelper",
                     AssemblyName = "SomeAssembly",
-                    RequiredAttributes = new[] { "style" }
+                    RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "style" } }
                 };
                 var inputDescriptor = new TagHelperDescriptor
                 {
                     TagName = "input",
                     TypeName = "InputTagHelper",
                     AssemblyName = "SomeAssembly",
-                    RequiredAttributes = new[] { "class", "style" }
+                    RequiredAttributes = new[]
+                    {
+                        new TagHelperRequiredAttributeDescriptor { Name = "class" },
+                        new TagHelperRequiredAttributeDescriptor { Name = "style" }
+                    }
                 };
                 var inputWildcardPrefixDescriptor = new TagHelperDescriptor
                 {
                     TagName = "input",
                     TypeName = "InputWildCardAttribute",
                     AssemblyName = "SomeAssembly",
-                    RequiredAttributes = new[] { "nodashprefix*" }
+                    RequiredAttributes = new[]
+                    {
+                        new TagHelperRequiredAttributeDescriptor
+                        {
+                            Name = "nodashprefix",
+                            NameComparison = TagHelperRequiredAttributeNameComparison.PrefixMatch,
+                        }
+                    }
                 };
                 var catchAllDescriptor = new TagHelperDescriptor
                 {
                     TagName = TagHelperDescriptorProvider.ElementCatchAllTarget,
                     TypeName = "CatchAllTagHelper",
                     AssemblyName = "SomeAssembly",
-                    RequiredAttributes = new[] { "class" }
+                    RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "class" } }
                 };
                 var catchAllDescriptor2 = new TagHelperDescriptor
                 {
                     TagName = TagHelperDescriptorProvider.ElementCatchAllTarget,
                     TypeName = "CatchAllTagHelper",
                     AssemblyName = "SomeAssembly",
-                    RequiredAttributes = new[] { "custom", "class" }
+                    RequiredAttributes = new[]
+                    {
+                        new TagHelperRequiredAttributeDescriptor { Name = "custom" },
+                        new TagHelperRequiredAttributeDescriptor { Name = "class" }
+                    }
                 };
                 var catchAllWildcardPrefixDescriptor = new TagHelperDescriptor
                 {
                     TagName = TagHelperDescriptorProvider.ElementCatchAllTarget,
                     TypeName = "CatchAllWildCardAttribute",
                     AssemblyName = "SomeAssembly",
-                    RequiredAttributes = new[] { "prefix-*" }
+                    RequiredAttributes = new[]
+                    {
+                        new TagHelperRequiredAttributeDescriptor
+                        {
+                            Name = "prefix-",
+                            NameComparison = TagHelperRequiredAttributeNameComparison.PrefixMatch,
+                        }
+                    }
                 };
                 var defaultAvailableDescriptors =
                     new[] { divDescriptor, inputDescriptor, catchAllDescriptor, catchAllDescriptor2 };
                 var defaultWildcardDescriptors =
                     new[] { inputWildcardPrefixDescriptor, catchAllWildcardPrefixDescriptor };
+                Func<string, KeyValuePair<string, string>> kvp =
+                    (name) => new KeyValuePair<string, string>(name, "test value");
 
                 return new TheoryData<
                     string, // tagName
-                    IEnumerable<string>, // providedAttributes
+                    IEnumerable<KeyValuePair<string, string>>, // providedAttributes
                     IEnumerable<TagHelperDescriptor>, // availableDescriptors
                     IEnumerable<TagHelperDescriptor>> // expectedDescriptors
                 {
                     {
                         "div",
-                        new[] { "custom" },
+                        new[] { kvp("custom") },
                         defaultAvailableDescriptors,
                         Enumerable.Empty<TagHelperDescriptor>()
                     },
-                    { "div", new[] { "style" }, defaultAvailableDescriptors, new[] { divDescriptor } },
-                    { "div", new[] { "class" }, defaultAvailableDescriptors, new[] { catchAllDescriptor } },
+                    { "div", new[] { kvp("style") }, defaultAvailableDescriptors, new[] { divDescriptor } },
+                    { "div", new[] { kvp("class") }, defaultAvailableDescriptors, new[] { catchAllDescriptor } },
                     {
                         "div",
-                        new[] { "class", "style" },
+                        new[] { kvp("class"), kvp("style") },
                         defaultAvailableDescriptors,
                         new[] { divDescriptor, catchAllDescriptor }
                     },
                     {
                         "div",
-                        new[] { "class", "style", "custom" },
+                        new[] { kvp("class"), kvp("style"), kvp("custom") },
                         defaultAvailableDescriptors,
                         new[] { divDescriptor, catchAllDescriptor, catchAllDescriptor2 }
                     },
                     {
                         "input",
-                        new[] { "class", "style" },
+                        new[] { kvp("class"), kvp("style") },
                         defaultAvailableDescriptors,
                         new[] { inputDescriptor, catchAllDescriptor }
                     },
                     {
                         "input",
-                        new[] { "nodashprefixA" },
+                        new[] { kvp("nodashprefixA") },
                         defaultWildcardDescriptors,
                         new[] { inputWildcardPrefixDescriptor }
                     },
                     {
                         "input",
-                        new[] { "nodashprefix-ABC-DEF", "random" },
+                        new[] { kvp("nodashprefix-ABC-DEF"), kvp("random") },
                         defaultWildcardDescriptors,
                         new[] { inputWildcardPrefixDescriptor }
                     },
                     {
                         "input",
-                        new[] { "prefixABCnodashprefix" },
+                        new[] { kvp("prefixABCnodashprefix") },
                         defaultWildcardDescriptors,
                         Enumerable.Empty<TagHelperDescriptor>()
                     },
                     {
                         "input",
-                        new[] { "prefix-" },
+                        new[] { kvp("prefix-") },
                         defaultWildcardDescriptors,
                         Enumerable.Empty<TagHelperDescriptor>()
                     },
                     {
                         "input",
-                        new[] { "nodashprefix" },
+                        new[] { kvp("nodashprefix") },
                         defaultWildcardDescriptors,
                         Enumerable.Empty<TagHelperDescriptor>()
                     },
                     {
                         "input",
-                        new[] { "prefix-A" },
+                        new[] { kvp("prefix-A") },
                         defaultWildcardDescriptors,
                         new[] { catchAllWildcardPrefixDescriptor }
                     },
                     {
                         "input",
-                        new[] { "prefix-ABC-DEF", "random" },
+                        new[] { kvp("prefix-ABC-DEF"), kvp("random") },
                         defaultWildcardDescriptors,
                         new[] { catchAllWildcardPrefixDescriptor }
                     },
                     {
                         "input",
-                        new[] { "prefix-abc", "nodashprefix-def" },
+                        new[] { kvp("prefix-abc"), kvp("nodashprefix-def") },
                         defaultWildcardDescriptors,
                         new[] { inputWildcardPrefixDescriptor, catchAllWildcardPrefixDescriptor }
                     },
                     {
                         "input",
-                        new[] { "class", "prefix-abc", "onclick", "nodashprefix-def", "style" },
+                        new[] { kvp("class"), kvp("prefix-abc"), kvp("onclick"), kvp("nodashprefix-def"), kvp("style") },
                         defaultWildcardDescriptors,
                         new[] { inputWildcardPrefixDescriptor, catchAllWildcardPrefixDescriptor }
                     },
@@ -237,7 +261,7 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
         [MemberData(nameof(RequiredAttributeData))]
         public void GetDescriptors_ReturnsDescriptorsWithRequiredAttributes(
             string tagName,
-            IEnumerable<string> providedAttributes,
+            IEnumerable<KeyValuePair<string, string>> providedAttributes,
             IEnumerable<TagHelperDescriptor> availableDescriptors,
             IEnumerable<TagHelperDescriptor> expectedDescriptors)
         {
@@ -265,7 +289,7 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
             // Act
             var resolvedDescriptors = provider.GetDescriptors(
                 tagName: "th",
-                attributeNames: Enumerable.Empty<string>(),
+                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
@@ -284,11 +308,11 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
             // Act
             var retrievedDescriptorsDiv = provider.GetDescriptors(
                 tagName: "th:div",
-                attributeNames: Enumerable.Empty<string>(),
+                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
             var retrievedDescriptorsSpan = provider.GetDescriptors(
                 tagName: "th2:span",
-                attributeNames: Enumerable.Empty<string>(),
+                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
@@ -308,11 +332,11 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
             // Act
             var retrievedDescriptorsDiv = provider.GetDescriptors(
                 tagName: "th:div",
-                attributeNames: Enumerable.Empty<string>(),
+                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
             var retrievedDescriptorsSpan = provider.GetDescriptors(
                 tagName: "th:span",
-                attributeNames: Enumerable.Empty<string>(),
+                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
@@ -333,7 +357,7 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
             // Act
             var retrievedDescriptors = provider.GetDescriptors(
                 tagName: "th:div",
-                attributeNames: Enumerable.Empty<string>(),
+                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
@@ -354,7 +378,7 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
             // Act
             var retrievedDescriptorsDiv = provider.GetDescriptors(
                 tagName: "div",
-                attributeNames: Enumerable.Empty<string>(),
+                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
@@ -383,7 +407,7 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
             // Act
             var retrievedDescriptors = provider.GetDescriptors(
                 tagName: "foo",
-                attributeNames: Enumerable.Empty<string>(),
+                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
@@ -418,11 +442,11 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
             // Act
             var divDescriptors = provider.GetDescriptors(
                 tagName: "div",
-                attributeNames: Enumerable.Empty<string>(),
+                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
             var spanDescriptors = provider.GetDescriptors(
                 tagName: "span",
-                attributeNames: Enumerable.Empty<string>(),
+                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
@@ -453,7 +477,7 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
             // Act
             var retrievedDescriptors = provider.GetDescriptors(
                 tagName: "div",
-                attributeNames: Enumerable.Empty<string>(),
+                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert

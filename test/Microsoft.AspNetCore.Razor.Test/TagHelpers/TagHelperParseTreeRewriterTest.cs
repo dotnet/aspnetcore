@@ -13,11 +13,74 @@ using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Microsoft.AspNetCore.Razor.Test.Framework;
 using Microsoft.AspNetCore.Razor.Text;
 using Xunit;
+using Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Test.TagHelpers
 {
     public class TagHelperParseTreeRewriterTest : TagHelperRewritingTestBase
     {
+        public static TheoryData GetAttributeNameValuePairsData
+        {
+            get
+            {
+                var factory = CreateDefaultSpanFactory();
+                var blockFactory = new BlockFactory(factory);
+                Func<string, string, KeyValuePair<string, string>> kvp =
+                    (key, value) => new KeyValuePair<string, string>(key, value);
+                var empty = Enumerable.Empty<KeyValuePair<string, string>>();
+                var csharp = TagHelperParseTreeRewriter.InvalidAttributeValueMarker;
+
+                // documentContent, expectedPairs
+                return new TheoryData<string, IEnumerable<KeyValuePair<string, string>>>
+                {
+                    { "<a>", empty },
+                    { "<a @{ } href='~/home'>", empty },
+                    { "<a href=\"@true\">", new[] { kvp("href", csharp) } },
+                    { "<a href=\"prefix @true suffix\">", new[] { kvp("href", $"prefix{csharp} suffix") } },
+                    { "<a href=~/home>", new[] { kvp("href", "~/home") } },
+                    { "<a href=~/home @{ } nothing='something'>", new[] { kvp("href", "~/home"), kvp("", "") } },
+                    {
+                        "<a href=\"@DateTime.Now::0\" class='btn btn-success' random>",
+                        new[] { kvp("href", $"{csharp}::0"), kvp("class", "btn btn-success"), kvp("random", "") }
+                    },
+                    { "<a href=>", new[] { kvp("href", "") } },
+                    { "<a href='\">  ", new[] { kvp("href", "\">") } },
+                    { "<a href'", new[] { kvp("href'", "") } },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(GetAttributeNameValuePairsData))]
+        public void GetAttributeNameValuePairs_ParsesPairsCorrectly(
+            string documentContent,
+            IEnumerable<KeyValuePair<string, string>> expectedPairs)
+        {
+            // Arrange
+            var errorSink = new ErrorSink();
+            var parseResult = ParseDocument(documentContent, errorSink);
+            var document = parseResult.Document;
+            var rewriters = RazorParser.GetDefaultRewriters(new HtmlMarkupParser());
+            var rewritingContext = new RewritingContext(document, errorSink);
+            foreach (var rewriter in rewriters)
+            {
+                rewriter.Rewrite(rewritingContext);
+            }
+            var block = rewritingContext.SyntaxTree.Children.First();
+            var parseTreeRewriter = new TagHelperParseTreeRewriter(provider: null);
+
+            // Assert - Guard
+            var tagBlock = Assert.IsType<Block>(block);
+            Assert.Equal(BlockType.Tag, tagBlock.Type);
+            Assert.Empty(errorSink.Errors);
+
+            // Act
+            var pairs = parseTreeRewriter.GetAttributeNameValuePairs(tagBlock);
+
+            // Assert
+            Assert.Equal(expectedPairs, pairs);
+        }
+
         public static TheoryData PartialRequiredParentData
         {
             get
@@ -716,7 +779,7 @@ namespace Microsoft.AspNetCore.Razor.Test.TagHelpers
                         TagName = "strong",
                         TypeName = "StrongTagHelper",
                         AssemblyName = "SomeAssembly",
-                        RequiredAttributes = new[] { "required" },
+                        RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "required" } },
                         AllowedChildren = new[] { "br" }
                     }
                 };
@@ -1648,21 +1711,25 @@ namespace Microsoft.AspNetCore.Razor.Test.TagHelpers
                         TagName = "p",
                         TypeName = "pTagHelper",
                         AssemblyName = "SomeAssembly",
-                        RequiredAttributes = new[] { "class" }
+                        RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "class" } }
                     },
                     new TagHelperDescriptor
                     {
                         TagName = "div",
                         TypeName = "divTagHelper",
                         AssemblyName = "SomeAssembly",
-                        RequiredAttributes = new[] { "class", "style" }
+                        RequiredAttributes = new[]
+                        {
+                            new TagHelperRequiredAttributeDescriptor { Name = "class" },
+                            new TagHelperRequiredAttributeDescriptor { Name = "style" }
+                        }
                     },
                     new TagHelperDescriptor
                     {
                         TagName = "*",
                         TypeName = "catchAllTagHelper",
                         AssemblyName = "SomeAssembly",
-                        RequiredAttributes = new[] { "catchAll" }
+                        RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "catchAll" } }
                     }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
@@ -1911,14 +1978,14 @@ namespace Microsoft.AspNetCore.Razor.Test.TagHelpers
                         TagName = "p",
                         TypeName = "pTagHelper",
                         AssemblyName = "SomeAssembly",
-                        RequiredAttributes = new[] { "class" }
+                        RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "class" } }
                     },
                     new TagHelperDescriptor
                     {
                         TagName = "*",
                         TypeName = "catchAllTagHelper",
                         AssemblyName = "SomeAssembly",
-                        RequiredAttributes = new[] { "catchAll" }
+                        RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "catchAll" } }
                     }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
@@ -2135,7 +2202,7 @@ namespace Microsoft.AspNetCore.Razor.Test.TagHelpers
                         TagName = "p",
                         TypeName = "pTagHelper",
                         AssemblyName = "SomeAssembly",
-                        RequiredAttributes = new[] { "class" }
+                        RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "class" } }
                     }
                 };
             var descriptorProvider = new TagHelperDescriptorProvider(descriptors);

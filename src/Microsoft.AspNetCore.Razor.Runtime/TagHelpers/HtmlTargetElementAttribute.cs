@@ -45,8 +45,10 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         public string Tag { get; }
 
         /// <summary>
-        /// A comma-separated <see cref="string"/> of attribute names the HTML element must contain for the
-        /// <see cref="ITagHelper"/> to run. <c>*</c> at the end of an attribute name acts as a prefix match.
+        /// A comma-separated <see cref="string"/> of attribute selectors the HTML element must match for the
+        /// <see cref="ITagHelper"/> to run. <c>*</c> at the end of an attribute name acts as a prefix match. A value
+        /// surrounded by square brackets is handled as a CSS attribute value selector. Operators <c>^=</c>, <c>$=</c> and
+        /// <c>=</c> are supported e.g. <c>"name"</c>, <c>"[name]"</c>, <c>"[name=value]"</c>, <c>"[ name ^= 'value' ]"</c>.
         /// </summary>
         public string Attributes { get; set; }
 

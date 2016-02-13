@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Parser.TagHelpers;
 
 namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
 {
@@ -13,8 +14,6 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
     public class TagHelperDescriptorProvider
     {
         public const string ElementCatchAllTarget = "*";
-
-        public static readonly string RequiredAttributeWildcardSuffix = "*";
 
         private IDictionary<string, HashSet<TagHelperDescriptor>> _registrations;
         private string _tagHelperPrefix;
@@ -39,14 +38,14 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
         /// </summary>
         /// <param name="tagName">The name of the HTML tag to match. Providing a '*' tag name
         /// retrieves catch-all <see cref="TagHelperDescriptor"/>s (descriptors that target every tag).</param>
-        /// <param name="attributeNames">Attributes the HTML element must contain to match.</param>
+        /// <param name="attributes">Attributes the HTML element must contain to match.</param>
         /// <param name="parentTagName">The parent tag name of the given <paramref name="tagName"/> tag.</param>
         /// <returns><see cref="TagHelperDescriptor"/>s that apply to the given <paramref name="tagName"/>.
         /// Will return an empty <see cref="Enumerable" /> if no <see cref="TagHelperDescriptor"/>s are
         /// found.</returns>
         public IEnumerable<TagHelperDescriptor> GetDescriptors(
             string tagName,
-            IEnumerable<string> attributeNames,
+            IEnumerable<KeyValuePair<string, string>> attributes,
             string parentTagName)
         {
             if (!string.IsNullOrEmpty(_tagHelperPrefix) &&
@@ -78,10 +77,10 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                 descriptors = matchingDescriptors.Concat(descriptors);
             }
 
-            var applicableDescriptors = ApplyRequiredAttributes(descriptors, attributeNames);
+            var applicableDescriptors = ApplyRequiredAttributes(descriptors, attributes);
             applicableDescriptors = ApplyParentTagFilter(applicableDescriptors, parentTagName);
 
-            return applicableDescriptors;
+            return applicableDescriptors.ToArray();
         }
 
         private IEnumerable<TagHelperDescriptor> ApplyParentTagFilter(
@@ -95,37 +94,12 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
 
         private IEnumerable<TagHelperDescriptor> ApplyRequiredAttributes(
             IEnumerable<TagHelperDescriptor> descriptors,
-            IEnumerable<string> attributeNames)
+            IEnumerable<KeyValuePair<string, string>> attributes)
         {
             return descriptors.Where(
-                descriptor =>
-                {
-                    foreach (var requiredAttribute in descriptor.RequiredAttributes)
-                    {
-                        // '*' at the end of a required attribute indicates: apply to attributes prefixed with the
-                        // required attribute value.
-                        if (requiredAttribute.EndsWith(
-                            RequiredAttributeWildcardSuffix,
-                            StringComparison.OrdinalIgnoreCase))
-                        {
-                            var prefix = requiredAttribute.Substring(0, requiredAttribute.Length - 1);
-
-                            if (!attributeNames.Any(
-                                attributeName =>
-                                    attributeName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
-                                    !string.Equals(attributeName, prefix, StringComparison.OrdinalIgnoreCase)))
-                            {
-                                return false;
-                            }
-                        }
-                        else if (!attributeNames.Contains(requiredAttribute, StringComparer.OrdinalIgnoreCase))
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                });
+                descriptor => descriptor.RequiredAttributes.All(
+                    requiredAttribute => attributes.Any(
+                        attribute => requiredAttribute.IsMatch(attribute.Key, attribute.Value))));
         }
 
         private void Register(TagHelperDescriptor descriptor)

@@ -195,4 +195,19 @@
   <data name="ArgumentMustBeAnInstanceOf" xml:space="preserve">
     <value>Argument must be an instance of '{0}'.</value>
   </data>
+  <data name="TagHelperDescriptorFactory_CouldNotFindMatchingEndBrace" xml:space="preserve">
+    <value>Could not find matching ']' for required attribute '{0}'.</value>
+  </data>
+  <data name="TagHelperDescriptorFactory_InvalidRequiredAttributeCharacter" xml:space="preserve">
+    <value>Invalid required attribute character '{0}' in required attribute '{1}'. Separate required attributes with commas.</value>
+  </data>
+  <data name="TagHelperDescriptorFactory_InvalidRequiredAttributeMismatchedQuotes" xml:space="preserve">
+    <value>Required attribute '{0}' has mismatched quotes '{1}' around value.</value>
+  </data>
+  <data name="TagHelperDescriptorFactory_PartialRequiredAttributeOperator" xml:space="preserve">
+    <value>Required attribute '{0}' has a partial CSS operator. '{1}' must be followed by an equals.</value>
+  </data>
+  <data name="TagHelperDescriptorFactory_InvalidRequiredAttributeOperator" xml:space="preserve">
+    <value>Invalid character '{0}' in required attribute '{1}'. Expected supported CSS operator or ']'.</value>
+  </data>
 </root>

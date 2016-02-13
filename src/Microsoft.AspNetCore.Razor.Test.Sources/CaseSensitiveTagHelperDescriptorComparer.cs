@@ -33,7 +33,10 @@ namespace Microsoft.AspNetCore.Razor.Test.Internal
             // attributes or prefixes. In tests we do.
             Assert.Equal(descriptorX.TagName, descriptorY.TagName, StringComparer.Ordinal);
             Assert.Equal(descriptorX.Prefix, descriptorY.Prefix, StringComparer.Ordinal);
-            Assert.Equal(descriptorX.RequiredAttributes, descriptorY.RequiredAttributes, StringComparer.Ordinal);
+            Assert.Equal(
+                descriptorX.RequiredAttributes,
+                descriptorY.RequiredAttributes,
+                CaseSensitiveTagHelperRequiredAttributeDescriptorComparer.Default);
             Assert.Equal(descriptorX.RequiredParent, descriptorY.RequiredParent, StringComparer.Ordinal);
 
             if (descriptorX.AllowedChildren != descriptorY.AllowedChildren)
@@ -66,9 +69,10 @@ namespace Microsoft.AspNetCore.Razor.Test.Internal
                     TagHelperDesignTimeDescriptorComparer.Default.GetHashCode(descriptor.DesignTimeDescriptor));
             }
 
-            foreach (var requiredAttribute in descriptor.RequiredAttributes.OrderBy(attribute => attribute))
+            foreach (var requiredAttribute in descriptor.RequiredAttributes.OrderBy(attribute => attribute.Name))
             {
-                hashCodeCombiner.Add(requiredAttribute, StringComparer.Ordinal);
+                hashCodeCombiner.Add(
+                    CaseSensitiveTagHelperRequiredAttributeDescriptorComparer.Default.GetHashCode(requiredAttribute));
             }
 
             if (descriptor.AllowedChildren != null)

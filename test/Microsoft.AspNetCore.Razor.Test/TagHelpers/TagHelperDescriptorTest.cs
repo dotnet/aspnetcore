@@ -21,8 +21,22 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                 Prefix = "prefix:",
                 TagName = "tag name",
                 TypeName = "type name",
-                AssemblyName =  "assembly name",
-                RequiredAttributes = new[] { "required attribute one", "required attribute two" },
+                AssemblyName = "assembly name",
+                RequiredAttributes = new[]
+                {
+                    new TagHelperRequiredAttributeDescriptor
+                    {
+                        Name = "required attribute one",
+                        NameComparison = TagHelperRequiredAttributeNameComparison.PrefixMatch
+                    },
+                    new TagHelperRequiredAttributeDescriptor
+                    {
+                        Name = "required attribute two",
+                        NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch,
+                        Value = "something",
+                        ValueComparison = TagHelperRequiredAttributeValueComparison.PrefixMatch,
+                    }
+                },
                 AllowedChildren = new[] { "allowed child one" },
                 RequiredParent = "parent name",
                 DesignTimeDescriptor = new TagHelperDesignTimeDescriptor
@@ -41,7 +55,14 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                 $"\"{ nameof(TagHelperDescriptor.AssemblyName) }\":\"assembly name\"," +
                 $"\"{ nameof(TagHelperDescriptor.Attributes) }\":[]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":" +
-                "[\"required attribute one\",\"required attribute two\"]," +
+                $"[{{\"{ nameof(TagHelperRequiredAttributeDescriptor.Name)}\":\"required attribute one\"," +
+                $"\"{ nameof(TagHelperRequiredAttributeDescriptor.NameComparison) }\":1," +
+                $"\"{ nameof(TagHelperRequiredAttributeDescriptor.Value) }\":null," +
+                $"\"{ nameof(TagHelperRequiredAttributeDescriptor.ValueComparison) }\":0}}," +
+                $"{{\"{ nameof(TagHelperRequiredAttributeDescriptor.Name)}\":\"required attribute two\"," +
+                $"\"{ nameof(TagHelperRequiredAttributeDescriptor.NameComparison) }\":0," +
+                $"\"{ nameof(TagHelperRequiredAttributeDescriptor.Value) }\":\"something\"," +
+                $"\"{ nameof(TagHelperRequiredAttributeDescriptor.ValueComparison) }\":2}}]," +
                 $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":[\"allowed child one\"]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredParent) }\":\"parent name\"," +
                 $"\"{ nameof(TagHelperDescriptor.TagStructure) }\":0," +
@@ -200,8 +221,15 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                 $"\"{nameof(TagHelperDescriptor.TypeName)}\":\"type name\"," +
                 $"\"{nameof(TagHelperDescriptor.AssemblyName)}\":\"assembly name\"," +
                 $"\"{nameof(TagHelperDescriptor.Attributes)}\":[]," +
-                $"\"{nameof(TagHelperDescriptor.RequiredAttributes)}\":" +
-                "[\"required attribute one\",\"required attribute two\"]," +
+                $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":" +
+                $"[{{\"{ nameof(TagHelperRequiredAttributeDescriptor.Name)}\":\"required attribute one\"," +
+                $"\"{ nameof(TagHelperRequiredAttributeDescriptor.NameComparison) }\":1," +
+                $"\"{ nameof(TagHelperRequiredAttributeDescriptor.Value) }\":null," +
+                $"\"{ nameof(TagHelperRequiredAttributeDescriptor.ValueComparison) }\":0}}," +
+                $"{{\"{ nameof(TagHelperRequiredAttributeDescriptor.Name)}\":\"required attribute two\"," +
+                $"\"{ nameof(TagHelperRequiredAttributeDescriptor.NameComparison) }\":0," +
+                $"\"{ nameof(TagHelperRequiredAttributeDescriptor.Value) }\":\"something\"," +
+                $"\"{ nameof(TagHelperRequiredAttributeDescriptor.ValueComparison) }\":2}}]," +
                 $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":[\"allowed child one\",\"allowed child two\"]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredParent) }\":\"parent name\"," +
                 $"\"{nameof(TagHelperDescriptor.TagStructure)}\":2," +
@@ -215,7 +243,21 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                 TagName = "tag name",
                 TypeName = "type name",
                 AssemblyName = "assembly name",
-                RequiredAttributes = new[] { "required attribute one", "required attribute two" },
+                RequiredAttributes = new[]
+                {
+                    new TagHelperRequiredAttributeDescriptor
+                    {
+                        Name = "required attribute one",
+                        NameComparison = TagHelperRequiredAttributeNameComparison.PrefixMatch
+                    },
+                    new TagHelperRequiredAttributeDescriptor
+                    {
+                        Name = "required attribute two",
+                        NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch,
+                        Value = "something",
+                        ValueComparison = TagHelperRequiredAttributeValueComparison.PrefixMatch,
+                    }
+                },
                 AllowedChildren = new[] { "allowed child one", "allowed child two" },
                 RequiredParent = "parent name",
                 DesignTimeDescriptor = new TagHelperDesignTimeDescriptor
@@ -237,7 +279,7 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
             Assert.Equal(expectedDescriptor.TypeName, descriptor.TypeName, StringComparer.Ordinal);
             Assert.Equal(expectedDescriptor.AssemblyName, descriptor.AssemblyName, StringComparer.Ordinal);
             Assert.Empty(descriptor.Attributes);
-            Assert.Equal(expectedDescriptor.RequiredAttributes, descriptor.RequiredAttributes, StringComparer.Ordinal);
+            Assert.Equal(expectedDescriptor.RequiredAttributes, descriptor.RequiredAttributes, TagHelperRequiredAttributeDescriptorComparer.Default);
             Assert.Equal(
                 expectedDescriptor.DesignTimeDescriptor,
                 descriptor.DesignTimeDescriptor,
