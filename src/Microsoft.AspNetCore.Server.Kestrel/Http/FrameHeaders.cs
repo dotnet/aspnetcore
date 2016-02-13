@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
     public abstract class FrameHeaders : IHeaderDictionary
     {
+        protected bool _isReadOnly;
         protected Dictionary<string, StringValues> MaybeUnknown;
 
         protected Dictionary<string, StringValues> Unknown => MaybeUnknown ?? (MaybeUnknown = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase));
@@ -26,6 +27,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
             set
             {
+                if (_isReadOnly)
+                {
+                    ThrowReadOnlyException();
+                }
                 SetValueFast(key, value);
             }
         }
@@ -38,20 +43,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
             set
             {
+                if (_isReadOnly)
+                {
+                    ThrowReadOnlyException();
+                }
                 SetValueFast(key, value);
             }
         }
 
+        protected void ThrowReadOnlyException()
+        {
+            throw new InvalidOperationException("Headers are readonly, reponse has already started.");
+        }
+
+        protected void ThrowArgumentException()
+        {
+            throw new ArgumentException();
+        }
+
+        protected void ThrowKeyNotFoundException()
+        {
+            throw new KeyNotFoundException();
+        }
+
+        protected void ThrowDuplicateKeyException()
+        {
+            throw new ArgumentException("An item with the same key has already been added.");
+        }
+
         int ICollection<KeyValuePair<string, StringValues>>.Count => GetCountFast();
 
-        bool ICollection<KeyValuePair<string, StringValues>>.IsReadOnly => false;
+        bool ICollection<KeyValuePair<string, StringValues>>.IsReadOnly => _isReadOnly;
 
         ICollection<string> IDictionary<string, StringValues>.Keys => ((IDictionary<string, StringValues>)this).Select(pair => pair.Key).ToList();
 
         ICollection<StringValues> IDictionary<string, StringValues>.Values => ((IDictionary<string, StringValues>)this).Select(pair => pair.Value).ToList();
 
+        public void SetReadOnly()
+        {
+            _isReadOnly = true;
+        }
+
         public void Reset()
         {
+            _isReadOnly = false;
             ClearFast();
         }
 
@@ -105,16 +140,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         void ICollection<KeyValuePair<string, StringValues>>.Add(KeyValuePair<string, StringValues> item)
         {
+            if (_isReadOnly)
+            {
+                ThrowReadOnlyException();
+            }
             AddValueFast(item.Key, item.Value);
         }
 
         void IDictionary<string, StringValues>.Add(string key, StringValues value)
         {
+            if (_isReadOnly)
+            {
+                ThrowReadOnlyException();
+            }
             AddValueFast(key, value);
         }
 
         void ICollection<KeyValuePair<string, StringValues>>.Clear()
         {
+            if (_isReadOnly)
+            {
+                ThrowReadOnlyException();
+            }
             ClearFast();
         }
 
@@ -158,6 +205,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         bool IDictionary<string, StringValues>.Remove(string key)
         {
+            if (_isReadOnly)
+            {
+                ThrowReadOnlyException();
+            }
             return RemoveFast(key);
         }
 

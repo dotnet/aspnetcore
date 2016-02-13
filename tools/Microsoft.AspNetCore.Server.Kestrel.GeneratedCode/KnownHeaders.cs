@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }}
                             else
                             {{
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }}
                         }}
                     ")}}}
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 ")}}}
             if (MaybeUnknown == null) 
             {{
-                throw new System.Collections.Generic.KeyNotFoundException();
+                ThrowKeyNotFoundException();
             }}
             return MaybeUnknown[key];
         }}
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {{
                             if ({header.TestBit()})
                             {{
-                                throw new ArgumentException(""An item with the same key has already been added."");
+                                ThrowDuplicateKeyException();
                             }}
                             {header.SetBit()};
                             _{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
@@ -377,14 +377,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {{
             if (arrayIndex < 0)
             {{
-                throw new ArgumentException();
+                ThrowArgumentException();
             }}
             {Each(loop.Headers, header => $@"
                 if ({header.TestBit()}) 
                 {{
                     if (arrayIndex == array.Length)
                     {{
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }}
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>(""{header.Name}"", _{header.Identifier});
@@ -415,6 +415,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }}
             ")}
         }}" : "")}
+        {(loop.ClassName == "FrameRequestHeaders" ? $@"
         public unsafe void Append(byte[] keyBytes, int keyOffset, int keyLength, string value)
         {{
             fixed (byte* ptr = &keyBytes[keyOffset]) 
@@ -449,7 +450,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             StringValues existing;
             Unknown.TryGetValue(key, out existing);
             Unknown[key] = AppendValue(existing, value);
-        }}
+        }}" : "")}
         public partial struct Enumerator
         {{
             public bool MoveNext()

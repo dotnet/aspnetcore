@@ -782,7 +782,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -794,7 +794,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -806,7 +806,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -818,7 +818,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -830,7 +830,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -846,7 +846,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -858,7 +858,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -870,7 +870,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -886,7 +886,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -898,7 +898,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -910,7 +910,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -926,7 +926,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -938,7 +938,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -950,7 +950,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -962,7 +962,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -974,7 +974,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -990,7 +990,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -1002,7 +1002,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -1014,7 +1014,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -1026,7 +1026,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -1038,7 +1038,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -1054,7 +1054,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -1066,7 +1066,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -1082,7 +1082,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -1098,7 +1098,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -1110,7 +1110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -1126,7 +1126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -1138,7 +1138,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -1154,7 +1154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -1166,7 +1166,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -1182,7 +1182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -1194,7 +1194,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -1206,7 +1206,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -1222,7 +1222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -1238,7 +1238,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -1250,7 +1250,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -1266,7 +1266,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -1278,7 +1278,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -1294,7 +1294,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -1306,7 +1306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -1322,7 +1322,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -1338,7 +1338,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -1354,7 +1354,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -1370,7 +1370,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -1378,7 +1378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 }
             if (MaybeUnknown == null) 
             {
-                throw new System.Collections.Generic.KeyNotFoundException();
+                ThrowKeyNotFoundException();
             }
             return MaybeUnknown[key];
         }
@@ -2481,7 +2481,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 1L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 1L;
                             _CacheControl = value;
@@ -2492,7 +2492,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 131072L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 131072L;
                             _ContentRange = value;
@@ -2503,7 +2503,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 524288L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 524288L;
                             _LastModified = value;
@@ -2514,7 +2514,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 16777216L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 16777216L;
                             _Authorization = value;
@@ -2525,7 +2525,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 2147483648L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 2147483648L;
                             _IfNoneMatch = value;
@@ -2540,7 +2540,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 2L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 2L;
                             _Connection = value;
@@ -2551,7 +2551,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 8L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 8L;
                             _KeepAlive = value;
@@ -2562,7 +2562,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 1099511627776L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 1099511627776L;
                             _UserAgent = value;
@@ -2577,7 +2577,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 4L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 4L;
                             _Date = value;
@@ -2588,7 +2588,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 134217728L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 134217728L;
                             _From = value;
@@ -2599,7 +2599,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 268435456L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 268435456L;
                             _Host = value;
@@ -2614,7 +2614,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 16L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 16L;
                             _Pragma = value;
@@ -2625,7 +2625,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 1048576L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 1048576L;
                             _Accept = value;
@@ -2636,7 +2636,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 33554432L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 33554432L;
                             _Cookie = value;
@@ -2647,7 +2647,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 67108864L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 67108864L;
                             _Expect = value;
@@ -2658,7 +2658,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 2199023255552L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 2199023255552L;
                             _Origin = value;
@@ -2673,7 +2673,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 32L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 32L;
                             _Trailer = value;
@@ -2684,7 +2684,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 128L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 128L;
                             _Upgrade = value;
@@ -2695,7 +2695,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 512L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 512L;
                             _Warning = value;
@@ -2706,7 +2706,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 262144L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 262144L;
                             _Expires = value;
@@ -2717,7 +2717,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 68719476736L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 68719476736L;
                             _Referer = value;
@@ -2732,7 +2732,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 64L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 64L;
                             _TransferEncoding = value;
@@ -2743,7 +2743,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 1073741824L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 1073741824L;
                             _IfModifiedSince = value;
@@ -2758,7 +2758,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 256L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 256L;
                             _Via = value;
@@ -2773,7 +2773,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 1024L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 1024L;
                             _Allow = value;
@@ -2784,7 +2784,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 137438953472L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 137438953472L;
                             _Range = value;
@@ -2799,7 +2799,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 2048L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 2048L;
                             _ContentLength = value;
@@ -2810,7 +2810,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 2097152L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 2097152L;
                             _AcceptCharset = value;
@@ -2825,7 +2825,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 4096L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 4096L;
                             _ContentType = value;
@@ -2836,7 +2836,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 17179869184L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 17179869184L;
                             _MaxForwards = value;
@@ -2851,7 +2851,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 8192L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 8192L;
                             _ContentEncoding = value;
@@ -2862,7 +2862,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 16384L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 16384L;
                             _ContentLanguage = value;
@@ -2873,7 +2873,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 32768L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 32768L;
                             _ContentLocation = value;
@@ -2888,7 +2888,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 65536L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 65536L;
                             _ContentMD5 = value;
@@ -2903,7 +2903,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 4194304L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 4194304L;
                             _AcceptEncoding = value;
@@ -2914,7 +2914,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 8388608L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 8388608L;
                             _AcceptLanguage = value;
@@ -2929,7 +2929,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 536870912L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 536870912L;
                             _IfMatch = value;
@@ -2940,7 +2940,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 4294967296L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 4294967296L;
                             _IfRange = value;
@@ -2955,7 +2955,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 8589934592L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 8589934592L;
                             _IfUnmodifiedSince = value;
@@ -2966,7 +2966,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 34359738368L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 34359738368L;
                             _ProxyAuthorization = value;
@@ -2981,7 +2981,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 274877906944L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 274877906944L;
                             _TE = value;
@@ -2996,7 +2996,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 549755813888L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 549755813888L;
                             _Translate = value;
@@ -3011,7 +3011,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 4398046511104L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 4398046511104L;
                             _AccessControlRequestMethod = value;
@@ -3026,7 +3026,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 8796093022208L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 8796093022208L;
                             _AccessControlRequestHeaders = value;
@@ -3790,14 +3790,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             if (arrayIndex < 0)
             {
-                throw new ArgumentException();
+                ThrowArgumentException();
             }
             
                 if (((_bits & 1L) != 0)) 
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Cache-Control", _CacheControl);
@@ -3808,7 +3808,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Connection", _Connection);
@@ -3819,7 +3819,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Date", _Date);
@@ -3830,7 +3830,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Keep-Alive", _KeepAlive);
@@ -3841,7 +3841,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Pragma", _Pragma);
@@ -3852,7 +3852,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Trailer", _Trailer);
@@ -3863,7 +3863,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Transfer-Encoding", _TransferEncoding);
@@ -3874,7 +3874,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Upgrade", _Upgrade);
@@ -3885,7 +3885,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Via", _Via);
@@ -3896,7 +3896,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Warning", _Warning);
@@ -3907,7 +3907,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Allow", _Allow);
@@ -3918,7 +3918,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Length", _ContentLength);
@@ -3929,7 +3929,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Type", _ContentType);
@@ -3940,7 +3940,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Encoding", _ContentEncoding);
@@ -3951,7 +3951,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Language", _ContentLanguage);
@@ -3962,7 +3962,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Location", _ContentLocation);
@@ -3973,7 +3973,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-MD5", _ContentMD5);
@@ -3984,7 +3984,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Range", _ContentRange);
@@ -3995,7 +3995,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Expires", _Expires);
@@ -4006,7 +4006,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Last-Modified", _LastModified);
@@ -4017,7 +4017,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Accept", _Accept);
@@ -4028,7 +4028,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Accept-Charset", _AcceptCharset);
@@ -4039,7 +4039,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Accept-Encoding", _AcceptEncoding);
@@ -4050,7 +4050,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Accept-Language", _AcceptLanguage);
@@ -4061,7 +4061,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Authorization", _Authorization);
@@ -4072,7 +4072,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Cookie", _Cookie);
@@ -4083,7 +4083,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Expect", _Expect);
@@ -4094,7 +4094,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("From", _From);
@@ -4105,7 +4105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Host", _Host);
@@ -4116,7 +4116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("If-Match", _IfMatch);
@@ -4127,7 +4127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("If-Modified-Since", _IfModifiedSince);
@@ -4138,7 +4138,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("If-None-Match", _IfNoneMatch);
@@ -4149,7 +4149,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("If-Range", _IfRange);
@@ -4160,7 +4160,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("If-Unmodified-Since", _IfUnmodifiedSince);
@@ -4171,7 +4171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Max-Forwards", _MaxForwards);
@@ -4182,7 +4182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Proxy-Authorization", _ProxyAuthorization);
@@ -4193,7 +4193,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Referer", _Referer);
@@ -4204,7 +4204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Range", _Range);
@@ -4215,7 +4215,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("TE", _TE);
@@ -4226,7 +4226,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Translate", _Translate);
@@ -4237,7 +4237,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("User-Agent", _UserAgent);
@@ -4248,7 +4248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Origin", _Origin);
@@ -4259,7 +4259,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Request-Method", _AccessControlRequestMethod);
@@ -4270,7 +4270,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Request-Headers", _AccessControlRequestHeaders);
@@ -4279,6 +4279,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             
             ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
         }
+        
         
         public unsafe void Append(byte[] keyBytes, int keyOffset, int keyLength, string value)
         {
@@ -6177,7 +6178,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6189,7 +6190,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6201,7 +6202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6213,7 +6214,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6229,7 +6230,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6241,7 +6242,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6253,7 +6254,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6269,7 +6270,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6281,7 +6282,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6293,7 +6294,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6309,7 +6310,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6321,7 +6322,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6337,7 +6338,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6349,7 +6350,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6361,7 +6362,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6373,7 +6374,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6389,7 +6390,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6401,7 +6402,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6417,7 +6418,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6429,7 +6430,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6445,7 +6446,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6461,7 +6462,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6477,7 +6478,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6493,7 +6494,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6505,7 +6506,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6517,7 +6518,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6529,7 +6530,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6545,7 +6546,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6557,7 +6558,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6573,7 +6574,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6589,7 +6590,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6605,7 +6606,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     
@@ -6617,7 +6618,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6633,7 +6634,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6649,7 +6650,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6665,7 +6666,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }
                         }
                     }
@@ -6673,7 +6674,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 }
             if (MaybeUnknown == null) 
             {
-                throw new System.Collections.Generic.KeyNotFoundException();
+                ThrowKeyNotFoundException();
             }
             return MaybeUnknown[key];
         }
@@ -7605,7 +7606,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 1L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 1L;
                             _CacheControl = value;
@@ -7616,7 +7617,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 131072L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 131072L;
                             _ContentRange = value;
@@ -7627,7 +7628,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 524288L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 524288L;
                             _LastModified = value;
@@ -7638,7 +7639,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 1048576L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 1048576L;
                             _AcceptRanges = value;
@@ -7653,7 +7654,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 2L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 2L;
                             _Connection = value;
@@ -7665,7 +7666,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 8L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 8L;
                             _KeepAlive = value;
@@ -7676,7 +7677,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 134217728L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 134217728L;
                             _SetCookie = value;
@@ -7691,7 +7692,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 4L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 4L;
                             _Date = value;
@@ -7703,7 +7704,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 4194304L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 4194304L;
                             _ETag = value;
@@ -7714,7 +7715,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 268435456L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 268435456L;
                             _Vary = value;
@@ -7729,7 +7730,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 16L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 16L;
                             _Pragma = value;
@@ -7740,7 +7741,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 67108864L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 67108864L;
                             _Server = value;
@@ -7756,7 +7757,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 32L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 32L;
                             _Trailer = value;
@@ -7767,7 +7768,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 128L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 128L;
                             _Upgrade = value;
@@ -7778,7 +7779,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 512L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 512L;
                             _Warning = value;
@@ -7789,7 +7790,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 262144L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 262144L;
                             _Expires = value;
@@ -7804,7 +7805,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 64L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 64L;
                             _TransferEncoding = value;
@@ -7816,7 +7817,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 16777216L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 16777216L;
                             _ProxyAutheticate = value;
@@ -7831,7 +7832,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 256L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 256L;
                             _Via = value;
@@ -7842,7 +7843,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 2097152L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 2097152L;
                             _Age = value;
@@ -7857,7 +7858,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 1024L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 1024L;
                             _Allow = value;
@@ -7872,7 +7873,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 2048L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 2048L;
                             _ContentLength = value;
@@ -7888,7 +7889,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 4096L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 4096L;
                             _ContentType = value;
@@ -7903,7 +7904,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 8192L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 8192L;
                             _ContentEncoding = value;
@@ -7914,7 +7915,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 16384L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 16384L;
                             _ContentLanguage = value;
@@ -7925,7 +7926,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 32768L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 32768L;
                             _ContentLocation = value;
@@ -7936,7 +7937,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 536870912L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 536870912L;
                             _WWWAuthenticate = value;
@@ -7951,7 +7952,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 65536L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 65536L;
                             _ContentMD5 = value;
@@ -7962,7 +7963,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 33554432L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 33554432L;
                             _RetryAfter = value;
@@ -7977,7 +7978,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 8388608L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 8388608L;
                             _Location = value;
@@ -7992,7 +7993,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 1073741824L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 1073741824L;
                             _AccessControlAllowCredentials = value;
@@ -8007,7 +8008,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 2147483648L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 2147483648L;
                             _AccessControlAllowHeaders = value;
@@ -8018,7 +8019,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 4294967296L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 4294967296L;
                             _AccessControlAllowMethods = value;
@@ -8033,7 +8034,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 8589934592L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 8589934592L;
                             _AccessControlAllowOrigin = value;
@@ -8048,7 +8049,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 17179869184L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 17179869184L;
                             _AccessControlExposeHeaders = value;
@@ -8063,7 +8064,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             if (((_bits & 34359738368L) != 0))
                             {
-                                throw new ArgumentException("An item with the same key has already been added.");
+                                ThrowDuplicateKeyException();
                             }
                             _bits |= 34359738368L;
                             _AccessControlMaxAge = value;
@@ -8672,14 +8673,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             if (arrayIndex < 0)
             {
-                throw new ArgumentException();
+                ThrowArgumentException();
             }
             
                 if (((_bits & 1L) != 0)) 
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Cache-Control", _CacheControl);
@@ -8690,7 +8691,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Connection", _Connection);
@@ -8701,7 +8702,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Date", _Date);
@@ -8712,7 +8713,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Keep-Alive", _KeepAlive);
@@ -8723,7 +8724,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Pragma", _Pragma);
@@ -8734,7 +8735,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Trailer", _Trailer);
@@ -8745,7 +8746,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Transfer-Encoding", _TransferEncoding);
@@ -8756,7 +8757,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Upgrade", _Upgrade);
@@ -8767,7 +8768,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Via", _Via);
@@ -8778,7 +8779,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Warning", _Warning);
@@ -8789,7 +8790,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Allow", _Allow);
@@ -8800,7 +8801,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Length", _ContentLength);
@@ -8811,7 +8812,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Type", _ContentType);
@@ -8822,7 +8823,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Encoding", _ContentEncoding);
@@ -8833,7 +8834,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Language", _ContentLanguage);
@@ -8844,7 +8845,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Location", _ContentLocation);
@@ -8855,7 +8856,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-MD5", _ContentMD5);
@@ -8866,7 +8867,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Range", _ContentRange);
@@ -8877,7 +8878,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Expires", _Expires);
@@ -8888,7 +8889,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Last-Modified", _LastModified);
@@ -8899,7 +8900,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Accept-Ranges", _AcceptRanges);
@@ -8910,7 +8911,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Age", _Age);
@@ -8921,7 +8922,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("ETag", _ETag);
@@ -8932,7 +8933,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Location", _Location);
@@ -8943,7 +8944,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Proxy-Autheticate", _ProxyAutheticate);
@@ -8954,7 +8955,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Retry-After", _RetryAfter);
@@ -8965,7 +8966,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Server", _Server);
@@ -8976,7 +8977,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Set-Cookie", _SetCookie);
@@ -8987,7 +8988,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Vary", _Vary);
@@ -8998,7 +8999,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("WWW-Authenticate", _WWWAuthenticate);
@@ -9009,7 +9010,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Allow-Credentials", _AccessControlAllowCredentials);
@@ -9020,7 +9021,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Allow-Headers", _AccessControlAllowHeaders);
@@ -9031,7 +9032,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Allow-Methods", _AccessControlAllowMethods);
@@ -9042,7 +9043,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Allow-Origin", _AccessControlAllowOrigin);
@@ -9053,7 +9054,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Expose-Headers", _AccessControlExposeHeaders);
@@ -9064,7 +9065,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     if (arrayIndex == array.Length)
                     {
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Max-Age", _AccessControlMaxAge);
@@ -9535,603 +9536,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }
             
         }
-        public unsafe void Append(byte[] keyBytes, int keyOffset, int keyLength, string value)
-        {
-            fixed (byte* ptr = &keyBytes[keyOffset]) 
-            { 
-                var pUB = ptr; 
-                var pUL = (ulong*)pUB; 
-                var pUI = (uint*)pUB; 
-                var pUS = (ushort*)pUB;
-                switch (keyLength)
-                {
-                    case 13:
-                        {
-                            if ((((pUL[0] & 16131893727263186911uL) == 5711458528024281411uL) && ((pUI[2] & 3755991007u) == 1330795598u) && ((pUB[12] & 223u) == 76u))) 
-                            {
-                                if (((_bits & 1L) != 0))
-                                {
-                                    _CacheControl = AppendValue(_CacheControl, value);
-                                }
-                                else
-                                {
-                                    _bits |= 1L;
-                                    _CacheControl = new StringValues(value);
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1196310866u) && ((pUB[12] & 223u) == 69u))) 
-                            {
-                                if (((_bits & 131072L) != 0))
-                                {
-                                    _ContentRange = AppendValue(_ContentRange, value);
-                                }
-                                else
-                                {
-                                    _bits |= 131072L;
-                                    _ContentRange = new StringValues(value);
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131858680330051551uL) == 4922237774822850892uL) && ((pUI[2] & 3755991007u) == 1162430025u) && ((pUB[12] & 223u) == 68u))) 
-                            {
-                                if (((_bits & 524288L) != 0))
-                                {
-                                    _LastModified = AppendValue(_LastModified, value);
-                                }
-                                else
-                                {
-                                    _bits |= 524288L;
-                                    _LastModified = new StringValues(value);
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16140865742145839071uL) == 5921481788798223169uL) && ((pUI[2] & 3755991007u) == 1162300993u) && ((pUB[12] & 223u) == 83u))) 
-                            {
-                                if (((_bits & 1048576L) != 0))
-                                {
-                                    _AcceptRanges = AppendValue(_AcceptRanges, value);
-                                }
-                                else
-                                {
-                                    _bits |= 1048576L;
-                                    _AcceptRanges = new StringValues(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 10:
-                        {
-                            if ((((pUL[0] & 16131858542891098079uL) == 5283922227757993795uL) && ((pUS[4] & 57311u) == 20047u))) 
-                            {
-                                if (((_bits & 2L) != 0))
-                                {
-                                    _Connection = AppendValue(_Connection, value);
-                                }
-                                else
-                                {
-                                    _bits |= 2L;
-                                    _Connection = new StringValues(value);
-                                    _rawConnection = null;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131858680330051551uL) == 5281668125874799947uL) && ((pUS[4] & 57311u) == 17750u))) 
-                            {
-                                if (((_bits & 8L) != 0))
-                                {
-                                    _KeepAlive = AppendValue(_KeepAlive, value);
-                                }
-                                else
-                                {
-                                    _bits |= 8L;
-                                    _KeepAlive = new StringValues(value);
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131858543427968991uL) == 5426643225946637651uL) && ((pUS[4] & 57311u) == 17737u))) 
-                            {
-                                if (((_bits & 134217728L) != 0))
-                                {
-                                    _SetCookie = AppendValue(_SetCookie, value);
-                                }
-                                else
-                                {
-                                    _bits |= 134217728L;
-                                    _SetCookie = new StringValues(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 4:
-                        {
-                            if ((((pUI[0] & 3755991007u) == 1163149636u))) 
-                            {
-                                if (((_bits & 4L) != 0))
-                                {
-                                    _Date = AppendValue(_Date, value);
-                                }
-                                else
-                                {
-                                    _bits |= 4L;
-                                    _Date = new StringValues(value);
-                                    _rawDate = null;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1195463749u))) 
-                            {
-                                if (((_bits & 4194304L) != 0))
-                                {
-                                    _ETag = AppendValue(_ETag, value);
-                                }
-                                else
-                                {
-                                    _bits |= 4194304L;
-                                    _ETag = new StringValues(value);
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1498562902u))) 
-                            {
-                                if (((_bits & 268435456L) != 0))
-                                {
-                                    _Vary = AppendValue(_Vary, value);
-                                }
-                                else
-                                {
-                                    _bits |= 268435456L;
-                                    _Vary = new StringValues(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 6:
-                        {
-                            if ((((pUI[0] & 3755991007u) == 1195463248u) && ((pUS[2] & 57311u) == 16717u))) 
-                            {
-                                if (((_bits & 16L) != 0))
-                                {
-                                    _Pragma = AppendValue(_Pragma, value);
-                                }
-                                else
-                                {
-                                    _bits |= 16L;
-                                    _Pragma = new StringValues(value);
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1448232275u) && ((pUS[2] & 57311u) == 21061u))) 
-                            {
-                                if (((_bits & 67108864L) != 0))
-                                {
-                                    _Server = AppendValue(_Server, value);
-                                }
-                                else
-                                {
-                                    _bits |= 67108864L;
-                                    _Server = new StringValues(value);
-                                    _rawServer = null;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 7:
-                        {
-                            if ((((pUI[0] & 3755991007u) == 1229017684u) && ((pUS[2] & 57311u) == 17740u) && ((pUB[6] & 223u) == 82u))) 
-                            {
-                                if (((_bits & 32L) != 0))
-                                {
-                                    _Trailer = AppendValue(_Trailer, value);
-                                }
-                                else
-                                {
-                                    _bits |= 32L;
-                                    _Trailer = new StringValues(value);
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1380405333u) && ((pUS[2] & 57311u) == 17473u) && ((pUB[6] & 223u) == 69u))) 
-                            {
-                                if (((_bits & 128L) != 0))
-                                {
-                                    _Upgrade = AppendValue(_Upgrade, value);
-                                }
-                                else
-                                {
-                                    _bits |= 128L;
-                                    _Upgrade = new StringValues(value);
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1314013527u) && ((pUS[2] & 57311u) == 20041u) && ((pUB[6] & 223u) == 71u))) 
-                            {
-                                if (((_bits & 512L) != 0))
-                                {
-                                    _Warning = AppendValue(_Warning, value);
-                                }
-                                else
-                                {
-                                    _bits |= 512L;
-                                    _Warning = new StringValues(value);
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1230002245u) && ((pUS[2] & 57311u) == 17746u) && ((pUB[6] & 223u) == 83u))) 
-                            {
-                                if (((_bits & 262144L) != 0))
-                                {
-                                    _Expires = AppendValue(_Expires, value);
-                                }
-                                else
-                                {
-                                    _bits |= 262144L;
-                                    _Expires = new StringValues(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 17:
-                        {
-                            if ((((pUL[0] & 16131858542891098079uL) == 5928221808112259668uL) && ((pUL[1] & 16131858542891098111uL) == 5641115115480565037uL) && ((pUB[16] & 223u) == 71u))) 
-                            {
-                                if (((_bits & 64L) != 0))
-                                {
-                                    _TransferEncoding = AppendValue(_TransferEncoding, value);
-                                }
-                                else
-                                {
-                                    _bits |= 64L;
-                                    _TransferEncoding = new StringValues(value);
-                                    _rawTransferEncoding = null;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131893727263186911uL) == 6143241228466999888uL) && ((pUL[1] & 16131858542891098079uL) == 6071207754897639508uL) && ((pUB[16] & 223u) == 69u))) 
-                            {
-                                if (((_bits & 16777216L) != 0))
-                                {
-                                    _ProxyAutheticate = AppendValue(_ProxyAutheticate, value);
-                                }
-                                else
-                                {
-                                    _bits |= 16777216L;
-                                    _ProxyAutheticate = new StringValues(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 3:
-                        {
-                            if ((((pUS[0] & 57311u) == 18774u) && ((pUB[2] & 223u) == 65u))) 
-                            {
-                                if (((_bits & 256L) != 0))
-                                {
-                                    _Via = AppendValue(_Via, value);
-                                }
-                                else
-                                {
-                                    _bits |= 256L;
-                                    _Via = new StringValues(value);
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUS[0] & 57311u) == 18241u) && ((pUB[2] & 223u) == 69u))) 
-                            {
-                                if (((_bits & 2097152L) != 0))
-                                {
-                                    _Age = AppendValue(_Age, value);
-                                }
-                                else
-                                {
-                                    _bits |= 2097152L;
-                                    _Age = new StringValues(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 5:
-                        {
-                            if ((((pUI[0] & 3755991007u) == 1330400321u) && ((pUB[4] & 223u) == 87u))) 
-                            {
-                                if (((_bits & 1024L) != 0))
-                                {
-                                    _Allow = AppendValue(_Allow, value);
-                                }
-                                else
-                                {
-                                    _bits |= 1024L;
-                                    _Allow = new StringValues(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 14:
-                        {
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1196311884u) && ((pUS[6] & 57311u) == 18516u))) 
-                            {
-                                if (((_bits & 2048L) != 0))
-                                {
-                                    _ContentLength = AppendValue(_ContentLength, value);
-                                }
-                                else
-                                {
-                                    _bits |= 2048L;
-                                    _ContentLength = new StringValues(value);
-                                    _rawContentLength = null;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 12:
-                        {
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1162893652u))) 
-                            {
-                                if (((_bits & 4096L) != 0))
-                                {
-                                    _ContentType = AppendValue(_ContentType, value);
-                                }
-                                else
-                                {
-                                    _bits |= 4096L;
-                                    _ContentType = new StringValues(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 16:
-                        {
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 5138124782612729413uL))) 
-                            {
-                                if (((_bits & 8192L) != 0))
-                                {
-                                    _ContentEncoding = AppendValue(_ContentEncoding, value);
-                                }
-                                else
-                                {
-                                    _bits |= 8192L;
-                                    _ContentEncoding = new StringValues(value);
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 4992030546487820620uL))) 
-                            {
-                                if (((_bits & 16384L) != 0))
-                                {
-                                    _ContentLanguage = AppendValue(_ContentLanguage, value);
-                                }
-                                else
-                                {
-                                    _bits |= 16384L;
-                                    _ContentLanguage = new StringValues(value);
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 5642809484339531596uL))) 
-                            {
-                                if (((_bits & 32768L) != 0))
-                                {
-                                    _ContentLocation = AppendValue(_ContentLocation, value);
-                                }
-                                else
-                                {
-                                    _bits |= 32768L;
-                                    _ContentLocation = new StringValues(value);
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131858543427968991uL) == 5211884407196440407uL) && ((pUL[1] & 16131858542891098079uL) == 4995689643909598789uL))) 
-                            {
-                                if (((_bits & 536870912L) != 0))
-                                {
-                                    _WWWAuthenticate = AppendValue(_WWWAuthenticate, value);
-                                }
-                                else
-                                {
-                                    _bits |= 536870912L;
-                                    _WWWAuthenticate = new StringValues(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 11:
-                        {
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUS[4] & 57311u) == 17485u) && ((pUB[10] & 255u) == 53u))) 
-                            {
-                                if (((_bits & 65536L) != 0))
-                                {
-                                    _ContentMD5 = AppendValue(_ContentMD5, value);
-                                }
-                                else
-                                {
-                                    _bits |= 65536L;
-                                    _ContentMD5 = new StringValues(value);
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131893727263186911uL) == 5062377317797741906uL) && ((pUS[4] & 57311u) == 17748u) && ((pUB[10] & 223u) == 82u))) 
-                            {
-                                if (((_bits & 33554432L) != 0))
-                                {
-                                    _RetryAfter = AppendValue(_RetryAfter, value);
-                                }
-                                else
-                                {
-                                    _bits |= 33554432L;
-                                    _RetryAfter = new StringValues(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 8:
-                        {
-                            if ((((pUL[0] & 16131858542891098079uL) == 5642809484339531596uL))) 
-                            {
-                                if (((_bits & 8388608L) != 0))
-                                {
-                                    _Location = AppendValue(_Location, value);
-                                }
-                                else
-                                {
-                                    _bits |= 8388608L;
-                                    _Location = new StringValues(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 32:
-                        {
-                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4696493889984679503uL) && ((pUL[2] & 16131858680330051551uL) == 4995128798724705356uL) && ((pUL[3] & 16131858542891098079uL) == 6002244186580862276uL))) 
-                            {
-                                if (((_bits & 1073741824L) != 0))
-                                {
-                                    _AccessControlAllowCredentials = AppendValue(_AccessControlAllowCredentials, value);
-                                }
-                                else
-                                {
-                                    _bits |= 1073741824L;
-                                    _AccessControlAllowCredentials = new StringValues(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 28:
-                        {
-                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4696493889984679503uL) && ((pUL[2] & 16131858680330051551uL) == 4703244745433893964uL) && ((pUI[6] & 3755991007u) == 1397900612u))) 
-                            {
-                                if (((_bits & 2147483648L) != 0))
-                                {
-                                    _AccessControlAllowHeaders = AppendValue(_AccessControlAllowHeaders, value);
-                                }
-                                else
-                                {
-                                    _bits |= 2147483648L;
-                                    _AccessControlAllowHeaders = new StringValues(value);
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4696493889984679503uL) && ((pUL[2] & 16131858680330051551uL) == 6072344529712663628uL) && ((pUI[6] & 3755991007u) == 1396985672u))) 
-                            {
-                                if (((_bits & 4294967296L) != 0))
-                                {
-                                    _AccessControlAllowMethods = AppendValue(_AccessControlAllowMethods, value);
-                                }
-                                else
-                                {
-                                    _bits |= 4294967296L;
-                                    _AccessControlAllowMethods = new StringValues(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 27:
-                        {
-                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4696493889984679503uL) && ((pUL[2] & 16131858680330051551uL) == 5283372369015950412uL) && ((pUS[12] & 57311u) == 18759u) && ((pUB[26] & 223u) == 78u))) 
-                            {
-                                if (((_bits & 8589934592L) != 0))
-                                {
-                                    _AccessControlAllowOrigin = AppendValue(_AccessControlAllowOrigin, value);
-                                }
-                                else
-                                {
-                                    _bits |= 8589934592L;
-                                    _AccessControlAllowOrigin = new StringValues(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 29:
-                        {
-                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4984724266136391247uL) && ((pUL[2] & 16131893727263186911uL) == 4992289962713895000uL) && ((pUI[6] & 3755991007u) == 1380271169u) && ((pUB[28] & 223u) == 83u))) 
-                            {
-                                if (((_bits & 17179869184L) != 0))
-                                {
-                                    _AccessControlExposeHeaders = AppendValue(_AccessControlExposeHeaders, value);
-                                }
-                                else
-                                {
-                                    _bits |= 17179869184L;
-                                    _AccessControlExposeHeaders = new StringValues(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 22:
-                        {
-                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 5561185018439814735uL) && ((pUI[4] & 3758088159u) == 1093490753u) && ((pUS[10] & 57311u) == 17735u))) 
-                            {
-                                if (((_bits & 34359738368L) != 0))
-                                {
-                                    _AccessControlMaxAge = AppendValue(_AccessControlMaxAge, value);
-                                }
-                                else
-                                {
-                                    _bits |= 34359738368L;
-                                    _AccessControlMaxAge = new StringValues(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                }
-            }
-            var key = System.Text.Encoding.ASCII.GetString(keyBytes, keyOffset, keyLength);
-            StringValues existing;
-            Unknown.TryGetValue(key, out existing);
-            Unknown[key] = AppendValue(existing, value);
-        }
+        
         public partial struct Enumerator
         {
             public bool MoveNext()

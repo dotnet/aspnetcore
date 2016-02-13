@@ -656,8 +656,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             byte[] statusBytes,
             bool appCompleted)
         {
-            var end = SocketOutput.ProducingStart();
             var responseHeaders = _frameHeaders.ResponseHeaders;
+            responseHeaders.SetReadOnly();
+
+            var end = SocketOutput.ProducingStart();
             if (_keepAlive)
             {
                 foreach (var connectionValue in responseHeaders.HeaderConnection)
