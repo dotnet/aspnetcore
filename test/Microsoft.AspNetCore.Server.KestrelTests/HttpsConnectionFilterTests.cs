@@ -59,13 +59,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 handler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 #endif
                 var serverAddress = $"https://localhost:{TestServer.GetNextPort()}/";
-                var serviceContext = new TestServiceContext()
-                {
-                    ConnectionFilter = new HttpsConnectionFilter(
+                var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
                         new HttpsConnectionFilterOptions
-                        { ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword")},
+                        { ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword") },
                         new NoOpConnectionFilter())
-                };
+                );
 
                 using (var server = new TestServer(App, serviceContext, serverAddress))
                 {
@@ -108,16 +106,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 #endif
 
                 var serverAddress = $"https://localhost:{TestServer.GetNextPort()}/";
-                var serviceContext = new TestServiceContext()
-                {
-                    ConnectionFilter = new HttpsConnectionFilter(
+                var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
                         new HttpsConnectionFilterOptions
                         {
                             ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"),
                             ClientCertificateMode = ClientCertificateMode.RequireCertificate
                         },
                         new NoOpConnectionFilter())
-                };
+                );
 
                 using (var server = new TestServer(App, serviceContext, serverAddress))
                 {
@@ -157,16 +153,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 #endif
 
                 var serverAddress = $"https://localhost:{TestServer.GetNextPort()}/";
-                var serviceContext = new TestServiceContext()
-                {
-                    ConnectionFilter = new HttpsConnectionFilter(
-                        new HttpsConnectionFilterOptions
-                        {
-                            ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"),
-                            ClientCertificateMode = ClientCertificateMode.AllowCertificate
-                        },
-                        new NoOpConnectionFilter())
-                };
+                var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
+                    new HttpsConnectionFilterOptions
+                    {
+                        ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"),
+                        ClientCertificateMode = ClientCertificateMode.AllowCertificate
+                    },
+                    new NoOpConnectionFilter())
+                );
 
                 RequestDelegate app = context =>
                 {
@@ -209,17 +203,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 #endif
 
                 var serverAddress = $"https://localhost:{TestServer.GetNextPort()}/";
-                var serviceContext = new TestServiceContext()
-                {
-                    ConnectionFilter = new HttpsConnectionFilter(
-                        new HttpsConnectionFilterOptions
-                        {
-                            ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"),
-                            ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                            ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
-                        },
-                        new NoOpConnectionFilter())
-                };
+                var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
+                    new HttpsConnectionFilterOptions
+                    {
+                        ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"),
+                        ClientCertificateMode = ClientCertificateMode.RequireCertificate,
+                        ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
+                    },
+                    new NoOpConnectionFilter())
+                );
 
                 RequestDelegate app = context =>
                 {
@@ -281,15 +273,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 #endif
 
                 var serverAddress = $"https://localhost:{TestServer.GetNextPort()}/";
-                var serviceContext = new TestServiceContext()
-                {
-                    ConnectionFilter = new HttpsConnectionFilter(
+                var serviceContext = new TestServiceContext(
+                    new HttpsConnectionFilter(
                         new HttpsConnectionFilterOptions
                         {
                             ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword")
                         },
                         new NoOpConnectionFilter())
-                };
+                );
 
                 RequestDelegate app = context => context.Response.WriteAsync(context.Request.Scheme);
 

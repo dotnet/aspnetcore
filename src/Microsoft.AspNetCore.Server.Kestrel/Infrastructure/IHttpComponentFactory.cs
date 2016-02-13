@@ -7,6 +7,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 {
     interface IHttpComponentFactory
     {
+        IKestrelServerInformation ServerInformation { get; set; }
+
         Streams CreateStreams(FrameContext owner);
 
         void DisposeStreams(Streams streams, bool poolingPermitted);

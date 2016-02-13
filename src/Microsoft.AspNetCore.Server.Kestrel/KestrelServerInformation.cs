@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             Addresses = GetAddresses(configuration);
             ThreadCount = GetThreadCount(configuration);
             NoDelay = GetNoDelay(configuration);
-            ReuseStreams = GetReuseStreams(configuration);
+            PoolingParameters = new KestrelServerPoolingParameters(configuration);
         }
 
         public ICollection<string> Addresses { get; }
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         public bool NoDelay { get; set; }
 
-        public bool ReuseStreams { get; set; }
+        public KestrelServerPoolingParameters PoolingParameters { get; }
 
         public IConnectionFilter ConnectionFilter { get; set; }
 
@@ -109,19 +109,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
 
             return true;
-        }
-
-        private static bool GetReuseStreams(IConfiguration configuration)
-        {
-            var reuseStreamsString = configuration["kestrel.reuseStreams"];
-
-            bool reuseStreams;
-            if (bool.TryParse(reuseStreamsString, out reuseStreams))
-            {
-                return reuseStreams;
-            }
-
-            return false;
         }
     }
 }

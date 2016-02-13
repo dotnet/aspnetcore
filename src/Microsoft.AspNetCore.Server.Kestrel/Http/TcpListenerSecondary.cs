@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             var acceptSocket = new UvTcpHandle(Log);
             acceptSocket.Init(Thread.Loop, Thread.QueueCloseHandle);
-            acceptSocket.NoDelay(NoDelay);
+            acceptSocket.NoDelay(ServerInformation.NoDelay);
             return acceptSocket;
         }
     }

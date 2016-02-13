@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private readonly object _onStartingSync = new Object();
         private readonly object _onCompletedSync = new Object();
 
+        protected bool _poolingPermitted = true;
         private Headers _frameHeaders;
         private Streams _frameStreams;
 
@@ -279,7 +280,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 DuplexStream = null;
                 var frameStreams = _frameStreams;
                 _frameStreams = null;
-                HttpComponentFactory.DisposeStreams(frameStreams, poolingPermitted: (poolingPermitted && ReuseStreams));
+                HttpComponentFactory.DisposeStreams(frameStreams, poolingPermitted);
             }
         }
 

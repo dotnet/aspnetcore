@@ -86,19 +86,19 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [InlineData(null, false)]
-        [InlineData("", false)]
-        [InlineData("false", false)]
-        [InlineData("False", false)]
-        [InlineData("true", true)]
-        [InlineData("True", true)]
-        [InlineData("Foo", false)]
-        [InlineData("FooBar", false)]
-        public void SetReuseStreamsUsingConfiguration(string input, bool expected)
+        [InlineData(null, 0)]
+        [InlineData("", 0)]
+        [InlineData("0", 0)]
+        [InlineData("00", 0)]
+        [InlineData("0.0", 0)]
+        [InlineData("1", 1)]
+        [InlineData("16", 16)]
+        [InlineData("1000", 1000)]
+        public void SetMaxPooledStreamsUsingConfiguration(string input, int expected)
         {
             var values = new Dictionary<string, string>
             {
-                { "kestrel.reuseStreams", input }
+                { "kestrel.maxPooledStreams", input }
             };
 
             var configuration = new ConfigurationBuilder()
@@ -107,7 +107,33 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var information = new KestrelServerInformation(configuration);
 
-            Assert.Equal(expected, information.ReuseStreams);
+            Assert.Equal(expected, information.PoolingParameters.MaxPooledStreams);
+        }
+
+
+        [Theory]
+        [InlineData(null, 0)]
+        [InlineData("", 0)]
+        [InlineData("0", 0)]
+        [InlineData("00", 0)]
+        [InlineData("0.0", 0)]
+        [InlineData("1", 1)]
+        [InlineData("16", 16)]
+        [InlineData("1000", 1000)]
+        public void SetMaxPooledHeadersUsingConfiguration(string input, int expected)
+        {
+            var values = new Dictionary<string, string>
+            {
+                { "kestrel.maxPooledHeaders", input }
+            };
+
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(values)
+                .Build();
+
+            var information = new KestrelServerInformation(configuration);
+
+            Assert.Equal(expected, information.PoolingParameters.MaxPooledHeaders);
         }
 
         private static int Clamp(int value, int min, int max)

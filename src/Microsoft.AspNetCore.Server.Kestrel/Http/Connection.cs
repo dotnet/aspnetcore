@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
 
             // Don't initialize _frame until SocketInput and SocketOutput are set to their final values.
-            if (ConnectionFilter == null)
+            if (ServerInformation.ConnectionFilter == null)
             {
                 SocketInput = _rawSocketInput;
                 SocketOutput = _rawSocketOutput;
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                 try
                 {
-                    ConnectionFilter.OnConnectionAsync(_filterContext).ContinueWith((task, state) =>
+                    ServerInformation.ConnectionFilter.OnConnectionAsync(_filterContext).ContinueWith((task, state) =>
                     {
                         var connection = (Connection)state;
 

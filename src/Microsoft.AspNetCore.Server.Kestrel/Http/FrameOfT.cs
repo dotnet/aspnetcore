@@ -131,14 +131,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
             catch (Exception ex)
             {
+                // Error occurred, do not return components to pool
+                _poolingPermitted = false;
                 Log.LogWarning(0, ex, "Connection processing ended abnormally");
             }
             finally
             {
-                // Error occurred, do not return components to pool
-                ResetComponents(poolingPermitted: false);
                 try
                 {
+                    ResetComponents(poolingPermitted: _poolingPermitted);
                     _abortedCts = null;
 
                     // If _requestAborted is set, the connection has already been closed.

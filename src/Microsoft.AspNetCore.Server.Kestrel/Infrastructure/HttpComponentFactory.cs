@@ -2,16 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Concurrent;
-using Microsoft.AspNetCore.Server.Kestrel.Http;
 using System.Text;
+using Microsoft.AspNetCore.Server.Kestrel.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 {
     class HttpComponentFactory : IHttpComponentFactory
     {
-        private const int _maxPooledComponents = 128;
+        
         private ConcurrentQueue<Streams> _streamPool = new ConcurrentQueue<Streams>();
         private ConcurrentQueue<Headers> _headerPool = new ConcurrentQueue<Headers>();
+
+        public IKestrelServerInformation ServerInformation { get; set; }
+
+        public HttpComponentFactory(IKestrelServerInformation serverInformation)
+        {
+            ServerInformation = serverInformation;
+        }
 
         public Streams CreateStreams(FrameContext owner)
         {
@@ -29,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
         public void DisposeStreams(Streams streams, bool poolingPermitted)
         {
-            if (poolingPermitted && _streamPool.Count < _maxPooledComponents)
+            if (poolingPermitted && _streamPool.Count < ServerInformation.PoolingParameters.MaxPooledStreams)
             {
                 streams.Uninitialize();
 
@@ -53,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
         public void DisposeHeaders(Headers headers, bool poolingPermitted)
         {
-            if (poolingPermitted && _headerPool.Count < _maxPooledComponents)
+            if (poolingPermitted && _headerPool.Count < ServerInformation.PoolingParameters.MaxPooledHeaders)
             {
                 headers.Uninitialize();
 

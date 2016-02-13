@@ -35,10 +35,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         new TestServiceContext()
                     },
                     {
-                        new TestServiceContext
-                        {
-                            ConnectionFilter = new PassThroughConnectionFilter()
-                        }
+                        new TestServiceContext(new PassThroughConnectionFilter())
                     }
                 };
             }
@@ -188,7 +185,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [MemberData(nameof(ConnectionFilterData))]
         public async Task ReuseStreamsOn(ServiceContext testContext)
         {
-            testContext.ReuseStreams = true;
+            testContext.ServerInformation.PoolingParameters.MaxPooledStreams = 120;
 
             var streamCount = 0;
             var loopCount = 20;
@@ -231,7 +228,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [MemberData(nameof(ConnectionFilterData))]
         public async Task ReuseStreamsOff(ServiceContext testContext)
         {
-            testContext.ReuseStreams = false;
+            testContext.ServerInformation.PoolingParameters.MaxPooledStreams = 0;
 
             var streamCount = 0;
             var loopCount = 20;
