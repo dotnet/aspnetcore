@@ -97,6 +97,70 @@ namespace Microsoft.AspNetCore.Html
         }
 
         /// <inheritdoc />
+        public void CopyTo(IHtmlContentBuilder destination)
+        {
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+
+            for (var i = 0; i < Entries.Count; i++)
+            {
+                var entry = Entries[i];
+
+                string entryAsString;
+                IHtmlContentContainer entryAsContainer;
+                if ((entryAsString = entry as string)  != null)
+                {
+                    destination.Append(entryAsString);
+                }
+                else if ((entryAsContainer = entry as IHtmlContentContainer) != null)
+                {
+                    // Since we're copying, do a deep flatten.
+                    entryAsContainer.CopyTo(destination);
+                }
+                else
+                {
+                    // Only string, IHtmlContent values can be added to the buffer.
+                    destination.AppendHtml((IHtmlContent)entry);
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public void MoveTo(IHtmlContentBuilder destination)
+        {
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+
+            for (var i = 0; i < Entries.Count; i++)
+            {
+                var entry = Entries[i];
+
+                string entryAsString;
+                IHtmlContentContainer entryAsContainer;
+                if ((entryAsString = entry as string) != null)
+                {
+                    destination.Append(entryAsString);
+                }
+                else if ((entryAsContainer = entry as IHtmlContentContainer) != null)
+                {
+                    // Since we're moving, do a deep flatten.
+                    entryAsContainer.MoveTo(destination);
+                }
+                else
+                {
+                    // Only string, IHtmlContent values can be added to the buffer.
+                    destination.AppendHtml((IHtmlContent)entry);
+                }
+            }
+
+            Entries.Clear();
+        }
+
+        /// <inheritdoc />
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
             if (writer == null)

@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Html
     /// <summary>
     /// A builder for HTML content.
     /// </summary>
-    public interface IHtmlContentBuilder : IHtmlContent
+    public interface IHtmlContentBuilder : IHtmlContentContainer
     {
         /// <summary>
         /// Appends an <see cref="IHtmlContent"/> instance.

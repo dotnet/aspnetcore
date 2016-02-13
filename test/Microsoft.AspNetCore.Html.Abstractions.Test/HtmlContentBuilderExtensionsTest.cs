@@ -392,6 +392,20 @@ namespace Microsoft.AspNetCore.Html.Test
                 return this;
             }
 
+            public void CopyTo(IHtmlContentBuilder destination)
+            {
+                foreach (var entry in Entries)
+                {
+                    destination.AppendHtml(entry);
+                }
+            }
+
+            public void MoveTo(IHtmlContentBuilder destination)
+            {
+                CopyTo(destination);
+                Clear();
+            }
+
             public void WriteTo(TextWriter writer, HtmlEncoder encoder)
             {
                 foreach (var entry in Entries)

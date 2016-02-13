@@ -17,16 +17,19 @@ namespace Microsoft.AspNetCore.Html
         /// </summary>
         public static readonly IHtmlContent NewLine = new HtmlEncodedString(Environment.NewLine);
 
-        private readonly string _value;
-
         /// <summary>
         /// Creates a new <see cref="HtmlEncodedString"/>.
         /// </summary>
         /// <param name="value">The HTML encoded value.</param>
         public HtmlEncodedString(string value)
         {
-            _value = value;
+            Value = value;
         }
+
+        /// <summary>
+        /// Gets the HTML encoded value.
+        /// </summary>
+        public string Value { get; }
 
         /// <inheritdoc />
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
@@ -41,13 +44,13 @@ namespace Microsoft.AspNetCore.Html
                 throw new ArgumentNullException(nameof(encoder));
             }
 
-            writer.Write(_value);
+            writer.Write(Value);
         }
 
         /// <inheritdoc />
         public override string ToString()
         {
-            return _value ?? string.Empty;
+            return Value ?? string.Empty;
         }
     }
 }

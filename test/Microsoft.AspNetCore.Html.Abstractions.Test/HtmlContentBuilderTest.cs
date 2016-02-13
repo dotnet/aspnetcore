@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
@@ -106,6 +107,106 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Fact]
+        public void CopyTo_CopiesAllItems()
+        {
+            // Arrange
+            var source = new HtmlContentBuilder();
+            source.AppendHtml(new TestHtmlContent("hello"));
+            source.Append("Test");
+
+            var destination = new HtmlContentBuilder();
+            destination.Append("some-content");
+
+            // Act
+            source.CopyTo(destination);
+
+            // Assert
+            Assert.Equal(2, source.Entries.Count);
+            Assert.Equal(3, destination.Entries.Count);
+
+            Assert.Equal("some-content", Assert.IsType<string>(destination.Entries[0]));
+            Assert.Equal(new TestHtmlContent("hello"), Assert.IsType<TestHtmlContent>(destination.Entries[1]));
+            Assert.Equal("Test", Assert.IsType<string>(destination.Entries[2]));
+        }
+
+        [Fact]
+        public void CopyTo_DoesDeepCopy()
+        {
+            // Arrange
+            var source = new HtmlContentBuilder();
+
+            var nested = new HtmlContentBuilder();
+            source.AppendHtml(nested);
+            nested.AppendHtml(new TestHtmlContent("hello"));
+            source.Append("Test");
+
+            var destination = new HtmlContentBuilder();
+            destination.Append("some-content");
+
+            // Act
+            source.CopyTo(destination);
+
+            // Assert
+            Assert.Equal(2, source.Entries.Count);
+            Assert.Equal(1, nested.Entries.Count);
+            Assert.Equal(3, destination.Entries.Count);
+
+            Assert.Equal("some-content", Assert.IsType<string>(destination.Entries[0]));
+            Assert.Equal(new TestHtmlContent("hello"), Assert.IsType<TestHtmlContent>(destination.Entries[1]));
+            Assert.Equal("Test", Assert.IsType<string>(destination.Entries[2]));
+        }
+
+        [Fact]
+        public void MoveTo_CopiesAllItems_AndClears()
+        {
+            // Arrange
+            var source = new HtmlContentBuilder();
+            source.AppendHtml(new TestHtmlContent("hello"));
+            source.Append("Test");
+
+            var destination = new HtmlContentBuilder();
+            destination.Append("some-content");
+
+            // Act
+            source.MoveTo(destination);
+
+            // Assert
+            Assert.Equal(0, source.Entries.Count);
+            Assert.Equal(3, destination.Entries.Count);
+
+            Assert.Equal("some-content", Assert.IsType<string>(destination.Entries[0]));
+            Assert.Equal(new TestHtmlContent("hello"), Assert.IsType<TestHtmlContent>(destination.Entries[1]));
+            Assert.Equal("Test", Assert.IsType<string>(destination.Entries[2]));
+        }
+
+        [Fact]
+        public void MoveTo_DoesDeepMove()
+        {
+            // Arrange
+            var source = new HtmlContentBuilder();
+
+            var nested = new HtmlContentBuilder();
+            source.AppendHtml(nested);
+            nested.AppendHtml(new TestHtmlContent("hello"));
+            source.Append("Test");
+
+            var destination = new HtmlContentBuilder();
+            destination.Append("some-content");
+
+            // Act
+            source.MoveTo(destination);
+
+            // Assert
+            Assert.Equal(0, source.Entries.Count);
+            Assert.Equal(0, nested.Entries.Count);
+            Assert.Equal(3, destination.Entries.Count);
+
+            Assert.Equal("some-content", Assert.IsType<string>(destination.Entries[0]));
+            Assert.Equal(new TestHtmlContent("hello"), Assert.IsType<TestHtmlContent>(destination.Entries[1]));
+            Assert.Equal("Test", Assert.IsType<string>(destination.Entries[2]));
+        }
+
+        [Fact]
         public void WriteTo_WritesAllItems()
         {
             // Arrange
@@ -122,7 +223,7 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal("Written from TestHtmlContent: HelloHtmlEncode[[Test]]", writer.ToString());
         }
 
-        private class TestHtmlContent : IHtmlContent
+        private class TestHtmlContent : IHtmlContent, IEquatable<TestHtmlContent>
         {
             private string _content;
 
@@ -139,6 +240,27 @@ namespace Microsoft.Extensions.Internal
             public override string ToString()
             {
                 return "Written from TestHtmlContent: " + _content;
+            }
+
+            public override int GetHashCode()
+            {
+                return _content.GetHashCode();
+            }
+
+            public override bool Equals(object obj)
+            {
+                var other = obj as TestHtmlContent;
+                if (other != null)
+                {
+                    return Equals(other);
+                }
+
+                return base.Equals(obj);
+            }
+
+            public bool Equals(TestHtmlContent other)
+            {
+                return string.Equals(_content, other._content);
             }
         }
     }
