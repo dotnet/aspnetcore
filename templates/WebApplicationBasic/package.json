@@ -1,0 +1,11 @@
+{
+  "name": "WebApplicationBasic",
+  "version": "0.0.0",
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-concat": "2.5.2",
+    "gulp-cssmin": "0.1.7",
+    "gulp-uglify": "1.2.0",
+    "rimraf": "2.2.8"
+  }
+}
