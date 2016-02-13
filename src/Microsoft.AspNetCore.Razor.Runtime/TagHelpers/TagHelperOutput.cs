@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     /// <summary>
     /// Class used to represent the output of an <see cref="ITagHelper"/>.
     /// </summary>
-    public class TagHelperOutput : IHtmlContent
+    public class TagHelperOutput : IHtmlContentContainer
     {
         private readonly Func<bool, HtmlEncoder, Task<TagHelperContent>> _getChildContentAsync;
         private TagHelperAttributeList _attributes;
@@ -276,12 +276,110 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             return _getChildContentAsync(useCachedResult, encoder);
         }
 
-        /// <inheritdoc />
+        void IHtmlContentContainer.CopyTo(IHtmlContentBuilder destination)
+        {
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+
+            _preElement?.CopyTo(destination);
+
+            var isTagNameNullOrWhitespace = string.IsNullOrWhiteSpace(TagName);
+
+            if (!isTagNameNullOrWhitespace)
+            {
+                destination.AppendHtml("<");
+                destination.AppendHtml(TagName);
+
+                CopyAttributesTo(destination);
+
+                if (TagMode == TagMode.SelfClosing)
+                {
+                    destination.AppendHtml(" /");
+                }
+
+                destination.AppendHtml(">");
+            }
+
+            if (isTagNameNullOrWhitespace || TagMode == TagMode.StartTagAndEndTag)
+            {
+                _preContent?.CopyTo(destination);
+
+                _content?.CopyTo(destination);
+
+                _postContent?.CopyTo(destination);
+            }
+
+            if (!isTagNameNullOrWhitespace && TagMode == TagMode.StartTagAndEndTag)
+            {
+                destination.AppendHtml("</");
+                destination.AppendHtml(TagName);
+                destination.AppendHtml(">");
+            }
+
+            _postElement?.CopyTo(destination);
+        }
+
+        void IHtmlContentContainer.MoveTo(IHtmlContentBuilder destination)
+        {
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+
+            _preElement?.MoveTo(destination);
+
+            var isTagNameNullOrWhitespace = string.IsNullOrWhiteSpace(TagName);
+
+            if (!isTagNameNullOrWhitespace)
+            {
+                destination.AppendHtml("<");
+                destination.AppendHtml(TagName);
+                
+                CopyAttributesTo(destination);
+
+                if (TagMode == TagMode.SelfClosing)
+                {
+                    destination.AppendHtml(" /");
+                }
+
+                destination.AppendHtml(">");
+            }
+
+            if (isTagNameNullOrWhitespace || TagMode == TagMode.StartTagAndEndTag)
+            {
+                _preContent?.MoveTo(destination);
+                _content?.MoveTo(destination);
+                _postContent?.MoveTo(destination);
+            }
+
+            if (!isTagNameNullOrWhitespace && TagMode == TagMode.StartTagAndEndTag)
+            {
+                destination.AppendHtml("</");
+                destination.AppendHtml(TagName);
+                destination.AppendHtml(">");
+            }
+
+            _postElement?.MoveTo(destination);
+
+            // Depending on the code path we took, these might need to be cleared.
+            _preContent?.Clear();
+            _content?.Clear();
+            _postContent?.Clear();
+            _attributes?.Clear();
+        }
+
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
             if (writer == null)
             {
                 throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (encoder == null)
+            {
+                throw new ArgumentNullException(nameof(encoder));
             }
 
             _preElement?.WriteTo(writer, encoder);
@@ -310,16 +408,25 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                     var htmlContent = value as IHtmlContent;
                     if (htmlContent != null)
                     {
-                        // There's no way of tracking the attribute value quotations in the Razor source. Therefore, we
-                        // must escape any IHtmlContent double quote values in the case that a user wrote:
-                        // <p name='A " is valid in single quotes'></p>
-                        using (var stringWriter = new StringWriter())
+                        // Perf: static text in a bound attribute go down this path. Avoid allocating if possible (common case).
+                        var htmlEncodedString = value as HtmlEncodedString;
+                        if (htmlEncodedString != null && !htmlEncodedString.Value.Contains("\""))
                         {
-                            htmlContent.WriteTo(stringWriter, encoder);
-                            stringWriter.GetStringBuilder().Replace("\"", "&quot;");
+                            writer.Write(htmlEncodedString.Value);
+                        }
+                        else
+                        {
+                            // There's no way of tracking the attribute value quotations in the Razor source. Therefore, we
+                            // must escape any IHtmlContent double quote values in the case that a user wrote:
+                            // <p name='A " is valid in single quotes'></p>
+                            using (var stringWriter = new StringWriter())
+                            {
+                                htmlContent.WriteTo(stringWriter, encoder);
+                                stringWriter.GetStringBuilder().Replace("\"", "&quot;");
 
-                            var stringValue = stringWriter.ToString();
-                            writer.Write(stringValue);
+                                var stringValue = stringWriter.ToString();
+                                writer.Write(stringValue);
+                            }
                         }
                     }
                     else if (value != null)
@@ -355,6 +462,77 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             }
 
             _postElement?.WriteTo(writer, encoder);
+        }
+
+        private void CopyAttributesTo(IHtmlContentBuilder destination)
+        {
+            StringWriter stringWriter = null;
+
+            // Perf: Avoid allocating enumerator
+            for (var i = 0; i < (_attributes?.Count ?? 0); i++)
+            {
+                var attribute = _attributes[i];
+                destination.AppendHtml(" ");
+                destination.AppendHtml(attribute.Name);
+
+                if (attribute.Minimized)
+                {
+                    continue;
+                }
+
+                destination.AppendHtml("=\"");
+                var value = attribute.Value;
+                var htmlContent = value as IHtmlContent;
+                if (htmlContent != null)
+                {
+                    // Perf: static text in a bound attribute go down this path. Avoid allocating if possible (common case).
+                    var htmlEncodedString = value as HtmlEncodedString;
+                    if (htmlEncodedString != null && !htmlEncodedString.Value.Contains("\""))
+                    {
+                        destination.AppendHtml(htmlEncodedString);
+                    }
+                    else
+                    {
+                        // Perf: We'll share this writer implementation for all attributes since
+                        // they can't nest.
+                        stringWriter = stringWriter ?? new StringWriter();
+
+                        destination.AppendHtml(new AttributeContent(htmlContent, stringWriter));
+                    }
+                }
+                else if (value != null)
+                {
+                    destination.Append(value.ToString());
+                }
+
+                destination.AppendHtml("\"");
+            }
+        }
+
+        private class AttributeContent : IHtmlContent
+        {
+            private readonly IHtmlContent _inner;
+            private readonly StringWriter _stringWriter;
+
+            public AttributeContent(IHtmlContent inner, StringWriter stringWriter)
+            {
+                _inner = inner;
+                _stringWriter = stringWriter;
+            }
+
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+            {
+                // There's no way of tracking the attribute value quotations in the Razor source. Therefore, we
+                // must escape any IHtmlContent double quote values in the case that a user wrote:
+                // <p name='A " is valid in single quotes'></p>
+                _inner.WriteTo(_stringWriter, encoder);
+                _stringWriter.GetStringBuilder().Replace("\"", "&quot;");
+
+                var stringValue = _stringWriter.ToString();
+                writer.Write(stringValue);
+
+                _stringWriter.GetStringBuilder().Clear();
+            }
         }
     }
 }

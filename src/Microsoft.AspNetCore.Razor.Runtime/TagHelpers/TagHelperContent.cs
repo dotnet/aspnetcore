@@ -128,6 +128,12 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// <returns>A reference to this instance after the clear operation has completed.</returns>
         public abstract TagHelperContent Clear();
 
+        /// <inheritdoc />
+        public abstract void CopyTo(IHtmlContentBuilder destination);
+
+        /// <inheritdoc />
+        public abstract void MoveTo(IHtmlContentBuilder destination);
+
         /// <summary>
         /// Gets the content.
         /// </summary>

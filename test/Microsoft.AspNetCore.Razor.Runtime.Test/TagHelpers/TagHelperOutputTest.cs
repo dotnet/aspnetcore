@@ -972,16 +972,17 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             Assert.Equal(expected, writer.ToString(), StringComparer.Ordinal);
         }
 
-        // This tests a separate code path that's used by THO when the writer is an HtmlTextWriter.
-        // The output should be the same, but we do some specific perf optimizations on this path.
         [Theory]
         [MemberData(nameof(WriteTagHelper_InputData))]
-        public void WriteTo_WritesFormattedTagHelper_HtmlTextWriter(TagHelperOutput output, string expected)
+        public void CopyTo_CopiesToBuilder(TagHelperOutput output, string expected)
         {
             // Arrange
-            var inner = new StringWriter();
+            var attributeCount = output.Attributes.Count;
+
+            var writer = new StringWriter();
             var testEncoder = new HtmlTestEncoder();
-            var writer = new MockHtmlTextWriter(inner, testEncoder);
+
+            var buffer = new HtmlContentBuilder();
 
             var tagHelperExecutionContext = new TagHelperExecutionContext(
                 tagName: output.TagName,
@@ -994,10 +995,49 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             tagHelperExecutionContext.Output = output;
 
             // Act
-            output.WriteTo(writer, testEncoder);
+            ((IHtmlContentContainer)output).CopyTo(buffer);
 
             // Assert
-            Assert.Equal(expected, inner.ToString(), StringComparer.Ordinal);
+            buffer.WriteTo(writer, testEncoder);
+
+            Assert.Equal(attributeCount, output.Attributes.Count);
+            Assert.Equal(expected, writer.ToString(), StringComparer.Ordinal);
+        }
+
+        [Theory]
+        [MemberData(nameof(WriteTagHelper_InputData))]
+        public void MoveTo_MovesToBuilder(TagHelperOutput output, string expected)
+        {
+            // Arrange
+            var writer = new StringWriter();
+            var testEncoder = new HtmlTestEncoder();
+
+            var buffer = new HtmlContentBuilder();
+
+            var tagHelperExecutionContext = new TagHelperExecutionContext(
+                tagName: output.TagName,
+                tagMode: output.TagMode,
+                items: new Dictionary<object, object>(),
+                uniqueId: string.Empty,
+                executeChildContentAsync: () => Task.FromResult(result: true),
+                startTagHelperWritingScope: _ => { },
+                endTagHelperWritingScope: () => new DefaultTagHelperContent());
+            tagHelperExecutionContext.Output = output;
+
+            // Act
+            ((IHtmlContentContainer)output).MoveTo(buffer);
+
+            // Assert
+            buffer.WriteTo(writer, testEncoder);
+
+            Assert.True(output.PreElement.IsEmpty);
+            Assert.True(output.PreContent.IsEmpty);
+            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.PostContent.IsEmpty);
+            Assert.True(output.PostElement.IsEmpty);
+            Assert.Empty(output.Attributes);
+
+            Assert.Equal(expected, writer.ToString(), StringComparer.Ordinal);
         }
 
         private static TagHelperOutput GetTagHelperOutput(
@@ -1045,30 +1085,6 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             }
 
             return output;
-        }
-
-        private class MockHtmlTextWriter : HtmlTextWriter
-        {
-            private readonly HtmlEncoder _encoder;
-            private readonly TextWriter _inner;
-
-            public MockHtmlTextWriter(TextWriter inner, HtmlEncoder encoder)
-            {
-                _inner = inner;
-                _encoder = encoder;
-            }
-
-            public override Encoding Encoding => _inner.Encoding;
-
-            public override void Write(IHtmlContent value)
-            {
-                value.WriteTo(_inner, _encoder);
-            }
-
-            public override void Write(char value)
-            {
-                _inner.Write(value);
-            }
         }
     }
 }

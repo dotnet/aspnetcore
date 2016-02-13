@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using Microsoft.AspNetCore.Html;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
@@ -81,6 +83,107 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
             // Assert
             Assert.Equal(expected, copiedTagHelperContent.GetContent(new HtmlTestEncoder()));
+        }
+
+        [Fact]
+        public void CopyTo_CopiesAllItems()
+        {
+            // Arrange
+            var source = new DefaultTagHelperContent();
+            source.AppendHtml(new HtmlEncodedString("hello"));
+            source.Append("Test");
+
+            var items = new List<object>();
+            var destination = new HtmlContentBuilder(items);
+            destination.Append("some-content");
+
+            // Act
+            source.CopyTo(destination);
+
+            // Assert
+            Assert.Equal(3, items.Count);
+
+            Assert.Equal("some-content", Assert.IsType<string>(items[0]));
+            Assert.Equal("hello", Assert.IsType<HtmlEncodedString>(items[1]).Value);
+            Assert.Equal("Test", Assert.IsType<string>(items[2]));
+        }
+
+        [Fact]
+        public void CopyTo_DoesDeepCopy()
+        {
+            // Arrange
+            var source = new DefaultTagHelperContent();
+
+            var nested = new DefaultTagHelperContent();
+            source.AppendHtml(nested);
+            nested.AppendHtml(new HtmlEncodedString("hello"));
+            source.Append("Test");
+
+            var items = new List<object>();
+            var destination = new HtmlContentBuilder(items);
+            destination.Append("some-content");
+
+            // Act
+            source.CopyTo(destination);
+
+            // Assert
+            Assert.Equal(3, items.Count);
+
+            Assert.Equal("some-content", Assert.IsType<string>(items[0]));
+            Assert.Equal("hello", Assert.IsType<HtmlEncodedString>(items[1]).Value);
+            Assert.Equal("Test", Assert.IsType<string>(items[2]));
+        }
+
+        [Fact]
+        public void MoveTo_CopiesAllItems_AndClears()
+        {
+            // Arrange
+            var source = new DefaultTagHelperContent();
+            source.AppendHtml(new HtmlEncodedString("hello"));
+            source.Append("Test");
+
+            var items = new List<object>();
+            var destination = new HtmlContentBuilder(items);
+            destination.Append("some-content");
+
+            // Act
+            source.MoveTo(destination);
+
+            // Assert
+            Assert.True(source.IsEmpty);
+            Assert.Equal(3, items.Count);
+
+            Assert.Equal("some-content", Assert.IsType<string>(items[0]));
+            Assert.Equal("hello", Assert.IsType<HtmlEncodedString>(items[1]).Value);
+            Assert.Equal("Test", Assert.IsType<string>(items[2]));
+        }
+
+        [Fact]
+        public void MoveTo_DoesDeepMove()
+        {
+            // Arrange
+            var source = new DefaultTagHelperContent();
+
+            var nested = new DefaultTagHelperContent();
+            source.AppendHtml(nested);
+            nested.AppendHtml(new HtmlEncodedString("hello"));
+            source.Append("Test");
+
+            var items = new List<object>();
+            var destination = new HtmlContentBuilder(items);
+            destination.Append("some-content");
+
+            // Act
+            source.MoveTo(destination);
+
+            // Assert
+            Assert.True(source.IsEmpty);
+            Assert.True(nested.IsEmpty);
+            Assert.Equal(3, items.Count);
+
+            Assert.Equal("some-content", Assert.IsType<string>(items[0]));
+            Assert.Equal("hello", Assert.IsType<HtmlEncodedString>(items[1]).Value);
+            Assert.Equal("Test", Assert.IsType<string>(items[2]));
         }
 
         // GetContent - this one relies on the default encoder.
