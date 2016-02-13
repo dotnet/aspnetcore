@@ -1,211 +1,437 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
+    /// <summary>
+    /// <para>
+    /// A <see cref="TextWriter"/> that is backed by a unbuffered writer (over the Response stream) and/or a 
+    /// <see cref="ViewBuffer"/>
+    /// </para>
+    /// <para>
+    /// When <c>Flush</c> or <c>FlushAsync</c> is invoked, the writer copies all content from the buffer to
+    /// the writer and switches to writing to the unbuffered writer for all further write operations.
+    /// </para>
+    /// </summary>
     public class ViewBufferTextWriter : TextWriter
     {
-        public const int PageSize = 1024;
-
         private readonly TextWriter _inner;
-        private readonly List<char[]> _pages;
-        private readonly ArrayPool<char> _pool;
+        private readonly HtmlEncoder _htmlEncoder;
 
-        private int _currentPage;
-        private int _currentIndex; // The next 'free' character
-
-        public ViewBufferTextWriter(ArrayPool<char> pool, TextWriter inner)
+        /// <summary>
+        /// Creates a new instance of <see cref="ViewBufferTextWriter"/>.
+        /// </summary>
+        /// <param name="buffer">The <see cref="ViewBuffer"/> for buffered output.</param>
+        /// <param name="encoding">The <see cref="System.Text.Encoding"/>.</param>
+        public ViewBufferTextWriter(ViewBuffer buffer, Encoding encoding)
         {
-            _pool = pool;
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+
+            if (encoding == null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
+            }
+
+            Buffer = buffer;
+            Encoding = encoding;
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="ViewBufferTextWriter"/>.
+        /// </summary>
+        /// <param name="buffer">The <see cref="ViewBuffer"/> for buffered output.</param>
+        /// <param name="encoding">The <see cref="System.Text.Encoding"/>.</param>
+        /// <param name="htmlEncoder">The HTML encoder.</param>
+        /// <param name="inner">
+        /// The inner <see cref="TextWriter"/> to write output to when this instance is no longer buffering.
+        /// </param>
+        public ViewBufferTextWriter(ViewBuffer buffer, Encoding encoding, HtmlEncoder htmlEncoder, TextWriter inner)
+        {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+
+            if (encoding == null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
+            }
+
+            if (htmlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(htmlEncoder));
+            }
+
+            if (inner == null)
+            {
+                throw new ArgumentNullException(nameof(inner));
+            }
+
+            Buffer = buffer;
+            Encoding = encoding;
+            _htmlEncoder = htmlEncoder;
             _inner = inner;
-            _pages = new List<char[]>();
         }
 
-        public override Encoding Encoding => _inner.Encoding;
+        /// <inheritdoc />
+        public override Encoding Encoding { get; }
 
-        public override void Flush()
+        /// <inheritdoc />
+        public bool IsBuffering { get; private set; } = true;
+
+        /// <summary>
+        /// Gets the <see cref="ViewBuffer"/>.
+        /// </summary>
+        public ViewBuffer Buffer { get; }
+
+        /// <inheritdoc />
+        public override void Write(char value)
         {
-            // Don't do anything. We'll call FlushAsync.
+            if (IsBuffering)
+            {
+                Buffer.AppendHtml(value.ToString());
+            }
+            else
+            {
+                _inner.Write(value);
+            }
         }
 
-        public override async Task FlushAsync()
+        /// <inheritdoc />
+        public override void Write(char[] buffer, int index, int count)
         {
-            if (_pages.Count == 0)
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+
+            if (index < 0 || index >= buffer.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+
+            if (count < 0 || (buffer.Length - index < count))
+            {
+                throw new ArgumentOutOfRangeException(nameof(count));
+            }
+
+            if (IsBuffering)
+            {
+                Buffer.AppendHtml(new string(buffer, index, count));
+            }
+            else
+            {
+                _inner.Write(buffer, index, count);
+            }
+        }
+
+        /// <inheritdoc />
+        public override void Write(string value)
+        {
+            if (string.IsNullOrEmpty(value))
             {
                 return;
             }
 
-            for (var i = 0; i <= _currentPage; i++)
+            if (IsBuffering)
             {
-                var page = _pages[i];
-
-                var count = i == _currentPage ? _currentIndex : page.Length;
-                if (count > 0)
-                {
-                    await _inner.WriteAsync(page, 0, count);
-                }
+                Buffer.AppendHtml(value);
             }
-
-            // Return all but one of the pages. This way if someone writes a large chunk of
-            // content, we can return those buffers and avoid holding them for the whole
-            // page's lifetime.
-            for (var i = _pages.Count - 1; i > 0; i--)
+            else
             {
-                var page = _pages[i];
-
-                try
-                {
-                    _pages.RemoveAt(i);
-                }
-                finally
-                {
-                    _pool.Return(page);
-                }
-            }
-
-            _currentPage = 0;
-            _currentIndex = 0;
-        }
-
-        public override void Write(char value)
-        {
-            var page = GetCurrentPage();
-            page[_currentIndex++] = value;
-        }
-
-        public override void Write(char[] buffer)
-        {
-            Write(buffer, 0, buffer.Length);
-        }
-
-        public override void Write(char[] buffer, int index, int count)
-        {
-            while (count > 0)
-            {
-                var page = GetCurrentPage();
-                var copyLength = Math.Min(count, page.Length - _currentIndex);
-                Debug.Assert(copyLength > 0);
-
-                Array.Copy(
-                    buffer,
-                    index,
-                    page,
-                    _currentIndex,
-                    copyLength);
-
-                _currentIndex += copyLength;
-                index += copyLength;
-
-                count -= copyLength;
+                _inner.Write(value);
             }
         }
 
-        public override void Write(string value)
+        /// <inheritdoc />
+        public override void Write(object value)
         {
-            var index = 0;
-            var count = value.Length;
-
-            while (count > 0)
+            if (value == null)
             {
-                var page = GetCurrentPage();
-                var copyLength = Math.Min(count, page.Length - _currentIndex);
-                Debug.Assert(copyLength > 0);
+                return;
+            }
 
-                value.CopyTo(
-                    index,
-                    page,
-                    _currentIndex,
-                    copyLength);
-
-                _currentIndex += copyLength;
-                index += copyLength;
-
-                count -= copyLength;
+            IHtmlContentContainer container;
+            IHtmlContent content;
+            if ((container = value as IHtmlContentContainer) != null)
+            {
+                Write(container);
+            }
+            else if ((content = value as IHtmlContent) != null)
+            {
+                Write(content);
+            }
+            else
+            {
+                Write(value.ToString());
             }
         }
 
+        /// <summary>
+        /// Writes an <see cref="IHtmlContent"/> value.
+        /// </summary>
+        /// <param name="value">The <see cref="IHtmlContent"/> value.</param>
+        public void Write(IHtmlContent value)
+        {
+            if (value == null)
+            {
+                return;
+            }
+
+            if (IsBuffering)
+            {
+                Buffer.AppendHtml(value);
+            }
+            else
+            {
+                value.WriteTo(_inner, _htmlEncoder);
+            }
+        }
+
+        /// <summary>
+        /// Writes an <see cref="IHtmlContentContainer"/> value.
+        /// </summary>
+        /// <param name="value">The <see cref="IHtmlContentContainer"/> value.</param>
+        public void Write(IHtmlContentContainer value)
+        {
+            if (value == null)
+            {
+                return;
+            }
+
+            if (IsBuffering)
+            {
+                value.MoveTo(Buffer);
+            }
+            else
+            {
+                value.WriteTo(_inner, _htmlEncoder);
+            }
+        }
+
+        /// <inheritdoc />
+        public override void WriteLine(object value)
+        {
+            if (value == null)
+            {
+                return;
+            }
+
+            IHtmlContentContainer container;
+            IHtmlContent content;
+            if ((container = value as IHtmlContentContainer) != null)
+            {
+                Write(container);
+                Write(NewLine);
+            }
+            else if ((content = value as IHtmlContent) != null)
+            {
+                Write(content);
+                Write(NewLine);
+            }
+            else
+            {
+                Write(value.ToString());
+                Write(NewLine);
+            }
+        }
+
+        /// <inheritdoc />
         public override Task WriteAsync(char value)
         {
-            return _inner.WriteAsync(value);
+            if (IsBuffering)
+            {
+                Buffer.AppendHtml(value.ToString());
+                return TaskCache.CompletedTask;
+            }
+            else
+            {
+                return _inner.WriteAsync(value);
+            }
         }
 
+        /// <inheritdoc />
         public override Task WriteAsync(char[] buffer, int index, int count)
         {
-            return _inner.WriteAsync(buffer, index, count);
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+
+            if (index < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+            if (count < 0 || (buffer.Length - index < count))
+            {
+                throw new ArgumentOutOfRangeException(nameof(count));
+            }
+
+            if (IsBuffering)
+            {
+                Buffer.AppendHtml(new string(buffer, index, count));
+                return TaskCache.CompletedTask;
+            }
+            else
+            {
+                return _inner.WriteAsync(buffer, index, count);
+            }
         }
 
+        /// <inheritdoc />
         public override Task WriteAsync(string value)
         {
-            return _inner.WriteAsync(value);
+            if (IsBuffering)
+            {
+                Buffer.AppendHtml(value);
+                return TaskCache.CompletedTask;
+            }
+            else
+            {
+                return _inner.WriteAsync(value);
+            }
         }
 
-        private char[] GetCurrentPage()
+        /// <inheritdoc />
+        public override void WriteLine()
         {
-            char[] page = null;
-            if (_pages.Count == 0)
+            if (IsBuffering)
             {
-                Debug.Assert(_currentPage == 0);
-                Debug.Assert(_currentIndex == 0);
-
-                try
-                {
-                    page = _pool.Rent(PageSize);
-                    _pages.Add(page);
-                }
-                catch when (page != null)
-                {
-                    _pool.Return(page);
-                    throw;
-                }
-
-                return page;
+                Buffer.AppendHtml(NewLine);
             }
-
-            Debug.Assert(_pages.Count > _currentPage);
-            page = _pages[_currentPage];
-
-            if (_currentIndex == page.Length)
+            else
             {
-                // Current page is full.
-                _currentPage++;
-                _currentIndex = 0;
-
-                if (_pages.Count == _currentPage)
-                {
-                    try
-                    {
-                        page = _pool.Rent(PageSize);
-                        _pages.Add(page);
-                    }
-                    catch when (page != null)
-                    {
-                        _pool.Return(page);
-                        throw;
-                    }
-                }
+                _inner.WriteLine();
             }
-
-            return page;
         }
 
-        protected override void Dispose(bool disposing)
+        /// <inheritdoc />
+        public override void WriteLine(string value)
         {
-            base.Dispose(disposing);
-
-            for (var i = 0; i < _pages.Count; i++)
+            if (IsBuffering)
             {
-                _pool.Return(_pages[i]);
+                Buffer.AppendHtml(value);
+                Buffer.AppendHtml(NewLine);
+            }
+            else
+            {
+                _inner.WriteLine(value);
+            }
+        }
+
+        /// <inheritdoc />
+        public override Task WriteLineAsync(char value)
+        {
+            if (IsBuffering)
+            {
+                Buffer.AppendHtml(value.ToString());
+                Buffer.AppendHtml(NewLine);
+                return TaskCache.CompletedTask;
+            }
+            else
+            {
+                return _inner.WriteLineAsync(value);
+            }
+        }
+
+        /// <inheritdoc />
+        public override Task WriteLineAsync(char[] value, int start, int offset)
+        {
+            if (IsBuffering)
+            {
+                Buffer.AppendHtml(new string(value, start, offset));
+                Buffer.AppendHtml(NewLine);
+                return TaskCache.CompletedTask;
+            }
+            else
+            {
+                return _inner.WriteLineAsync(value, start, offset);
+            }
+        }
+
+        /// <inheritdoc />
+        public override Task WriteLineAsync(string value)
+        {
+            if (IsBuffering)
+            {
+                Buffer.AppendHtml(value);
+                Buffer.AppendHtml(NewLine);
+                return TaskCache.CompletedTask;
+            }
+            else
+            {
+                return _inner.WriteLineAsync(value);
+            }
+        }
+
+        /// <inheritdoc />
+        public override Task WriteLineAsync()
+        {
+            if (IsBuffering)
+            {
+                Buffer.AppendHtml(NewLine);
+                return TaskCache.CompletedTask;
+            }
+            else
+            {
+                return _inner.WriteLineAsync();
+            }
+        }
+
+        /// <summary>
+        /// Copies the buffered content to the unbuffered writer and invokes flush on it.
+        /// Additionally causes this instance to no longer buffer and direct all write operations
+        /// to the unbuffered writer.
+        /// </summary>
+        public override void Flush()
+        {
+            if (_inner == null || _inner is ViewBufferTextWriter)
+            {
+                return;
             }
 
-            _pages.Clear();
+            if (IsBuffering)
+            {
+                IsBuffering = false;
+                Buffer.WriteTo(_inner, _htmlEncoder);
+                Buffer.Clear();
+            }
+
+            _inner.Flush();
+        }
+
+        /// <summary>
+        /// Copies the buffered content to the unbuffered writer and invokes flush on it.
+        /// Additionally causes this instance to no longer buffer and direct all write operations
+        /// to the unbuffered writer.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous copy and flush operations.</returns>
+        public override async Task FlushAsync()
+        {
+            if (_inner == null || _inner is ViewBufferTextWriter)
+            {
+                return;
+            }
+
+            if (IsBuffering)
+            {
+                IsBuffering = false;
+                await Buffer.WriteToAsync(_inner, _htmlEncoder);
+                Buffer.Clear();
+            }
+
+            await _inner.FlushAsync();
         }
     }
 }

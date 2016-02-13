@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private bool _renderedBody;
         private AttributeInfo _attributeInfo;
         private TagHelperAttributeInfo _tagHelperAttributeInfo;
-        private HtmlContentWrapperTextWriter _valueBuffer;
+        private StringWriter _valueBuffer;
         private IViewBufferScope _bufferScope;
         private bool _ignoreBody;
         private HashSet<string> _ignoredSections;
@@ -214,7 +214,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </remarks>
         public void StartTagHelperWritingScope(HtmlEncoder encoder)
         {
-            _tagHelperScopes.Push(new TagHelperScopeInfo(HtmlEncoder, ViewContext.Writer));
+            var buffer = new ViewBuffer(BufferScope, Path, ViewBuffer.TagHelperPageSize);
+            _tagHelperScopes.Push(new TagHelperScopeInfo(buffer, HtmlEncoder, ViewContext.Writer));
 
             // If passed an HtmlEncoder, override the property.
             if (encoder != null)
@@ -224,9 +225,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             // We need to replace the ViewContext's Writer to ensure that all content (including content written
             // from HTML helpers) is redirected.
-            var buffer = new ViewBuffer(BufferScope, Path);
-            var writer = new HtmlContentWrapperTextWriter(buffer, ViewContext.Writer.Encoding);
-            ViewContext.Writer = writer;
+            ViewContext.Writer = new ViewBufferTextWriter(buffer, ViewContext.Writer.Encoding);
         }
 
         /// <summary>
@@ -240,13 +239,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 throw new InvalidOperationException(Resources.RazorPage_ThereIsNoActiveWritingScopeToEnd);
             }
 
+            var scopeInfo = _tagHelperScopes.Pop();
+
             // Get the content written during the current scope.
-            var writer = ViewContext.Writer as HtmlContentWrapperTextWriter;
             var tagHelperContent = new DefaultTagHelperContent();
-            tagHelperContent.AppendHtml(writer?.ContentBuilder);
+            tagHelperContent.AppendHtml(scopeInfo.Buffer);
 
             // Restore previous scope.
-            var scopeInfo = _tagHelperScopes.Pop();
             HtmlEncoder = scopeInfo.Encoder;
             ViewContext.Writer = scopeInfo.Writer;
 
@@ -317,16 +316,25 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var htmlContent = value as IHtmlContent;
             if (htmlContent != null)
             {
-                var htmlTextWriter = writer as HtmlTextWriter;
-                if (htmlTextWriter == null)
+                var bufferedWriter = writer as ViewBufferTextWriter;
+                if (bufferedWriter == null || !bufferedWriter.IsBuffering)
                 {
                     htmlContent.WriteTo(writer, encoder);
                 }
                 else
                 {
-                    // This special case allows us to keep buffering as IHtmlContent until we get to the 'final'
-                    // TextWriter.
-                    htmlTextWriter.Write(htmlContent);
+                    var htmlContentContainer = value as IHtmlContentContainer;
+                    if (htmlContentContainer != null)
+                    {
+                        // This is likely another ViewBuffer.
+                        htmlContentContainer.MoveTo(bufferedWriter.Buffer);
+                    }
+                    else
+                    {
+                        // Perf: This is the common case for IHtmlContent, ViewBufferTextWriter is inefficient
+                        // for writing character by character.
+                        bufferedWriter.Buffer.AppendHtml(htmlContent);
+                    }
                 }
 
                 return;
@@ -354,7 +362,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             if (!string.IsNullOrEmpty(value))
             {
-                encoder.Encode(writer, value);
+                // Perf: Encode right away instead of writing it character-by-character.
+                // character-by-character isn't efficient when using a writer backed by a ViewBuffer.
+                var encoded = encoder.Encode(value);
+                writer.Write(encoded);
             }
         }
 
@@ -529,7 +540,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             int attributeValuesCount)
         {
             _tagHelperAttributeInfo = new TagHelperAttributeInfo(executionContext, attributeName, attributeValuesCount);
-            _valueBuffer = null;
         }
 
         public void AddHtmlAttributeValue(
@@ -567,10 +577,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             if (value != null)
             {
+                // Perf: We'll use this buffer for all of the attribute values and then clear it to
+                // reduce allocations.
                 if (_valueBuffer == null)
                 {
-                    var buffer = new ViewBuffer(BufferScope, Path);
-                    _valueBuffer = new HtmlContentWrapperTextWriter(buffer, Output.Encoding);
+                    _valueBuffer = new StringWriter();
                 }
 
                 if (!string.IsNullOrEmpty(prefix))
@@ -586,10 +597,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             if (!_tagHelperAttributeInfo.Suppressed)
             {
-                executionContext.AddHtmlAttribute(
-                    _tagHelperAttributeInfo.Name,
-                    (IHtmlContent)_valueBuffer?.ContentBuilder ?? HtmlString.Empty);
-                _valueBuffer = null;
+                // Perf: _valueBuffer might be null if nothing was written. If it is set, clear it so
+                // it is reset for the next value.
+                var content = _valueBuffer == null ? HtmlString.Empty : new HtmlString(_valueBuffer.ToString());
+                _valueBuffer?.GetStringBuilder().Clear();
+
+                executionContext.AddHtmlAttribute(_tagHelperAttributeInfo.Name, content);
             }
         }
 
@@ -1053,11 +1066,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         private struct TagHelperScopeInfo
         {
-            public TagHelperScopeInfo(HtmlEncoder encoder, TextWriter writer)
+            public TagHelperScopeInfo(ViewBuffer buffer, HtmlEncoder encoder, TextWriter writer)
             {
+                Buffer = buffer;
                 Encoder = encoder;
                 Writer = writer;
             }
+
+            public ViewBuffer Buffer { get; }
 
             public HtmlEncoder Encoder { get; }
 

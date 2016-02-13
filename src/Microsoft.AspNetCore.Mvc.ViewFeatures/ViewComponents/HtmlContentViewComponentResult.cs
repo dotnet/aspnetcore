@@ -46,15 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var htmlWriter = context.Writer as HtmlTextWriter;
-            if (htmlWriter == null)
-            {
-                EncodedContent.WriteTo(context.Writer, context.HtmlEncoder);
-            }
-            else
-            {
-                htmlWriter.Write(EncodedContent);
-            }
+            context.Writer.Write(EncodedContent);
         }
 
         /// <summary>

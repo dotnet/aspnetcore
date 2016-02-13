@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             // Act
             await page.ExecuteAsync();
-            var pageOutput = page.Output.ToString();
+            var pageOutput = page.RenderedContent;
 
             // Assert
             Assert.Equal(
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             // Act
             await page.ExecuteAsync();
-            var pageOutput = page.Output.ToString();
+            var pageOutput = page.RenderedContent;
 
             // Assert
             Assert.Equal("HtmlEncode[[Hello Prefix]]HtmlEncode[[From Scope: ]]HtmlEncode[[Hello In Scope]]", pageOutput);
@@ -113,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             await page.ExecuteAsync();
 
             // Assert
-            var pageOutput = page.Output.ToString();
+            var pageOutput = page.RenderedContent;
             Assert.Equal(
                 "HtmlEncode[[Hello Prefix]]HtmlEncode[[From Scopes: ]]HtmlEncode[[Hello In Scope Pre Nest]]" +
                 "HtmlEncode[[Hello In Scope Post Nest]]HtmlEncode[[Hello In Nested Scope]]",
@@ -222,6 +223,138 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             // Act & Assert
             await page.ExecuteAsync();
+        }
+
+        // This is an integration test for ensuring that ViewBuffer segments used by
+        // TagHelpers can be merged back into the 'main' segment where possible.
+        [Fact]
+        public async Task TagHelperScopes_ViewBuffersCanCombine()
+        {
+            // Arrange
+            var bufferScope = new TestViewBufferScope();
+            var viewContext = CreateViewContext(bufferScope: bufferScope);
+
+            var page = CreatePage(async v =>
+            {
+                Assert.Equal(0, bufferScope.CreatedBuffers.Count);
+                v.Write("Level:0"); // Creates a 'top-level' buffer.
+                Assert.Equal(1, bufferScope.CreatedBuffers.Count);
+
+                // Run a TagHelper
+                {
+                    v.StartTagHelperWritingScope(encoder: null);
+
+                    Assert.Equal(1, bufferScope.CreatedBuffers.Count);
+                    Assert.Equal(0, bufferScope.ReturnedBuffers.Count);
+                    v.Write("Level:1-A"); // Creates a new buffer for the taghelper.
+                    Assert.Equal(2, bufferScope.CreatedBuffers.Count);
+                    Assert.Equal(0, bufferScope.ReturnedBuffers.Count);
+
+                    TagHelperContent innerContentLevel1 = null;
+                    var outputLevel1 = new TagHelperOutput("t1", new TagHelperAttributeList(), (_, encoder) =>
+                    {
+                        return Task.FromResult(innerContentLevel1);
+                    });
+
+                    innerContentLevel1 = v.EndTagHelperWritingScope();
+                    outputLevel1.Content = await outputLevel1.GetChildContentAsync();
+
+                    Assert.Equal(2, bufferScope.CreatedBuffers.Count);
+                    Assert.Equal(0, bufferScope.ReturnedBuffers.Count);
+                    v.Write(outputLevel1); // Writing the taghelper to output returns a buffer.
+                    Assert.Equal(2, bufferScope.CreatedBuffers.Count);
+                    Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
+                }
+
+                Assert.Equal(2, bufferScope.CreatedBuffers.Count);
+                Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
+                v.Write("Level:0"); // Already have a buffer for this scope.
+                Assert.Equal(2, bufferScope.CreatedBuffers.Count);
+                Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
+
+                // Run another TagHelper
+                {
+                    v.StartTagHelperWritingScope(encoder: null);
+
+                    Assert.Equal(2, bufferScope.CreatedBuffers.Count);
+                    Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
+                    v.Write("Level:1-B"); // Creates a new buffer for the taghelper.
+                    Assert.Equal(3, bufferScope.CreatedBuffers.Count);
+                    Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
+
+                    TagHelperContent innerContentLevel1 = null;
+                    var outputLevel1 = new TagHelperOutput("t2", new TagHelperAttributeList(), (_, encoder) =>
+                    {
+                        return Task.FromResult(innerContentLevel1);
+                    });
+
+                    // Run a nested TagHelper
+                    {
+                        v.StartTagHelperWritingScope(encoder: null);
+
+                        Assert.Equal(3, bufferScope.CreatedBuffers.Count);
+                        Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
+                        v.Write("Level:2"); // Creates a new buffer for the taghelper.
+                        Assert.Equal(4, bufferScope.CreatedBuffers.Count);
+                        Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
+
+                        TagHelperContent innerContentLevel2 = null;
+                        var outputLevel2 = new TagHelperOutput("t3", new TagHelperAttributeList(), (_, encoder) =>
+                        {
+                            return Task.FromResult(innerContentLevel2);
+                        });
+
+                        innerContentLevel2 = v.EndTagHelperWritingScope();
+                        outputLevel2.Content = await outputLevel2.GetChildContentAsync();
+
+                        Assert.Equal(4, bufferScope.CreatedBuffers.Count);
+                        Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
+                        v.Write(outputLevel2); // Writing the taghelper to output returns a buffer.
+                        Assert.Equal(4, bufferScope.CreatedBuffers.Count);
+                        Assert.Equal(2, bufferScope.ReturnedBuffers.Count);
+                    }
+
+                    Assert.Equal(4, bufferScope.CreatedBuffers.Count);
+                    Assert.Equal(2, bufferScope.ReturnedBuffers.Count);
+                    v.Write("Level:1-B"); // Already have a buffer for this scope.
+                    Assert.Equal(4, bufferScope.CreatedBuffers.Count);
+                    Assert.Equal(2, bufferScope.ReturnedBuffers.Count);
+
+                    innerContentLevel1 = v.EndTagHelperWritingScope();
+                    outputLevel1.Content = await outputLevel1.GetChildContentAsync();
+
+                    Assert.Equal(4, bufferScope.CreatedBuffers.Count);
+                    Assert.Equal(2, bufferScope.ReturnedBuffers.Count);
+                    v.Write(outputLevel1); // Writing the taghelper to output returns a buffer.
+                    Assert.Equal(4, bufferScope.CreatedBuffers.Count);
+                    Assert.Equal(3, bufferScope.ReturnedBuffers.Count);
+                }
+
+                Assert.Equal(4, bufferScope.CreatedBuffers.Count);
+                Assert.Equal(3, bufferScope.ReturnedBuffers.Count);
+                v.Write("Level:0"); // Already have a buffer for this scope.
+                Assert.Equal(4, bufferScope.CreatedBuffers.Count);
+                Assert.Equal(3, bufferScope.ReturnedBuffers.Count);
+
+            }, viewContext);
+
+            // Act & Assert
+            await page.ExecuteAsync();
+            Assert.Equal(
+                "HtmlEncode[[Level:0]]" +
+                "<t1>" +
+                    "HtmlEncode[[Level:1-A]]" + 
+                "</t1>" +
+                "HtmlEncode[[Level:0]]" +
+                "<t2>" +
+                    "HtmlEncode[[Level:1-B]]" +
+                    "<t3>" +
+                        "HtmlEncode[[Level:2]]" +
+                    "</t3>" +
+                    "HtmlEncode[[Level:1-B]]" +
+                "</t2>" +
+                "HtmlEncode[[Level:0]]", 
+                page.RenderedContent);
         }
 
         [Fact]
@@ -1237,8 +1370,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public async Task Write_WithHtmlString_WritesValueWithoutEncoding()
         {
             // Arrange
-            var buffer = new ViewBuffer(new TestViewBufferScope(), string.Empty);
-            var writer = new RazorTextWriter(TextWriter.Null, buffer, new HtmlTestEncoder());
+            var buffer = new ViewBuffer(new TestViewBufferScope(), string.Empty, pageSize: 32);
+            var writer = new ViewBufferTextWriter(buffer, Encoding.UTF8);
 
             var page = CreatePage(p =>
             {
@@ -1250,7 +1383,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             await page.ExecuteAsync();
 
             // Assert
-            Assert.Equal("Hello world", HtmlContentUtilities.HtmlContentToString(writer.Buffer));
+            Assert.Equal("Hello world", HtmlContentUtilities.HtmlContentToString(buffer));
         }
 
         private static TestableRazorPage CreatePage(
@@ -1284,12 +1417,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return view.Object;
         }
 
-        private static ViewContext CreateViewContext(TextWriter writer = null, string viewPath = null)
+        private static ViewContext CreateViewContext(
+            TextWriter writer = null,
+            IViewBufferScope bufferScope = null,
+            string viewPath = null)
         {
-            writer = writer ?? new StringWriter();
+            bufferScope = bufferScope ?? new TestViewBufferScope();
+            var buffer = new ViewBuffer(bufferScope, viewPath ?? "TEST", 32);
+            writer = writer ?? new ViewBufferTextWriter(buffer, Encoding.UTF8);
+
             var httpContext = new DefaultHttpContext();
             var serviceProvider = new ServiceCollection()
-                .AddSingleton<IViewBufferScope, TestViewBufferScope>()
+                .AddSingleton<IViewBufferScope>(bufferScope)
                 .BuildServiceProvider();
             httpContext.RequestServices = serviceProvider;
             var actionContext = new ActionContext(
@@ -1321,8 +1460,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 get
                 {
-                    var writer = Assert.IsType<StringWriter>(Output);
-                    return writer.ToString();
+                    var bufferedWriter = Assert.IsType<ViewBufferTextWriter>(Output);
+                    using (var stringWriter = new StringWriter())
+                    {
+                        bufferedWriter.Buffer.WriteTo(stringWriter, HtmlEncoder);
+                        return stringWriter.ToString();
+                    }
                 }
             }
 

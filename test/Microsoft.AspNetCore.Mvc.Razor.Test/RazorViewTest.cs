@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             // Assert
             Assert.NotSame(expected, actual);
-            Assert.IsType<RazorTextWriter>(actual);
+            Assert.IsType<ViewBufferTextWriter>(actual);
             Assert.Equal("HtmlEncode[[Hello world]]", viewContext.Writer.ToString());
         }
 
@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             await view.RenderAsync(viewContext);
 
             // Assert
-            Assert.IsType<RazorTextWriter>(actual);
+            Assert.IsType<ViewBufferTextWriter>(actual);
             Assert.NotSame(original, actual);
         }
 

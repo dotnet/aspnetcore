@@ -400,13 +400,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             public void WriteTo(TextWriter writer, HtmlEncoder encoder)
             {
-                var htmlTextWriter = writer as HtmlTextWriter;
-                if (htmlTextWriter != null)
-                {
-                    htmlTextWriter.Write(this);
-                    return;
-                }
-
                 for (var i = 0; i < _builder.Length; i++)
                 {
                     writer.Write(_builder[i]);

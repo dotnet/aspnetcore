@@ -100,15 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization
                 throw new ArgumentNullException(nameof(encoder));
             }
 
-            var htmlTextWriter = writer as HtmlTextWriter;
-            if (htmlTextWriter == null)
-            {
-                FormatValue(writer, encoder, Value, _arguments);
-            }
-            else
-            {
-                htmlTextWriter.Write(this);
-            }
+            FormatValue(writer, encoder, Value, _arguments);
         }
 
         private static void FormatValue(

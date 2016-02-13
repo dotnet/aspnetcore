@@ -134,8 +134,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             ViewComponentDescriptor descriptor,
             object arguments)
         {
-            var viewBuffer = new ViewBuffer(_viewBufferScope, descriptor.FullName);
-            using (var writer = new HtmlContentWrapperTextWriter(viewBuffer, _viewContext.Writer.Encoding))
+            var viewBuffer = new ViewBuffer(_viewBufferScope, descriptor.FullName, ViewBuffer.ViewComponentPageSize);
+            using (var writer = new ViewBufferTextWriter(viewBuffer, _viewContext.Writer.Encoding))
             {
                 var context = new ViewComponentContext(
                     descriptor,
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 }
 
                 await invoker.InvokeAsync(context);
-                return writer.ContentBuilder;
+                return viewBuffer;
             }
         }
     }

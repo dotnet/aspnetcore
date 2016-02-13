@@ -57,14 +57,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // _fieldName containing almost any character.
             public void WriteTo(TextWriter writer, HtmlEncoder encoder)
             {
-                var htmlTextWriter = writer as HtmlTextWriter;
-                if (htmlTextWriter != null)
-                {
-                    // If possible, defer encoding until we're writing to the response.
-                    htmlTextWriter.Write(this);
-                    return;
-                }
-
                 writer.Write("<input name=\"");
                 encoder.Encode(writer, _fieldName);
                 writer.Write("\" type=\"hidden\" value=\"");

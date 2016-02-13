@@ -251,13 +251,14 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <inheritdoc />
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
-            var htmlTextWriter = writer as HtmlTextWriter;
-            if (htmlTextWriter != null)
+            if (writer == null)
             {
-                // As a perf optimization, we can buffer this output rather than writing it
-                // out character by character.
-                htmlTextWriter.Write(this);
-                return;
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (encoder == null)
+            {
+                throw new ArgumentNullException(nameof(encoder));
             }
 
             switch (TagRenderMode)

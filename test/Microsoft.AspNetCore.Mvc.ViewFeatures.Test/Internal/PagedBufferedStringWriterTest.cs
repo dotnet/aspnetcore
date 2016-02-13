@@ -9,13 +9,13 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
-    public class ViewBufferTextWriterTest
+    public class PagedBufferedStringWriterTest
     {
         private static readonly char[] Content;
 
-        static ViewBufferTextWriterTest()
+        static PagedBufferedStringWriterTest()
         {
-            Content = new char[4 * ViewBufferTextWriter.PageSize];
+            Content = new char[4 * PagedBufferedTextWriter.PageSize];
             for (var i = 0; i < Content.Length; i++)
             {
                 Content[i] = (char)((i % 26) + 'A');
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var pool = new TestArrayPool();
             var inner = new StringWriter();
 
-            var writer = new ViewBufferTextWriter(pool, inner);
+            var writer = new PagedBufferedTextWriter(pool, inner);
 
             // Act
             for (var i = 0; i < Content.Length; i++)
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var pool = new TestArrayPool();
             var inner = new StringWriter();
 
-            var writer = new ViewBufferTextWriter(pool, inner);
+            var writer = new PagedBufferedTextWriter(pool, inner);
 
             // These numbers chosen to hit boundary conditions in buffer lengths
             Assert.Equal(4096, Content.Length); // Update these numbers if this changes.
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var pool = new TestArrayPool();
             var inner = new StringWriter();
 
-            var writer = new ViewBufferTextWriter(pool, inner);
+            var writer = new PagedBufferedTextWriter(pool, inner);
 
             // These numbers chosen to hit boundary conditions in buffer lengths
             Assert.Equal(4096, Content.Length); // Update these numbers if this changes.
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var pool = new TestArrayPool();
             var inner = new StringWriter();
 
-            var writer = new ViewBufferTextWriter(pool, inner);
+            var writer = new PagedBufferedTextWriter(pool, inner);
 
             // These numbers chosen to hit boundary conditions in buffer lengths
             Assert.Equal(4096, Content.Length); // Update these numbers if this changes.
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var pool = new TestArrayPool();
             var inner = new StringWriter();
 
-            var writer = new ViewBufferTextWriter(pool, inner);
+            var writer = new PagedBufferedTextWriter(pool, inner);
 
             for (var i = 0; i < Content.Length; i++)
             {

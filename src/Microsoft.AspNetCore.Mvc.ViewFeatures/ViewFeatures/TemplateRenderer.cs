@@ -126,8 +126,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
                 if (viewEngineResult.Success)
                 {
-                    var viewBuffer = new ViewBuffer(_bufferScope, viewName);
-                    using (var writer = new HtmlContentWrapperTextWriter(viewBuffer, _viewContext.Writer.Encoding))
+                    var viewBuffer = new ViewBuffer(_bufferScope, viewName, ViewBuffer.PartialViewPageSize);
+                    using (var writer = new ViewBufferTextWriter(viewBuffer, _viewContext.Writer.Encoding))
                     {
                         // Forcing synchronous behavior so users don't have to await templates.
                         var view = viewEngineResult.View;
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                             var viewContext = new ViewContext(_viewContext, viewEngineResult.View, _viewData, writer);
                             var renderTask = viewEngineResult.View.RenderAsync(viewContext);
                             renderTask.GetAwaiter().GetResult();
-                            return writer.ContentBuilder;
+                            return viewBuffer;
                         }
                     }
                 }

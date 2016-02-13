@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 htmlHelperOptions: new HtmlHelperOptions());
             var view = Mock.Of<IView>();
             var viewData = new ViewDataDictionary(originalContext.ViewData);
-            var writer = new HtmlContentWrapperTextWriter(new HtmlContentBuilder(), Encoding.UTF8);
+            var writer = new StringWriter();
 
             // Act
             var context = new ViewContext(originalContext, view, viewData, writer);

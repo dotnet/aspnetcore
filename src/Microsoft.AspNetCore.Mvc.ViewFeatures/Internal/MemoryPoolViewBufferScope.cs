@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
     /// </summary>
     public class MemoryPoolViewBufferScope : IViewBufferScope, IDisposable
     {
-        public static readonly int SegmentSize = 512;
+        public static readonly int MinimumSize = 16;
         private readonly ArrayPool<ViewBufferValue> _viewBufferPool;
         private readonly ArrayPool<char> _charPool;
         private List<ViewBufferValue[]> _available;
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         /// The <see cref="ArrayPool{ViewBufferValue}"/> for creating <see cref="ViewBufferValue"/> instances.
         /// </param>
         /// <param name="charPool">
-        /// The <see cref="ArrayPool{Char}"/> for creating <see cref="ViewBufferTextWriter"/> instances.
+        /// The <see cref="ArrayPool{Char}"/> for creating <see cref="PagedBufferedTextWriter"/> instances.
         /// </param>
         public MemoryPoolViewBufferScope(ArrayPool<ViewBufferValue> viewBufferPool, ArrayPool<char> charPool)
         {
@@ -36,8 +36,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         }
 
         /// <inheritdoc />
-        public ViewBufferValue[] GetSegment()
+        public ViewBufferValue[] GetPage(int pageSize)
         {
+            if (pageSize <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(pageSize));
+            }
+
             if (_disposed)
             {
                 throw new ObjectDisposedException(typeof(MemoryPoolViewBufferScope).FullName);
@@ -60,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             try
             {
-                segment = _viewBufferPool.Rent(SegmentSize);
+                segment = _viewBufferPool.Rent(Math.Max(pageSize, MinimumSize));
                 _leased.Add(segment);
             }
             catch when (segment != null)
@@ -91,14 +96,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         }
 
         /// <inheritdoc />
-        public ViewBufferTextWriter CreateWriter(TextWriter writer)
+        public PagedBufferedTextWriter CreateWriter(TextWriter writer)
         {
             if (writer == null)
             {
                 throw new ArgumentNullException(nameof(writer));
             }
 
-            return new ViewBufferTextWriter(_charPool, writer);
+            return new PagedBufferedTextWriter(_charPool, writer);
         }
 
         /// <inheritdoc />

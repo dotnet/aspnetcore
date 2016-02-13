@@ -9,26 +9,25 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     public class TestViewBufferScope : IViewBufferScope
     {
-        public const int DefaultBufferSize = 128;
-        private readonly int _bufferSize;
-
-        public TestViewBufferScope(int bufferSize = DefaultBufferSize)
-        {
-            _bufferSize = bufferSize;
-        }
+        public IList<ViewBufferValue[]> CreatedBuffers { get; } = new List<ViewBufferValue[]>();
 
         public IList<ViewBufferValue[]> ReturnedBuffers { get; } = new List<ViewBufferValue[]>();
 
-        public ViewBufferValue[] GetSegment() => new ViewBufferValue[_bufferSize];
+        public ViewBufferValue[] GetPage(int size)
+        {
+            var buffer = new ViewBufferValue[size];
+            CreatedBuffers.Add(buffer);
+            return buffer;
+        }
 
         public void ReturnSegment(ViewBufferValue[] segment)
         {
             ReturnedBuffers.Add(segment);
         }
 
-        public ViewBufferTextWriter CreateWriter(TextWriter writer)
+        public PagedBufferedTextWriter CreateWriter(TextWriter writer)
         {
-            return new ViewBufferTextWriter(ArrayPool<char>.Shared, writer);
+            return new PagedBufferedTextWriter(ArrayPool<char>.Shared, writer);
         }
     }
 }

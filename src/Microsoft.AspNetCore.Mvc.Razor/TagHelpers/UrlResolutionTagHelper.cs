@@ -354,16 +354,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
 
             public void WriteTo(TextWriter writer, HtmlEncoder encoder)
             {
-                var htmlTextWriter = writer as HtmlTextWriter;
-                if (htmlTextWriter != null)
-                {
-                    htmlTextWriter.Write(this);
-                }
-                else
-                {
-                    encoder.Encode(writer, _firstSegment, 0, _firstSegmentLength);
-                    writer.Write(_secondSegment);
-                }
+                encoder.Encode(writer, _firstSegment, 0, _firstSegmentLength);
+                writer.Write(_secondSegment);
             }
         }
     }
