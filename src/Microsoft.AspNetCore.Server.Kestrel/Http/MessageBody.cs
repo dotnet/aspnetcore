@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             return result;
         }
 
-        public async Task Consume(CancellationToken cancellationToken = default(CancellationToken))
+        public Task Consume(CancellationToken cancellationToken = default(CancellationToken))
         {
             ValueTask<int> result;
             var send100checked = false;
@@ -52,17 +53,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         }
                         send100checked = true;
                     }
+                    // Incomplete Task await result
+                    return ConsumeAwaited(result.AsTask(), cancellationToken);
                 }
                 // ValueTask uses .GetAwaiter().GetResult() if necessary
                 else if (result.Result == 0) 
                 {
                     // Completed Task, end of stream
-                    return;
+                    return TaskUtilities.CompletedTask;
                 }
-                else
+
+            } while (true);
+        }
+
+        private async Task ConsumeAwaited(Task<int> currentTask, CancellationToken cancellationToken)
+        {
+            if (await currentTask == 0)
+            {
+                return;
+            }
+
+            ValueTask<int> result;
+            do
+            {
+                result = ReadAsyncImplementation(default(ArraySegment<byte>), cancellationToken);
+                if (result.IsCompleted)
                 {
-                    // Completed Task, get next Task rather than await
-                    continue;
+                    // ValueTask uses .GetAwaiter().GetResult() if necessary
+                    if (result.Result == 0)
+                    {
+                        // Completed Task, end of stream
+                        return;
+                    }
+                    else
+                    {
+                        // Completed Task, get next Task rather than await
+                        continue;
+                    }
                 }
             } while (await result != 0);
         }
