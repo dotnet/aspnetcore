@@ -266,20 +266,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             if (_frameHeaders != null)
             {
-                RequestHeaders = null;
-                ResponseHeaders = null;
                 var frameHeaders = _frameHeaders;
                 _frameHeaders = null;
+
+                RequestHeaders = null;
+                ResponseHeaders = null;
                 HttpComponentFactory.DisposeHeaders(frameHeaders, poolingPermitted);
             }
 
             if (_frameStreams != null)
             {
+                var frameStreams = _frameStreams;
+                _frameStreams = null;
+
                 RequestBody = null;
                 ResponseBody = null;
                 DuplexStream = null;
-                var frameStreams = _frameStreams;
-                _frameStreams = null;
                 HttpComponentFactory.DisposeStreams(frameStreams, poolingPermitted);
             }
         }
