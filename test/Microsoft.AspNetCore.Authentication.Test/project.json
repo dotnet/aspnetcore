@@ -18,7 +18,6 @@
   "frameworks": {
     "dnxcore50": {
       "dependencies": {
-        "System.Runtime": "4.0.21-*",
         "dotnet-test-xunit": "1.0.0-dev-*"
       },
       "imports": "portable-net451+win8"
