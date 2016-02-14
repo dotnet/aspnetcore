@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             public WrappedApplicationEnvironment(string applicationBasePath, IApplicationEnvironment env)
             {
-                ApplicationBasePath = ResolvePath(applicationBasePath);
+                ApplicationBasePath = ResolvePath(applicationBasePath, env.ApplicationBasePath);
                 ApplicationName = env.ApplicationName;
                 ApplicationVersion = env.ApplicationVersion;
                 RuntimeFramework = env.RuntimeFramework;
@@ -240,20 +240,13 @@ namespace Microsoft.AspNetCore.Hosting
             public FrameworkName RuntimeFramework { get; }
         }
 
-        private static string ResolvePath(string applicationBasePath)
+        private static string ResolvePath(string applicationBasePath, string basePath)
         {
             if (Path.IsPathRooted(applicationBasePath))
             {
                 return applicationBasePath;
             }
 
-            var basePath =
-#if NET451
-                (string)AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") ??
-                AppDomain.CurrentDomain.BaseDirectory;
-#else
-                AppContext.BaseDirectory;
-#endif
             return Path.Combine(Path.GetFullPath(basePath), applicationBasePath);
         }
     }
