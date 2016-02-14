@@ -124,6 +124,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var pipeName = @"\\.\pipe\ServerPipeDispatchConnections" + Guid.NewGuid().ToString("n");
 
+            var port = TestServer.GetNextPort();
             var loop = new UvLoopHandle(_logger);
             loop.Init(_uv);
 
@@ -153,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var serverListenTcp = new UvTcpHandle(_logger);
             serverListenTcp.Init(loop);
-            var address = ServerAddress.FromUrl("http://localhost:54321/");
+            var address = ServerAddress.FromUrl($"http://localhost:{port}/");
             serverListenTcp.Bind(address);
             serverListenTcp.Listen(128, (_1, status, error, _2) =>
             {
@@ -234,24 +235,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     serverConnectionPipeAcceptedEvent.WaitOne();
 
-                    var socket = new Socket(SocketType.Stream, ProtocolType.IP);
-                    if (PlatformApis.IsWindows)
-                    {
-                        const int SIO_LOOPBACK_FAST_PATH = (-1744830448);
-                        var optionInValue = BitConverter.GetBytes(1);
-                        try
-                        {
-                            socket.IOControl(SIO_LOOPBACK_FAST_PATH, optionInValue, null);
-                        }
-                        catch
-                        {
-                            // If the operating system version on this machine did
-                            // not support SIO_LOOPBACK_FAST_PATH (i.e. version
-                            // prior to Windows 8 / Windows Server 2012), handle the exception
-                        }
-                    }
-                    socket.NoDelay = true;
-                    socket.Connect(IPAddress.Loopback, 54321);
+                    var socket = TestConnection.CreateConnectedLoopbackSocket(port);
                     socket.Send(new byte[] { 6, 7, 8, 9 });
                     socket.Shutdown(SocketShutdown.Send);
                     var cb = socket.Receive(new byte[64]);

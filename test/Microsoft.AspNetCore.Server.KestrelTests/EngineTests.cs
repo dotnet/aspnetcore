@@ -118,24 +118,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var started = engine.CreateServer(address);
 
             Console.WriteLine("Started");
-            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            if (PlatformApis.IsWindows)
-            {
-                const int SIO_LOOPBACK_FAST_PATH = (-1744830448);
-                var optionInValue = BitConverter.GetBytes(1);
-                try
-                {
-                    socket.IOControl(SIO_LOOPBACK_FAST_PATH, optionInValue, null);
-                }
-                catch
-                {
-                    // If the operating system version on this machine did
-                    // not support SIO_LOOPBACK_FAST_PATH (i.e. version
-                    // prior to Windows 8 / Windows Server 2012), handle the exception
-                }
-            }
-            socket.NoDelay = true;
-            socket.Connect(new IPEndPoint(IPAddress.Loopback, port));
+            var socket = TestConnection.CreateConnectedLoopbackSocket(port);
             socket.Send(Encoding.ASCII.GetBytes("POST / HTTP/1.0\r\n\r\nHello World"));
             socket.Shutdown(SocketShutdown.Send);
             var buffer = new byte[8192];
@@ -491,24 +474,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(App, testContext))
             {
-                var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-                if (PlatformApis.IsWindows)
-                {
-                    const int SIO_LOOPBACK_FAST_PATH = (-1744830448);
-                    var optionInValue = BitConverter.GetBytes(1);
-                    try
-                    {
-                        socket.IOControl(SIO_LOOPBACK_FAST_PATH, optionInValue, null);
-                    }
-                    catch
-                    {
-                        // If the operating system version on this machine did
-                        // not support SIO_LOOPBACK_FAST_PATH (i.e. version
-                        // prior to Windows 8 / Windows Server 2012), handle the exception
-                    }
-                }
-                socket.NoDelay = true;
-                socket.Connect(IPAddress.Loopback, server.Port);
+                var socket = TestConnection.CreateConnectedLoopbackSocket(server.Port);
                 await Task.Delay(200);
                 socket.Dispose();
 

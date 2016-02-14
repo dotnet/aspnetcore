@@ -87,38 +87,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 tcp2.Dispose();
                 stream.Dispose();
             }, null);
-            var t = Task.Run(async () =>
+            var t = Task.Run(() =>
             {
-                var socket = new Socket(
-                    AddressFamily.InterNetwork,
-                    SocketType.Stream,
-                    ProtocolType.Tcp);
-                if (PlatformApis.IsWindows)
-                {
-                    const int SIO_LOOPBACK_FAST_PATH = (-1744830448);
-                    var optionInValue = BitConverter.GetBytes(1);
-                    try
-                    {
-                        socket.IOControl(SIO_LOOPBACK_FAST_PATH, optionInValue, null);
-                    }
-                    catch
-                    {
-                        // If the operating system version on this machine did
-                        // not support SIO_LOOPBACK_FAST_PATH (i.e. version
-                        // prior to Windows 8 / Windows Server 2012), handle the exception
-                    }
-                }
-                socket.NoDelay = true;
-#if DNX451
-                await Task.Factory.FromAsync(
-                    socket.BeginConnect,
-                    socket.EndConnect,
-                    new IPEndPoint(IPAddress.Loopback, port),
-                    null,
-                    TaskCreationOptions.None);
-#else
-                await socket.ConnectAsync(new IPEndPoint(IPAddress.Loopback, port));
-#endif
+                var socket = TestConnection.CreateConnectedLoopbackSocket(port);
                 socket.Dispose();
             });
             loop.Run();
@@ -159,33 +130,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Console.WriteLine("Task.Run");
             var t = Task.Run(async () =>
             {
-                var socket = new Socket(
-                    AddressFamily.InterNetwork,
-                    SocketType.Stream,
-                    ProtocolType.Tcp);
-                if (PlatformApis.IsWindows)
-                {
-                    const int SIO_LOOPBACK_FAST_PATH = (-1744830448);
-                    var optionInValue = BitConverter.GetBytes(1);
-                    try
-                    {
-                        socket.IOControl(SIO_LOOPBACK_FAST_PATH, optionInValue, null);
-                    }
-                    catch
-                    {
-                        // If the operating system version on this machine did
-                        // not support SIO_LOOPBACK_FAST_PATH (i.e. version
-                        // prior to Windows 8 / Windows Server 2012), handle the exception
-                    }
-                }
-                socket.NoDelay = true;
+                var socket = TestConnection.CreateConnectedLoopbackSocket(port);
 #if DNX451
-                await Task.Factory.FromAsync(
-                    socket.BeginConnect,
-                    socket.EndConnect,
-                    new IPEndPoint(IPAddress.Loopback, port),
-                    null,
-                    TaskCreationOptions.None);
                 await Task.Factory.FromAsync(
                     socket.BeginSend,
                     socket.EndSend,
@@ -194,7 +140,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     null,
                     TaskCreationOptions.None);
 #else
-                await socket.ConnectAsync(new IPEndPoint(IPAddress.Loopback, port));
                 await socket.SendAsync(new[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4, 5 }) },
                                        SocketFlags.None);
 #endif
@@ -262,33 +207,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Console.WriteLine("Task.Run");
             var t = Task.Run(async () =>
             {
-                var socket = new Socket(
-                    AddressFamily.InterNetwork,
-                    SocketType.Stream,
-                    ProtocolType.Tcp);
-                if (PlatformApis.IsWindows)
-                {
-                    const int SIO_LOOPBACK_FAST_PATH = (-1744830448);
-                    var optionInValue = BitConverter.GetBytes(1);
-                    try
-                    {
-                        socket.IOControl(SIO_LOOPBACK_FAST_PATH, optionInValue, null);
-                    }
-                    catch
-                    {
-                        // If the operating system version on this machine did
-                        // not support SIO_LOOPBACK_FAST_PATH (i.e. version
-                        // prior to Windows 8 / Windows Server 2012), handle the exception
-                    }
-                }
-                socket.NoDelay = true;
+                var socket = TestConnection.CreateConnectedLoopbackSocket(port);
 #if DNX451
-                await Task.Factory.FromAsync(
-                    socket.BeginConnect,
-                    socket.EndConnect,
-                    new IPEndPoint(IPAddress.Loopback, port),
-                    null,
-                    TaskCreationOptions.None);
                 await Task.Factory.FromAsync(
                     socket.BeginSend,
                     socket.EndSend,
@@ -297,7 +217,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     null,
                     TaskCreationOptions.None);
 #else
-                await socket.ConnectAsync(new IPEndPoint(IPAddress.Loopback, port));
                 await socket.SendAsync(new[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4, 5 }) },
                                        SocketFlags.None);
 #endif
