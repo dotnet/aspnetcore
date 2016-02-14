@@ -10,8 +10,7 @@
     "dnxcore50": {
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
-        "dotnet-test-xunit": "1.0.0-dev-*",
-        "System.Runtime": "4.0.21-*"
+        "dotnet-test-xunit": "1.0.0-dev-*"
       },
       "imports": "portable-net451+win8"
     },
