@@ -705,7 +705,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <returns>The created <see cref="HttpUnauthorizedResult"/> for the response.</returns>
         [NonAction]
-        public virtual HttpUnauthorizedResult HttpUnauthorized()
+        public virtual HttpUnauthorizedResult Unauthorized()
         {
             return new HttpUnauthorizedResult();
         }
@@ -715,7 +715,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <returns>The created <see cref="HttpNotFoundResult"/> for the response.</returns>
         [NonAction]
-        public virtual HttpNotFoundResult HttpNotFound()
+        public virtual HttpNotFoundResult NotFound()
         {
             return new HttpNotFoundResult();
         }
@@ -725,7 +725,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <returns>The created <see cref="HttpNotFoundObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual HttpNotFoundObjectResult HttpNotFound(object value)
+        public virtual HttpNotFoundObjectResult NotFound(object value)
         {
             var disposableValue = value as IDisposable;
             if (disposableValue != null)
@@ -741,7 +741,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <returns>The created <see cref="BadRequestResult"/> for the response.</returns>
         [NonAction]
-        public virtual BadRequestResult HttpBadRequest()
+        public virtual BadRequestResult BadRequest()
         {
             return new BadRequestResult();
         }
@@ -751,7 +751,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual BadRequestObjectResult HttpBadRequest(object error)
+        public virtual BadRequestObjectResult BadRequest(object error)
         {
             var disposableValue = error as IDisposable;
             if (disposableValue != null)
@@ -767,7 +767,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual BadRequestObjectResult HttpBadRequest(ModelStateDictionary modelState)
+        public virtual BadRequestObjectResult BadRequest(ModelStateDictionary modelState)
         {
             if (modelState == null)
             {
