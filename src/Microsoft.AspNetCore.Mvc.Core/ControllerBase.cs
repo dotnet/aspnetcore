@@ -289,22 +289,22 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Creates a <see cref="HttpOkResult"/> object that produces an empty OK (200) response.
+        /// Creates a <see cref="OkResult"/> object that produces an empty OK (200) response.
         /// </summary>
-        /// <returns>The created <see cref="HttpOkResult"/> for the response.</returns>
+        /// <returns>The created <see cref="OkResult"/> for the response.</returns>
         [NonAction]
-        public virtual HttpOkResult Ok()
+        public virtual OkResult Ok()
         {
-            return new HttpOkResult();
+            return new OkResult();
         }
 
         /// <summary>
-        /// Creates an <see cref="HttpOkObjectResult"/> object that produces an OK (200) response.
+        /// Creates an <see cref="OkObjectResult"/> object that produces an OK (200) response.
         /// </summary>
         /// <param name="value">The content value to format in the entity body.</param>
-        /// <returns>The created <see cref="HttpOkObjectResult"/> for the response.</returns>
+        /// <returns>The created <see cref="OkObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual HttpOkObjectResult Ok(object value)
+        public virtual OkObjectResult Ok(object value)
         {
             var disposableValue = value as IDisposable;
             if (disposableValue != null)
@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Mvc
                 Response.RegisterForDispose(disposableValue);
             }
 
-            return new HttpOkObjectResult(value);
+            return new OkObjectResult(value);
         }
 
         /// <summary>
@@ -701,31 +701,31 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Creates an <see cref="HttpUnauthorizedResult"/> that produces an Unauthorized (401) response.
+        /// Creates an <see cref="UnauthorizedResult"/> that produces an Unauthorized (401) response.
         /// </summary>
-        /// <returns>The created <see cref="HttpUnauthorizedResult"/> for the response.</returns>
+        /// <returns>The created <see cref="UnauthorizedResult"/> for the response.</returns>
         [NonAction]
-        public virtual HttpUnauthorizedResult Unauthorized()
+        public virtual UnauthorizedResult Unauthorized()
         {
-            return new HttpUnauthorizedResult();
+            return new UnauthorizedResult();
         }
 
         /// <summary>
-        /// Creates an <see cref="HttpNotFoundResult"/> that produces a Not Found (404) response.
+        /// Creates an <see cref="NotFoundResult"/> that produces a Not Found (404) response.
         /// </summary>
-        /// <returns>The created <see cref="HttpNotFoundResult"/> for the response.</returns>
+        /// <returns>The created <see cref="NotFoundResult"/> for the response.</returns>
         [NonAction]
-        public virtual HttpNotFoundResult NotFound()
+        public virtual NotFoundResult NotFound()
         {
-            return new HttpNotFoundResult();
+            return new NotFoundResult();
         }
 
         /// <summary>
-        /// Creates an <see cref="HttpNotFoundObjectResult"/> that produces a Not Found (404) response.
+        /// Creates an <see cref="NotFoundObjectResult"/> that produces a Not Found (404) response.
         /// </summary>
-        /// <returns>The created <see cref="HttpNotFoundObjectResult"/> for the response.</returns>
+        /// <returns>The created <see cref="NotFoundObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual HttpNotFoundObjectResult NotFound(object value)
+        public virtual NotFoundObjectResult NotFound(object value)
         {
             var disposableValue = value as IDisposable;
             if (disposableValue != null)
@@ -733,7 +733,7 @@ namespace Microsoft.AspNetCore.Mvc
                 Response.RegisterForDispose(disposableValue);
             }
 
-            return new HttpNotFoundObjectResult(value);
+            return new NotFoundObjectResult(value);
         }
 
         /// <summary>

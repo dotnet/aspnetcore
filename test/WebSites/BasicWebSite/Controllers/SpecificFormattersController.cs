@@ -20,7 +20,7 @@ namespace BasicWebSite
         {
             if (!ModelState.IsValid)
             {
-                return HttpBadRequest(ModelState);
+                return BadRequest(ModelState);
             }
 
             return Ok(person);
@@ -31,7 +31,7 @@ namespace BasicWebSite
         {
             if (!ModelState.IsValid)
             {
-                return HttpBadRequest(ModelState);
+                return BadRequest(ModelState);
             }
 
             return Ok(person);

@@ -765,10 +765,10 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var controller = new TestableController();
 
             // Act
-            var result = controller.HttpUnauthorized();
+            var result = controller.Unauthorized();
 
             // Assert
-            Assert.IsType<HttpUnauthorizedResult>(result);
+            Assert.IsType<UnauthorizedResult>(result);
             Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);
         }
 
@@ -779,10 +779,10 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var controller = new TestableController();
 
             // Act
-            var result = controller.HttpNotFound();
+            var result = controller.NotFound();
 
             // Assert
-            Assert.IsType<HttpNotFoundResult>(result);
+            Assert.IsType<NotFoundResult>(result);
             Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
         }
 
@@ -793,10 +793,10 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var controller = new TestableController();
 
             // Act
-            var result = controller.HttpNotFound("Test Content");
+            var result = controller.NotFound("Test Content");
 
             // Assert
-            Assert.IsType<HttpNotFoundObjectResult>(result);
+            Assert.IsType<NotFoundObjectResult>(result);
             Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
             Assert.Equal("Test Content", result.Value);
         }
@@ -814,10 +814,10 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var input = new DisposableObject();
 
             // Act
-            var result = controller.HttpNotFound(input);
+            var result = controller.NotFound(input);
 
             // Assert
-            Assert.IsType<HttpNotFoundObjectResult>(result);
+            Assert.IsType<NotFoundObjectResult>(result);
             Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
             Assert.Same(input, result.Value);
             mockHttpContext.Verify(
@@ -835,7 +835,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var result = controller.Ok();
 
             // Assert
-            Assert.IsType<HttpOkResult>(result);
+            Assert.IsType<OkResult>(result);
             Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
         }
 
@@ -855,7 +855,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var result = controller.Ok(input);
 
             // Assert
-            Assert.IsType<HttpOkObjectResult>(result);
+            Assert.IsType<OkObjectResult>(result);
             Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
             Assert.Same(input, result.Value);
             mockHttpContext.Verify(
@@ -870,7 +870,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var controller = new TestableController();
 
             // Act
-            var result = controller.HttpBadRequest();
+            var result = controller.BadRequest();
 
             // Assert
             Assert.IsType<BadRequestResult>(result);
@@ -885,7 +885,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var obj = new object();
 
             // Act
-            var result = controller.HttpBadRequest(obj);
+            var result = controller.BadRequest(obj);
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(result);
@@ -906,7 +906,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var input = new DisposableObject();
 
             // Act
-            var result = controller.HttpBadRequest(input);
+            var result = controller.BadRequest(input);
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(result);
@@ -924,7 +924,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var controller = new TestableController();
 
             // Act
-            var result = controller.HttpBadRequest(new ModelStateDictionary());
+            var result = controller.BadRequest(new ModelStateDictionary());
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(result);

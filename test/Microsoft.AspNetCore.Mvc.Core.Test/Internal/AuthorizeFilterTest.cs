@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var authorizationContext = GetAuthorizationContext(services =>
                 services.AddSingleton(authorizationService.Object));
 
-            authorizationContext.Result = new HttpUnauthorizedResult();
+            authorizationContext.Result = new UnauthorizedResult();
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);

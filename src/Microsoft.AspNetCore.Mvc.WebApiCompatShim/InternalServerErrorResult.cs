@@ -9,7 +9,7 @@ namespace System.Web.Http
     /// <summary>
     /// An action result that returns an empty <see cref="StatusCodes.Status500InternalServerError"/> response.
     /// </summary>
-    public class InternalServerErrorResult : HttpStatusCodeResult
+    public class InternalServerErrorResult : StatusCodeResult
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="InternalServerErrorResult"/> class.

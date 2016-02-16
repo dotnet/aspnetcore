@@ -6,16 +6,15 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// An <see cref="HttpStatusCodeResult"/> that when executed will produce an empty
-    /// <see cref="StatusCodes.Status200OK"/> response.
+    /// Represents an <see cref="UnauthorizedResult"/> that when
+    /// executed will produce an Unauthorized (401) response.
     /// </summary>
-    public class HttpOkResult : HttpStatusCodeResult
+    public class UnauthorizedResult : StatusCodeResult
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpOkResult"/> class.
+        /// Creates a new <see cref="UnauthorizedResult"/> instance.
         /// </summary>
-        public HttpOkResult()
-            : base(StatusCodes.Status200OK)
+        public UnauthorizedResult() : base(StatusCodes.Status401Unauthorized)
         {
         }
     }

@@ -8,13 +8,13 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// An <see cref="ObjectResult"/> that when executed will produce a Not Found (404) response.
     /// </summary>
-    public class HttpNotFoundObjectResult : ObjectResult
+    public class NotFoundObjectResult : ObjectResult
     {
         /// <summary>
-        /// Creates a new <see cref="HttpNotFoundObjectResult"/> instance.
+        /// Creates a new <see cref="NotFoundObjectResult"/> instance.
         /// </summary>
         /// <param name="value">The value to format in the entity body.</param>
-        public HttpNotFoundObjectResult(object value)
+        public NotFoundObjectResult(object value)
             : base(value)
         {
             StatusCode = StatusCodes.Status404NotFound;

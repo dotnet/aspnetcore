@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             var actionResult = resourceExecutingContext.Result;
-            Assert.IsType<HttpNotFoundResult>(actionResult);
+            Assert.IsType<NotFoundResult>(actionResult);
         }
 
         [Fact]
@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             var actionResult = resourceExecutingContext.Result;
-            Assert.IsType<HttpNotFoundResult>(actionResult);
+            Assert.IsType<NotFoundResult>(actionResult);
         }
 
         [Theory]
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             filter.OnResourceExecuting(resourceExecutingContext);
 
             // Assert
-            var result = Assert.IsType<HttpNotFoundResult>(resourceExecutingContext.Result);
+            var result = Assert.IsType<NotFoundResult>(resourceExecutingContext.Result);
         }
 
         [Theory]

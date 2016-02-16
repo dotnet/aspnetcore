@@ -415,35 +415,35 @@ namespace System.Web.Http
         }
 
         /// <summary>
-        /// Creates an <see cref="HttpNotFoundResult"/> (404 Not Found).
+        /// Creates an <see cref="NotFoundResult"/> (404 Not Found).
         /// </summary>
-        /// <returns>A <see cref="HttpNotFoundResult"/>.</returns>
+        /// <returns>A <see cref="NotFoundResult"/>.</returns>
         [NonAction]
-        public virtual HttpNotFoundResult NotFound()
+        public virtual NotFoundResult NotFound()
         {
-            return new HttpNotFoundResult();
+            return new NotFoundResult();
         }
 
         /// <summary>
-        /// Creates an <see cref="HttpOkResult"/> (200 OK).
+        /// Creates an <see cref="OkResult"/> (200 OK).
         /// </summary>
-        /// <returns>An <see cref="HttpOkResult"/>.</returns>
+        /// <returns>An <see cref="OkResult"/>.</returns>
         [NonAction]
-        public virtual HttpOkResult Ok()
+        public virtual OkResult Ok()
         {
-            return new HttpOkResult();
+            return new OkResult();
         }
 
         /// <summary>
-        /// Creates an <see cref="HttpOkObjectResult"/> (200 OK) with the specified values.
+        /// Creates an <see cref="OkObjectResult"/> (200 OK) with the specified values.
         /// </summary>
         /// <typeparam name="T">The type of content in the entity body.</typeparam>
         /// <param name="content">The content value to negotiate and format in the entity body.</param>
-        /// <returns>An <see cref="HttpOkObjectResult"/> with the specified values.</returns>
+        /// <returns>An <see cref="OkObjectResult"/> with the specified values.</returns>
         [NonAction]
-        public virtual HttpOkObjectResult Ok<T>(T content)
+        public virtual OkObjectResult Ok<T>(T content)
         {
-            return new HttpOkObjectResult(content);
+            return new OkObjectResult(content);
         }
 
         /// <summary>
@@ -531,14 +531,14 @@ namespace System.Web.Http
         }
 
         /// <summary>
-        /// Creates a <see cref="HttpStatusCodeResult"/> with the specified status code.
+        /// Creates a <see cref="StatusCodeResult"/> with the specified status code.
         /// </summary>
         /// <param name="status">The HTTP status code for the response message</param>
-        /// <returns>A <see cref="HttpStatusCodeResult"/> with the specified status code.</returns>
+        /// <returns>A <see cref="StatusCodeResult"/> with the specified status code.</returns>
         [NonAction]
-        public virtual HttpStatusCodeResult StatusCode(HttpStatusCode status)
+        public virtual StatusCodeResult StatusCode(HttpStatusCode status)
         {
-            return new HttpStatusCodeResult((int)status);
+            return new StatusCodeResult((int)status);
         }
 
         /// <inheritdoc />

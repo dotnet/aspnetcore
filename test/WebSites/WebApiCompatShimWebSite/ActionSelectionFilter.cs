@@ -25,7 +25,7 @@ namespace WebApiCompatShimWebSite
                     })
                 });
 
-            context.Result = new HttpStatusCodeResult(StatusCodes.Status200OK);
+            context.Result = new StatusCodeResult(StatusCodes.Status200OK);
         }
     }
 }

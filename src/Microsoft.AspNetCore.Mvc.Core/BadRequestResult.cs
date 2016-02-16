@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// A <see cref="HttpStatusCodeResult"/> that when
+    /// A <see cref="StatusCodeResult"/> that when
     /// executed will produce a Bad Request (400) response.
     /// </summary>
-    public class BadRequestResult : HttpStatusCodeResult
+    public class BadRequestResult : StatusCodeResult
     {
         /// <summary>
         /// Creates a new <see cref="BadRequestResult"/> instance.

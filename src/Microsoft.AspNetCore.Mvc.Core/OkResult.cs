@@ -6,15 +6,16 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// Represents an <see cref="HttpStatusCodeResult"/> that when
-    /// executed will produce a Not Found (404) response.
+    /// An <see cref="StatusCodeResult"/> that when executed will produce an empty
+    /// <see cref="StatusCodes.Status200OK"/> response.
     /// </summary>
-    public class HttpNotFoundResult : HttpStatusCodeResult
+    public class OkResult : StatusCodeResult
     {
         /// <summary>
-        /// Creates a new <see cref="HttpNotFoundResult"/> instance.
+        /// Initializes a new instance of the <see cref="OkResult"/> class.
         /// </summary>
-        public HttpNotFoundResult() : base(StatusCodes.Status404NotFound)
+        public OkResult()
+            : base(StatusCodes.Status200OK)
         {
         }
     }

@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc
             // body correctly.
             if (!string.Equals(filterContext.HttpContext.Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
             {
-                filterContext.Result = new HttpStatusCodeResult(StatusCodes.Status403Forbidden);
+                filterContext.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
             }
             else
             {

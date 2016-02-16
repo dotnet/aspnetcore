@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            context.Result = new HttpUnauthorizedResult();
+            context.Result = new UnauthorizedResult();
         }
     }
 }

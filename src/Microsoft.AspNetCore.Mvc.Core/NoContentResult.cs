@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Mvc
 {
-    public class NoContentResult : HttpStatusCodeResult
+    public class NoContentResult : StatusCodeResult
     {
         public NoContentResult()
             : base(StatusCodes.Status204NoContent)

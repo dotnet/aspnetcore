@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc
         public void HttpUnauthorizedResult_InitializesStatusCode()
         {
             // Arrange & act
-            var result = new HttpUnauthorizedResult();
+            var result = new UnauthorizedResult();
 
             // Assert
             Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);

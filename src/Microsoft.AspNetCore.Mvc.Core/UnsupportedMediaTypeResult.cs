@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// A <see cref="HttpStatusCodeResult"/> that when
+    /// A <see cref="StatusCodeResult"/> that when
     /// executed will produce a UnsupportedMediaType (415) response.
     /// </summary>
-    public class UnsupportedMediaTypeResult : HttpStatusCodeResult
+    public class UnsupportedMediaTypeResult : StatusCodeResult
     {
         /// <summary>
         /// Creates a new instance of <see cref="UnsupportedMediaTypeResult"/>.

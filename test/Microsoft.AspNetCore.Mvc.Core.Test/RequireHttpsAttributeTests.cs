@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             Assert.NotNull(authContext.Result);
-            var result = Assert.IsType<HttpStatusCodeResult>(authContext.Result);
+            var result = Assert.IsType<StatusCodeResult>(authContext.Result);
             Assert.Equal(StatusCodes.Status403Forbidden, result.StatusCode);
         }
 
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Mvc
             attr.OnAuthorization(authContext);
 
             // Assert
-            var result = Assert.IsType<HttpStatusCodeResult>(authContext.Result);
+            var result = Assert.IsType<StatusCodeResult>(authContext.Result);
             Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
         }
 
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             protected override void HandleNonHttpsRequest(AuthorizationFilterContext filterContext)
             {
-                filterContext.Result = new HttpStatusCodeResult(StatusCodes.Status404NotFound);
+                filterContext.Result = new StatusCodeResult(StatusCodes.Status404NotFound);
             }
         }
 

@@ -22,14 +22,14 @@ namespace JsonPatchSample.Web.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    return HttpBadRequest(ModelState);
+                    return BadRequest(ModelState);
                 }
 
                 return new ObjectResult(customer);
             }
             else
             {
-                return HttpBadRequest(ModelState);
+                return BadRequest(ModelState);
             }
         }
 
@@ -44,7 +44,7 @@ namespace JsonPatchSample.Web.Controllers
 
             if (!ModelState.IsValid)
             {
-                return HttpBadRequest(ModelState);
+                return BadRequest(ModelState);
             }
 
             return new ObjectResult(customer);

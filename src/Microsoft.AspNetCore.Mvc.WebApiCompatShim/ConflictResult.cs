@@ -9,7 +9,7 @@ namespace System.Web.Http
     /// <summary>
     /// An action result that returns an empty <see cref="StatusCodes.Status409Conflict"/> response.
     /// </summary>
-    public class ConflictResult : HttpStatusCodeResult
+    public class ConflictResult : StatusCodeResult
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ConflictResult"/> class.

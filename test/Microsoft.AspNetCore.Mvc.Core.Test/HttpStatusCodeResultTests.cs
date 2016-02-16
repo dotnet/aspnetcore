@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc
         public void HttpStatusCodeResult_ExecuteResultSetsResponseStatusCode()
         {
             // Arrange
-            var result = new HttpStatusCodeResult(StatusCodes.Status404NotFound);
+            var result = new StatusCodeResult(StatusCodes.Status404NotFound);
 
             var httpContext = GetHttpContext();
             var routeData = new RouteData();

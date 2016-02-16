@@ -45,7 +45,7 @@ namespace BasicWebSite.Controllers
 
         public IActionResult NoContentResult()
         {
-            return new HttpStatusCodeResult(StatusCodes.Status204NoContent);
+            return new StatusCodeResult(StatusCodes.Status204NoContent);
         }
 
         [AcceptVerbs("GET", "POST")]

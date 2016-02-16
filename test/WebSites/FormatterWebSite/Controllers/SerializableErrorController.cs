@@ -13,7 +13,7 @@ namespace FormatterWebSite.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return HttpBadRequest(ModelState);
+                return BadRequest(ModelState);
             }
 
             return Content("Hello World!");

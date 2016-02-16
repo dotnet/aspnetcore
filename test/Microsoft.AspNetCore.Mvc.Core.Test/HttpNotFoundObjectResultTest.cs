@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc
         public void HttpNotFoundObjectResult_InitializesStatusCode()
         {
             // Arrange & act
-            var notFound = new HttpNotFoundObjectResult(null);
+            var notFound = new NotFoundObjectResult(null);
 
             // Assert
             Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc
         public void HttpNotFoundObjectResult_InitializesStatusCodeAndResponseContent()
         {
             // Arrange & act
-            var notFound = new HttpNotFoundObjectResult("Test Content");
+            var notFound = new NotFoundObjectResult("Test Content");
 
             // Assert
             Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc
                 HttpContext = httpContext,
             };
 
-            var result = new HttpNotFoundObjectResult("Test Content");
+            var result = new NotFoundObjectResult("Test Content");
             
             // Act
             await result.ExecuteResultAsync(actionContext);

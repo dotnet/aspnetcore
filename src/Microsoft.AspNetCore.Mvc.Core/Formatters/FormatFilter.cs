@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             if (contentType == null)
             {
                 // no contentType exists for the format, return 404
-                context.Result = new HttpNotFoundResult();
+                context.Result = new NotFoundResult();
                 return;
             }
 
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // type than requested e.g. OK if "text/*" requested and action supports "text/plain".
                 if (!IsSuperSetOfAnySupportedMediaType(contentType, supportedMediaTypes))
                 {
-                    context.Result = new HttpNotFoundResult();
+                    context.Result = new NotFoundResult();
                 }
             }
         }

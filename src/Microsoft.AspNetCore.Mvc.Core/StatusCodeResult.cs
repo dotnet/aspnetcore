@@ -12,14 +12,14 @@ namespace Microsoft.AspNetCore.Mvc
     /// Represents an <see cref="ActionResult"/> that when executed will
     /// produce an HTTP response with the given response status code.
     /// </summary>
-    public class HttpStatusCodeResult : ActionResult
+    public class StatusCodeResult : ActionResult
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpStatusCodeResult"/> class
+        /// Initializes a new instance of the <see cref="StatusCodeResult"/> class
         /// with the given <paramref name="statusCode"/>.
         /// </summary>
         /// <param name="statusCode">The HTTP status code of the response.</param>
-        public HttpStatusCodeResult(int statusCode)
+        public StatusCodeResult(int statusCode)
         {
             StatusCode = statusCode;
         }
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             var factory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-            var logger = factory.CreateLogger<HttpStatusCodeResult>();
+            var logger = factory.CreateLogger<StatusCodeResult>();
 
             logger.HttpStatusCodeResultExecuting(StatusCode);
 

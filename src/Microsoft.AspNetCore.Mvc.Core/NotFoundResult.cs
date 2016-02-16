@@ -6,15 +6,15 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// Represents an <see cref="HttpUnauthorizedResult"/> that when
-    /// executed will produce an Unauthorized (401) response.
+    /// Represents an <see cref="StatusCodeResult"/> that when
+    /// executed will produce a Not Found (404) response.
     /// </summary>
-    public class HttpUnauthorizedResult : HttpStatusCodeResult
+    public class NotFoundResult : StatusCodeResult
     {
         /// <summary>
-        /// Creates a new <see cref="HttpUnauthorizedResult"/> instance.
+        /// Creates a new <see cref="NotFoundResult"/> instance.
         /// </summary>
-        public HttpUnauthorizedResult() : base(StatusCodes.Status401Unauthorized)
+        public NotFoundResult() : base(StatusCodes.Status404NotFound)
         {
         }
     }

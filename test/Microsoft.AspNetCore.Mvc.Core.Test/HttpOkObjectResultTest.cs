@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc
         public void HttpOkObjectResult_InitializesStatusCodeAndValue(object value)
         {
             // Arrange & Act
-            var result = new HttpOkObjectResult(value);
+            var result = new OkObjectResult(value);
 
             // Assert
             Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc
         public async Task HttpOkObjectResult_SetsStatusCode(object value)
         {
             // Arrange
-            var result = new HttpOkObjectResult(value);
+            var result = new OkObjectResult(value);
 
             var httpContext = new DefaultHttpContext
             {

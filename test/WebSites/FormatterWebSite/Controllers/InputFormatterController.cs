@@ -13,7 +13,7 @@ namespace FormatterWebSite.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return new HttpStatusCodeResult(StatusCodes.Status400BadRequest);
+                return new StatusCodeResult(StatusCodes.Status400BadRequest);
             }
 
             return Content(test);

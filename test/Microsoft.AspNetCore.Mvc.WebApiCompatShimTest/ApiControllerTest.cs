@@ -278,7 +278,7 @@ namespace System.Web.Http
             var result = controller.NotFound();
 
             // Assert
-            Assert.Equal(404, Assert.IsType<HttpNotFoundResult>(result).StatusCode);
+            Assert.Equal(404, Assert.IsType<NotFoundResult>(result).StatusCode);
         }
 
         [Fact]
@@ -291,7 +291,7 @@ namespace System.Web.Http
             var result = controller.Ok();
 
             // Assert
-            Assert.Equal(200, Assert.IsType<HttpOkResult>(result).StatusCode);
+            Assert.Equal(200, Assert.IsType<OkResult>(result).StatusCode);
         }
 
 
@@ -306,7 +306,7 @@ namespace System.Web.Http
             var result = controller.Ok(product);
 
             // Assert
-            var okResult = Assert.IsType<HttpOkObjectResult>(result);
+            var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Same(product, okResult.Value);
         }
 
@@ -400,7 +400,7 @@ namespace System.Web.Http
             var result = controller.StatusCode(HttpStatusCode.ExpectationFailed);
 
             // Assert
-            Assert.Equal(StatusCodes.Status417ExpectationFailed, Assert.IsType<HttpStatusCodeResult>(result).StatusCode);
+            Assert.Equal(StatusCodes.Status417ExpectationFailed, Assert.IsType<StatusCodeResult>(result).StatusCode);
         }
 
         private class Product

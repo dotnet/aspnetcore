@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc
         public void HttpOkResult_InitializesStatusCode()
         {
             // Arrange & Act
-            var result = new HttpOkResult();
+            var result = new OkResult();
 
             // Assert
             Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc
             httpContext.RequestServices = CreateServices().BuildServiceProvider();
 
             var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-            var result = new HttpOkResult();
+            var result = new OkResult();
 
             // Act
             await result.ExecuteResultAsync(context);
