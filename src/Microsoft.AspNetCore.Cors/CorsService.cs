@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// Looks up a policy using the <paramref name="policyName"/> and then evaluates the policy using the passed in
         /// <paramref name="context"/>.
         /// </summary>
-        /// <param name="requestContext"></param>
+        /// <param name="context"></param>
         /// <param name="policyName"></param>
         /// <returns>A <see cref="CorsResult"/> which contains the result of policy evaluation and can be
         /// used by the caller to set appropriate response headers.</returns>
