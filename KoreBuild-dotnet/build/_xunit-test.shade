@@ -34,37 +34,47 @@ projectFile=''
             var testArgs = noParallelTestProjects.Contains(projectName) ? " -parallel none" : "";
 
             var configs = project.ValueAsJsonObject("frameworks");
-            IEnumerable<string> targetFrameworks = configs == null?
-                new string[0]:
-                configs.Keys.Where(k => k.StartsWith("dnx", StringComparison.OrdinalIgnoreCase));
+            var targetFrameworks = configs == null
+                ? new string[0]
+                : configs.Keys
+                    .Where(k => k.StartsWith("dnx4", StringComparison.OrdinalIgnoreCase)
+                        || k.StartsWith("net4", StringComparison.OrdinalIgnoreCase));
 
             var runnerFolder = Path.GetFullPath(Path.Combine(KoreBuildFolderPath, "build", "xunit.runner.console", "tools"));
             var xunitCoreFolder = Path.GetFullPath(Path.Combine(KoreBuildFolderPath, "build", "xunit.core", "build", "_desktop"));
             
             foreach (var framework in targetFrameworks)
             {
-                if (!framework.StartsWith("dnxcore"))
+                if (IsLinux)
                 {
-                    if (IsLinux)
-                    {
-                        // Work around issue with testing in parallel on Mono.
-                        testArgs = " -parallel none";
-                    }
-
-                    var publishFolder = Path.Combine(projectFolder, ".testPublish", framework);
-                    DotnetPublish(projectFile, publishFolder, framework);
-                    Copy(runnerFolder, publishFolder, "*.*", true);
-                    
-                    // Copy xunit.execution.desktop. This is required in order to load the binding
-                    // redirects for dlls. See this thread for more details:
-                    // https://github.com/xunit/xunit/issues/732
-                    Copy(xunitCoreFolder, publishFolder, "*.*", true);
-
-                    var targetTestDll = projectName + ".dll";
-
-                    var runnerExe = Path.GetFullPath(Path.Combine(publishFolder, "xunit.console.exe"));
-                    ExecClr(runnerExe, targetTestDll + " " + testArgs, publishFolder);
+                    // Work around issue with testing in parallel on Mono.
+                    testArgs = " -parallel none";
                 }
+
+                var publishFolder = Path.Combine(projectFolder, "obj", "testPublish-" + framework);
+                DotnetPublish(projectFile, publishFolder, framework);
+
+                var runnerExe = "xunit.console.exe";
+                string runnerFullPath;
+
+                // Copy xunit.execution.desktop. This is required in order to load the binding
+                // redirects for dlls. See this thread for more details:
+                // https://github.com/xunit/xunit/issues/732
+                // Furthermore, xunit.console.exe must be launched in the same folder as the test dll
+                if (framework.StartsWith("dnx", StringComparison.OrdinalIgnoreCase))
+                {
+                    Copy(runnerFolder, publishFolder, "*.*", true);
+                    Copy(xunitCoreFolder, publishFolder, "*.*", true);
+                    runnerFullPath = Path.GetFullPath(Path.Combine(publishFolder, runnerExe));
+                }
+                else
+                {
+                    runnerFullPath = Path.Combine(runnerFolder, runnerExe);
+                }
+
+                var targetTestDll = projectName + ".dll";
+
+                ExecClr(runnerFullPath, targetTestDll + " " + testArgs, publishFolder);
             }
         }
     }
