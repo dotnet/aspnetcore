@@ -691,14 +691,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var modelMetadata = metadataProvider.GetMetadataForType(typeof(Product));
 
             var dictionary = new ModelStateDictionary();
-            dictionary["Name"] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
             dictionary.AddModelError("Name", "MyProperty invalid.");
-            dictionary["Id"] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
             dictionary.AddModelError("Id", "Id invalid.");
             dictionary.AddModelError("Id", "Id is required.");
-            dictionary["Category"] = new ModelStateEntry { ValidationState = ModelValidationState.Valid };
-
-            dictionary["Unrelated"] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
+            dictionary.MarkFieldValid("Category");
             dictionary.AddModelError("Unrelated", "Unrelated is required.");
 
             // Act
@@ -727,10 +723,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var modelMetadata = metadataProvider.GetMetadataForType(typeof(string));
 
             var dictionary = new ModelStateDictionary();
-            dictionary[string.Empty] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
             dictionary.AddModelError(string.Empty, "MyProperty invalid.");
-
-            dictionary["Unrelated"] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
             dictionary.AddModelError("Unrelated", "Unrelated is required.");
 
             // Act
@@ -754,19 +747,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var modelMetadata = metadataProvider.GetMetadataForType(typeof(List<Product>));
 
             var dictionary = new ModelStateDictionary();
-            dictionary["[0].Name"] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
             dictionary.AddModelError("[0].Name", "Name invalid.");
-            dictionary["[0].Id"] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
             dictionary.AddModelError("[0].Id", "Id invalid.");
             dictionary.AddModelError("[0].Id", "Id required.");
-            dictionary["[0].Category"] = new ModelStateEntry { ValidationState = ModelValidationState.Valid };
+            dictionary.MarkFieldValid("[0].Category");
 
-            dictionary["[1].Name"] = new ModelStateEntry { ValidationState = ModelValidationState.Valid };
-            dictionary["[1].Id"] = new ModelStateEntry { ValidationState = ModelValidationState.Valid };
-            dictionary["[1].Category"] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
+            dictionary.MarkFieldValid("[1].Name");
+            dictionary.MarkFieldValid("[1].Id");
             dictionary.AddModelError("[1].Category", "Category invalid.");
-
-            dictionary["Unrelated"] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
             dictionary.AddModelError("Unrelated", "Unrelated is required.");
 
             // Act
@@ -804,20 +792,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var modelMetadata = metadataProvider.GetMetadataForType(typeof(Product));
 
             var dictionary = new ModelStateDictionary();
-            dictionary["product.Name"] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
             dictionary.AddModelError("product.Name", "Name invalid.");
-            dictionary["product.Id"] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
             dictionary.AddModelError("product.Id", "Id invalid.");
             dictionary.AddModelError("product.Id", "Id required.");
-            dictionary["product.Category"] = new ModelStateEntry { ValidationState = ModelValidationState.Valid };
-            dictionary["product.Category.Name"] = new ModelStateEntry { ValidationState = ModelValidationState.Valid };
-            dictionary["product.Order[0].Name"] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
+            dictionary.MarkFieldValid("product.Category");
+            dictionary.MarkFieldValid("product.Category.Name");
             dictionary.AddModelError("product.Order[0].Name", "Order name invalid.");
-            dictionary["product.Order[0].Address.Street"] =
-                new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
             dictionary.AddModelError("product.Order[0].Address.Street", "Street invalid.");
-            dictionary["product.Order[1].Name"] = new ModelStateEntry { ValidationState = ModelValidationState.Valid };
-            dictionary["product.Order[0]"] = new ModelStateEntry { ValidationState = ModelValidationState.Invalid };
+            dictionary.MarkFieldValid("product.Order[1].Name");
             dictionary.AddModelError("product.Order[0]", "Order invalid.");
 
             // Act

@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -11,6 +10,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     public static class ValidationHelpers
     {
+        private static readonly ModelStateEntry[] EmptyModelStateEntries = new ModelStateEntry[0];
+
         public static string GetModelErrorMessageOrDefault(ModelError modelError)
         {
             Debug.Assert(modelError != null);
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         }
 
         // Returns non-null list of model states, which caller will render in order provided.
-        public static IEnumerable<ModelStateEntry> GetModelStateList(
+        public static IList<ModelStateEntry> GetModelStateList(
             ViewDataDictionary viewData,
             bool excludePropertyErrors)
         {
@@ -57,49 +58,59 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 {
                     return new[] { ms };
                 }
-
-                return Enumerable.Empty<ModelStateEntry>();
             }
-            else
+            else if (viewData.ModelState.Count > 0)
             {
                 var metadata = viewData.ModelMetadata;
-                var orderer = new ErrorsOrderer(metadata);
+                var modelStateDictionary = viewData.ModelState;
+                var entries = new List<ModelStateEntry>();
+                Visit(modelStateDictionary, modelStateDictionary.Root, metadata, entries);
 
-                return viewData.ModelState
-                    .OrderBy(data => orderer.GetOrder(data.Key))
-                    .Select(ms => ms.Value);
+                if (entries.Count < modelStateDictionary.Count)
+                {
+                    // Account for entries in the ModelStateDictionary that do not have corresponding ModelMetadata values.
+                    foreach (var entry in modelStateDictionary)
+                    {
+                        if (!entries.Contains(entry.Value))
+                        {
+                            entries.Add(entry.Value);
+                        }
+                    }
+                }
+
+                return entries;
             }
+
+            return EmptyModelStateEntries;
         }
 
-        // Helper for sorting modelStates to respect the ordering in the metadata.
-        // ModelState doesn't refer to ModelMetadata, but we can correlate via the property name.
-        private class ErrorsOrderer
+        private static void Visit(
+            ModelStateDictionary dictionary,
+            ModelStateEntry modelStateEntry,
+            ModelMetadata metadata,
+            List<ModelStateEntry> orderedModelStateEntries)
         {
-            private readonly Dictionary<string, int> _ordering =
-                new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
-            public ErrorsOrderer(ModelMetadata metadata)
+            if (metadata.ElementMetadata != null)
             {
-                if (metadata == null)
+                foreach (var indexEntry in modelStateEntry.Children)
                 {
-                    throw new ArgumentNullException(nameof(metadata));
-                }
-
-                foreach (var data in metadata.Properties)
-                {
-                    _ordering[data.PropertyName] = data.Order;
+                    Visit(dictionary, indexEntry, metadata.ElementMetadata, orderedModelStateEntries);
                 }
             }
 
-            public int GetOrder(string key)
+            for (var i = 0; i < metadata.Properties.Count; i++)
             {
-                int value;
-                if (_ordering.TryGetValue(key, out value))
+                var propertyMetadata = metadata.Properties[i];
+                var propertyModelStateEntry = modelStateEntry.GetModelStateForProperty(propertyMetadata.PropertyName);
+                if (propertyModelStateEntry != null)
                 {
-                    return value;
+                    Visit(dictionary, propertyModelStateEntry, propertyMetadata, orderedModelStateEntries);
                 }
+            }
 
-                return ModelMetadata.DefaultOrder;
+            if (!modelStateEntry.IsContainerNode)
+            {
+                orderedModelStateEntries.Add(modelStateEntry);
             }
         }
     }

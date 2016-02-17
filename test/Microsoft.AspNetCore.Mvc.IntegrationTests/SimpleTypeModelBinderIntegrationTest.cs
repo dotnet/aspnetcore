@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
+            Assert.Equal(1, modelState.Keys.Count());
             var key = Assert.Single(modelState.Keys, k => k == "CustomParameter.Address.Zip");
             Assert.Equal("1", modelState[key].AttemptedValue);
             Assert.Equal("1", modelState[key].RawValue);
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
+            Assert.Equal(1, modelState.Keys.Count());
             var key = Assert.Single(modelState.Keys, k => k == "Address.Zip");
             Assert.Equal("1", modelState[key].AttemptedValue);
             Assert.Equal("1", modelState[key].RawValue);
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
+            Assert.Equal(1, modelState.Keys.Count());
             var key = Assert.Single(modelState.Keys);
             Assert.Equal("Parameter1", key);
             Assert.Equal("someValue", modelState[key].AttemptedValue);
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
+            Assert.Equal(1, modelState.Keys.Count());
             var key = Assert.Single(modelState.Keys);
             Assert.Equal("Parameter1", key);
             Assert.Equal("someValue,otherValue", modelState[key].AttemptedValue);
@@ -512,7 +512,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ??
+                default(ModelBindingResult);
 
             // Assert
             // ModelBindingResult
@@ -529,7 +530,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(new[] { "Address.Lines", "Address.Zip", "Name" }, modelState.Keys.ToArray());
+            Assert.Equal(new[] { "Address.Lines", "Address.Zip", "Name" }, modelState.Keys.OrderBy(p => p).ToArray());
             var entry = modelState["Address.Lines"];
             Assert.NotNull(entry);
             Assert.Empty(entry.Errors);

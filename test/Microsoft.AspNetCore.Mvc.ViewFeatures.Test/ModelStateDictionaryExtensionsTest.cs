@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             // Arrange
             var dictionary = new ModelStateDictionary();
-            dictionary.Add("Text", new ModelStateEntry());
+            dictionary.SetModelValue("Text", "value", "value");
 
             // Act
             dictionary.Remove<TestModel>(model => model.Text);
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             // Arrange
             var dictionary = new ModelStateDictionary();
-            dictionary.Add("Child.Text", new ModelStateEntry());
+            dictionary.SetModelValue("Child.Text", "value", "value");
 
             // Act
             dictionary.Remove<TestModel>(model => model.Child.Text);
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             // Arrange
             var dictionary = new ModelStateDictionary();
-            dictionary.Add("Child.Value", new ModelStateEntry());
+            dictionary.SetModelValue("Child.Value", "value", "value");
 
             // Act
             dictionary.Remove<TestModel>(model => model.Child.Value);
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
             var variable = "Test";
             var dictionary = new ModelStateDictionary();
-            dictionary.Add("variable", new ModelStateEntry());
+            dictionary.SetModelValue("variable", "value", "value");
 
             // Act
             dictionary.Remove<TestModel>(model => variable);
@@ -219,12 +219,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void RemoveAll_ForSingleExpression_RemovesModelStateKeys()
         {
             // Arrange
-            var state = new ModelStateEntry();
             var dictionary = new ModelStateDictionary();
 
-            dictionary.Add("Key", state);
-            dictionary.Add("Text", new ModelStateEntry());
-            dictionary.Add("Text.Length", new ModelStateEntry());
+            dictionary.SetModelValue("Key", "value1", "value1");
+            dictionary.SetModelValue("Text", "value2", "value2");
+            dictionary.SetModelValue("Text.Length", "value3", "value3");
+            var expected = dictionary["Key"];
 
             // Act
             dictionary.RemoveAll<TestModel>(model => model.Text);
@@ -233,19 +233,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var modelState = Assert.Single(dictionary);
 
             Assert.Equal("Key", modelState.Key);
-            Assert.Same(state, modelState.Value);
+            Assert.Same(expected, modelState.Value);
         }
 
         [Fact]
         public void RemoveAll_ForRelationExpression_RemovesModelStateKeys()
         {
             // Arrange
-            var state = new ModelStateEntry();
             var dictionary = new ModelStateDictionary();
-
-            dictionary.Add("Key", state);
-            dictionary.Add("Child", new ModelStateEntry());
-            dictionary.Add("Child.Text", new ModelStateEntry());
+            dictionary.SetModelValue("Key", "value1", "value1");
+            dictionary.SetModelValue("Child", "value2", "value2");
+            dictionary.SetModelValue("Child.Text", "value3", "value3");
+            var expected = dictionary["Key"];
 
             // Act
             dictionary.RemoveAll<TestModel>(model => model.Child);
@@ -254,18 +253,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var modelState = Assert.Single(dictionary);
 
             Assert.Equal("Key", modelState.Key);
-            Assert.Same(state, modelState.Value);
+            Assert.Same(expected, modelState.Value);
         }
 
         [Fact]
         public void RemoveAll_ForImplicitlyCastedToObjectExpression_RemovesModelStateKeys()
         {
             // Arrange
-            var state = new ModelStateEntry();
             var dictionary = new ModelStateDictionary();
-
-            dictionary.Add("Child", state);
-            dictionary.Add("Child.Value", new ModelStateEntry());
+            dictionary.SetModelValue("Child", "value1", "value1");
+            dictionary.SetModelValue("Child.Value", "value2", "value2");
+            var expected = dictionary["child"];
 
             // Act
             dictionary.RemoveAll<TestModel>(model => model.Child.Value);
@@ -274,7 +272,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var modelState = Assert.Single(dictionary);
 
             Assert.Equal("Child", modelState.Key);
-            Assert.Same(state, modelState.Value);
+            Assert.Same(expected, modelState.Value);
         }
 
         [Fact]
@@ -282,13 +280,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             // Arrange
             var variable = "Test";
-            var state = new ModelStateEntry();
             var dictionary = new ModelStateDictionary();
+            dictionary.SetModelValue("Key", "value1", "value1");
+            dictionary.SetModelValue("variable", "value2", "value2");
+            dictionary.SetModelValue("variable.Text", "value3", "value3");
+            dictionary.SetModelValue("variable.Value", "value4", "value4");
 
-            dictionary.Add("Key", state);
-            dictionary.Add("variable", new ModelStateEntry());
-            dictionary.Add("variable.Text", new ModelStateEntry());
-            dictionary.Add("variable.Value", new ModelStateEntry());
+            var expected = dictionary["Key"];
 
             // Act
             dictionary.RemoveAll<TestModel>(model => variable);
@@ -297,21 +295,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var modelState = Assert.Single(dictionary);
 
             Assert.Equal("Key", modelState.Key);
-            Assert.Same(state, modelState.Value);
+            Assert.Same(expected, modelState.Value);
         }
 
         [Fact]
         public void RemoveAll_ForModelExpression_RemovesModelPropertyKeys()
         {
             // Arrange
-            var state = new ModelStateEntry();
             var dictionary = new ModelStateDictionary();
-
-            dictionary.Add("Key", state);
-            dictionary.Add("Text", new ModelStateEntry());
-            dictionary.Add("Child", new ModelStateEntry());
-            dictionary.Add("Child.Text", new ModelStateEntry());
-            dictionary.Add("Child.NoValue", new ModelStateEntry());
+            dictionary.SetModelValue("Key", "value1", "value1");
+            dictionary.SetModelValue("Text", "value2", "value2");
+            dictionary.SetModelValue("Child", "value3", "value3");
+            dictionary.SetModelValue("Child.Text", "value4", "value4");
+            dictionary.SetModelValue("Child.NoValue", "value5", "value5");
+            var expected = dictionary["Key"];
 
             // Act
             dictionary.RemoveAll<TestModel>(model => model);
@@ -320,7 +317,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var modelState = Assert.Single(dictionary);
 
             Assert.Equal("Key", modelState.Key);
-            Assert.Same(state, modelState.Value);
+            Assert.Same(expected, modelState.Value);
         }
 
         private class TestModel

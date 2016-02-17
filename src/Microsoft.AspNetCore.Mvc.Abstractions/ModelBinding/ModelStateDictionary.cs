@@ -4,7 +4,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -12,15 +14,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// Represents the state of an attempt to bind values from an HTTP Request to an action method, which includes
     /// validation information.
     /// </summary>
-    public class ModelStateDictionary : IDictionary<string, ModelStateEntry>
+    public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry>
     {
         // Make sure to update the doc headers if this value is changed.
         /// <summary>
         /// The default value for <see cref="MaxAllowedErrors"/> of <c>200</c>.
         /// </summary>
         public static readonly int DefaultMaxAllowedErrors = 200;
+        private static readonly char[] Delimiters = new char[] { '.', '[' };
 
-        private readonly Dictionary<string, ModelStateEntry> _innerDictionary;
+        private readonly ModelStateNode _root;
         private int _maxAllowedErrors;
 
         /// <summary>
@@ -37,8 +40,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public ModelStateDictionary(int maxAllowedErrors)
         {
             MaxAllowedErrors = maxAllowedErrors;
-
-            _innerDictionary = new Dictionary<string, ModelStateEntry>(StringComparer.OrdinalIgnoreCase);
+            var emptySegment = new StringSegment(buffer: string.Empty);
+            _root = new ModelStateNode(subKey: emptySegment)
+            {
+                Key = string.Empty
+            };
         }
 
         /// <summary>
@@ -47,20 +53,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         /// <param name="dictionary">The <see cref="ModelStateDictionary"/> to copy values from.</param>
         public ModelStateDictionary(ModelStateDictionary dictionary)
+            : this(dictionary?.MaxAllowedErrors ?? DefaultMaxAllowedErrors)
         {
             if (dictionary == null)
             {
                 throw new ArgumentNullException(nameof(dictionary));
             }
 
-            _innerDictionary = new Dictionary<string, ModelStateEntry>(
-                dictionary,
-                StringComparer.OrdinalIgnoreCase);
-
-            MaxAllowedErrors = dictionary.MaxAllowedErrors;
-            ErrorCount = dictionary.ErrorCount;
-            HasRecordedMaxModelError = dictionary.HasRecordedMaxModelError;
+            Merge(dictionary);
         }
+
+        /// <summary>
+        /// Root entry for the <see cref="ModelStateDictionary"/>.
+        /// </summary>
+        public ModelStateEntry Root => _root;
 
         /// <summary>
         /// Gets or sets the maximum allowed model state errors in this instance of <see cref="ModelStateDictionary"/>.
@@ -115,28 +121,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public int ErrorCount { get; private set; }
 
         /// <inheritdoc />
-        public int Count
-        {
-            get { return _innerDictionary.Count; }
-        }
+        public int Count { get; private set; }
+
+        /// <summary>
+        /// Gets the key sequence.
+        /// </summary>
+        public KeyEnumerable Keys => new KeyEnumerable(this);
 
         /// <inheritdoc />
-        public bool IsReadOnly
-        {
-            get { return ((ICollection<KeyValuePair<string, ModelStateEntry>>)_innerDictionary).IsReadOnly; }
-        }
+        IEnumerable<string> IReadOnlyDictionary<string, ModelStateEntry>.Keys => Keys;
+
+        /// <summary>
+        /// Gets the value sequence.
+        /// </summary>
+        public ValueEnumerable Values => new ValueEnumerable(this);
 
         /// <inheritdoc />
-        public ICollection<string> Keys
-        {
-            get { return _innerDictionary.Keys; }
-        }
-
-        /// <inheritdoc />
-        public ICollection<ModelStateEntry> Values
-        {
-            get { return _innerDictionary.Values; }
-        }
+        IEnumerable<ModelStateEntry> IReadOnlyDictionary<string, ModelStateEntry>.Values => Values;
 
         /// <summary>
         /// Gets a value that indicates whether any model state values in this model state dictionary is invalid or not validated.
@@ -150,14 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public ModelValidationState ValidationState
-        {
-            get
-            {
-                var entries = FindKeysWithPrefix(string.Empty);
-                return GetValidity(entries, defaultState: ModelValidationState.Valid);
-            }
-        }
+        public ModelValidationState ValidationState => GetValidity(_root) ?? ModelValidationState.Valid;
 
         /// <inheritdoc />
         public ModelStateEntry this[string key]
@@ -169,29 +163,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     throw new ArgumentNullException(nameof(key));
                 }
 
-                ModelStateEntry value;
-                _innerDictionary.TryGetValue(key, out value);
-                return value;
+                ModelStateEntry entry;
+                TryGetValue(key, out entry);
+                return entry;
             }
-            set
-            {
-                if (key == null)
-                {
-                    throw new ArgumentNullException(nameof(key));
-                }
-
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-                _innerDictionary[key] = value;
-            }
-        }
-
-        // For unit testing
-        internal IDictionary<string, ModelStateEntry> InnerDictionary
-        {
-            get { return _innerDictionary; }
         }
 
         // Flag that indiciates if TooManyModelErrorException has already been added to this dictionary.
@@ -337,8 +312,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             ErrorCount++;
-            var modelState = GetModelStateForKey(key);
+            var modelState = GetOrAddNode(key);
+            Count += !modelState.IsContainerNode ? 0 : 1;
             modelState.ValidationState = ModelValidationState.Invalid;
+            modelState.MarkNonContainerNode();
             modelState.Errors.Add(errorMessage);
 
             return true;
@@ -359,8 +336,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(key));
             }
 
-            var entries = FindKeysWithPrefix(key);
-            return GetValidity(entries, defaultState: ModelValidationState.Unvalidated);
+            var item = GetNode(key);
+            return GetValidity(item) ?? ModelValidationState.Unvalidated;
         }
 
         /// <summary>
@@ -398,12 +375,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(key));
             }
 
-            var modelState = GetModelStateForKey(key);
+            var modelState = GetOrAddNode(key);
             if (modelState.ValidationState == ModelValidationState.Invalid)
             {
                 throw new InvalidOperationException(Resources.Validation_InvalidFieldCannotBeReset);
             }
 
+            Count += !modelState.IsContainerNode ? 0 : 1;
+            modelState.MarkNonContainerNode();
             modelState.ValidationState = ModelValidationState.Valid;
         }
 
@@ -419,12 +398,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(key));
             }
 
-            var modelState = GetModelStateForKey(key);
+            var modelState = GetOrAddNode(key);
             if (modelState.ValidationState == ModelValidationState.Invalid)
             {
                 throw new InvalidOperationException(Resources.Validation_InvalidFieldCannotBeReset_ToSkipped);
             }
 
+            Count += !modelState.IsContainerNode ? 0 : 1;
+            modelState.MarkNonContainerNode();
             modelState.ValidationState = ModelValidationState.Skipped;
         }
 
@@ -440,9 +421,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return;
             }
 
-            foreach (var entry in dictionary)
+            foreach (var source in dictionary)
             {
-                this[entry.Key] = entry.Value;
+                var target = GetOrAddNode(source.Key);
+                Count += !target.IsContainerNode ? 0 : 1;
+                ErrorCount += source.Value.Errors.Count - target.Errors.Count;
+                target.Copy(source.Value);
+                target.MarkNonContainerNode();
             }
         }
 
@@ -462,9 +447,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(key));
             }
 
-            var modelState = GetModelStateForKey(key);
+            var modelState = GetOrAddNode(key);
+            Count += !modelState.IsContainerNode ? 0 : 1;
             modelState.RawValue = rawValue;
             modelState.AttemptedValue = attemptedValue;
+            modelState.MarkNonContainerNode();
         }
 
         /// <summary>
@@ -515,46 +502,106 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
-        private ModelStateEntry GetModelStateForKey(string key)
+        private ModelStateNode GetNode(string key) => GetNode(key, createIfNotExists: false);
+
+        private ModelStateNode GetOrAddNode(string key) => GetNode(key, createIfNotExists: true);
+
+        private ModelStateNode GetNode(string key, bool createIfNotExists)
         {
-            if (key == null)
+            Debug.Assert(key != null);
+            if (key.Length == 0)
             {
-                throw new ArgumentNullException(nameof(key));
+                return _root;
             }
 
-            ModelStateEntry entry;
-            if (!TryGetValue(key, out entry))
+            // For a key of the format, foo.bar[0].baz[qux] we'll create the following nodes:
+            // foo
+            //  -> bar
+            //   -> [0]
+            //    -> baz
+            //     -> [qux]
+
+            var current = _root;
+            var previousIndex = 0;
+            int index;
+            while ((index = key.IndexOfAny(Delimiters, previousIndex)) != -1)
             {
-                entry = new ModelStateEntry();
-                this[key] = entry;
+                var keyStart = previousIndex == 0 || key[previousIndex - 1] == '.'
+                    ? previousIndex
+                    : previousIndex - 1;
+                var subKey = new StringSegment(key, keyStart, index - keyStart);
+                current = current.GetNode(subKey, createIfNotExists);
+                if (current == null)
+                {
+                    // createIfNotExists is set to false and a node wasn't found. Exit early.
+                    return null;
+                }
+
+                previousIndex = index + 1;
             }
 
-            return entry;
+            if (previousIndex < key.Length)
+            {
+                var keyStart = previousIndex == 0 || key[previousIndex - 1] == '.'
+                    ? previousIndex
+                    : previousIndex - 1;
+                var subKey = new StringSegment(key, keyStart, key.Length - keyStart);
+                current = current.GetNode(subKey, createIfNotExists);
+            }
+
+            if (current != null && current.Key == null)
+            {
+                // Don't update the key if it's been previously assigned. This is to prevent change in key casing
+                // e.g. modelState.SetModelValue("foo", .., ..);
+                // var value = modelState["FOO"];
+                current.Key = key;
+            }
+
+            return current;
         }
 
-        private static ModelValidationState GetValidity(PrefixEnumerable entries, ModelValidationState defaultState)
+        private static ModelValidationState? GetValidity(ModelStateNode node)
         {
-
-            var hasEntries = false;
-            var validationState = ModelValidationState.Valid;
-
-            foreach (var entry in entries)
+            if (node == null)
             {
-                hasEntries = true;
+                return null;
+            }
 
-                var entryState = entry.Value.ValidationState;
-                if (entryState == ModelValidationState.Unvalidated)
+            ModelValidationState? validationState = null;
+            if (!node.IsContainerNode)
+            {
+                validationState = ModelValidationState.Valid;
+                if (node.ValidationState == ModelValidationState.Unvalidated)
                 {
                     // If any entries of a field is unvalidated, we'll treat the tree as unvalidated.
-                    return entryState;
+                    return ModelValidationState.Unvalidated;
                 }
-                else if (entryState == ModelValidationState.Invalid)
+
+                if (node.ValidationState == ModelValidationState.Invalid)
                 {
-                    validationState = entryState;
+                    validationState = node.ValidationState;
                 }
             }
 
-            return hasEntries ? validationState : defaultState;
+            if (node.ChildNodes != null)
+            {
+                for (var i = 0; i < node.ChildNodes.Count; i++)
+                {
+                    var entryState = GetValidity(node.ChildNodes[i]);
+
+                    if (entryState == ModelValidationState.Unvalidated)
+                    {
+                        return entryState;
+                    }
+
+                    if (validationState == null || entryState == ModelValidationState.Invalid)
+                    {
+                        validationState = entryState;
+                    }
+                }
+            }
+
+            return validationState;
         }
 
         private void EnsureMaxErrorsReachedRecorded()
@@ -570,43 +617,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         private void AddModelErrorCore(string key, Exception exception)
         {
-            var modelState = GetModelStateForKey(key);
+            var modelState = GetOrAddNode(key);
+            Count += !modelState.IsContainerNode ? 0 : 1;
             modelState.ValidationState = ModelValidationState.Invalid;
+            modelState.MarkNonContainerNode();
             modelState.Errors.Add(exception);
         }
 
-        /// <inheritdoc />
-        public void Add(KeyValuePair<string, ModelStateEntry> item)
-        {
-            Add(item.Key, item.Value);
-        }
-
-        /// <inheritdoc />
-        public void Add(string key, ModelStateEntry value)
-        {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            _innerDictionary.Add(key, value);
-        }
-
-        /// <inheritdoc />
+        /// <summary>
+        /// Removes all keys and values from ths instance of <see cref="ModelStateDictionary"/>.
+        /// </summary>
         public void Clear()
         {
-            _innerDictionary.Clear();
-        }
-
-        /// <inheritdoc />
-        public bool Contains(KeyValuePair<string, ModelStateEntry> item)
-        {
-            return ((ICollection<KeyValuePair<string, ModelStateEntry>>)_innerDictionary).Contains(item);
+            Count = 0;
+            HasRecordedMaxModelError = false;
+            ErrorCount = 0;
+            _root.Reset();
+            _root.ChildNodes.Clear();
         }
 
         /// <inheritdoc />
@@ -617,27 +644,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(key));
             }
 
-            return _innerDictionary.ContainsKey(key);
+            return !GetNode(key)?.IsContainerNode ?? false;
         }
 
-        /// <inheritdoc />
-        public void CopyTo(KeyValuePair<string, ModelStateEntry>[] array, int arrayIndex)
-        {
-            if (array == null)
-            {
-                throw new ArgumentNullException(nameof(array));
-            }
-
-            ((ICollection<KeyValuePair<string, ModelStateEntry>>)_innerDictionary).CopyTo(array, arrayIndex);
-        }
-
-        /// <inheritdoc />
-        public bool Remove(KeyValuePair<string, ModelStateEntry> item)
-        {
-            return ((ICollection<KeyValuePair<string, ModelStateEntry>>)_innerDictionary).Remove(item);
-        }
-
-        /// <inheritdoc />
+        /// <summary>
+        /// Removes the <see cref="ModelStateEntry"/> with the specified <paramref name="key"/>.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns><c>true</c> if the element is successfully removed; otherwise <c>false</c>. This method also
+        /// returns <c>false</c> if key was not found.</returns>
         public bool Remove(string key)
         {
             if (key == null)
@@ -645,7 +660,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(key));
             }
 
-            return _innerDictionary.Remove(key);
+            var node = GetNode(key);
+            if (node?.IsContainerNode == false)
+            {
+                Count--;
+                ErrorCount -= node.Errors.Count;
+                node.Reset();
+                return true;
+            }
+
+            return false;
         }
 
         /// <inheritdoc />
@@ -656,20 +680,29 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(key));
             }
 
-            return _innerDictionary.TryGetValue(key, out value);
+            var result = GetNode(key);
+            if (result?.IsContainerNode == false)
+            {
+                value = result;
+                return true;
+            }
+
+            value = null;
+            return false;
         }
 
-        /// <inheritdoc />
-        public IEnumerator<KeyValuePair<string, ModelStateEntry>> GetEnumerator()
-        {
-            return _innerDictionary.GetEnumerator();
-        }
+        /// <summary>
+        /// Returns an enumerator that iterates through this instance of <see cref="ModelStateDictionary"/>.
+        /// </summary>
+        /// <returns>An <see cref="Enumerator"/>.</returns>
+        public Enumerator GetEnumerator() => new Enumerator(this, prefix: string.Empty);
 
         /// <inheritdoc />
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator<KeyValuePair<string, ModelStateEntry>>
+            IEnumerable<KeyValuePair<string, ModelStateEntry>>.GetEnumerator() => GetEnumerator();
+
+        /// <inheritdoc />
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public static bool StartsWithPrefix(string prefix, string key)
         {
@@ -698,7 +731,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 return false;
             }
-            
+
             if (key.Length == prefix.Length)
             {
                 // Exact match
@@ -724,6 +757,126 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return new PrefixEnumerable(this, prefix);
         }
 
+        [DebuggerDisplay("SubKey={SubKey}, Key={Key}, ValidationState={ValidationState}")]
+        private class ModelStateNode : ModelStateEntry
+        {
+            private bool _isContainerNode = true;
+
+            public ModelStateNode(StringSegment subKey)
+            {
+                SubKey = subKey;
+            }
+
+            public List<ModelStateNode> ChildNodes { get; set; }
+
+            public override IReadOnlyList<ModelStateEntry> Children => ChildNodes;
+
+            public string Key { get; set; }
+
+            public StringSegment SubKey { get; }
+
+            public override bool IsContainerNode => _isContainerNode;
+
+            public void MarkNonContainerNode()
+            {
+                _isContainerNode = false;
+            }
+
+            public void Copy(ModelStateEntry entry)
+            {
+                RawValue = entry.RawValue;
+                AttemptedValue = entry.AttemptedValue;
+                Errors.Clear();
+                for (var i = 0; i < entry.Errors.Count; i++)
+                {
+                    Errors.Add(entry.Errors[i]);
+                }
+
+                ValidationState = entry.ValidationState;
+            }
+
+            public void Reset()
+            {
+                _isContainerNode = true;
+                RawValue = null;
+                AttemptedValue = null;
+                ValidationState = ModelValidationState.Unvalidated;
+                Errors.Clear();
+            }
+
+            public ModelStateNode GetNode(StringSegment subKey, bool createIfNotExists)
+            {
+                if (subKey.Length == 0)
+                {
+                    return this;
+                }
+
+                var index = BinarySearch(subKey);
+                ModelStateNode modelStateNode = null;
+                if (index >= 0)
+                {
+                    modelStateNode = ChildNodes[index];
+                }
+                else if (createIfNotExists)
+                {
+                    if (ChildNodes == null)
+                    {
+                        ChildNodes = new List<ModelStateNode>(1);
+                    }
+
+                    modelStateNode = new ModelStateNode(subKey);
+                    ChildNodes.Insert(~index, modelStateNode);
+                }
+
+                return modelStateNode;
+            }
+
+            public override ModelStateEntry GetModelStateForProperty(string propertyName)
+                => GetNode(new StringSegment(propertyName), createIfNotExists: false);
+
+            private int BinarySearch(StringSegment searchKey)
+            {
+                if (ChildNodes == null)
+                {
+                    return -1;
+                }
+
+                var low = 0;
+                var high = ChildNodes.Count - 1;
+                while (low <= high)
+                {
+                    var mid = low + ((high - low) / 2);
+                    var midKey = ChildNodes[mid].SubKey;
+                    var result = midKey.Length - searchKey.Length;
+                    if (result == 0)
+                    {
+                        result = string.Compare(
+                            midKey.Buffer,
+                            midKey.Offset,
+                            searchKey.Buffer,
+                            searchKey.Offset,
+                            searchKey.Length,
+                            StringComparison.OrdinalIgnoreCase);
+                    }
+
+                    if (result == 0)
+                    {
+                        return mid;
+                    }
+                    if (result < 0)
+                    {
+                        low = mid + 1;
+                    }
+                    else
+                    {
+                        high = mid - 1;
+                    }
+                }
+
+                return ~low;
+            }
+        }
+
         public struct PrefixEnumerable : IEnumerable<KeyValuePair<string, ModelStateEntry>>
         {
             private readonly ModelStateDictionary _dictionary;
@@ -745,32 +898,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 _prefix = prefix;
             }
 
-            public PrefixEnumerator GetEnumerator()
-            {
-                return _dictionary == null ? new PrefixEnumerator() : new PrefixEnumerator(_dictionary, _prefix);
-            }
+            public Enumerator GetEnumerator() => new Enumerator(_dictionary, _prefix);
 
             IEnumerator<KeyValuePair<string, ModelStateEntry>>
-                IEnumerable<KeyValuePair<string, ModelStateEntry>>.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
+                IEnumerable<KeyValuePair<string, ModelStateEntry>>.GetEnumerator() => GetEnumerator();
 
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
-        public struct PrefixEnumerator : IEnumerator<KeyValuePair<string, ModelStateEntry>>
+        public struct Enumerator : IEnumerator<KeyValuePair<string, ModelStateEntry>>
         {
-            private readonly ModelStateDictionary _dictionary;
-            private string _prefix;
+            private readonly ModelStateNode _rootNode;
+            private ModelStateNode _modelStateNode;
+            private List<ModelStateNode> _nodes;
+            private int _index;
+            private bool _visitedRoot;
 
-            private ExactMatchState _exactMatch;
-            private Dictionary<string, ModelStateEntry>.Enumerator _enumerator;
-
-            public PrefixEnumerator(ModelStateDictionary dictionary, string prefix)
+            public Enumerator(ModelStateDictionary dictionary, string prefix)
             {
                 if (dictionary == null)
                 {
@@ -782,23 +926,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     throw new ArgumentNullException(nameof(prefix));
                 }
 
-                _dictionary = dictionary;
-                _prefix = prefix;
-
-                _exactMatch = ExactMatchState.NotChecked;
-                _enumerator = default(Dictionary<string, ModelStateEntry>.Enumerator);
-                Current = default(KeyValuePair<string, ModelStateEntry>);
+                _index = -1;
+                _rootNode = dictionary.GetNode(prefix);
+                _modelStateNode = null;
+                _nodes = null;
+                _visitedRoot = false;
             }
 
-            public KeyValuePair<string, ModelStateEntry> Current { get; private set; }
+            public KeyValuePair<string, ModelStateEntry> Current =>
+                new KeyValuePair<string, ModelStateEntry>(_modelStateNode.Key, _modelStateNode);
 
-            object IEnumerator.Current
-            {
-                get
-                {
-                    return Current;
-                }
-            }
+            object IEnumerator.Current => Current;
 
             public void Dispose()
             {
@@ -806,61 +944,56 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             public bool MoveNext()
             {
-                if (_dictionary == null)
+                if (_rootNode == null)
                 {
                     return false;
                 }
 
-                // ModelStateDictionary has a behavior where the first 'match' returned from iterating
-                // prefixes is the exact match for the prefix (if present). Only after looking for an
-                // exact match do we fall back to iteration to find 'starts-with' matches.
-                if (_exactMatch == ExactMatchState.NotChecked)
+                if (!_visitedRoot)
                 {
-                    _enumerator = _dictionary._innerDictionary.GetEnumerator();
-
-                    ModelStateEntry entry;
-                    if (_dictionary.TryGetValue(_prefix, out entry))
+                    // Visit the root node
+                    _visitedRoot = true;
+                    if (_rootNode.ChildNodes?.Count > 0)
                     {
-                        // Mark exact match as found
-                        _exactMatch = ExactMatchState.Found;
-                        Current = new KeyValuePair<string, ModelStateEntry>(_prefix, entry);
-                        return true;
+                        _nodes = new List<ModelStateNode> { _rootNode };
                     }
-                    else
+
+                    if (!_rootNode.IsContainerNode)
                     {
-                        // Mark exact match tested for
-                        _exactMatch = ExactMatchState.NotFound;
+                        _modelStateNode = _rootNode;
+                        return true;
                     }
                 }
 
-                while (_enumerator.MoveNext())
+                if (_nodes == null)
                 {
-                    var key = _enumerator.Current.Key;
-                    if (_exactMatch == ExactMatchState.NotFound)
+                    return false;
+                }
+
+                while (_nodes.Count > 0)
+                {
+                    var node = _nodes[0];
+                    if (_index == node.ChildNodes.Count - 1)
                     {
-                        if (StartsWithPrefix(_prefix, key))
-                        {
-                            Current = _enumerator.Current;
-                            return true;
-                        }
+                        // We've exhausted the current sublist.
+                        _nodes.RemoveAt(0);
+                        _index = -1;
                         continue;
                     }
-                    else if (_exactMatch == ExactMatchState.ReferenceSet && Object.ReferenceEquals(_prefix, key))
+                    else
                     {
-                        // Fast path skip this one. Is the exact string reference set below.
+                        _index++;
                     }
-                    else if (_exactMatch == ExactMatchState.Found &&
-                        string.Equals(_prefix, key, StringComparison.OrdinalIgnoreCase))
+
+                    var currentChild = node.ChildNodes[_index];
+                    if (currentChild.ChildNodes?.Count > 0)
                     {
-                        // Update _prefix to be this exact string reference to enable fast path
-                        _prefix = key;
-                        // Mark exact reference set
-                        _exactMatch = ExactMatchState.ReferenceSet;
-                        // Skip this one. We've already handled the 'exact match' case.
+                        _nodes.Add(currentChild);
                     }
-                    else if (StartsWithPrefix(_prefix, key))
+
+                    if (!currentChild.IsContainerNode)
                     {
-                        Current = _enumerator.Current;
+                        _modelStateNode = currentChild;
                         return true;
                     }
                 }
@@ -870,17 +1003,120 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             public void Reset()
             {
-                _exactMatch = ExactMatchState.NotChecked;
-                _enumerator = default(Dictionary<string, ModelStateEntry>.Enumerator);
-                Current = default(KeyValuePair<string, ModelStateEntry>);
+                _index = -1;
+                _nodes.Clear();
+                _visitedRoot = false;
+                _modelStateNode = null;
+            }
+        }
+
+        public struct KeyEnumerable : IEnumerable<string>
+        {
+            private readonly ModelStateDictionary _dictionary;
+
+            public KeyEnumerable(ModelStateDictionary dictionary)
+            {
+                _dictionary = dictionary;
             }
 
-            private enum ExactMatchState
+            public KeyEnumerator GetEnumerator() => new KeyEnumerator(_dictionary, prefix: string.Empty);
+
+            IEnumerator<string> IEnumerable<string>.GetEnumerator() => GetEnumerator();
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        public struct KeyEnumerator : IEnumerator<string>
+        {
+            private Enumerator _prefixEnumerator;
+
+            public KeyEnumerator(ModelStateDictionary dictionary, string prefix)
             {
-                NotChecked,
-                NotFound,
-                Found,
-                ReferenceSet
+                _prefixEnumerator = new Enumerator(dictionary, prefix);
+                Current = null;
+            }
+
+            public string Current { get; private set; }
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose() => _prefixEnumerator.Dispose();
+
+            public bool MoveNext()
+            {
+                var result = _prefixEnumerator.MoveNext();
+                if (result)
+                {
+                    var current = _prefixEnumerator.Current;
+                    Current = current.Key;
+                }
+                else
+                {
+                    Current = null;
+                }
+
+                return result;
+            }
+
+            public void Reset()
+            {
+                _prefixEnumerator.Reset();
+                Current = null;
+            }
+        }
+
+        public struct ValueEnumerable : IEnumerable<ModelStateEntry>
+        {
+            private readonly ModelStateDictionary _dictionary;
+
+            public ValueEnumerable(ModelStateDictionary dictionary)
+            {
+                _dictionary = dictionary;
+            }
+
+            public ValueEnumerator GetEnumerator() => new ValueEnumerator(_dictionary, prefix: string.Empty);
+
+            IEnumerator<ModelStateEntry> IEnumerable<ModelStateEntry>.GetEnumerator() => GetEnumerator();
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        public struct ValueEnumerator : IEnumerator<ModelStateEntry>
+        {
+            private Enumerator _prefixEnumerator;
+
+            public ValueEnumerator(ModelStateDictionary dictionary, string prefix)
+            {
+                _prefixEnumerator = new Enumerator(dictionary, prefix);
+                Current = null;
+            }
+
+            public ModelStateEntry Current { get; private set; }
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose() => _prefixEnumerator.Dispose();
+
+            public bool MoveNext()
+            {
+                var result = _prefixEnumerator.MoveNext();
+                if (result)
+                {
+                    var current = _prefixEnumerator.Current;
+                    Current = current.Value;
+                }
+                else
+                {
+                    Current = null;
+                }
+
+                return result;
+            }
+
+            public void Reset()
+            {
+                _prefixEnumerator.Reset();
+                Current = null;
             }
         }
     }

@@ -33,12 +33,10 @@ namespace System.Web.Http.Dispatcher
                 yield return new[] { new HttpError() };
                 yield return new[] { new HttpError("error") };
                 yield return new[] { new HttpError(new NotImplementedException(), true) };
-                yield return new[] { new HttpError(
-                    new ModelStateDictionary()
-                    {
-                        { "key", new ModelStateEntry { Errors = { new ModelError("error") } } }
-                    },
-                    true) };
+
+                var modelState = new ModelStateDictionary();
+                modelState.AddModelError("key", "error");
+                yield return new[] { new HttpError(modelState, true) };
             }
         }
 
@@ -247,7 +245,7 @@ namespace System.Web.Http.Dispatcher
         }
 
         [Theory]
-        [MemberData("ErrorKeyValue")]
+        [MemberData(nameof(ErrorKeyValue))]
         public void HttpErrorStringProperties_UseCorrectHttpErrorKey(HttpError httpError, Func<string> productUnderTest, string key, string actualValue)
         {
             // Arrange
@@ -289,7 +287,7 @@ namespace System.Web.Http.Dispatcher
         }
 
         [Theory]
-        [MemberData("HttpErrors")]
+        [MemberData(nameof(HttpErrors))]
         public void HttpErrors_UseCaseInsensitiveComparer(HttpError httpError)
         {
             // Arrange

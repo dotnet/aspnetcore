@@ -259,10 +259,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             viewData["FieldPrefix.Name"] = "View data dictionary value";
             viewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
 
-            var modelState = new ModelStateEntry();
-            modelState.RawValue = new string[] { "Attempted name value" };
-            modelState.AttemptedValue = "Attempted name value";
-            viewData.ModelState["FieldPrefix.Name"] = modelState;
+            viewData.ModelState.SetModelValue(
+                "FieldPrefix.Name",
+                "Attempted name value",
+                "Attempted name value");
 
             // Act
             var result = helper.DisplayText("Name");
@@ -284,10 +284,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             viewData["Name"] = "View data dictionary value";
             viewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
 
-            var modelState = new ModelStateEntry();
-            modelState.RawValue = new string[] { "Attempted name value" };
-            modelState.AttemptedValue = "Attempted name value";
-            viewData.ModelState["FieldPrefix.Name"] = modelState;
+            viewData.ModelState.SetModelValue(
+                "FieldPrefix.Name",
+                "Attempted name value",
+                "Attempted name value");
 
             // Act
             var result = helper.DisplayTextFor(m => m.Name);

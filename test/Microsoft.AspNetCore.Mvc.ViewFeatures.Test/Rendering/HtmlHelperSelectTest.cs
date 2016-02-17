@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
             // Act & Assert
             var ex = Assert.Throws<ArgumentException>(
-                "expression", 
+                "expression",
                 () => helper.DropDownList(null, selectList: null, optionLabel: null, htmlAttributes: null));
             Assert.Equal(expected, ex.Message);
         }
@@ -412,19 +412,15 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             // Arrange
             var expectedHtml = GetExpectedSelectElement(SelectSources.ModelStateEntry, allowMultiple: false);
 
-            var modelState = new ModelStateDictionary
-            {
-                ["Property1"] = new ModelStateEntry
-                {
-                    RawValue = new string[] { SelectSources.ModelStateEntry.ToString() },
-                    AttemptedValue = SelectSources.ModelStateEntry.ToString()
-                },
-                ["Prefix.Property1"] = new ModelStateEntry
-                {
-                    RawValue = new string[] { SelectSources.ModelStateEntryWithPrefix.ToString() },
-                    AttemptedValue = SelectSources.ModelStateEntryWithPrefix.ToString()
-                },
-            };
+            var modelState = new ModelStateDictionary();
+            modelState.SetModelValue(
+                "Property1",
+                 SelectSources.ModelStateEntry,
+                 SelectSources.ModelStateEntry.ToString());
+            modelState.SetModelValue(
+                "Prefix.Property1",
+                 SelectSources.ModelStateEntryWithPrefix,
+                 SelectSources.ModelStateEntryWithPrefix.ToString());
 
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var viewData = new ViewDataDictionary<ModelContainingSources>(provider, modelState)
@@ -453,19 +449,15 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 SelectSources.ModelStateEntryWithPrefix,
                 allowMultiple: false);
 
-            var modelState = new ModelStateDictionary
-            {
-                ["Property1"] = new ModelStateEntry
-                {
-                    RawValue = new string[] { SelectSources.ModelStateEntry.ToString() },
-                    AttemptedValue = SelectSources.ModelStateEntry.ToString()
-                },
-                ["Prefix.Property1"] = new ModelStateEntry
-                {
-                    RawValue = new string[] { SelectSources.ModelStateEntryWithPrefix.ToString() },
-                    AttemptedValue = SelectSources.ModelStateEntryWithPrefix.ToString()
-                },
-            };
+            var modelState = new ModelStateDictionary();
+            modelState.SetModelValue(
+                "Property1",
+                 SelectSources.ModelStateEntry,
+                 SelectSources.ModelStateEntry.ToString());
+            modelState.SetModelValue(
+                "Prefix.Property1",
+                 SelectSources.ModelStateEntryWithPrefix,
+                 SelectSources.ModelStateEntryWithPrefix.ToString());
 
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var viewData = new ViewDataDictionary<ModelContainingSources>(provider, modelState)
@@ -823,19 +815,15 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             // Arrange
             var expectedHtml = GetExpectedSelectElement(SelectSources.ModelStateEntry, allowMultiple: true);
 
-            var modelState = new ModelStateDictionary
-            {
-                ["Property1"] = new ModelStateEntry
-                {
-                    RawValue = new string[] { SelectSources.ModelStateEntry.ToString() },
-                    AttemptedValue = SelectSources.ModelStateEntry.ToString()
-                },
-                ["Prefix.Property1"] = new ModelStateEntry
-                {
-                    RawValue = new string[] { SelectSources.ModelStateEntryWithPrefix.ToString() },
-                    AttemptedValue = SelectSources.ModelStateEntryWithPrefix.ToString()
-                },
-            };
+            var modelState = new ModelStateDictionary();
+            modelState.SetModelValue(
+                "Property1",
+                 SelectSources.ModelStateEntry,
+                 SelectSources.ModelStateEntry.ToString());
+            modelState.SetModelValue(
+                "Prefix.Property1",
+                 SelectSources.ModelStateEntryWithPrefix,
+                 SelectSources.ModelStateEntryWithPrefix.ToString());
 
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var viewData = new ViewDataDictionary<ModelContainingListOfSources>(provider, modelState)
@@ -864,19 +852,15 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 SelectSources.ModelStateEntryWithPrefix,
                 allowMultiple: true);
 
-            var modelState = new ModelStateDictionary
-            {
-                ["Property1"] = new ModelStateEntry
-                {
-                    RawValue = new string[] { SelectSources.ModelStateEntry.ToString() },
-                    AttemptedValue = SelectSources.ModelStateEntry.ToString()
-                },
-                ["Prefix.Property1"] = new ModelStateEntry
-                {
-                    RawValue = new string[] { SelectSources.ModelStateEntryWithPrefix.ToString() },
-                    AttemptedValue = SelectSources.ModelStateEntryWithPrefix.ToString()
-                },
-            };
+            var modelState = new ModelStateDictionary();
+            modelState.SetModelValue(
+                "Property1",
+                 SelectSources.ModelStateEntry,
+                 SelectSources.ModelStateEntry.ToString());
+            modelState.SetModelValue(
+                "Prefix.Property1",
+                 SelectSources.ModelStateEntryWithPrefix,
+                 SelectSources.ModelStateEntryWithPrefix.ToString());
 
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var viewData = new ViewDataDictionary<ModelContainingListOfSources>(provider, modelState)

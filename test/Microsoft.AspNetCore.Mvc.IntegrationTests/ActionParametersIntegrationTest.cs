@@ -63,8 +63,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "Address[0].Street");
+            var key = Assert.Single(modelState.Keys);
+            Assert.Equal("Address[0].Street", key);
             Assert.Equal("SomeStreet", modelState[key].AttemptedValue);
             Assert.Equal("SomeStreet", modelState[key].RawValue);
             Assert.Empty(modelState[key].Errors);
@@ -141,6 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var modelState = operationContext.ActionContext.ModelState;
             var model = new Person4();
+
             // Act
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
 
@@ -157,8 +158,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "Address[0].Street");
+            var key = Assert.Single(modelState.Keys);
+            Assert.Equal("Address[0].Street", key);
             Assert.Equal("SomeStreet", modelState[key].AttemptedValue);
             Assert.Equal("SomeStreet", modelState[key].RawValue);
             Assert.Empty(modelState[key].Errors);
@@ -243,8 +244,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "prefix.Address[0].Street");
+            var key = Assert.Single(modelState.Keys);
+            Assert.Equal("prefix.Address[0].Street", key);
             Assert.Equal("SomeStreet", modelState[key].AttemptedValue);
             Assert.Equal("SomeStreet", modelState[key].RawValue);
             Assert.Empty(modelState[key].Errors);
@@ -334,8 +335,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "prefix.Address[0].Street");
+            var key = Assert.Single(modelState.Keys);
+            Assert.Equal("prefix.Address[0].Street", key);
             Assert.Equal("SomeStreet", modelState[key].AttemptedValue);
             Assert.Equal("SomeStreet", modelState[key].RawValue);
             Assert.Empty(modelState[key].Errors);

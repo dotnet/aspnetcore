@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -590,9 +591,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.NotNull(boundPerson);
 
             Assert.False(modelState.IsValid);
-            Assert.Equal(1, modelState.Keys.Count);
-
-            var street = Assert.Single(modelState, kvp => kvp.Key == "CustomParameter.Address.Street").Value;
+            var entry = Assert.Single(modelState);
+            Assert.Equal("CustomParameter.Address.Street", entry.Key);
+            var street = entry.Value;
             Assert.Equal(ModelValidationState.Invalid, street.ValidationState);
             var error = Assert.Single(street.Errors);
             // Mono issue - https://github.com/aspnet/External/issues/19

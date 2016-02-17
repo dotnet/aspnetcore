@@ -162,15 +162,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             viewData["StringProperty"] = "ViewDataValue";
             viewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
 
-            var modelState = new ModelStateEntry();
-            modelState.AttemptedValue = "StringPropertyAttemptedValue";
-            modelState.RawValue = new string[] { "StringPropertyRawValue" };
-            viewData.ModelState["FieldPrefix.StringProperty"] = modelState;
+            viewData.ModelState.SetModelValue(
+                "FieldPrefix.StringProperty",
+                "StringPropertyRawValue",
+                "StringPropertyAttemptedValue");
 
-            modelState = new ModelStateEntry();
-            modelState.AttemptedValue = "ModelAttemptedValue";
-            modelState.RawValue = new string[] { "ModelRawValue" };
-            viewData.ModelState["FieldPrefix"] = modelState;
+            viewData.ModelState.SetModelValue(
+                "FieldPrefix",
+                "ModelRawValue",
+                "ModelAttemptedValue");
 
             // Act & Assert
             Assert.Equal("StringPropertyRawValue", helper.Value("StringProperty", format: null));
@@ -219,10 +219,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var viewData = helper.ViewData;
             viewData["StringProperty"] = "ViewDataValue <\"\">";
 
-            var modelState = new ModelStateEntry();
-            modelState.AttemptedValue = "ObjectPropertyAttemptedValue <\"\">";
-            modelState.RawValue = new string[] { "ObjectPropertyRawValue <\"\">" };
-            viewData.ModelState["ObjectProperty"] = modelState;
+            viewData.ModelState.SetModelValue(
+                "ObjectProperty",
+                "ObjectPropertyRawValue <\"\">",
+                "ObjectPropertyAttemptedValue <\"\">");
 
             // Act & Assert
             Assert.Equal(

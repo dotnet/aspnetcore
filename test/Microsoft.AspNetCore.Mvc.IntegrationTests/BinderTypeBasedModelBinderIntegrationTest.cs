@@ -234,9 +234,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // ModelState
             Assert.True(modelState.IsValid);
-
-            Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "Address.Street");
+            var key = Assert.Single(modelState.Keys);
+            Assert.Equal("Address.Street", key);
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
             Assert.NotNull(modelState[key].RawValue); // Value is set by test model binder, no need to validate it.
         }
@@ -274,8 +273,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // ModelState
             Assert.True(modelState.IsValid);
-            Assert.Equal(1, modelState.Keys.Count);
-            var key = Assert.Single(modelState.Keys, k => k == "CustomParameter.Address.Street");
+            var key = Assert.Single(modelState.Keys);
+            Assert.Equal("CustomParameter.Address.Street", key);
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
             Assert.NotNull(modelState[key].RawValue); // Value is set by test model binder, no need to validate it.
         }

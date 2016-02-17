@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Xunit;
 
@@ -70,12 +69,8 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var modelState = new ModelStateDictionary();
-            modelState.Add(
-                "key1",
-                new ModelStateEntry());
-            modelState.Add(
-                "key2",
-                new ModelStateEntry());
+            modelState.SetModelValue("key1", "value1", "value1");
+            modelState.SetModelValue("key2", "value2", "value2");
 
             // Act
             var serializableError = new SerializableError(modelState);

@@ -83,8 +83,9 @@ namespace WebApiCompatShimWebSite
                 var error = item.Value.Errors.SingleOrDefault();
                 if (error != null)
                 {
-                    var value = error.Exception != null ? error.Exception.Message :
-                                                          error.ErrorMessage;
+                    var value = error.Exception != null ?
+                        error.Exception.Message :
+                        error.ErrorMessage;
                     result.Add(item.Key, value);
                 }
             }

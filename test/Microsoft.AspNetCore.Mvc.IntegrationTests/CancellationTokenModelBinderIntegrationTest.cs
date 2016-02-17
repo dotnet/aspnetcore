@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // ModelState
             Assert.True(modelState.IsValid);
 
-            Assert.Equal(0, modelState.Keys.Count);
+            Assert.Empty(modelState.Keys);
         }
 
         [Fact]

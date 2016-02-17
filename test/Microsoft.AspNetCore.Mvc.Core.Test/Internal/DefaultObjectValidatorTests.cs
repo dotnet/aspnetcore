@@ -5,9 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-#if NETSTANDARDAPP1_5
-using System.Reflection;
-#endif
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
@@ -749,9 +746,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var validator = CreateValidator();
 
-            modelState.Add("items[0]", new ModelStateEntry());
-            modelState.Add("items[1]", new ModelStateEntry());
-            modelState.Add("items[2]", new ModelStateEntry());
+            modelState.SetModelValue("items[0]", "value1", "value1");
+            modelState.SetModelValue("items[1]", "value2", "value2");
+            modelState.SetModelValue("items[2]", "value3", "value3");
             validationState.Add(model, new ValidationStateEntry()
             {
                 Key = "items",
@@ -797,10 +794,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 { "BarKey", "BarValue" }
             };
 
-            modelState.Add("items[0].Key", new ModelStateEntry());
-            modelState.Add("items[0].Value", new ModelStateEntry());
-            modelState.Add("items[1].Key", new ModelStateEntry());
-            modelState.Add("items[1].Value", new ModelStateEntry());
+            modelState.SetModelValue("items[0].Key", "key0", "key0");
+            modelState.SetModelValue("items[0].Value", "value0", "value0");
+            modelState.SetModelValue("items[1].Key", "key1", "key1");
+            modelState.SetModelValue("items[1].Value", "value1", "value1");
             validationState.Add(model, new ValidationStateEntry() { Key = "items" });
 
             // Act
