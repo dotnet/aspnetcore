@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Tokenizer.Symbols
 
         public override bool Equals(object obj)
         {
-            SymbolBase<TType> other = obj as SymbolBase<TType>;
+            var other = obj as SymbolBase<TType>;
             return other != null &&
                 Start.Equals(other.Start) &&
                 string.Equals(Content, other.Content, StringComparison.Ordinal) &&

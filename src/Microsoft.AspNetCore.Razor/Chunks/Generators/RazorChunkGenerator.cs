@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Chunks.Generators
             ClassName = className;
             RootNamespaceName = rootNamespaceName;
             SourceFileName = sourceFileName;
-            GenerateLinePragmas = string.IsNullOrEmpty(SourceFileName) ? false : true;
+            GenerateLinePragmas = !string.IsNullOrEmpty(SourceFileName);
             Host = host;
         }
 

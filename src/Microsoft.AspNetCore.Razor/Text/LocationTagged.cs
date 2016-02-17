@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Text
 
         public override bool Equals(object obj)
         {
-            LocationTagged<TValue> other = obj as LocationTagged<TValue>;
+            var other = obj as LocationTagged<TValue>;
             if (ReferenceEquals(other, null))
             {
                 return false;

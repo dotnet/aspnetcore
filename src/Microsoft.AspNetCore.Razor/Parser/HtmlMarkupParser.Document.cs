@@ -12,8 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Parser
 {
     public partial class HtmlMarkupParser
     {
-        private static readonly char[] ValidAfterTypeAttributeNameCharacters =
-            new[] { ' ', '\t', '\r', '\n', '\f', '=' };
+        private static readonly char[] ValidAfterTypeAttributeNameCharacters = { ' ', '\t', '\r', '\n', '\f', '=' };
 
         public override void ParseDocument()
         {

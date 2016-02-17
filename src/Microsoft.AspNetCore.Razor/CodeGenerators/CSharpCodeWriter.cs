@@ -16,8 +16,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
     {
         private const string InstanceMethodFormat = "{0}.{1}";
 
-        private static readonly char[] CStyleStringLiteralEscapeChars = new char[]
-        {
+        private static readonly char[] CStyleStringLiteralEscapeChars = {
             '\r',
             '\t',
             '\"',

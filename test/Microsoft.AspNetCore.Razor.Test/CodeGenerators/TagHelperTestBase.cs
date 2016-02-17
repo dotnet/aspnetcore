@@ -82,9 +82,9 @@ namespace Microsoft.AspNetCore.Razor.Test.Generator
                 return Host.DecorateCodeGenerator(new TestCSharpCodeGenerator(context), context);
             }
 
-            protected internal override RazorParser CreateParser(string fileName)
+            protected internal override RazorParser CreateParser(string sourceFileName)
             {
-                var parser = base.CreateParser(fileName);
+                var parser = base.CreateParser(sourceFileName);
 
                 return new RazorParser(parser.CodeParser,
                                        parser.MarkupParser,

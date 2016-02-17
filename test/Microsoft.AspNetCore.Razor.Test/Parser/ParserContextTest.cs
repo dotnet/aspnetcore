@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser
         public void EndBlockAddsCurrentBlockToParentBlock()
         {
             // Arrange
-            Mock<ParserVisitor> mockListener = new Mock<ParserVisitor>();
+            var mockListener = new Mock<ParserVisitor>();
             var context = SetupTestContext("phoo");
 
             // Act
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser
         {
             // Arrange
             var factory = SpanFactory.CreateCsHtml();
-            Mock<ParserVisitor> mockListener = new Mock<ParserVisitor>();
+            var mockListener = new Mock<ParserVisitor>();
             var context = SetupTestContext("phoo");
 
             var builder = new SpanBuilder()

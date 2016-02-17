@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser
         public void VisitSendsDocumentToVisitor()
         {
             // Arrange
-            Mock<ParserVisitor> targetMock = new Mock<ParserVisitor>();
+            var targetMock = new Mock<ParserVisitor>();
             var root = new BlockBuilder() { Type = BlockType.Comment }.Build();
             var errorSink = new ErrorSink();
             var results = new ParserResults(root,
@@ -35,10 +35,10 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser
         public void VisitSendsErrorsToVisitor()
         {
             // Arrange
-            Mock<ParserVisitor> targetMock = new Mock<ParserVisitor>();
+            var targetMock = new Mock<ParserVisitor>();
             var root = new BlockBuilder() { Type = BlockType.Comment }.Build();
             var errorSink = new ErrorSink();
-            List<RazorError> errors = new List<RazorError>
+            var errors = new List<RazorError>
             {
                 new RazorError("Foo", new SourceLocation(1, 0, 1), length: 3),
                 new RazorError("Bar", new SourceLocation(2, 0, 2), length: 3),
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser
         public void VisitCallsOnCompleteWhenAllNodesHaveBeenVisited()
         {
             // Arrange
-            Mock<ParserVisitor> targetMock = new Mock<ParserVisitor>();
+            var targetMock = new Mock<ParserVisitor>();
             var root = new BlockBuilder() { Type = BlockType.Comment }.Build();
             var errorSink = new ErrorSink();
             errorSink.OnError(new RazorError("Foo", new SourceLocation(1, 0, 1), length: 3));

@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Generator
         private class CustomTagHelperAttributeCodeRenderer : TagHelperAttributeValueCodeRenderer
         {
             public override void RenderAttributeValue(
-                TagHelperAttributeDescriptor attributeInfo,
+                TagHelperAttributeDescriptor attributeDescriptor,
                 CSharpCodeWriter writer,
                 CodeGeneratorContext context,
                 Action<CSharpCodeWriter> renderAttributeValue,
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Generator
             {
                 writer.Write("**From custom attribute code renderer**: ");
 
-                base.RenderAttributeValue(attributeInfo, writer, context, renderAttributeValue, complexValue);
+                base.RenderAttributeValue(attributeDescriptor, writer, context, renderAttributeValue, complexValue);
             }
         }
 

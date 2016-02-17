@@ -45,9 +45,9 @@ namespace Microsoft.AspNetCore.Razor
             return new RazorChunkGenerator(className, rootNamespaceName, sourceFileName, host);
         }
 
-        public override CodeGenerator CreateCodeGenerator(CodeGeneratorContext context)
+        public override CodeGenerator CreateCodeGenerator(CodeGeneratorContext chunkGeneratorContext)
         {
-            return new CSharpCodeGenerator(context);
+            return new CSharpCodeGenerator(chunkGeneratorContext);
         }
     }
 }

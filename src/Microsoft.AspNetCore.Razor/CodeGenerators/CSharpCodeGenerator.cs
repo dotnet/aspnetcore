@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
             using (writer.BuildConstructor(Context.ClassName))
             {
                 // Any constructor based logic that we need to add?
-            };
+            }
         }
 
         private void AddImports(ChunkTree chunkTree, CSharpCodeWriter writer, IEnumerable<string> defaultImports)

@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser
         private static void RunSyncContextTest<T>(T expected, Func<Action<T>, CallbackVisitor> ctor, Action<CallbackVisitor, T> call)
         {
             // Arrange
-            Mock<SynchronizationContext> mockContext = new Mock<SynchronizationContext>();
+            var mockContext = new Mock<SynchronizationContext>();
             mockContext.Setup(c => c.Post(It.IsAny<SendOrPostCallback>(), It.IsAny<object>()))
                 .Callback<SendOrPostCallback, object>((callback, state) => { callback(expected); });
 

@@ -13,13 +13,13 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 {
     public class TagHelperTypeResolverTest
     {
-        protected static readonly Type[] ValidTestableTagHelpers = new[]
+        protected static readonly Type[] ValidTestableTagHelpers = 
         {
             typeof(Valid_PlainTagHelper),
             typeof(Valid_InheritedTagHelper)
         };
 
-        protected static readonly Type[] InvalidTestableTagHelpers = new[]
+        protected static readonly Type[] InvalidTestableTagHelpers = 
         {
             typeof(Invalid_AbstractTagHelper),
             typeof(Invalid_GenericTagHelper<>),

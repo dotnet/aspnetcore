@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
 {
     public class CodeWriter : IDisposable
     {
-        private static readonly char[] NewLineCharacters = new char[] { '\r', '\n' };
+        private static readonly char[] NewLineCharacters = { '\r', '\n' };
 
         private string _cache = string.Empty;
         private bool _dirty;
