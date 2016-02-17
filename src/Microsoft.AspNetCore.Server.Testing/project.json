@@ -16,13 +16,12 @@
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
-    "dnx451": {
+    "net451": {
       "dependencies": {
         "Microsoft.Web.Administration": "7.0.0"
       },
       "frameworkAssemblies": {
         "System.Net.Http": "",
-        "System.Xml": ""
       }
     },
     "dnxcore50": {

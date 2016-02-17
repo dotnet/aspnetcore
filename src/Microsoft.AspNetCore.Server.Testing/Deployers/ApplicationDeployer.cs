@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.Testing
         protected void AddEnvironmentVariablesToProcess(ProcessStartInfo startInfo)
         {
             var environment =
-#if DNX451
+#if NET451
                 startInfo.EnvironmentVariables;
 #elif DNXCORE50
                 startInfo.Environment;
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Server.Testing
             }
         }
 
-#if DNX451
+#if NET451
         protected void SetEnvironmentVariable(System.Collections.Specialized.StringDictionary environment, string name, string value)
         {
 #elif DNXCORE50
