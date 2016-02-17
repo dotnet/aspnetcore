@@ -8,7 +8,7 @@ using System.Globalization;
 namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
-    /// An <see cref="IEqualityComparer{object}"/> implementation that compares objects as-if
+    /// An <see cref="IEqualityComparer{Object}"/> implementation that compares objects as-if
     /// they were route value strings.
     /// </summary>
     /// <remarks>

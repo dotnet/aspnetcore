@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Builds a mapping of constraints.
         /// </summary>
-        /// <returns>An <see cref="IDictionary{string, IRouteConstraint}"/> of the constraints.</returns>
+        /// <returns>An <see cref="IDictionary{String, IRouteConstraint}"/> of the constraints.</returns>
         public IDictionary<string, IRouteConstraint> Build()
         {
             var constraints = new Dictionary<string, IRouteConstraint>(StringComparer.OrdinalIgnoreCase);

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Internal;
 namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
-    /// An <see cref="IDictionary{string, object}"/> type for route values.
+    /// An <see cref="IDictionary{String, Object}"/> type for route values.
     /// </summary>
     public class RouteValueDictionary : IDictionary<string, object>, IReadOnlyDictionary<string, object>
     {
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Routing
         /// or an object with public properties as key-value pairs.
         /// </param>
         /// <remarks>
-        /// If the value is a dictionary or other <see cref="IEnumerable{KeyValuePair{string, object}}"/>,
+        /// If the value is a dictionary or other <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{String, Object}"/>,
         /// then its entries are copied. Otherwise the object is interpreted as a set of key-value pairs where the
         /// property names are keys, and property values are the values, and copied into the dictionary.
         /// Only public instance non-index properties are considered.

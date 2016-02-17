@@ -38,8 +38,8 @@ namespace Microsoft.AspNetCore.Routing
         /// <paramref name="action"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IRouteBuilder"/>.</param>
+        /// <param name="template">The route template.</param>
         /// <param name="action">The action to apply to the <see cref="IApplicationBuilder"/>.</param>
-        /// <param name="handler">The <see cref="RequestDelegate"/> route handler.</param>
         /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
         public static IRouteBuilder MapRoute(this IRouteBuilder builder, string template, Action<IApplicationBuilder> action)
         {
