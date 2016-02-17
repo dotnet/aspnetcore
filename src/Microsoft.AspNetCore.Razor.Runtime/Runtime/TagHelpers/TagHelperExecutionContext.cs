@@ -14,14 +14,14 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
     /// </summary>
     public class TagHelperExecutionContext
     {
-        private readonly string _tagName;
-        private readonly string _uniqueId;
-        private readonly TagMode _tagMode;
         private readonly List<ITagHelper> _tagHelpers;
-        private readonly Func<Task> _executeChildContentAsync;
         private readonly Action<HtmlEncoder> _startTagHelperWritingScope;
         private readonly Func<TagHelperContent> _endTagHelperWritingScope;
         private TagHelperContent _childContent;
+        private string _tagName;
+        private string _uniqueId;
+        private TagMode _tagMode;
+        private Func<Task> _executeChildContentAsync;
         private Dictionary<HtmlEncoder, TagHelperContent> _perEncoderChildContent;
         private TagHelperAttributeList _htmlAttributes;
         private TagHelperAttributeList _allAttributes;
@@ -63,26 +63,6 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             Action<HtmlEncoder> startTagHelperWritingScope,
             Func<TagHelperContent> endTagHelperWritingScope)
         {
-            if (tagName == null)
-            {
-                throw new ArgumentNullException(nameof(tagName));
-            }
-
-            if (items == null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
-
-            if (uniqueId == null)
-            {
-                throw new ArgumentNullException(nameof(uniqueId));
-            }
-
-            if (executeChildContentAsync == null)
-            {
-                throw new ArgumentNullException(nameof(executeChildContentAsync));
-            }
-
             if (startTagHelperWritingScope == null)
             {
                 throw new ArgumentNullException(nameof(startTagHelperWritingScope));
@@ -94,14 +74,11 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             }
 
             _tagHelpers = new List<ITagHelper>();
-            _executeChildContentAsync = executeChildContentAsync;
+
+            Reinitialize(tagName, tagMode, items, uniqueId, executeChildContentAsync);
+
             _startTagHelperWritingScope = startTagHelperWritingScope;
             _endTagHelperWritingScope = endTagHelperWritingScope;
-
-            _tagMode = tagMode;
-            _tagName = tagName;
-            Items = items;
-            _uniqueId = uniqueId;
         }
 
         /// <summary>
@@ -118,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         /// <summary>
         /// Gets the collection of items used to communicate with other <see cref="ITagHelper"/>s.
         /// </summary>
-        public IDictionary<object, object> Items { get; }
+        public IDictionary<object, object> Items { get; private set; }
 
         /// <summary>
         /// <see cref="ITagHelper"/>s that should be run.
@@ -212,6 +189,53 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             EnsureAllAttributes();
 
             _allAttributes.Add(name, value);
+        }
+
+        /// <summary>
+        /// Clears the <see cref="TagHelperExecutionContext"/> and updates its state with the provided values.
+        /// </summary>
+        /// <param name="tagName">The tag name to use.</param>
+        /// <param name="tagMode">The <see cref="TagMode"/> to use.</param>
+        /// <param name="items">The <see cref="IDictionary{Object, Object}"/> to use.</param>
+        /// <param name="uniqueId">The unique id to use.</param>
+        /// <param name="executeChildContentAsync">The <see cref="Func{Task}"/> to use.</param>
+        public void Reinitialize(
+            string tagName,
+            TagMode tagMode,
+            IDictionary<object, object> items,
+            string uniqueId,
+            Func<Task> executeChildContentAsync)
+        {
+            if (tagName == null)
+            {
+                throw new ArgumentNullException(nameof(tagName));
+            }
+
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
+            if (uniqueId == null)
+            {
+                throw new ArgumentNullException(nameof(uniqueId));
+            }
+
+            if (executeChildContentAsync == null)
+            {
+                throw new ArgumentNullException(nameof(executeChildContentAsync));
+            }
+
+            _tagName = tagName;
+            _tagMode = tagMode;
+            Items = items;
+            _uniqueId = uniqueId;
+            _executeChildContentAsync = executeChildContentAsync;
+            _tagHelpers.Clear();
+            _perEncoderChildContent?.Clear();
+            _htmlAttributes = null;
+            _allAttributes = null;
+            _childContent = null;
         }
 
         // Internal for testing.

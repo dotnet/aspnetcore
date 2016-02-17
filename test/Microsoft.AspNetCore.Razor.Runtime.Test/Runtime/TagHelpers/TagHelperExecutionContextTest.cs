@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
@@ -13,6 +14,106 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 {
     public class TagHelperExecutionContextTest
     {
+        [Fact]
+        public async Task ExecutionContext_Reinitialize_UpdatesTagHelperOutputAsExpected()
+        {
+            // Arrange
+            var tagName = "div";
+            var tagMode = TagMode.StartTagOnly;
+            var callCount = 0;
+            Func<Task> executeChildContentAsync = () =>
+            {
+                callCount++;
+                return Task.FromResult(true);
+            };
+            Action<HtmlEncoder> startTagHelperWritingScope = _ => { };
+            Func<TagHelperContent> endTagHelperWritingScope = () => null;
+            var executionContext = new TagHelperExecutionContext(
+                tagName,
+                tagMode,
+                items: new Dictionary<object, object>(),
+                uniqueId: string.Empty,
+                executeChildContentAsync: executeChildContentAsync,
+                startTagHelperWritingScope: startTagHelperWritingScope,
+                endTagHelperWritingScope: endTagHelperWritingScope);
+            var updatedTagName = "p";
+            var updatedTagMode = TagMode.SelfClosing;
+            var updatedCallCount = 0;
+            Func<Task> updatedExecuteChildContentAsync = () =>
+            {
+                updatedCallCount++;
+                return Task.FromResult(true);
+            };
+            executionContext.AddMinimizedHtmlAttribute("something");
+
+            // Act - 1
+            executionContext.Reinitialize(
+                updatedTagName,
+                updatedTagMode,
+                items: new Dictionary<object, object>(),
+                uniqueId: string.Empty,
+                executeChildContentAsync: updatedExecuteChildContentAsync);
+            executionContext.AddMinimizedHtmlAttribute("Another attribute");
+
+            // Assert - 1
+            var output = executionContext.CreateTagHelperOutput();
+            Assert.Equal(updatedTagName, output.TagName);
+            Assert.Equal(updatedTagMode, output.TagMode);
+            var attribute = Assert.Single(output.Attributes);
+            Assert.Equal("Another attribute", attribute.Name);
+
+            // Act - 2
+            await output.GetChildContentAsync();
+
+            // Assert - 2
+            Assert.Equal(callCount, 0);
+            Assert.Equal(updatedCallCount, 1);
+        }
+
+        [Fact]
+        public void ExecutionContext_Reinitialize_UpdatesTagHelperContextAsExpected()
+        {
+            // Arrange
+            var tagName = "div";
+            var tagMode = TagMode.StartTagOnly;
+            var items = new Dictionary<object, object>();
+            var uniqueId = "some unique id";
+            var callCount = 0;
+            Func<Task> executeChildContentAsync = () =>
+            {
+                callCount++;
+                return Task.FromResult(true);
+            };
+            Action<HtmlEncoder> startWritingScope = _ => { };
+            Func<TagHelperContent> endWritingScope = () => null;
+            var executionContext = new TagHelperExecutionContext(
+                tagName,
+                tagMode,
+                items,
+                uniqueId,
+                executeChildContentAsync,
+                startWritingScope,
+                endWritingScope);
+            var updatedItems = new Dictionary<object, object>();
+            var updatedUniqueId = "another unique id";
+            executionContext.AddMinimizedHtmlAttribute("something");
+
+            // Act
+            executionContext.Reinitialize(
+                tagName,
+                tagMode,
+                updatedItems,
+                updatedUniqueId,
+                executeChildContentAsync);
+            executionContext.AddMinimizedHtmlAttribute("Another attribute");
+
+            // Assert
+            var context = executionContext.CreateTagHelperContext();
+            var attribute = Assert.Single(context.AllAttributes);
+            Assert.Equal(attribute.Name, "Another attribute");
+            Assert.Equal(updatedUniqueId, context.UniqueId);
+            Assert.Same(updatedItems, context.Items);
+        }
 
         [Theory]
         [InlineData(TagMode.SelfClosing)]

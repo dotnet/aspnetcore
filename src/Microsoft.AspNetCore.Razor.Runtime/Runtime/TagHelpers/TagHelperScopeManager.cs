@@ -15,14 +15,14 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
     /// </summary>
     public class TagHelperScopeManager
     {
-        private readonly Stack<TagHelperExecutionContext> _executionScopes;
+        private readonly ExecutionContextPool _executionContextPool;
 
         /// <summary>
         /// Instantiates a new <see cref="TagHelperScopeManager"/>.
         /// </summary>
         public TagHelperScopeManager()
         {
-            _executionScopes = new Stack<TagHelperExecutionContext>();
+            _executionContextPool = new ExecutionContextPool();
         }
 
         /// <summary>
@@ -72,12 +72,13 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             }
 
             IDictionary<object, object> items;
+            var parentExecutionContext = _executionContextPool.Current;
 
             // If we're not wrapped by another TagHelper, then there will not be a parentExecutionContext.
-            if (_executionScopes.Count > 0)
+            if (parentExecutionContext != null)
             {
                 items = new CopyOnWriteDictionary<object, object>(
-                    _executionScopes.Peek().Items,
+                    parentExecutionContext.Items,
                     comparer: EqualityComparer<object>.Default);
             }
             else
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 items = new Dictionary<object, object>();
             }
 
-            var executionContext = new TagHelperExecutionContext(
+            var executionContext = _executionContextPool.Rent(
                 tagName,
                 tagMode,
                 items,
@@ -93,8 +94,6 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 executeChildContentAsync,
                 startTagHelperWritingScope,
                 endTagHelperWritingScope);
-
-            _executionScopes.Push(executionContext);
 
             return executionContext;
         }
@@ -106,7 +105,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         /// <c>null</c> otherwise.</returns>
         public TagHelperExecutionContext End()
         {
-            if (_executionScopes.Count == 0)
+            if (_executionContextPool.Current == null)
             {
                 throw new InvalidOperationException(
                     Resources.FormatScopeManager_EndCannotBeCalledWithoutACallToBegin(
@@ -115,14 +114,61 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                         nameof(TagHelperScopeManager)));
             }
 
-            _executionScopes.Pop();
+            _executionContextPool.ReturnCurrent();
 
-            if (_executionScopes.Count != 0)
+            var parentExecutionContext = _executionContextPool.Current;
+
+            return parentExecutionContext;
+        }
+
+        private class ExecutionContextPool
+        {
+            private readonly List<TagHelperExecutionContext> _executionContexts;
+            private int _nextIndex;
+
+            public ExecutionContextPool()
             {
-                return _executionScopes.Peek();
+                _executionContexts = new List<TagHelperExecutionContext>();
             }
 
-            return null;
+            public TagHelperExecutionContext Current => _nextIndex > 0 ? _executionContexts[_nextIndex - 1] : null;
+
+            public TagHelperExecutionContext Rent(
+                string tagName,
+                TagMode tagMode,
+                IDictionary<object, object> items,
+                string uniqueId,
+                Func<Task> executeChildContentAsync,
+                Action<HtmlEncoder> startTagHelperWritingScope,
+                Func<TagHelperContent> endTagHelperWritingScope)
+            {
+                TagHelperExecutionContext tagHelperExecutionContext;
+
+                if (_nextIndex == _executionContexts.Count)
+                {
+                    tagHelperExecutionContext = new TagHelperExecutionContext(
+                        tagName,
+                        tagMode,
+                        items,
+                        uniqueId,
+                        executeChildContentAsync,
+                        startTagHelperWritingScope,
+                        endTagHelperWritingScope);
+
+                    _executionContexts.Add(tagHelperExecutionContext);
+                }
+                else
+                {
+                    tagHelperExecutionContext = _executionContexts[_nextIndex];
+                    tagHelperExecutionContext.Reinitialize(tagName, tagMode, items, uniqueId, executeChildContentAsync);
+                }
+
+                _nextIndex++;
+
+                return tagHelperExecutionContext;
+            }
+
+            public void ReturnCurrent() => _nextIndex--;
         }
     }
 }
