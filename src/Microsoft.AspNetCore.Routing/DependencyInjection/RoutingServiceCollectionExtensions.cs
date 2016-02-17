@@ -15,15 +15,17 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class RoutingServiceCollectionExtensions
     {
-        public static IServiceCollection AddRouting(this IServiceCollection services)
+        /// <summary>
+        /// Adds services required for routing requests.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+        public static void AddRouting(this IServiceCollection services)
         {
-            return AddRouting(services, configureOptions: null);
-        }
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
 
-        public static IServiceCollection AddRouting(
-            this IServiceCollection services,
-            Action<RouteOptions> configureOptions)
-        {
             services.TryAddTransient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
             services.TryAddSingleton(UrlEncoder.Default);
             services.TryAddSingleton<ObjectPoolProvider>(new DefaultObjectPoolProvider());
@@ -35,13 +37,29 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             services.TryAddSingleton(typeof(RoutingMarkerService));
+        }
 
-            if (configureOptions != null)
+        /// <summary>
+        /// Adds services required for routing requests.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+        /// <param name="configureOptions">The routing options to configure the middleware with.</param>
+        public static void AddRouting(
+            this IServiceCollection services,
+            Action<RouteOptions> configureOptions)
+        {
+            if (services == null)
             {
-                services.Configure(configureOptions);
+                throw new ArgumentNullException(nameof(services));
             }
 
-            return services;
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            services.Configure(configureOptions);
+            services.AddRouting();
         }
     }
 }
