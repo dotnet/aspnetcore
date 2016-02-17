@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public bool Equals(BindingSource other)
         {
-            return other == null ? false : string.Equals(other.Id, Id, StringComparison.Ordinal);
+            return string.Equals(other?.Id, Id, StringComparison.Ordinal);
         }
 
         /// <inheritdoc />

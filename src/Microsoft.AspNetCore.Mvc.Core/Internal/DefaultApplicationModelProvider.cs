@@ -592,8 +592,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var routeTemplateProvider =
                 attributes
                 .OfType<IRouteTemplateProvider>()
-                .Where(a => !IsSilentRouteAttribute(a))
-                .SingleOrDefault();
+                .SingleOrDefault(a => !IsSilentRouteAttribute(a));
 
             if (routeTemplateProvider != null)
             {

@@ -220,8 +220,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ActionDescriptor action)
         {
             var constraint = action.RouteConstraints
-                .Where(c => c.RouteKey == TreeRouter.RouteGroupKey)
-                .FirstOrDefault();
+                .FirstOrDefault(c => c.RouteKey == TreeRouter.RouteGroupKey);
             if (constraint == null ||
                 constraint.KeyHandling != RouteKeyHandling.RequireKey ||
                 constraint.RouteValue == null)

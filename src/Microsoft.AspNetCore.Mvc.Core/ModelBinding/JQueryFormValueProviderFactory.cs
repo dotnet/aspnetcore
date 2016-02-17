@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 throw new ArgumentNullException(nameof(context));
             }
-            
+
             var request = context.ActionContext.HttpContext.Request;
             if (request.HasFormContentType)
             {
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 {
                     throw new ArgumentException(
                         message: Resources.FormatJQueryFormValueProviderFactory_MissingClosingBracket(key),
-                        paramName: "key");
+                        paramName: nameof(key));
                 }
 
                 if (indexClose == indexOpen + 1)

@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public override bool Equals(object obj)
         {
             var other = obj as ValueProviderResult?;
-            return other.HasValue ? Equals(other.Value) : false;
+            return other.HasValue && Equals(other.Value);
         }
 
         /// <inheritdoc />
