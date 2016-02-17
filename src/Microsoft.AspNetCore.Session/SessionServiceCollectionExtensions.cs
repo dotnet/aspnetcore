@@ -16,16 +16,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds services required for application session state.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddSession(this IServiceCollection services)
+        public static void AddSession(this IServiceCollection services)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
-            
+
             services.AddTransient<ISessionStore, DistributedSessionStore>();
-            return services;
         }
 
         /// <summary>
@@ -33,16 +31,20 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
         /// <param name="configure">The session options to configure the middleware with.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddSession(this IServiceCollection services, Action<SessionOptions> configure)
+        public static void AddSession(this IServiceCollection services, Action<SessionOptions> configure)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
 
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
             services.Configure(configure);
-            return services.AddSession();
+            services.AddSession();
         }
     }
 }

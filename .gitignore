@@ -28,3 +28,4 @@ nuget.exe
 project.lock.json
 .build/
 .testPublish/
+launchSettings.json
