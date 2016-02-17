@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -15,12 +17,18 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void InitialDictionaryContainsServerAndDate()
         {
+            var configuration = new ConfigurationBuilder().Build();
+            var serverInformation = new KestrelServerInformation(configuration);
             var connectionContext = new ConnectionContext
             {
                 DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-            };
-            var frame = new Frame<object>(application: null, context: connectionContext);
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                ServerInformation = serverInformation,
+                HttpComponentFactory = new HttpComponentFactory(serverInformation)
+        };
+            var frame = new Frame<object>(application: null, context: connectionContext)
+                            .InitializeHeaders();
+
             IDictionary<string, StringValues> headers = frame.ResponseHeaders;
 
             Assert.Equal(2, headers.Count);
@@ -43,13 +51,18 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void InitialEntriesCanBeCleared()
         {
+            var configuration = new ConfigurationBuilder().Build();
+            var serverInformation = new KestrelServerInformation(configuration);
             var connectionContext = new ConnectionContext
             {
                 DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                ServerInformation = serverInformation,
+                HttpComponentFactory = new HttpComponentFactory(serverInformation)
             };
-            var frame = new Frame<object>(application: null, context: connectionContext);
-            
+            var frame = new Frame<object>(application: null, context: connectionContext)
+                            .InitializeHeaders();
+
             Assert.True(frame.ResponseHeaders.Count > 0);
 
             frame.ResponseHeaders.Clear();

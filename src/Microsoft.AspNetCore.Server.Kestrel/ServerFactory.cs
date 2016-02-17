@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -28,8 +29,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         public IServer CreateServer(IConfiguration configuration)
         {
             var information = new KestrelServerInformation(configuration);
+            var componentFactory = new HttpComponentFactory(information);
             var serverFeatures = new FeatureCollection();
             serverFeatures.Set<IKestrelServerInformation>(information);
+            serverFeatures.Set<IHttpComponentFactory>(componentFactory);
             serverFeatures.Set<IServerAddressesFeature>(information);
             return new KestrelServer(serverFeatures, _appLifetime, _loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel"));
         }

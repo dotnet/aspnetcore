@@ -216,10 +216,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         : "")}
         
         private long _bits = 0;
-        {Each(loop.Headers, header => @"
-        private StringValues _" + header.Identifier + ";")}
-        {Each(loop.Headers.Where(header => header.EnhancedSetter), header => @"
-        private byte[] _raw" + header.Identifier + ";")}
+        private HeaderReferences _headers;
         {Each(loop.Headers, header => $@"
         public StringValues Header{header.Identifier}
         {{
@@ -227,23 +224,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {{
                 if ({header.TestBit()})
                 {{
-                    return _{header.Identifier};
+                    return _headers._{header.Identifier};
                 }}
                 return StringValues.Empty;
             }}
             set
             {{
                 {header.SetBit()};
-                _{header.Identifier} = value; {(header.EnhancedSetter == false ? "" : $@"
-                _raw{header.Identifier} = null;")}
+                _headers._{header.Identifier} = value; {(header.EnhancedSetter == false ? "" : $@"
+                _headers._raw{header.Identifier} = null;")}
             }}
         }}")}
         {Each(loop.Headers.Where(header => header.EnhancedSetter), header => $@"
         public void SetRaw{header.Identifier}(StringValues value, byte[] raw)
         {{
             {header.SetBit()};
-            _{header.Identifier} = value; 
-            _raw{header.Identifier} = raw;
+            _headers._{header.Identifier} = value; 
+            _headers._raw{header.Identifier} = raw;
         }}")}
         protected override int GetCountFast()
         {{
@@ -259,11 +256,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {{
                             if ({header.TestBit()})
                             {{
-                                return _{header.Identifier};
+                                return _headers._{header.Identifier};
                             }}
                             else
                             {{
-                                throw new System.Collections.Generic.KeyNotFoundException();
+                                ThrowKeyNotFoundException();
                             }}
                         }}
                     ")}}}
@@ -271,7 +268,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 ")}}}
             if (MaybeUnknown == null) 
             {{
-                throw new System.Collections.Generic.KeyNotFoundException();
+                ThrowKeyNotFoundException();
             }}
             return MaybeUnknown[key];
         }}
@@ -285,7 +282,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {{
                             if ({header.TestBit()})
                             {{
-                                value = _{header.Identifier};
+                                value = _headers._{header.Identifier};
                                 return true;
                             }}
                             else
@@ -309,8 +306,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase)) 
                         {{
                             {header.SetBit()};
-                            _{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
-                            _raw{header.Identifier} = null;")}
+                            _headers._{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
+                            _headers._raw{header.Identifier} = null;")}
                             return;
                         }}
                     ")}}}
@@ -328,11 +325,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {{
                             if ({header.TestBit()})
                             {{
-                                throw new ArgumentException(""An item with the same key has already been added."");
+                                ThrowDuplicateKeyException();
                             }}
                             {header.SetBit()};
-                            _{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
-                            _raw{header.Identifier} = null;")}
+                            _headers._{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
+                            _headers._raw{header.Identifier} = null;")}
                             return;
                         }}
                     ")}}}
@@ -351,8 +348,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             if ({header.TestBit()})
                             {{
                                 {header.ClearBit()};
-                                _{header.Identifier} = StringValues.Empty;{(header.EnhancedSetter == false ? "" : $@"
-                                _raw{header.Identifier} = null;")}
+                                _headers._{header.Identifier} = StringValues.Empty;{(header.EnhancedSetter == false ? "" : $@"
+                                _headers._raw{header.Identifier} = null;")}
                                 return true;
                             }}
                             else
@@ -368,6 +365,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         protected override void ClearFast()
         {{
             _bits = 0;
+            _headers = default(HeaderReferences);
             MaybeUnknown?.Clear();
         }}
         
@@ -375,17 +373,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {{
             if (arrayIndex < 0)
             {{
-                throw new ArgumentException();
+                ThrowArgumentException();
             }}
             {Each(loop.Headers, header => $@"
                 if ({header.TestBit()}) 
                 {{
                     if (arrayIndex == array.Length)
                     {{
-                        throw new ArgumentException();
+                        ThrowArgumentException();
                     }}
 
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(""{header.Name}"", _{header.Identifier});
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(""{header.Name}"", _headers._{header.Identifier});
                     ++arrayIndex;
                 }}
             ")}
@@ -397,12 +395,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {Each(loop.Headers, header => $@"
                 if ({header.TestBit()}) 
                 {{ {(header.EnhancedSetter == false ? "" : $@"
-                    if (_raw{header.Identifier} != null) 
+                    if (_headers._raw{header.Identifier} != null) 
                     {{
-                        output.CopyFrom(_raw{header.Identifier}, 0, _raw{header.Identifier}.Length);
+                        output.CopyFrom(_headers._raw{header.Identifier}, 0, _headers._raw{header.Identifier}.Length);
                     }} 
                     else ")}
-                        foreach (var value in _{header.Identifier})
+                        foreach (var value in _headers._{header.Identifier})
                         {{
                             if (value != null)
                             {{
@@ -413,6 +411,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }}
             ")}
         }}" : "")}
+        {(loop.ClassName == "FrameRequestHeaders" ? $@"
         public unsafe void Append(byte[] keyBytes, int keyOffset, int keyLength, string value)
         {{
             fixed (byte* ptr = &keyBytes[keyOffset]) 
@@ -429,13 +428,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             {{
                                 if ({header.TestBit()})
                                 {{
-                                    _{header.Identifier} = AppendValue(_{header.Identifier}, value);
+                                    _headers._{header.Identifier} = AppendValue(_headers._{header.Identifier}, value);
                                 }}
                                 else
                                 {{
                                     {header.SetBit()};
-                                    _{header.Identifier} = new StringValues(value);{(header.EnhancedSetter == false ? "" : $@"
-                                    _raw{header.Identifier} = null;")}
+                                    _headers._{header.Identifier} = new StringValues(value);{(header.EnhancedSetter == false ? "" : $@"
+                                    _headers._raw{header.Identifier} = null;")}
                                 }}
                                 return;
                             }}
@@ -447,7 +446,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             StringValues existing;
             Unknown.TryGetValue(key, out existing);
             Unknown[key] = AppendValue(existing, value);
+        }}" : "")}
+        private struct HeaderReferences
+        {{{Each(loop.Headers, header => @"
+            public StringValues _" + header.Identifier + ";")}
+            {Each(loop.Headers.Where(header => header.EnhancedSetter), header => @"
+            public byte[] _raw" + header.Identifier + ";")}
         }}
+
         public partial struct Enumerator
         {{
             public bool MoveNext()
@@ -465,7 +471,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 state{header.Index}:
                     if ({header.TestBit()})
                     {{
-                        _current = new KeyValuePair<string, StringValues>(""{header.Name}"", _collection._{header.Identifier});
+                        _current = new KeyValuePair<string, StringValues>(""{header.Name}"", _collection._headers._{header.Identifier});
                         _state = {header.Index + 1};
                         return true;
                     }}

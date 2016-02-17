@@ -3,8 +3,10 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
+using Microsoft.AspNetCore.Server.Kestrel.Filter;
 using Microsoft.AspNetCore.Server.Kestrel.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
@@ -18,6 +20,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Log = new TestKestrelTrace();
             ThreadPool = new LoggingThreadPool(Log);
             DateHeaderValueManager = new TestDateHeaderValueManager();
+
+            var configuration = new ConfigurationBuilder().Build();
+            ServerInformation = new KestrelServerInformation(configuration);
+            HttpComponentFactory = new HttpComponentFactory(ServerInformation);
+        }
+
+        public TestServiceContext(IConnectionFilter filter)
+            : base()
+        {
+            ServerInformation.ConnectionFilter = filter;
         }
 
         public RequestDelegate App

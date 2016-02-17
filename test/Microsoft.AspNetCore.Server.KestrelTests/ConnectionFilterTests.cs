@@ -36,10 +36,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public async Task CanReadAndWriteWithRewritingConnectionFilter()
         {
             var filter = new RewritingConnectionFilter();
-            var serviceContext = new TestServiceContext()
-            {
-                ConnectionFilter = filter
-            };
+            var serviceContext = new TestServiceContext(filter);
+
             var sendString = "POST / HTTP/1.0\r\n\r\nHello World?";
 
             using (var server = new TestServer(App, serviceContext))
@@ -62,10 +60,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public async Task CanReadAndWriteWithAsyncConnectionFilter()
         {
-            var serviceContext = new TestServiceContext()
-            {
-                ConnectionFilter = new AsyncConnectionFilter()
-            };
+            var serviceContext = new TestServiceContext(new AsyncConnectionFilter());
 
             using (var server = new TestServer(App, serviceContext))
             {
@@ -87,10 +82,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public async Task ThrowingSynchronousConnectionFilterDoesNotCrashServer()
         {
-            var serviceContext = new TestServiceContext()
-            {
-                ConnectionFilter = new ThrowingConnectionFilter()
-            };
+            var serviceContext = new TestServiceContext(new ThrowingConnectionFilter());
 
             using (var server = new TestServer(App, serviceContext))
             {

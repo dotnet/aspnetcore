@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
-        public async Task RequestPathIsNormalized()
+        public void RequestPathIsNormalized()
         {
             var port = PortManager.GetPort();
             var config = new ConfigurationBuilder().AddInMemoryCollection(
