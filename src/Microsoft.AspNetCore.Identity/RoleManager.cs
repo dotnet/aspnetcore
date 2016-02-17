@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Identity
             ThrowIfDisposed();
             if (role == null)
             {
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
             }
             var result = await ValidateRoleInternal(role);
             if (!result.Succeeded)
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Identity
             ThrowIfDisposed();
             if (role == null)
             {
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
             }
 
             return UpdateRoleAsync(role);
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Identity
             ThrowIfDisposed();
             if (role == null)
             {
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
             }
 
             return Store.DeleteAsync(role, CancellationToken);
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Identity
             ThrowIfDisposed();
             if (roleName == null)
             {
-                throw new ArgumentNullException("roleName");
+                throw new ArgumentNullException(nameof(roleName));
             }
 
             return await FindByNameAsync(NormalizeKey(roleName)) != null;
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Identity
             ThrowIfDisposed();
             if (roleName == null)
             {
-                throw new ArgumentNullException("roleName");
+                throw new ArgumentNullException(nameof(roleName));
             }
 
             return Store.FindByNameAsync(NormalizeKey(roleName), CancellationToken);
@@ -341,11 +341,11 @@ namespace Microsoft.AspNetCore.Identity
             var claimStore = GetClaimStore();
             if (claim == null)
             {
-                throw new ArgumentNullException("claim");
+                throw new ArgumentNullException(nameof(claim));
             }
             if (role == null)
             {
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
             }
 
             await claimStore.AddClaimAsync(role, claim, CancellationToken);
@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.Identity
             var claimStore = GetClaimStore();
             if (role == null)
             {
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
             }
 
             await claimStore.RemoveClaimAsync(role, claim, CancellationToken);
@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.Identity
             var claimStore = GetClaimStore();
             if (role == null)
             {
-                throw new ArgumentNullException("role");
+                throw new ArgumentNullException(nameof(role));
             }
             return claimStore.GetClaimsAsync(role, CancellationToken);
         }
