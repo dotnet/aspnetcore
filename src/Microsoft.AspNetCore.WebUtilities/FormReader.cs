@@ -184,6 +184,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// Parses an HTTP form body.
         /// </summary>
         /// <param name="stream">The HTTP form body to parse.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns>The collection containing the parsed HTTP form body.</returns>
         public static Task<Dictionary<string, StringValues>> ReadFormAsync(Stream stream, CancellationToken cancellationToken = new CancellationToken())
         {
@@ -194,6 +195,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// Parses an HTTP form body.
         /// </summary>
         /// <param name="stream">The HTTP form body to parse.</param>
+        /// <param name="encoding">The character encoding to use.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns>The collection containing the parsed HTTP form body.</returns>
         public static async Task<Dictionary<string, StringValues>> ReadFormAsync(Stream stream, Encoding encoding, CancellationToken cancellationToken = new CancellationToken())
         {

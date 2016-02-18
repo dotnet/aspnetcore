@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="response"></param>
         /// <param name="file">The file.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         public static Task SendFileAsync(this HttpResponse response, IFileInfo file,
             CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -80,6 +81,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="response"></param>
         /// <param name="fileName">The full path to the file.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns></returns>
         public static Task SendFileAsync(this HttpResponse response, string fileName,
             CancellationToken cancellationToken = default(CancellationToken))

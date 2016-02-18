@@ -23,8 +23,9 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <summary>
         /// Creates a stream that reads until it reaches the given boundary pattern.
         /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="boundary"></param>
+        /// <param name="stream">The <see cref="BufferedReadStream"/>.</param>
+        /// <param name="boundary">The boundary pattern to use.</param>
+        /// <param name="expectLeadingCrlf">Specifies whether a leading crlf should be expected.</param>
         public MultipartReaderStream(BufferedReadStream stream, string boundary, bool expectLeadingCrlf = true)
         {
             if (stream == null)

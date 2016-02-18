@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         /// <summary>
         /// Gets the minimum <c>char[]</c> size required for decoding of <paramref name="count"/> characters
-        /// with the <see cref="Base64UrlDecode(char[], int, int)"/> method.
+        /// with the <see cref="Base64UrlDecode(string, int, char[], int, int)"/> method.
         /// </summary>
         /// <param name="count">The number of characters to decode.</param>
         /// <returns>
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         /// <summary>
         /// Get the minimum output <c>char[]</c> size required for encoding <paramref name="count"/>
-        /// <see cref="byte"/>s with the <see cref="Base64UrlEncode(byte[], int, int, char[], int)"/> method.
+        /// <see cref="byte"/>s with the <see cref="Base64UrlEncode(byte[], int, char[], int, int)"/> method.
         /// </summary>
         /// <param name="count">The number of characters to encode.</param>
         /// <returns>
