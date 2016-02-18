@@ -14,7 +14,7 @@
     "dotnet5.4": {
       "dependencies": {
         "System.Collections.Concurrent": "4.0.12-*",
-        "System.Linq": "4.0.2-*"
+        "System.Linq": "4.1.0-*"
       }
     }
   }
