@@ -58,6 +58,41 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Theory]
+        [InlineData("", "")]
+        [InlineData("123456qwerty++//X+/x", "123456qwerty--__X-_x")]
+        [InlineData("123456qwerty++//X+/xxw==", "123456qwerty--__X-_xxw")]
+        [InlineData("123456qwerty++//X+/xxw0=", "123456qwerty--__X-_xxw0")]
+        public void Base64UrlEncode_And_Decode_WithBufferOffsets(string base64Input, string expectedBase64Url)
+        {
+            // Arrange
+            var input = new byte[3].Concat(Convert.FromBase64String(base64Input)).Concat(new byte[2]).ToArray();
+            var buffer = new char[30];
+            var output = new char[30];
+            for (var i = 0; i < buffer.Length; i++)
+            {
+                buffer[i] = '^';
+                output[i] = '^';
+            }
+
+            // Act 1
+            var numEncodedChars =
+                WebEncoders.Base64UrlEncode(input, offset: 3, output: output, outputOffset: 4, count: input.Length - 5);
+
+            // Assert 1
+            var encodedString = new string(output, startIndex: 4, length: numEncodedChars);
+            Assert.Equal(expectedBase64Url, encodedString);
+
+            // Act 2
+            var roundTripInput = new string(output);
+            var roundTripped =
+                WebEncoders.Base64UrlDecode(roundTripInput, offset: 4, buffer: buffer, bufferOffset: 5, count: numEncodedChars);
+
+            // Assert 2, verify that values round-trip
+            var roundTrippedAsBase64 = Convert.ToBase64String(roundTripped);
+            Assert.Equal(roundTrippedAsBase64, base64Input);
+        }
+
+        [Theory]
         [InlineData(0, 1, 0)]
         [InlineData(0, 0, 1)]
         [InlineData(10, 9, 2)]
