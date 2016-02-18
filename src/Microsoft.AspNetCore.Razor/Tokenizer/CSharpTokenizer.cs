@@ -91,7 +91,12 @@ namespace Microsoft.AspNetCore.Razor.Tokenizer
                 case CSharpTokenizerState.AtSymbolAfterRazorCommentBody:
                     return AtSymbolAfterRazorCommentBody();
                 default:
+#if NET451
+                    // No Debug.Fail
                     Debug.Fail("Invalid TokenizerState");
+#else
+                    Debug.Assert(false, "Invalid TokenizerState");
+#endif
                     return default(StateResult);
             }
         }
