@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.DataProtection
         }
 
         /// <summary>
-        /// Returns a <see cref="Policy"/> object from the default registry location.
+        /// Returns an array of <see cref="ServiceDescriptor"/>s from the default registry location.
         /// </summary>
         public static ServiceDescriptor[] ResolveDefaultPolicy()
         {

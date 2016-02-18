@@ -7,7 +7,8 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 {
     /// <summary>
     /// Represents a configured authenticated encryption mechanism which uses
-    /// managed <see cref="SymmetricAlgorithm"/> and <see cref="KeyedHashAlgorithm"/> types.
+    /// managed <see cref="System.Security.Cryptography.SymmetricAlgorithm"/> and
+    /// <see cref="System.Security.Cryptography.KeyedHashAlgorithm"/> types.
     /// </summary>
     public sealed class ManagedAuthenticatedEncryptorConfiguration : IAuthenticatedEncryptorConfiguration, IInternalAuthenticatedEncryptorConfiguration
     {

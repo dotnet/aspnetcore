@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// <param name="expiration">An 'out' parameter which upon a successful unprotect
         /// operation receives the expiration date of the payload.</param>
         /// <returns>The plaintext form of the protected data.</returns>
-        /// <exception cref="CryptographicException">
+        /// <exception cref="System.Security.Cryptography.CryptographicException">
         /// Thrown if <paramref name="protectedData"/> is invalid, malformed, or expired.
         /// </exception>
         public static string Unprotect(this ITimeLimitedDataProtector protector, string protectedData, out DateTimeOffset expiration)

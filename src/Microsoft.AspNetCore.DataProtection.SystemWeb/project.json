@@ -20,7 +20,9 @@
   },
   "compilationOptions": {
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [ "CS1591" ],
+    "xmlDoc": true
   },
   "packInclude": {
     "content/net451/": "web.config.transform"

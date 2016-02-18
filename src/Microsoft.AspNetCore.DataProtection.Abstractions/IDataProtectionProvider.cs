@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// <summary>
         /// Creates an <see cref="IDataProtector"/> given a purpose.
         /// </summary>
-        /// <param name="purposes">
+        /// <param name="purpose">
         /// The purpose to be assigned to the newly-created <see cref="IDataProtector"/>.
         /// </param>
         /// <returns>An IDataProtector tied to the provided purpose.</returns>

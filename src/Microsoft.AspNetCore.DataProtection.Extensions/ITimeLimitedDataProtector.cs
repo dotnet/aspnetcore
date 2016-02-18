@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// <summary>
         /// Creates an <see cref="ITimeLimitedDataProtector"/> given a purpose.
         /// </summary>
-        /// <param name="purposes">
+        /// <param name="purpose">
         /// The purpose to be assigned to the newly-created <see cref="ITimeLimitedDataProtector"/>.
         /// </param>
         /// <returns>An <see cref="ITimeLimitedDataProtector"/> tied to the provided purpose.</returns>
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// <param name="expiration">An 'out' parameter which upon a successful unprotect
         /// operation receives the expiration date of the payload.</param>
         /// <returns>The plaintext form of the protected data.</returns>
-        /// <exception cref="CryptographicException">
+        /// <exception cref="System.Security.Cryptography.CryptographicException">
         /// Thrown if <paramref name="protectedData"/> is invalid, malformed, or expired.
         /// </exception>
         byte[] Unprotect(byte[] protectedData, out DateTimeOffset expiration);

@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
         /// Creates a <see cref="RegistryXmlRepository"/> with keys stored in the given registry key.
         /// </summary>
         /// <param name="registryKey">The registry key in which to persist key material.</param>
+        /// <param name="services">The <see cref="IServiceProvider"/> used to resolve services.</param>
         public RegistryXmlRepository(RegistryKey registryKey, IServiceProvider services)
         {
             if (registryKey == null)

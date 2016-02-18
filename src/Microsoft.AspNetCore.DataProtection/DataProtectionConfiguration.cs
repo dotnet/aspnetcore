@@ -17,6 +17,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
+#if !DOTNET5_4
     /// <summary>
     /// Provides access to configuration for the data protection system, which allows the
     /// developer to configure default cryptographic algorithms, key storage locations,
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.DataProtection
     /// <para>
     /// If the developer changes the at-rest key protection mechanism, it is intended that
     /// he also change the key storage location, and vice versa. For instance, a call to
-    /// <see cref="ProtectKeysWithCertificate(string)"/> should generally be accompanied by
+    /// <see cref="ProtectKeysWithCertificate(string)" /> should generally be accompanied by
     /// a call to <see cref="PersistKeysToFileSystem(DirectoryInfo)"/>, or exceptions may
     /// occur at runtime due to the data protection system not knowing where to persist keys.
     /// </para>
@@ -43,6 +44,31 @@ namespace Microsoft.AspNetCore.DataProtection
     /// contain existing keys that use older algorithms or protection mechanisms.
     /// </para>
     /// </remarks>
+#else
+    /// <summary>
+    /// Provides access to configuration for the data protection system, which allows the
+    /// developer to configure default cryptographic algorithms, key storage locations,
+    /// and the mechanism by which keys are protected at rest.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// If the developer changes the at-rest key protection mechanism, it is intended that
+    /// he also change the key storage location, and vice versa.
+    /// </para>
+    /// <para>
+    /// Similarly, when a developer modifies the default protected payload cryptographic
+    /// algorithms, it is intended that he also select an explitiy key storage location.
+    /// A call to <see cref="UseCryptographicAlgorithms(AuthenticatedEncryptionOptions)"/>
+    /// should therefore generally be paired with a call to <see cref="PersistKeysToFileSystem(DirectoryInfo)"/>,
+    /// for example.
+    /// </para>
+    /// <para>
+    /// When the default cryptographic algorithms or at-rest key protection mechanisms are
+    /// changed, they only affect <strong>new</strong> keys in the repository. The repository may
+    /// contain existing keys that use older algorithms or protection mechanisms.
+    /// </para>
+    /// </remarks>
+#endif
     public class DataProtectionConfiguration
     {
         /// <summary>
@@ -284,7 +310,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// <remarks>
         /// See https://msdn.microsoft.com/en-us/library/windows/desktop/hh769091(v=vs.85).aspx
         /// and https://msdn.microsoft.com/en-us/library/windows/desktop/hh706800(v=vs.85).aspx
-        /// for more information on valid values for the the <paramref name="descriptor"/>
+        /// for more information on valid values for the the <paramref name="protectionDescriptorRule"/>
         /// and <paramref name="flags"/> arguments.
         /// This API is only supported on Windows 8 / Windows Server 2012 and higher.
         /// </remarks>

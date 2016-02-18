@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         /// </summary>
         /// <param name="encryptedElement">An encrypted XML element.</param>
         /// <returns>The decrypted form of <paramref name="encryptedElement"/>.</returns>
-        /// <remarks>
         public XElement Decrypt(XElement encryptedElement)
         {
             if (encryptedElement == null)

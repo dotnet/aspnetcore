@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// <param name="protector">The data protector to use for this operation.</param>
         /// <param name="protectedData">The protected data to unprotect.</param>
         /// <returns>The plaintext form of the protected data.</returns>
-        /// <exception cref="CryptographicException">
+        /// <exception cref="System.Security.Cryptography.CryptographicException">
         /// Thrown if <paramref name="protectedData"/> is invalid or malformed.
         /// </exception>
         public static string Unprotect(this IDataProtector protector, string protectedData)
