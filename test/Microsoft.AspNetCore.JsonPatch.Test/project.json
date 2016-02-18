@@ -17,7 +17,7 @@
       },
       "imports": "portable-net451+win8"
     },
-    "dnx451": {
+    "net451": {
       "frameworkAssemblies": {
         "System.Runtime": "",
         "System.Threading.Tasks": ""
