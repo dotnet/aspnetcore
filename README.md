@@ -76,8 +76,8 @@ You should also be able to run `dnx` and see the help text of the `dnx` command.
 
 # Documentation and Further Learning
 
-## [Community Standup](https://www.youtube.com/playlist?list=PL0M0zPgJ3HSftTAAHttA3JQU4vOjXFquF)
-The community standup is held every week and streamed live to YouTube. You can view past standups in the linked playlist.
+## [Community Standup](https://live.asp.net/)
+The community standup is held every week and streamed live to [live.asp.net](https://github.com/aspnet/live.asp.net). You can view past standups in the linked website.
 
 If you have questions you can also jump online during the next standup and have them answered live.
 
