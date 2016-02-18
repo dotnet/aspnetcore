@@ -189,12 +189,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         protected FrameRequestHeaders FrameRequestHeaders => _frameHeaders.RequestHeaders;
 
-        public Frame InitializeHeaders()
+        public void InitializeHeaders()
         {
             _frameHeaders = HttpComponentFactory.CreateHeaders(DateHeaderValueManager);
             RequestHeaders = _frameHeaders.RequestHeaders;
             ResponseHeaders = _frameHeaders.ResponseHeaders;
-            return this;
         }
 
 

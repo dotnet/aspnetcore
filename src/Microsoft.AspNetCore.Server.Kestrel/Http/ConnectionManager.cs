@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             if (_connectionStopTasks != null)
             {
-                throw new InvalidOperationException(nameof(WalkConnectionsAndClose) + " cannot be called twice.");
+                throw new InvalidOperationException($"{nameof(WalkConnectionsAndClose)} cannot be called twice.");
             }
 
             _connectionStopTasks = new List<Task>();
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             if (_connectionStopTasks == null)
             {
-                throw new InvalidOperationException(nameof(WalkConnectionsAndClose) + " must be called first.");
+                throw new InvalidOperationException($"{nameof(WalkConnectionsAndClose)} must be called first.");
             }
 
             return Task.WhenAll(_connectionStopTasks);

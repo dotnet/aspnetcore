@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 ServerInformation = serverInformation,
                 HttpComponentFactory = new HttpComponentFactory(serverInformation)
         };
-            var frame = new Frame<object>(application: null, context: connectionContext)
-                            .InitializeHeaders();
+            var frame = new Frame<object>(application: null, context: connectionContext);
+            frame.InitializeHeaders();
 
             IDictionary<string, StringValues> headers = frame.ResponseHeaders;
 
@@ -60,8 +60,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 ServerInformation = serverInformation,
                 HttpComponentFactory = new HttpComponentFactory(serverInformation)
             };
-            var frame = new Frame<object>(application: null, context: connectionContext)
-                            .InitializeHeaders();
+            var frame = new Frame<object>(application: null, context: connectionContext);
+            frame.InitializeHeaders();
 
             Assert.True(frame.ResponseHeaders.Count > 0);
 
