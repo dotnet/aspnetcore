@@ -1,11 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -37,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc
                 return new TheoryData<string, string, string, string, string>
                 {
                     { "localhost", null, null, null, "https://localhost" },
-                    { "localhost:5000", null, null, null, "https://localhost:5000" },
+                    { "localhost:5000", null, null, null, "https://localhost" },
                     { "localhost", "/pathbase", null, null, "https://localhost/pathbase" },
                     { "localhost", "/pathbase", "/path", null, "https://localhost/pathbase/path" },
                     { "localhost", "/pathbase", "/path", "?foo=bar", "https://localhost/pathbase/path?foo=bar" },
@@ -67,6 +70,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var requestContext = new DefaultHttpContext();
+            requestContext.RequestServices = CreateServices();
             requestContext.Request.Scheme = "http";
             requestContext.Request.Method = "GET";
             requestContext.Request.Host = HostString.FromUriComponent(host);
@@ -109,6 +113,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var requestContext = new DefaultHttpContext();
+            requestContext.RequestServices = CreateServices();
             requestContext.Request.Scheme = "http";
             requestContext.Request.Method = method;
             var authContext = CreateAuthorizationContext(requestContext);
@@ -128,6 +133,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var requestContext = new DefaultHttpContext();
+            requestContext.RequestServices = CreateServices();
             requestContext.Request.Scheme = "http";
 
             var authContext = CreateAuthorizationContext(requestContext);
@@ -139,6 +145,51 @@ namespace Microsoft.AspNetCore.Mvc
             // Assert
             var result = Assert.IsType<StatusCodeResult>(authContext.Result);
             Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("http://localhost", null, "https://localhost/")]
+        [InlineData("http://localhost:5000", null, "https://localhost/")]
+        [InlineData("http://[2001:db8:a0b:12f0::1]", null, "https://[2001:db8:a0b:12f0::1]/")]
+        [InlineData("http://[2001:db8:a0b:12f0::1]:5000", null, "https://[2001:db8:a0b:12f0::1]/")]
+        [InlineData("http://localhost:5000/path", null, "https://localhost/path")]
+        [InlineData("http://localhost:5000/path?foo=bar", null, "https://localhost/path?foo=bar")]
+        [InlineData("http://本地主機:5000", null, "https://xn--tiq21tzznx7c/")]
+        [InlineData("http://localhost", 44380, "https://localhost:44380/")]
+        [InlineData("http://localhost:5000", 44380, "https://localhost:44380/")]
+        [InlineData("http://[2001:db8:a0b:12f0::1]", 44380, "https://[2001:db8:a0b:12f0::1]:44380/")]
+        [InlineData("http://[2001:db8:a0b:12f0::1]:5000", 44380, "https://[2001:db8:a0b:12f0::1]:44380/")]
+        [InlineData("http://localhost:5000/path", 44380, "https://localhost:44380/path")]
+        [InlineData("http://localhost:5000/path?foo=bar", 44380, "https://localhost:44380/path?foo=bar")]
+        [InlineData("http://本地主機:5000", 44380, "https://xn--tiq21tzznx7c:44380/")]
+        public void OnAuthorization_RedirectsToHttpsEndpoint_ForCustomSslPort(
+            string url,
+            int? sslPort,
+            string expectedUrl)
+        {
+            // Arrange
+            var options = new TestOptionsManager<MvcOptions>();
+            var uri = new Uri(url);
+
+            var requestContext = new DefaultHttpContext();
+            requestContext.RequestServices = CreateServices(sslPort);
+            requestContext.Request.Scheme = "http";
+            requestContext.Request.Method = "GET";
+            requestContext.Request.Host = HostString.FromUriComponent(uri);
+            requestContext.Request.Path = PathString.FromUriComponent(uri);
+            requestContext.Request.QueryString = QueryString.FromUriComponent(uri);
+
+            var authContext = CreateAuthorizationContext(requestContext);
+            var attr = new RequireHttpsAttribute();
+
+            // Act
+            attr.OnAuthorization(authContext);
+
+            // Assert
+            Assert.NotNull(authContext.Result);
+            var result = Assert.IsType<RedirectResult>(authContext.Result);
+
+            Assert.Equal(expectedUrl, result.Url);
         }
 
         private class CustomRequireHttpsAttribute : RequireHttpsAttribute
@@ -153,6 +204,17 @@ namespace Microsoft.AspNetCore.Mvc
         {
             var actionContext = new ActionContext(ctx, new RouteData(), new ActionDescriptor());
             return new AuthorizationFilterContext(actionContext, new IFilterMetadata[0]);
+        }
+
+        private static IServiceProvider CreateServices(int? sslPort = null)
+        {
+            var options = new TestOptionsManager<MvcOptions>();
+            options.Value.SslPort = sslPort;
+
+            var services = new ServiceCollection();
+            services.AddSingleton<IOptions<MvcOptions>>(options);
+
+            return services.BuildServiceProvider();
         }
     }
 }

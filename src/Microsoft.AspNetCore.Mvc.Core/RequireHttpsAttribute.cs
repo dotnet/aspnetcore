@@ -4,6 +4,8 @@
 using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -35,10 +37,25 @@ namespace Microsoft.AspNetCore.Mvc
             }
             else
             {
+                var optionsAccessor = filterContext.HttpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>();
+
                 var request = filterContext.HttpContext.Request;
+
+                var host = request.Host;
+                if (optionsAccessor.Value.SslPort.HasValue && optionsAccessor.Value.SslPort > 0)
+                {
+                    // a specific SSL port is specified
+                    host = new HostString(host.Host, optionsAccessor.Value.SslPort.Value);
+                }
+                else
+                {
+                    // clear the port
+                    host = new HostString(host.Host);
+                }
+                
                 var newUrl = string.Concat(
                     "https://",
-                    request.Host.ToUriComponent(),
+                    host.ToUriComponent(),
                     request.PathBase.ToUriComponent(),
                     request.Path.ToUriComponent(),
                     request.QueryString.ToUriComponent());

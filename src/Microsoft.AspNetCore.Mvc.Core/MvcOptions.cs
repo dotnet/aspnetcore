@@ -127,5 +127,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets a list of <see cref="IValueProviderFactory"/> used by this application.
         /// </summary>
         public IList<IValueProviderFactory> ValueProviderFactories { get; }
+
+        /// <summary>
+        /// Gets or sets the SSL port that is used by this application when <see cref="RequireHttpsAttribute"/>
+        /// is used. If not set the port won't be specified in the secured URL e.g. https://localhost/path.
+        /// </summary>
+        public int? SslPort { get; set; }
     }
 }
