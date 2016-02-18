@@ -152,9 +152,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 host.Start();
 
-                using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+                using (var socket = TestConnection.CreateConnectedLoopbackSocket(port))
                 {
-                    socket.Connect(new IPEndPoint(IPAddress.Loopback, port));
                     socket.Send(Encoding.ASCII.GetBytes("GET /%41%CC%8A/A/../B/%41%CC%8A HTTP/1.1\r\n\r\n"));
                     socket.Shutdown(SocketShutdown.Send);
 

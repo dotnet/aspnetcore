@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Filter;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Networking;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -109,8 +111,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var address = ServerAddress.FromUrl($"http://localhost:{port}/");
             var started = engine.CreateServer(address);
 
-            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socket.Connect(new IPEndPoint(IPAddress.Loopback, port));
+            var socket = TestConnection.CreateConnectedLoopbackSocket(port);
             socket.Send(Encoding.ASCII.GetBytes("POST / HTTP/1.0\r\n\r\nHello World"));
             socket.Shutdown(SocketShutdown.Send);
             var buffer = new byte[8192];
@@ -456,8 +457,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(App, testContext))
             {
-                var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-                socket.Connect(IPAddress.Loopback, server.Port);
+                var socket = TestConnection.CreateConnectedLoopbackSocket(server.Port);
                 await Task.Delay(200);
                 socket.Dispose();
 

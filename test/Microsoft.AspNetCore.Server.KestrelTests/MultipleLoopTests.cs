@@ -127,6 +127,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var pipeName = @"\\.\pipe\ServerPipeDispatchConnections" + Guid.NewGuid().ToString("n");
 
+            var port = TestServer.GetNextPort();
             var loop = new UvLoopHandle(_logger);
             loop.Init(_uv);
 
@@ -156,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var serverListenTcp = new UvTcpHandle(_logger);
             serverListenTcp.Init(loop, (a, b) => { });
-            var address = ServerAddress.FromUrl("http://localhost:54321/");
+            var address = ServerAddress.FromUrl($"http://localhost:{port}/");
             serverListenTcp.Bind(address);
             serverListenTcp.Listen(128, (_1, status, error, _2) =>
             {
@@ -237,8 +238,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     serverConnectionPipeAcceptedEvent.WaitOne();
 
-                    var socket = new Socket(SocketType.Stream, ProtocolType.IP);
-                    socket.Connect(IPAddress.Loopback, 54321);
+                    var socket = TestConnection.CreateConnectedLoopbackSocket(port);
                     socket.Send(new byte[] { 6, 7, 8, 9 });
                     socket.Shutdown(SocketShutdown.Send);
                     var cb = socket.Receive(new byte[64]);

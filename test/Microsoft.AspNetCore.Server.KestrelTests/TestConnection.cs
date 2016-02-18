@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel.Networking;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -28,8 +29,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         public void Create(int port)
         {
-            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            _socket.Connect(new IPEndPoint(IPAddress.Loopback, port));
+            _socket = CreateConnectedLoopbackSocket(port);
 
             _stream = new NetworkStream(_socket, false);
             _reader = new StreamReader(_stream, Encoding.ASCII);
@@ -124,6 +124,28 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var count = await _reader.ReadAsync(ch, 0, 128);
             var text = new string(ch, 0, count);
             Assert.Equal("", text);
+        }
+
+        public static Socket CreateConnectedLoopbackSocket(int port)
+        {
+            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            if (PlatformApis.IsWindows)
+            {
+                const int SIO_LOOPBACK_FAST_PATH = -1744830448;
+                var optionInValue = BitConverter.GetBytes(1);
+                try
+                {
+                    socket.IOControl(SIO_LOOPBACK_FAST_PATH, optionInValue, null);
+                }
+                catch
+                {
+                    // If the operating system version on this machine did
+                    // not support SIO_LOOPBACK_FAST_PATH (i.e. version
+                    // prior to Windows 8 / Windows Server 2012), handle the exception
+                }
+            }
+            socket.Connect(new IPEndPoint(IPAddress.Loopback, port));
+            return socket;
         }
     }
 }
