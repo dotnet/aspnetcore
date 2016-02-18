@@ -17,7 +17,7 @@
     "dotnet5.4": {
       "dependencies": {
         "System.Collections": "4.0.11-*",
-        "System.Linq": "4.0.2-*",
+        "System.Linq": "4.1.0-*",
         "System.Net.Primitives": "4.0.11-*",
         "System.Net.WebSockets": "4.0.0-*",
         "System.Runtime.Extensions": "4.1.0-*",
