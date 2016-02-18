@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private readonly KestrelThread _thread;
         private readonly UvStreamHandle _socket;
         private readonly Connection _connection;
-        private readonly long _connectionId;
+        private readonly string _connectionId;
         private readonly IKestrelTrace _log;
         private readonly IThreadPool _threadPool;
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             UvStreamHandle socket,
             MemoryPool2 memory,
             Connection connection,
-            long connectionId,
+            string connectionId,
             IKestrelTrace log,
             IThreadPool threadPool,
             Queue<UvWriteReq> writeReqPool)

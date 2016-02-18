@@ -44,9 +44,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             set
             {
                 _app = value;
-                FrameFactory = (connectionContext, remoteEP, localEP, prepareRequest) =>
+                FrameFactory = connectionContext =>
                 {
-                    return new Frame<HttpContext>(new DummyApplication(_app), connectionContext, remoteEP, localEP, prepareRequest);
+                    return new Frame<HttpContext>(new DummyApplication(_app), connectionContext);
                 };
             }
         }

@@ -5,33 +5,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 {
     public interface IKestrelTrace : ILogger
     {
-        void ConnectionStart(long connectionId);
+        void ConnectionStart(string connectionId);
 
-        void ConnectionStop(long connectionId);
+        void ConnectionStop(string connectionId);
 
-        void ConnectionRead(long connectionId, int count);
+        void ConnectionRead(string connectionId, int count);
 
-        void ConnectionPause(long connectionId);
+        void ConnectionPause(string connectionId);
 
-        void ConnectionResume(long connectionId);
+        void ConnectionResume(string connectionId);
 
-        void ConnectionReadFin(long connectionId);
+        void ConnectionReadFin(string connectionId);
 
-        void ConnectionWriteFin(long connectionId);
+        void ConnectionWriteFin(string connectionId);
 
-        void ConnectionWroteFin(long connectionId, int status);
+        void ConnectionWroteFin(string connectionId, int status);
 
-        void ConnectionKeepAlive(long connectionId);
+        void ConnectionKeepAlive(string connectionId);
 
-        void ConnectionDisconnect(long connectionId);
+        void ConnectionDisconnect(string connectionId);
 
-        void ConnectionWrite(long connectionId, int count);
+        void ConnectionWrite(string connectionId, int count);
 
-        void ConnectionWriteCallback(long connectionId, int status);
+        void ConnectionWriteCallback(string connectionId, int status);
 
-        void ConnectionError(long connectionId, Exception ex);
+        void ConnectionError(string connectionId, Exception ex);
 
-        void ConnectionDisconnectedWrite(long connectionId, int count, Exception ex);
+        void ConnectionDisconnectedWrite(string connectionId, int count, Exception ex);
 
         void NotAllConnectionsClosedGracefully();
 

@@ -272,6 +272,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         int IHttpConnectionFeature.LocalPort { get; set; }
 
+        string IHttpConnectionFeature.ConnectionId { get; set; }
+
         object IFeatureCollection.this[Type key]
         {
             get { return FastFeatureGet(key); }

@@ -17,16 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public Frame(IHttpApplication<TContext> application,
                      ConnectionContext context)
-            : this(application, context, remoteEndPoint: null, localEndPoint: null, prepareRequest: null)
-        {
-        }
-
-        public Frame(IHttpApplication<TContext> application,
-                     ConnectionContext context,
-                     IPEndPoint remoteEndPoint,
-                     IPEndPoint localEndPoint,
-                     Action<IFeatureCollection> prepareRequest)
-            : base(context, remoteEndPoint, localEndPoint, prepareRequest)
+            : base(context)
         {
             _application = application;
         }

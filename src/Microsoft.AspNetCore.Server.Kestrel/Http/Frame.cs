@@ -67,26 +67,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         private HttpVersionType _httpVersion;
 
-        private readonly IPEndPoint _localEndPoint;
-        private readonly IPEndPoint _remoteEndPoint;
-        private readonly Action<IFeatureCollection> _prepareRequest;
-
         private readonly string _pathBase;
 
         public Frame(ConnectionContext context)
-            : this(context, remoteEndPoint: null, localEndPoint: null, prepareRequest: null)
-        {
-        }
-
-        public Frame(ConnectionContext context,
-                     IPEndPoint remoteEndPoint,
-                     IPEndPoint localEndPoint,
-                     Action<IFeatureCollection> prepareRequest)
             : base(context)
         {
-            _remoteEndPoint = remoteEndPoint;
-            _localEndPoint = localEndPoint;
-            _prepareRequest = prepareRequest;
             _pathBase = context.ServerAddress.PathBase;
 
             FrameControl = this;
@@ -249,13 +234,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             ReasonPhrase = null;
 
             var httpConnectionFeature = this as IHttpConnectionFeature;
-            httpConnectionFeature.RemoteIpAddress = _remoteEndPoint?.Address;
-            httpConnectionFeature.RemotePort = _remoteEndPoint?.Port ?? 0;
+            httpConnectionFeature.RemoteIpAddress = RemoteEndPoint?.Address;
+            httpConnectionFeature.RemotePort = RemoteEndPoint?.Port ?? 0;
 
-            httpConnectionFeature.LocalIpAddress = _localEndPoint?.Address;
-            httpConnectionFeature.LocalPort = _localEndPoint?.Port ?? 0;
+            httpConnectionFeature.LocalIpAddress = LocalEndPoint?.Address;
+            httpConnectionFeature.LocalPort = LocalEndPoint?.Port ?? 0;
 
-            _prepareRequest?.Invoke(this);
+            httpConnectionFeature.ConnectionId = ConnectionId;
+
+            PrepareRequest?.Invoke(this);
 
             _manuallySetRequestAbortToken = null;
             _abortedCts = null;

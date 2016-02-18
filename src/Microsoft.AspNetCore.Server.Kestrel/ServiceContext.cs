@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         public IThreadPool ThreadPool { get; set; }
 
-        public Func<ConnectionContext, IPEndPoint, IPEndPoint, Action<IFeatureCollection>, Frame> FrameFactory { get; set; }
+        public Func<ConnectionContext, Frame> FrameFactory { get; set; }
 
         public DateHeaderValueManager DateHeaderValueManager { get; set; }
 
