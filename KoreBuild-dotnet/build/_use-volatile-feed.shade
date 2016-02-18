@@ -1,0 +1,36 @@
+use namespace="System.Collections"
+use namespace="System.Xml.Linq"
+
+@{
+    var prefix = "NUGET_VOLATILE_FEED_";
+
+    var feeds = Environment.GetEnvironmentVariables()
+        .Cast<DictionaryEntry>()
+        .Where(entry => ((string)entry.Key).StartsWith("NUGET_VOLATILE_FEED_"))
+        .Select(entry => new KeyValuePair<string, string>(((string)entry.Key).Substring(prefix.Length), (string)entry.Value))
+        .ToList();
+
+    if (!feeds.Any())
+    {
+        return;
+    }
+    
+    var nugetConfig = XDocument.Load("NuGet.config");
+    var packageSources = nugetConfig.Element("configuration").Element("packageSources");
+    var addElements = packageSources.Elements("add").ToList();
+    foreach (var feed in feeds)
+    {
+        var valueToUpdate = addElements.FirstOrDefault(f => string.Equals(f.Attribute("key").Value, feed.Key, StringComparison.OrdinalIgnoreCase));
+        if (valueToUpdate == null)
+        {
+            packageSources.Add(new XElement("add", new XAttribute("key", feed.Key), new XAttribute("value", feed.Value)));
+        }
+        else
+        {
+            valueToUpdate.Attribute("value").Value = feed.Value;
+        }
+    }
+    
+    nugetConfig.Save("NuGet.config");
+}
+

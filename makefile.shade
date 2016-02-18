@@ -70,9 +70,11 @@ var buildTarget = "compile"
         });
     }
 
-#verify-all .pull .change-default-build-target .only-compile
+#verify-all .pull .change-default-build-target-to-verify .build-all
 
-#smoke-test-mono .pull .fix-project-json .change-default-build-target .only-compile
+#build-and-install-all .pull .change-default-build-target-for-coherence-build .build-all
+
+#smoke-test-mono .pull .fix-project-json .change-default-build-target-to-verify .build-all
 
 #fix-project-json
     @{
@@ -87,10 +89,13 @@ var buildTarget = "compile"
                   updateText = updateText.Replace(".NETPortable,Version=v4.6,Profile=Profile151", "foo");
               }
 
-#change-default-build-target
+#change-default-build-target-to-verify
     @{
         buildTarget = "verify";
     }
+
+#change-default-build-target-for-coherence-build
+    - buildTarget = "compile nuget-install";
 
 #init
     @{
@@ -309,11 +314,14 @@ var buildTarget = "compile"
         }
     }
 
-#only-compile target='compile'
+#only-compile .build-all
+    -Log.Warn("only-compile target is deprecated. Use build-all");
+
+#build-all target='compile'
     @{
         var failed = new Dictionary<string, Exception>();
         var skipped = new List<string>();
-
+        
         foreach(var repo in repositories)
         {
             var blockName = string.Format("Building {0}", repo);
@@ -678,38 +686,39 @@ functions
             IEnumerable<string> reposToBuild = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
                 // The repos list is topologically sorted based on build order
                 "Common",
+                "JsonPatch",
+                "FileSystem",
                 "Configuration",
                 "DependencyInjection",
-                "Microsoft.Data.Sqlite",
                 "EventNotification",
                 "Options",
                 "Logging",
+                "dnx-watch",
+                "HtmlAbstractions",
                 "UserSecrets",
                 "DataProtection",
-                "Caching",
                 "HttpAbstractions",
                 "Testing",
                 "aspnet.xunit",
-                "FileSystem",
-                "JsonPatch",
+                "Microsoft.Data.Sqlite",
+                "Caching",
                 "Razor",
                 "RazorTooling",
                 "Hosting",
                 "EntityFramework",
                 "WebListener",
-                "libuv-build",
                 "KestrelHttpServer",
                 "IISIntegration",
                 "ServerTests",
-                "Diagnostics",
-                "Antiforgery",
+                "Session",
                 "CORS",
-                "Security",
                 "Routing",
                 "StaticFiles",
+                "Diagnostics",
+                "Security",
+                "Antiforgery",
                 "WebSockets",
                 "Localization",
-                "Session",
                 "BasicMiddleware",
                 "Proxy",
                 "Mvc",
@@ -718,10 +727,10 @@ functions
                 "SignalR-Server",
                 "SignalR-SQLServer",
                 "SignalR-Redis",
+                "SignalR-ServiceBus",
                 "BrowserLink",
-                "dnx-watch",
                 "Entropy",
-                "MusicStore"
+                "MusicStore",
             };
 
             var repositoryInclude = Environment.GetEnvironmentVariable("KOREBUILD_REPOSITORY_INCLUDE");
