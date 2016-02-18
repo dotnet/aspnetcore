@@ -38,6 +38,12 @@ This will download the DNVM script and put it in your user profile. You can chec
 where dnvm
 ```
 
+or using the following PowerShell command:
+
+```
+Get-Command dnvm
+```
+
 > If the output of `where dnvm` shows a program files location before the user profile, or doesn't show an entry in user profile, then the install has either failed or your PATH is incorrect. After installing dnvm you should have the dnvm script in `%USERPROFILE%\.dnx\bin` and that path needs to be on your PATH.
 
 ## OS X
