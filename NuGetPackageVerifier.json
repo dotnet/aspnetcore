@@ -1,18 +1,14 @@
 {
     "adx": { // Packages written by the ADX team and that ship on NuGet.org
         "rules": [
-            "AssemblyHasDocumentFileRule",
-            "AssemblyHasVersionAttributesRule",
-            "AssemblyHasServicingAttributeRule",
-            "AssemblyHasNeutralResourcesLanguageAttributeRule",
-            "SatellitePackageRule",
-            "StrictSemanticVersionValidationRule"
+            "AdxVerificationCompositeRule"
         ],
         "packages": {
             "Microsoft.AspNetCore.Diagnostics": { },
             "Microsoft.AspNetCore.Diagnostics.Abstractions": { },
             "Microsoft.AspNetCore.Diagnostics.Elm": { },
-            "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": { }
+            "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": { },
+            "Microsoft.AspNetCore.MiddlewareAnalysis": { }
         }
     },
     "adx-nonshipping": {
@@ -23,12 +19,7 @@
     },
     "Default": { // Rules to run for packages not listed in any other set.
         "rules": [
-            "AssemblyHasDocumentFileRule",
-            "AssemblyHasVersionAttributesRule",
-            "AssemblyHasServicingAttributeRule",
-            "AssemblyHasNeutralResourcesLanguageAttributeRule",
-            "SatellitePackageRule",
-            "StrictSemanticVersionValidationRule"
+            "DefaultCompositeRule"
         ]
     }
 }

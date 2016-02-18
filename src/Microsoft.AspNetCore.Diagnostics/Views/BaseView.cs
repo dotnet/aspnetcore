@@ -285,6 +285,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Views
         /// <summary>
         /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Output"/>.
         /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         /// <param name="value">The <see cref="string"/> to write.</param>
         protected void WriteLiteralTo(TextWriter writer, string value)
         {

@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>
+        /// <param name="runtimeEnvironment"></param>
         public RuntimeInfoMiddleware(
             RequestDelegate next,
             IOptions<RuntimeInfoPageOptions> options,

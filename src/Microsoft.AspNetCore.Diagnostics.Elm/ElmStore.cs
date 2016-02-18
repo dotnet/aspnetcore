@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Elm
         /// <summary>
         /// Adds a new <see cref="ActivityContext"/> to the store.
         /// </summary>
-        /// <param name="context">The context to be added to the store.</param>
+        /// <param name="activity">The <see cref="ActivityContext"/> to be added to the store.</param>
         public void AddActivity(ActivityContext activity)
         {
             if (activity == null)

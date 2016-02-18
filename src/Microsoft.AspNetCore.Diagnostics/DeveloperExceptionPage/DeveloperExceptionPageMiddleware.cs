@@ -37,6 +37,9 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>
+        /// <param name="loggerFactory"></param>
+        /// <param name="appEnvironment"></param>
+        /// <param name="diagnosticSource"></param>
         public DeveloperExceptionPageMiddleware(
             RequestDelegate next,
             IOptions<DeveloperExceptionPageOptions> options,
