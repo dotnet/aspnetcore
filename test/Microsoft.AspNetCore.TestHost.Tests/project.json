@@ -17,13 +17,11 @@
       },
       "imports": "portable-net451+win8"
     },
-    "dnx451": {
-      "frameworkAssemblies":
-      {
+    "net451": {
+      "frameworkAssemblies": {
         "System.Threading.Tasks": ""
       },
       "dependencies": {
-        "System.Threading.Tasks": "4.0.11-*",
         "xunit.runner.console": "2.1.0"
       }
     }
