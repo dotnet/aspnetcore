@@ -17,6 +17,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
         unsafe public MockLibuv()
             : base(onlyForTesting: true)
         {
+            _onWrite = (socket, buffers, triggerCompleted) =>
+            {
+                triggerCompleted(0);
+                return 0;
+            };
+
             _uv_write = UvWrite;
 
             _uv_async_send = postHandle =>
@@ -69,6 +75,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
             _uv_walk = (loop, callback, ignore) => 0;
             _uv_err_name = errno => IntPtr.Zero;
             _uv_strerror = errno => IntPtr.Zero;
+            _uv_read_start = UvReadStart;
+            _uv_read_stop = handle => 0;
         }
 
         public Func<UvStreamHandle, int, Action<int>, int> OnWrite
@@ -81,6 +89,17 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
             {
                 _onWrite = value;
             }
+        }
+
+        public uv_alloc_cb AllocCallback { get; set; }
+
+        public uv_read_cb ReadCallback { get; set; }
+
+        private int UvReadStart(UvStreamHandle handle, uv_alloc_cb allocCallback, uv_read_cb readCallback)
+        {
+            AllocCallback = allocCallback;
+            ReadCallback = readCallback;
+            return 0;
         }
 
         unsafe private int UvWrite(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, uv_write_cb cb)

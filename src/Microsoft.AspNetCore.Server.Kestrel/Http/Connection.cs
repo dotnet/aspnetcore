@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         // Base32 encoding - in ascii sort order for easy text based sorting
         private static readonly string _encode32Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 
-        private static readonly Action<UvStreamHandle, int, object> _readCallback = 
+        private static readonly Action<UvStreamHandle, int, object> _readCallback =
             (handle, status, state) => ReadCallback(handle, status, state);
-        private static readonly Func<UvStreamHandle, int, object, Libuv.uv_buf_t> _allocCallback = 
+        private static readonly Func<UvStreamHandle, int, object, Libuv.uv_buf_t> _allocCallback =
             (handle, suggestedsize, state) => AllocCallback(handle, suggestedsize, state);
 
         // Seed the _lastConnectionId for this application instance with
@@ -252,8 +252,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         private void OnRead(UvStreamHandle handle, int status)
         {
+            if (status == 0)
+            {
+                // A zero status does not indicate an error or connection end. It indicates
+                // there is no data to be read right now.
+                // See the note at http://docs.libuv.org/en/v1.x/stream.html#c.uv_read_cb.
+                // We need to clean up whatever was allocated by OnAlloc.
+                _rawSocketInput.IncomingDeferred();
+                return;
+            }
+
             var normalRead = status > 0;
-            var normalDone = status == 0 || status == Constants.ECONNRESET || status == Constants.EOF;
+            var normalDone = status == Constants.ECONNRESET || status == Constants.EOF;
             var errorDone = !(normalDone || normalRead);
             var readCount = normalRead ? status : 0;
 

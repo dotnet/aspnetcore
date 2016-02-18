@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -115,6 +116,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
 
             Complete();
+        }
+
+        public void IncomingDeferred()
+        {
+            Debug.Assert(_pinned != null);
+
+            if (_pinned != null)
+            {
+                if (_pinned != _tail)
+                {
+                    _memory.Return(_pinned);
+                }
+
+                _pinned = null;
+            }
         }
 
         private void Complete()
