@@ -29,7 +29,8 @@ namespace Microsoft.AspNetCore.TestHost
         /// <summary>
         /// Create a new handler.
         /// </summary>
-        /// <param name="next">The pipeline entry point.</param>
+        /// <param name="pathBase">The base path.</param>
+        /// <param name="application">The <see cref="IHttpApplication{TContext}"/>.</param>
         public ClientHandler(PathString pathBase, IHttpApplication<Context> application)
         {
             if (application == null)

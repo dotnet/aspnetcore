@@ -6,7 +6,7 @@ using System.ServiceProcess;
 namespace Microsoft.AspNetCore.Hosting.WindowsServices
 {
     /// <summary>
-    ///     Extensions to <see cref="IWebHost" for hosting inside a Windows service. />
+    ///     Extensions to <see cref="IWebHost"/> for hosting inside a Windows service.
     /// </summary>
     public static class WebHostWindowsServiceExtensions
     {
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices
         /// </summary>
         /// <param name="host">An instance of the <see cref="IWebHost"/> to host in the Windows service.</param>
         /// <example>
-        ///     This example shows how to use <see cref="WebHostService.Run"/>.
+        ///     This example shows how to use <see cref="RunAsService"/>.
         ///     <code>
         ///         public class Program
         ///         {

@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Add or replace a setting in <see cref="Settings"/>.
+        /// Add or replace a setting in the configuration.
         /// </summary>
         /// <param name="key">The key of the setting to add or replace.</param>
         /// <param name="value">The value of the setting to add or replace.</param>
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <summary>
         /// Specify the startup method to be used to configure the web application.
         /// </summary>
-        /// <param name="configureApplication">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
+        /// <param name="configureApp">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public IWebHostBuilder Configure(Action<IApplicationBuilder> configureApp)
         {

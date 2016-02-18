@@ -19,7 +19,8 @@ namespace Microsoft.AspNetCore.Hosting.Server
         /// <summary>
         /// Start the server with an HttpApplication.
         /// </summary>
-        /// <param name="application">An instance of <see cref="IHttpApplication"/>.</param>
+        /// <param name="application">An instance of <see cref="IHttpApplication{TContext}"/>.</param>
+        /// <typeparam name="TContext">The context associated with the HttpApplication.</typeparam>
         void Start<TContext>(IHttpApplication<TContext> application);
     }
 }

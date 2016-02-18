@@ -1,29 +1,20 @@
 {
     "adx": { // Packages written by the ADX team and that ship on NuGet.org
         "rules": [
-            "AssemblyHasDocumentFileRule",
-            "AssemblyHasVersionAttributesRule",
-            "AssemblyHasServicingAttributeRule",
-            "AssemblyHasNeutralResourcesLanguageAttributeRule",
-            "SatellitePackageRule",
-            "StrictSemanticVersionValidationRule"
+            "AdxVerificationCompositeRule"
         ],
         "packages": {
             "Microsoft.AspNetCore.Hosting": { },
             "Microsoft.AspNetCore.Hosting.Abstractions": { },
             "Microsoft.AspNetCore.Hosting.Server.Abstractions": { },
+            "Microsoft.AspNetCore.Hosting.WindowsServices": { },
             "Microsoft.AspNetCore.Server.Testing": { },
             "Microsoft.AspNetCore.TestHost": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
         "rules": [
-            "AssemblyHasDocumentFileRule",
-            "AssemblyHasVersionAttributesRule",
-            "AssemblyHasServicingAttributeRule",
-            "AssemblyHasNeutralResourcesLanguageAttributeRule",
-            "SatellitePackageRule",
-            "StrictSemanticVersionValidationRule"
+            "DefaultCompositeRule"
         ]
     }
 }
