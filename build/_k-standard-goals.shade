@@ -204,7 +204,7 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
   }
 
 #nuget-install target='install' description='Install NuGet packages to local repo'
-  -if (Directory.Exists("src") {
+  -if (Directory.Exists("src")) {
     kpm-publish sourcePackagesDir='${BUILD_DIR}' targetPackagesDir='${E("PACKAGES_PUBLISH_DIR")}'
     nuget-resilient-publish sourcePackagesDir='${BUILD_DIR}' nugetFeed='${E("NUGET_PUBLISH_FEED")}' if='!string.IsNullOrEmpty(E("NUGET_PUBLISH_FEED"))'
   - }
