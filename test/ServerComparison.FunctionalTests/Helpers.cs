@@ -10,7 +10,7 @@ namespace ServerComparison.FunctionalTests
     {
         public static string GetApplicationPath()
         {
-            return Path.GetFullPath(Path.Combine("..", "ServerComparison.TestSites"));
+            return Path.GetFullPath(Path.Combine("..", "..", "..", "ServerComparison.TestSites"));
         }
     }
 }

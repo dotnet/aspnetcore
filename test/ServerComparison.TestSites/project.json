@@ -14,8 +14,7 @@
     "emitEntryPoint": true
   },
   "content": [
-    "wwwroot/**/*",
-    "hosting.json"
+    "wwwroot/**/*"
   ],
   "frameworks": {
     "dnx451": { },
