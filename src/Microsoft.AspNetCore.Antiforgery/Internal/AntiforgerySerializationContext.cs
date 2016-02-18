@@ -16,7 +16,15 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         // Don't let the MemoryStream grow beyond 1 MB.
         private const int MaximumStreamSize = 0x100000;
 
-        private MemoryStream _memory;
+        // Start _chars off with length 256 (18 bytes is protected into 116 bytes then encoded into 156 characters).
+        // Double length from there if necessary.
+        private const int InitialCharsLength = 256;
+
+        // Don't let _chars grow beyond 512k characters.
+        private const int MaximumCharsLength = 0x80000;
+
+        private char[] _chars;
+        private MemoryStream _stream;
         private BinaryReader _reader;
         private BinaryWriter _writer;
         private SHA256 _sha256;
@@ -25,16 +33,16 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         {
             get
             {
-                if (_memory == null)
+                if (_stream == null)
                 {
-                    _memory = new MemoryStream(InitialStreamSize);
+                    _stream = new MemoryStream(InitialStreamSize);
                 }
 
-                return _memory;
+                return _stream;
             }
             private set
             {
-                _memory = value;
+                _stream = value;
             }
         }
 
@@ -91,18 +99,42 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             }
         }
 
+        public char[] GetChars(int count)
+        {
+            if (_chars == null || _chars.Length < count)
+            {
+                var newLength = _chars == null ? InitialCharsLength : checked(_chars.Length * 2);
+                while (newLength < count)
+                {
+                    newLength = checked(newLength * 2);
+                }
+
+                _chars = new char[newLength];
+            }
+
+            return _chars;
+        }
+
         public void Reset()
         {
-            if (Stream.Capacity > MaximumStreamSize)
+            if (_chars != null && _chars.Length > MaximumCharsLength)
             {
-                Stream = null;
-                Reader = null;
-                Writer = null;
+                _chars = null;
             }
-            else
+
+            if (_stream != null)
             {
-                Stream.Position = 0L;
-                Stream.SetLength(0L);
+                if (Stream.Capacity > MaximumStreamSize)
+                {
+                    Stream = null;
+                    Reader = null;
+                    Writer = null;
+                }
+                else
+                {
+                    Stream.Position = 0L;
+                    Stream.SetLength(0L);
+                }
             }
         }
     }
