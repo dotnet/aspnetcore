@@ -15,7 +15,7 @@
       "dependencies": {
         "System.Diagnostics.Contracts": "4.0.1-*",
         "System.IO": "4.1.0-*",
-        "System.Linq": "4.0.2-*",
+        "System.Linq": "4.1.0-*",
         "System.Net.WebSockets": "4.0.0-*",
         "System.Runtime.InteropServices": "4.1.0-*",
         "System.Runtime.Extensions": "4.1.0-*",
