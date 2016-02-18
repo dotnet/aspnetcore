@@ -34,20 +34,36 @@ namespace Microsoft.AspNetCore.Http.Features.Authentication
         public virtual void Authenticated(ClaimsPrincipal principal, IDictionary<string, string> properties, IDictionary<string, object> description)
         {
             Accepted = true;
+
             Principal = principal;
             Properties = properties;
             Description = description;
+
+            // Set defaults for fields we don't use in case multiple handlers modified the context.
+            Error = null;
         }
 
         public virtual void NotAuthenticated()
         {
             Accepted = true;
+
+            // Set defaults for fields we don't use in case multiple handlers modified the context.
+            Description = null;
+            Error = null;
+            Principal = null;
+            Properties = null;
         }
 
         public virtual void Failed(Exception error)
         {
-            Error = error;
             Accepted = true;
+
+            Error = error;
+
+            // Set defaults for fields we don't use in case multiple handlers modified the context.
+            Description = null;
+            Principal = null;
+            Properties = null;
         }
     }
 }
