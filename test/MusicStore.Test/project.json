@@ -5,7 +5,7 @@
   "dependencies": {
     "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
-    "MusicStore": "",
+    "MusicStore": "1.0.0-*",
     "XUnit": "2.1.0"
   },
   "frameworks": {
