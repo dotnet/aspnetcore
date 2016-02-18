@@ -35,7 +35,7 @@
         "System.Diagnostics.Tracing": "4.1.0-*",
         "System.Globalization": "4.0.11-*",
         "System.IO": "4.1.0-*",
-        "System.Linq": "4.0.2-*",
+        "System.Linq": "4.1.0-*",
         "System.Net.Primitives": "4.0.11-*",
         "System.Runtime.Extensions": "4.1.0-*",
         "System.Runtime.InteropServices": "4.1.0-*",
