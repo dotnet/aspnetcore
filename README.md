@@ -109,6 +109,12 @@ These are some of the most common repos:
 
 See the [NuGet feeds](https://github.com/aspnet/Home/wiki/NuGet-feeds) wiki page.
 
+## Build tools
+
+This project produces builds using JetBrains TeamCity.
+
+<a href="https://www.jetbrains.com/teamcity/"><img src="https://github.com/aspnet/Home/wiki/images/logo_TeamCity.png"></a>
+
 # Feedback
 
 Check out the [contributing](CONTRIBUTING.md) page to see the best places to log issues and start discussions.
