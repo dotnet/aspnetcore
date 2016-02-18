@@ -7,7 +7,9 @@
   },
   "compilationOptions": {
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [ "CS1591" ],
+    "xmlDoc": true
   },
   "dependencies": {
     "System.Text.Encodings.Web": "4.0.0-*"
