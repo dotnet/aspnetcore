@@ -22,8 +22,11 @@ namespace Microsoft.AspNetCore.Server.Testing
         // This is the argument that separates the dotnet arguments for the args being passed to the
         // app being run when running dotnet run
         public static readonly string DotnetArgumentSeparator = "--";
+        private static readonly bool IsWindows =
+            PlatformServices.Default.Runtime.OperatingSystem.Equals("Windows", StringComparison.OrdinalIgnoreCase);
 
         private readonly Stopwatch _stopwatch = new Stopwatch();
+
 
         public ApplicationDeployer(DeploymentParameters deploymentParameters, ILogger logger)
         {
@@ -106,8 +109,7 @@ namespace Microsoft.AspNetCore.Server.Testing
             if (hostProcess != null && !hostProcess.HasExited)
             {
                 // Shutdown the host process.
-                hostProcess.Kill();
-                hostProcess.WaitForExit(5 * 1000);
+                KillProcess(hostProcess.Id);
                 if (!hostProcess.HasExited)
                 {
                     Logger.LogWarning("Unable to terminate the host process with process Id '{processId}", hostProcess.Id);
@@ -121,6 +123,30 @@ namespace Microsoft.AspNetCore.Server.Testing
             {
                 Logger.LogWarning("Host process already exited or never started successfully.");
             }
+        }
+
+        private void KillProcess(int processId)
+        {
+            ProcessStartInfo startInfo;
+
+            if (IsWindows)
+            {
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = "taskkill",
+                    Arguments = $"/T /F /PID {processId}",
+                };
+            }
+            else
+            {
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = "pkill",
+                    Arguments = $"-TERM -P {processId}",
+                };
+            }
+            var killProcess = Process.Start(startInfo);
+            killProcess.WaitForExit();
         }
 
         protected void AddEnvironmentVariablesToProcess(ProcessStartInfo startInfo)
