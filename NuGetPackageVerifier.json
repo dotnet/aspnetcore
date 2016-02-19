@@ -1,12 +1,7 @@
 {
     "adx": { // Packages written by the ADX team and that ship on NuGet.org
         "rules": [
-            "AssemblyHasDocumentFileRule",
-            "AssemblyHasVersionAttributesRule",
-            "AssemblyHasServicingAttributeRule",
-            "AssemblyHasNeutralResourcesLanguageAttributeRule",
-            "SatellitePackageRule",
-            "StrictSemanticVersionValidationRule"
+            "AdxVerificationCompositeRule"
         ],
         "packages": {
             "Microsoft.AspNetCore.WebSockets.Client": { },
@@ -14,14 +9,9 @@
             "Microsoft.AspNetCore.WebSockets.Server": { }
         }
     },
-    "Default": { // Ru les to run for packages not listed in any other set.
+    "Default": { // Rules to run for packages not listed in any other set.
         "rules": [
-            "AssemblyHasDocumentFileRule",
-            "AssemblyHasVersionAttributesRule",
-            "AssemblyHasServicingAttributeRule",
-            "AssemblyHasNeutralResourcesLanguageAttributeRule",
-            "SatellitePackageRule",
-            "StrictSemanticVersionValidationRule"
+            "DefaultCompositeRule"
         ]
     }
 }
