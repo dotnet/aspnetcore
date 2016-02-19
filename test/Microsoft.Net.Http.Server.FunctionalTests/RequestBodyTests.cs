@@ -51,7 +51,7 @@ namespace Microsoft.Net.Http.Server
                 Assert.Equal("Hello World", response);
             }
         }
-#if DNX451
+#if NET451
         [Fact]
         public async Task RequestBody_ReadBeginEnd_Success()
         {

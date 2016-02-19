@@ -1,35 +1,34 @@
 {
   "testRunner": "xunit",
-  "commands": {
-    "test": "xunit.runner.aspnet"
-  },
   "dependencies": {
     "Microsoft.Net.Http.Server": "0.1.0-*",
     "Microsoft.Net.WebSockets.Server": "0.1.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
-    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    "xunit": "2.1.0"
   },
   "frameworks": {
-    "dnx451": {
-      "frameworkAssemblies": {
-        "System.DirectoryServices": "",
-        "System.Net.Http": "",
-        "System.Net.Http.WebRequest": ""
-      },
-      "dependencies": {
-        "xunit.runner.console": "2.1.0"
-      }
-    },
     "dnxcore50": {
       "dependencies": {
         "System.Net.Http": "4.0.1-*",
         "System.Net.Http.WinHttpHandler": "4.0.0-*",
         "System.Net.Requests": "4.0.11-*",
         "System.Net.WebSockets.Client": "4.0.0-*",
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+        "dotnet-test-xunit": "1.0.0-dev-*"
       },
       "imports": "portable-net451+win8"
+    },
+    "net451": {
+      "frameworkAssemblies": {
+        "System.DirectoryServices": "",
+        "System.Net.Http": "",
+        "System.Net.Http.WebRequest": "",
+        "System.Runtime": "",
+        "System.Threading.Tasks": ""
+      },
+      "dependencies": {
+        "xunit.runner.console": "2.1.0"
+      }
     }
   }
 }

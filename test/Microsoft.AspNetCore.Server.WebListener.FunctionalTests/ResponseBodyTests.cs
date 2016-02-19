@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             {
                 httpContext.Response.Headers["Content-lenGth"] = " 30 ";
                 Stream stream = httpContext.Response.Body;
-#if DNX451
+#if NET451
                 stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
 #else
                 await stream.WriteAsync(new byte[10], 0, 10);

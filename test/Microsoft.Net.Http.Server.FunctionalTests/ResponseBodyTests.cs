@@ -122,7 +122,7 @@ namespace Microsoft.Net.Http.Server
                 var context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = " 30 ";
                 Stream stream = context.Response.Body;
-#if DNX451
+#if NET451
                 stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
 #else
                 await stream.WriteAsync(new byte[10], 0, 10);

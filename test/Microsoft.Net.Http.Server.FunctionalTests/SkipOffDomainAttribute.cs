@@ -18,7 +18,7 @@ namespace Microsoft.Net.Http.Server
             {
                 try
                 {
-#if DNX451
+#if NET451
                     return !string.IsNullOrEmpty(System.DirectoryServices.ActiveDirectory.Domain.GetComputerDomain().Name);
 #endif
                 }
