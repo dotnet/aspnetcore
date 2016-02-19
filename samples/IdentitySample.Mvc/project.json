@@ -35,7 +35,11 @@
     "web": "IdentitySample.Mvc"
   },
   "frameworks": {
-    "dnx451": {},
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Reflection": ""
+      }
+    },
     "dnxcore50": {
       "imports": "portable-net45+win8"
     }
