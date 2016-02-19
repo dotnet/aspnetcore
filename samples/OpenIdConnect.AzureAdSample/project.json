@@ -1,0 +1,23 @@
+﻿{
+  "dependencies": {
+    "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
+    "Microsoft.AspNetCore.Authentication.OpenIdConnect": "0.1.0-*",
+    "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
+    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
+    "Microsoft.IdentityModel.Clients.ActiveDirectory": "2.22.302111727",
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
+  },
+  "frameworks": {
+    "dnx451": { }
+  },
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+  "commands": {
+    "web": "OpenIdConnect.AzureAdSample"
+  },
+  "userSecretsId": "aspnet5-OpenIdConnectSample-20151210110318"
+}

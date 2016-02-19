@@ -1,7 +1,6 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4D2B6A51-2F9F-44F5-8131-EA5CAC053652}"
 EndProject
@@ -55,6 +54,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Owin.Security.Interop", "src\Microsoft.Owin.Security.Interop\Microsoft.Owin.Security.Interop.xproj", "{A7922DD8-09F1-43E4-938B-CC523EA08898}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Owin.Security.Interop.Test", "test\Microsoft.Owin.Security.Interop.Test\Microsoft.Owin.Security.Interop.Test.xproj", "{A2B5DC39-68D5-4145-A8CC-6AEAB7D33A24}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIdConnect.AzureAdSample", "samples\OpenIdConnect.AzureAdSample\OpenIdConnect.AzureAdSample.xproj", "{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -312,6 +313,18 @@ Global
 		{A2B5DC39-68D5-4145-A8CC-6AEAB7D33A24}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A2B5DC39-68D5-4145-A8CC-6AEAB7D33A24}.Release|x86.ActiveCfg = Release|Any CPU
 		{A2B5DC39-68D5-4145-A8CC-6AEAB7D33A24}.Release|x86.Build.0 = Release|Any CPU
+		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Debug|x86.Build.0 = Debug|Any CPU
+		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Release|x86.ActiveCfg = Release|Any CPU
+		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -338,5 +351,6 @@ Global
 		{D399B84F-591B-4E98-92BA-B0F63E7B6957} = {F8C0AA27-F3FB-4286-8E4C-47EF86B539FF}
 		{A7922DD8-09F1-43E4-938B-CC523EA08898} = {4D2B6A51-2F9F-44F5-8131-EA5CAC053652}
 		{A2B5DC39-68D5-4145-A8CC-6AEAB7D33A24} = {7BF11F3A-60B6-4796-B504-579C67FFBA34}
+		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E} = {F8C0AA27-F3FB-4286-8E4C-47EF86B539FF}
 	EndGlobalSection
 EndGlobal

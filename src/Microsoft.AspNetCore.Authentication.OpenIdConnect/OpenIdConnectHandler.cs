@@ -303,7 +303,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// Invoked to process incoming OpenIdConnect messages.
         /// </summary>
         /// <returns>An <see cref="AuthenticationTicket"/> if successful.</returns>
-        /// <remarks>Uses log id's OIDCH-0000 - OIDCH-0025</remarks>
         protected override async Task<AuthenticateResult> HandleRemoteAuthenticateAsync()
         {
             Logger.LogTrace(10, "Entering: {0}." + nameof(HandleRemoteAuthenticateAsync), GetType());
@@ -450,16 +449,23 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 // Authorization Code or Hybrid flow
                 if (!string.IsNullOrEmpty(authorizationResponse.Code))
                 {
-                    // TODO: Does this event provide any value over AuthorizationResponseReceived or AuthorizationResponseValidated?
                     var authorizationCodeReceivedContext = await RunAuthorizationCodeReceivedEventAsync(authorizationResponse, properties, ticket, jwt);
                     if (CheckEventResult(authorizationCodeReceivedContext, out result))
                     {
                         return result;
                     }
                     authorizationResponse = authorizationCodeReceivedContext.ProtocolMessage;
-                    var code = authorizationCodeReceivedContext.Code;
+                    properties = authorizationCodeReceivedContext.Properties;
+                    var tokenEndpointRequest = authorizationCodeReceivedContext.TokenEndpointRequest;
+                    // If the developer redeemed the code themselves...
+                    tokenEndpointResponse = authorizationCodeReceivedContext.TokenEndpointResponse;
+                    ticket = authorizationCodeReceivedContext.Ticket;
+                    jwt = authorizationCodeReceivedContext.JwtSecurityToken;
 
-                    tokenEndpointResponse = await RedeemAuthorizationCodeAsync(code, authorizationCodeReceivedContext.RedirectUri);
+                    if (!authorizationCodeReceivedContext.HandledCodeRedemption)
+                    {
+                        tokenEndpointResponse = await RedeemAuthorizationCodeAsync(tokenEndpointRequest);
+                    }
 
                     var authorizationCodeRedeemedContext = await RunTokenResponseReceivedEventAsync(authorizationResponse, tokenEndpointResponse, properties);
                     if (CheckEventResult(authorizationCodeRedeemedContext, out result))
@@ -485,13 +491,17 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                         }
                     }
 
-                    Options.ProtocolValidator.ValidateTokenResponse(new OpenIdConnectProtocolValidationContext()
+                    // Validate the token response if it wasn't provided manually
+                    if (!authorizationCodeReceivedContext.HandledCodeRedemption)
                     {
-                        ClientId = Options.ClientId,
-                        ProtocolMessage = tokenEndpointResponse,
-                        ValidatedIdToken = jwt,
-                        Nonce = nonce
-                    });
+                        Options.ProtocolValidator.ValidateTokenResponse(new OpenIdConnectProtocolValidationContext()
+                        {
+                            ClientId = Options.ClientId,
+                            ProtocolMessage = tokenEndpointResponse,
+                            ValidatedIdToken = jwt,
+                            Nonce = nonce
+                        });
+                    }
                 }
 
                 var authenticationValidatedContext = await RunAuthenticationValidatedEventAsync(authorizationResponse, ticket, properties, tokenEndpointResponse);
@@ -574,23 +584,11 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <param name="authorizationCode">The authorization code to redeem.</param>
         /// <param name="redirectUri">Uri that was passed in the request sent for the authorization code.</param>
         /// <returns>OpenIdConnect message that has tokens inside it.</returns>
-        protected virtual async Task<OpenIdConnectMessage> RedeemAuthorizationCodeAsync(string authorizationCode, string redirectUri)
+        protected virtual async Task<OpenIdConnectMessage> RedeemAuthorizationCodeAsync(OpenIdConnectMessage tokenEndpointRequest)
         {
             Logger.LogDebug(21, "Redeeming code for tokens.");
-
-            var openIdMessage = new OpenIdConnectMessage()
-            {
-                ClientId = Options.ClientId,
-                ClientSecret = Options.ClientSecret,
-                Code = authorizationCode,
-                GrantType = "authorization_code",
-                RedirectUri = redirectUri
-            };
-
-            // TODO: Event that lets you customize the message. E.g. use certificates, specify resources.
-
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, _configuration.TokenEndpoint);
-            requestMessage.Content = new FormUrlEncodedContent(openIdMessage.Parameters);
+            requestMessage.Content = new FormUrlEncodedContent(tokenEndpointRequest.Parameters);
             var responseMessage = await Backchannel.SendAsync(requestMessage);
             responseMessage.EnsureSuccessStatusCode();
             var tokenResonse = await responseMessage.Content.ReadAsStringAsync();
@@ -874,19 +872,27 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             return authorizationResponseReceivedContext;
         }
 
-        private async Task<AuthorizationCodeReceivedContext> RunAuthorizationCodeReceivedEventAsync(OpenIdConnectMessage message, AuthenticationProperties properties, AuthenticationTicket ticket, JwtSecurityToken jwt)
+        private async Task<AuthorizationCodeReceivedContext> RunAuthorizationCodeReceivedEventAsync(OpenIdConnectMessage authorizationResponse, AuthenticationProperties properties, AuthenticationTicket ticket, JwtSecurityToken jwt)
         {
-            var redirectUri = properties.Items[OpenIdConnectDefaults.RedirectUriForCodePropertiesKey];
+            Logger.LogTrace(32, "AuthorizationCode received");
 
-            Logger.LogTrace(32, "AuthorizationCode received: '{0}'", message.Code);
-
-            var authorizationCodeReceivedContext = new AuthorizationCodeReceivedContext(Context, Options, properties)
+            var tokenEndpointRequest = new OpenIdConnectMessage()
             {
-                Code = message.Code,
-                ProtocolMessage = message,
-                RedirectUri = redirectUri,
+                ClientId = Options.ClientId,
+                ClientSecret = Options.ClientSecret,
+                Code = authorizationResponse.Code,
+                GrantType = OpenIdConnectGrantTypes.AuthorizationCode,
+                RedirectUri = properties.Items[OpenIdConnectDefaults.RedirectUriForCodePropertiesKey]
+            };
+
+            var authorizationCodeReceivedContext = new AuthorizationCodeReceivedContext(Context, Options)
+            {
+                ProtocolMessage = authorizationResponse,
+                Properties = properties,
+                TokenEndpointRequest = tokenEndpointRequest,
                 Ticket = ticket,
-                JwtSecurityToken = jwt
+                JwtSecurityToken = jwt,
+                Backchannel = Backchannel,
             };
 
             await Options.Events.AuthorizationCodeReceived(authorizationCodeReceivedContext);
