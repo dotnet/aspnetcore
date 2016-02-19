@@ -94,11 +94,11 @@ namespace Microsoft.AspNetCore.Identity
         internal ILookupNormalizer KeyNormalizer { get; set; }
 
         /// <summary>
-        /// Gets an IQueryable collection of Roles if the persistence store is an <see cref="IQueryableRoleStore"/>,
+        /// Gets an IQueryable collection of Roles if the persistence store is an <see cref="IQueryableRoleStore{TRole}"/>,
         /// otherwise throws a <see cref="NotSupportedException"/>.
         /// </summary>
-        /// <value>An IQueryable collection of Roles if the persistence store is an <see cref="IQueryableRoleStore"/>.</value>
-        /// <exception cref="NotSupportedException">Thrown if the persistence store is not an <see cref="IQueryableRoleStore"/>.</exception>
+        /// <value>An IQueryable collection of Roles if the persistence store is an <see cref="IQueryableRoleStore{TRole}"/>.</value>
+        /// <exception cref="NotSupportedException">Thrown if the persistence store is not an <see cref="IQueryableRoleStore{TRole}"/>.</exception>
         /// <remarks>
         /// Callers to this property should use <see cref="SupportsQueryableRoles"/> to ensure the backing role store supports 
         /// returning an IQueryable list of roles.

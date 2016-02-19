@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Identity
     /// <summary>
     /// Provides an abstraction for a factory to create a <see cref="ClaimsPrincipal"/> from a user.
     /// </summary>
-    /// <typeparam name="TRole">The type encapsulating a user.</typeparam>
+    /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
     public interface IUserClaimsPrincipalFactory<TUser>
         where TUser : class
     {
@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Identity
         /// Creates a <see cref="ClaimsPrincipal"/> from an user asynchronously.
         /// </summary>
         /// <param name="user">The user to create a <see cref="ClaimsPrincipal"/> from.</param>
-        /// <param name="authenticationType">The name of the authentication method the <paramref name="user"/> was sourced from.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous creation operation, containing the created <see cref="ClaimsPrincipal"/>.</returns>
         Task<ClaimsPrincipal> CreateAsync(TUser user);
     }

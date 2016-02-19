@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Creates a new instance of <see cref="PasswordHasher{TUser}"/>.
         /// </summary>
-        /// <param name="options">The options for this instance.</param>
+        /// <param name="optionsAccessor">The options for this instance.</param>
         public PasswordHasher(IOptions<PasswordHasherOptions> optionsAccessor = null)
         {
             var options = optionsAccessor?.Value ?? new PasswordHasherOptions();

@@ -231,7 +231,6 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Returns an <see cref="IdentityError"/> indicating a password entered does not contain a non-alphanumeric character, which is required by the password policy.
         /// </summary>
-        /// <param name="length">The length that is not long enough.</param>
         /// <returns>An <see cref="IdentityError"/> indicating a password entered does not contain a non-alphanumeric character.</returns>
         public virtual IdentityError PasswordRequiresNonAlphanumeric()
         {
@@ -245,7 +244,6 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Returns an <see cref="IdentityError"/> indicating a password entered does not contain a numeric character, which is required by the password policy.
         /// </summary>
-        /// <param name="length">The length that is not long enough.</param>
         /// <returns>An <see cref="IdentityError"/> indicating a password entered does not contain a numeric character.</returns>
         public virtual IdentityError PasswordRequiresDigit()
         {
@@ -259,7 +257,6 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Returns an <see cref="IdentityError"/> indicating a password entered does not contain a lower case letter, which is required by the password policy.
         /// </summary>
-        /// <param name="length">The length that is not long enough.</param>
         /// <returns>An <see cref="IdentityError"/> indicating a password entered does not contain a lower case letter.</returns>
         public virtual IdentityError PasswordRequiresLower()
         {
@@ -273,7 +270,6 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Returns an <see cref="IdentityError"/> indicating a password entered does not contain an upper case letter, which is required by the password policy.
         /// </summary>
-        /// <param name="length">The length that is not long enough.</param>
         /// <returns>An <see cref="IdentityError"/> indicating a password entered does not contain an upper case letter.</returns>
         public virtual IdentityError PasswordRequiresUpper()
         {

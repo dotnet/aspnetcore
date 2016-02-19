@@ -193,10 +193,9 @@ namespace Microsoft.AspNetCore.Identity
 
         /// <summary>
         /// Validates the security stamp for the specified <paramref name="principal"/> against
-        /// the persisted stamp for the <paramref name="userId"/>, as an asynchronous operation.
+        /// the persisted stamp for the current user, as an asynchronous operation.
         /// </summary>
         /// <param name="principal">The principal whose stamp should be validated.</param>
-        /// <param name="userId">The ID for the user.</param>
         /// <returns>The task object representing the asynchronous operation. The task will contain the <typeparamref name="TUser"/>
         /// if the stamp matches the persisted value, otherwise it will return false.</returns>
         public virtual async Task<TUser> ValidateSecurityStampAsync(ClaimsPrincipal principal)
@@ -271,7 +270,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="userName">The user name to sign in.</param>
         /// <param name="password">The password to attempt to sign in with.</param>
         /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
-        /// <param name="shouldLockout">Flag indicating if the user account should be locked if the sign in fails.</param>
+        /// <param name="lockoutOnFailure">Flag indicating if the user account should be locked if the sign in fails.</param>
         /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
         /// for the sign-in attempt.</returns>
         public virtual async Task<SignInResult> PasswordSignInAsync(string userName, string password,

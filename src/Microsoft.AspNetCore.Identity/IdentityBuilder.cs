@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Adds an <see cref="IUserValidator"/> for the <seealso cref="UserType"/>.
+        /// Adds an <see cref="IUserValidator{TUser}"/> for the <seealso cref="UserType"/>.
         /// </summary>
         /// <typeparam name="T">The user type to validate.</typeparam>
         /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Adds an <see cref="IdentityErrorDescriber"/>.
         /// </summary>
-        /// <typeparam name="T">The type of the error describer.</typeparam>
+        /// <typeparam name="TDescriber">The type of the error describer.</typeparam>
         /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public virtual IdentityBuilder AddErrorDescriber<TDescriber>() where TDescriber : IdentityErrorDescriber
         {

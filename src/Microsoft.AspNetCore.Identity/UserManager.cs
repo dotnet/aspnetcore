@@ -44,9 +44,8 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="passwordValidators">A collection of <see cref="IPasswordValidator{TUser}"/> to validate passwords against.</param>
         /// <param name="keyNormalizer">The <see cref="ILookupNormalizer"/> to use when generating index keys for users.</param>
         /// <param name="errors">The <see cref="IdentityErrorDescriber"/> used to provider error messages.</param>
-        /// <param name="tokenProviders"></param>
+        /// <param name="services">The <see cref="IServiceProvider"/> used to resolve services.</param>
         /// <param name="logger">The logger used to log messages, warnings and errors.</param>
-        /// <param name="contextAccessor">The accessor used to access the <see cref="HttpContext"/>.</param>
         public UserManager(IUserStore<TUser> store,
             IOptions<IdentityOptions> optionsAccessor,
             IPasswordHasher<TUser> passwordHasher,
@@ -423,9 +422,8 @@ namespace Microsoft.AspNetCore.Identity
         /// Finds and returns a user, if any, who has the specified <paramref name="userId"/>.
         /// </summary>
         /// <param name="userId">The user ID to search for.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>
-        /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="userID"/> if it exists.
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="userId"/> if it exists.
         /// </returns>
         public virtual Task<TUser> FindByIdAsync(string userId)
         {
@@ -437,9 +435,8 @@ namespace Microsoft.AspNetCore.Identity
         /// Finds and returns a user, if any, who has the specified user name.
         /// </summary>
         /// <param name="userName">The user name to search for.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>
-        /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="userID"/> if it exists.
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="userName"/> if it exists.
         /// </returns>
         public virtual Task<TUser> FindByNameAsync(string userName)
         {
@@ -959,7 +956,6 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="user">The user to replace the claim on.</param>
         /// <param name="claim">The claim to replace.</param>
         /// <param name="newClaim">The new claim to replace the existing <paramref name="claim"/> with.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
         /// of the operation.
@@ -988,7 +984,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Removes the specified <paramref name="claim"/> from the given <paramref name="user"/>.
         /// </summary>
-        /// <param name="user">The user to remove the specified <paramref name="claims"/> from.</param>
+        /// <param name="user">The user to remove the specified <paramref name="claim"/> from.</param>
         /// <param name="claim">The <see cref="Claim"/> to remove.</param>
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
@@ -1057,7 +1053,7 @@ namespace Microsoft.AspNetCore.Identity
         /// Add the specified <paramref name="user"/> to the named role.
         /// </summary>
         /// <param name="user">The user to add to the named role.</param>
-        /// <param name="roleName">The name of the role to add the user to.</param>
+        /// <param name="role">The name of the role to add the user to.</param>
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
         /// of the operation.
@@ -1084,7 +1080,7 @@ namespace Microsoft.AspNetCore.Identity
         /// Add the specified <paramref name="user"/> to the named roles.
         /// </summary>
         /// <param name="user">The user to add to the named roles.</param>
-        /// <param name="roleName">The name of the roles to add the user to.</param>
+        /// <param name="roles">The name of the roles to add the user to.</param>
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
         /// of the operation.
@@ -1118,7 +1114,7 @@ namespace Microsoft.AspNetCore.Identity
         /// Removes the specified <paramref name="user"/> from the named role.
         /// </summary>
         /// <param name="user">The user to remove from the named role.</param>
-        /// <param name="roleName">The name of the role to remove the user from.</param>
+        /// <param name="role">The name of the role to remove the user from.</param>
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
         /// of the operation.
@@ -1157,7 +1153,7 @@ namespace Microsoft.AspNetCore.Identity
         /// Removes the specified <paramref name="user"/> from the named roles.
         /// </summary>
         /// <param name="user">The user to remove from the named roles.</param>
-        /// <param name="roleName">The name of the roles to remove the user from.</param>
+        /// <param name="roles">The name of the roles to remove the user from.</param>
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
         /// of the operation.
@@ -1209,7 +1205,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="user">The user whose role membership should be checked.</param>
         /// <param name="role">The name of the role to be checked.</param>
         /// <returns>
-        /// The <see cref="Task"/> that represents the asynchronous operation, containing a flag indicating whether the specified <see cref="user"/> is
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing a flag indicating whether the specified <paramref name="user"/> is
         /// a member of the named role.
         /// </returns>
         public virtual async Task<bool> IsInRoleAsync(TUser user, string role)
@@ -1227,7 +1223,6 @@ namespace Microsoft.AspNetCore.Identity
         /// Gets the email address for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose email should be returned.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The task object containing the results of the asynchronous operation, the email address for the specified <paramref name="user"/>.</returns>
         public virtual async Task<string> GetEmailAsync(TUser user)
         {
@@ -1267,8 +1262,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Gets the user, if any, associated with the specified, normalized email address.
         /// </summary>
-        /// <param name="normalizedEmail">The normalized email address to return the user for.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <param name="email">The normalized email address to return the user for.</param>
         /// <returns>
         /// The task object containing the results of the asynchronous lookup operation, the user if any associated with the specified normalized email address.
         /// </returns>
@@ -1361,6 +1355,7 @@ namespace Microsoft.AspNetCore.Identity
         /// Generates an email change token for the specified user.
         /// </summary>
         /// <param name="user">The user to generate an email change token for.</param>
+        /// <param name="newEmail">The new email address.</param>
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, an email change token.
         /// </returns>
@@ -1725,6 +1720,7 @@ namespace Microsoft.AspNetCore.Identity
         /// as an asynchronous operation.
         /// </summary>
         /// <param name="user">The user whose two factor authentication enabled status should be set.</param>
+        /// <param name="enabled">A flag indicating whether the specified <paramref name="user"/> has two factor authentication enabled.</param>
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, the <see cref="IdentityResult"/> of the operation
         /// </returns>

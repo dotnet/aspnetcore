@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="roleName">The name of the role to be checked.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>
-        /// The <see cref="Task"/> that represents the asynchronous operation, containing a flag indicating whether the specified <see cref="user"/> is
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing a flag indicating whether the specified <paramref name="user"/> is
         /// a member of the named role.
         /// </returns>
         Task<bool> IsInRoleAsync(TUser user, string roleName, CancellationToken cancellationToken);

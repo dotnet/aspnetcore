@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Identity
         /// Checks if a two factor authentication token can be generated for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="manager">The <see cref="UserManager{TUser}"/> to retrieve the <paramref name="user"/> from.</param>
-        /// <param name="user">The <see cref="TUser"/> to check for the possibility of generating a two factor authentication token.</param>
+        /// <param name="user">The <typeparamref name="TUser"/> to check for the possibility of generating a two factor authentication token.</param>
         /// <returns>True if the user has an email address set, otherwise false.</returns>
         public override async Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
         {
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="purpose">The purpose of the two factor authentication token.</param>
         /// <param name="manager">The <see cref="UserManager{TUser}"/> to retrieve the <paramref name="user"/> from.</param>
-        /// <param name="user">The <see cref="TUser"/> to check for the possibility of generating a two factor authentication token.</param>
+        /// <param name="user">The <typeparamref name="TUser"/> to check for the possibility of generating a two factor authentication token.</param>
         /// <returns>A string suitable for use as entropy in token generation.</returns>
         public override async Task<string> GetUserModifierAsync(string purpose, UserManager<TUser> manager,
             TUser user)

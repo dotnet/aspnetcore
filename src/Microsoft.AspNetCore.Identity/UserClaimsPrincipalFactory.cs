@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Identity
         where TRole : class
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ClaimsIdentityFactory"/> class.
+        /// Initializes a new instance of the <see cref="UserClaimsPrincipalFactory{TUser, TRole}"/> class.
         /// </summary>
         /// <param name="userManager">The <see cref="UserManager{TUser}"/> to retrieve user information from.</param>
         /// <param name="roleManager">The <see cref="RoleManager{TRole}"/> to retrieve a user's roles from.</param>
@@ -74,7 +74,6 @@ namespace Microsoft.AspNetCore.Identity
         /// Creates a <see cref="ClaimsPrincipal"/> from an user asynchronously.
         /// </summary>
         /// <param name="user">The user to create a <see cref="ClaimsPrincipal"/> from.</param>
-        /// <param name="authenticationType">The name of the authentication method the <paramref name="user"/> was sourced from.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous creation operation, containing the created <see cref="ClaimsPrincipal"/>.</returns>
         public virtual async Task<ClaimsPrincipal> CreateAsync(TUser user)
         {

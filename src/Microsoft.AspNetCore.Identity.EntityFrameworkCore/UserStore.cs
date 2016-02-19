@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <param name="userId">The user ID to search for.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>
-        /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="userID"/> if it exists.
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="userId"/> if it exists.
         /// </returns>
         public virtual Task<TUser> FindByIdAsync(string userId, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <param name="normalizedUserName">The normalized user name to search for.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>
-        /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="userID"/> if it exists.
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="normalizedUserName"/> if it exists.
         /// </returns>
         public virtual Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -542,10 +542,10 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Adds the <paramref name="claim"/> given to the specified <paramref name="user"/>.
+        /// Adds the <paramref name="claims"/> given to the specified <paramref name="user"/>.
         /// </summary>
-        /// <param name="uuser">The user to add the claim to.</param>
-        /// <param name="claim">The claim to add to the user.</param>
+        /// <param name="user">The user to add the claim to.</param>
+        /// <param name="claims">The claim to add to the user.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         public virtual Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken = default(CancellationToken))
@@ -627,7 +627,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Adds the <paramref name=login"/> given to the specified <paramref name="user"/>.
+        /// Adds the <paramref name="login"/> given to the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user to add the login to.</param>
         /// <param name="login">The login to add to the user.</param>
@@ -659,10 +659,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Removes the <paramref name=login"/> given from the specified <paramref name="user"/>.
+        /// Removes the <paramref name="loginProvider"/> given from the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user to remove the login from.</param>
-        /// <param name="login">The login to remove from the user.</param>
+        /// <param name="loginProvider">The login to remove from the user.</param>
+        /// <param name="providerKey">The key provided by the <paramref name="loginProvider"/> to identify a user.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         public virtual async Task RemoveLoginAsync(TUser user, string loginProvider, string providerKey,
