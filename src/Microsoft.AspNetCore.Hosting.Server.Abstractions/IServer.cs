@@ -17,10 +17,10 @@ namespace Microsoft.AspNetCore.Hosting.Server
         IFeatureCollection Features { get; }
 
         /// <summary>
-        /// Start the server with an HttpApplication.
+        /// Start the server with an application.
         /// </summary>
         /// <param name="application">An instance of <see cref="IHttpApplication{TContext}"/>.</param>
-        /// <typeparam name="TContext">The context associated with the HttpApplication.</typeparam>
+        /// <typeparam name="TContext">The context associated with the application.</typeparam>
         void Start<TContext>(IHttpApplication<TContext> application);
     }
 }

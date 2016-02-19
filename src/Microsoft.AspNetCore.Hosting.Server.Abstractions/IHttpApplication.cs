@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Http.Features;
 namespace Microsoft.AspNetCore.Hosting.Server
 {
     /// <summary>
-    /// Represents an HttpApplication.
+    /// Represents an application.
     /// </summary>
-    /// <typeparam name="TContext">The context associated with the HttpApplication.</typeparam>
+    /// <typeparam name="TContext">The context associated with the application.</typeparam>
     public interface IHttpApplication<TContext>
     {
         /// <summary>
