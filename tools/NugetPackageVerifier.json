@@ -5,6 +5,7 @@
             "PowerShellScriptIsSignedRule"
         ],
         "packages": {
+            "dotnet-razor-tooling": { },
             "Microsoft.EntityFrameworkCore.Commands": { },
             "Microsoft.EntityFrameworkCore": { },
             "Microsoft.EntityFrameworkCore.InMemory": { },
@@ -200,7 +201,6 @@
             "Microsoft.AspNetCore.StaticFiles": { },
             "Microsoft.AspNetCore.TestHost": { },
             "Microsoft.AspNetCore.Testing": { },
-            "Microsoft.AspNetCore.Tooling.Razor": { },
             "Microsoft.AspNetCore.WebSockets.Client": { },
             "Microsoft.AspNetCore.WebSockets.Protocol": { },
             "Microsoft.AspNetCore.WebSockets.Server": { },
