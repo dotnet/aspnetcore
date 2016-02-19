@@ -9,6 +9,7 @@
   },
   "testRunner": "xunit",
   "frameworks": {
-    "dnx451": {}
+    "net451": {}
   }
 }
+
