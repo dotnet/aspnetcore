@@ -22,6 +22,7 @@
         "System.Globalization.Extensions": "4.0.1-*",
         "System.Linq": "4.1.0-*",
         "System.Text.Encoding": "4.0.11-*",
+        "System.Resources.ResourceManager": "4.0.1-*"
       }
     }
   }
