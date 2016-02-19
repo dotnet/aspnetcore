@@ -3,7 +3,7 @@
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "Microsoft.Extensions.WebEncoders": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
-    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    "xunit": "2.1.0"
   },
   "testRunner": "xunit",
   "compilationOptions": {
@@ -18,7 +18,7 @@
       },
       "imports": "portable-net451+win8"
     },
-    "dnx451": {
+    "net451": {
       "dependencies": {
         "xunit.runner.console": "2.1.0"
       }
