@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// Creates a new instance of the SendFileMiddleware.
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
+        /// <param name="hostingEnv">The <see cref="IHostingEnvironment"/> used by this middleware.</param>
         /// <param name="options">The configuration for this middleware.</param>
         public DirectoryBrowserMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, IOptions<DirectoryBrowserOptions> options)
         {
