@@ -17,7 +17,8 @@
     "../../shared/**/*.cs"
   ],
   "tools": {
-    "dotnet-publish-iis": "1.0.0-*"
+    "dotnet-publish-iis": "1.0.0-*",
+    "dotnet-razor-tooling": "1.0.0-*"
   },
   "content": [
     "Areas",
@@ -27,7 +28,6 @@
     "config.json"
   ],
   "dependencies": {
-    "dotnet-razor-tooling": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.Facebook": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.Google": "1.0.0-*",
