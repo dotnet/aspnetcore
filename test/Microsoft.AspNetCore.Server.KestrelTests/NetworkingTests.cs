@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var t = Task.Run(async () =>
             {
                 var socket = TestConnection.CreateConnectedLoopbackSocket(port);
-#if DNX451
+#if NET451
                 await Task.Factory.FromAsync(
                     socket.BeginSend,
                     socket.EndSend,
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var t = Task.Run(async () =>
             {
                 var socket = TestConnection.CreateConnectedLoopbackSocket(port);
-#if DNX451
+#if NET451
                 await Task.Factory.FromAsync(
                     socket.BeginSend,
                     socket.EndSend,
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var buffer = new ArraySegment<byte>(new byte[2048]);
                 while (true)
                 {
-#if DNX451
+#if NET451
                     var count = await Task.Factory.FromAsync(
                         socket.BeginReceive,
                         socket.EndReceive,

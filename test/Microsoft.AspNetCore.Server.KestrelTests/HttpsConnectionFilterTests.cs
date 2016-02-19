@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             try
             {
-#if DNX451
+#if NET451
                 var handler = new HttpClientHandler();
                 ServicePointManager.ServerCertificateValidationCallback += validationCallback;
 #else
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
             finally
             {
-#if DNX451
+#if NET451
                 ServicePointManager.ServerCertificateValidationCallback -= validationCallback;
 #endif
             }
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             try
             {
-#if DNX451
+#if NET451
                 var handler = new HttpClientHandler();
                 ServicePointManager.ServerCertificateValidationCallback += validationCallback;
 #else
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
             finally
             {
-#if DNX451
+#if NET451
                 ServicePointManager.ServerCertificateValidationCallback -= validationCallback;
 #endif
             }
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             try
             {
-#if DNX451
+#if NET451
                 var handler = new HttpClientHandler();
                 ServicePointManager.ServerCertificateValidationCallback += validationCallback;
 #else
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
             finally
             {
-#if DNX451
+#if NET451
                 ServicePointManager.ServerCertificateValidationCallback -= validationCallback;
 #endif
             }
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             try
             {
-#if DNX451
+#if NET451
                 ServicePointManager.ServerCertificateValidationCallback += validationCallback;
 #endif
 
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
             finally
             {
-#if DNX451
+#if NET451
                 ServicePointManager.ServerCertificateValidationCallback -= validationCallback;
 #endif
             }
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             try
             {
-#if DNX451
+#if NET451
                 var handler = new HttpClientHandler();
                 ServicePointManager.ServerCertificateValidationCallback += validationCallback;
 #else
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
             finally
             {
-#if DNX451
+#if NET451
                 ServicePointManager.ServerCertificateValidationCallback -= validationCallback;
 #endif
             }
