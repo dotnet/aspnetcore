@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.Localization
         IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures);
 
         /// <summary>
-        /// Creates a new <see cref="ResourceManagerStringLocalizer"/> for a specific <see cref="CultureInfo"/>.
+        /// Creates a new <see cref="IStringLocalizer"/> for a specific <see cref="CultureInfo"/>.
         /// </summary>
         /// <param name="culture">The <see cref="CultureInfo"/> to use.</param>
         /// <returns>A culture-specific <see cref="IStringLocalizer"/>.</returns>
