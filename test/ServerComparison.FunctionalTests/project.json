@@ -9,6 +9,12 @@
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "Microsoft.Net.Http.Headers": "1.0.0-*"
   },
+
+  "content": [
+    "Http.config",
+    "NtlmAuthentation.config"
+  ],
+
   "frameworks": {
     "net451": {
       "dependencies": {
