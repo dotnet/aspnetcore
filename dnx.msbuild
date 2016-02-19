@@ -309,8 +309,8 @@
             <PoliCheckPackages Include="$(SymbolPackagePath)Microsoft.EntityFrameworkCore.*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Data.Sqlite.*.symbols.nupkg;
                                         $(SymbolPackagePath)dnx*.symbols.nupkg;
-                                        $(SymbolPackagePath)dotnet-sql-cache.symbols.nupkg;
-                                        $(SymbolPackagePath)dotnet-user-secrets.symbols.nupkg;
+                                        $(SymbolPackagePath)dotnet-sql-cache.*.symbols.nupkg;
+                                        $(SymbolPackagePath)dotnet-user-secrets.*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.AspNetCore*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Dnx*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Extensions*.symbols.nupkg;
