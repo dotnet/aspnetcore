@@ -66,7 +66,7 @@ namespace MusicStore.Areas.Admin.Controllers
             if (album == null)
             {
                 cache.Remove(cacheKey);
-                return HttpNotFound();
+                return NotFound();
             }
 
             return View(album);
@@ -119,7 +119,7 @@ namespace MusicStore.Areas.Admin.Controllers
 
             if (album == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
 
             ViewBag.GenreId = new SelectList(DbContext.Genres, "GenreId", "Name", album.GenreId);
@@ -157,7 +157,7 @@ namespace MusicStore.Areas.Admin.Controllers
             var album = await DbContext.Albums.Where(a => a.AlbumId == id).FirstOrDefaultAsync();
             if (album == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
 
             return View(album);
@@ -174,7 +174,7 @@ namespace MusicStore.Areas.Admin.Controllers
             var album = await DbContext.Albums.Where(a => a.AlbumId == id).FirstOrDefaultAsync();
             if (album == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
 
             DbContext.Albums.Remove(album);
@@ -203,7 +203,7 @@ namespace MusicStore.Areas.Admin.Controllers
 
             if (album == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
 
             return Content(album.AlbumId.ToString());

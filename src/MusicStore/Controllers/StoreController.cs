@@ -38,7 +38,7 @@ namespace MusicStore.Controllers
 
             if (genreModel == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
 
             return View(genreModel);
@@ -70,7 +70,7 @@ namespace MusicStore.Controllers
 
             if (album == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
 
             return View(album);

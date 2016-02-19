@@ -57,7 +57,7 @@ namespace MusicStore.Controllers
             var result = await controller.Browse(string.Empty);
 
             // Assert
-            Assert.IsType<HttpNotFoundResult>(result);
+            Assert.IsType<NotFoundResult>(result);
         }
 
         [Fact]
@@ -96,7 +96,7 @@ namespace MusicStore.Controllers
             var result = await controller.Details(_serviceProvider.GetRequiredService<IMemoryCache>(), albumId);
 
             // Assert
-            Assert.IsType<HttpNotFoundResult>(result);
+            Assert.IsType<NotFoundResult>(result);
         }
 
         [Fact]
