@@ -51,7 +51,9 @@
   },
   "compilationOptions": {
     "allowUnsafe": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [ "CS1591" ],
+    "xmlDoc": true
   },
   "packInclude": {
     "/": "../../content/thirdpartynotices.txt",
