@@ -13,15 +13,13 @@
     "xunit.runner.console": "2.1.0"
   },
   "frameworks": {
-    "dnx451": {
+    "net451": {
      "frameworkAssemblies": {
         "System.Runtime": "",
         "System.Threading.Tasks": ""
       }
     }
   },
-  "testRunner": "xunit",
-  "commands": {
-    "test": "xunit.runner.aspnet"
-  }
+  "testRunner": "xunit"
 }
+
