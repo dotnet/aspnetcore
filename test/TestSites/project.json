@@ -4,8 +4,7 @@
     "emitEntryPoint": true
   },
   "content": [
-    "wwwroot/**/*",
-    "hosting.json"
+    "wwwroot/**/*"
   ],
   "dependencies": {
     "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",

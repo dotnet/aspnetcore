@@ -4,7 +4,7 @@
     "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
-    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    "xunit": "2.1.0"
   },
   "frameworks": {
     "dnxcore50": {
@@ -13,6 +13,11 @@
         "dotnet-test-xunit": "1.0.0-dev-*"
       }
     },
-    "dnx451": {}
-  }
+    "net451": {
+      "dependencies": {
+        "xunit.runner.console": "2.1.0"
+      }
+    }
+  },
+    "testRunner": "xunit"
 }

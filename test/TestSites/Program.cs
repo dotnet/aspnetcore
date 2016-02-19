@@ -13,6 +13,7 @@ namespace TestSites
                 .UseDefaultConfiguration(args)
                 .UseIISPlatformHandlerUrl()
                 .UseStartup("TestSites")
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .Build();
 
             host.Run();

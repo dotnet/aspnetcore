@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.IISPlatformHandler.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44399/")]
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44399/")]
         [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "https://localhost:44398/")]
         public Task Https_HelloWorld(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.IISPlatformHandler.FunctionalTests
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "https://localhost:44397/")]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x86, "https://localhost:44396/")]
+        //[InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x86, "https://localhost:44396/")]
         public Task Https_HelloWorld_NoClientCert(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             return HttpsHelloWorldCerts(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, sendClientCert: false);
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.IISPlatformHandler.FunctionalTests
         [ConditionalTheory(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44395/")]
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44395/")]
         [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "https://localhost:44394/")]
         public Task Https_HelloWorld_ClientCert(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {

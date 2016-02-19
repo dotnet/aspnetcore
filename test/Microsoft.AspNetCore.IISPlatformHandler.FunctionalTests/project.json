@@ -1,24 +1,32 @@
 {
+    "content": [
+        "Http.config",
+        "Https.config",
+        "NtlmAuthentation.config",
+    ],
     "compilationOptions": {
         "warningsAsErrors": true
     },
-    "commands": {
-        "test": "xunit.runner.aspnet"
-    },
     "dependencies": {
         "Microsoft.AspNetCore.Server.Testing": "1.0.0-*",
+        "Microsoft.Extensions.Logging": "1.0.0-*",
         "Microsoft.Extensions.Logging.Console": "1.0.0-*",
         "Microsoft.NETCore.Platforms": "1.0.1-*",
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+        "xunit": "2.1.0"
     },
     "frameworks": {
-        "dnx451": {
+        "net451": {
+            "dependencies": {
+                "xunit.runner.console": "2.1.0"
+            },
             "frameworkAssemblies": {
                 "System.Data": "",
                 "System.Net.Http": "",
                 "System.Net.Http.WebRequest": "",
+                "System.Runtime": "",
                 "System.Xml": ""
             }
         }
-    }
+    },
+    "testRunner": "xunit"
 }
