@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0-*",
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+
+  "dependencies": {
+    "NETStandard.Library": "1.0.0-*"
+  },
+
+  "frameworks": {
+    "dnxcore50": {
+      "dependencies": {
+        "System.Console": "4.0.0-*",
+        "System.Diagnostics.Process": "4.1.0-*",
+        "System.IO": "4.0.11-*",
+        "System.IO.FileSystem": "4.0.1-*"
+      }
+    }
+  }
+}

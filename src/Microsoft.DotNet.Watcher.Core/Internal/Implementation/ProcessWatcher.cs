@@ -7,11 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.PlatformAbstractions;
 
-namespace Microsoft.DotNet.Watcher.Core
+namespace Microsoft.DotNet.Watcher.Core.Internal
 {
     public class ProcessWatcher : IProcessWatcher
     {
-        private static readonly bool _isWindows = PlatformServices.Default.Runtime.OperatingSystem.Equals("Windows", StringComparison.OrdinalIgnoreCase);
+        private static readonly TimeSpan _processKillTimeout = TimeSpan.FromSeconds(30);
 
         private Process _runningProcess;
 
@@ -39,7 +39,13 @@ namespace Microsoft.DotNet.Watcher.Core
 
         public Task<int> WaitForExitAsync(CancellationToken cancellationToken)
         {
-            cancellationToken.Register(() => KillProcess(_runningProcess?.Id));
+            cancellationToken.Register(() =>
+            {
+                if (_runningProcess != null)
+                {
+                    _runningProcess.KillTree(_processKillTimeout);
+                }
+            });
 
             return Task.Run(() =>
             {
@@ -52,41 +58,5 @@ namespace Microsoft.DotNet.Watcher.Core
             });
         }
 
-        private void KillProcess(int? processId)
-        {
-            if (processId == null)
-            {
-                return;
-            }
-
-            if (_isWindows)
-            {
-                var startInfo = new ProcessStartInfo()
-                {
-                    FileName = "taskkill",
-                    Arguments = $"/T /F /PID {processId}",
-                };
-                var killProcess =  Process.Start(startInfo);
-                killProcess.WaitForExit();
-            }
-            else
-            {
-                var killSubProcessStartInfo = new ProcessStartInfo
-                {
-                    FileName = "pkill",
-                    Arguments = $"-TERM -P {processId}",
-                };
-                var killSubProcess = Process.Start(killSubProcessStartInfo);
-                killSubProcess.WaitForExit();
-                
-                var killProcessStartInfo = new ProcessStartInfo
-                {
-                    FileName = "kill",
-                    Arguments = $"-TERM {processId}",
-                };
-                var killProcess = Process.Start(killProcessStartInfo);
-                killProcess.WaitForExit();
-            }
-        }
     }
 }

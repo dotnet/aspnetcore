@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.DotNet.ProjectModel.Graph;
 
-namespace Microsoft.DotNet.Watcher.Core
+namespace Microsoft.DotNet.Watcher.Core.Internal
 {
     internal class Project : IProject
     {

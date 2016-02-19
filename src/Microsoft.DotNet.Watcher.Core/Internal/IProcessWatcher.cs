@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.DotNet.Watcher.Core
+namespace Microsoft.DotNet.Watcher.Core.Internal
 {
     public interface IProcessWatcher
     {

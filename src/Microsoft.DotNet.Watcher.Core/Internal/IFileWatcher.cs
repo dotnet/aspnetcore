@@ -3,16 +3,12 @@
 
 using System;
 
-namespace Microsoft.DotNet.Watcher.Core
+namespace Microsoft.DotNet.Watcher.Core.Internal
 {
     public interface IFileWatcher : IDisposable
     {
-        event Action<string> OnChanged;
+        event Action<string> OnFileChange;
 
-        void WatchDirectory(string path, string extension);
-
-        bool WatchFile(string path);
-
-        void WatchProject(string path);
+        void WatchDirectory(string directory);
     }
 }

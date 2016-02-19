@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.DotNet.Watcher.Core.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watcher.Core
 {
     public class DotNetWatcher
     {
-        private readonly Func<string, IFileWatcher> _fileWatcherFactory;
+        private readonly Func<IFileWatcher> _fileWatcherFactory;
         private readonly Func<IProcessWatcher> _processWatcherFactory;
         private readonly IProjectProvider _projectProvider;
         private readonly ILoggerFactory _loggerFactory;
@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Watcher.Core
         public bool ExitOnChange { get; set; }
 
         public DotNetWatcher(
-            Func<string, IFileWatcher> fileWatcherFactory,
+            Func<IFileWatcher> fileWatcherFactory,
             Func<IProcessWatcher> processWatcherFactory,
             IProjectProvider projectProvider,
             ILoggerFactory loggerFactory)
@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Watcher.Core
 
             while (true)
             {
-                var project = await WaitForValidProjectJsonAsync(projectFile, cancellationToken);
+                await WaitForValidProjectJsonAsync(projectFile, cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using (var currentRunCancellationSource = new CancellationTokenSource())
@@ -94,7 +94,7 @@ namespace Microsoft.DotNet.Watcher.Core
                     cancellationToken,
                     currentRunCancellationSource.Token))
                 {
-                    var fileWatchingTask = WaitForProjectFileToChangeAsync(project, combinedCancellationSource.Token);
+                    var fileWatchingTask = WaitForProjectFileToChangeAsync(projectFile, combinedCancellationSource.Token);
                     var dotnetTask = WaitForDotnetToExitAsync(dotnetArgumentsAsString, workingDir, combinedCancellationSource.Token);
 
                     var tasksToWait = new Task[] { dotnetTask, fileWatchingTask };
@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Watcher.Core
 
                         _logger.LogInformation("Waiting for a file to change before restarting dotnet...");
                         // Now wait for a file to change before restarting dotnet
-                        await WaitForProjectFileToChangeAsync(project, cancellationToken);
+                        await WaitForProjectFileToChangeAsync(projectFile, cancellationToken);
                     }
                     else
                     {
@@ -146,12 +146,11 @@ namespace Microsoft.DotNet.Watcher.Core
             }
         }
 
-        private async Task<string> WaitForProjectFileToChangeAsync(IProject project, CancellationToken cancellationToken)
+        private async Task<string> WaitForProjectFileToChangeAsync(string projectFile, CancellationToken cancellationToken)
         {
-            using (var fileWatcher = _fileWatcherFactory(Path.GetDirectoryName(project.ProjectFile)))
+            using (var projectWatcher = CreateProjectWatcher(projectFile, watchProjectJsonOnly: false))
             {
-                AddProjectAndDependeciesToWatcher(project, fileWatcher);
-                return await WatchForFileChangeAsync(fileWatcher, cancellationToken);
+                return await projectWatcher.WaitForChangeAsync(cancellationToken);
             }
         }
 
@@ -161,37 +160,33 @@ namespace Microsoft.DotNet.Watcher.Core
 
             var dotnetWatcher = _processWatcherFactory();
             int dotnetProcessId = dotnetWatcher.Start("dotnet", dotnetArguments, workingDir);
-            _logger.LogInformation($"dotnet run process id: {dotnetProcessId}");
+            _logger.LogInformation($"dotnet process id: {dotnetProcessId}");
 
             return dotnetWatcher.WaitForExitAsync(cancellationToken);
         }
 
-        private async Task<IProject> WaitForValidProjectJsonAsync(string projectFile, CancellationToken cancellationToken)
+        private async Task WaitForValidProjectJsonAsync(string projectFile, CancellationToken cancellationToken)
         {
-            IProject project = null;
-
             while (true)
             {
+                IProject project;
                 string errors;
                 if (_projectProvider.TryReadProject(projectFile, out project, out errors))
                 {
-                    return project;
+                    return;
                 }
 
                 _logger.LogError($"Error(s) reading project file '{projectFile}': ");
                 _logger.LogError(errors);
                 _logger.LogInformation("Fix the error to continue.");
 
-                using (var fileWatcher = _fileWatcherFactory(Path.GetDirectoryName(projectFile)))
+                using (var projectWatcher = CreateProjectWatcher(projectFile, watchProjectJsonOnly: true))
                 {
-                    fileWatcher.WatchFile(projectFile);
-                    fileWatcher.WatchProject(projectFile);
-
-                    await WatchForFileChangeAsync(fileWatcher, cancellationToken);
+                    await projectWatcher.WaitForChangeAsync(cancellationToken);
 
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        return null;
+                        return;
                     }
 
                     _logger.LogInformation($"File changed: {projectFile}");
@@ -199,66 +194,18 @@ namespace Microsoft.DotNet.Watcher.Core
             }
         }
 
-        private void AddProjectAndDependeciesToWatcher(string projectFile, IFileWatcher fileWatcher)
+        private ProjectWatcher CreateProjectWatcher(string projectFile, bool watchProjectJsonOnly)
         {
-            IProject project;
-            string errors;
-
-            if (_projectProvider.TryReadProject(projectFile, out project, out errors))
-            {
-                AddProjectAndDependeciesToWatcher(project, fileWatcher);
-            }
-        }
-
-        private void AddProjectAndDependeciesToWatcher(IProject project, IFileWatcher fileWatcher)
-        {
-            foreach (var file in project.Files)
-            {
-                if (!string.IsNullOrEmpty(file))
-                {
-                    fileWatcher.WatchDirectory(
-                        Path.GetDirectoryName(file),
-                        Path.GetExtension(file));
-                }
-            }
-
-            fileWatcher.WatchProject(project.ProjectFile);
-
-            foreach (var projFile in project.ProjectDependencies)
-            {
-                AddProjectAndDependeciesToWatcher(projFile, fileWatcher);
-            }
-        }
-
-        private async Task<string> WatchForFileChangeAsync(IFileWatcher fileWatcher, CancellationToken cancellationToken)
-        {
-            var tcs = new TaskCompletionSource<string>();
-
-            cancellationToken.Register(() => tcs.TrySetResult(null));
-
-            Action<string> callback = path => 
-            {
-                tcs.TrySetResult(path);
-            };
-
-            fileWatcher.OnChanged += callback;
-
-            var changedPath = await tcs.Task;
-
-            // Don't need to listen anymore
-            fileWatcher.OnChanged -= callback;
-
-            return changedPath;
+            return new ProjectWatcher(projectFile, watchProjectJsonOnly, _fileWatcherFactory, _projectProvider);
         }
 
         public static DotNetWatcher CreateDefault(ILoggerFactory loggerFactory)
         {
             return new DotNetWatcher(
-                fileWatcherFactory: root => new FileWatcher(root),
+                fileWatcherFactory: () => new FileWatcher(),
                 processWatcherFactory: () => new ProcessWatcher(),
                 projectProvider: new ProjectProvider(),
                 loggerFactory: loggerFactory);
         }
-
     }
 }
