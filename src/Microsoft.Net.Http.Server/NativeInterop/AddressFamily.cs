@@ -23,12 +23,20 @@
 
 namespace Microsoft.Net.Http.Server
 {
+#if NET451
     /// <devdoc>
     ///    <para>
-    ///       Specifies the address families that an instance of the <see cref='System.Net.Sockets.Socket'/>
+    ///       Specifies the address families that an instance of the <see cref="System.Net.Sockets.Socket"/>
     ///       class can use.
     ///    </para>
     /// </devdoc>
+#else
+    /// <devdoc>
+    ///    <para>
+    ///       Specifies the address families.
+    ///    </para>
+    /// </devdoc>
+#endif
     internal enum AddressFamily
     {
         /// <devdoc>

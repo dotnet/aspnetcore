@@ -88,7 +88,6 @@ namespace Microsoft.Net.Http.Server
         /// Generates a right-aligned hex string and returns the start offset.
         /// </summary>
         /// <param name="size">Chunk size to be encoded</param>
-        /// <param name="offset">Out parameter where we store offset into buffer.</param>
         /// <returns>A byte array with the header in int.</returns>
         internal static ArraySegment<byte> GetChunkHeader(int size)
         {
