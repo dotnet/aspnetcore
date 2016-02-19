@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using Microsoft.AspNetCore.Http.Abstractions;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -25,6 +26,31 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
+        /// Creates a new HostString from its host and port parts.
+        /// </summary>
+        /// <param name="host">The value should be Unicode rather than punycode. IPv6 addresses must use square braces.</param>
+        /// <param name="port">A positive, greater than 0 value representing the port in the host string.</param>
+        public HostString(string host, int port)
+        {
+            if(port <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(port), Resources.Exception_PortMustBeGreaterThanZero);
+            }
+
+            int index;
+            if (host.IndexOf('[') == -1
+                && (index = host.IndexOf(':')) >= 0
+                && index < host.Length - 1
+                && host.IndexOf(':', index + 1) >= 0)
+            {
+                // IPv6 without brackets ::1 is the only type of host with 2 or more colons
+                host =  $"[{host}]";
+            }
+
+            _value = host + ":" + port.ToString(CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
         /// Returns the original value from the constructor.
         /// </summary>
         public string Value
@@ -35,6 +61,45 @@ namespace Microsoft.AspNetCore.Http
         public bool HasValue
         {
             get { return !string.IsNullOrEmpty(_value); }
+        }
+
+        /// <summary>
+        /// Returns the value of the host part of the value. The port is removed if it was present.
+        /// IPv6 addresses will have brackets added if they are missing.
+        /// </summary>
+        /// <returns></returns>
+        public string Host
+        {
+            get
+            {
+                string host, port;
+
+                GetParts(out host, out port);
+
+                return host;
+            }
+        }
+
+        /// <summary>
+        /// Returns the value of the port part of the host, or <value>null</value> if none is found.
+        /// </summary>
+        /// <returns></returns>
+        public int? Port
+        {
+            get
+            {
+                string host, port;
+                int p;
+
+                GetParts(out host, out port);
+
+                if (string.IsNullOrEmpty(port) || !int.TryParse(port, out p))
+                {
+                    return null;
+                }
+                
+                return p;
+            }
         }
 
         /// <summary>
@@ -53,35 +118,25 @@ namespace Microsoft.AspNetCore.Http
         /// <returns></returns>
         public string ToUriComponent()
         {
-            int index;
             if (string.IsNullOrEmpty(_value))
             {
                 return string.Empty;
             }
-            else if (_value.IndexOf('[') >= 0)
-            {
-                // IPv6 in brackets [::1], maybe with port
-                return _value;
-            }
-            else if ((index = _value.IndexOf(':')) >= 0
-                && index < _value.Length - 1
-                && _value.IndexOf(':', index + 1) >= 0)
-            {
-                // IPv6 without brackets ::1 is the only type of host with 2 or more colons
-                return $"[{_value}]";
-            }
-            else if (index >= 0)
-            {
-                // Has a port
-                string port = _value.Substring(index);
+
+            string host, port;
+
+            GetParts(out host, out port);
+
+            if (host.IndexOf('[') == -1)
+            { 
                 var mapping = new IdnMapping();
-                return mapping.GetAscii(_value, 0, index) + port;
+                host = mapping.GetAscii(host);
             }
-            else
-            {
-                var mapping = new IdnMapping();
-                return mapping.GetAscii(_value);
-            }
+
+            return string.IsNullOrEmpty(port)
+                ? host
+                : string.Concat(host, ":", port);
+            
         }
 
         /// <summary>
@@ -196,6 +251,50 @@ namespace Microsoft.AspNetCore.Http
         public static bool operator !=(HostString left, HostString right)
         {
             return !left.Equals(right);
+        }
+
+        /// <summary>
+        /// Parses the current value. IPv6 addresses will have brackets added if they are missing.
+        /// </summary>
+        private void GetParts(out string host, out string port)
+        {
+            int index;
+            port = null;
+            host = null;
+
+            if (string.IsNullOrEmpty(_value))
+            {
+                return;
+            }
+            else if ((index = _value.IndexOf(']')) >= 0)
+            {
+                // IPv6 in brackets [::1], maybe with port
+                host = _value.Substring(0, index + 1);
+
+                if ((index = _value.IndexOf(':', index + 1)) >= 0)
+                {
+                    port = _value.Substring(index + 1);
+                }
+            }
+            else if ((index = _value.IndexOf(':')) >= 0
+                && index < _value.Length - 1
+                && _value.IndexOf(':', index + 1) >= 0)
+            {
+                // IPv6 without brackets ::1 is the only type of host with 2 or more colons
+                host = $"[{_value}]";
+                port = null;
+            }
+            else if (index >= 0)
+            {
+                // Has a port
+                host = _value.Substring(0, index);
+                port = _value.Substring(index + 1);
+            }
+            else
+            {
+                host = _value;
+                port = null;
+            }
         }
     }
 }

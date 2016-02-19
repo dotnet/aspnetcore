@@ -138,6 +138,22 @@ namespace Microsoft.AspNetCore.Http.Abstractions
             return string.Format(CultureInfo.CurrentCulture, GetString("Exception_InvokeDoesNotSupportRefOrOutParams"), p0);
         }
 
+        /// <summary>
+        /// The value must be greater than zero.
+        /// </summary>
+        internal static string Exception_PortMustBeGreaterThanZero
+        {
+            get { return GetString("Exception_PortMustBeGreaterThanZero"); }
+        }
+
+        /// <summary>
+        /// The value must be greater than zero.
+        /// </summary>
+        internal static string FormatException_PortMustBeGreaterThanZero()
+        {
+            return GetString("Exception_PortMustBeGreaterThanZero");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

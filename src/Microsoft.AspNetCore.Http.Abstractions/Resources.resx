@@ -141,4 +141,7 @@
   <data name="Exception_InvokeDoesNotSupportRefOrOutParams" xml:space="preserve">
     <value>The '{0}' method must not have ref or out parameters.</value>
   </data>
+  <data name="Exception_PortMustBeGreaterThanZero" xml:space="preserve">
+    <value>The value must be greater than zero.</value>
+  </data>
 </root>
