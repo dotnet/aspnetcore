@@ -16,13 +16,13 @@
     "net451": {},
     "dotnet5.4": {
       "dependencies": {
-        "System.Collections": "4.0.11-*",
-        "System.Diagnostics.Contracts": "4.0.1-*",
-        "System.Globalization": "4.0.11-*",
-        "System.Globalization.Extensions": "4.0.1-*",
-        "System.Linq": "4.1.0-*",
-        "System.Text.Encoding": "4.0.11-*",
-        "System.Resources.ResourceManager": "4.0.1-*"
+        "System.Collections": "4.0.10-*",
+        "System.Diagnostics.Contracts": "4.0.0-*",
+        "System.Globalization": "4.0.10-*",
+        "System.Globalization.Extensions": "4.0.0-*",
+        "System.Linq": "4.0.0-*",
+        "System.Text.Encoding": "4.0.10-*",
+        "System.Resources.ResourceManager": "4.0.0-*"
       }
     }
   }
