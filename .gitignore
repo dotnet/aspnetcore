@@ -27,3 +27,5 @@ nuget.exe
 project.lock.json
 .testPublish/
 .build/
+/.vs/
+
