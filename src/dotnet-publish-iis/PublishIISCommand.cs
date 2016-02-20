@@ -30,7 +30,8 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS
             var webRoot = GetWebRoot(applicationBasePath);
 
             XDocument webConfigXml = null;
-            var webConfigPath = Path.Combine(_publishFolder, webRoot, "web.config");
+            var webRootDirectory = Path.Combine(_publishFolder, webRoot);
+            var webConfigPath = Path.Combine(webRootDirectory, "web.config");
             if (File.Exists(webConfigPath))
             {
                 Reporter.Output.WriteLine($"Updating web.config at '{webConfigPath}'");
@@ -43,6 +44,12 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS
             }
             else
             {
+                if (!Directory.Exists(webRootDirectory))
+                {
+                    Reporter.Output.WriteLine($"No webroot directory found. Creating '{webRootDirectory}'");
+                    Directory.CreateDirectory(webRootDirectory);
+                }
+
                 Reporter.Output.WriteLine($"No web.config found. Creating '{webConfigPath}'");
             }
 
