@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -22,6 +23,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
             Encoding = Encoding.UTF8
         }.ToString();
 
+        private readonly IArrayPool<char> _charPool;
+
         /// <summary>
         /// Creates a new <see cref="JsonResultExecutor"/>.
         /// </summary>
@@ -31,7 +34,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
         public JsonResultExecutor(
             IHttpResponseStreamWriterFactory writerFactory, 
             ILogger<JsonResultExecutor> logger, 
-            IOptions<MvcJsonOptions> options)
+            IOptions<MvcJsonOptions> options,
+            ArrayPool<char> charPool)
         {
             if (writerFactory == null)
             {
@@ -48,9 +52,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
                 throw new ArgumentNullException(nameof(options));
             }
 
+            if (charPool == null)
+            {
+                throw new ArgumentNullException(nameof(charPool));
+            }
+
             WriterFactory = writerFactory;
             Logger = logger;
             Options = options.Value;
+            _charPool = new JsonArrayPool<char>(charPool);
         }
 
         /// <summary>
@@ -111,6 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
             {
                 using (var jsonWriter = new JsonTextWriter(writer))
                 {
+                    jsonWriter.ArrayPool = _charPool;
                     jsonWriter.CloseOutput = false;
 
                     var jsonSerializer = JsonSerializer.Create(serializerSettings);

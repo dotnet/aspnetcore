@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Buffers;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -161,7 +162,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
             return new JsonResultExecutor(
                 new TestHttpResponseStreamWriterFactory(),
                 NullLogger<JsonResultExecutor>.Instance,
-                new TestOptionsManager<MvcJsonOptions>());
+                new TestOptionsManager<MvcJsonOptions>(),
+                ArrayPool<char>.Shared);
         }
 
         private static HttpContext GetHttpContext()
