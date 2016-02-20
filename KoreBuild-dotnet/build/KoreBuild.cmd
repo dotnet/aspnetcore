@@ -17,15 +17,15 @@ IF "%KOREBUILD_DOTNET_VERSION%"=="" (
     SET KOREBUILD_DOTNET_VERSION=1.0.0.001496
 )
 
-IF NOT EXIST Sake  (
+IF NOT EXIST %~dp0Sake  (
     "%NUGET_PATH%" install Sake -ExcludeVersion -Source https://api.nuget.org/v3/index.json -o %~dp0
 )
 
-IF NOT EXIST xunit.runner.console  (
+IF NOT EXIST %~dp0xunit.runner.console  (
     "%NUGET_PATH%" install xunit.runner.console -ExcludeVersion -Source https://api.nuget.org/v3/index.json -o %~dp0
 )
 
-IF NOT EXIST xunit.core  (
+IF NOT EXIST %~dp0xunit.core  (
     "%NUGET_PATH%" install xunit.core -ExcludeVersion -Source https://api.nuget.org/v3/index.json -o %~dp0
 )
 

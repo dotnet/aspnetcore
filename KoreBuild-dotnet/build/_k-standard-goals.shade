@@ -179,11 +179,44 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 
 #xunit-test target='test' if='Directory.Exists("test")'
   @{
-    var projectFiles = Files.Include("test/**/project.json").Exclude("**/bin/*/app/project.json").ToList();
-    projectFiles.ForEach(projectFile => XunitTest(projectFile, testParallel: false, configuration: Configuration));
-    projectFiles.ForEach(projectFile => DotnetTest(projectFile, testParallel: false, configuration: Configuration));
-    projectFiles.ForEach(projectFile => DnxTest(projectFile, testParallel: false));
+    var projectFiles = Files.Include("test/**/project.json").Exclude("**/bin/*/app/project.json");
+    foreach (var projectFile in projectFiles)
+    {
+        var projectText = File.ReadAllText(projectFile);
+        var project = (JsonObject)Json.Deserialize(projectText);
+        var configs = project.ValueAsJsonObject("frameworks");
+        var targetFrameworks = configs == null ? new string[0] : configs.Keys;
+
+        var net45TFM = targetFrameworks.FirstOrDefault(t => t.StartsWith("net45", StringComparison.OrdinalIgnoreCase));
+        var dnx451TFM = targetFrameworks.FirstOrDefault(t => t.Equals("dnx451", StringComparison.OrdinalIgnoreCase));
+        var dnxCore50TFM = targetFrameworks.FirstOrDefault(t => t.Equals("dnxcore50", StringComparison.OrdinalIgnoreCase));
+        if (dnxCore50TFM != null)
+        {
+            var hasTestCommand = project.Keys.Contains("commands") && project.ValueAsJsonObject("commands").Keys.Contains("test");
+            if (projectText.Contains("dotnet-test-xunit"))
+            {
+                DotnetTest(projectFile, dnxCore50TFM, Configuration);
+            }
+            else if (hasTestCommand)
+            {
+                DnxTest(projectFile, dnxCore50TFM, Configuration);
+            }
+        }
+
+        if (project.Keys.Contains("testRunner"))
+        {
+            if (net45TFM != null)
+            {
+                XunitTest(projectFile, net45TFM, Configuration);
+            }
+            else if (dnx451TFM != null)
+            {
+                XunitTest(projectFile, dnx451TFM, Configuration);
+            }
+       }
+    }
   }
+
 
 #make-roslyn-fast
   ngen-roslyn
@@ -355,22 +388,19 @@ macro name="DotnetBuild" projectFile='string' configuration='string'
 macro name="DotnetPack" projectFile='string' dotnetPackOutputDir='string' configuration='string'
     dotnet-pack
 
-macro name="DotnetPublish" projectFile='string' outputFolder='string' framework='string'
-    dotnet-publish
-    
 macro name="DotnetPublish" projectFile='string' outputFolder='string' framework='string' configuration='string'
     dotnet-publish
 
-macro name="DotnetTest" projectFile='string' testParallel='bool' configuration='string'
+macro name="DotnetTest" projectFile='string' framework='string' configuration='string'
     dotnet-test
 
-macro name="XunitTest" projectFile='string' testParallel='bool' configuration='string'
+macro name="XunitTest" projectFile='string' framework='string' configuration='string'
     xunit-test
 
 macro name='Dnx' command='string' dnxDir='string' dnvmUse='string'
     dnx
 
-macro name="DnxTest" projectFile='string' testParallel='bool'
+macro name="DnxTest" projectFile='string' framework='string' configuration='string'
     dnx-test
 
 macro name="UpdateResx" resxFile='string'

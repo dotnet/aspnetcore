@@ -1,4 +1,3 @@
-use import="Json"
 use import="Environment"
 
 default NO_PARALLEL_TEST_PROJECTS='${E("NO_PARALLEL_TEST_PROJECTS")}'
@@ -11,6 +10,9 @@ dotnet-test
 projectFile=''
     Required. Path to the test project.json to execute
     
+framework=''
+    Required. The TFM to run tests for
+
 configuration=''
     Optional. The configuration to build in. Defaults to 'Debug'.
 */}
@@ -18,31 +20,8 @@ configuration=''
 default configuration = 'Debug'
 
 @{
-    var projectText = File.ReadAllText(projectFile);
-    var project = (JsonObject)Json.Deserialize(projectText);
-
-    // This check is just used to transition from dnx to dotnet
-    var commands = project.ValueAsJsonObject("commands");
-
-    if (commands == null && project.Keys.Contains("testRunner"))
-    {
-        var projectFolder = Path.GetDirectoryName(projectFile);
-        var projectName = Path.GetFileName(projectFolder);
-
-        var testArgs = "--configuration " + configuration;
-
-        var configs = project.ValueAsJsonObject("frameworks");
-        IEnumerable<string> targetFrameworks = configs == null?
-            new string[0]:
-            configs.Keys.Where(k => k.StartsWith("dnx", StringComparison.OrdinalIgnoreCase));
-
-        foreach (var framework in targetFrameworks)
-        {
-            if (framework.StartsWith("dnxcore"))
-            {
-                Dotnet("test " + testArgs, projectFolder);
-            }
-        }
-    }
+    var projectFolder = Path.GetDirectoryName(projectFile);
+    var testArgs = "--configuration " + configuration + " --framework " + framework;
+    Dotnet("test " + testArgs, projectFolder);
 }
 
