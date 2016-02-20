@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests
             using (new CultureReplacer())
             {
                 var builder = new WebHostBuilder()
-                    .ConfigureServices(InitializeServices)
                     .UseStartup(typeof(TStartup));
 
                 _server = new TestServer(builder);
@@ -42,32 +41,6 @@ namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests
         {
             Client.Dispose();
             _server.Dispose();
-        }
-
-        protected virtual void InitializeServices(IServiceCollection services)
-        {
-            var libraryManager = DnxPlatformServices.Default.LibraryManager;
-
-            // When an application executes in a regular context, the application base path points to the root
-            // directory where the application is located, for example .../samples/MvcSample.Web. However, when
-            // executing an application as part of a test, the ApplicationBasePath of the IApplicationEnvironment
-            // points to the root folder of the test project.
-            // To compensate, we need to calculate the correct project path and override the application
-            // environment value so that components like the view engine work properly in the context of the test.
-            var startupAssembly = typeof(TStartup).GetTypeInfo().Assembly;
-            var applicationName = startupAssembly.GetName().Name;
-            var library = libraryManager.GetLibrary(applicationName);
-            var applicationRoot = Path.GetDirectoryName(library.Path);
-
-            var applicationEnvironment = PlatformServices.Default.Application;
-
-            services.AddSingleton<IApplicationEnvironment>(
-                new TestApplicationEnvironment(applicationEnvironment, applicationName, applicationRoot));
-
-            // Inject a custom assembly provider. Overrides AddMvc() because that uses TryAdd().
-            var assemblyProvider = new StaticAssemblyProvider();
-            assemblyProvider.CandidateAssemblies.Add(startupAssembly);
-            services.AddSingleton<IAssemblyProvider>(assemblyProvider);
         }
     }
 }

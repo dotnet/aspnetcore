@@ -14,7 +14,7 @@
     "RuntimeInfoPageSample": "1.0.0",
     "StatusCodePagesSample": "1.0.0",
     "WelcomePageSample": "1.0.0",
-    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    "xunit": "2.1.0"
   },
   "exclude": [
     "wwwroot",
@@ -28,8 +28,13 @@
         "dotnet-test-xunit": "1.0.0-dev-*"
       }
     },
-    "dnx451": {}
+    "dnx451": {
+      "dependencies": {
+        "xunit.runner.console": "2.1.0"
+      }
+    }
   },
+  "testRunner": "xunit",
   "publishExclude": [
     "**.user",
     "**.vspscc"
