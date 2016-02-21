@@ -5,7 +5,6 @@
     "Microsoft.AspNetCore.Server.Kestrel.Https": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
-    "System.Net.Http": "4.0.1-*",
     "xunit": "2.1.0",
     "Microsoft.AspNetCore.Internal.libuv-Darwin": {
       "version": "1.0.0-*",
@@ -22,6 +21,7 @@
         "System.Diagnostics.TraceSource": "4.0.0-*",
         "System.Globalization.Extensions": "4.0.1-*",
         "System.IO": "4.1.0-*",
+        "System.Net.Http": "4.0.1-*",
         "System.Net.Http.WinHttpHandler": "4.0.0-*",
         "System.Net.Sockets": "4.1.0-*",
         "System.Runtime.Handles": "4.0.1-*",
@@ -32,6 +32,9 @@
     "net451": {
       "dependencies": {
         "xunit.runner.console": "2.1.0"
+      },
+      "frameworkAssemblies": {
+        "System.Net.Http": "4.0.0.0"
       }
     }
   },
