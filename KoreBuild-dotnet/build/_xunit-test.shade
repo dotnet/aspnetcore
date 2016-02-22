@@ -12,7 +12,11 @@ xunit-test
 projectFile=''
     Required. Path to the test project.json to execute
 
+configuration=''
+    Optional. The configuration to build in. Defaults to 'Debug'.
 */}
+
+default configuration = 'Debug'
 
 @{
     if (!string.Equals(KOREBUILD_TEST_SKIPMONO, "1") && !string.Equals(KOREBUILD_TEST_SKIPMONO, "true"))
@@ -52,7 +56,7 @@ projectFile=''
                 }
 
                 var publishFolder = Path.Combine(projectFolder, "obj", "testPublish-" + framework);
-                DotnetPublish(projectFile, publishFolder, framework);
+                DotnetPublish(projectFile, publishFolder, framework, configuration);
 
                 var runnerExe = "xunit.console.exe";
                 string runnerFullPath;

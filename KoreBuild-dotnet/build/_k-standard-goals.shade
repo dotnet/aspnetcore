@@ -180,8 +180,8 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 #xunit-test target='test' if='Directory.Exists("test")'
   @{
     var projectFiles = Files.Include("test/**/project.json").Exclude("**/bin/*/app/project.json").ToList();
-    projectFiles.ForEach(projectFile => XunitTest(projectFile, testParallel: false));
-    projectFiles.ForEach(projectFile => DotnetTest(projectFile, testParallel: false));
+    projectFiles.ForEach(projectFile => XunitTest(projectFile, testParallel: false, configuration: Configuration));
+    projectFiles.ForEach(projectFile => DotnetTest(projectFile, testParallel: false, configuration: Configuration));
     projectFiles.ForEach(projectFile => DnxTest(projectFile, testParallel: false));
   }
 
@@ -357,11 +357,14 @@ macro name="DotnetPack" projectFile='string' dotnetPackOutputDir='string' config
 
 macro name="DotnetPublish" projectFile='string' outputFolder='string' framework='string'
     dotnet-publish
+    
+macro name="DotnetPublish" projectFile='string' outputFolder='string' framework='string' configuration='string'
+    dotnet-publish
 
-macro name="DotnetTest" projectFile='string' testParallel='bool'
+macro name="DotnetTest" projectFile='string' testParallel='bool' configuration='string'
     dotnet-test
 
-macro name="XunitTest" projectFile='string' testParallel='bool'
+macro name="XunitTest" projectFile='string' testParallel='bool' configuration='string'
     xunit-test
 
 macro name='Dnx' command='string' dnxDir='string' dnvmUse='string'

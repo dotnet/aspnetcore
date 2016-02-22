@@ -10,8 +10,12 @@ dotnet-test
 
 projectFile=''
     Required. Path to the test project.json to execute
-
+    
+configuration=''
+    Optional. The configuration to build in. Defaults to 'Debug'.
 */}
+
+default configuration = 'Debug'
 
 @{
     var projectText = File.ReadAllText(projectFile);
@@ -25,13 +29,7 @@ projectFile=''
         var projectFolder = Path.GetDirectoryName(projectFile);
         var projectName = Path.GetFileName(projectFolder);
 
-        var noParallelTestProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        if (!string.IsNullOrEmpty(NO_PARALLEL_TEST_PROJECTS))
-        {
-            noParallelTestProjects.UnionWith(NO_PARALLEL_TEST_PROJECTS.Split((char)','));
-        }
-
-        var testArgs = noParallelTestProjects.Contains(projectName) ? " -parallel none" : "";
+        var testArgs = "--configuration " + configuration;
 
         var configs = project.ValueAsJsonObject("frameworks");
         IEnumerable<string> targetFrameworks = configs == null?
