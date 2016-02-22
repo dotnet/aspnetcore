@@ -10,9 +10,16 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Extension methods for setting up antiforgery services in an <see cref="IServiceCollection" />.
+    /// </summary>
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddAntiforgery(this IServiceCollection services)
+        /// <summary>
+        /// Adds antiforgery services to the specified <see cref="IServiceCollection" />.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        public static void AddAntiforgery(this IServiceCollection services)
         {
             if (services == null)
             {
@@ -40,27 +47,27 @@ namespace Microsoft.Extensions.DependencyInjection
                 var policy = new AntiforgerySerializationContextPooledObjectPolicy();
                 return provider.Create(policy);
             });
-
-            return services;
         }
 
-        public static IServiceCollection AddAntiforgery(
-            this IServiceCollection services,
-            Action<AntiforgeryOptions> setupAction)
+        /// <summary>
+        /// Adds antiforgery services to the specified <see cref="IServiceCollection" />.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        /// <param name="setupAction">An <see cref="Action{AntiforgeryOptions}"/> to configure the provided <see cref="AntiforgeryOptions"/>.</param>
+        public static void AddAntiforgery(this IServiceCollection services, Action<AntiforgeryOptions> setupAction)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.AddAntiforgery();
-
-            if (setupAction != null)
+            if (setupAction == null)
             {
-                services.Configure(setupAction);
+                throw new ArgumentNullException(nameof(setupAction));
             }
 
-            return services;
+            services.AddAntiforgery();
+            services.Configure(setupAction);
         }
     }
 }
