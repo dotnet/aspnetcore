@@ -368,7 +368,16 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
 
             Accept(chunk.Children);
 
-            Writer.WriteMethodInvocation(Context.Host.GeneratedClassContext.EndWriteAttributeMethodName);
+            if (!string.IsNullOrEmpty(Context.TargetWriterName))
+            {
+                Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.EndWriteAttributeToMethodName)
+                    .Write(Context.TargetWriterName)
+                    .WriteEndMethodInvocation();
+            }
+            else
+            {
+                Writer.WriteMethodInvocation(Context.Host.GeneratedClassContext.EndWriteAttributeMethodName);
+            }
         }
 
         protected override void Visit(SectionChunk chunk)
