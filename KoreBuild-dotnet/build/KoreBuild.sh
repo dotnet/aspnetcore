@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 [ -z "$KOREBUILD_DOTNET_CHANNEL" ] && KOREBUILD_DOTNET_CHANNEL=beta
-[ -z "$KOREBUILD_DOTNET_VERSION" ] && KOREBUILD_DOTNET_VERSION=1.0.0.001244
+[ -z "$KOREBUILD_DOTNET_VERSION" ] && KOREBUILD_DOTNET_VERSION=1.0.0.001496
 
 targets=""
 filename=$0
@@ -58,7 +58,6 @@ else
     # requires sudo
     export DOTNET_INSTALL_DIR=~/.dotnet
     export PATH=$DOTNET_INSTALL_DIR/bin:$PATH
-    export DOTNET_HOME=$DOTNET_INSTALL_DIR/share/dotnet/cli
     export KOREBUILD_FOLDER="$(dirname $thisDir)"
     chmod +x $thisDir/dotnet-install.sh
     $thisDir/dotnet-install.sh --channel $KOREBUILD_DOTNET_CHANNEL --version $KOREBUILD_DOTNET_VERSION
