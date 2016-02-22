@@ -193,11 +193,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .SetupGet(o => o.Value)
                 .Returns(new RouteOptions());
 
-            return new ServiceCollection()
+            var services = new ServiceCollection()
                 .AddSingleton<IInlineConstraintResolver>(new DefaultInlineConstraintResolver(routeOptions.Object))
-                .AddSingleton<UrlEncoder>(new UrlTestEncoder())
-                .AddRouting()
-                .AddSingleton(actionDescriptorProvider.Object)
+                .AddSingleton<UrlEncoder>(new UrlTestEncoder());
+
+            services.AddRouting();
+
+            return services.AddSingleton(actionDescriptorProvider.Object)
                 .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
                 .BuildServiceProvider();
         }
