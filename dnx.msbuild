@@ -263,11 +263,11 @@
 
     <Target Name="NuGetVerify" DependsOnTargets="RebuildPackages" Condition="'$(VerifySignatures)' == 'true'">
         <PropertyGroup>
-            <DnxToolsFeed>https://www.myget.org/F/dnxtools/api/v3/index.json</DnxToolsFeed>
+            <DnxToolsFeed>https://www.myget.org/F/dnxtools/api/v2</DnxToolsFeed>
             <CommandsPath>$(DNXToolsPath)commands</CommandsPath>
         </PropertyGroup>
-        <Exec Command="dnu commands install --source $(DnxToolsFeed) --source $(NuGetV3Feed) NuGetPackageVerifier --packages &quot;$(CommandsPath)&quot;"/>
-        <Exec Command="$(CommandsPath)\nugetverify &quot;$(PackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
+        <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre NuGetPackageVerifier -Source $(DnxToolsFeed) -out $(CommandsPath)"/>
+        <Exec Command="$(CommandsPath)\NuGetPackageVerifier\NuGetPackageVerifier.exe &quot;$(PackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
         <RemoveDir Directories="$(CommandsPath)"/>
     </Target>
 
