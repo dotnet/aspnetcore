@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
     public class LocalizationSampleTest
     {
         private static readonly string _applicationPath =
-#if DNX451
+#if NET451
             Path.GetFullPath(Path.Combine("..", "..", "..", "..", "samples", "LocalizationSample"));
 #else
             Path.GetFullPath(Path.Combine("..", "..", "samples", "LocalizationSample"));

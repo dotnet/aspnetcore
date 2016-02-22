@@ -8,7 +8,6 @@
     "Microsoft.Extensions.Localization": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "xunit": "2.1.0-*",
-    "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "frameworks": {
     "dnxcore50": {
@@ -19,10 +18,16 @@
         "dotnet-test-xunit": "1.0.0-dev-*"
       }
     },
-    "dnx451": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Runtime": "",
+        "System.Threading.Tasks": ""
+      },
       "dependencies": {
-        "Moq": "4.2.1312.1622"
+        "Moq": "4.2.1312.1622",
+        "xunit.runner.console": "2.1.0"
       }
     }
-  }
+  },
+  "testRunner": "xunit"
 }
