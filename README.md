@@ -7,12 +7,12 @@ How to run Coherence-Signed
 2. Depending on the Git branch you want to test (e.g. dev or release), run:
    ```
    set build_branch=dev
-   set RootDrop=\\projectk-tc\drops\Coherence\%build_branch%
+   set RootDrop=\\aspnetci\drops\Coherence\%build_branch%
    ```
 
-3. Make a temporary edit to k.msbuild to disable BinScope and signing
+3. Make a temporary edit to `dnx.msbuild` to disable BinScope and signing
    verification (you generally can't run them locally).
-   Change line 10 from:
+   Change line 14 from:
    ```
    <Target Name="Build" DependsOnTargets="CopyUnsignedPackages;BinScope;VerifySignatures" />
     ```
