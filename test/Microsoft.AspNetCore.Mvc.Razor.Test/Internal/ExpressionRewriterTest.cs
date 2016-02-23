@@ -8,9 +8,6 @@ using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Dnx.Compilation.CSharp;
-using Microsoft.Extensions.CompilationAbstractions;
-using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
@@ -567,28 +564,13 @@ public class Person
 
         private IEnumerable<MetadataReference> GetReferences()
         {
-            var libraryExporter = CompilationServices.Default?.LibraryExporter;
-            if (libraryExporter == null)
+            var types = new[]
             {
-                var types = new[]
-                {
-                   typeof(System.Linq.Expressions.Expression),
-                   typeof(string),
-                };
+                typeof(System.Linq.Expressions.Expression),
+                typeof(string),
+            };
 
-                return types.Select(t => MetadataReference.CreateFromFile(t.GetTypeInfo().Assembly.Location));
-            }
-
-            var environment = PlatformServices.Default.Application;
-            var references = new List<MetadataReference>();
-
-            var libraryExports = libraryExporter.GetAllExports(environment.ApplicationName);
-            foreach (var export in libraryExports.MetadataReferences)
-            {
-                references.Add(export.ConvertMetadataReference(MetadataReferenceExtensions.CreateAssemblyMetadata));
-            }
-
-            return references;
+            return types.Select(t => MetadataReference.CreateFromFile(t.GetTypeInfo().Assembly.Location));
         }
     }
 }

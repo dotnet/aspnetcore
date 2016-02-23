@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.AspNetCore.Mvc.Cors;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -21,7 +20,6 @@ using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -139,24 +137,6 @@ namespace Microsoft.AspNetCore.Mvc
         {
             get
             {
-                Type[] razorViewEngineOptionsRegistrations;
-                if (CompilationServices.Default == null)
-                {
-                    razorViewEngineOptionsRegistrations = new[]
-                    {
-                        typeof(RazorViewEngineOptionsSetup),
-                        typeof(DependencyContextRazorViewEngineOptionsSetup)
-                    };
-
-                }
-                else
-                {
-                    razorViewEngineOptionsRegistrations = new[]
-                    {
-                        typeof(RazorViewEngineOptionsSetup)
-                    };
-                }
-
                 return new Dictionary<Type, Type[]>()
                 {
                     {
@@ -186,7 +166,11 @@ namespace Microsoft.AspNetCore.Mvc
                     },
                     {
                         typeof(IConfigureOptions<RazorViewEngineOptions>),
-                        razorViewEngineOptionsRegistrations
+                        new[]
+                        {
+                            typeof(RazorViewEngineOptionsSetup),
+                            typeof(DependencyContextRazorViewEngineOptionsSetup)
+                        }
                     },
                     {
                         typeof(IActionConstraintProvider),

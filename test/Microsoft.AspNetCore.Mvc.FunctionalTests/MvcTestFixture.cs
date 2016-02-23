@@ -7,8 +7,13 @@ using System.Net.Http;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
+#if DNX451
+using Microsoft.Extensions.CompilationAbstractions;
+#endif
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
 
@@ -19,7 +24,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         private readonly TestServer _server;
 
         public MvcTestFixture()
+#if DNXCORE50
+            : this("../../../../../Websites/")
+#else
             : this("../../../Websites/")
+#endif
         {
         }
 
@@ -61,11 +70,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var applicationName = startupAssembly.GetName().Name;
 
             var applicationEnvironment = PlatformServices.Default.Application;
-#if DNXCORE50 || DNX451
+#if DNX451
+            services.AddSingleton(CompilationServices.Default.LibraryExporter);
+            services.AddSingleton<ICompilationService, DnxRoslynCompilationService>();
+
             var libraryManager = DnxPlatformServices.Default.LibraryManager;
             var library = libraryManager.GetLibrary(applicationName);
-            var applicationRoot = Path.GetDirectoryName(library.Path);    
-#else       
+            var applicationRoot = Path.GetDirectoryName(library.Path);
+#else
             var applicationRoot = Path.GetFullPath(Path.Combine(
                applicationEnvironment.ApplicationBasePath,
                relativePath,

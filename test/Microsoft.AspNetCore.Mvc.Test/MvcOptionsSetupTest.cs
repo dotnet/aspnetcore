@@ -4,8 +4,8 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Reflection;
+using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Hosting;
@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -34,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc
         public void Setup_SetsUpViewEngines()
         {
             // Arrange & Act
-            var options = GetOptions<MvcViewOptions>(AddDnxServices);
+            var options = GetOptions<MvcViewOptions>(AddViewEngineOptionsServices);
 
             // Assert
             var viewEngine = Assert.Single(options.ViewEngines);
@@ -119,7 +118,7 @@ namespace Microsoft.AspNetCore.Mvc
         public void Setup_SetsUpClientModelValidatorProviders()
         {
             // Arrange & Act
-            var options = GetOptions<MvcViewOptions>(AddDnxServices);
+            var options = GetOptions<MvcViewOptions>(AddViewEngineOptionsServices);
 
             // Assert
             Assert.Collection(options.ClientModelValidatorProviders,
@@ -236,6 +235,7 @@ namespace Microsoft.AspNetCore.Mvc
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddMvc();
             serviceCollection.AddTransient<ILoggerFactory, LoggerFactory>();
+
             if (action != null)
             {
                 action(serviceCollection);
@@ -245,14 +245,10 @@ namespace Microsoft.AspNetCore.Mvc
             return serviceProvider;
         }
 
-        private static void AddDnxServices(IServiceCollection serviceCollection)
+        private static void AddViewEngineOptionsServices(IServiceCollection serviceCollection)
         {
-            serviceCollection.AddSingleton(Mock.Of<ILibraryManager>());
-            serviceCollection.AddSingleton(Mock.Of<ILibraryExporter>());
-            serviceCollection.AddSingleton(Mock.Of<ICompilerOptionsProvider>());
             serviceCollection.AddSingleton(Mock.Of<IHostingEnvironment>());
             var applicationEnvironment = new Mock<IApplicationEnvironment>();
-
             applicationEnvironment.SetupGet(e => e.ApplicationName)
                 .Returns(typeof(MvcOptionsSetupTest).GetTypeInfo().Assembly.GetName().Name);
 

@@ -2,12 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.PortableExecutable;
+#if DOTNET5_6
+using System.Runtime.Loader;
+#endif
+using System.Text;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.CodeAnalysis;
-using Microsoft.Dnx.Compilation.CSharp;
-using Microsoft.Extensions.CompilationAbstractions;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
+using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.DependencyModel;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
@@ -15,107 +28,293 @@ using Microsoft.Extensions.PlatformAbstractions;
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     /// <summary>
-    /// A type that uses Roslyn to compile C# content and <see cref="ILibraryExporter"/> to find out references.
+    /// A type that uses Roslyn to compile C# content.
     /// </summary>
-    public class DefaultRoslynCompilationService : RoslynCompilationService
+    public class DefaultRoslynCompilationService : ICompilationService
     {
+        private readonly Lazy<bool> _supportsPdbGeneration = new Lazy<bool>(SymbolsUtility.SupportsSymbolsGeneration);
+        private readonly ConcurrentDictionary<string, AssemblyMetadata> _metadataFileCache =
+            new ConcurrentDictionary<string, AssemblyMetadata>(StringComparer.OrdinalIgnoreCase);
+
         private readonly IApplicationEnvironment _environment;
-        private readonly ILibraryExporter _libraryExporter;
+        private readonly IFileProvider _fileProvider;
+        private readonly Lazy<List<MetadataReference>> _applicationReferences;
+        private readonly string _classPrefix;
+        private readonly Action<RoslynCompilationContext> _compilationCallback;
+        private readonly CSharpParseOptions _parseOptions;
+        private readonly CSharpCompilationOptions _compilationOptions;
+        private readonly ILogger _logger;
+        private readonly DependencyContext _dependencyContext;
+
+#if DOTNET5_6
+        private readonly RazorLoadContext _razorLoadContext;
+#endif
 
         /// <summary>
         /// Initalizes a new instance of the <see cref="DefaultRoslynCompilationService"/> class.
         /// </summary>
         /// <param name="environment">The environment for the executing application.</param>
-        /// <param name="libraryExporter">The library manager that provides export and reference information.</param>
         /// <param name="host">The <see cref="IMvcRazorHost"/> that was used to generate the code.</param>
         /// <param name="optionsAccessor">Accessor to <see cref="RazorViewEngineOptions"/>.</param>
         /// <param name="fileProviderAccessor">The <see cref="IRazorViewEngineFileProviderAccessor"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public DefaultRoslynCompilationService(IApplicationEnvironment environment,
-            ILibraryExporter libraryExporter,
+        public DefaultRoslynCompilationService(
+            IApplicationEnvironment environment,
             IMvcRazorHost host,
             IOptions<RazorViewEngineOptions> optionsAccessor,
             IRazorViewEngineFileProviderAccessor fileProviderAccessor,
             ILoggerFactory loggerFactory)
-            : base(environment, host, optionsAccessor, fileProviderAccessor, loggerFactory)
         {
             _environment = environment;
-            _libraryExporter = libraryExporter;
+            _applicationReferences = new Lazy<List<MetadataReference>>(GetApplicationReferences);
+            _fileProvider = fileProviderAccessor.FileProvider;
+            _classPrefix = host.MainClassNamePrefix;
+            _compilationCallback = optionsAccessor.Value.CompilationCallback;
+            _parseOptions = optionsAccessor.Value.ParseOptions;
+            _compilationOptions = optionsAccessor.Value.CompilationOptions;
+            _logger = loggerFactory.CreateLogger<DefaultRoslynCompilationService>();
+
+#if DOTNET5_6
+            _razorLoadContext = new RazorLoadContext();
+#endif
+
+            var applicationAssembly = Assembly.Load(new AssemblyName(environment.ApplicationName));
+            _dependencyContext = DependencyContext.Load(applicationAssembly);
         }
 
-        protected override List<MetadataReference> GetApplicationReferences()
+        /// <inheritdoc />
+        public CompilationResult Compile(RelativeFileInfo fileInfo, string compilationContent)
         {
-            var references = new List<MetadataReference>();
-
-            // Get the MetadataReference for the executing application. If it's a Roslyn reference,
-            // we can copy the references created when compiling the application to the Razor page being compiled.
-            // This avoids performing expensive calls to MetadataReference.CreateFromImage.
-            var libraryExport = _libraryExporter.GetExport(_environment.ApplicationName);
-            if (libraryExport?.MetadataReferences != null && libraryExport.MetadataReferences.Count > 0)
+            if (fileInfo == null)
             {
-                Debug.Assert(libraryExport.MetadataReferences.Count == 1,
-                    "Expected 1 MetadataReferences, found " + libraryExport.MetadataReferences.Count);
-                var roslynReference = libraryExport.MetadataReferences[0] as IRoslynMetadataReference;
-                var compilationReference = roslynReference?.MetadataReference as CompilationReference;
-                if (compilationReference != null)
-                {
-                    references.AddRange(compilationReference.Compilation.References);
-                    references.Add(roslynReference.MetadataReference);
-                    return references;
-                }
+                throw new ArgumentNullException(nameof(fileInfo));
             }
 
-            var export = _libraryExporter.GetAllExports(_environment.ApplicationName);
-            if (export != null)
+            if (compilationContent == null)
             {
-                foreach (var metadataReference in export.MetadataReferences)
-                {
-                    // Taken from https://github.com/aspnet/KRuntime/blob/757ba9bfdf80bd6277e715d6375969a7f44370ee/src/...
-                    // Microsoft.Extensions.Runtime.Roslyn/RoslynCompiler.cs#L164
-                    // We don't want to take a dependency on the Roslyn bit directly since it pulls in more dependencies
-                    // than the view engine needs (Microsoft.Extensions.Runtime) for example
-                    references.Add(ConvertMetadataReference(metadataReference));
-                }
+                throw new ArgumentNullException(nameof(compilationContent));
             }
 
-            return references;
+            _logger.GeneratedCodeToAssemblyCompilationStart(fileInfo.RelativePath);
+
+            var startTimestamp = _logger.IsEnabled(LogLevel.Debug) ? Stopwatch.GetTimestamp() : 0;
+
+            var assemblyName = Path.GetRandomFileName();
+
+            var sourceText = SourceText.From(compilationContent, Encoding.UTF8);
+            var syntaxTree = CSharpSyntaxTree.ParseText(
+                sourceText,
+                path: assemblyName,
+                options: _parseOptions);
+
+            var references = _applicationReferences.Value;
+
+            var compilation = CSharpCompilation.Create(
+                assemblyName,
+                options: _compilationOptions,
+                syntaxTrees: new[] { syntaxTree },
+                references: references);
+
+            compilation = Rewrite(compilation);
+
+            var compilationContext = new RoslynCompilationContext(compilation);
+            _compilationCallback(compilationContext);
+            compilation = compilationContext.Compilation;
+
+            using (var ms = new MemoryStream())
+            {
+                using (var pdb = new MemoryStream())
+                {
+                    EmitResult result;
+
+                    if (_supportsPdbGeneration.Value)
+                    {
+                        result = compilation.Emit(ms, pdbStream: pdb);
+                    }
+                    else
+                    {
+                        result = compilation.Emit(ms);
+                    }
+
+                    if (!result.Success)
+                    {
+                        return GetCompilationFailedResult(
+                            fileInfo.RelativePath,
+                            compilationContent,
+                            assemblyName,
+                            result.Diagnostics);
+                    }
+
+                    Assembly assembly;
+                    ms.Seek(0, SeekOrigin.Begin);
+
+                    if (_supportsPdbGeneration.Value)
+                    {
+                        pdb.Seek(0, SeekOrigin.Begin);
+                        assembly = LoadStream(ms, pdb);
+                    }
+                    else
+                    {
+                        assembly = LoadStream(ms, assemblySymbols: null);
+                    }
+
+                    var type = assembly
+                        .GetExportedTypes()
+                        .First(t => t.Name.StartsWith(_classPrefix, StringComparison.Ordinal));
+
+                    _logger.GeneratedCodeToAssemblyCompilationEnd(fileInfo.RelativePath, startTimestamp);
+
+                    return new CompilationResult(type);
+                }
+            }
         }
 
-        private MetadataReference ConvertMetadataReference(IMetadataReference metadataReference)
+        private Assembly LoadStream(MemoryStream ms, MemoryStream assemblySymbols)
         {
-            var roslynReference = metadataReference as IRoslynMetadataReference;
+#if NET451
+            return Assembly.Load(ms.ToArray(), assemblySymbols?.ToArray());
+#else
+            return _razorLoadContext.Load(ms, assemblySymbols);
+#endif
+        }
 
-            if (roslynReference != null)
+        private CSharpCompilation Rewrite(CSharpCompilation compilation)
+        {
+            var rewrittenTrees = new List<SyntaxTree>();
+            foreach (var tree in compilation.SyntaxTrees)
             {
-                return roslynReference.MetadataReference;
+                var semanticModel = compilation.GetSemanticModel(tree, ignoreAccessibility: true);
+                var rewriter = new ExpressionRewriter(semanticModel);
+
+                var rewrittenTree = tree.WithRootAndOptions(rewriter.Visit(tree.GetRoot()), tree.Options);
+                rewrittenTrees.Add(rewrittenTree);
             }
 
-            var embeddedReference = metadataReference as IMetadataEmbeddedReference;
+            return compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(rewrittenTrees);
+        }
 
-            if (embeddedReference != null)
+        private CompilationResult GetCompilationFailedResult(
+            string relativePath,
+            string compilationContent,
+            string assemblyName,
+            IEnumerable<Diagnostic> diagnostics)
+        {
+            var diagnosticGroups = diagnostics
+                .Where(IsError)
+                .GroupBy(diagnostic => GetFilePath(relativePath, diagnostic), StringComparer.Ordinal);
+
+            var failures = new List<CompilationFailure>();
+            foreach (var group in diagnosticGroups)
             {
-                return MetadataReference.CreateFromImage(embeddedReference.Contents);
-            }
-
-            var fileMetadataReference = metadataReference as IMetadataFileReference;
-
-            if (fileMetadataReference != null)
-            {
-                return CreateMetadataFileReference(fileMetadataReference.Path);
-            }
-
-            var projectReference = metadataReference as IMetadataProjectReference;
-            if (projectReference != null)
-            {
-                using (var ms = new MemoryStream())
+                var sourceFilePath = group.Key;
+                string sourceFileContent;
+                if (string.Equals(assemblyName, sourceFilePath, StringComparison.Ordinal))
                 {
-                    projectReference.EmitReferenceAssembly(ms);
+                    // The error is in the generated code and does not have a mapping line pragma
+                    sourceFileContent = compilationContent;
+                    sourceFilePath = Resources.GeneratedCodeFileName;
+                }
+                else
+                {
+                    sourceFileContent = ReadFileContentsSafely(_fileProvider, sourceFilePath);
+                }
 
-                    return MetadataReference.CreateFromImage(ms.ToArray());
+                var compilationFailure = new CompilationFailure(
+                    sourceFilePath,
+                    sourceFileContent,
+                    compilationContent,
+                    group.Select(GetDiagnosticMessage));
+
+                failures.Add(compilationFailure);
+            }
+
+            return new CompilationResult(failures);
+        }
+
+        private static string GetFilePath(string relativePath, Diagnostic diagnostic)
+        {
+            if (diagnostic.Location == Location.None)
+            {
+                return relativePath;
+            }
+
+            return diagnostic.Location.GetMappedLineSpan().Path;
+        }
+
+        private List<MetadataReference> GetApplicationReferences()
+        {
+            return _dependencyContext.CompileLibraries
+                .SelectMany(library => library.ResolveReferencePaths())
+                .Select(CreateMetadataFileReference)
+                .ToList();
+        }
+
+        private MetadataReference CreateMetadataFileReference(string path)
+        {
+            var metadata = _metadataFileCache.GetOrAdd(path, _ =>
+            {
+                using (var stream = File.OpenRead(path))
+                {
+                    var moduleMetadata = ModuleMetadata.CreateFromStream(stream, PEStreamOptions.PrefetchMetadata);
+                    return AssemblyMetadata.Create(moduleMetadata);
+                }
+            });
+
+            return metadata.GetReference(filePath: path);
+        }
+
+        private static bool IsError(Diagnostic diagnostic)
+        {
+            return diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error;
+        }
+
+        private static string ReadFileContentsSafely(IFileProvider fileProvider, string filePath)
+        {
+            var fileInfo = fileProvider.GetFileInfo(filePath);
+            if (fileInfo.Exists)
+            {
+                try
+                {
+                    using (var reader = new StreamReader(fileInfo.CreateReadStream()))
+                    {
+                        return reader.ReadToEnd();
+                    }
+                }
+                catch
+                {
+                    // Ignore any failures
                 }
             }
 
-            throw new NotSupportedException();
+            return null;
         }
+
+        private static DiagnosticMessage GetDiagnosticMessage(Diagnostic diagnostic)
+        {
+            var mappedLineSpan = diagnostic.Location.GetMappedLineSpan();
+            return new DiagnosticMessage(
+                diagnostic.GetMessage(),
+                CSharpDiagnosticFormatter.Instance.Format(diagnostic),
+                mappedLineSpan.Path,
+                mappedLineSpan.StartLinePosition.Line + 1,
+                mappedLineSpan.StartLinePosition.Character + 1,
+                mappedLineSpan.EndLinePosition.Line + 1,
+                mappedLineSpan.EndLinePosition.Character + 1);
+        }
+
+#if DOTNET5_6
+        private class RazorLoadContext : AssemblyLoadContext
+        {
+            protected override Assembly Load(AssemblyName assemblyName)
+            {
+                return Default.LoadFromAssemblyName(assemblyName);
+            }
+
+            public Assembly Load(Stream assembly, Stream assemblySymbols)
+            {
+                return LoadFromStream(assembly, assemblySymbols);
+            }
+        }
+#endif
     }
 }

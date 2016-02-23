@@ -7,7 +7,7 @@ namespace RazorWebSite
     {
         public string ExecuteOperation()
         {
-#if NET451
+#if NET451 || DNX451
             return "This method is running from NET451";
 #elif DNXCORE50
             return "This method is running from DNXCORE50";

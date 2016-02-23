@@ -59,14 +59,6 @@ namespace Microsoft.Extensions.DependencyInjection
         internal static void AddMvcCoreServices(IServiceCollection services)
         {
             //
-            // RuntimeServices
-            //
-            if (DnxPlatformServices.Default?.LibraryManager != null)
-            {
-                services.TryAddSingleton(DnxPlatformServices.Default.LibraryManager);
-            }
-
-            //
             // Options
             //
             services.TryAddEnumerable(
@@ -78,14 +70,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Action Discovery
             //
             // These are consumed only when creating action descriptors, then they can be de-allocated
-            if (DnxPlatformServices.Default?.LibraryManager != null)
-            {
-                services.TryAddTransient<IAssemblyProvider, DefaultAssemblyProvider>();
-            }
-            else
-            {
-                services.TryAddTransient<IAssemblyProvider, DependencyContextAssemblyProvider>();
-            }
+            services.TryAddTransient<IAssemblyProvider, DefaultAssemblyProvider>();
 
             services.TryAddTransient<IControllerTypeProvider, DefaultControllerTypeProvider>();
             services.TryAddEnumerable(

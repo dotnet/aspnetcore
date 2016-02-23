@@ -57,18 +57,22 @@
     "test": "xunit.runner.aspnet"
   },
   "frameworks": {
-    "dnx451": {
-      "dependencies": {
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
-      },
-    },
-    "net451": { },
     "dnxcore50": {
       "dependencies": {
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+        "Microsoft.Dnx.Compilation.CSharp.Common": "1.0.0-*",
+        "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*",
+        "dotnet-test-xunit": "1.0.0-dev-*"
       },
       "imports": "portable-net451+win8"
-    }
+    },
+    "dnx451": {
+      "dependencies": {
+        "Microsoft.Dnx.Compilation.CSharp.Common": "1.0.0-*",
+        "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+      }
+    },
+    "net451": { }
   },
   "exclude": [
     "wwwroot",

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
@@ -12,7 +10,6 @@ using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
@@ -94,30 +91,22 @@ namespace Microsoft.Extensions.DependencyInjection
         // Internal for testing.
         internal static void AddRazorViewEngineServices(IServiceCollection services)
         {
-            var compilationServicesAvailible = CompilationServices.Default != null;
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<
+                    IConfigureOptions<RazorViewEngineOptions>,
+                    DependencyContextRazorViewEngineOptionsSetup>());
 
-            if (compilationServicesAvailible)
-            {
-                services.TryAddSingleton(CompilationServices.Default.LibraryExporter);
-
-                // This caches compilation related details that are valid across the lifetime of the application.
-                services.TryAddSingleton<ICompilationService, DefaultRoslynCompilationService>();
-            }
-            else
-            {
-                services.TryAddEnumerable(
-                    ServiceDescriptor.Transient<IConfigureOptions<RazorViewEngineOptions>, DependencyContextRazorViewEngineOptionsSetup>());
-
-                // This caches compilation related details that are valid across the lifetime of the application.
-                services.TryAddSingleton<ICompilationService, DependencyContextCompilationService>();
-            }
+            // This caches compilation related details that are valid across the lifetime of the application.
+            services.TryAddSingleton<ICompilationService, DefaultRoslynCompilationService>();
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcViewOptions>, MvcRazorMvcViewOptionsSetup>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
 
-            services.TryAddSingleton<IRazorViewEngineFileProviderAccessor, DefaultRazorViewEngineFileProviderAccessor>();
+            services.TryAddSingleton<
+                IRazorViewEngineFileProviderAccessor,
+                DefaultRazorViewEngineFileProviderAccessor>();
 
             services.TryAddSingleton<IRazorViewEngine, RazorViewEngine>();
 
@@ -144,11 +133,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Consumed by the Cache tag helper to cache results across the lifetime of the application.
             services.TryAddSingleton<IMemoryCache, MemoryCache>();
-
-            if (DnxPlatformServices.Default?.AssemblyLoadContextAccessor != null)
-            {
-                services.TryAddSingleton(DnxPlatformServices.Default.AssemblyLoadContextAccessor);
-            }
         }
     }
 }
