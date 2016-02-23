@@ -49,7 +49,8 @@
 
         <ItemGroup>
             <UnsignedPackages
-                Include="$(DropSource)**\EntityFrameworkCore*.nupkg;
+                Include="$(DropSource)**\Microsoft.EntityFrameworkCore*.nupkg;
+                         $(DropSource)**\dotnet-ef.*.nupkg;
                          $(DropSource)**\Microsoft.Data.Sqlite*.nupkg;
                          $(DropSource)**\Microsoft.VisualStudio.Web.BrowserLink*.nupkg;
                          $(DropSource)**\dnx*.nupkg;
@@ -85,11 +86,12 @@
         <ItemGroup>
             <_UnsignedBinaries
                 Include="$(UnsignedPackagesPath)**\AspNet.Loader*.dll;
-                         $(UnsignedPackagesPath)**\EntityFrameworkCore*.dll;
-                         $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore.psd1;
-                         $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore.psm1;
-                         $(UnsignedPackagesPath)**\EntityFrameworkCore*\**\init.ps1;
-                         $(UnsignedPackagesPath)**\EntityFrameworkCore*\**\install.ps1;
+                         $(UnsignedPackagesPath)**\dotnet-ef.dll;
+                         $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore*.dll;
+                         $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore.Commands*\**\EntityFramework.psd1;
+                         $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore.Commands*\**\EntityFramework.psm1;
+                         $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore.Commands*\**\init.ps1;
+                         $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore.Commands*\**\install.ps1;
                          $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.dll;
                          $(UnsignedPackagesPath)**\dnx*.dll;
@@ -174,7 +176,8 @@
 
     <Target Name="UpdateLicenseURLs" DependsOnTargets="SignFiles">
         <ItemGroup>
-            <NuSpecEULA Include="$(UnsignedPackagesPath)**\EntityFrameworkCore*.nuspec;
+            <NuSpecEULA Include="$(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore*.nuspec;
+                                 $(UnsignedPackagesPath)**\dotnet-ef*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.nuspec;
                                  $(UnsignedPackagesPath)**\dnvm.*.nuspec;
@@ -190,7 +193,8 @@
                                  $(UnsignedPackagesPath)**\NuGet.*.nuspec;
                                  $(UnsignedPackagesPath)**\StyleCop.KRules*.nuspec"/>
 
-            <NuSpecEULA Include="$(UnsignedSymbolPackagesPath)**\EntityFrameworkCore*.nuspec;
+            <NuSpecEULA Include="$(UnsignedSymbolPackagesPath)**\Microsoft.EntityFrameworkCore*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\dotnet-ef*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\Microsoft.Data.Sqlite*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\dnvm.*.nuspec;
