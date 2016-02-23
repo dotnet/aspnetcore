@@ -89,13 +89,13 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
     }
 
 #build-clean if='Directory.Exists("src")'
-  k-clean each='var projectFile in Files.Include("src/**/project.json")'
+  k-clean each='var projectFile in Files.Include("src/*/project.json")'
 
 #ci-deep-clean .deep-clean target='clean' if='IsTeamCity'
 
 #build-compile target='compile' if='Directory.Exists("src")'
   @{
-    var projectFiles = Files.Include("src/**/project.json").ToList();
+    var projectFiles = Files.Include("src/*/project.json").ToList();
     projectFiles.ForEach(projectFile => DotnetPack(projectFile, BUILD_DIR, Configuration));
 
     foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/" + Configuration + "/*.nupkg")))
@@ -106,17 +106,13 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 
 #build-test target='compile' if='Directory.Exists("test") && !BuildSrcOnly'
   @{
-    var projectFiles = Files.Include("test/**/project.json")
-      // weird bug in double-star globbing can include any file ending in project.json as well
-      .Where(f => Path.GetFileName(f).Equals("project.json", StringComparison.OrdinalIgnoreCase))
-      .ToList();
-
+    var projectFiles = Files.Include("test/*/project.json").ToList();
     projectFiles.ForEach(projectFile => DotnetBuild(projectFile, Configuration));
   }
 
 #build-samples target='compile' if='Directory.Exists("samples") && !BuildSrcOnly'
   @{
-    var projectFiles = Files.Include("samples/**/project.json").ToList();
+    var projectFiles = Files.Include("samples/*/project.json").ToList();
     projectFiles.ForEach(projectFile => DotnetBuild(projectFile, Configuration));
   }
 
@@ -179,7 +175,7 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 
 #xunit-test target='test' if='Directory.Exists("test")'
   @{
-    var projectFiles = Files.Include("test/**/project.json").Exclude("**/bin/*/app/project.json");
+    var projectFiles = Files.Include("test/*/project.json");
     foreach (var projectFile in projectFiles)
     {
         var projectText = File.ReadAllText(projectFile);
@@ -263,10 +259,6 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
   @{
      Log.Warn("The --test-dnxcore flag is no longer supported. It will be ignored.");
   }
-
-#stylecop if='Directory.Exists("src")'
-  stylecop-setup
-  stylecop-run each='var projectFile in Files.Include("src/**/project.json")'
 
 functions @{
     private static bool Quiet { get; set; }
