@@ -98,7 +98,7 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
     var projectFiles = Files.Include("src/**/project.json").ToList();
     projectFiles.ForEach(projectFile => DotnetPack(projectFile, BUILD_DIR, Configuration));
 
-    foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg")))
+    foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/" + Configuration + "/*.nupkg")))
     {
         File.Copy(nupkg, Path.Combine(BUILD_DIR, Path.GetFileName(nupkg)), true);
     }
