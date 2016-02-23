@@ -88,7 +88,7 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
         }
     }
 
-#build-clean target='clean' if='Directory.Exists("src")'
+#build-clean if='Directory.Exists("src")'
   k-clean each='var projectFile in Files.Include("src/**/project.json")'
 
 #ci-deep-clean .deep-clean target='clean' if='IsTeamCity'
