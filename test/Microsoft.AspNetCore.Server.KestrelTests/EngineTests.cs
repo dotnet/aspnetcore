@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -12,11 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
-using Microsoft.AspNetCore.Server.Kestrel.Filter;
-using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Networking;
-using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -1022,39 +1016,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await Assert.ThrowsAsync<TaskCanceledException>(async () => await writeTcs.Task);
                 // RequestAborted tripped
                 Assert.True(registrationWh.Wait(1000));
-            }
-        }
-
-        private class TestApplicationErrorLogger : ILogger
-        {
-            public int ApplicationErrorsLogged { get; set; }
-
-            public IDisposable BeginScopeImpl(object state)
-            {
-                return new Disposable(() => { });
-            }
-
-            public bool IsEnabled(LogLevel logLevel)
-            {
-                return true;
-            }
-
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-            {
-                // Application errors are logged using 13 as the eventId.
-                if (eventId.Id == 13)
-                {
-                    ApplicationErrorsLogged++;
-                }
-            }
-        }
-
-        private class PassThroughConnectionFilter : IConnectionFilter
-        {
-            public Task OnConnectionAsync(ConnectionFilterContext context)
-            {
-                context.Connection = new LoggingStream(context.Connection, new TestApplicationErrorLogger());
-                return TaskUtilities.CompletedTask;
             }
         }
     }

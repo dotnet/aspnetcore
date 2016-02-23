@@ -1,18 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
-using Microsoft.AspNetCore.Server.Kestrel.Filter;
-using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
-using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -435,41 +430,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "");
                 }
-            }
-        }
-
-        private class TestApplicationErrorLogger : ILogger
-        {
-            // Application errors are logged using 13 as the eventId.
-            private const int ApplicationErrorEventId = 13;
-
-            public int ApplicationErrorsLogged { get; set; }
-
-            public IDisposable BeginScopeImpl(object state)
-            {
-                return new Disposable(() => { });
-            }
-
-            public bool IsEnabled(LogLevel logLevel)
-            {
-                return true;
-            }
-
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-            {
-                if (eventId.Id == ApplicationErrorEventId)
-                {
-                    ApplicationErrorsLogged++;
-                }
-            }
-        }
-
-        private class PassThroughConnectionFilter : IConnectionFilter
-        {
-            public Task OnConnectionAsync(ConnectionFilterContext context)
-            {
-                context.Connection = new LoggingStream(context.Connection, new TestApplicationErrorLogger());
-                return TaskUtilities.CompletedTask;
             }
         }
     }
