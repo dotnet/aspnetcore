@@ -12,6 +12,8 @@ RUN apt-get -qqy install \
 	unzip \
 	libunwind8 \
 	libicu52 \
+	libcurl3-gnutls \
+	libssl-dev \
 	gettext
 
 RUN curl -sSL https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/install.sh | sh
