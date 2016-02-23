@@ -102,7 +102,6 @@
                          $(UnsignedPackagesPath)**\dotnet-user-secrets.dll;
                          $(UnsignedPackagesPath)**\dotnet-watch.dll;
                          $(UnsignedPackagesPath)**\Microsoft.AspNetCore*.dll;
-                         $(UnsignedPackagesPath)**\Microsoft.AspNet.SignalR.Client.Cpp.*.exe;
                          $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.Dnx*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore*.dll;
