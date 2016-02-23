@@ -92,7 +92,7 @@
             <_UnsignedBinaries
                 Include="$(UnsignedPackagesPath)**\AspNet.Loader*.dll;
                          $(UnsignedPackagesPath)**\dnx*.dll;
-                         $(UnsignedPackagesPath)**\dnx*.exe";
+                         $(UnsignedPackagesPath)**\dnx*.exe;
                          $(UnsignedPackagesPath)**\dotnet-ef.dll;
                          $(UnsignedPackagesPath)**\dotnet-publish-iis.dll;
                          $(UnsignedPackagesPath)**\dotnet-razor-tooling.dll;
@@ -115,7 +115,7 @@
                          $(UnsignedPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.dll;
                          $(UnsignedPackagesPath)**\NuGet.*.dll;
                          $(UnsignedPackagesPath)**\signalrclient.dll;
-                         $(UnsignedPackagesPath)**\StyleCop.KRules*.dll
+                         $(UnsignedPackagesPath)**\StyleCop.KRules*.dll"
             />
 
             <UnsignedBinaries Include="@(_UnsignedBinaries)">
