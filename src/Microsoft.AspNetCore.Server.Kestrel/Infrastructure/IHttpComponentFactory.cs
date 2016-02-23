@@ -11,10 +11,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
         Streams CreateStreams(FrameContext owner);
 
-        void DisposeStreams(Streams streams, bool poolingPermitted);
+        void DisposeStreams(Streams streams);
 
         Headers CreateHeaders(DateHeaderValueManager dateValueManager);
 
-        void DisposeHeaders(Headers headers, bool poolingPermitted);
+        void DisposeHeaders(Headers headers);
     }
 }

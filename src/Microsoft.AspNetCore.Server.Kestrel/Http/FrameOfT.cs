@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Http
@@ -64,55 +63,66 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         _abortedCts = null;
                         _manuallySetRequestAbortToken = null;
 
-                        var context = _application.CreateContext(this);
-                        try
+                        if (!_corruptedRequest)
                         {
-                            await _application.ProcessRequestAsync(context).ConfigureAwait(false);
-                        }
-                        catch (Exception ex)
-                        {
-                            ReportApplicationError(ex);
-                        }
-                        finally
-                        {
-                            // Trigger OnStarting if it hasn't been called yet and the app hasn't
-                            // already failed. If an OnStarting callback throws we can go through
-                            // our normal error handling in ProduceEnd.
-                            // https://github.com/aspnet/KestrelHttpServer/issues/43
-                            if (!_responseStarted && _applicationException == null && _onStarting != null)
+                            var context = _application.CreateContext(this);
+                            try
                             {
-                                await FireOnStarting();
+                                await _application.ProcessRequestAsync(context).ConfigureAwait(false);
                             }
-
-                            PauseStreams();
-
-                            if (_onCompleted != null)
+                            catch (Exception ex)
                             {
-                                await FireOnCompleted();
+                                ReportApplicationError(ex);
                             }
+                            finally
+                            {
+                                // Trigger OnStarting if it hasn't been called yet and the app hasn't
+                                // already failed. If an OnStarting callback throws we can go through
+                                // our normal error handling in ProduceEnd.
+                                // https://github.com/aspnet/KestrelHttpServer/issues/43
+                                if (!_responseStarted && _applicationException == null && _onStarting != null)
+                                {
+                                    await FireOnStarting();
+                                }
 
-                            _application.DisposeContext(context, _applicationException);
+                                PauseStreams();
+
+                                if (_onCompleted != null)
+                                {
+                                    await FireOnCompleted();
+                                }
+
+                                _application.DisposeContext(context, _applicationException);
+                            }
 
                             // If _requestAbort is set, the connection has already been closed.
                             if (Volatile.Read(ref _requestAborted) == 0)
                             {
                                 ResumeStreams();
 
-                                await ProduceEnd();
-
-                                if (_keepAlive)
+                                if (_keepAlive && !_corruptedRequest)
                                 {
-                                    // Finish reading the request body in case the app did not.
-                                    await messageBody.Consume();
+                                    try
+                                    {
+                                        // Finish reading the request body in case the app did not.
+                                        await messageBody.Consume();
+                                    }
+                                    catch (BadHttpRequestException ex)
+                                    {
+                                        ReportCorruptedHttpRequest(ex);
+                                    }
                                 }
+
+                                await ProduceEnd();
                             }
 
                             StopStreams();
                         }
 
-                        if (!_keepAlive)
+                        if (!_keepAlive || _corruptedRequest)
                         {
-                            ResetComponents(poolingPermitted: true);
+                            // End the connection for non keep alive and Bad Requests
+                            // as data incoming may have been thrown off
                             return;
                         }
                     }
@@ -122,15 +132,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
             catch (Exception ex)
             {
-                // Error occurred, do not return components to pool
-                _poolingPermitted = false;
                 Log.LogWarning(0, ex, "Connection processing ended abnormally");
             }
             finally
             {
                 try
                 {
-                    ResetComponents(poolingPermitted: _poolingPermitted);
+                    ResetComponents();
                     _abortedCts = null;
 
                     // If _requestAborted is set, the connection has already been closed.

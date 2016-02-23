@@ -7,6 +7,7 @@ using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Exceptions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
@@ -118,10 +119,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 return new ForChunkedEncoding(keepAlive, headers, context);
             }
 
-            var contentLength = headers.HeaderContentLength.ToString();
-            if (contentLength.Length > 0)
+            var unparsedContentLength = headers.HeaderContentLength.ToString();
+            if (unparsedContentLength.Length > 0)
             {
-                return new ForContentLength(keepAlive, int.Parse(contentLength), context);
+                int contentLength;
+                if (!int.TryParse(unparsedContentLength, out contentLength) || contentLength < 0)
+                {
+                    context.ReportCorruptedHttpRequest(new BadHttpRequestException("Invalid content length."));
+                    return new ForContentLength(keepAlive, 0, context);
+                }
+                else
+                {
+                    return new ForContentLength(keepAlive, contentLength, context);
+                }
             }
 
             if (keepAlive)
@@ -130,6 +140,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
 
             return new ForRemainingData(context);
+        }
+
+        private int ThrowBadRequestException(string message)
+        {
+            // returns int so can be used as item non-void function
+            var ex =  new BadHttpRequestException(message);
+            _context.ReportCorruptedHttpRequest(ex);
+
+            throw ex;
         }
 
         private class ForRemainingData : MessageBody
@@ -177,7 +196,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     _inputLength -= actual;
                     if (actual == 0)
                     {
-                        throw new InvalidDataException("Unexpected end of request content");
+                        ThrowBadRequestException("Unexpected end of request content");
                     }
                     return actual;
                 }
@@ -193,7 +212,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 _inputLength -= actual;
                 if (actual == 0)
                 {
-                    throw new InvalidDataException("Unexpected end of request content");
+                    ThrowBadRequestException("Unexpected end of request content");
                 }
 
                 return actual;
@@ -290,7 +309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                 if (_mode == Mode.TrailerHeaders)
                 {
-                    while (!Frame.TakeMessageHeaders(input, _requestHeaders))
+                    while (!_context.TakeMessageHeaders(input, _requestHeaders))
                     {
                         await GetDataAsync(input);
                     }
@@ -451,7 +470,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     }
                     else
                     {
-                        ThrowInvalidFormat();
+                        ThrowBadRequestException("Bad chunk suffix");
                     }
                 }
                 finally
@@ -489,7 +508,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }
             }
 
-            private static int CalculateChunkSize(int extraHexDigit, int currentParsedSize)
+            private int CalculateChunkSize(int extraHexDigit, int currentParsedSize)
             {
                 checked
                 {
@@ -507,35 +526,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     }
                     else
                     {
-                        return ThrowInvalidFormat();
+                        return ThrowBadRequestException("Bad chunk size data");
                     }
                 }
             }
 
-            private static SocketInput GetDataAsync(SocketInput input)
+            private SocketInput GetDataAsync(SocketInput input)
             {
                 ThrowIfRequestIncomplete(input);
 
                 return input;
             }
 
-            private static void ThrowIfRequestIncomplete(SocketInput input)
+            private void ThrowIfRequestIncomplete(SocketInput input)
             {
                 if (input.RemoteIntakeFin)
                 {
-                    ThrowRequestIncomplete();
+                    ThrowBadRequestException("Chunked request incomplete");
                 }
-            }
-
-            private static int ThrowInvalidFormat()
-            {
-                // returns int so can be used as item non-void function
-                throw new InvalidOperationException("Bad request");
-            }
-
-            private static void ThrowRequestIncomplete()
-            {
-                throw new InvalidOperationException("Chunked request incomplete");
             }
 
             private enum Mode

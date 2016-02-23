@@ -29,12 +29,18 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             using (var pool = new MemoryPool2())
             using (var socketInput = new SocketInput(pool, ltp))
             {
+                var connectionContext = new ConnectionContext()
+                {
+                    DateHeaderValueManager = new DateHeaderValueManager(),
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+                };
+                var frame = new Frame<object>(application: null, context: connectionContext);
                 var headerCollection = new FrameRequestHeaders();
 
                 var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
                 socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                var success = Frame.TakeMessageHeaders(socketInput, headerCollection);
+                var success = frame.TakeMessageHeaders(socketInput, headerCollection);
 
                 Assert.True(success);
                 Assert.Equal(numHeaders, headerCollection.Count());

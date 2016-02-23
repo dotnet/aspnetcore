@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Server.Kestrel.Exceptions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 {
@@ -32,6 +33,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         void ConnectionError(string connectionId, Exception ex);
 
         void ConnectionDisconnectedWrite(string connectionId, int count, Exception ex);
+
+        void ConnectionBadRequest(string connectionId, BadHttpRequestException ex);
 
         void NotAllConnectionsClosedGracefully();
 

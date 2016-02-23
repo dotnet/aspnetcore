@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 while (await request.Body.ReadAsync(buffer, 0, buffer.Length) != 0)
                 {
-                    // read to end
+                    ;// read to end
                 }
 
                 if (requestsReceived < requestCount)
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 while (await request.Body.ReadAsync(buffer, 0, buffer.Length) != 0)
                 {
-                    // read to end
+                    ;// read to end
                 }
 
                 if (requestsReceived < requestCount)
@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task InvalidLengthResultsIn500(ServiceContext testContext)
+        public async Task InvalidLengthResultsIn400(ServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
             {
@@ -367,14 +367,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     "POST / HTTP/1.1",
                     "Transfer-Encoding: chunked",
                     "",
-                    "Cio",
-                    "HelloChunked",
-                    "0",
-                    "");
+                    "Cii");
 
-                    // Should really be a 40x as is bad request
                     await connection.Receive(
-                        "HTTP/1.1 500 Internal Server Error",
+                        "HTTP/1.1 400 Bad Request",
                         "");
                     await connection.ReceiveStartsWith("Date:");
                     await connection.ReceiveEnd(
@@ -388,7 +384,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task InvalidSizedDataResultsIn500(ServiceContext testContext)
+        public async Task InvalidSizedDataResultsIn400(ServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
             {
@@ -415,13 +411,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Transfer-Encoding: chunked",
                         "",
                         "C",
-                        "HelloChunkedInvalid",
-                        "0",
-                        "");
+                        "HelloChunkedIn");
 
-                    // Should really be a 40x as is bad request
                     await connection.Receive(
-                        "HTTP/1.1 500 Internal Server Error",
+                        "HTTP/1.1 400 Bad Request",
                         "");
                     await connection.ReceiveStartsWith("Date:");
                     await connection.ReceiveEnd(

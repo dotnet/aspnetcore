@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Numerics;
 using System.Text;
 using System.Threading;
@@ -13,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Exceptions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private readonly object _onStartingSync = new Object();
         private readonly object _onCompletedSync = new Object();
 
-        protected bool _poolingPermitted = true;
+        protected bool _corruptedRequest = false;
         private Headers _frameHeaders;
         private Streams _frameStreams;
 
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public void Reset()
         {
-            ResetComponents(poolingPermitted: true);
+            ResetComponents();
 
             _onStarting = null;
             _onCompleted = null;
@@ -248,27 +248,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             _abortedCts = null;
         }
 
-        protected void ResetComponents(bool poolingPermitted)
+        protected void ResetComponents()
         {
-            if (_frameHeaders != null)
+            var frameHeaders = Interlocked.Exchange(ref _frameHeaders, null);
+            if (frameHeaders != null)
             {
-                var frameHeaders = _frameHeaders;
-                _frameHeaders = null;
-
                 RequestHeaders = null;
                 ResponseHeaders = null;
-                HttpComponentFactory.DisposeHeaders(frameHeaders, poolingPermitted);
+                HttpComponentFactory.DisposeHeaders(frameHeaders);
             }
 
-            if (_frameStreams != null)
+            var frameStreams = Interlocked.Exchange(ref _frameStreams, null);
+            if (frameStreams != null)
             {
-                var frameStreams = _frameStreams;
-                _frameStreams = null;
-
                 RequestBody = null;
                 ResponseBody = null;
                 DuplexStream = null;
-                HttpComponentFactory.DisposeStreams(frameStreams, poolingPermitted);
+                HttpComponentFactory.DisposeStreams(frameStreams);
             }
         }
 
@@ -568,8 +564,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         protected Task ProduceEnd()
         {
-            if (_applicationException != null)
+            if (_corruptedRequest || _applicationException != null)
             {
+                if (_corruptedRequest)
+                {
+                    // 400 Bad Request
+                    StatusCode = 400;
+                } 
+                else
+                {
+                    // 500 Internal Server Error
+                    StatusCode = 500;
+                }
+
                 if (_responseStarted)
                 {
                     // We can no longer respond with a 500, so we simply close the connection.
@@ -578,7 +585,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }
                 else
                 {
-                    StatusCode = 500;
                     ReasonPhrase = null;
 
                     var responseHeaders = _frameHeaders.ResponseHeaders;
@@ -711,7 +717,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 string method;
                 var begin = scan;
-                if (!begin.GetKnownMethod(ref scan,out method))
+                if (!begin.GetKnownMethod(ref scan, out method))
                 {
                     if (scan.Seek(ref _vectorSpaces) == -1)
                     {
@@ -834,7 +840,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             return true;
         }
 
-        public static bool TakeMessageHeaders(SocketInput input, FrameRequestHeaders requestHeaders)
+        public bool TakeMessageHeaders(SocketInput input, FrameRequestHeaders requestHeaders)
         {
             var scan = input.ConsumingStart();
             var consumed = scan;
@@ -863,7 +869,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             consumed = scan;
                             return true;
                         }
-                        throw new InvalidDataException("Malformed request");
+
+                        ReportCorruptedHttpRequest(new BadHttpRequestException("Headers corrupted, invalid header sequence."));
+                        // Headers corrupted, parsing headers is complete
+                        return true;
                     }
 
                     while (
@@ -953,16 +962,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                    statusCode != 304;
         }
 
+        public void ReportCorruptedHttpRequest(BadHttpRequestException ex)
+        {
+            _corruptedRequest = true;
+            Log.ConnectionBadRequest(ConnectionId, ex);
+        }
+
         protected void ReportApplicationError(Exception ex)
         {
             if (_applicationException == null)
             {
                 _applicationException = ex;
             }
+            else if (_applicationException is AggregateException)
+            {
+                _applicationException = new AggregateException(_applicationException, ex).Flatten();
+            }
             else
             {
                 _applicationException = new AggregateException(_applicationException, ex);
             }
+
             Log.ApplicationError(ex);
         }
 
