@@ -97,6 +97,7 @@
                          $(UnsignedPackagesPath)**\dotnet-publish-iis.dll;
                          $(UnsignedPackagesPath)**\dotnet-razor-tooling.dll;
                          $(UnsignedPackagesPath)**\dotnet-sql-cache.dll;
+                         $(UnsignedPackagesPath)**\dotnet-sql-cache.exe;
                          $(UnsignedPackagesPath)**\dotnet-test-xunit.dll;
                          $(UnsignedPackagesPath)**\dotnet-user-secrets.dll;
                          $(UnsignedPackagesPath)**\dotnet-watch.dll;
