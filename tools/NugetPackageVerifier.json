@@ -1,20 +1,14 @@
 {
     "adx": { // Packages written by the ADX team and that ship on NuGet.org
         "rules": [
-            "AuthenticodeSigningRule",
-            "PowerShellScriptIsSignedRule"
+            "SigningVerificationCompositeRule"
         ],
         "packages": {
-            "dotnet-razor-tooling": { },
-            "Microsoft.EntityFrameworkCore.Commands": { },
-            "Microsoft.EntityFrameworkCore": { },
-            "Microsoft.EntityFrameworkCore.InMemory": { },
-            "Microsoft.EntityFrameworkCore.SqlServer": { },
-            "Microsoft.EntityFrameworkCore.SqlServer.Design": { },
-            "Microsoft.EntityFrameworkCore.Relational": { },
-            "Microsoft.EntityFrameworkCore.Relational.Design": { },
-            "Microsoft.EntityFrameworkCore.Sqlite": { },
-            "Microsoft.EntityFrameworkCore.Sqlite.Design": { },
+            "dotnet-ef": {},
+            "dotnet-publish-iis": {},
+            "dotnet-razor-tooling": {},
+            "dotnet-test-xunit": {},
+            "dotnet-watch": {},
             "dnx-clr-win-x64": {
                 "SIGN_AUTHENTICODE": {
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
@@ -31,68 +25,14 @@
                 "SIGN_AUTHENTICODE": {
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
                     "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\Microsoft.Win32.Primitives.dll": "Need to follow up, not from ADX team",
-                    "bin\\mscorlib.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Console.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Diagnostics.Debug.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Diagnostics.FileVersionInfo.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Diagnostics.Process.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Diagnostics.TraceSource.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Globalization.Extensions.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.IO.Compression.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.IO.FileSystem.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.IO.FileSystem.DriveInfo.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.IO.FileSystem.Watcher.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.IO.MemoryMappedFiles.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.IO.Pipes.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Net.Http.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Net.NameResolution.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Net.Primitives.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Net.Requests.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Net.Sockets.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Private.Uri.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Runtime.Extensions.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Runtime.InteropServices.RuntimeInformation.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Security.Cryptography.Encoding.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Security.Cryptography.OpenSsl.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Security.Cryptography.X509Certificates.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Text.Encoding.CodePages.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Threading.dll": "Need to follow up, not from ADX team"
+                    "bin\\mscorlib.dll": "Need to follow up, not from ADX team"
                 }
             },
             "dnx-coreclr-linux-x64": {
                 "SIGN_AUTHENTICODE": {
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
                     "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\Microsoft.Win32.Primitives.dll": "Need to follow up, not from ADX team",
-                    "bin\\mscorlib.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Console.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Diagnostics.Debug.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Diagnostics.FileVersionInfo.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Diagnostics.Process.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Diagnostics.TraceSource.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Globalization.Extensions.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.IO.Compression.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.IO.FileSystem.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.IO.FileSystem.DriveInfo.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.IO.FileSystem.Watcher.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.IO.MemoryMappedFiles.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.IO.Pipes.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Net.Http.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Net.NameResolution.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Net.Primitives.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Net.Requests.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Net.Sockets.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Private.Uri.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Runtime.Extensions.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Runtime.InteropServices.RuntimeInformation.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Security.Cryptography.Encoding.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Security.Cryptography.OpenSsl.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Security.Cryptography.X509Certificates.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Text.Encoding.CodePages.dll": "Need to follow up, not from ADX team",
-                    "bin\\System.Threading.dll": "Need to follow up, not from ADX team"
+                    "bin\\mscorlib.dll": "Need to follow up, not from ADX team"
                 }
             },
             "dnx-coreclr-win-x64": {
@@ -119,68 +59,70 @@
                     "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
                 }
             },
-            "dotnet-sql-cache": { },
-            "dotnet-user-secrets": { },
-            "Microsoft.AspNetCore.Antiforgery": { },
-            "Microsoft.AspNetCore.Authentication": { },
-            "Microsoft.AspNetCore.Authentication.Cookies": { },
-            "Microsoft.AspNetCore.Authentication.Facebook": { },
-            "Microsoft.AspNetCore.Authentication.Google": { },
-            "Microsoft.AspNetCore.Authentication.JwtBearer": { },
-            "Microsoft.AspNetCore.Authentication.MicrosoftAccount": { },
-            "Microsoft.AspNetCore.Authentication.OAuth": { },
-            "Microsoft.AspNetCore.Authentication.OpenIdConnect": { },
-            "Microsoft.AspNetCore.Authentication.Twitter": { },
-            "Microsoft.AspNetCore.Authorization": { },
-            "Microsoft.AspNetCore.Buffering": { },
-            "Microsoft.AspNetCore.CookiePolicy": { },
-            "Microsoft.AspNetCore.Cors": { },
-            "Microsoft.AspNetCore.Cryptography.Internal": { },
-            "Microsoft.AspNetCore.Cryptography.KeyDerivation": { },
-            "Microsoft.AspNetCore.DataProtection": { },
-            "Microsoft.AspNetCore.DataProtection.Abstractions": { },
-            "Microsoft.AspNetCore.DataProtection.Extensions": { },
-            "Microsoft.AspNetCore.DataProtection.SystemWeb": { },
-            "Microsoft.AspNetCore.Diagnostics": { },
-            "Microsoft.AspNetCore.Diagnostics.Abstractions": { },
-            "Microsoft.AspNetCore.Diagnostics.Elm": { },
-            "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": { },
-            "Microsoft.AspNetCore.Hosting": { },
-            "Microsoft.AspNetCore.Hosting.Abstractions": { },
-            "Microsoft.AspNetCore.Hosting.Server.Abstractions": { },
-            "Microsoft.AspNetCore.Html.Abstractions": { },
-            "Microsoft.AspNetCore.Http": { },
-            "Microsoft.AspNetCore.Http.Abstractions": { },
-            "Microsoft.AspNetCore.Http.Extensions": { },
-            "Microsoft.AspNetCore.Http.Features": { },
-            "Microsoft.AspNetCore.HttpOverrides": { },
-            "Microsoft.AspNetCore.Identity": { },
-            "Microsoft.AspNetCore.Identity.EntityFrameworkCore": { },
-            "Microsoft.AspNetCore.IISPlatformHandler": { },
-            "Microsoft.AspNetCore.JsonPatch": { },
-            "Microsoft.AspNetCore.Localization": { },
-            "Microsoft.AspNetCore.MiddlewareAnalysis": { },
-            "Microsoft.AspNetCore.Mvc": { },
-            "Microsoft.AspNetCore.Mvc.Abstractions": { },
-            "Microsoft.AspNetCore.Mvc.ApiExplorer": { },
-            "Microsoft.AspNetCore.Mvc.Core": { },
-            "Microsoft.AspNetCore.Mvc.Cors": { },
-            "Microsoft.AspNetCore.Mvc.DataAnnotations": { },
-            "Microsoft.AspNetCore.Mvc.Formatters.Json": { },
-            "Microsoft.AspNetCore.Mvc.Formatters.Xml": { },
-            "Microsoft.AspNetCore.Mvc.Localization": { },
-            "Microsoft.AspNetCore.Mvc.Razor": { },
-            "Microsoft.AspNetCore.Mvc.Razor.Host": { },
-            "Microsoft.AspNetCore.Mvc.TagHelpers": { },
-            "Microsoft.AspNetCore.Mvc.ViewFeatures": { },
-            "Microsoft.AspNetCore.Mvc.WebApiCompatShim": { },
-            "Microsoft.AspNetCore.Owin": { },
-            "Microsoft.AspNetCore.Proxy": { },
-            "Microsoft.AspNetCore.Razor": { },
-            "Microsoft.AspNetCore.Razor.Runtime": { },
-            "Microsoft.AspNetCore.Razor.Runtime.Precompilation": { },
-            "Microsoft.AspNetCore.Routing": { },
-            "Microsoft.AspNetCore.Routing.Abstractions": { },
+            "dotnet-sql-cache": {},
+            "dotnet-user-secrets": {},
+            "Microsoft.AspNet.SignalR.Client.Cpp.v120.WinDesktop": {},
+            "Microsoft.AspNet.SignalR.Client.Cpp.v140.WinDesktop": {},
+            "Microsoft.AspNetCore.Antiforgery": {},
+            "Microsoft.AspNetCore.Authentication": {},
+            "Microsoft.AspNetCore.Authentication.Cookies": {},
+            "Microsoft.AspNetCore.Authentication.Facebook": {},
+            "Microsoft.AspNetCore.Authentication.Google": {},
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {},
+            "Microsoft.AspNetCore.Authentication.MicrosoftAccount": {},
+            "Microsoft.AspNetCore.Authentication.OAuth": {},
+            "Microsoft.AspNetCore.Authentication.OpenIdConnect": {},
+            "Microsoft.AspNetCore.Authentication.Twitter": {},
+            "Microsoft.AspNetCore.Authorization": {},
+            "Microsoft.AspNetCore.Buffering": {},
+            "Microsoft.AspNetCore.CookiePolicy": {},
+            "Microsoft.AspNetCore.Cors": {},
+            "Microsoft.AspNetCore.Cryptography.Internal": {},
+            "Microsoft.AspNetCore.Cryptography.KeyDerivation": {},
+            "Microsoft.AspNetCore.DataProtection": {},
+            "Microsoft.AspNetCore.DataProtection.Abstractions": {},
+            "Microsoft.AspNetCore.DataProtection.Extensions": {},
+            "Microsoft.AspNetCore.DataProtection.SystemWeb": {},
+            "Microsoft.AspNetCore.Diagnostics": {},
+            "Microsoft.AspNetCore.Diagnostics.Abstractions": {},
+            "Microsoft.AspNetCore.Diagnostics.Elm": {},
+            "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": {},
+            "Microsoft.AspNetCore.Hosting": {},
+            "Microsoft.AspNetCore.Hosting.Abstractions": {},
+            "Microsoft.AspNetCore.Hosting.Server.Abstractions": {},
+            "Microsoft.AspNetCore.Hosting.WindowsServices": {},
+            "Microsoft.AspNetCore.Html.Abstractions": {},
+            "Microsoft.AspNetCore.Http": {},
+            "Microsoft.AspNetCore.Http.Abstractions": {},
+            "Microsoft.AspNetCore.Http.Extensions": {},
+            "Microsoft.AspNetCore.Http.Features": {},
+            "Microsoft.AspNetCore.HttpOverrides": {},
+            "Microsoft.AspNetCore.Identity": {},
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {},
+            "Microsoft.AspNetCore.IISPlatformHandler": {},
+            "Microsoft.AspNetCore.JsonPatch": {},
+            "Microsoft.AspNetCore.Localization": {},
+            "Microsoft.AspNetCore.MiddlewareAnalysis": {},
+            "Microsoft.AspNetCore.Mvc": {},
+            "Microsoft.AspNetCore.Mvc.Abstractions": {},
+            "Microsoft.AspNetCore.Mvc.ApiExplorer": {},
+            "Microsoft.AspNetCore.Mvc.Core": {},
+            "Microsoft.AspNetCore.Mvc.Cors": {},
+            "Microsoft.AspNetCore.Mvc.DataAnnotations": {},
+            "Microsoft.AspNetCore.Mvc.Formatters.Json": {},
+            "Microsoft.AspNetCore.Mvc.Formatters.Xml": {},
+            "Microsoft.AspNetCore.Mvc.Localization": {},
+            "Microsoft.AspNetCore.Mvc.Razor": {},
+            "Microsoft.AspNetCore.Mvc.Razor.Host": {},
+            "Microsoft.AspNetCore.Mvc.TagHelpers": {},
+            "Microsoft.AspNetCore.Mvc.ViewFeatures": {},
+            "Microsoft.AspNetCore.Mvc.WebApiCompatShim": {},
+            "Microsoft.AspNetCore.Owin": {},
+            "Microsoft.AspNetCore.Proxy": {},
+            "Microsoft.AspNetCore.Razor": {},
+            "Microsoft.AspNetCore.Razor.Runtime": {},
+            "Microsoft.AspNetCore.Routing": {},
+            "Microsoft.AspNetCore.Routing.Abstractions": {},
             "Microsoft.AspNetCore.Server.Kestrel": {
                 "SIGN_AUTHENTICODE": {
                     "runtimes\\win7-arm\\native\\libuv.dll": "We don't sign 3rd party DLLs",
@@ -188,23 +130,22 @@
                     "runtimes\\win7-x86\\native\\libuv.dll": "We don't sign 3rd party DLLs"
                 }
             },
-            "Microsoft.AspNetCore.Server.Kestrel.Https": { },
-            "Microsoft.AspNetCore.Server.Testing": { },
-            "Microsoft.AspNetCore.Server.WebListener": { },
-            "Microsoft.AspNetCore.Session": { },
-            "Microsoft.AspNetCore.SignalR.Client.Cpp.v120.WinDesktop": { },
-            "Microsoft.AspNetCore.SignalR.Client.Cpp.v140.WinDesktop": { },
-            "Microsoft.AspNetCore.SignalR.Messaging": { },
-            "Microsoft.AspNetCore.SignalR.Redis": { },
-            "Microsoft.AspNetCore.SignalR.Server": { },
-            "Microsoft.AspNetCore.SignalR.SqlServer": { },
-            "Microsoft.AspNetCore.StaticFiles": { },
-            "Microsoft.AspNetCore.TestHost": { },
-            "Microsoft.AspNetCore.Testing": { },
-            "Microsoft.AspNetCore.WebSockets.Client": { },
-            "Microsoft.AspNetCore.WebSockets.Protocol": { },
-            "Microsoft.AspNetCore.WebSockets.Server": { },
-            "Microsoft.AspNetCore.WebUtilities": { },
+            "Microsoft.AspNetCore.Server.Kestrel.Https": {},
+            "Microsoft.AspNetCore.Server.Testing": {},
+            "Microsoft.AspNetCore.Server.WebListener": {},
+            "Microsoft.AspNetCore.Session": {},
+            "Microsoft.AspNetCore.SignalR.Messaging": {},
+            "Microsoft.AspNetCore.SignalR.Redis": {},
+            "Microsoft.AspNetCore.SignalR.Server": {},
+            "Microsoft.AspNetCore.SignalR.ServiceBus": {},
+            "Microsoft.AspNetCore.SignalR.SqlServer": {},
+            "Microsoft.AspNetCore.StaticFiles": {},
+            "Microsoft.AspNetCore.TestHost": {},
+            "Microsoft.AspNetCore.Testing": {},
+            "Microsoft.AspNetCore.WebSockets.Client": {},
+            "Microsoft.AspNetCore.WebSockets.Protocol": {},
+            "Microsoft.AspNetCore.WebSockets.Server": {},
+            "Microsoft.AspNetCore.WebUtilities": {},
             "Microsoft.Data.Sqlite": {
                 "SIGN_AUTHENTICODE": {
                     "build\\netcore50\\win10-arm\\native\\sqlite3.dll": "We don't sign 3rd party DLLs",
@@ -214,76 +155,85 @@
                     "runtimes\\win7-x86\\native\\sqlite3.dll": "We don't sign 3rd party DLLs"
                 }
             },
-            "Microsoft.Dnx.ApplicationHost": { },
-            "Microsoft.Dnx.Compilation": { },
-            "Microsoft.Dnx.Compilation.CSharp": { },
-            "Microsoft.Dnx.Compilation.CSharp.Abstractions": { },
-            "Microsoft.Dnx.Compilation.CSharp.Common": { },
-            "Microsoft.Dnx.Compilation.DesignTime": { },
-            "Microsoft.Dnx.DesignTimeHost": { },
-            "Microsoft.Dnx.DesignTimeHost.Abstractions": { },
-            "Microsoft.Dnx.Loader": { },
-            "Microsoft.Dnx.Project": { },
-            "Microsoft.Dnx.Runtime": { },
-            "Microsoft.Dnx.Testing.Abstractions": { },
-            "Microsoft.Dnx.TestHost": { },
-            "Microsoft.Dnx.Tooling": { },
-            "Microsoft.Dnx.Watcher": { },
-            "Microsoft.Dnx.Watcher.Core": { },
-            "Microsoft.Extensions.Caching.Abstractions": { },
-            "Microsoft.Extensions.Caching.Memory": { },
-            "Microsoft.Extensions.Caching.Redis": { },
-            "Microsoft.Extensions.Caching.SqlServer": { },
-            "Microsoft.Extensions.CodeGeneration": { },
-            "Microsoft.Extensions.CodeGeneration.Core": { },
-            "Microsoft.Extensions.CodeGeneration.EntityFrameworkCore": { },
-            "Microsoft.Extensions.CodeGeneration.Templating": { },
-            "Microsoft.Extensions.CodeGenerators.Mvc": { },
-            "Microsoft.Extensions.CommandLineUtils": { },
-            "Microsoft.Extensions.CompilationAbstractions": { },
-            "Microsoft.Extensions.Configuration": { },
-            "Microsoft.Extensions.Configuration.Abstractions": { },
-            "Microsoft.Extensions.Configuration.Binder": { },
-            "Microsoft.Extensions.Configuration.CommandLine": { },
-            "Microsoft.Extensions.Configuration.EnvironmentVariables": { },
-            "Microsoft.Extensions.Configuration.FileExtensions": { },
-            "Microsoft.Extensions.Configuration.FileProviderExtensions": { },
-            "Microsoft.Extensions.Configuration.Ini": { },
-            "Microsoft.Extensions.Configuration.Json": { },
-            "Microsoft.Extensions.Configuration.UserSecrets": { },
-            "Microsoft.Extensions.Configuration.Xml": { },
-            "Microsoft.Extensions.DependencyInjection": { },
-            "Microsoft.Extensions.DependencyInjection.Abstractions": { },
-            "Microsoft.Extensions.DependencyInjection.Specification.Tests": { },
-            "Microsoft.Extensions.DiagnosticAdapter": { },
-            "Microsoft.Extensions.FileProviders.Abstractions": { },
-            "Microsoft.Extensions.FileProviders.Composite": { },
-            "Microsoft.Extensions.FileProviders.Embedded": { },
-            "Microsoft.Extensions.FileProviders.Physical": { },
-            "Microsoft.Extensions.FileSystemGlobbing": { },
-            "Microsoft.Extensions.Globalization.CultureInfoCache": { },
-            "Microsoft.Extensions.Localization": { },
-            "Microsoft.Extensions.Localization.Abstractions": { },
-            "Microsoft.Extensions.Logging": { },
-            "Microsoft.Extensions.Logging.Abstractions": { },
-            "Microsoft.Extensions.Logging.Console": { },
-            "Microsoft.Extensions.Logging.Debug": { },
-            "Microsoft.Extensions.Logging.EventLog": { },
-            "Microsoft.Extensions.Logging.Testing": { },
-            "Microsoft.Extensions.Logging.TraceSource": { },
-            "Microsoft.Extensions.Options.ConfigurationExtensions": { },
-            "Microsoft.Extensions.Options": { },
-            "Microsoft.Extensions.PlatformAbstractions": { },
-            "Microsoft.Extensions.Primitives": { },
-            "Microsoft.Extensions.WebEncoders": { },
-            "Microsoft.Net.Http.Headers": { },
-            "Microsoft.Net.Http.Server": { },
-            "Microsoft.Net.WebSockets.Server": { },
-            "Microsoft.NETCore.ConsoleHost-x64": { },
-            "Microsoft.NETCore.Runtime.CoreCLR-arm": { },
-            "Microsoft.NETCore.Runtime.CoreCLR-x86": { },
-            "Microsoft.Owin.Security.Cookies.Interop": { },
-            "Microsoft.VisualStudio.Web.BrowserLink.Loader": { }
+            "Microsoft.Dnx.ApplicationHost": {},
+            "Microsoft.Dnx.Compilation": {},
+            "Microsoft.Dnx.Compilation.CSharp": {},
+            "Microsoft.Dnx.Compilation.CSharp.Abstractions": {},
+            "Microsoft.Dnx.Compilation.CSharp.Common": {},
+            "Microsoft.Dnx.Compilation.DesignTime": {},
+            "Microsoft.Dnx.DesignTimeHost": {},
+            "Microsoft.Dnx.DesignTimeHost.Abstractions": {},
+            "Microsoft.Dnx.Loader": {},
+            "Microsoft.Dnx.Project": {},
+            "Microsoft.Dnx.Runtime": {},
+            "Microsoft.Dnx.Testing.Abstractions": {},
+            "Microsoft.Dnx.TestHost": {},
+            "Microsoft.Dnx.Tooling": {},
+            "Microsoft.EntityFrameworkCore.Commands": {},
+            "Microsoft.EntityFrameworkCore": {},
+            "Microsoft.EntityFrameworkCore.InMemory": {},
+            "Microsoft.EntityFrameworkCore.SqlServer": {},
+            "Microsoft.EntityFrameworkCore.SqlServer.Design": {},
+            "Microsoft.EntityFrameworkCore.Relational": {},
+            "Microsoft.EntityFrameworkCore.Relational.Design": {},
+            "Microsoft.EntityFrameworkCore.Sqlite": {},
+            "Microsoft.EntityFrameworkCore.Sqlite.Design": {},
+            "Microsoft.Extensions.Caching.Abstractions": {},
+            "Microsoft.Extensions.Caching.Memory": {},
+            "Microsoft.Extensions.Caching.Redis": {},
+            "Microsoft.Extensions.Caching.SqlServer": {},
+            "Microsoft.Extensions.CodeGeneration": {},
+            "Microsoft.Extensions.CodeGeneration.Core": {},
+            "Microsoft.Extensions.CodeGeneration.EntityFrameworkCore": {},
+            "Microsoft.Extensions.CodeGeneration.Templating": {},
+            "Microsoft.Extensions.CodeGenerators.Mvc": {},
+            "Microsoft.Extensions.CodeGeneration.Utils": {},
+            "Microsoft.Extensions.CommandLineUtils": {},
+            "Microsoft.Extensions.CompilationAbstractions": {},
+            "Microsoft.Extensions.Configuration": {},
+            "Microsoft.Extensions.Configuration.Abstractions": {},
+            "Microsoft.Extensions.Configuration.Binder": {},
+            "Microsoft.Extensions.Configuration.CommandLine": {},
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": {},
+            "Microsoft.Extensions.Configuration.FileExtensions": {},
+            "Microsoft.Extensions.Configuration.FileProviderExtensions": {},
+            "Microsoft.Extensions.Configuration.Ini": {},
+            "Microsoft.Extensions.Configuration.Json": {},
+            "Microsoft.Extensions.Configuration.UserSecrets": {},
+            "Microsoft.Extensions.Configuration.Xml": {},
+            "Microsoft.Extensions.DependencyInjection": {},
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {},
+            "Microsoft.Extensions.DependencyInjection.Specification.Tests": {},
+            "Microsoft.Extensions.DependencyModel": {},
+            "Microsoft.Extensions.DiagnosticAdapter": {},
+            "Microsoft.Extensions.FileProviders.Abstractions": {},
+            "Microsoft.Extensions.FileProviders.Composite": {},
+            "Microsoft.Extensions.FileProviders.Embedded": {},
+            "Microsoft.Extensions.FileProviders.Physical": {},
+            "Microsoft.Extensions.FileSystemGlobbing": {},
+            "Microsoft.Extensions.Globalization.CultureInfoCache": {},
+            "Microsoft.Extensions.Localization": {},
+            "Microsoft.Extensions.Localization.Abstractions": {},
+            "Microsoft.Extensions.Logging": {},
+            "Microsoft.Extensions.Logging.Abstractions": {},
+            "Microsoft.Extensions.Logging.Console": {},
+            "Microsoft.Extensions.Logging.Debug": {},
+            "Microsoft.Extensions.Logging.EventLog": {},
+            "Microsoft.Extensions.Logging.Testing": {},
+            "Microsoft.Extensions.Logging.TraceSource": {},
+            "Microsoft.Extensions.ObjectPool": {},
+            "Microsoft.Extensions.Options.ConfigurationExtensions": {},
+            "Microsoft.Extensions.Options": {},
+            "Microsoft.Extensions.PlatformAbstractions": {},
+            "Microsoft.Extensions.PlatformAbstractions.Dnx": {},
+            "Microsoft.Extensions.Primitives": {},
+            "Microsoft.Extensions.Testing.Abstractions": {},
+            "Microsoft.Extensions.WebEncoders": {},
+            "Microsoft.Identity.Client": {},
+            "Microsoft.Net.Http.Headers": {},
+            "Microsoft.Net.Http.Server": {},
+            "Microsoft.Net.WebSockets.Server": {},
+            "Microsoft.VisualStudio.Web.BrowserLink.Loader": {}
         }
     },
     "adx-nonshipping": { // Packages written by the ADX team but that don't ship on NuGet.org (thus, no need to scan anything in them)
@@ -291,86 +241,106 @@
             // don't run any rules for packages the ADX team creates but doesn't ship
         ],
         "packages": {
-            "Microsoft.EntityFrameworkCore.FunctionalTests": { },
-            "Microsoft.EntityFrameworkCore.Relational.FunctionalTests": { },
-            "Microsoft.EntityFrameworkCore.Relational.Design.FunctionalTests": { },
-            "KoreBuild": { },
-            "KoreBuild-dotnet": { },
-            "Microsoft.AspNetCore.DataProtection.Sources": { },
-            "Microsoft.AspNetCore.Internal.libuv-Darwin": { },
-            "Microsoft.AspNetCore.Internal.libuv-Windows": { },
-            "Microsoft.AspNetCore.Razor.Test.Sources": { },
-            "Microsoft.AspNetCore.Routing.DecisionTree.Sources": { },
-            "Microsoft.AspNetCore.SignalR.Sources": { },
-            "Microsoft.Dnx": { },
-            "Microsoft.Dnx.Host": { },
-            "Microsoft.Dnx.Host.Clr": { },
-            "Microsoft.Dnx.Host.CoreClr": { },
-            "Microsoft.Dnx.Host.Mono": { },
-            "Microsoft.Dnx.Runtime.CommandParsing.Sources": { },
-            "Microsoft.Dnx.Runtime.Internals": { },
-            "Microsoft.Extensions.JsonParser.Sources": { },
-            "Microsoft.Dnx.Runtime.Sources": { },
-            "Microsoft.Dnx.TestHost.Client.Sources": { },
-            "Microsoft.Extensions.ActivatorUtilities.Sources": { },
-            "Microsoft.Extensions.ClosedGenericMatcher.Sources": { },
-            "Microsoft.Extensions.CodeGeneration.Sources": { },
-            "Microsoft.Extensions.CommandLineUtils.Sources": { },
-            "Microsoft.Extensions.CopyOnWriteDictionary.Sources": { },
-            "Microsoft.Extensions.FileProviders.Sources": { },
-            "Microsoft.Extensions.HashCodeCombiner.Sources": { },
-            "Microsoft.Extensions.Logging.NLog": { },
-            "Microsoft.Extensions.PropertyActivator.Sources": { },
-            "Microsoft.Extensions.PropertyHelper.Sources": { },
-            "Microsoft.Extensions.SecurityHelper.Sources": { },
-            "Microsoft.Extensions.TypeNameHelper.Sources": { },
-            "PageGenerator": { },
-            "xunit.runner.aspnet": { }
+            "Microsoft.EntityFrameworkCore.FunctionalTests": {},
+            "Microsoft.EntityFrameworkCore.Relational.FunctionalTests": {},
+            "Microsoft.EntityFrameworkCore.Relational.Design.FunctionalTests": {},
+            "KoreBuild": {},
+            "KoreBuild-dotnet": {},
+            "Microsoft.AspNetCore.DataProtection.Sources": {},
+            "Microsoft.AspNetCore.Internal.libuv-Darwin": {},
+            "Microsoft.AspNetCore.Internal.libuv-Windows": {},
+            "Microsoft.AspNetCore.Razor.Test.Sources": {},
+            "Microsoft.AspNetCore.Routing.DecisionTree.Sources": {},
+            "Microsoft.AspNetCore.SignalR.Sources": {},
+            "Microsoft.Dnx": {},
+            "Microsoft.Dnx.Host": {},
+            "Microsoft.Dnx.Host.Clr": {},
+            "Microsoft.Dnx.Host.CoreClr": {},
+            "Microsoft.Dnx.Host.Mono": {},
+            "Microsoft.Dnx.Runtime.CommandParsing.Sources": {},
+            "Microsoft.Dnx.Runtime.Internals": {},
+            "Microsoft.Extensions.JsonParser.Sources": {},
+            "Microsoft.Dnx.Runtime.Sources": {},
+            "Microsoft.Dnx.TestHost.Client.Sources": {},
+            "Microsoft.Extensions.ActivatorUtilities.Sources": {},
+            "Microsoft.Extensions.ClosedGenericMatcher.Sources": {},
+            "Microsoft.Extensions.CommandLineUtils.Sources": {},
+            "Microsoft.Extensions.CopyOnWriteDictionary.Sources": {},
+            "Microsoft.Extensions.FileProviders.Sources": {},
+            "Microsoft.Extensions.HashCodeCombiner.Sources": {},
+            "Microsoft.Extensions.PropertyActivator.Sources": {},
+            "Microsoft.Extensions.PropertyHelper.Sources": {},
+            "Microsoft.Extensions.SecurityHelper.Sources": {},
+            "Microsoft.Extensions.TypeNameHelper.Sources": {},
+            "PageGenerator": {},
+            "xunit.runner.aspnet": {}
         }
     },
     "non-adx": { // Packages NOT written by the ADX team, but we still do a minimal scan on them
         "rules": [ // run minimal set of rules on packages that other teams ship
-            "AssemblyStrongNameRule"
+            "NonAdxVerificationCompositeRule"
         ],
         "packages": {
-            "Console.for.NETCore": { },
-            "Microsoft.Cci": { },
-            "Microsoft.CodeAnalysis": { },
-            "Microsoft.CodeAnalysis.Common": { },
-            "Microsoft.CodeAnalysis.Compilers": { },
-            "Microsoft.CodeAnalysis.CSharp": { },
-            "Microsoft.CodeAnalysis.CSharp.Features": { },
-            "Microsoft.CodeAnalysis.CSharp.Scripting": { },
-            "Microsoft.CodeAnalysis.CSharp.Workspaces": { },
-            "Microsoft.CodeAnalysis.EditorFeatures": { },
-            "Microsoft.CodeAnalysis.EditorFeatures.Text": { },
-            "Microsoft.CodeAnalysis.Features": { },
-            "Microsoft.CodeAnalysis.VisualBasic": { },
-            "Microsoft.CodeAnalysis.Scripting": { },
-            "Microsoft.CodeAnalysis.Scripting.Common": { },
-            "Microsoft.CodeAnalysis.Scripting.VisualBasic": { },
-            "Microsoft.CodeAnalysis.VisualBasic.Workspaces": { },
-            "Microsoft.CodeAnalysis.Test.Resources.Proprietary": { },
-            "Microsoft.CodeAnalysis.VisualBasic.Features": { },
-            "Microsoft.CodeAnalysis.Workspaces.Common": { },
-            "Microsoft.CSharp": { },
-            "Microsoft.DNXCore": { },
-            "Microsoft.DotNet.CoreCLR": {
-                "SIGN_STRONGNAME": {
-                    "lib\\aspnetcore50\\mscorlib.dll": "Need to follow up, not from ADX team"
+            "Microsoft.Cci": {},
+            "Microsoft.CodeAnalysis": {},
+            "Microsoft.CodeAnalysis.Common": {},
+            "Microsoft.CodeAnalysis.Compilers": {},
+            "Microsoft.CodeAnalysis.CSharp": {},
+            "Microsoft.CodeAnalysis.CSharp.Features": {},
+            "Microsoft.CodeAnalysis.CSharp.Scripting": {},
+            "Microsoft.CodeAnalysis.CSharp.Workspaces": {},
+            "Microsoft.CodeAnalysis.EditorFeatures": {},
+            "Microsoft.CodeAnalysis.EditorFeatures.Text": {},
+            "Microsoft.CodeAnalysis.Features": {},
+            "Microsoft.CodeAnalysis.VisualBasic": {},
+            "Microsoft.CodeAnalysis.Scripting": {},
+            "Microsoft.CodeAnalysis.Scripting.Common": {},
+            "Microsoft.CodeAnalysis.Scripting.VisualBasic": {},
+            "Microsoft.CodeAnalysis.VisualBasic.Workspaces": {},
+            "Microsoft.CodeAnalysis.Test.Resources.Proprietary": {},
+            "Microsoft.CodeAnalysis.VisualBasic.Features": {},
+            "Microsoft.CodeAnalysis.Workspaces.Common": {},
+            "Microsoft.CSharp": {},
+            "Microsoft.DotNet.Cli.Utils": {
+                "SIGN_AUTHENTICODE": {
+                    "lib\\dnxcore50\\Microsoft.DotNet.Cli.Utils.dll": "Need to follow up, not from ADX team",
+                    "lib\\net451\\Microsoft.DotNet.Cli.Utils.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "Microsoft.Experimental.IdentityModel.Clients.ActiveDirectory": { },
-            "Microsoft.IdentityModel.Clients.ActiveDirectory": { },
-            "Microsoft.IdentityModel.Logging": { },
+            "Microsoft.DotNet.CoreHost": {},
+            "Microsoft.DotNet.InternalAbstractions": {
+                "SIGN_AUTHENTICODE": {
+                    "lib\\dotnet5.4\\Microsoft.DotNet.InternalAbstractions.dll": "Need to follow up, not from ADX team",
+                    "lib\\net451\\Microsoft.DotNet.InternalAbstractions.dll": "Need to follow up, not from ADX team"
+                }
+            },
+            "Microsoft.DotNet.ProjectModel": {
+                "SIGN_AUTHENTICODE": {
+                    "lib\\dnxcore50\\Microsoft.DotNet.ProjectModel.dll": "Need to follow up, not from ADX team",
+                    "lib\\net451\\Microsoft.DotNet.ProjectModel.dll": "Need to follow up, not from ADX team"
+                }
+            },
+            "Microsoft.DotNet.ProjectModel.Loader": {
+                "SIGN_AUTHENTICODE": {
+                    "lib\\dnxcore50\\Microsoft.DotNet.ProjectModel.Loader.dll": "Need to follow up, not from ADX team"
+                }
+            },
+            "Microsoft.DotNet.Watcher.Core": {
+                "SIGN_AUTHENTICODE": {
+                    "lib\\dnxcore50\\Microsoft.DotNet.Watcher.Core.dll": "Need to follow up, not from ADX team"
+                }
+            },
+            "Microsoft.Experimental.IdentityModel.Clients.ActiveDirectory": {},
+            "Microsoft.IdentityModel.Clients.ActiveDirectory": {},
+            "Microsoft.IdentityModel.Logging": {},
             "Microsoft.IdentityModel.Protocol.Extensions": {
                 "SIGN_STRONGNAME": {
                     "lib\\dnx451\\Microsoft.IdentityModel.Protocol.Extensions.dll": "Need to follow up, not from ADX team",
                     "lib\\dnxcore50\\Microsoft.IdentityModel.Protocol.Extensions.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "Microsoft.IdentityModel.Protocols": { },
-            "Microsoft.IdentityModel.Protocols.OpenIdConnect": { },
+            "Microsoft.IdentityModel.Protocols": {},
+            "Microsoft.IdentityModel.Protocols.OpenIdConnect": {},
             "Microsoft.IdentityModel.Protocols.WsFederation": {
                 "SIGN_STRONGNAME": {
                     "lib\\dnx451\\Microsoft.IdentityModel.Protocols.WsFederation.dll": "Need to follow up, not from ADX team",
@@ -378,505 +348,398 @@
                     "lib\\net451\\Microsoft.IdentityModel.Protocols.WsFederation.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "Microsoft.NETCore.ConsoleHost-arm": { },
-            "Microsoft.NETCore.ConsoleHost-x86": { },
-            "Microsoft.NETCore": { },
-            "Microsoft.NETCore.Console": { },
-            "Microsoft.NETCore.ConsoleHost": { },
-            "Microsoft.NETCore.Platforms": { },
-            "Microsoft.NETCore.Portable.Compatibility": { },
-            "Microsoft.NETCore.Runtime": { },
-            "Microsoft.NETCore.Runtime.ApiSets-x64": { },
-            "Microsoft.NETCore.Runtime.ApiSets-x86": { },
-            "Microsoft.NETCore.Runtime.CoreCLR": { },
-            "Microsoft.NETCore.Runtime.CoreCLR-x64": { },
-            "Microsoft.NETCore.Runtime.CoreCLR.ConsoleHost-arm": { },
-            "Microsoft.NETCore.Runtime.CoreCLR.ConsoleHost-x64": { },
-            "Microsoft.NETCore.Runtime.CoreCLR.ConsoleHost-x86": { },
-            "Microsoft.NETCore.Runtime.CoreCLR.TestHost-arm": { },
-            "Microsoft.NETCore.Runtime.CoreCLR.TestHost-x64": { },
-            "Microsoft.NETCore.Runtime.CoreCLR.TestHost-x86": { },
-            "Microsoft.NETCore.Runtime.CoreCLR.UAPHost-arm": { },
-            "Microsoft.NETCore.Runtime.CoreCLR.UAPHost-x64": { },
-            "Microsoft.NETCore.Runtime.CoreCLR.UAPHost-x86": { },
-            "Microsoft.NETCore.Runtime.CoreCLR.UWPHost-arm": { },
-            "Microsoft.NETCore.Runtime.CoreCLR.UWPHost-x64": { },
-            "Microsoft.NETCore.Runtime.CoreCLR.UWPHost-x86": { },
-            "Microsoft.NETCore.Runtime.Native": { },
-            "Microsoft.NETCore.TargetRuntimes": { },
-            "Microsoft.NETCore.Targets": { },
-            "Microsoft.NETCore.Targets.DNXCore": { },
-            "Microsoft.NETCore.Targets.NETFramework": { },
-            "Microsoft.NETCore.Targets.UniversalWindowsPlatform": { },
-            "Microsoft.NETCore.TestHost": { },
-            "Microsoft.NETCore.TestHost-arm": { },
-            "Microsoft.NETCore.TestHost-x64": { },
-            "Microsoft.NETCore.TestHost-x86": { },
-            "Microsoft.NETCore.UniversalWindowsPlatform": { },
-            "Microsoft.NETCore.UWPHost-arm": { },
-            "Microsoft.NETCore.UWPHost-x64": { },
-            "Microsoft.NETCore.UWPHost-x86": { },
-            "Microsoft.NETCore.Windows.ApiSets": { },
-            "Microsoft.NETCore.Windows.ApiSets-x64": { },
-            "Microsoft.NETCore.Windows.ApiSets-x86": { },
-            "Microsoft.TargetingPack.NETFramework.v4.5": { },
-            "Microsoft.TargetingPack.NETFramework.v4.6": { },
-            "Microsoft.TargetingPack.NETFramework.v4.6.1": { },
+            "Microsoft.IdentityModel.Tokens": {},
+            "Microsoft.NETCore": {},
+            "Microsoft.NETCore.Console": {},
+            "Microsoft.NETCore.ConsoleHost": {},
+            "Microsoft.NETCore.Platforms": {},
+            "Microsoft.NETCore.Portable.Compatibility": {},
+            "Microsoft.NETCore.Runtime": {},
+            "Microsoft.NETCore.Runtime.CoreCLR": {},
+            "Microsoft.NETCore.Runtime.Native": {},
+            "Microsoft.NETCore.Targets": {},
+            "Microsoft.NETCore.Targets.DNXCore": {},
+            "Microsoft.NETCore.Targets.NETFramework": {},
+            "Microsoft.NETCore.Targets.UniversalWindowsPlatform": {},
+            "Microsoft.NETCore.TestHost": {},
+            "Microsoft.NETCore.UniversalWindowsPlatform": {},
+            "Microsoft.NETCore.Windows.ApiSets": {},
+            "Microsoft.Owin.Security.Interop": {},
             "Microsoft.TargetingPack.Private.CoreCLR": {
                 "SIGN_STRONGNAME": {
-                    "ref\\dotnet5.1\\mscorlib.dll": "Need to follow up, not from ADX team"
+                    "lib\\dotnet5.1\\mscorlib.dll": "Need to follow up, not from ADX team"
+                },
+                "SIGN_AUTHENTICODE": {
+                    "lib\\dotnet5.1\\mscorlib.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "Microsoft.TargetingPack.Private.NETNative": {
-                "SIGN_STRONGNAME": {
-                    "ref\\netcore50\\System.Private.CompatQuirks.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.CoreLib.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.CoreLib.DynamicDelegate.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.CoreLib.InteropServices.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.DataContractSerialization.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.DeveloperExperience.AppX.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.DeveloperExperience.Console.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.Interop.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.Interop.Extensions.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.PortableServiceModelThunks.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.PortableThunks.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.Reflection.Core.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.Reflection.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.Reflection.Execution.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.Reflection.Metadata.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.ServiceModel.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.StackTraceGenerator.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.Threading.AsyncCausalitySupport.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.Threading.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.TypeLoader.dll": "Need to follow up, not from ADX team",
-                    "ref\\netcore50\\System.Private.WinRTInterop.CoreLib.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "Microsoft.VisualBasic": { },
-            "Microsoft.Win32.Primitives": { },
-            "Microsoft.Win32.Registry": { },
-            "Microsoft.Win32.Registry.AccessControl": { },
-            "NETStandard.Library": { },
-            "NETStandard.Platform": { },
-            "runtime.any.System.Linq.Expressions": { },
-            "runtime.any.System.Private.DataContractSerialization": { },
-            "runtime.any.System.Reflection.DispatchProxy": { },
-            "runtime.any.System.Xml.XmlSerializer": { },
-            "runtime.aot.System.Linq.Expressions": { },
-            "runtime.aot.System.Private.DataContractSerialization": { },
-            "runtime.aot.System.Reflection.DispatchProxy": { },
-            "runtime.aot.System.Xml.XmlSerializer": { },
-            "runtime.centos.7.1-x64.Microsoft.NETCore.ConsoleHost": { },
+            "Microsoft.TargetingPack.Private.NETNative": { },
+            "Microsoft.VisualBasic": {},
+            "Microsoft.Win32.Primitives": {},
+            "Microsoft.Win32.Registry": {},
+            "Microsoft.Win32.Registry.AccessControl": {},
+            "NETStandard.Library": {},
+            "NETStandard.Platform": {},
+            "NuGet.Client": {},
+            "NuGet.CommandLine.XPlat": {},
+            "NuGet.Commands": {},
+            "NuGet.Common": {},
+            "NuGet.Configuration": {},
+            "NuGet.ContentModel": {},
+            "NuGet.DependencyResolver": {},
+            "NuGet.DependencyResolver.Core": {},
+            "NuGet.Frameworks": {},
+            "NuGet.LibraryModel": {},
+            "NuGet.Logging": {},
+            "NuGet.Packaging": {},
+            "NuGet.Packaging.Core": {},
+            "NuGet.Packaging.Core.Types": {},
+            "NuGet.ProjectModel": {},
+            "NuGet.Protocol.Core.Types": {},
+            "NuGet.Protocol.Core.v3": {},
+            "NuGet.Repositories": {},
+            "NuGet.RuntimeModel": {},
+            "NuGet.Versioning": {},
+            "runtime.any.System.AppContext": {},
+            "runtime.any.System.Collections": {},
+            "runtime.any.System.Diagnostics.Tools": {},
+            "runtime.any.System.Diagnostics.Tracing": {},
+            "runtime.any.System.Dynamic.Runtime": {},
+            "runtime.any.System.Globalization": {},
+            "runtime.any.System.Globalization.Calendars": {},
+            "runtime.any.System.IO": {},
+            "runtime.any.System.Linq.Expressions": {},
+            "runtime.any.System.Private.DataContractSerialization": {},
+            "runtime.any.System.Reflection": {},
+            "runtime.any.System.Reflection.DispatchProxy": {},
+            "runtime.any.System.Reflection.Extensions": {},
+            "runtime.any.System.Reflection.Primitives": {},
+            "runtime.any.System.Reflection.TypeExtensions": {},
+            "runtime.any.System.Resources.ResourceManager": {},
+            "runtime.any.System.Runtime": {},
+            "runtime.any.System.Runtime.Extensions": {},
+            "runtime.any.System.Runtime.Handles": {},
+            "runtime.any.System.Runtime.InteropServices": {},
+            "runtime.any.System.Text.Encoding": {},
+            "runtime.any.System.Text.Encoding.Extensions": {},
+            "runtime.any.System.Threading.Tasks": {},
+            "runtime.any.System.Threading.Timer": {},
+            "runtime.any.System.Xml.XmlSerializer": {},
+            "runtime.aot.System.Collections": {},
+            "runtime.aot.System.Diagnostics.Tools": {},
+            "runtime.aot.System.Diagnostics.Tracing": {},
+            "runtime.aot.System.Dynamic.Runtime": {},
+            "runtime.aot.System.Globalization": {},
+            "runtime.aot.System.Globalization.Calendars": {},
+            "runtime.aot.System.IO": {},
+            "runtime.aot.System.Linq.Expressions": {},
+            "runtime.aot.System.Private.DataContractSerialization": {},
+            "runtime.aot.System.Reflection": {},
+            "runtime.aot.System.Reflection.DispatchProxy": {},
+            "runtime.aot.System.Reflection.Extensions": {},
+            "runtime.aot.System.Reflection.Primitives": {},
+            "runtime.aot.System.Reflection.TypeExtensions": {},
+            "runtime.aot.System.Resources.ResourceManager": {},
+            "runtime.aot.System.Runtime": {},
+            "runtime.aot.System.Runtime.Extensions": {},
+            "runtime.aot.System.Runtime.Handles": {},
+            "runtime.aot.System.Runtime.InteropServices": {},
+            "runtime.aot.System.Text.Encoding": {},
+            "runtime.aot.System.Text.Encoding.Extensions": {},
+            "runtime.aot.System.Threading.Tasks": {},
+            "runtime.aot.System.Threading.Timer": {},
+            "runtime.aot.System.Xml.XmlSerializer": {},
+            "runtime.centos.7-x64.Microsoft.DotNet.CoreHost": {},
+            "runtime.centos.7.1-x64.Microsoft.NETCore.ConsoleHost": {},
             "runtime.centos.7.1-x64.Microsoft.NETCore.Runtime.CoreCLR": {
                 "SIGN_STRONGNAME": {
                     "runtimes\\centos.7.1-x64\\lib\\dotnet\\mscorlib.dll": "Need to follow up, not from ADX team"
+                },
+                "SIGN_AUTHENTICODE": {
+                    "runtimes\\centos.7.1-x64\\lib\\dotnet\\mscorlib.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "runtime.centos.7.1-x64.Microsoft.NETCore.TestHost": { },
-            "runtime.centos.7.1-x64.runtime.native.System": { },
-            "runtime.centos.7.1-x64.runtime.native.System.IO.Compression": { },
-            "runtime.centos.7.1-x64.runtime.native.System.Net.Http": { },
-            "runtime.centos.7.1-x64.runtime.native.System.Security.Cryptography": { },
-            "runtime.linux.System.Diagnostics.Process": {
+            "runtime.centos.7.1-x64.Microsoft.NETCore.TestHost": {},
+            "runtime.centos.7.1-x64.runtime.native.System": {},
+            "runtime.centos.7.1-x64.runtime.native.System.IO.Compression": {},
+            "runtime.centos.7.1-x64.runtime.native.System.Net.Http": {},
+            "runtime.centos.7.1-x64.runtime.native.System.Security.Cryptography": {},
+            "runtime.debian.8.2-x64.Microsoft.NETCore.ConsoleHost": {},
+            "runtime.debian.8.2-x64.Microsoft.NETCore.Runtime.CoreCLR": {
                 "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.5\\System.Diagnostics.Process.dll": "Need to follow up, not from ADX team"
+                    "runtimes\\debian.8.2-x64\\lib\\dotnet\\mscorlib.dll": "Need to follow up, not from ADX team"
+                },
+                "SIGN_AUTHENTICODE": {
+                    "runtimes\\debian.8.2-x64\\lib\\dotnet\\mscorlib.dll": "Need to follow up, not from ADX team"
                 }
             },
+            "runtime.debian.8.2-x64.Microsoft.NETCore.TestHost": {},
+            "runtime.debian.8.2-x64.runtime.native.System": {},
+            "runtime.debian.8.2-x64.runtime.native.System.IO.Compression": {},
+            "runtime.debian.8.2-x64.runtime.native.System.Net.Http": {},
+            "runtime.debian.8.2-x64.runtime.native.System.Security.Cryptography": {},
+            "runtime.linux.System.Diagnostics.Process": {},
             "runtime.linux.System.IO.FileSystem": {
                 "SIGN_STRONGNAME": {
                     "runtimes\\linux\\lib\\dotnet5.4\\System.IO.FileSystem.dll": "Need to follow up, not from ADX team"
+                },
+                "SIGN_AUTHENTICODE": {
+                    "runtimes\\linux\\lib\\dotnet5.4\\System.IO.FileSystem.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "runtime.linux.System.IO.FileSystem.DriveInfo": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.IO.FileSystem.DriveInfo.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.linux.System.IO.FileSystem.Watcher": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.IO.FileSystem.Watcher.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.linux.System.IO.MemoryMappedFiles": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.IO.MemoryMappedFiles.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.linux.System.Net.Http": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Net.Http.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.linux.System.Net.NameResolution": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dnxcore50\\System.Net.NameResolution.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.linux.System.Net.NetworkInformation": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\linux\\lib\\dotnet5.4\\System.Net.NetworkInformation.dll": "Need to follow up, not from ADX team"
-                }
-            },
+            "runtime.linux.System.IO.FileSystem.DriveInfo": {},
+            "runtime.linux.System.IO.FileSystem.Watcher": {},
+            "runtime.linux.System.IO.MemoryMappedFiles": {},
+            "runtime.linux.System.Net.Http": {},
+            "runtime.linux.System.Net.NameResolution": {},
+            "runtime.linux.System.Net.NetworkInformation": {},
             "runtime.linux.System.Net.Sockets": {
                 "SIGN_STRONGNAME": {
+                    "runtimes\\linux\\lib\\dotnet5.5\\System.Net.Sockets.dll": "Need to follow up, not from ADX team"
+                },
+                "SIGN_AUTHENTICODE": {
                     "runtimes\\linux\\lib\\dotnet5.5\\System.Net.Sockets.dll": "Need to follow up, not from ADX team"
                 }
             },
             "runtime.linux.System.Runtime.Extensions": {
                 "SIGN_STRONGNAME": {
                     "runtimes\\unix\\lib\\dotnet5.4\\System.Runtime.Extensions.dll": "Need to follow up, not from ADX team"
+                },
+                "SIGN_AUTHENTICODE": {
+                    "runtimes\\unix\\lib\\dotnet5.4\\System.Runtime.Extensions.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "runtime.linux.System.Runtime.InteropServices.RuntimeInformation": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.2\\System.Runtime.InteropServices.RuntimeInformation.dll": "Need to follow up, not from ADX team"
-                }
-            },
+            "runtime.linux.System.Runtime.InteropServices.RuntimeInformation": {},
             "runtime.linux.System.Security.Cryptography.Algorithms": {
                 "SIGN_STRONGNAME": {
                     "runtimes\\unix\\lib\\dotnet5.4\\System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team"
+                },
+                "SIGN_AUTHENTICODE": {
+                    "runtimes\\unix\\lib\\dotnet5.4\\System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "runtime.native.System": { },
-            "runtime.native.System.IO.Compression": { },
-            "runtime.native.System.Net.Http": { },
-            "runtime.native.System.Security.Cryptography": { },
+            "runtime.native.System": {},
+            "runtime.native.System.IO.Compression": {},
+            "runtime.native.System.Net.Http": {},
+            "runtime.native.System.Security.Cryptography": {},
+            "runtime.osx.10.10-x64.Microsoft.DotNet.CoreHost": {},
             "runtime.osx.10.10-x64.Microsoft.NETCore.Runtime.CoreCLR": {
                 "SIGN_STRONGNAME": {
                     "runtimes\\osx.10.10-x64\\lib\\dotnet\\mscorlib.dll": "3rd party DLLs don't need this"
+                },
+                "SIGN_AUTHENTICODE": {
+                    "runtimes\\osx.10.10-x64\\lib\\dotnet\\mscorlib.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "runtime.osx.10.10-x64.runtime.native.System": { },
-            "runtime.osx.10.10-x64.runtime.native.System.IO.Compression": { },
-            "runtime.osx.10.10-x64.runtime.native.System.Net.Http": { },
-            "runtime.osx.10.10-x64.runtime.native.System.Security.Cryptography": { },
-            "runtime.osx.10.10.System.Diagnostics.Process": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.5\\System.Diagnostics.Process.dll": "Need to follow up, not from ADX team"
-                }
-            },
+            "runtime.osx.10.10-x64.runtime.native.System": {},
+            "runtime.osx.10.10-x64.runtime.native.System.IO.Compression": {},
+            "runtime.osx.10.10-x64.runtime.native.System.Net.Http": {},
+            "runtime.osx.10.10-x64.runtime.native.System.Security.Cryptography": {},
+            "runtime.osx.10.10.System.Diagnostics.Process": {},
             "runtime.osx.10.10.System.IO.FileSystem": {
                 "SIGN_STRONGNAME": {
                     "runtimes\\osx.10.10\\lib\\dotnet5.4\\System.IO.FileSystem.dll": "Need to follow up, not from ADX team"
+                },
+                "SIGN_AUTHENTICODE": {
+                    "runtimes\\osx.10.10\\lib\\dotnet5.4\\System.IO.FileSystem.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "runtime.osx.10.10.System.IO.FileSystem.DriveInfo": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.IO.FileSystem.DriveInfo.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.osx.10.10.System.IO.FileSystem.Watcher": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.IO.FileSystem.Watcher.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.osx.10.10.System.IO.MemoryMappedFiles": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.IO.MemoryMappedFiles.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.osx.10.10.System.Net.Http": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Net.Http.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.osx.10.10.System.Net.NameResolution": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dnxcore50\\System.Net.NameResolution.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.osx.10.10.System.Net.NetworkInformation": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\osx.10.10\\lib\\dotnet5.4\\System.Net.NetworkInformation.dll": "Need to follow up, not from ADX team"
-                }
-            },
+            "runtime.osx.10.10.System.IO.FileSystem.DriveInfo": {},
+            "runtime.osx.10.10.System.IO.FileSystem.Watcher": {},
+            "runtime.osx.10.10.System.IO.MemoryMappedFiles": {},
+            "runtime.osx.10.10.System.Net.Http": {},
+            "runtime.osx.10.10.System.Net.NameResolution": {},
+            "runtime.osx.10.10.System.Net.NetworkInformation": {},
             "runtime.osx.10.10.System.Net.Primitives": {
                 "SIGN_STRONGNAME": {
+                    "runtimes\\unix\\lib\\dnxcore50\\System.Net.Primitives.dll": "Need to follow up, not from ADX team"
+                },
+                "SIGN_AUTHENTICODE": {
                     "runtimes\\unix\\lib\\dnxcore50\\System.Net.Primitives.dll": "Need to follow up, not from ADX team"
                 }
             },
             "runtime.osx.10.10.System.Net.Sockets": {
                 "SIGN_STRONGNAME": {
                     "runtimes\\osx.10.10\\lib\\dotnet5.5\\System.Net.Sockets.dll": "Need to follow up, not from ADX team"
+                },
+                "SIGN_AUTHENTICODE": {
+                    "runtimes\\osx.10.10\\lib\\dotnet5.5\\System.Net.Sockets.dll": "Need to follow up, not from ADX team"
                 }
             },
             "runtime.osx.10.10.System.Runtime.Extensions": {
                 "SIGN_STRONGNAME": {
                     "runtimes\\unix\\lib\\dotnet5.4\\System.Runtime.Extensions.dll": "Need to follow up, not from ADX team"
+                },
+                "SIGN_AUTHENTICODE": {
+                    "runtimes\\unix\\lib\\dotnet5.4\\System.Runtime.Extensions.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "runtime.osx.10.10.System.Runtime.InteropServices.RuntimeInformation": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.2\\System.Runtime.InteropServices.RuntimeInformation.dll": "Need to follow up, not from ADX team"
-                }
-            },
+            "runtime.osx.10.10.System.Runtime.InteropServices.RuntimeInformation": {},
             "runtime.osx.10.10.System.Security.Cryptography.Algorithms": {
                 "SIGN_STRONGNAME": {
                     "runtimes\\osx.10.10\\lib\\dotnet5.4\\System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team"
+                },
+                "SIGN_AUTHENTICODE": {
+                    "runtimes\\osx.10.10\\lib\\dotnet5.4\\System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "runtime.OSX.10.10-x64.Microsoft.NETCore.ConsoleHost": { },
-            "runtime.OSX.10.10-x64.Microsoft.NETCore.Runtime.CoreCLR": { },
-            "runtime.OSX.10.10-x64.Microsoft.NETCore.TestHost": { },
-            "runtime.Ubuntu.14.04-x64.Microsoft.NETCore.ConsoleHost": { },
+            "runtime.OSX.10.10-x64.Microsoft.NETCore.ConsoleHost": {},
+            "runtime.OSX.10.10-x64.Microsoft.NETCore.Runtime.CoreCLR": {},
+            "runtime.OSX.10.10-x64.Microsoft.NETCore.TestHost": {},
+            "runtime.rhel.7-x64.Microsoft.NETCore.ConsoleHost": {},
+            "runtime.rhel.7-x64.Microsoft.NETCore.Runtime.CoreCLR": {
+                "SIGN_STRONGNAME": {
+                    "runtimes\\rhel.7-x64\\lib\\dotnet\\mscorlib.dll": "Need to follow up, not from ADX team"
+                },
+                "SIGN_AUTHENTICODE": {
+                    "runtimes\\rhel.7-x64\\lib\\dotnet\\mscorlib.dll": "Need to follow up, not from ADX team"
+                }
+            },
+            "runtime.rhel.7-x64.Microsoft.NETCore.TestHost": {},
+            "runtime.rhel.7-x64.runtime.native.System": {},
+            "runtime.rhel.7-x64.runtime.native.System.IO.Compression": {},
+            "runtime.rhel.7-x64.runtime.native.System.Net.Http": {},
+            "runtime.rhel.7-x64.runtime.native.System.Security.Cryptography": {},
+            "runtime.ubuntu.14.04-x64.Microsoft.DotNet.CoreHost": {},
+            "runtime.Ubuntu.14.04-x64.Microsoft.NETCore.ConsoleHost": {},
             "runtime.ubuntu.14.04-x64.Microsoft.NETCore.Runtime.CoreCLR": {
                 "SIGN_STRONGNAME": {
                     "runtimes\\ubuntu.14.04-x64\\lib\\dotnet\\mscorlib.dll": "3rd party DLLs don't need this"
+                },
+                "SIGN_AUTHENTICODE": {
+                    "runtimes\\ubuntu.14.04-x64\\lib\\dotnet\\mscorlib.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "runtime.Ubuntu.14.04-x64.Microsoft.NETCore.TestHost": { },
-            "runtime.ubuntu.14.04-x64.runtime.native.System": { },
-            "runtime.ubuntu.14.04-x64.runtime.native.System.IO.Compression": { },
-            "runtime.ubuntu.14.04-x64.runtime.native.System.Net.Http": { },
-            "runtime.ubuntu.14.04-x64.runtime.native.System.Security.Cryptography": { },
-            "runtime.unix.Microsoft.Win32.Primitives": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\Microsoft.Win32.Primitives.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.unix.System.IO.Compression": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.IO.Compression.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.unix.System.Console": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Console.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.unix.System.Data.SqlClient": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.5\\System.Data.SqlClient.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.unix.System.Diagnostics.Debug": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Diagnostics.Debug.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.unix.System.Diagnostics.FileVersionInfo": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Diagnostics.FileVersionInfo.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.unix.System.Diagnostics.TraceSource": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Diagnostics.TraceSource.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.unix.System.Globalization.Extensions": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Globalization.Extensions.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.unix.System.IO.FileSystem": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.IO.FileSystem.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.unix.System.IO.Pipes": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.IO.Pipes.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.unix.System.Net.Primitives": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dnxcore50\\System.Net.Primitives.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.unix.System.Net.Requests": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Net.Requests.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.unix.System.Net.Security": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dnxcore50\\System.Net.Security.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.unix.System.Net.Sockets": {
-              "SIGN_STRONGNAME": {
-                "runtimes\\unix\\lib\\dotnet5.4\\System.Net.Sockets.dll": "Need to follow up, not from ADX team"
-              }
-            },
+            "runtime.Ubuntu.14.04-x64.Microsoft.NETCore.TestHost": {},
+            "runtime.ubuntu.14.04-x64.runtime.native.System": {},
+            "runtime.ubuntu.14.04-x64.runtime.native.System.IO.Compression": {},
+            "runtime.ubuntu.14.04-x64.runtime.native.System.Net.Http": {},
+            "runtime.ubuntu.14.04-x64.runtime.native.System.Security.Cryptography": {},
+            "runtime.unix.Microsoft.Win32.Primitives": {},
+            "runtime.unix.System.IO.Compression": {},
+            "runtime.unix.System.Console": {},
+            "runtime.unix.System.Data.SqlClient": {},
+            "runtime.unix.System.Diagnostics.Debug": {},
+            "runtime.unix.System.Diagnostics.FileVersionInfo": {},
+            "runtime.unix.System.Diagnostics.TraceSource": {},
+            "runtime.unix.System.Globalization.Extensions": {},
+            "runtime.unix.System.IO.FileSystem": {},
+            "runtime.unix.System.IO.Pipes": {},
+            "runtime.unix.System.Net.Ping": {},
+            "runtime.unix.System.Net.Primitives": {},
+            "runtime.unix.System.Net.Requests": {},
+            "runtime.unix.System.Net.Security": {},
+            "runtime.unix.System.Net.Sockets": {},
             "runtime.unix.System.Net.Utilities": {
-              "SIGN_STRONGNAME": {
-                "runtimes\\unix\\lib\\dnxcore50\\System.Net.Utilities.dll": "Need to follow up, not from ADX team"
-              }
-            },
-            "runtime.unix.System.Net.WebSockets.Client": {
                 "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Net.WebSockets.Client.dll": "Need to follow up, not from ADX team"
+                    "runtimes\\unix\\lib\\dnxcore50\\System.Net.Utilities.dll": "Need to follow up, not from ADX team"
+                },
+                "SIGN_AUTHENTICODE": {
+                    "runtimes\\unix\\lib\\dnxcore50\\System.Net.Utilities.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "runtime.unix.System.Private.Uri": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.1\\System.Private.Uri.dll": "Need to follow up, not from ADX team"
+            "runtime.unix.System.Net.WebSockets.Client": {},
+            "runtime.unix.System.Private.ServiceModel": {},
+            "runtime.unix.System.Private.Uri": {},
+            "runtime.unix.System.Runtime.Extensions": {},
+            "runtime.unix.System.Security.Cryptography.Algorithms": {},
+            "runtime.unix.System.Security.Cryptography.Encoding": {},
+            "runtime.unix.System.Security.Cryptography.X509Certificates": {},
+            "runtime.unix.System.Text.Encoding.CodePages": {},
+            "runtime.unix.System.Threading": {},
+            "runtime.win.System.Runtime.InteropServices.RuntimeInformation": {},
+            "runtime.win.System.Text.Encoding.CodePages": {},
+            "runtime.win7-arm.Microsoft.NETCore.ConsoleHost": {},
+            "runtime.win7-arm.Microsoft.NETCore.TestHost": {},
+            "runtime.win7-arm.runtime.native.System.IO.Compression": {},
+            "runtime.win7-arm.System.IO.Compression.clrcompression": {},
+            "runtime.win7-x64.Microsoft.DotNet.CoreHost": {
+                "SIGN_AUTHENTICODE": {
+                    "runtimes\\win7-x64\\native\\corehost.exe": "Need to follow up, not from ADX team",
+                    "runtimes\\win7-x64\\native\\hostpolicy.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "runtime.unix.System.Security.Cryptography.Algorithms": {
-              "SIGN_STRONGNAME": {
-                "runtimes\\unix\\lib\\dotnet5.4\\System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team"
-              }
-            },
-            "runtime.unix.System.Security.Cryptography.Encoding": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Security.Cryptography.Encoding.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.unix.System.Security.Cryptography.X509Certificates": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Security.Cryptography.X509Certificates.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.unix.System.Text.Encoding.CodePages": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Text.Encoding.CodePages.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.unix.System.Threading": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Threading.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "runtime.linux.System.IO.Compression.ZipFile": {
-                "SIGN_STRONGNAME": {
-                    "lib\\dotnet\\System.IO.Compression.ZipFile.dll": "3rd party DLLs don't need this"
-                }
-            },
-            "runtime.osx.10.10.System.IO.Compression.ZipFile": {
-                "SIGN_STRONGNAME": {
-                    "lib\\dotnet\\System.IO.Compression.ZipFile.dll": "3rd party DLLs don't need this"
-                }
-            },
-            "runtime.osx.System.Diagnostics.Process": {
-                "SIGN_STRONGNAME": {
-                    "lib\\dotnet\\System.Diagnostics.Process.dll": "3rd party DLLs don't need this"
-                }
-            },
-            "runtime.osx.System.IO.Compression.ZipFile": {
-                "SIGN_STRONGNAME": {
-                    "lib\\dotnet\\System.IO.Compression.ZipFile.dll": "3rd party DLLs don't need this"
-                }
-            },
-            "runtime.osx.System.IO.FileSystem.DriveInfo": {
-                "SIGN_STRONGNAME": {
-                    "lib\\dotnet\\System.IO.FileSystem.DriveInfo.dll": "3rd party DLLs don't need this"
-                }
-            },
-            "runtime.osx.System.IO.FileSystem.Watcher": {
-                "SIGN_STRONGNAME": {
-                    "lib\\dotnet\\System.IO.FileSystem.Watcher.dll": "3rd party DLLs don't need this"
-                }
-            },
-            "runtime.osx.System.IO.MemoryMappedFiles": {
-                "SIGN_STRONGNAME": {
-                    "lib\\dotnet\\System.IO.MemoryMappedFiles.dll": "3rd party DLLs don't need this"
-                }
-            },
-            "runtime.osx.System.Net.Http": {
-                "SIGN_STRONGNAME": {
-                    "lib\\dotnet\\System.Net.Http.dll": "3rd party DLLs don't need this"
-                }
-            },
-            "runtime.osx.System.Runtime.Extensions": {
-                "SIGN_STRONGNAME": {
-                    "lib\\dotnet\\System.Runtime.Extensions.dll": "3rd party DLLs don't need this"
-                }
-            },
-            "runtime.osx.System.Runtime.InteropServices.RuntimeInformation": {
-                "SIGN_STRONGNAME": {
-                    "lib\\dotnet\\System.Runtime.InteropServices.RuntimeInformation.dll": "3rd party DLLs don't need this"
-                }
-            },
-            "runtime.win.System.Runtime.InteropServices.RuntimeInformation": { },
-            "runtime.win.System.Text.Encoding.CodePages": { },
-            "runtime.win7-arm.Microsoft.NETCore.ConsoleHost": { },
-            "runtime.win7-arm.Microsoft.NETCore.TestHost": { },
-            "runtime.win7-arm.runtime.native.System.IO.Compression": { },
-            "runtime.win7-arm.System.IO.Compression.clrcompression": { },
-            "runtime.win7-x64.runtime.native.System.IO.Compression": { },
-            "runtime.win7-x86.runtime.native.System.IO.Compression": { },
-            "runtime.win7.System.IO.Compression.ZipFile": { },
-            "runtime.win8-arm.Microsoft.NETCore.Runtime.CoreCLR": { },
-            "runtime.win7.Microsoft.Win32.Primitives": { },
-            "runtime.win7.System.Console": { },
-            "runtime.win7.System.Diagnostics.Debug": { },
-            "runtime.win7.System.Diagnostics.FileVersionInfo": { },
-            "runtime.win7.System.Diagnostics.Process": { },
-            "runtime.win7.System.Diagnostics.TraceSource": { },
-            "runtime.win7.System.Globalization.Extensions": { },
-            "runtime.win7.System.IO.FileSystem": { },
-            "runtime.win7.System.IO.FileSystem.DriveInfo": { },
-            "runtime.win7.System.IO.FileSystem.Watcher": { },
-            "runtime.win7.System.IO.MemoryMappedFiles": { },
-            "runtime.win7.System.IO.Pipes": { },
-            "runtime.win7.System.Net.Http": { },
-            "runtime.win7.System.Net.NameResolution": { },
-            "runtime.win7.System.Net.NetworkInformation": { },
-            "runtime.win7.System.Net.Primitives": { },
-            "runtime.win7.System.Net.Requests": { },
-            "runtime.win7.System.Net.Security": { },
-            "runtime.win7.System.Net.Sockets": { },
-            "runtime.win7.System.Net.Utilities": { },
-            "runtime.win7.System.Net.WebSockets.Client": { },
-            "runtime.win7.System.Private.Uri": { },
-            "runtime.win7.System.Runtime.Extensions": { },
-            "runtime.win7.System.Runtime.InteropServices.RuntimeInformation": { },
-            "runtime.win7.System.Security.Cryptography.Algorithms": { },
-            "runtime.win7.System.Security.Cryptography.Encoding": { },
-            "runtime.win7.System.Security.Cryptography.X509Certificates": { },
-            "runtime.win7.System.Text.Encoding.CodePages": { },
-            "runtime.win7.System.Threading": { },
-            "runtime.win7-x86.Microsoft.NETCore.ConsoleHost": { },
-            "runtime.win7-x86.Microsoft.NETCore.Runtime.CoreCLR": { },
-            "runtime.win7-x86.Microsoft.NETCore.TestHost": { },
-            "runtime.win7-x86.Microsoft.NETCore.Windows.ApiSets": { },
-            "runtime.win7-x86.System.Data.SqlClient.sni": { },
-            "runtime.win7-x86.System.IO.Compression.clrcompression": { },
-            "runtime.win7-x64.Microsoft.NETCore.ConsoleHost": { },
-            "runtime.win7-x64.Microsoft.NETCore.Runtime.CoreCLR": { },
-            "runtime.win7-x64.Microsoft.NETCore.TestHost": { },
-            "runtime.win7-x64.Microsoft.NETCore.Windows.ApiSets": { },
-            "runtime.win7-x64.System.Data.SqlClient.sni": { },
-            "runtime.win7-x64.System.IO.Compression.clrcompression": { },
-            "runtime.win7.System.Data.SqlClient": { },
-            "runtime.win7.System.IO.Compression": { },
-            "System.AppContext": { },
-            "System.Buffers": { },
-            "System.Collections": { },
-            "System.Collections.Concurrent": { },
-            "System.Collections.Immutable": { },
-            "System.Collections.NonGeneric": { },
-            "System.Collections.Specialized": { },
-            "System.ComponentModel": { },
-            "System.ComponentModel.Annotations": { },
-            "System.ComponentModel.EventBasedAsync": { },
-            "System.ComponentModel.Primitives": { },
-            "System.ComponentModel.TypeConverter": { },
-            "System.Console": { },
-            "System.Data.Common": { },
-            "System.Data.SqlClient": { },
-            "System.Data.SqlClient.sni-arm": { },
-            "System.Data.SqlClient.sni-x64": { },
-            "System.Data.SqlClient.sni-x86": { },
-            "System.Diagnostics.Contracts": { },
-            "System.Diagnostics.Debug": { },
-            "System.Diagnostics.DiagnosticSource": { },
-            "System.Diagnostics.FileVersionInfo": { },
-            "System.Diagnostics.Process": { },
-            "System.Diagnostics.StackTrace": { },
-            "System.Diagnostics.TextWriterTraceListener": { },
-            "System.Diagnostics.Tools": { },
-            "System.Diagnostics.TraceSource": { },
-            "System.Diagnostics.Tracing": { },
-            "System.Diagnostics.Tracing.Telemetry": { },
-            "System.Dynamic.Runtime": { },
-            "System.Globalization": { },
-            "System.Globalization.Calendars": { },
-            "System.Globalization.Extensions": { },
-            "System.IdentityModel.Tokens": { },
-            "System.IdentityModel.Tokens.Jwt": { },
+            "runtime.win7-x64.runtime.native.System.IO.Compression": {},
+            "runtime.win7-x86.runtime.native.System.IO.Compression": {},
+            "runtime.win8-arm.Microsoft.NETCore.Runtime.CoreCLR": {},
+            "runtime.win7.Microsoft.Win32.Primitives": {},
+            "runtime.win7.System.Console": {},
+            "runtime.win7.System.Diagnostics.Debug": {},
+            "runtime.win7.System.Diagnostics.FileVersionInfo": {},
+            "runtime.win7.System.Diagnostics.Process": {},
+            "runtime.win7.System.Diagnostics.TraceSource": {},
+            "runtime.win7.System.Globalization.Extensions": {},
+            "runtime.win7.System.IO.FileSystem": {},
+            "runtime.win7.System.IO.FileSystem.DriveInfo": {},
+            "runtime.win7.System.IO.FileSystem.Watcher": {},
+            "runtime.win7.System.IO.MemoryMappedFiles": {},
+            "runtime.win7.System.IO.Pipes": {},
+            "runtime.win7.System.Net.Http": {},
+            "runtime.win7.System.Net.NameResolution": {},
+            "runtime.win7.System.Net.NetworkInformation": {},
+            "runtime.win7.System.Net.Ping": {},
+            "runtime.win7.System.Net.Primitives": {},
+            "runtime.win7.System.Net.Requests": {},
+            "runtime.win7.System.Net.Security": {},
+            "runtime.win7.System.Net.Sockets": {},
+            "runtime.win7.System.Net.Utilities": {},
+            "runtime.win7.System.Net.WebSockets.Client": {},
+            "runtime.win7.System.Private.ServiceModel": {},
+            "runtime.win7.System.Private.Uri": {},
+            "runtime.win7.System.Runtime.Extensions": {},
+            "runtime.win7.System.Security.Cryptography.Algorithms": {},
+            "runtime.win7.System.Security.Cryptography.Encoding": {},
+            "runtime.win7.System.Security.Cryptography.X509Certificates": {},
+            "runtime.win7.System.Threading": {},
+            "runtime.win7-x86.Microsoft.NETCore.ConsoleHost": {},
+            "runtime.win7-x86.Microsoft.NETCore.Runtime.CoreCLR": {},
+            "runtime.win7-x86.Microsoft.NETCore.TestHost": {},
+            "runtime.win7-x86.Microsoft.NETCore.Windows.ApiSets": {},
+            "runtime.win7-x86.System.Data.SqlClient.sni": {},
+            "runtime.win7-x86.System.IO.Compression.clrcompression": {},
+            "runtime.win7-x64.Microsoft.NETCore.ConsoleHost": {},
+            "runtime.win7-x64.Microsoft.NETCore.Runtime.CoreCLR": {},
+            "runtime.win7-x64.Microsoft.NETCore.TestHost": {},
+            "runtime.win7-x64.Microsoft.NETCore.Windows.ApiSets": {},
+            "runtime.win7-x64.System.Data.SqlClient.sni": {},
+            "runtime.win7-x64.System.IO.Compression.clrcompression": {},
+            "runtime.win7.System.Data.SqlClient": {},
+            "runtime.win7.System.IO.Compression": {},
+            "runtime.win8-x64.Microsoft.NETCore.Windows.ApiSets": {},
+            "runtime.win8-x86.Microsoft.NETCore.Windows.ApiSets": {},
+            "runtime.win81-x64.Microsoft.NETCore.Windows.ApiSets": {},
+            "runtime.win81-x86.Microsoft.NETCore.Windows.ApiSets": {},
+            "System.AppContext": {},
+            "System.Buffers": {},
+            "System.Collections": {},
+            "System.Collections.Concurrent": {},
+            "System.Collections.Immutable": {},
+            "System.Collections.NonGeneric": {},
+            "System.Collections.Specialized": {},
+            "System.ComponentModel": {},
+            "System.ComponentModel.Annotations": {},
+            "System.ComponentModel.EventBasedAsync": {},
+            "System.ComponentModel.Primitives": {},
+            "System.ComponentModel.TypeConverter": {},
+            "System.Console": {},
+            "System.Data.Common": {},
+            "System.Data.SqlClient": {},
+            "System.Diagnostics.Contracts": {},
+            "System.Diagnostics.Debug": {},
+            "System.Diagnostics.DiagnosticSource": {},
+            "System.Diagnostics.FileVersionInfo": {},
+            "System.Diagnostics.Process": {},
+            "System.Diagnostics.StackTrace": {},
+            "System.Diagnostics.TextWriterTraceListener": {},
+            "System.Diagnostics.Tools": {},
+            "System.Diagnostics.TraceSource": {},
+            "System.Diagnostics.Tracing": {},
+            "System.Dynamic.Runtime": {},
+            "System.Globalization": {},
+            "System.Globalization.Calendars": {},
+            "System.Globalization.Extensions": {},
+            "System.IdentityModel.Tokens": {},
+            "System.IdentityModel.Tokens.Jwt": {},
             "System.IdentityModel.Tokens.Saml": {
                 "SIGN_STRONGNAME": {
                     "lib\\dnx451\\System.IdentityModel.Tokens.Saml.dll": "Need to follow up, not from ADX team",
@@ -884,132 +747,118 @@
                     "lib\\net451\\System.IdentityModel.Tokens.Saml.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "System.IO": { },
-            "System.IO.Compression": { },
-            "System.IO.Compression.clrcompression-arm": { },
-            "System.IO.Compression.clrcompression-x64": { },
-            "System.IO.Compression.clrcompression-x86": { },
-            "System.IO.Compression.ZipFile": { },
-            "System.IO.FileSystem": { },
-            "System.IO.FileSystem.AccessControl": { },
-            "System.IO.FileSystem.DriveInfo": { },
-            "System.IO.FileSystem.Primitives": { },
-            "System.IO.FileSystem.Watcher": { },
-            "System.IO.IsolatedStorage": { },
-            "System.IO.MemoryMappedFiles": { },
-            "System.IO.Packaging": { },
-            "System.IO.Pipes": { },
-            "System.IO.UnmanagedMemoryStream": { },
-            "System.Linq": { },
-            "System.Linq.Expressions": { },
-            "System.Linq.Parallel": { },
-            "System.Linq.Queryable": { },
-            "System.Net.Http": { },
-            "System.Net.Http.Rtc": { },
-            "System.Net.Http.WinHttpHandler": { },
-            "System.Net.NameResolution": { },
-            "System.Net.NetworkInformation": { },
-            "System.Net.Primitives": { },
-            "System.Net.Requests": { },
-            "System.Net.Security": { },
-            "System.Net.Sockets": { },
-            "System.Net.Utilities": { },
-            "System.Net.WebHeaderCollection": { },
-            "System.Net.WebSockets": { },
-            "System.Net.WebSockets.Client": { },
-            "System.Numerics.Vectors": { },
-            "System.Numerics.Vectors.WindowsRuntime": { },
-            "System.ObjectModel": { },
-            "System.Private.DataContractSerialization": { },
-            "System.Private.Networking": { },
-            "System.Private.ServiceModel": { },
-            "System.Private.Uri": { },
-            "System.Reflection": { },
-            "System.Reflection.Context": { },
-            "System.Reflection.DispatchProxy": { },
-            "System.Reflection.Emit": { },
-            "System.Reflection.Emit.ILGeneration": { },
-            "System.Reflection.Emit.Lightweight": { },
-            "System.Reflection.Extensions": { },
-            "System.Reflection.Metadata": { },
-            "System.Reflection.Primitives": { },
-            "System.Reflection.TypeExtensions": { },
-            "System.Resources.ReaderWriter": { },
-            "System.Resources.ResourceManager": { },
-            "System.Runtime": { },
-            "System.Runtime.CompilerServices.VisualC": { },
-            "System.Runtime.Extensions": { },
-            "System.Runtime.Handles": { },
-            "System.Runtime.InteropServices": { },
-            "System.Runtime.InteropServices.RuntimeInformation": { },
-            "System.Runtime.InteropServices.WindowsRuntime": { },
-            "System.Runtime.Loader": { },
-            "System.Runtime.Numerics": { },
-            "System.Runtime.Serialization.Json": { },
-            "System.Runtime.Serialization.Primitives": { },
-            "System.Runtime.Serialization.Xml": { },
-            "System.Runtime.WindowsRuntime": { },
-            "System.Runtime.WindowsRuntime.UI.Xaml": { },
-            "System.Security.AccessControl": { },
-            "System.Security.Claims": { },
-            "System.Security.Cryptography.Algorithms": { },
-            "System.Security.Cryptography.Cng": { },
-            "System.Security.Cryptography.Csp": { },
-            "System.Security.Cryptography.DeriveBytes": { },
-            "System.Security.Cryptography.Encoding": { },
-            "System.Security.Cryptography.Encryption": { },
-            "System.Security.Cryptography.Encryption.Aes": { },
-            "System.Security.Cryptography.Hashing": { },
-            "System.Security.Cryptography.Hashing.Algorithms": { },
-            "System.Security.Cryptography.OpenSsl": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Security.Cryptography.OpenSsl.dll": "Need to follow up, not from ADX team"
-                }
-            },
-            "System.Security.Cryptography.Primitives": { },
-            "System.Security.Cryptography.RandomNumberGenerator": { },
-            "System.Security.Cryptography.RSA": { },
-            "System.Security.Cryptography.X509Certificates": { },
-            "System.Security.Principal": { },
-            "System.Security.Principal.Windows": { },
-            "System.Security.SecureString": { },
-            "System.ServiceModel.Duplex": { },
-            "System.ServiceModel.Http": { },
-            "System.ServiceModel.NetTcp": { },
-            "System.ServiceModel.Primitives": { },
-            "System.ServiceModel.Security": { },
-            "System.ServiceProcess.ServiceController": { },
-            "System.Text.Encoding": { },
-            "System.Text.Encoding.CodePages": { },
-            "System.Text.Encoding.Extensions": { },
-            "System.Text.Encodings.Web": { },
-            "System.Text.RegularExpressions": { },
-            "System.Threading": { },
-            "System.Threading.AccessControl": { },
-            "System.Threading.Overlapped": { },
-            "System.Threading.Tasks": { },
-            "System.Threading.Tasks.Dataflow": { },
-            "System.Threading.Tasks.Extensions": { },
-            "System.Threading.Tasks.Parallel": { },
-            "System.Threading.Thread": { },
-            "System.Threading.ThreadPool": { },
-            "System.Threading.Timer": { },
-            "System.Xml.ReaderWriter": { },
-            "System.Xml.XDocument": { },
-            "System.Xml.XmlDocument": { },
-            "System.Xml.XmlSerializer": { },
-            "System.Xml.XPath": { },
-            "System.Xml.XPath.XDocument": { },
-            "System.Xml.XPath.XmlDocument": { },
-            "UAP.for.NETCore": { },
-            "UWP.for.NETCore": { }
+            "System.IO": {},
+            "System.IO.Compression": {},
+            "System.IO.Compression.ZipFile": {},
+            "System.IO.FileSystem": {},
+            "System.IO.FileSystem.AccessControl": {},
+            "System.IO.FileSystem.DriveInfo": {},
+            "System.IO.FileSystem.Primitives": {},
+            "System.IO.FileSystem.Watcher": {},
+            "System.IO.IsolatedStorage": {},
+            "System.IO.MemoryMappedFiles": {},
+            "System.IO.Packaging": {},
+            "System.IO.Pipes": {},
+            "System.IO.UnmanagedMemoryStream": {},
+            "System.Linq": {},
+            "System.Linq.Expressions": {},
+            "System.Linq.Parallel": {},
+            "System.Linq.Queryable": {},
+            "System.Net.Http": {},
+            "System.Net.Http.Rtc": {},
+            "System.Net.Http.WinHttpHandler": {},
+            "System.Net.NameResolution": {},
+            "System.Net.NetworkInformation": {},
+            "System.Net.Ping": {},
+            "System.Net.Primitives": {},
+            "System.Net.Requests": {},
+            "System.Net.Security": {},
+            "System.Net.Sockets": {},
+            "System.Net.Utilities": {},
+            "System.Net.WebHeaderCollection": {},
+            "System.Net.WebSockets": {},
+            "System.Net.WebSockets.Client": {},
+            "System.Numerics.Vectors": {},
+            "System.Numerics.Vectors.WindowsRuntime": {},
+            "System.ObjectModel": {},
+            "System.Private.DataContractSerialization": {},
+            "System.Private.Networking": {},
+            "System.Private.ServiceModel": {},
+            "System.Private.Uri": {},
+            "System.Reflection": {},
+            "System.Reflection.Context": {},
+            "System.Reflection.DispatchProxy": {},
+            "System.Reflection.Emit": {},
+            "System.Reflection.Emit.ILGeneration": {},
+            "System.Reflection.Emit.Lightweight": {},
+            "System.Reflection.Extensions": {},
+            "System.Reflection.Metadata": {},
+            "System.Reflection.Primitives": {},
+            "System.Reflection.TypeExtensions": {},
+            "System.Resources.Reader": {},
+            "System.Resources.ReaderWriter": {},
+            "System.Resources.ResourceManager": {},
+            "System.Resources.Writer": {},
+            "System.Runtime": {},
+            "System.Runtime.CompilerServices.VisualC": {},
+            "System.Runtime.Extensions": {},
+            "System.Runtime.Handles": {},
+            "System.Runtime.InteropServices": {},
+            "System.Runtime.InteropServices.PInvoke": {},
+            "System.Runtime.InteropServices.RuntimeInformation": {},
+            "System.Runtime.InteropServices.WindowsRuntime": {},
+            "System.Runtime.Loader": {},
+            "System.Runtime.Numerics": {},
+            "System.Runtime.Serialization.Json": {},
+            "System.Runtime.Serialization.Primitives": {},
+            "System.Runtime.Serialization.Xml": {},
+            "System.Runtime.WindowsRuntime": {},
+            "System.Runtime.WindowsRuntime.UI.Xaml": {},
+            "System.Security.AccessControl": {},
+            "System.Security.Claims": {},
+            "System.Security.Cryptography.Algorithms": {},
+            "System.Security.Cryptography.Cng": {},
+            "System.Security.Cryptography.Csp": {},
+            "System.Security.Cryptography.Encoding": {},
+            "System.Security.Cryptography.OpenSsl": {},
+            "System.Security.Cryptography.Primitives": {},
+            "System.Security.Cryptography.X509Certificates": {},
+            "System.Security.Principal": {},
+            "System.Security.Principal.Windows": {},
+            "System.ServiceModel.Duplex": {},
+            "System.ServiceModel.Http": {},
+            "System.ServiceModel.NetTcp": {},
+            "System.ServiceModel.Primitives": {},
+            "System.ServiceModel.Security": {},
+            "System.ServiceProcess.ServiceController": {},
+            "System.Text.Encoding": {},
+            "System.Text.Encoding.CodePages": {},
+            "System.Text.Encoding.Extensions": {},
+            "System.Text.Encodings.Web": {},
+            "System.Text.RegularExpressions": {},
+            "System.Threading": {},
+            "System.Threading.AccessControl": {},
+            "System.Threading.Overlapped": {},
+            "System.Threading.Tasks": {},
+            "System.Threading.Tasks.Dataflow": {},
+            "System.Threading.Tasks.Extensions": {},
+            "System.Threading.Tasks.Parallel": {},
+            "System.Threading.Thread": {},
+            "System.Threading.ThreadPool": {},
+            "System.Threading.Timer": {},
+            "System.Xml.ReaderWriter": {},
+            "System.Xml.XDocument": {},
+            "System.Xml.XmlDocument": {},
+            "System.Xml.XmlSerializer": {},
+            "System.Xml.XPath": {},
+            "System.Xml.XPath.XDocument": {},
+            "System.Xml.XPath.XmlDocument": {}
         }
     },
     "default": { // Rules to run for packages not listed in any other set.
         "rules": [
-            "AuthenticodeSigningRule",
-            "PowerShellScriptIsSignedRule"
+            "SigningVerificationCompositeRule"
         ],
-        "packages": { }
+        "packages": {}
     }
 }
