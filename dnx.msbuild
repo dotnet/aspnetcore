@@ -49,19 +49,24 @@
 
         <ItemGroup>
             <UnsignedPackages
-                Include="$(DropSource)**\Microsoft.EntityFrameworkCore*.nupkg;
-                         $(DropSource)**\dotnet-ef.*.nupkg;
-                         $(DropSource)**\Microsoft.Data.Sqlite*.nupkg;
-                         $(DropSource)**\Microsoft.VisualStudio.Web.BrowserLink*.nupkg;
+                Include="$(DropSource)**\dotnet-ef.*.nupkg;
+                         $(DropSource)**\dotnet-publish-iis.*.nupkg;
+                         $(DropSource)**\dotnet-razor-tooling.*.nupkg;
+                         $(DropSource)**\dotnet-sql-cache.*.nupkg;
+                         $(DropSource)**\dotnet-test-xunit.*.nupkg;
+                         $(DropSource)**\dotnet-user-secrets.*.nupkg;
+                         $(DropSource)**\dotnet-watch.*.nupkg;
                          $(DropSource)**\dnx*.nupkg;
-                         $(DropSource)**\dotnet-sql-cache.nupkg;
-                         $(DropSource)**\dotnet-user-secrets.nupkg;
                          $(DropSource)**\KoreBuild*.nupkg;
                          $(DropSource)**\Microsoft.AspNetCore*.nupkg;
+                         $(DropSource)**\Microsoft.AspNet.SignalR.Client.Cpp.*.nupkg;
+                         $(DropSource)**\Microsoft.Data.Sqlite*.nupkg;
                          $(DropSource)**\Microsoft.Dnx*.nupkg;
+                         $(DropSource)**\Microsoft.EntityFrameworkCore*.nupkg;
                          $(DropSource)**\Microsoft.Extensions*.nupkg;
                          $(DropSource)**\Microsoft.Net*.nupkg;
                          $(DropSource)**\Microsoft.Owin.Security*.nupkg;
+                         $(DropSource)**\Microsoft.VisualStudio.Web.BrowserLink*.nupkg;
                          $(DropSource)**\NuGet.*.nupkg;
                          $(DropSource)**\StyleCop.KRules*.nupkg"
             />
@@ -86,26 +91,31 @@
         <ItemGroup>
             <_UnsignedBinaries
                 Include="$(UnsignedPackagesPath)**\AspNet.Loader*.dll;
+                         $(UnsignedPackagesPath)**\dnx*.dll;
+                         $(UnsignedPackagesPath)**\dnx*.exe";
                          $(UnsignedPackagesPath)**\dotnet-ef.dll;
+                         $(UnsignedPackagesPath)**\dotnet-publish-iis.dll;
+                         $(UnsignedPackagesPath)**\dotnet-razor-tooling.dll;
+                         $(UnsignedPackagesPath)**\dotnet-sql-cache.dll;
+                         $(UnsignedPackagesPath)**\dotnet-test-xunit.dll;
+                         $(UnsignedPackagesPath)**\dotnet-user-secrets.dll;
+                         $(UnsignedPackagesPath)**\dotnet-watch.dll;
+                         $(UnsignedPackagesPath)**\Microsoft.AspNetCore*.dll;
+                         $(UnsignedPackagesPath)**\Microsoft.AspNet.SignalR.Client.Cpp.*.exe";
+                         $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.dll;
+                         $(UnsignedPackagesPath)**\Microsoft.Dnx*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore.Commands*\**\EntityFramework.psd1;
                          $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore.Commands*\**\EntityFramework.psm1;
                          $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore.Commands*\**\init.ps1;
                          $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore.Commands*\**\install.ps1;
-                         $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.dll;
-                         $(UnsignedPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.dll;
-                         $(UnsignedPackagesPath)**\dnx*.dll;
-                         $(UnsignedPackagesPath)**\dotnet-sql-cache.dll;
-                         $(UnsignedPackagesPath)**\dotnet-user-secrets.dll;
-                         $(UnsignedPackagesPath)**\Microsoft.AspNetCore*.dll;
-                         $(UnsignedPackagesPath)**\Microsoft.Dnx*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.Extensions*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.Net*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.Owin.Security*.dll;
+                         $(UnsignedPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.dll;
                          $(UnsignedPackagesPath)**\NuGet.*.dll;
                          $(UnsignedPackagesPath)**\signalrclient.dll;
-                         $(UnsignedPackagesPath)**\StyleCop.KRules*.dll;
-                         $(UnsignedPackagesPath)**\dnx*.exe"
+                         $(UnsignedPackagesPath)**\StyleCop.KRules*.dll
             />
 
             <UnsignedBinaries Include="@(_UnsignedBinaries)">
