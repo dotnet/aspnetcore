@@ -9,9 +9,6 @@ dotnet-test
 
 projectFile=''
     Required. Path to the test project.json to execute
-    
-framework=''
-    Required. The TFM to run tests for
 
 configuration=''
     Optional. The configuration to build in. Defaults to 'Debug'.
@@ -21,7 +18,7 @@ default configuration = 'Debug'
 
 @{
     var projectFolder = Path.GetDirectoryName(projectFile);
-    var testArgs = "--configuration " + configuration + " --framework " + framework;
+    var testArgs = "--configuration " + configuration;
     Dotnet("test " + testArgs, projectFolder);
 }
 

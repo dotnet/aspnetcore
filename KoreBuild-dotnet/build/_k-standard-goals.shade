@@ -195,7 +195,7 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
             var hasTestCommand = project.Keys.Contains("commands") && project.ValueAsJsonObject("commands").Keys.Contains("test");
             if (projectText.Contains("dotnet-test-xunit"))
             {
-                DotnetTest(projectFile, dnxCore50TFM, Configuration);
+                DotnetTest(projectFile, Configuration);
             }
             else if (hasTestCommand)
             {
@@ -391,7 +391,7 @@ macro name="DotnetPack" projectFile='string' dotnetPackOutputDir='string' config
 macro name="DotnetPublish" projectFile='string' outputFolder='string' framework='string' configuration='string'
     dotnet-publish
 
-macro name="DotnetTest" projectFile='string' framework='string' configuration='string'
+macro name="DotnetTest" projectFile='string' configuration='string'
     dotnet-test
 
 macro name="XunitTest" projectFile='string' framework='string' configuration='string'
