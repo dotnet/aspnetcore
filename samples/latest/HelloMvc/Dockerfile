@@ -3,7 +3,6 @@ FROM ubuntu:14.04
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
 RUN echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
 
-#ENV DNX_USER_HOME /opt/dnx
 ENV DOTNET_INSTALL_DIR /opt/dotnet
 
 RUN apt-get -qq update
@@ -16,14 +15,10 @@ RUN apt-get -qqy install \
 	libssl-dev \
 	gettext
 
-RUN curl -sSL https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/install.sh | sh
+ENV CHANNEL beta
+ENV VERSION 1.0.0.001496
+RUN curl -sSL https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/install.sh | /bin/bash
 
-#RUN curl -sSL https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.sh | DNX_USER_HOME=$DNX_USER_HOME DNX_BRANCH=v$DNX_VERSION sh
-#RUN bash -c "source $DNX_USER_HOME/dnvm/dnvm.sh \
-# 	&& dnvm upgrade -u \
-#	&& dnvm alias default | xargs -i ln -s $DNX_USER_HOME/runtimes/{} $DNX_USER_HOME/runtimes/default"
-
-# Install libuv for Kestrel from source code (binary is not in wheezy and one in jessie is still too old)
 RUN apt-get -qqy install \
 	autoconf \
 	automake \
@@ -40,13 +35,10 @@ RUN LIBUV_VERSION=1.4.2 \
 ENV DOTNET_HOME $DOTNET_INSTALLDIR/share/dotnet/cli
 ENV DOTNET_REFERENCE_ASSEMBLIES_PATH /usr/lib/mono/xbuild-frameworks
 ENV PATH $DOTNET_INSTALL_DIR/bin:$PATH
-#ENV PATH $PATH:$DNX_USER_HOME/runtimes/default/bin
-
-#ENV MONO_THREADS_PER_CPU 20
 
 COPY . /app
 WORKDIR /app
 RUN ["dotnet", "restore"]
 
-EXPOSE 5004
-ENTRYPOINT ["dotnet", "run"]
+EXPOSE 5000
+ENTRYPOINT ["dotnet", "run", "--", "--server.urls", "http://0.0.0.0:5000"]
