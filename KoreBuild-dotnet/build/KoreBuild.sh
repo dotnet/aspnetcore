@@ -42,13 +42,13 @@ thisDir="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 sakeFolder=$thisDir/Sake
 if [ ! -d $sakeFolder ]; then
-    mono $nugetPath install Sake -ExcludeVersion -o $thisDir -nocache -pre
+    mono $nugetPath install Sake -ExcludeVersion -o $thisDir -nocache
 fi
 if [ ! -d $thisDir/xunit.runner.console ]; then
-    mono $nugetPath install xunit.runner.console -ExcludeVersion -o $thisDir -nocache -pre
+    mono $nugetPath install xunit.runner.console -ExcludeVersion -o $thisDir -nocache
 fi
 if [ ! -d $thisDir/xunit.core ]; then
-    mono $nugetPath install xunit.core -ExcludeVersion -o $thisDir -nocache -pre
+    mono $nugetPath install xunit.core -ExcludeVersion -o $thisDir -nocache
 fi
 
 if [ ! -z "$KOREBUILD_SKIP_RUNTIME_INSTALL" ]; then
