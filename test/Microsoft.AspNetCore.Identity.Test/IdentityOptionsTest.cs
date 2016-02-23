@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.True(options.Password.RequireUppercase);
             Assert.Equal(6, options.Password.RequiredLength);
 
-            Assert.Equal("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@", options.User.AllowedUserNameCharacters);
+            Assert.Equal("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+", options.User.AllowedUserNameCharacters);
             Assert.False(options.User.RequireUniqueEmail);
 
             Assert.Equal(ClaimTypes.Role, options.ClaimsIdentity.RoleClaimType);
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(usernameClaimType, options.ClaimsIdentity.UserNameClaimType);
             Assert.Equal(securityStampClaimType, options.ClaimsIdentity.SecurityStampClaimType);
             Assert.True(options.User.RequireUniqueEmail);
-            Assert.Equal("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@", options.User.AllowedUserNameCharacters);
+            Assert.Equal("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+", options.User.AllowedUserNameCharacters);
             Assert.False(options.Password.RequireDigit);
             Assert.False(options.Password.RequireLowercase);
             Assert.False(options.Password.RequireNonAlphanumeric);

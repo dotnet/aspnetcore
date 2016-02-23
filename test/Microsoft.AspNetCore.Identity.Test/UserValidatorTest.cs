@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         [InlineData("hao", true)]
         [InlineData("test123", true)]
         [InlineData("hyphen-yes@foo-bar.com", true)]
+        [InlineData("+plus+yes+@foo-bar.com", true)]
         [InlineData("!noway", false)]
         [InlineData("foo@boz#.com", false)]
         public async Task DefaultAlphaNumericOnlyUserNameValidation(string userName, bool expectSuccess)
