@@ -37,8 +37,9 @@ configuration=''
 
         if (IsLinux)
         {
-            // Work around issue with testing in parallel on Mono.
-            testArgs = " -parallel none";
+            // Work around issue with testing in parallel on Mono
+            // and issue https://github.com/xunit/xunit/issues/158
+            testArgs = " -parallel none -noappdomain";
         }
 
         var publishFolder = Path.Combine(projectFolder, "obj", "testPublish-" + framework);
