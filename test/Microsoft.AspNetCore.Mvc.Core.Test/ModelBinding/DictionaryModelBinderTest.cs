@@ -472,7 +472,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             IDictionary<string, KeyValuePair<int, string>> values)
         {
             var metadataProvider = new TestModelMetadataProvider();
-            metadataProvider.ForType<IDictionary<int, string>>().BindingDetails(bd => bd.IsReadOnly = isReadOnly);
+            metadataProvider
+                .ForProperty<ModelWithIDictionaryProperty>(nameof(ModelWithIDictionaryProperty.DictionaryProperty))
+                .BindingDetails(bd => bd.IsReadOnly = isReadOnly);
+            var metadata = metadataProvider.GetMetadataForProperty(
+                typeof(ModelWithIDictionaryProperty),
+                nameof(ModelWithIDictionaryProperty.DictionaryProperty));
 
             var binder = new StubModelBinder(mbc =>
             {
@@ -491,7 +496,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
 
             var bindingContext = new DefaultModelBindingContext
             {
-                ModelMetadata = metadataProvider.GetMetadataForType(typeof(IDictionary<int, string>)),
+                ModelMetadata = metadata,
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
                 OperationBindingContext = new OperationBindingContext
@@ -505,6 +510,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             };
 
             return bindingContext;
+        }
+
+        private class ModelWithIDictionaryProperty
+        {
+            public IDictionary<int, string> DictionaryProperty { get; set; }
         }
 
         private class ModelWithDictionaryProperties

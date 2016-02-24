@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Test;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -367,11 +366,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             bool isReadOnly = false)
         {
             var metadataProvider = new TestModelMetadataProvider();
-            metadataProvider.ForType<IList<int>>().BindingDetails(bd => bd.IsReadOnly = isReadOnly);
+            metadataProvider
+                .ForProperty<ModelWithIListProperty>(nameof(ModelWithIListProperty.ListProperty))
+                .BindingDetails(bd => bd.IsReadOnly = isReadOnly);
+            var metadata = metadataProvider.GetMetadataForProperty(
+                typeof(ModelWithIListProperty),
+                nameof(ModelWithIListProperty.ListProperty));
 
             var bindingContext = new DefaultModelBindingContext
             {
-                ModelMetadata = metadataProvider.GetMetadataForType(typeof(IList<int>)),
+                ModelMetadata = metadata,
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = valueProvider,
@@ -429,6 +433,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private class ModelWithListProperty
         {
             public List<string> ListProperty { get; set; }
+        }
+
+        private class ModelWithIListProperty
+        {
+            public IList<int> ListProperty { get; set; }
         }
 
         private class ModelWithSimpleProperties
