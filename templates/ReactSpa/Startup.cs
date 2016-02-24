@@ -8,6 +8,7 @@ using Microsoft.AspNet.SpaServices.Webpack;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Serialization;
 
 namespace WebApplicationBasic
 {
@@ -28,7 +29,10 @@ namespace WebApplicationBasic
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddMvc();
+            services.AddMvc().AddJsonOptions(options =>
+            {
+                options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

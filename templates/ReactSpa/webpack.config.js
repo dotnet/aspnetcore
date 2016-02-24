@@ -17,7 +17,7 @@ module.exports = merge({
         ]
     },
     entry: {
-        main: ['./ClientApp/boot-client.tsx'],
+        main: ['./ClientApp/boot.tsx'],
         vendor: ['bootstrap', 'bootstrap/dist/css/bootstrap.css', 'style-loader', 'jquery']
     },
     output: {

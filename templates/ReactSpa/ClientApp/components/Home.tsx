@@ -13,12 +13,16 @@ export class Home extends React.Component<void, void> {
             </ul>
             <p>To help you get started, we've also set up:</p>
             <ul>
-                <li><strong>Client-side navigation</strong>. For example, click <em>About</em> then <em>Back</em> to return here.</li>
-                <li><strong>Server-side prerendering</strong>. For optimal performance, your React application is first executed on the server. The resulting HTML and state is then transferred to the client to continue execution. This is also known as being an <em>isomorphic</em> or <em>universal</em> application.</li>
+                <li><strong>Client-side navigation</strong>. For example, click <em>Counter</em> then <em>Back</em> to return here.</li>
                 <li><strong>Webpack dev middleware</strong>. In development mode, there's no need to run the <code>webpack</code> build tool. Your client-side resources are dynamically built on demand. Updates are available as soon as you modify any file.</li>
                 <li><strong>Hot module replacement</strong>. In development mode, you don't even need to reload the page after making most changes. Within seconds of saving changes to files, rebuilt CSS and React components will be injected directly into your running application, preserving its live state.</li>
                 <li><strong>Efficient production builds</strong>. In production mode, development-time features are disabled, and the <code>webpack</code> build tool produces minified static CSS and JavaScript files.</li>
             </ul>
+            <h4>Going further</h4>
+            <p>
+                For larger applications, or for server-side prerendering (i.e., for <em>isomorphic</em> or <em>universal</em> applications), you should consider using a Flux/Redux-like architecture.
+                You can generate an ASP.NET Core application with React and Redux using <code>dotnet new aspnet/spa/reactredux</code> instead of using this template.
+            </p>
         </div>;
     }
 }
