@@ -5,7 +5,7 @@ interface FetchDataExampleState {
     loading: boolean;
 }
 
-export class FetchData extends React.Component<void, FetchDataExampleState> {
+export class FetchData extends React.Component<any, FetchDataExampleState> {
     constructor() {
         super();        
         this.state = { forecasts: [], loading: true };
@@ -31,7 +31,7 @@ export class FetchData extends React.Component<void, FetchDataExampleState> {
     }
 
     private static renderForecastsTable(forecasts: WeatherForecast[]) {
-        return <table className="table">
+        return <table className='table'>
             <thead>
                 <tr>
                     <th>Date</th>
