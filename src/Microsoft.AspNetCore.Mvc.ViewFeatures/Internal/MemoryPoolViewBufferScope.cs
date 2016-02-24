@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         /// The <see cref="ArrayPool{ViewBufferValue}"/> for creating <see cref="ViewBufferValue"/> instances.
         /// </param>
         /// <param name="charPool">
-        /// The <see cref="ArrayPool{char}"/> for creating <see cref="ViewBufferTextWriter"/> instances.
+        /// The <see cref="ArrayPool{Char}"/> for creating <see cref="ViewBufferTextWriter"/> instances.
         /// </param>
         public MemoryPoolViewBufferScope(ArrayPool<ViewBufferValue> viewBufferPool, ArrayPool<char> charPool)
         {

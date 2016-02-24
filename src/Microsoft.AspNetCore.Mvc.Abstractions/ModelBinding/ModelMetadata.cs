@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <see cref="UnderlyingOrModelType"/>.
         /// </summary>
         /// <value>
-        /// An <see cref="IEnumerable{KeyValuePair{EnumGroupAndName, string}"/> of mappings between
+        /// An <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{EnumGroupAndName, String}"/> of mappings between
         /// <see cref="Enum"/> field groups, names and values. <c>null</c> if <see cref="IsEnum"/> is <c>false</c>.
         /// </value>
         public abstract IEnumerable<KeyValuePair<EnumGroupAndName, string>> EnumGroupedDisplayNamesAndValues { get; }
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets the names and values of all <see cref="Enum"/> values in <see cref="UnderlyingOrModelType"/>.
         /// </summary>
         /// <value>
-        /// An <see cref="IReadOnlyDictionary{string, string}"/> of mappings between <see cref="Enum"/> field names
+        /// An <see cref="IReadOnlyDictionary{String, String}"/> of mappings between <see cref="Enum"/> field names
         /// and values. <c>null</c> if <see cref="IsEnum"/> is <c>false</c>.
         /// </value>
         public abstract IReadOnlyDictionary<string, string> EnumNamesAndValues { get; }

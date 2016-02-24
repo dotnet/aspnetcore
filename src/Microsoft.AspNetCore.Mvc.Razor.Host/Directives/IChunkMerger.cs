@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Directives
         /// <summary>
         /// Merges an inherited <see cref="Chunk"/> into the <see cref="ChunkTree"/>.
         /// </summary>
-        /// <param name="ChunkTree">The <see cref="ChunkTree"/> to merge into.</param>
+        /// <param name="chunkTree">The <see cref="ChunkTree"/> to merge into.</param>
         /// <param name="inheritedChunks">The <see cref="IReadOnlyList{Chunk}"/>s to merge.</param>
         void MergeInheritedChunks(ChunkTree chunkTree, IReadOnlyList<Chunk> inheritedChunks);
     }

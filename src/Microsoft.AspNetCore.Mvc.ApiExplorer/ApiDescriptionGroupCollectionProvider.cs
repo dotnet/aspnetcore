@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// The <see cref="IActionDescriptorCollectionProvider"/>.
         /// </param>
         /// <param name="apiDescriptionProviders">
-        /// The <see cref="IEnumerable{IApiDescriptionProvider}}"/>.
+        /// The <see cref="IEnumerable{IApiDescriptionProvider}"/>.
         /// </param>
         public ApiDescriptionGroupCollectionProvider(
             IActionDescriptorCollectionProvider actionDescriptorCollectionProvider,

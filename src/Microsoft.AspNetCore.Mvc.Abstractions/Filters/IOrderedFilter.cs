@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// </para>
         /// <para>
         /// Synchronous filters, such as <see cref="IActionFilter"/>, have a before-method, such as
-        /// <see cref="IActionFilter.OnActionExecuting)"/>, and an after-method, such as
+        /// <see cref="IActionFilter.OnActionExecuting"/>, and an after-method, such as
         /// <see cref="IActionFilter.OnActionExecuted"/>. A synchronous filter with a lower numeric <see cref="Order"/>
         /// value will have its before-method executed before that of a filter with a higher value of 
         /// <see cref="Order"/>. During the after-stage of the filter, a synchronous filter with a lower

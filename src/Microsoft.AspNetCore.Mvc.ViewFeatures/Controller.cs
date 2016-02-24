@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <see cref="ViewComponents.ViewComponentDescriptor.FullName"/>.</param>
         /// <param name="arguments">
         /// An <see cref="object"/> with properties representing arguments to be passed to the invoked view component
-        /// method. Alternatively, an <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance
+        /// method. Alternatively, an <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance
         /// containing the invocation arguments.
         /// </param>
         /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="componentType">The view component <see cref="Type"/>.</param>
         /// <param name="arguments">
         /// An <see cref="object"/> with properties representing arguments to be passed to the invoked view component
-        /// method. Alternatively, an <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance
+        /// method. Alternatively, an <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance
         /// containing the invocation arguments.
         /// </param>
         /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Releases all resources currently used by this <see cref="Controller"/> instance.
         /// </summary>
-        /// <param name="disposing"><c>true</c> if this method is being invoked by the <see cref="Dispose"/> method,
+        /// <param name="disposing"><c>true</c> if this method is being invoked by the <see cref="Dispose()"/> method,
         /// otherwise <c>false</c>.</param>
         protected virtual void Dispose(bool disposing)
         {

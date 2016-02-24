@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         /// <summary>
         /// Gets the number of errors added to this instance of <see cref="ModelStateDictionary"/> via
-        /// <see cref="AddModelError"/> or <see cref="TryAddModelError"/>.
+        /// <see cref="M:AddModelError"/> or <see cref="M:TryAddModelError"/>.
         /// </summary>
         public int ErrorCount { get; private set; }
 
@@ -203,6 +203,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         /// <param name="key">The key of the <see cref="ModelStateEntry"/> to add errors to.</param>
         /// <param name="exception">The <see cref="Exception"/> to add.</param>
+        /// <param name="metadata">The <see cref="ModelMetadata"/> associated with the model.</param>
         public void AddModelError(string key, Exception exception, ModelMetadata metadata)
         {
             if (key == null)
@@ -230,6 +231,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         /// <param name="key">The key of the <see cref="ModelStateEntry"/> to add errors to.</param>
         /// <param name="exception">The <see cref="Exception"/> to add.</param>
+        /// <param name="metadata">The <see cref="ModelMetadata"/> associated with the model.</param>
         /// <returns>
         /// <c>True</c> if the given error was added, <c>false</c> if the error was ignored.
         /// See <see cref="MaxAllowedErrors"/>.
@@ -449,9 +451,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// the <see cref="ModelStateEntry"/> with the specified <paramref name="key"/>.
         /// </summary>
         /// <param name="key">The key for the <see cref="ModelStateEntry"/> entry.</param>
-        /// <param name="rawvalue">The raw value for the <see cref="ModelStateEntry"/> entry.</param>
+        /// <param name="rawValue">The raw value for the <see cref="ModelStateEntry"/> entry.</param>
         /// <param name="attemptedValue">
-        /// The values of <param name="rawValue"/> in a comma-separated <see cref="string"/>.
+        /// The values of <paramref name="rawValue"/> in a comma-separated <see cref="string"/>.
         /// </param>
         public void SetModelValue(string key, object rawValue, string attemptedValue)
         {

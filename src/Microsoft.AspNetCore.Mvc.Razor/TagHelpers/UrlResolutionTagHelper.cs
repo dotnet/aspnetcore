@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
         /// <summary>
         /// Creates a new <see cref="UrlResolutionTagHelper"/>.
         /// </summary>
-        /// <param name="urlHelper">The <see cref="IUrlHelperFactory"/>.</param>
+        /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
         public UrlResolutionTagHelper(IUrlHelperFactory urlHelperFactory, HtmlEncoder htmlEncoder)
         {

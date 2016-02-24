@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         /// <summary>
         /// Initializes a new instance of <see cref="DefaultViewComponentInvoker"/>.
         /// </summary>
-        /// <param name="typeActivatorCache">Caches factories for instantiating view component instances.</param>
         /// <param name="viewComponentFactory">The <see cref="IViewComponentFactory"/>.</param>
         /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>

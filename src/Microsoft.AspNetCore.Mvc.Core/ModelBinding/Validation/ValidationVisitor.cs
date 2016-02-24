@@ -34,6 +34,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// </summary>
         /// <param name="actionContext">The <see cref="ActionContext"/> associated with the current request.</param>
         /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/>.</param>
+        /// <param name="validatorCache">The <see cref="ValidatorCache"/> that provides a list of <see cref="IModelValidator"/>s.</param>
+        /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
         /// <param name="validationState">The <see cref="ValidationStateDictionary"/>.</param>
         public ValidationVisitor(
             ActionContext actionContext,

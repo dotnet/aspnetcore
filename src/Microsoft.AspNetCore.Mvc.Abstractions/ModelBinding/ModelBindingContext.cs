@@ -139,12 +139,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract NestedScope EnterNestedScope();
 
         /// <summary>
-        /// Removes a layer of state pushed by calling <see cref="EnterNestedScope"/>.
+        /// Removes a layer of state pushed by calling <see cref="M:EnterNestedScope"/>.
         /// </summary>
         protected abstract void ExitNestedScope();
 
         /// <summary>
-        /// Return value of <see cref="ModelBindingContext.EnterNestedScope"/>. Should be disposed
+        /// Return value of <see cref="M:EnterNestedScope"/>. Should be disposed
         /// by caller when child binding context state should be popped off of 
         /// the <see cref="ModelBindingContext"/>.
         /// </summary>
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             /// <summary>
-            /// Exits the <see cref="NestedScope"/> created by calling <see cref="ModelBindingContext.EnterNestedScope"/>.
+            /// Exits the <see cref="NestedScope"/> created by calling <see cref="M:EnterNestedScope"/>.
             /// </summary>
             public void Dispose()
             {

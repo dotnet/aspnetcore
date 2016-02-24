@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// if the current model represents a collection.
         /// </summary>
         /// <param name="htmlHelper">
-        /// The <see cref="IHtmlHelper{IEnumerable{TModelItem}}"/> instance this method extends.
+        /// The <see cref="IHtmlHelper{T}"/> of <see cref="IEnumerable{TModelItem}"/> instance this method extends.
         /// </param>
         /// <param name="expression">An expression to be evaluated against an item in the current model.</param>
         /// <typeparam name="TModelItem">The type of items in the model collection.</typeparam>

@@ -45,8 +45,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// tokens.</param>
         /// <param name="optionsAccessor">The accessor for <see cref="MvcOptions"/>.</param>
         /// <param name="metadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
-        /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
+        /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
+        /// <param name="clientValidatorCache">The <see cref="ClientValidatorCache"/> that provides
+        /// a list of <see cref="IClientModelValidator"/>s.</param>
         public DefaultHtmlGenerator(
             IAntiforgery antiforgery,
             IOptions<MvcViewOptions> optionsAccessor,
@@ -1077,7 +1079,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>
         /// A <see cref="TagBuilder"/> instance for the &lt;/form&gt; element.

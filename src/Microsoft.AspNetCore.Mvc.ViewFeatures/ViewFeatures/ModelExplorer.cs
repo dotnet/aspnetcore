@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="metadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="container">The container <see cref="ModelExplorer"/>.</param>
         /// <param name="metadata">The <see cref="ModelMetadata"/>.</param>
-        /// <param name="modelAccessor">A model accessor function. May be <c>null</c>.</param>
+        /// <param name="modelAccessor">A model accessor function..</param>
         public ModelExplorer(
             IModelMetadataProvider metadataProvider,
             ModelExplorer container,
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <summary>
         /// Gets a <see cref="ModelExplorer"/> for the provided model value and model <see cref="Type"/>.
         /// </summary>
-        /// <param name="modelType">The model <see cref="Type"/>.</param>
+        /// <param name="metadata">The <see cref="ModelMetadata"/> associated with the model.</param>
         /// <param name="model">The model value.</param>
         /// <returns>A <see cref="ModelExplorer"/>.</returns>
         /// <remarks>
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// Gets a <see cref="ModelExplorer"/> for the provided model value and model <see cref="Type"/>.
         /// </summary>
         /// <param name="modelType">The model <see cref="Type"/>.</param>
-        /// <param name="model">The model value.</param>
+        /// <param name="modelAccessor">A model accessor function.</param>
         /// <returns>A <see cref="ModelExplorer"/>.</returns>
         /// <remarks>
         /// <para>
@@ -406,8 +406,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <summary>
         /// Gets a <see cref="ModelExplorer"/> for the provided model value and model <see cref="Type"/>.
         /// </summary>
-        /// <param name="modelType">The model <see cref="Type"/>.</param>
-        /// <param name="model">The model value.</param>
+        /// <param name="metadata">The <see cref="ModelMetadata"/> associated with the model.</param>
+        /// <param name="modelAccessor">A model accessor function.</param>
         /// <returns>A <see cref="ModelExplorer"/>.</returns>
         /// <remarks>
         /// <para>

@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         /// <param name="serializerSettings">The <see cref="JsonSerializerSettings"/>.</param>
-        /// <param name="charPool">The <see cref="ArrayPool{char}"/>.</param>
+        /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
         /// <param name="objectPoolProvider">The <see cref="ObjectPoolProvider"/>.</param>
         public JsonInputFormatter(
             ILogger logger,

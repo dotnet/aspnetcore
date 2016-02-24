@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="viewData">The <see cref="ViewDataDictionary"/>.</param>
         /// <param name="tempData">The <see cref="ITempDataDictionary"/>.</param>
         /// <param name="writer">The <see cref="TextWriter"/> to render output to.</param>
+        /// <param name="htmlHelperOptions">The <see cref="HtmlHelperOptions"/> to apply to this instance.</param>
         public ViewContext(
             ActionContext actionContext,
             IView view,

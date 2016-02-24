@@ -632,12 +632,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Clears <see cref="ModelStateDictionary"/> entries for <see cref="ModelMetadata"/>.
         /// </summary>
-        /// <param name="modelMetadata">The <see cref="ModelMetadata"/>.</param>
+        /// <param name="modelType">The <see cref="Type"/> of the model.</param>
+        /// <param name="modelState">The <see cref="ModelStateDictionary"/> associated with the model.</param>
+        /// <param name="metadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="modelKey">The entry to clear. </param>
-        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         public static void ClearValidationStateForModel(
             Type modelType,
-            ModelStateDictionary modelstate,
+            ModelStateDictionary modelState,
             IModelMetadataProvider metadataProvider,
             string modelKey)
         {
@@ -646,9 +647,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(modelType));
             }
 
-            if (modelstate == null)
+            if (modelState == null)
             {
-                throw new ArgumentNullException(nameof(modelstate));
+                throw new ArgumentNullException(nameof(modelState));
             }
 
             if (metadataProvider == null)
@@ -656,18 +657,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(metadataProvider));
             }
 
-            ClearValidationStateForModel(metadataProvider.GetMetadataForType(modelType), modelstate, modelKey);
+            ClearValidationStateForModel(metadataProvider.GetMetadataForType(modelType), modelState, modelKey);
         }
 
         /// <summary>
         /// Clears <see cref="ModelStateDictionary"/> entries for <see cref="ModelMetadata"/>.
         /// </summary>
         /// <param name="modelMetadata">The <see cref="ModelMetadata"/>.</param>
+        /// <param name="modelState">The <see cref="ModelStateDictionary"/> associated with the model.</param>
         /// <param name="modelKey">The entry to clear. </param>
-        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         public static void ClearValidationStateForModel(
             ModelMetadata modelMetadata,
-            ModelStateDictionary modelstate,
+            ModelStateDictionary modelState,
             string modelKey)
         {
             if (modelMetadata == null)
@@ -675,9 +676,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(modelMetadata));
             }
 
-            if (modelstate == null)
+            if (modelState == null)
             {
-                throw new ArgumentNullException(nameof(modelstate));
+                throw new ArgumentNullException(nameof(modelState));
             }
 
             if (string.IsNullOrEmpty(modelKey))
@@ -692,7 +693,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     //
                     // In the unlikely case that multiple top-level collections where bound to the empty prefix,
                     // you're just out of luck.
-                    foreach (var kvp in modelstate)
+                    foreach (var kvp in modelState)
                     {
                         if (kvp.Key.Length > 0 && kvp.Key[0] == '[')
                         {
@@ -706,14 +707,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 {
                     foreach (var property in modelMetadata.Properties)
                     {
-                        modelstate.ClearValidationState(property.BinderModelName ?? property.PropertyName);
+                        modelState.ClearValidationState(property.BinderModelName ?? property.PropertyName);
                     }
                 }
                 else
                 {
                     // Simple types bind to a single entry. So clear the entry with the empty-key, in the
                     // unlikely event that it has errors.
-                    var entry = modelstate[string.Empty];
+                    var entry = modelState[string.Empty];
                     if (entry != null)
                     {
                         entry.Errors.Clear();
@@ -726,7 +727,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 // If model key is non-empty, we just want to clear all keys with that prefix. We expect
                 // model binding to have only used this key (and suffixes) for all entries related to
                 // this model.
-                modelstate.ClearValidationState(modelKey);
+                modelState.ClearValidationState(modelKey);
             }
         }
 
@@ -849,10 +850,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Converts the provided <paramref name="value"/> to a value of <see cref="Type"/> <param name="type"/>
+        /// Converts the provided <paramref name="value"/> to a value of <see cref="Type"/> <paramref name="type"/>
         /// using the <see cref="CultureInfo.InvariantCulture"/>.
         /// </summary>
-        /// <param name="value">The value to convert."/></param>
+        /// <param name="value">The value to convert.</param>
         /// <param name="type">The <see cref="Type"/> for conversion.</param>
         /// <returns>
         /// The converted value or <c>null</c> if the value could not be converted.

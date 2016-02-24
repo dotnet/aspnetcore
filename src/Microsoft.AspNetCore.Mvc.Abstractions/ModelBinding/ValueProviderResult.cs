@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// multiple values were submitted.
     /// </para>
     /// <para>
-    /// Treat <see cref="ValueProviderResult"/> as an <see cref="IEnumerable{string}"/> to consume all values,
+    /// Treat <see cref="ValueProviderResult"/> as an <see cref="IEnumerable{String}"/> to consume all values,
     /// regardless of whether a single value or multiple values were submitted.
     /// </para>
     /// </remarks>
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Creates a new <see cref="ValueProviderResult"/>.
         /// </summary>
-        /// <param name="value">The submitted value.</param>
+        /// <param name="values">The submitted values.</param>
         /// <param name="culture">The <see cref="CultureInfo"/> associated with this value.</param>
         public ValueProviderResult(StringValues values, CultureInfo culture)
         {
@@ -134,9 +134,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Gets an <see cref="IEnumerator{string}"/> for this <see cref="ValueProviderResult"/>.
+        /// Gets an <see cref="IEnumerator{String}"/> for this <see cref="ValueProviderResult"/>.
         /// </summary>
-        /// <returns>An <see cref="IEnumerator{string}"/>.</returns>
+        /// <returns>An <see cref="IEnumerator{String}"/>.</returns>
         public IEnumerator<string> GetEnumerator()
         {
             return ((IEnumerable<string>)Values).GetEnumerator();

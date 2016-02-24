@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the checkbox element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; elements.</returns>
@@ -469,8 +469,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <para>
         /// In all but the default case, includes a "checked" attribute with
         /// value "checked" if the <see cref="string"/> values is equal to a converted <see cref="string"/> for
-        /// <paramref name="value"/> or <paramref name="isChecked"/> is <c>true</c> (for that case); does not include
-        /// the attribute otherwise.
+        /// <paramref name="value"/>; does not include the attribute otherwise.
         /// </para>
         /// </remarks>
         public static IHtmlContent RadioButton(
@@ -497,7 +496,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
@@ -535,8 +534,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <para>
         /// In all but the <paramref name="htmlAttributes"/> and default cases, includes a "checked" attribute with
         /// value "checked" if the <see cref="string"/> values is equal to a converted <see cref="string"/> for
-        /// <paramref name="value"/> or <paramref name="isChecked"/> is <c>true</c> (for that case); does not include
-        /// the attribute otherwise.
+        /// <paramref name="value"/>; does not include the attribute otherwise.
         /// </para>
         /// </remarks>
         public static IHtmlContent RadioButton(
@@ -828,7 +826,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="value">If non-<c>null</c>, value to include in the element.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
@@ -974,7 +972,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
@@ -1067,7 +1065,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;textarea&gt; element.</returns>
@@ -1163,7 +1161,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="value">If non-<c>null</c>, value to include in the element.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;textarea&gt; element.</returns>
@@ -1257,7 +1255,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <typeparam name="TModel">The type of the model.</typeparam>

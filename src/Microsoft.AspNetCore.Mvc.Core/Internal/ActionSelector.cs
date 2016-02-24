@@ -26,7 +26,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         /// Creates a new <see cref="ActionSelector"/>.
         /// </summary>
         /// <param name="decisionTreeProvider">The <see cref="IActionSelectorDecisionTreeProvider"/>.</param>
-        /// <param name="actionConstraintProviders">The set of <see cref="IActionInvokerProvider"/> instances.</param>
+        /// <param name="actionConstraintCache">The <see cref="ActionConstraintCache"/> that
+        /// providers a set of <see cref="IActionConstraint"/> instances.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public ActionSelector(
             IActionSelectorDecisionTreeProvider decisionTreeProvider,

@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the &lt;select&gt; element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;select&gt; element.</returns>
         /// <remarks>
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the &lt;select&gt; element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>

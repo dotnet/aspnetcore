@@ -7,7 +7,9 @@
   },
   "compilationOptions": {
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [ "CS1591" ],
+    "xmlDoc": true
   },
   "dependencies": {
     "Microsoft.AspNetCore.Routing.Abstractions": "1.0.0-*",

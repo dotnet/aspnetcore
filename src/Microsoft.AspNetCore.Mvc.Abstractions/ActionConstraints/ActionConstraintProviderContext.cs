@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
         /// <summary>
         /// Creates a new <see cref="ActionConstraintProviderContext"/>.
         /// </summary>
+        /// <param name="context">The <see cref="Http.HttpContext"/> associated with the request.</param>
         /// <param name="action">The <see cref="ActionDescriptor"/> for which constraints are being created.</param>
         /// <param name="items">The list of <see cref="ActionConstraintItem"/> objects.</param>
         public ActionConstraintProviderContext(
@@ -43,6 +44,9 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
             Results = items;
         }
 
+        /// <summary>
+        /// The <see cref="Http.HttpContext"/> associated with the request.
+        /// </summary>
         public HttpContext HttpContext { get; }
 
         /// <summary>

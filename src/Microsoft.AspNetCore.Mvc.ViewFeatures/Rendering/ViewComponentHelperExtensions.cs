@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <summary>
         /// Invokes a view component with the specified <paramref name="name"/>.
         /// </summary>
+        /// <param name="helper">The <see cref="IViewComponentHelper"/>.</param>
         /// <param name="name">The name of the view component.</param>
         /// <returns>A <see cref="Task"/> that on completion returns the rendered <see cref="IHtmlContent" />.
         /// </returns>
@@ -31,6 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <summary>
         /// Invokes a view component of type <paramref name="componentType" />.
         /// </summary>
+        /// <param name="helper">The <see cref="IViewComponentHelper"/>.</param>
         /// <param name="componentType">The view component <see cref="Type"/>.</param>
         /// <returns>A <see cref="Task"/> that on completion returns the rendered <see cref="IHtmlContent" />.
         /// </returns>
@@ -45,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         }
 
         /// <summary>
-        /// Invokes a view component of type <typeparam name="TComponent"/>.
+        /// Invokes a view component of type <typeparamref name="TComponent"/>.
         /// </summary>
         /// <param name="helper">The <see cref="IViewComponentHelper"/>.</param>
         /// <param name="arguments">Arguments to be passed to the invoked view component method.</param>
@@ -63,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         }
 
         /// <summary>
-        /// Invokes a view component of type <typeparam name="TComponent"/>.
+        /// Invokes a view component of type <typeparamref name="TComponent"/>.
         /// </summary>
         /// <param name="helper">The <see cref="IViewComponentHelper"/>.</param>
         /// <typeparam name="TComponent">The <see cref="Type"/> of the view component.</typeparam>

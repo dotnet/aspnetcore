@@ -46,8 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="antiforgery">
         /// If <c>true</c>, &lt;form&gt; elements will include an antiforgery token.
         /// If <c>false</c>, suppresses the generation an &lt;input&gt; of type "hidden" with an antiforgery token.
-        /// If <c>null</c>, &lt;form&gt; elements will include an antiforgery token only if
-        /// <paramref name="method"/> is not <see cref="FormMethod.Get"/>.
+        /// If <c>null</c>, &lt;form&gt; elements will include an antiforgery token.
         /// </param>
         /// <returns>
         /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
@@ -108,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>
@@ -150,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>
@@ -188,7 +187,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the route
         /// parameters.
         /// </param>
         /// <returns>
@@ -256,7 +255,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the route
         /// parameters.
         /// </param>
         /// <returns>
@@ -330,7 +329,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the route
         /// parameters.
         /// </param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
@@ -371,7 +370,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>
@@ -410,7 +409,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the route
         /// parameters.
         /// </param>
         /// <returns>
@@ -443,14 +442,13 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the route
         /// parameters.
         /// </param>
         /// <param name="antiforgery">
         /// If <c>true</c>, &lt;form&gt; elements will include an antiforgery token.
         /// If <c>false</c>, suppresses the generation an &lt;input&gt; of type "hidden" with an antiforgery token.
-        /// If <c>null</c>, &lt;form&gt; elements will include an antiforgery token only if
-        /// <paramref name="method"/> is not <see cref="FormMethod.Get"/>.
+        /// If <c>null</c>, &lt;form&gt; elements will include an antiforgery token.
         /// </param>
         /// <returns>
         /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
@@ -509,8 +507,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="antiforgery">
         /// If <c>true</c>, &lt;form&gt; elements will include an antiforgery token.
         /// If <c>false</c>, suppresses the generation an &lt;input&gt; of type "hidden" with an antiforgery token.
-        /// If <c>null</c>, &lt;form&gt; elements will include an antiforgery token only if
-        /// <paramref name="method"/> is not <see cref="FormMethod.Get"/>.
+        /// If <c>null</c>, &lt;form&gt; elements will include an antiforgery token.
         /// </param>
         /// <returns>
         /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
@@ -543,7 +540,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the route
         /// parameters.
         /// </param>
         /// <returns>
@@ -611,7 +608,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the route
         /// parameters.
         /// </param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
@@ -649,7 +646,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>

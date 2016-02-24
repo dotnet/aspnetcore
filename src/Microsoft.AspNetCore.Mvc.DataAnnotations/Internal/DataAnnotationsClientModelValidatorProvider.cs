@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
     /// for attributes which derive from <see cref="ValidationAttribute"/>. It also provides
     /// a validator for types which implement <see cref="IClientModelValidator"/>.
     /// The logic to support <see cref="IClientModelValidator"/>
-    /// is implemented in <see cref="ValidationAttributeAdapter{}"/>.
+    /// is implemented in <see cref="ValidationAttributeAdapter{TAttribute}"/>.
     /// </summary>
     public class DataAnnotationsClientModelValidatorProvider : IClientModelValidatorProvider
     {
@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         /// <summary>
         /// Create a new instance of <see cref="DataAnnotationsClientModelValidatorProvider"/>.
         /// </summary>
+        /// <param name="validationAttributeAdapterProvider">The <see cref="IValidationAttributeAdapterProvider"/>
+        /// that supplies <see cref="IAttributeAdapter"/>s.</param>
         /// <param name="options">The <see cref="IOptions{MvcDataAnnotationsLocalizationOptions}"/>.</param>
         /// <param name="stringLocalizerFactory">The <see cref="IStringLocalizerFactory"/>.</param>
         public DataAnnotationsClientModelValidatorProvider(

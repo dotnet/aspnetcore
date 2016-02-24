@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;label&gt; element.</returns>
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="labelText">The inner text of the element.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;label&gt; element.</returns>

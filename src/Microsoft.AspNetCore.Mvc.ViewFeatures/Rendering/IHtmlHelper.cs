@@ -71,11 +71,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the anchor element.</returns>
         IHtmlContent ActionLink(
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
         /// </param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
         /// <param name="antiforgery">
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>
         /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
         /// </param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
         /// <param name="antiforgery">
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>
         /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="isChecked">If <c>true</c>, checkbox is initially checked.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the checkbox element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; elements.</returns>
         /// <remarks>
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// properties that have the same name.
         /// </param>
         /// <param name="additionalViewData">
-        /// An anonymous <see cref="object"/> or <see cref="IDictionary{string, object}"/> that can contain additional
+        /// An anonymous <see cref="object"/> or <see cref="IDictionary{String, Object}"/> that can contain additional
         /// view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/> instance created for the
         /// template.
         /// </param>
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the &lt;select&gt; element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;select&gt; element.</returns>
         /// <remarks>
@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// properties that have the same name.
         /// </param>
         /// <param name="additionalViewData">
-        /// An anonymous <see cref="object"/> or <see cref="IDictionary{string, object}"/> that can contain additional
+        /// An anonymous <see cref="object"/> or <see cref="IDictionary{String, Object}"/> that can contain additional
         /// view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/> instance created for the
         /// template.
         /// </param>
@@ -404,7 +404,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="value">If non-<c>null</c>, value to include in the element.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
@@ -450,7 +450,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="labelText">The inner text of the element.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;label&gt; element.</returns>
         IHtmlContent Label(string expression, string labelText, object htmlAttributes);
@@ -466,7 +466,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the &lt;select&gt; element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;select&gt; element.</returns>
         /// <remarks>
@@ -504,7 +504,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="value">If non-<c>null</c>, value to include in the element.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
@@ -538,7 +538,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
@@ -624,11 +624,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the anchor element.</returns>
         IHtmlContent RouteLink(
@@ -649,7 +649,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="columns">Number of columns in the textarea.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;textarea&gt; element.</returns>
         /// <remarks>
@@ -690,7 +690,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
@@ -740,7 +740,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the <paramref name="tag"/> element.
-        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// Alternatively, an <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <param name="tag">
         /// The tag to wrap the <paramref name="message"/> in the generated HTML. Its default value is
@@ -762,7 +762,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="message">The message to display with the validation summary.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the topmost (&lt;div&gt;) element.
-        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// Alternatively, an <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <param name="tag">
         /// The tag to wrap the <paramref name="message"/> in the generated HTML. Its default value is

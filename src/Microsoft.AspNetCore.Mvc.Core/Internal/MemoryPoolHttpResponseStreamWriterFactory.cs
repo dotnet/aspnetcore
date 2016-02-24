@@ -26,10 +26,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         /// Creates a new <see cref="MemoryPoolHttpResponseStreamWriterFactory"/>.
         /// </summary>
         /// <param name="bytePool">
-        /// The <see cref="ArrayPool{byte}"/> for creating <see cref="byte"/> buffers.
+        /// The <see cref="ArrayPool{Byte}"/> for creating <see cref="byte"/> buffers.
         /// </param>
         /// <param name="charPool">
-        /// The <see cref="ArrayPool{char}"/> for creating <see cref="char"/> buffers.
+        /// The <see cref="ArrayPool{Char}"/> for creating <see cref="char"/> buffers.
         /// </param>
         public MemoryPoolHttpResponseStreamWriterFactory(
             ArrayPool<byte> bytePool,

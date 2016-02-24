@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         /// The <see cref="ViewComponentContext"/> for the view component being invoked.
         /// </param>
         /// <param name="arguments">The view component arguments.</param>
+        /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/> to use.</param>
         /// <param name="viewContext">The <see cref="ViewContext"/>.</param>
         /// <param name="writer">The <see cref="TextWriter"/> for writing output.</param>
         public ViewComponentContext(

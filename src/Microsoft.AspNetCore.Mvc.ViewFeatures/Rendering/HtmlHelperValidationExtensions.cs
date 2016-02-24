@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the
         /// (<see cref="ViewContext.ValidationMessageElement"/>) element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the
         /// (<see cref="ViewContext.ValidationMessageElement"/>) element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the
         /// (<see cref="ViewContext.ValidationMessageElement"/>) element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <typeparam name="TModel">The type of the model.</typeparam>
@@ -461,7 +461,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="message">The message to display with the validation summary.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the topmost (&lt;div&gt;) element.
-        /// Alternatively, an <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing
+        /// Alternatively, an <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing
         /// the HTML attributes.
         /// </param>
         /// <returns>
@@ -495,7 +495,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="message">The message to display with the validation summary.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the topmost (&lt;div&gt;) element.
-        /// Alternatively, an <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing
+        /// Alternatively, an <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing
         /// the HTML attributes.
         /// </param>
         /// <param name="tag">
@@ -572,7 +572,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="message">The message to display with the validation summary.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the topmost (&lt;div&gt;) element.
-        /// Alternatively, an <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing
+        /// Alternatively, an <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing
         /// the HTML attributes.
         /// </param>
         /// <returns>

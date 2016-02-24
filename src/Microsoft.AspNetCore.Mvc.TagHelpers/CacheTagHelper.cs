@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// Creates a new <see cref="CacheTagHelper"/>.
         /// </summary>
         /// <param name="memoryCache">The <see cref="IMemoryCache"/>.</param>
+        /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/> to use.</param>
         public CacheTagHelper(IMemoryCache memoryCache, HtmlEncoder htmlEncoder)
         {
             MemoryCache = memoryCache;

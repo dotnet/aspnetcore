@@ -52,6 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="modelState">The <see cref="ModelStateDictionary"/> instance this method extends.</param>
         /// <param name="expression">An expression to be evaluated against an item in the current model.</param>
         /// <param name="exception">The <see cref="Exception"/> to add.</param>
+        /// <param name="metadata">The <see cref="ModelMetadata"/> associated with the model.</param>
         public static void AddModelError<TModel>(
             this ModelStateDictionary modelState,
             Expression<Func<TModel, object>> expression,

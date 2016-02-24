@@ -296,8 +296,7 @@ namespace System.Net.Http
         /// found, this method returns a response with status 406 NotAcceptable.
         /// </summary>
         /// <remarks>
-        /// This method will use the provided <paramref name="configuration"/> or it will get the
-        /// <see cref="HttpContext"/> instance associated with <paramref name="request"/>.
+        /// This method will get the <see cref="HttpContext"/> instance associated with <paramref name="request"/>.
         /// </remarks>
         /// <typeparam name="T">The type of the value.</typeparam>
         /// <param name="request">The request.</param>

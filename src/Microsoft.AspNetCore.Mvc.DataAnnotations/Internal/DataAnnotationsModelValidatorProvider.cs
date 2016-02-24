@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         /// <summary>
         /// Create a new instance of <see cref="DataAnnotationsModelValidatorProvider"/>.
         /// </summary>
+        /// <param name="validationAttributeAdapterProvider">The <see cref="IValidationAttributeAdapterProvider"/>
+        /// that supplies <see cref="IAttributeAdapter"/>s.</param>
         /// <param name="options">The <see cref="IOptions{MvcDataAnnotationsLocalizationOptions}"/>.</param>
         /// <param name="stringLocalizerFactory">The <see cref="IStringLocalizerFactory"/>.</param>
         /// <remarks><paramref name="options"/> and <paramref name="stringLocalizerFactory"/>

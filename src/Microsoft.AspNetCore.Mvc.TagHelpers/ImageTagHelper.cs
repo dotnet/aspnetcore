@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// </summary>
         /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
         /// <param name="cache">The <see cref="IMemoryCache"/>.</param>
+        /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/> to use.</param>
         /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
         public ImageTagHelper(
             IHostingEnvironment hostingEnvironment,

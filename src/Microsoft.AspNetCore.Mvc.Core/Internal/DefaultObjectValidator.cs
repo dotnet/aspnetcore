@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         /// Initializes a new instance of <see cref="DefaultObjectValidator"/>.
         /// </summary>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
+        /// <param name="validatorCache">The <see cref="ValidatorCache"/>.</param>
         public DefaultObjectValidator(
             IModelMetadataProvider modelMetadataProvider,
             ValidatorCache validatorCache)

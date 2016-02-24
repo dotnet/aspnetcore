@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         /// Releases a ViewComponent instance.
         /// </summary>
         /// <param name="context">
-        /// The <see cref="ViewComponentContext"/> associated with the <paramref name="component"/>.
+        /// The <see cref="ViewComponentContext"/> associated with the <paramref name="viewComponent"/>.
         /// </param>
         /// <param name="viewComponent">The <see cref="ViewComponent"/> to release.</param>
         void Release(ViewComponentContext context, object viewComponent);

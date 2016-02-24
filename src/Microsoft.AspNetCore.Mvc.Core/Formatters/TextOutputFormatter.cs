@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         /// <summary>
         /// Determines the best <see cref="Encoding"/> amongst the supported encodings
-        /// for reading or writing an HTTP entity body based on the provided <paramref name="contentTypeHeader"/>.
+        /// for reading or writing an HTTP entity body based on the provided content type.
         /// </summary>
         /// <param name="context">The formatter context associated with the call.
         /// </param>

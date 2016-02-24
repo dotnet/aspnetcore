@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="logger">The <see cref="ILogger{JsonResultExecutor}"/>.</param>
         /// <param name="options">The <see cref="IOptions{MvcJsonOptions}"/>.</param>
+        /// <param name="charPool">The <see cref="ArrayPool{Char}"/> for creating <see cref="T:char[]"/> buffers.</param>
         public JsonResultExecutor(
             IHttpResponseStreamWriterFactory writerFactory, 
             ILogger<JsonResultExecutor> logger, 

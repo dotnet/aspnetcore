@@ -35,11 +35,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>
         /// A <see cref="TagBuilder"/> instance for the &lt;a&gt; element.
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="isChecked">The initial state of the checkbox element.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>
         /// A <see cref="TagBuilder"/> instance for the &lt;input type="checkbox".../&gt; element.
@@ -107,12 +107,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
         /// </param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>
         /// A <see cref="TagBuilder"/> instance for the &lt;/form&gt; element.
@@ -135,12 +135,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
         /// </param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>
         /// A <see cref="TagBuilder"/> instance for the &lt;/form&gt; element.
@@ -189,17 +189,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="linkText">The text to insert inside the element.</param>
         /// <param name="routeName">The name of the route to use for link generation.</param>
         /// <param name="protocol">The protocol (scheme) for the generated link.</param>
-        /// <param name="hostname">The hostname for the generated link.</param>
+        /// <param name="hostName">The hostname for the generated link.</param>
         /// <param name="fragment">The fragment for the genrated link.</param>
         /// <param name="routeValues">
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>
         /// A <see cref="TagBuilder"/> instance for the &lt;a&gt; element.
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the &lt;select&gt; element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>A new <see cref="TagBuilder"/> describing the &lt;select&gt; element.</returns>
         /// <remarks>
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <c>ViewContext.ViewData[expression]</c>.
         /// </param>
         /// <param name="currentValues">
-        /// An <see cref="ICollection{string}"/> containing values for &lt;option&gt; elements to select. If
+        /// An <see cref="ICollection{String}"/> containing values for &lt;option&gt; elements to select. If
         /// <c>null</c>, selects &lt;option&gt; elements based on <see cref="SelectListItem.Selected"/> values in
         /// <paramref name="selectList"/>.
         /// </param>
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the &lt;select&gt; element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>A new <see cref="TagBuilder"/> describing the &lt;select&gt; element.</returns>
         /// <remarks>
@@ -354,7 +354,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>
         /// A <see cref="TagBuilder"/> containing a <paramref name="tag"/> element if the
@@ -394,7 +394,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <returns>
         /// <para>
         /// <c>null</c> if no <paramref name="expression"/> result is found. Otherwise a
-        /// <see cref="ICollection{string}"/> containing current values for the given
+        /// <see cref="ICollection{String}"/> containing current values for the given
         /// <paramref name="expression"/>.
         /// </para>
         /// <para>
@@ -410,7 +410,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </para>
         /// </returns>
         /// <remarks>
-        /// See <see cref="GenerateSelect"/> for information about how the return value may be used.
+        /// See <see cref="M:GenerateSelect"/> for information about how the return value may be used.
         /// </remarks>
         ICollection<string> GetCurrentValues(
             ViewContext viewContext,

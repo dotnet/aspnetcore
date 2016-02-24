@@ -15,7 +15,8 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         /// <summary>
         /// Gets the <see cref="LocalizedHtmlString"/> resource for a specific name.
         /// </summary>
-        /// <param name="key">The key to use.</param>
+        /// <param name="htmlLocalizer">The <see cref="IHtmlLocalizer"/>.</param>
+        /// <param name="name">The key to use.</param>
         /// <returns>The <see cref="LocalizedHtmlString"/> resource.</returns>
         public static LocalizedHtmlString GetHtml(this IHtmlLocalizer htmlLocalizer, string name)
         {
@@ -35,7 +36,8 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         /// <summary>
         /// Gets the <see cref="LocalizedHtmlString"/> resource for a specific name.
         /// </summary>
-        /// <param name="key">The key to use.</param>
+        /// <param name="htmlLocalizer">The <see cref="IHtmlLocalizer"/>.</param>
+        /// <param name="name">The key to use.</param>
         /// <param name="arguments">The values to format the string with.</param>
         /// <returns>The <see cref="LocalizedHtmlString"/> resource.</returns>
         public static LocalizedHtmlString GetHtml(this IHtmlLocalizer htmlLocalizer, string name, params object[] arguments)

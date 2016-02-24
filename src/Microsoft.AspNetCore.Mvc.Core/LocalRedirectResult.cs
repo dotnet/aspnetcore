@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Initializes a new instance of the <see cref="LocalRedirectResult"/> class with the values
         /// provided.
         /// </summary>
-        /// <param name="url">The local URL to redirect to.</param>
+        /// <param name="localUrl">The local URL to redirect to.</param>
         /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
         public LocalRedirectResult(string localUrl, bool permanent)
         {

@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// An <see cref="ActionResult"/> that on execution invokes <see cref="AuthenticationManager.ForbidAsync"/>.
+    /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:AuthenticationManager.ForbidAsync"/>.
     /// </summary>
     public class ForbidResult : ActionResult
     {
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Initializes a new instance of <see cref="ForbidResult"/> with the
         /// specified authentication schemes.
         /// </summary>
-        /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
+        /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
         public ForbidResult(IList<string> authenticationSchemes)
             : this(authenticationSchemes, properties: null)
         {
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Initializes a new instance of <see cref="ForbidResult"/> with the
         /// specified authentication schemes and <paramref name="properties"/>.
         /// </summary>
-        /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
+        /// <param name="authenticationSchemes">The authentication scheme to challenge.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
         public ForbidResult(IList<string> authenticationSchemes, AuthenticationProperties properties)

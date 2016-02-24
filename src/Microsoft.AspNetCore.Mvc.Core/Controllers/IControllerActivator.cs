@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         /// <summary>
         /// Releases a controller.
         /// </summary>
+        /// <param name="context">The <see cref="ControllerContext"/> for the executing action.</param>
         /// <param name="controller">The controller to release.</param>
         void Release(ControllerContext context, object controller);
     }

@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="name">The name of the view component.</param>
         /// <param name="arguments">
         /// An <see cref="object"/> with properties representing arguments to be passed to the invoked view component
-        /// method. Alternatively, an <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance
+        /// method. Alternatively, an <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance
         /// containing the invocation arguments.
         /// </param>
         /// <returns>A <see cref="Task"/> that on completion returns the rendered <see cref="IHtmlContent" />.
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="componentType">The view component <see cref="Type"/>.</param>
         /// <param name="arguments">
         /// An <see cref="object"/> with properties representing arguments to be passed to the invoked view component
-        /// method. Alternatively, an <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance
+        /// method. Alternatively, an <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance
         /// containing the invocation arguments.
         /// </param>
         /// <returns>A <see cref="Task"/> that on completion returns the rendered <see cref="IHtmlContent" />.

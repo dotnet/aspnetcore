@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the route
         /// parameters.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the anchor element.</returns>
@@ -95,12 +95,12 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the route
         /// parameters.
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the anchor element.</returns>
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the route
         /// parameters.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the anchor element.</returns>
@@ -221,12 +221,12 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the route
         /// parameters.
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the anchor element.</returns>
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the route
         /// parameters.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the anchor element.</returns>
@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the route
         /// parameters.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the anchor element.</returns>
@@ -378,12 +378,12 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the route
         /// parameters.
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the anchor element.</returns>
@@ -423,12 +423,12 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the route
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the route
         /// parameters.
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing the HTML
+        /// <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance containing the HTML
         /// attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the anchor element.</returns>

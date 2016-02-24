@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <summary>
         /// Gets the list of <see cref="ClientValidatorItem"/> instances. <see cref="IClientModelValidatorProvider"/>
         /// instances should add the appropriate <see cref="ClientValidatorItem.Validator"/> properties when
-        /// <see cref="IClientModelValidatorProvider.CreateValidators(ClientValidatorProviderContext)()"/>
+        /// <see cref="IClientModelValidatorProvider.CreateValidators(ClientValidatorProviderContext)"/>
         /// is called.
         /// </summary>
         public IList<ClientValidatorItem> Results { get; }

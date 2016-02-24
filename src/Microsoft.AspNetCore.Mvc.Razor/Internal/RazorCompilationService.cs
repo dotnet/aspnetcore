@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// <param name="compilationService">The <see cref="ICompilationService"/> to compile generated code.</param>
         /// <param name="razorHost">The <see cref="IMvcRazorHost"/> to generate code from Razor files.</param>
         /// <param name="fileProviderAccessor">The <see cref="IRazorViewEngineFileProviderAccessor"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public RazorCompilationService(
             ICompilationService compilationService,
             IMvcRazorHost razorHost,

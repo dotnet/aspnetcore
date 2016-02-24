@@ -15,8 +15,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         /// Creates an instance of <typeparamref name="TInstance"/>.
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> used to resolve dependencies for
-        /// <paramref name="implementationType"/>.</param>
-        /// <param name="implementationType">The <see cref="Type"/> of the <typeparamref name="TInstance"/> to create.</param>
+        /// <paramref name="optionType"/>.</param>
+        /// <param name="optionType">The <see cref="Type"/> of the <typeparamref name="TInstance"/> to create.</param>
         TInstance CreateInstance<TInstance>(IServiceProvider serviceProvider, Type optionType);
     }
 }

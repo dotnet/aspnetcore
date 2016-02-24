@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <see cref="object"/> that contains the properties to display.
         /// </param>
         /// <param name="additionalViewData">
-        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
+        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{String, Object}"/>
         /// that can contain additional view data that will be merged into the
         /// <see cref="ViewFeatures.ViewDataDictionary{TModel}"/> instance created for the template.
         /// </param>
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <param name="templateName">The name of the template used to create the HTML markup.</param>
         /// <param name="additionalViewData">
-        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
+        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{String, Object}"/>
         /// that can contain additional view data that will be merged into the
         /// <see cref="ViewFeatures.ViewDataDictionary{TModel}"/> instance created for the template.
         /// </param>
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="htmlHelper">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <param name="additionalViewData">
-        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
+        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{String, Object}"/>
         /// that can contain additional view data that will be merged into the
         /// <see cref="ViewFeatures.ViewDataDictionary{TModel}"/> instance created for the template.
         /// </param>
@@ -364,7 +364,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <param name="templateName">The name of the template used to create the HTML markup.</param>
         /// <param name="additionalViewData">
-        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
+        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{String, Object}"/>
         /// that can contain additional view data that will be merged into the
         /// <see cref="ViewFeatures.ViewDataDictionary{TModel}"/> instance created for the template.
         /// </param>
@@ -488,7 +488,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="additionalViewData">
-        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
+        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{String, Object}"/>
         /// that can contain additional view data that will be merged into the
         /// <see cref="ViewFeatures.ViewDataDictionary{TModel}"/> instance created for the template.
         /// </param>
@@ -556,7 +556,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="templateName">The name of the template used to create the HTML markup.</param>
         /// <param name="additionalViewData">
-        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
+        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{String, Object}"/>
         /// that can contain additional view data that will be merged into the
         /// <see cref="ViewFeatures.ViewDataDictionary{TModel}"/> instance created for the template.
         /// </param>
@@ -639,7 +639,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// properties that have the same name.
         /// </param>
         /// <param name="additionalViewData">
-        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{string, object}"/>
+        /// An anonymous <see cref="object"/> or <see cref="System.Collections.Generic.IDictionary{String, Object}"/>
         /// that can contain additional view data that will be merged into the
         /// <see cref="ViewFeatures.ViewDataDictionary{TModel}"/> instance created for the template.
         /// </param>

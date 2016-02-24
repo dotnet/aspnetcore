@@ -761,6 +761,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// In layout pages, asynchronously renders the content of the section named <paramref name="name"/>.
         /// </summary>
         /// <param name="name">The section to render.</param>
+        /// <param name="required">Indicates the <paramref name="name"/> section must be registered
+        /// (using <c>@section</c>) in the page.</param>
         /// <returns>A <see cref="Task{HtmlString}"/> that on completion returns <see cref="HtmlString.Empty"/> that
         /// allows the <see cref="Write(object)"/> call to succeed.</returns>
         /// <remarks>The method writes to the <see cref="Output"/> and the value returned is a token
@@ -814,7 +816,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <summary>
-        /// Invokes <see cref="TextWriter.FlushAsync"/> on <see cref="Output"/> and <see cref="Stream.FlushAsync"/>
+        /// Invokes <see cref="TextWriter.FlushAsync"/> on <see cref="Output"/> and <see cref="M:Stream.FlushAsync"/>
         /// on the response stream, writing out any buffered content to the <see cref="HttpResponse.Body"/>.
         /// </summary>
         /// <returns>A <see cref="Task{HtmlString}"/> that represents the asynchronous flush operation and on

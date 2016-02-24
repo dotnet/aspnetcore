@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// value to the dictionary. It will expose public properties from derived types as well. This is typically
         /// used with objects of an anonymous type.
         ///
-        /// If the <paramref name="value"/> is already an <see cref="IDictionary{string, object}"/> instance, then it
+        /// If the <paramref name="value"/> is already an <see cref="IDictionary{String, Object}"/> instance, then it
         /// is returned as-is.
         /// <example>
         /// <c>new { data_name="value" }</c> will translate to the entry <c>{ "data_name", "value" }</c>
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// Creates a dictionary of HTML attributes from the input object,
         /// translating underscores to dashes in each public instance property.
         ///
-        /// If the object is already an <see cref="IDictionary{string, object}"/> instance, then it is
+        /// If the object is already an <see cref="IDictionary{String, Object}"/> instance, then it is
         /// returned as-is.
         /// <example>
         /// <c>new { data_name="value" }</c> will translate to the entry <c>{ "data-name", "value" }</c>
@@ -856,7 +856,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
         /// </param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
         /// <param name="antiforgery">
@@ -867,7 +867,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>
         /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.
@@ -915,7 +915,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
         /// created using <see cref="object"/> initializer syntax. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
         /// </param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
         /// <param name="antiforgery">
@@ -926,7 +926,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>
         /// An <see cref="MvcForm"/> instance which renders the &lt;/form&gt; end tag when disposed.

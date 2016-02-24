@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the checkbox element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; elements.</returns>
         /// <remarks>
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// that have the same name.
         /// </param>
         /// <param name="additionalViewData">
-        /// An anonymous <see cref="object"/> or <see cref="IDictionary{string, object}"/> that can contain additional
+        /// An anonymous <see cref="object"/> or <see cref="IDictionary{String, Object}"/> that can contain additional
         /// view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/> instance created for the
         /// template.
         /// </param>
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the &lt;select&gt; element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;select&gt; element.</returns>
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// that have the same name.
         /// </param>
         /// <param name="additionalViewData">
-        /// An anonymous <see cref="object"/> or <see cref="IDictionary{string, object}"/> that can contain additional
+        /// An anonymous <see cref="object"/> or <see cref="IDictionary{String, Object}"/> that can contain additional
         /// view data that will be merged into the <see cref="ViewDataDictionary{TModel}"/> instance created for the
         /// template.
         /// </param>
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="labelText">The inner text of the element.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;label&gt; element.</returns>
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the &lt;select&gt; element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;select&gt; element.</returns>
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="expression">An expression to be evaluated against the current model.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="value">Value to include in the element. Must not be <c>null</c>.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
@@ -354,7 +354,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="columns">Number of columns in the textarea.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;textarea&gt; element.</returns>
@@ -391,7 +391,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
-        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
@@ -433,7 +433,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the <paramref name="tag"/> element.
-        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// Alternatively, an <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
         /// </param>
         /// <param name="tag">
         /// The tag to wrap the <paramref name="message"/> in the generated HTML. Its default value is

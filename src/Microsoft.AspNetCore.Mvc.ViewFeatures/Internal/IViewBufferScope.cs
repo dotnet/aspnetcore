@@ -6,20 +6,20 @@ using System.IO;
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     /// <summary>
-    /// Creates and manages the lifetime of <see cref="ViewBufferValue[]"/> instances.
+    /// Creates and manages the lifetime of <see cref="T:ViewBufferValue[]"/> instances.
     /// </summary>
     public interface IViewBufferScope
     {
         /// <summary>
-        /// Gets a <see cref="ViewBufferValue[]"/>.
+        /// Gets a <see cref="T:ViewBufferValue[]"/>.
         /// </summary>
-        /// <returns>The <see cref="ViewBufferValue[]"/>.</returns>
+        /// <returns>The <see cref="T:ViewBufferValue[]"/>.</returns>
         ViewBufferValue[] GetSegment();
 
         /// <summary>
-        /// Returns a <see cref="ViewBufferValue[]"/> that can be reused.
+        /// Returns a <see cref="T:ViewBufferValue[]"/> that can be reused.
         /// </summary>
-        /// <param name="segment">The <see cref="ViewBufferValue[]"/>.</param>
+        /// <param name="segment">The <see cref="T:ViewBufferValue[]"/>.</param>
         void ReturnSegment(ViewBufferValue[] segment);
 
         /// <summary>

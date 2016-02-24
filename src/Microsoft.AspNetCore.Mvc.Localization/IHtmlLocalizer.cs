@@ -32,7 +32,6 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         /// <summary>
         /// Gets the string resource with the given name.
         /// </summary>
-        /// <param name="stringLocalizer">The <see cref="IStringLocalizer"/>.</param>
         /// <param name="name">The name of the string resource.</param>
         /// <returns>The string resource as a <see cref="LocalizedString"/>.</returns>
         LocalizedString GetString(string name);
@@ -40,7 +39,6 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         /// <summary>
         /// Gets the string resource with the given name and formatted with the supplied arguments.
         /// </summary>
-        /// <param name="stringLocalizer">The <see cref="IStringLocalizer"/>.</param>
         /// <param name="name">The name of the string resource.</param>
         /// <param name="arguments">The values to format the string with.</param>
         /// <returns>The formatted string resource as a <see cref="LocalizedString"/>.</returns>

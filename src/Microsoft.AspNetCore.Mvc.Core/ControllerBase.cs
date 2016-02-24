@@ -935,7 +935,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Creates a <see cref="ChallengeResult"/> with the specified authentication schemes.
         /// </summary>
-        /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
+        /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
         /// <returns>The created <see cref="ChallengeResult"/> for the response.</returns>
         [NonAction]
         public virtual ChallengeResult Challenge(IList<string> authenticationSchemes)
@@ -967,7 +967,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Creates a <see cref="ChallengeResult"/> with the specified specified authentication schemes and
         /// <paramref name="properties" />.
         /// </summary>
-        /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
+        /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
         /// <returns>The created <see cref="ChallengeResult"/> for the response.</returns>
@@ -997,7 +997,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Creates a <see cref="ForbidResult"/> with the specified authentication schemes.
         /// </summary>
-        /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
+        /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
         /// <returns>The created <see cref="ForbidResult"/> for the response.</returns>
         [NonAction]
         public virtual ForbidResult Forbid(IList<string> authenticationSchemes)
@@ -1029,7 +1029,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Creates a <see cref="ForbidResult"/> with the specified specified authentication schemes and
         /// <paramref name="properties" />.
         /// </summary>
-        /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
+        /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
         /// <returns>The created <see cref="ForbidResult"/> for the response.</returns>

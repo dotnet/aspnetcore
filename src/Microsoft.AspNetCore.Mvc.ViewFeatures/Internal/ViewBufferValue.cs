@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         /// <summary>
         /// Initializes a new instance of <see cref="ViewBufferValue"/> with a <see cref="IHtmlContent"/> value.
         /// </summary>
-        /// <param name="value">The <see cref="IHtmlContent"/>.</param>
+        /// <param name="content">The <see cref="IHtmlContent"/>.</param>
         public ViewBufferValue(IHtmlContent content)
         {
             Value = content;
