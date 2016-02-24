@@ -186,17 +186,9 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
         var net45TFM = targetFrameworks.FirstOrDefault(t => t.StartsWith("net45", StringComparison.OrdinalIgnoreCase));
         var dnx451TFM = targetFrameworks.FirstOrDefault(t => t.Equals("dnx451", StringComparison.OrdinalIgnoreCase));
         var dnxCore50TFM = targetFrameworks.FirstOrDefault(t => t.Equals("dnxcore50", StringComparison.OrdinalIgnoreCase));
-        if (dnxCore50TFM != null)
+        if (dnxCore50TFM != null && project.Keys.Contains("testRunner"))
         {
-            var hasTestCommand = project.Keys.Contains("commands") && project.ValueAsJsonObject("commands").Keys.Contains("test");
-            if (projectText.Contains("dotnet-test-xunit") && project.Keys.Contains("testRunner"))
-            {
-                DotnetTest(projectFile, Configuration);
-            }
-            else if (hasTestCommand)
-            {
-                DnxTest(projectFile, dnxCore50TFM, Configuration);
-            }
+            DotnetTest(projectFile, Configuration);
         }
 
         if (project.Keys.Contains("testRunner"))
