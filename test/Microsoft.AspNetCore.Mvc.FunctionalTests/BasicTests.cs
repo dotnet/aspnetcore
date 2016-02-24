@@ -218,27 +218,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task JsonViewComponent_RendersJson()
-        {
-            // Arrange
-            var expectedBody = JsonConvert.SerializeObject(new BasicWebSite.Models.Person()
-            {
-                Id = 10,
-                Name = "John"
-            });
-
-            // Act
-            var response = await Client.GetAsync("Home/JsonTextInView");
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
-
-            var actualBody = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedBody, actualBody);
-        }
-
-        [Fact]
         public async Task JsonHelper_RendersJson()
         {
             // Arrange

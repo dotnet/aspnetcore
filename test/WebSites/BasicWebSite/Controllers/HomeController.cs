@@ -83,11 +83,6 @@ namespace BasicWebSite.Controllers
             return View(person);
         }
 
-        public IActionResult JsonTextInView()
-        {
-            return View();
-        }
-
         public IActionResult ViewWithPrefixedAttributeValue()
         {
             return View();

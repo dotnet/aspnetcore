@@ -60,21 +60,6 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
-        public void ViewComponent_Json_SetsResultData()
-        {
-            // Arrange
-            var viewComponent = new TestViewComponent();
-            var testData = new object();
-
-            // Act
-            var actualResult = viewComponent.Json(testData);
-
-            // Assert
-            Assert.IsType<JsonViewComponentResult>(actualResult);
-            Assert.Same(testData, actualResult.Value);
-        }
-
-        [Fact]
         public void ViewComponent_View_WithEmptyParameter_SetsResultViewWithDefaultViewName()
         {
             // Arrange

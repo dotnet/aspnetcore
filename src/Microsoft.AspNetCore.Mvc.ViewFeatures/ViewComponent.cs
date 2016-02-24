@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -213,35 +212,6 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             return new ContentViewComponentResult(content);
-        }
-
-        /// <summary>
-        /// Returns a result which will render JSON text.
-        /// </summary>
-        /// <param name="value">The value to output in JSON text.</param>
-        /// <returns>A <see cref="JsonViewComponentResult"/>.</returns>
-        public JsonViewComponentResult Json(object value)
-        {
-            return new JsonViewComponentResult(value);
-        }
-
-        /// <summary>
-        /// Returns a result which will render JSON text.
-        /// </summary>
-        /// <param name="value">The value to output in JSON text.</param>
-        /// <param name="serializerSettings">The <see cref="JsonSerializerSettings"/> to be used by
-        /// the formatter.</param>
-        /// <returns>A <see cref="JsonViewComponentResult"/>.</returns>
-        /// <remarks>Callers should cache an instance of <see cref="JsonSerializerSettings"/> to avoid
-        /// recreating cached data with each call.</remarks>
-        public JsonViewComponentResult Json(object value, JsonSerializerSettings serializerSettings)
-        {
-            if (serializerSettings == null)
-            {
-                throw new ArgumentNullException(nameof(serializerSettings));
-            }
-
-            return new JsonViewComponentResult(value, serializerSettings);
         }
 
         /// <summary>

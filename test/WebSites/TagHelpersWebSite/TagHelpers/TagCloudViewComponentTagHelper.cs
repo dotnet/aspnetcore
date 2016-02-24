@@ -72,7 +72,8 @@ namespace MvcSample.Web.Components
         public async Task<IViewComponentResult> InvokeAsync(int count)
         {
             var tags = await GetTagsAsync(count);
-            return new JsonViewComponentResult(tags);
+
+            return new ContentViewComponentResult(string.Join(",", tags));
         }
 
         private Task<string[]> GetTagsAsync(int count)
