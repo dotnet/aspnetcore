@@ -19,6 +19,9 @@
   "frameworks": {
     "dnx451": { },
     "dnxcore50": {
+      "dependencies": {
+        "NETStandard.Library": "1.0.0-*"
+      },
       "imports": "portable-net451+win8"
      }
   }
