@@ -193,7 +193,7 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
         if (dnxCore50TFM != null)
         {
             var hasTestCommand = project.Keys.Contains("commands") && project.ValueAsJsonObject("commands").Keys.Contains("test");
-            if (projectText.Contains("dotnet-test-xunit"))
+            if (projectText.Contains("dotnet-test-xunit") && project.Keys.Contains("testRunner"))
             {
                 DotnetTest(projectFile, Configuration);
             }
