@@ -13,6 +13,7 @@
     "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.8.5",
     "jquery": "^2.2.1",
+    "ntypescript": "^1.201602232306.1",
     "react-transform-hmr": "^1.0.2",
     "style-loader": "^0.13.0",
     "ts-loader": "^0.8.1",
@@ -24,6 +25,7 @@
   },
   "dependencies": {
     "babel-core": "^6.5.2",
+    "domain-task": "^1.0.0",
     "react": "^0.14.7",
     "react-dom": "^0.14.7",
     "react-router": "^2.0.0"
