@@ -12,7 +12,7 @@ export class Counter extends React.Component<void, CounterState> {
     
     public render() {
         return <div>
-            <h2>Counter</h2>
+            <h1>Counter</h1>
             
             <p>This is a simple example of a React component.</p>
 

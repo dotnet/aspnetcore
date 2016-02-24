@@ -3,9 +3,11 @@ import * as React from 'react';
 export class About extends React.Component<void, void> {
     public render() {
         return <div>
-            <h2>About</h2>
+            <h1>About</h1>
 
-            <p>Use this area to provide additional information.</p>
+            <p>This is another component.</p>
+            
+            <p>It's here to demonstrate navigation.</p>
         </div>;
     }
 }

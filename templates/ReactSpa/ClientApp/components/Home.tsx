@@ -1,53 +1,24 @@
 import * as React from 'react';
-import { carouselItems } from '../data/CarouselItems';
-import { linkLists } from '../data/HomepageLinkLists';
 
 export class Home extends React.Component<void, void> {
     public render() {
         return <div>
-            { /* Carousel */ }
-            <div id="myCarousel" className="carousel slide" data-ride="carousel" data-interval="6000">
-                <ol className="carousel-indicators">
-                    { carouselItems.map((item, index) =>
-                        <li key={ index } data-target="#myCarousel" data-slide-to={ index } className={ index == 0 ? "active" : "" }></li>
-                    )}
-                </ol>
-                <div className="carousel-inner" role="listbox">
-                    { carouselItems.map((item, index) =>
-                        <div key={ index } className={ "item " + (index == 0 ? "active" : "") }>
-                            <img src={ item.imageUrl } alt={ item.imageAlt } className="img-responsive" />
-                            <div className="carousel-caption">
-                                <p>
-                                    { item.text }
-                                    <a className="btn btn-default" href={ item.learnMoreUrl }>Learn More</a>
-                                </p>
-                            </div>
-                        </div>
-                    )}
-                </div>
-                <a className="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
-                    <span className="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
-                    <span className="sr-only">Previous</span>
-                </a>
-                <a className="right carousel-control" href="#myCarousel" role="button" data-slide="next">
-                    <span className="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-                    <span className="sr-only">Next</span>
-                </a>
-            </div>
-
-            { /* Lists of links */ }
-            <div className="row">
-                { linkLists.map((list, listIndex) =>
-                    <div key={listIndex} className="col-md-3">
-                        <h2>{ list.title }</h2>
-                        <ul>
-                            { list.entries.map((entry, entryIndex) => 
-                                <li key={ entryIndex }>{ entry }</li>
-                            )}
-                        </ul>
-                    </div>
-                )}
-            </div>
+            <h1>Hello, world!</h1>
+            <p>Welcome to your new single-page application, built with:</p>
+            <ul>
+                <li><a href="https://get.asp.net/">ASP.NET Core</a> and <a href="https://msdn.microsoft.com/en-us/library/67ef8sbd.aspx">C#</a> for cross-platform server-side code</li>
+                <li><a href="https://facebook.github.io/react/">React</a> and <a href="http://www.typescriptlang.org/">TypeScript</a> for client-side code</li> 
+                <li><a href="https://webpack.github.io/">Webpack</a> for building and bundling client-side resources</li>
+                <li><a href="http://getbootstrap.com/">Bootstrap</a> for layout and styling</li>
+            </ul>
+            <p>To help you get started, we've also set up:</p>
+            <ul>
+                <li><strong>Client-side navigation</strong>. For example, click <em>About</em> then <em>Back</em> to return here.</li>
+                <li><strong>Server-side prerendering</strong>. For optimal performance, your React application is first executed on the server. The resulting HTML and state is then transferred to the client to continue execution. This is also known as being an <em>isomorphic</em> or <em>universal</em> application.</li>
+                <li><strong>Webpack dev middleware</strong>. In development mode, there's no need to run the <code>webpack</code> build tool. Your client-side resources are dynamically built on demand. Updates are available as soon as you modify any file.</li>
+                <li><strong>Hot module replacement</strong>. In development mode, you don't even need to reload the page after making most changes. Within seconds of saving changes to files, rebuilt CSS and React components will be injected directly into your running application, preserving its live state.</li>
+                <li><strong>Efficient production builds</strong>. In production mode, development-time features are disabled, and the <code>webpack</code> build tool produces minified static CSS and JavaScript files.</li>
+            </ul>
         </div>;
     }
 }
