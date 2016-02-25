@@ -8,49 +8,46 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// The <see cref="IServiceCollection"/> extensions for enabling CORS support.
+    /// Extension methods for setting up cross-origin resource sharing services in an <see cref="IServiceCollection" />.
     /// </summary>
     public static class CorsServiceCollectionExtensions
     {
         /// <summary>
-        /// Add services needed to support CORS to the given <paramref name="serviceCollection"/>.
+        /// Adds cross-origin resource sharing services to the specified <see cref="IServiceCollection" />.
         /// </summary>
-        /// <param name="serviceCollection">The service collection to which CORS services are added.</param>
-        /// <returns>The updated <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddCors(this IServiceCollection serviceCollection)
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        public static void AddCors(this IServiceCollection services)
         {
-            if (serviceCollection == null)
+            if (services == null)
             {
-                throw new ArgumentNullException(nameof(serviceCollection));
+                throw new ArgumentNullException(nameof(services));
             }
-            
-            serviceCollection.TryAdd(ServiceDescriptor.Transient<ICorsService, CorsService>());
-            serviceCollection.TryAdd(ServiceDescriptor.Transient<ICorsPolicyProvider, DefaultCorsPolicyProvider>());
-            return serviceCollection;
+
+            services.AddOptions();
+
+            services.TryAdd(ServiceDescriptor.Transient<ICorsService, CorsService>());
+            services.TryAdd(ServiceDescriptor.Transient<ICorsPolicyProvider, DefaultCorsPolicyProvider>());
         }
 
         /// <summary>
-        /// Add services needed to support CORS to the given <paramref name="serviceCollection"/>.
+        /// Adds cross-origin resource sharing services to the specified <see cref="IServiceCollection" />.
         /// </summary>
-        /// <param name="serviceCollection">The service collection to which CORS services are added.</param>
-        /// <param name="configure">A delegate which is run to configure the services.</param>
-        /// <returns>The updated <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddCors(
-            this IServiceCollection serviceCollection,
-            Action<CorsOptions> configure)
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        /// <param name="setupAction">An <see cref="Action{CorsOptions}"/> to configure the provided <see cref="CorsOptions"/>.</param>
+        public static void AddCors(this IServiceCollection services, Action<CorsOptions> setupAction)
         {
-            if (serviceCollection == null)
+            if (services == null)
             {
-                throw new ArgumentNullException(nameof(serviceCollection));
+                throw new ArgumentNullException(nameof(services));
             }
 
-            if (configure == null)
+            if (setupAction == null)
             {
-                throw new ArgumentNullException(nameof(configure));
+                throw new ArgumentNullException(nameof(setupAction));
             }
 
-            serviceCollection.Configure(configure);
-            return serviceCollection.AddCors();
+            services.AddCors();
+            services.Configure(setupAction);
         }
     }
 }
