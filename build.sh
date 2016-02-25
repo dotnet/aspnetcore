@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export NO_PARALLEL_TEST_PROJECTS=Microsoft.AspNetCore.Localization.FunctionalTests
+
 buildFolder=.build
 koreBuildFolder=$buildFolder/KoreBuild-dotnet
 
