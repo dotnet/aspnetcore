@@ -22,10 +22,16 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         public IList<LinkGenerationMatch> GetMatches(VirtualPathContext context)
         {
-            var results = new List<LinkGenerationMatch>();
-            Walk(results, context, _root, isFallbackPath: false);
-            results.Sort(LinkGenerationMatchComparer.Instance);
-            return results;
+            // Perf: Avoid allocation for List if there aren't any Matches or Criteria
+            if (_root.Matches.Count > 0 || _root.Criteria.Count > 0)
+            {
+                var results = new List<LinkGenerationMatch>();
+                Walk(results, context, _root, isFallbackPath: false);
+                results.Sort(LinkGenerationMatchComparer.Instance);
+                return results;
+            }
+
+            return null;            
         }
 
         // We need to recursively walk the decision tree based on the provided route data

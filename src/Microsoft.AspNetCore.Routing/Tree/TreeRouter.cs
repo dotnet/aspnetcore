@@ -138,9 +138,14 @@ namespace Microsoft.AspNetCore.Routing.Tree
             // order. We just need to iterate them and use the first one that can generate a link.
             var matches = _linkGenerationTree.GetMatches(context);
 
-            foreach (var match in matches)
+            if (matches == null)
             {
-                var path = GenerateVirtualPath(context, match.Entry);
+                return null;
+            }
+
+            for (var i = 0; i < matches.Count; i++)
+            {
+                var path = GenerateVirtualPath(context, matches[i].Entry);
                 if (path != null)
                 {
                     return path;

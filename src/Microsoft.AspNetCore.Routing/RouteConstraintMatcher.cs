@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (constraints == null)
+            if (constraints == null || constraints.Count == 0)
             {
                 return true;
             }
