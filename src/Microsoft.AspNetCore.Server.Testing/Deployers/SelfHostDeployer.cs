@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Testing
             executableArgs += $" --server.urls {uri} "
             + $" --server {(DeploymentParameters.ServerType == ServerType.WebListener ? "Microsoft.AspNetCore.Server.WebListener" : "Microsoft.AspNetCore.Server.Kestrel")}";
 
-            Logger.LogInformation($"Executing {DotnetCommandName} {executableArgs}");
+            Logger.LogInformation($"Executing {executableName} {executableArgs}");
 
             var startInfo = new ProcessStartInfo
             {
