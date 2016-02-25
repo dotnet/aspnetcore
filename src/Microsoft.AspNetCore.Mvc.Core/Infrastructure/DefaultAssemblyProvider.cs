@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// </summary>
     public class DefaultAssemblyProvider : IAssemblyProvider
     {
+        private readonly Assembly _entryAssembly;
         private readonly DependencyContext _dependencyContext;
 
         /// <summary>
@@ -25,8 +26,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <param name="environment">The <see cref="IApplicationEnvironment"/>.</param>
         public DefaultAssemblyProvider(IApplicationEnvironment environment)
         {
-            var applicationAssembly = Assembly.Load(new AssemblyName(environment.ApplicationName));
-            _dependencyContext = DependencyContext.Load(applicationAssembly);
+            _entryAssembly = Assembly.Load(new AssemblyName(environment.ApplicationName));
+            _dependencyContext = DependencyContext.Load(_entryAssembly);
         }
 
         /// <summary>
@@ -59,6 +60,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         {
             get
             {
+                if (_dependencyContext == null)
+                {
+                    // Use the entry assembly as the sole candidate.
+                    return new[] { _entryAssembly };
+                }
+
                 return GetCandidateLibraries()
                     .SelectMany(l => l.Assemblies)
                     .Select(Load);
@@ -78,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 return Enumerable.Empty<RuntimeLibrary>();
             }
 
-            return DependencyContext.Default.RuntimeLibraries.Where(IsCandidateLibrary);
+            return _dependencyContext.RuntimeLibraries.Where(IsCandidateLibrary);
         }
 
         private static Assembly Load(RuntimeAssembly assembly)

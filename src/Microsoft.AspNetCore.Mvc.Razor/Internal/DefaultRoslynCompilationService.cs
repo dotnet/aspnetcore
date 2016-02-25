@@ -243,6 +243,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         private List<MetadataReference> GetApplicationReferences()
         {
+            if (_dependencyContext == null)
+            {
+                // Avoid null ref if the entry point does not have DependencyContext specified.
+                return new List<MetadataReference>();
+            }
+
             return _dependencyContext.CompileLibraries
                 .SelectMany(library => library.ResolveReferencePaths())
                 .Select(CreateMetadataFileReference)
