@@ -8,22 +8,22 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 {
     /// <summary>
     /// A descriptor which can create an authenticated encryption system based upon the
-    /// configuration provided by an <see cref="AuthenticatedEncryptionOptions"/> object.
+    /// configuration provided by an <see cref="AuthenticatedEncryptionSettings"/> object.
     /// </summary>
     public sealed class AuthenticatedEncryptorDescriptor : IAuthenticatedEncryptorDescriptor
     {
         private readonly IServiceProvider _services;
 
-        public AuthenticatedEncryptorDescriptor(AuthenticatedEncryptionOptions options, ISecret masterKey)
-            : this(options, masterKey, services: null)
+        public AuthenticatedEncryptorDescriptor(AuthenticatedEncryptionSettings settings, ISecret masterKey)
+            : this(settings, masterKey, services: null)
         {
         }
 
-        public AuthenticatedEncryptorDescriptor(AuthenticatedEncryptionOptions options, ISecret masterKey, IServiceProvider services)
+        public AuthenticatedEncryptorDescriptor(AuthenticatedEncryptionSettings settings, ISecret masterKey, IServiceProvider services)
         {
-            if (options == null)
+            if (settings == null)
             {
-                throw new ArgumentNullException(nameof(options));
+                throw new ArgumentNullException(nameof(settings));
             }
 
             if (masterKey == null)
@@ -31,18 +31,18 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
                 throw new ArgumentNullException(nameof(masterKey));
             }
 
-            Options = options;
+            Settings = settings;
             MasterKey = masterKey;
             _services = services;
         }
 
         internal ISecret MasterKey { get; }
 
-        internal AuthenticatedEncryptionOptions Options { get; }
+        internal AuthenticatedEncryptionSettings Settings { get; }
 
         public IAuthenticatedEncryptor CreateEncryptorInstance()
         {
-            return Options.CreateAuthenticatedEncryptorInstance(MasterKey, _services);
+            return Settings.CreateAuthenticatedEncryptorInstance(MasterKey, _services);
         }
 
         public XmlSerializedDescriptorInfo ExportToXml()
@@ -54,12 +54,12 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
             // </descriptor>
 
             var encryptionElement = new XElement("encryption",
-                new XAttribute("algorithm", Options.EncryptionAlgorithm));
+                new XAttribute("algorithm", Settings.EncryptionAlgorithm));
 
-            var validationElement = (AuthenticatedEncryptionOptions.IsGcmAlgorithm(Options.EncryptionAlgorithm))
+            var validationElement = (AuthenticatedEncryptionSettings.IsGcmAlgorithm(Settings.EncryptionAlgorithm))
                 ? (object)new XComment(" AES-GCM includes a 128-bit authentication tag, no extra validation algorithm required. ")
                 : (object)new XElement("validation",
-                    new XAttribute("algorithm", Options.ValidationAlgorithm));
+                    new XAttribute("algorithm", Settings.ValidationAlgorithm));
 
             var outerElement = new XElement("descriptor",
                 encryptionElement,

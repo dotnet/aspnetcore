@@ -107,19 +107,19 @@ namespace Microsoft.AspNetCore.DataProtection
         private IEnumerable<ServiceDescriptor> ResolvePolicyCore()
         {
             // Read the encryption options type: CNG-CBC, CNG-GCM, Managed
-            IInternalAuthenticatedEncryptionOptions options = null;
+            IInternalAuthenticatedEncryptionSettings options = null;
             string encryptionType = (string)_policyRegKey.GetValue("EncryptionType");
             if (String.Equals(encryptionType, "CNG-CBC", StringComparison.OrdinalIgnoreCase))
             {
-                options = new CngCbcAuthenticatedEncryptionOptions();
+                options = new CngCbcAuthenticatedEncryptionSettings();
             }
             else if (String.Equals(encryptionType, "CNG-GCM", StringComparison.OrdinalIgnoreCase))
             {
-                options = new CngGcmAuthenticatedEncryptionOptions();
+                options = new CngGcmAuthenticatedEncryptionSettings();
             }
             else if (String.Equals(encryptionType, "Managed", StringComparison.OrdinalIgnoreCase))
             {
-                options = new ManagedAuthenticatedEncryptionOptions();
+                options = new ManagedAuthenticatedEncryptionSettings();
             }
             else if (!String.IsNullOrEmpty(encryptionType))
             {
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.DataProtection
             if (options != null)
             {
                 PopulateOptions(options, _policyRegKey);
-                yield return DataProtectionServiceDescriptors.IAuthenticatedEncryptorConfiguration_FromOptions(options);
+                yield return DataProtectionServiceDescriptors.IAuthenticatedEncryptorConfiguration_FromSettings(options);
             }
 
             // Read ancillary data

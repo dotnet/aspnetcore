@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         {
             // Arrange
             var control = new CngGcmAuthenticatedEncryptorDescriptor(
-                new CngGcmAuthenticatedEncryptionOptions()
+                new CngGcmAuthenticatedEncryptionSettings()
                 {
                     EncryptionAlgorithm = Constants.BCRYPT_AES_ALGORITHM,
                     EncryptionAlgorithmKeySize = 192,

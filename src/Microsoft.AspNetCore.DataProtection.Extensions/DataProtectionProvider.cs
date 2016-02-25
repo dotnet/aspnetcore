@@ -8,21 +8,20 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.DataProtection
 {
     /// <summary>
-    /// A simple implementation of an <see cref="IDataProtectionProvider"/> where keys are stored
+    /// Contains factory methods for creating an <see cref="IDataProtectionProvider"/> where keys are stored
     /// at a particular location on the file system.
     /// </summary>
-    public sealed class DataProtectionProvider : IDataProtectionProvider
+    /// <remarks>Use these methods when not using dependency injection to provide the service to the application.</remarks>
+    public static class DataProtectionProvider
     {
-        private readonly IDataProtectionProvider _innerProvider;
-
         /// <summary>
         /// Creates an <see cref="DataProtectionProvider"/> given a location at which to store keys.
         /// </summary>
         /// <param name="keyDirectory">The <see cref="DirectoryInfo"/> in which keys should be stored. This may
         /// represent a directory on a local disk or a UNC share.</param>
-        public DataProtectionProvider(DirectoryInfo keyDirectory)
-            : this(keyDirectory, configure: null)
+        public static IDataProtectionProvider Create(DirectoryInfo keyDirectory)
         {
+            return Create(keyDirectory, setupAction: builder => { });
         }
 
         /// <summary>
@@ -31,38 +30,34 @@ namespace Microsoft.AspNetCore.DataProtection
         /// </summary>
         /// <param name="keyDirectory">The <see cref="DirectoryInfo"/> in which keys should be stored. This may
         /// represent a directory on a local disk or a UNC share.</param>
-        /// <param name="configure">An optional callback which provides further configuration of the data protection
-        /// system. See <see cref="DataProtectionConfiguration"/> for more information.</param>
-        public DataProtectionProvider(DirectoryInfo keyDirectory, Action<DataProtectionConfiguration> configure)
+        /// <param name="setupAction">An optional callback which provides further configuration of the data protection
+        /// system. See <see cref="IDataProtectionBuilder"/> for more information.</param>
+        public static IDataProtectionProvider Create(
+            DirectoryInfo keyDirectory,
+            Action<IDataProtectionBuilder> setupAction)
         {
             if (keyDirectory == null)
             {
                 throw new ArgumentNullException(nameof(keyDirectory));
             }
 
-            // build the service collection
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddDataProtection(configurationObject =>
+            if (setupAction == null)
             {
-                configurationObject.PersistKeysToFileSystem(keyDirectory);
-                configure?.Invoke(configurationObject);
-            });
-
-            // extract the provider instance from the service collection
-            _innerProvider = serviceCollection.BuildServiceProvider().GetRequiredService<IDataProtectionProvider>();
-        }
-
-        /// <summary>
-        /// Implements <see cref="IDataProtectionProvider.CreateProtector(string)"/>.
-        /// </summary>
-        public IDataProtector CreateProtector(string purpose)
-        {
-            if (purpose == null)
-            {
-                throw new ArgumentNullException(nameof(purpose));
+                throw new ArgumentNullException(nameof(setupAction));
             }
 
-            return _innerProvider.CreateProtector(purpose);
+            // build the service collection
+            var serviceCollection = new ServiceCollection();
+            var builder = serviceCollection.AddDataProtection();
+            builder.PersistKeysToFileSystem(keyDirectory);
+
+            if (setupAction != null)
+            {
+                setupAction(builder);
+            }
+
+            // extract the provider instance from the service collection
+            return serviceCollection.BuildServiceProvider().GetRequiredService<IDataProtectionProvider>();
         }
     }
 }

@@ -58,13 +58,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         public static ServiceDescriptor IAuthenticatedEncryptorConfiguration_Default()
         {
-            return IAuthenticatedEncryptorConfiguration_FromOptions(new AuthenticatedEncryptionOptions());
+            return IAuthenticatedEncryptorConfiguration_FromSettings(new AuthenticatedEncryptionSettings());
         }
 
         /// <summary>
-        /// An <see cref="IAuthenticatedEncryptorConfiguration"/> backed by an <see cref="IInternalAuthenticatedEncryptionOptions"/>.
+        /// An <see cref="IAuthenticatedEncryptorConfiguration"/> backed by an <see cref="IInternalAuthenticatedEncryptionSettings"/>.
         /// </summary>
-        public static ServiceDescriptor IAuthenticatedEncryptorConfiguration_FromOptions(IInternalAuthenticatedEncryptionOptions options)
+        public static ServiceDescriptor IAuthenticatedEncryptorConfiguration_FromSettings(IInternalAuthenticatedEncryptionSettings options)
         {
             return ServiceDescriptor.Singleton<IAuthenticatedEncryptorConfiguration>(options.ToConfiguration);
         }

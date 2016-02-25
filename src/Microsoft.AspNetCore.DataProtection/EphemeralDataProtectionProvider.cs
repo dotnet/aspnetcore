@@ -40,12 +40,12 @@ namespace Microsoft.AspNetCore.DataProtection
             if (OSVersionUtil.IsWindows())
             {
                 // Fastest implementation: AES-256-GCM [CNG]
-                keyringProvider = new EphemeralKeyRing<CngGcmAuthenticatedEncryptionOptions>();
+                keyringProvider = new EphemeralKeyRing<CngGcmAuthenticatedEncryptionSettings>();
             }
             else
             {
                 // Slowest implementation: AES-256-CBC + HMACSHA256 [Managed]
-                keyringProvider = new EphemeralKeyRing<ManagedAuthenticatedEncryptionOptions>();
+                keyringProvider = new EphemeralKeyRing<ManagedAuthenticatedEncryptionSettings>();
             }
 
             var logger = services.GetLogger<EphemeralDataProtectionProvider>();
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.DataProtection
         }
 
         private sealed class EphemeralKeyRing<T> : IKeyRing, IKeyRingProvider
-            where T : IInternalAuthenticatedEncryptionOptions, new()
+            where T : IInternalAuthenticatedEncryptionSettings, new()
         {
             // Currently hardcoded to a 512-bit KDK.
             private const int NUM_BYTES_IN_KDK = 512 / 8;

@@ -40,16 +40,16 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
             //   <masterKey>...</masterKey>
             // </descriptor>
 
-            var options = new CngGcmAuthenticatedEncryptionOptions();
+            var settings = new CngGcmAuthenticatedEncryptionSettings();
 
             var encryptionElement = element.Element("encryption");
-            options.EncryptionAlgorithm = (string)encryptionElement.Attribute("algorithm");
-            options.EncryptionAlgorithmKeySize = (int)encryptionElement.Attribute("keyLength");
-            options.EncryptionAlgorithmProvider = (string)encryptionElement.Attribute("provider"); // could be null
+            settings.EncryptionAlgorithm = (string)encryptionElement.Attribute("algorithm");
+            settings.EncryptionAlgorithmKeySize = (int)encryptionElement.Attribute("keyLength");
+            settings.EncryptionAlgorithmProvider = (string)encryptionElement.Attribute("provider"); // could be null
 
             Secret masterKey = ((string)element.Element("masterKey")).ToSecret();
 
-            return new CngGcmAuthenticatedEncryptorDescriptor(options, masterKey, _services);
+            return new CngGcmAuthenticatedEncryptorDescriptor(settings, masterKey, _services);
         }
     }
 }

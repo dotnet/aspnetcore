@@ -41,20 +41,20 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
             //   <masterKey>...</masterKey>
             // </descriptor>
 
-            var options = new CngCbcAuthenticatedEncryptionOptions();
+            var settings = new CngCbcAuthenticatedEncryptionSettings();
 
             var encryptionElement = element.Element("encryption");
-            options.EncryptionAlgorithm = (string)encryptionElement.Attribute("algorithm");
-            options.EncryptionAlgorithmKeySize = (int)encryptionElement.Attribute("keyLength");
-            options.EncryptionAlgorithmProvider = (string)encryptionElement.Attribute("provider"); // could be null
+            settings.EncryptionAlgorithm = (string)encryptionElement.Attribute("algorithm");
+            settings.EncryptionAlgorithmKeySize = (int)encryptionElement.Attribute("keyLength");
+            settings.EncryptionAlgorithmProvider = (string)encryptionElement.Attribute("provider"); // could be null
 
             var hashElement = element.Element("hash");
-            options.HashAlgorithm = (string)hashElement.Attribute("algorithm");
-            options.HashAlgorithmProvider = (string)hashElement.Attribute("provider"); // could be null
+            settings.HashAlgorithm = (string)hashElement.Attribute("algorithm");
+            settings.HashAlgorithmProvider = (string)hashElement.Attribute("provider"); // could be null
 
             Secret masterKey = ((string)element.Element("masterKey")).ToSecret();
 
-            return new CngCbcAuthenticatedEncryptorDescriptor(options, masterKey, _services);
+            return new CngCbcAuthenticatedEncryptorDescriptor(settings, masterKey, _services);
         }
     }
 }

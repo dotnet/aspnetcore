@@ -9,22 +9,22 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 {
     /// <summary>
     /// A descriptor which can create an authenticated encryption system based upon the
-    /// configuration provided by an <see cref="CngCbcAuthenticatedEncryptionOptions"/> object.
+    /// configuration provided by an <see cref="CngCbcAuthenticatedEncryptionSettings"/> object.
     /// </summary>
     public sealed class CngCbcAuthenticatedEncryptorDescriptor : IAuthenticatedEncryptorDescriptor
     {
         private readonly ILogger _log;
 
-        public CngCbcAuthenticatedEncryptorDescriptor(CngCbcAuthenticatedEncryptionOptions options, ISecret masterKey)
-            : this(options, masterKey, services: null)
+        public CngCbcAuthenticatedEncryptorDescriptor(CngCbcAuthenticatedEncryptionSettings settings, ISecret masterKey)
+            : this(settings, masterKey, services: null)
         {
         }
 
-        public CngCbcAuthenticatedEncryptorDescriptor(CngCbcAuthenticatedEncryptionOptions options, ISecret masterKey, IServiceProvider services)
+        public CngCbcAuthenticatedEncryptorDescriptor(CngCbcAuthenticatedEncryptionSettings settings, ISecret masterKey, IServiceProvider services)
         {
-            if (options == null)
+            if (settings == null)
             {
-                throw new ArgumentNullException(nameof(options));
+                throw new ArgumentNullException(nameof(settings));
             }
 
             if (masterKey == null)
@@ -32,18 +32,18 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
                 throw new ArgumentNullException(nameof(masterKey));
             }
 
-            Options = options;
+            Settings = settings;
             MasterKey = masterKey;
             _log = services.GetLogger<CngCbcAuthenticatedEncryptorDescriptor>();
         }
 
         internal ISecret MasterKey { get; }
 
-        internal CngCbcAuthenticatedEncryptionOptions Options { get; }
+        internal CngCbcAuthenticatedEncryptionSettings Settings { get; }
 
         public IAuthenticatedEncryptor CreateEncryptorInstance()
         {
-            return Options.CreateAuthenticatedEncryptorInstance(MasterKey, _log);
+            return Settings.CreateAuthenticatedEncryptorInstance(MasterKey, _log);
         }
 
         public XmlSerializedDescriptorInfo ExportToXml()
@@ -56,18 +56,18 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
             // </descriptor>
 
             var encryptionElement = new XElement("encryption",
-                new XAttribute("algorithm", Options.EncryptionAlgorithm),
-                new XAttribute("keyLength", Options.EncryptionAlgorithmKeySize));
-            if (Options.EncryptionAlgorithmProvider != null)
+                new XAttribute("algorithm", Settings.EncryptionAlgorithm),
+                new XAttribute("keyLength", Settings.EncryptionAlgorithmKeySize));
+            if (Settings.EncryptionAlgorithmProvider != null)
             {
-                encryptionElement.SetAttributeValue("provider", Options.EncryptionAlgorithmProvider);
+                encryptionElement.SetAttributeValue("provider", Settings.EncryptionAlgorithmProvider);
             }
 
             var hashElement = new XElement("hash",
-                new XAttribute("algorithm", Options.HashAlgorithm));
-            if (Options.HashAlgorithmProvider != null)
+                new XAttribute("algorithm", Settings.HashAlgorithm));
+            if (Settings.HashAlgorithmProvider != null)
             {
-                hashElement.SetAttributeValue("provider", Options.HashAlgorithmProvider);
+                hashElement.SetAttributeValue("provider", Settings.HashAlgorithmProvider);
             }
 
             var rootElement = new XElement("descriptor",

@@ -10,22 +10,22 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 {
     /// <summary>
     /// A descriptor which can create an authenticated encryption system based upon the
-    /// configuration provided by an <see cref="ManagedAuthenticatedEncryptionOptions"/> object.
+    /// configuration provided by an <see cref="ManagedAuthenticatedEncryptionSettings"/> object.
     /// </summary>
     public sealed class ManagedAuthenticatedEncryptorDescriptor : IAuthenticatedEncryptorDescriptor
     {
         private readonly ILogger _log;
 
-        public ManagedAuthenticatedEncryptorDescriptor(ManagedAuthenticatedEncryptionOptions options, ISecret masterKey)
-            : this(options, masterKey, services: null)
+        public ManagedAuthenticatedEncryptorDescriptor(ManagedAuthenticatedEncryptionSettings settings, ISecret masterKey)
+            : this(settings, masterKey, services: null)
         {
         }
 
-        public ManagedAuthenticatedEncryptorDescriptor(ManagedAuthenticatedEncryptionOptions options, ISecret masterKey, IServiceProvider services)
+        public ManagedAuthenticatedEncryptorDescriptor(ManagedAuthenticatedEncryptionSettings settings, ISecret masterKey, IServiceProvider services)
         {
-            if (options == null)
+            if (settings == null)
             {
-                throw new ArgumentNullException(nameof(options));
+                throw new ArgumentNullException(nameof(settings));
             }
 
             if (masterKey == null)
@@ -33,18 +33,18 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
                 throw new ArgumentNullException(nameof(masterKey));
             }
 
-            Options = options;
+            Settings = settings;
             MasterKey = masterKey;
             _log = services.GetLogger<ManagedAuthenticatedEncryptorDescriptor>();
         }
 
         internal ISecret MasterKey { get; }
 
-        internal ManagedAuthenticatedEncryptionOptions Options { get; }
+        internal ManagedAuthenticatedEncryptionSettings Settings { get; }
 
         public IAuthenticatedEncryptor CreateEncryptorInstance()
         {
-            return Options.CreateAuthenticatedEncryptorInstance(MasterKey, _log);
+            return Settings.CreateAuthenticatedEncryptorInstance(MasterKey, _log);
         }
 
         public XmlSerializedDescriptorInfo ExportToXml()
@@ -57,11 +57,11 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
             // </descriptor>
 
             var encryptionElement = new XElement("encryption",
-                new XAttribute("algorithm", TypeToFriendlyName(Options.EncryptionAlgorithmType)),
-                new XAttribute("keyLength", Options.EncryptionAlgorithmKeySize));
+                new XAttribute("algorithm", TypeToFriendlyName(Settings.EncryptionAlgorithmType)),
+                new XAttribute("keyLength", Settings.EncryptionAlgorithmKeySize));
 
             var validationElement = new XElement("validation",
-                new XAttribute("algorithm", TypeToFriendlyName(Options.ValidationAlgorithmType)));
+                new XAttribute("algorithm", TypeToFriendlyName(Settings.ValidationAlgorithmType)));
 
             var rootElement = new XElement("descriptor",
                 new XComment(" Algorithms provided by specified SymmetricAlgorithm and KeyedHashAlgorithm "),

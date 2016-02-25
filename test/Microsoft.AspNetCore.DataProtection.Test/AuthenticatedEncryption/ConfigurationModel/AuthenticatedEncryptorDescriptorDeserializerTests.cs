@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         {
             // Arrange
             var control = new AuthenticatedEncryptorDescriptor(
-                new AuthenticatedEncryptionOptions()
+                new AuthenticatedEncryptionSettings()
                 {
                     EncryptionAlgorithm = EncryptionAlgorithm.AES_192_CBC,
                     ValidationAlgorithm = ValidationAlgorithm.HMACSHA512

@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.DataProtection
                 Assert.Empty(directory.GetFiles());
 
                 // Step 2: instantiate the system and round-trip a payload
-                var protector = new DataProtectionProvider(directory).CreateProtector("purpose");
+                var protector = DataProtectionProvider.Create(directory).CreateProtector("purpose");
                 Assert.Equal("payload", protector.Unprotect(protector.Protect("payload")));
 
                 // Step 3: validate that there's now a single key in the directory and that it's not protected
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.DataProtection
                 Assert.Empty(directory.GetFiles());
 
                 // Step 2: instantiate the system and round-trip a payload
-                var protector = new DataProtectionProvider(directory, configure =>
+                var protector = DataProtectionProvider.Create(directory, configure =>
                 {
                     configure.ProtectKeysWithDpapi();
                 }).CreateProtector("purpose");

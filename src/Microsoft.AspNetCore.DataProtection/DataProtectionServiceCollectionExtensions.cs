@@ -3,21 +3,21 @@
 
 using System;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Allows registering and configuring Data Protection in the application.
+    /// Extension methods for setting up data protection services in an <see cref="IServiceCollection" />.
     /// </summary>
     public static class DataProtectionServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds default Data Protection services to an <see cref="IServiceCollection"/>.
+        /// Adds data protection services to the specified <see cref="IServiceCollection" />.
         /// </summary>
-        /// <param name="services">The service collection to which to add DataProtection services.</param>
-        /// <returns>The <paramref name="services"/> instance.</returns>
-        public static IServiceCollection AddDataProtection(this IServiceCollection services)
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        public static IDataProtectionBuilder AddDataProtection(this IServiceCollection services)
         {
             if (services == null)
             {
@@ -26,30 +26,31 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddOptions();
             services.TryAdd(DataProtectionServices.GetDefaultServices());
-            return services;
+
+            return new DataProtectionBuilder(services);
         }
 
         /// <summary>
-        /// Adds default Data Protection services to an <see cref="IServiceCollection"/> and configures the behavior of the Data Protection system.
+        /// Adds data protection services to the specified <see cref="IServiceCollection" />.
         /// </summary>
-        /// <param name="services">A service collection to which Data Protection has already been added.</param>
-        /// <param name="configure">A callback which takes a <see cref="DataProtectionConfiguration"/> parameter.
-        /// This callback will be responsible for configuring the system.</param>
-        /// <returns>The <paramref name="services"/> instance.</returns>
-        public static IServiceCollection AddDataProtection(this IServiceCollection services, Action<DataProtectionConfiguration> configure)
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        /// <param name="setupAction">An <see cref="Action{DataProtectionOptions}"/> to configure the provided <see cref="DataProtectionOptions"/>.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        public static IDataProtectionBuilder AddDataProtection(this IServiceCollection services, Action<DataProtectionOptions> setupAction)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
 
-            if (configure == null)
+            if (setupAction == null)
             {
-                throw new ArgumentNullException(nameof(configure));
+                throw new ArgumentNullException(nameof(setupAction));
             }
 
-            configure(new DataProtectionConfiguration(services));
-            return services.AddDataProtection();
+            var builder = services.AddDataProtection();
+            services.Configure(setupAction);
+            return builder;
         }
     }
 }

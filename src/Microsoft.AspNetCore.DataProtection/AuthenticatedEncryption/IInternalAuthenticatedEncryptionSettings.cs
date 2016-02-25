@@ -7,18 +7,18 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationM
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 {
     /// <summary>
-    /// Implemented by our options classes to generalize creating configuration objects.
+    /// Implemented by our settings classes to generalize creating configuration objects.
     /// </summary>
-    internal interface IInternalAuthenticatedEncryptionOptions
+    internal interface IInternalAuthenticatedEncryptionSettings
     {
         /// <summary>
         /// Creates a <see cref="IInternalAuthenticatedEncryptorConfiguration"/> object
-        /// from the given options.
+        /// from the given settings.
         /// </summary>
         IInternalAuthenticatedEncryptorConfiguration ToConfiguration(IServiceProvider services);
 
         /// <summary>
-        /// Performs a self-test of the algorithm specified by the options object.
+        /// Performs a self-test of the algorithm specified by the settings object.
         /// </summary>
         void Validate();
     }

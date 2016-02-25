@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         public void CreateNewDescriptor_CreatesUniqueCorrectlySizedMasterKey()
         {
             // Arrange
-            var configuration = new ManagedAuthenticatedEncryptorConfiguration(new ManagedAuthenticatedEncryptionOptions());
+            var configuration = new ManagedAuthenticatedEncryptorConfiguration(new ManagedAuthenticatedEncryptionSettings());
 
             // Act
             var masterKey1 = ((ManagedAuthenticatedEncryptorDescriptor)configuration.CreateNewDescriptor()).MasterKey;
@@ -28,13 +28,13 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         public void CreateNewDescriptor_PropagatesOptions()
         {
             // Arrange
-            var configuration = new ManagedAuthenticatedEncryptorConfiguration(new ManagedAuthenticatedEncryptionOptions());
+            var configuration = new ManagedAuthenticatedEncryptorConfiguration(new ManagedAuthenticatedEncryptionSettings());
 
             // Act
             var descriptor = (ManagedAuthenticatedEncryptorDescriptor)configuration.CreateNewDescriptor();
 
             // Assert
-            Assert.Equal(configuration.Options, descriptor.Options);
+            Assert.Equal(configuration.Settings, descriptor.Settings);
         }
     }
 }

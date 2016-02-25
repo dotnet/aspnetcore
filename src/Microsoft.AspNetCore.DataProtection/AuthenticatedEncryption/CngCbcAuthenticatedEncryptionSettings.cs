@@ -12,10 +12,10 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 {
     /// <summary>
-    /// Options for configuring an authenticated encryption mechanism which uses
+    /// Settings for configuring an authenticated encryption mechanism which uses
     /// Windows CNG algorithms in CBC encryption + HMAC authentication modes.
     /// </summary>
-    public sealed class CngCbcAuthenticatedEncryptionOptions : IInternalAuthenticatedEncryptionOptions
+    public sealed class CngCbcAuthenticatedEncryptionSettings : IInternalAuthenticatedEncryptionSettings
     {
         /// <summary>
         /// The name of the algorithm to use for symmetric encryption.
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
         public string HashAlgorithmProvider { get; set; } = null;
 
         /// <summary>
-        /// Validates that this <see cref="CngCbcAuthenticatedEncryptionOptions"/> is well-formed, i.e.,
+        /// Validates that this <see cref="CngCbcAuthenticatedEncryptionSettings"/> is well-formed, i.e.,
         /// that the specified algorithms actually exist and that they can be instantiated properly.
         /// An exception will be thrown if validation fails.
         /// </summary>
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             return algorithmHandle;
         }
 
-        IInternalAuthenticatedEncryptorConfiguration IInternalAuthenticatedEncryptionOptions.ToConfiguration(IServiceProvider services)
+        IInternalAuthenticatedEncryptorConfiguration IInternalAuthenticatedEncryptionSettings.ToConfiguration(IServiceProvider services)
         {
             return new CngCbcAuthenticatedEncryptorConfiguration(this, services);
         }

@@ -13,23 +13,23 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
     {
         private readonly IServiceProvider _services;
 
-        public CngCbcAuthenticatedEncryptorConfiguration(CngCbcAuthenticatedEncryptionOptions options)
-            : this(options, services: null)
+        public CngCbcAuthenticatedEncryptorConfiguration(CngCbcAuthenticatedEncryptionSettings settings)
+            : this(settings, services: null)
         {
         }
 
-        public CngCbcAuthenticatedEncryptorConfiguration(CngCbcAuthenticatedEncryptionOptions options, IServiceProvider services)
+        public CngCbcAuthenticatedEncryptorConfiguration(CngCbcAuthenticatedEncryptionSettings settings, IServiceProvider services)
         {
-            if (options == null)
+            if (settings == null)
             {
-                throw new ArgumentNullException(nameof(options));
+                throw new ArgumentNullException(nameof(settings));
             }
 
-            Options = options;
+            Settings = settings;
             _services = services;
         }
 
-        public CngCbcAuthenticatedEncryptionOptions Options { get; }
+        public CngCbcAuthenticatedEncryptionSettings Settings { get; }
 
         public IAuthenticatedEncryptorDescriptor CreateNewDescriptor()
         {
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
         IAuthenticatedEncryptorDescriptor IInternalAuthenticatedEncryptorConfiguration.CreateDescriptorFromSecret(ISecret secret)
         {
-            return new CngCbcAuthenticatedEncryptorDescriptor(Options, secret, _services);
+            return new CngCbcAuthenticatedEncryptorDescriptor(Settings, secret, _services);
         }
     }
 }

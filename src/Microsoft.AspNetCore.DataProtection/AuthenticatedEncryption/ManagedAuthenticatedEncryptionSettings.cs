@@ -11,10 +11,10 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 {
     /// <summary>
-    /// Options for configuring an authenticated encryption mechanism which uses
+    /// Settings for configuring an authenticated encryption mechanism which uses
     /// managed SymmetricAlgorithm and KeyedHashAlgorithm implementations.
     /// </summary>
-    public sealed class ManagedAuthenticatedEncryptionOptions : IInternalAuthenticatedEncryptionOptions
+    public sealed class ManagedAuthenticatedEncryptionSettings : IInternalAuthenticatedEncryptionSettings
     {
         /// <summary>
         /// The type of the algorithm to use for symmetric encryption.
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
         public Type ValidationAlgorithmType { get; set; } = typeof(HMACSHA256);
 
         /// <summary>
-        /// Validates that this <see cref="ManagedAuthenticatedEncryptionOptions"/> is well-formed, i.e.,
+        /// Validates that this <see cref="ManagedAuthenticatedEncryptionSettings"/> is well-formed, i.e.,
         /// that the specified algorithms actually exist and can be instantiated properly.
         /// An exception will be thrown if validation fails.
         /// </summary>
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             }
         }
 
-        IInternalAuthenticatedEncryptorConfiguration IInternalAuthenticatedEncryptionOptions.ToConfiguration(IServiceProvider services)
+        IInternalAuthenticatedEncryptorConfiguration IInternalAuthenticatedEncryptionSettings.ToConfiguration(IServiceProvider services)
         {
             return new ManagedAuthenticatedEncryptorConfiguration(this, services);
         }

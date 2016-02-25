@@ -12,10 +12,10 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 {
     /// <summary>
-    /// Options for configuring an authenticated encryption mechanism which uses
+    /// Settings for configuring an authenticated encryption mechanism which uses
     /// Windows CNG algorithms in GCM encryption + authentication modes.
     /// </summary>
-    public sealed class CngGcmAuthenticatedEncryptionOptions : IInternalAuthenticatedEncryptionOptions
+    public sealed class CngGcmAuthenticatedEncryptionSettings : IInternalAuthenticatedEncryptionSettings
     {
         /// <summary>
         /// The name of the algorithm to use for symmetric encryption.
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
         public int EncryptionAlgorithmKeySize { get; set; } = 256;
 
         /// <summary>
-        /// Validates that this <see cref="CngGcmAuthenticatedEncryptionOptions"/> is well-formed, i.e.,
+        /// Validates that this <see cref="CngGcmAuthenticatedEncryptionSettings"/> is well-formed, i.e.,
         /// that the specified algorithm actually exists and can be instantiated properly.
         /// An exception will be thrown if validation fails.
         /// </summary>
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             return algorithmHandle;
         }
 
-        IInternalAuthenticatedEncryptorConfiguration IInternalAuthenticatedEncryptionOptions.ToConfiguration(IServiceProvider services)
+        IInternalAuthenticatedEncryptorConfiguration IInternalAuthenticatedEncryptionSettings.ToConfiguration(IServiceProvider services)
         {
             return new CngGcmAuthenticatedEncryptorConfiguration(this, services);
         }

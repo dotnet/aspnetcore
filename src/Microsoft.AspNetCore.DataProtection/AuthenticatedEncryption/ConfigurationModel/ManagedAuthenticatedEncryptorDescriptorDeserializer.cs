@@ -42,18 +42,18 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
             //   <masterKey>...</masterKey>
             // </descriptor>
 
-            var options = new ManagedAuthenticatedEncryptionOptions();
+            var settings = new ManagedAuthenticatedEncryptionSettings();
 
             var encryptionElement = element.Element("encryption");
-            options.EncryptionAlgorithmType = FriendlyNameToType((string)encryptionElement.Attribute("algorithm"));
-            options.EncryptionAlgorithmKeySize = (int)encryptionElement.Attribute("keyLength");
+            settings.EncryptionAlgorithmType = FriendlyNameToType((string)encryptionElement.Attribute("algorithm"));
+            settings.EncryptionAlgorithmKeySize = (int)encryptionElement.Attribute("keyLength");
 
             var validationElement = element.Element("validation");
-            options.ValidationAlgorithmType = FriendlyNameToType((string)validationElement.Attribute("algorithm"));
+            settings.ValidationAlgorithmType = FriendlyNameToType((string)validationElement.Attribute("algorithm"));
 
             Secret masterKey = ((string)element.Element("masterKey")).ToSecret();
 
-            return new ManagedAuthenticatedEncryptorDescriptor(options, masterKey, _services);
+            return new ManagedAuthenticatedEncryptorDescriptor(settings, masterKey, _services);
         }
 
         // Any changes to this method should also be be reflected

@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
         private static AuthenticatedEncryptorDescriptor CreateDescriptor(EncryptionAlgorithm encryptionAlgorithm, ValidationAlgorithm validationAlgorithm, ISecret masterKey)
         {
-            return new AuthenticatedEncryptorDescriptor(new AuthenticatedEncryptionOptions()
+            return new AuthenticatedEncryptorDescriptor(new AuthenticatedEncryptionSettings()
             {
                 EncryptionAlgorithm = encryptionAlgorithm,
                 ValidationAlgorithm = validationAlgorithm

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         {
             // Arrange
             var control = new ManagedAuthenticatedEncryptorDescriptor(
-                new ManagedAuthenticatedEncryptionOptions()
+                new ManagedAuthenticatedEncryptionSettings()
                 {
                     EncryptionAlgorithmType = encryptionAlgorithmType,
                     EncryptionAlgorithmKeySize = 192,
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         {
             // Arrange
             var control = new ManagedAuthenticatedEncryptorDescriptor(
-                new ManagedAuthenticatedEncryptionOptions()
+                new ManagedAuthenticatedEncryptionSettings()
                 {
                     EncryptionAlgorithmType = typeof(Aes),
                     EncryptionAlgorithmKeySize = 192,

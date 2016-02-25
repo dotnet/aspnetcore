@@ -400,7 +400,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         {
             // Arrange
             byte[] plaintext = new byte[] { 0x10, 0x20, 0x30, 0x40, 0x50 };
-            Key key = new Key(Guid.NewGuid(), DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, new AuthenticatedEncryptorConfiguration(new AuthenticatedEncryptionOptions()).CreateNewDescriptor());
+            Key key = new Key(Guid.NewGuid(), DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, new AuthenticatedEncryptorConfiguration(new AuthenticatedEncryptionSettings()).CreateNewDescriptor());
             var keyRing = new KeyRing(key, new[] { key });
             var mockKeyRingProvider = new Mock<IKeyRingProvider>();
             mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);

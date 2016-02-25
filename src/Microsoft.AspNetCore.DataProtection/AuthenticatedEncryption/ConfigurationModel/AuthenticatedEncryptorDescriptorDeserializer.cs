@@ -41,20 +41,20 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
             //   <masterKey requiresEncryption="true">...</masterKey>
             // </descriptor>
 
-            var options = new AuthenticatedEncryptionOptions();
+            var settings = new AuthenticatedEncryptionSettings();
 
             var encryptionElement = element.Element("encryption");
-            options.EncryptionAlgorithm = (EncryptionAlgorithm)Enum.Parse(typeof(EncryptionAlgorithm), (string)encryptionElement.Attribute("algorithm"));
+            settings.EncryptionAlgorithm = (EncryptionAlgorithm)Enum.Parse(typeof(EncryptionAlgorithm), (string)encryptionElement.Attribute("algorithm"));
 
             // only read <validation> if not GCM
-            if (!AuthenticatedEncryptionOptions.IsGcmAlgorithm(options.EncryptionAlgorithm))
+            if (!AuthenticatedEncryptionSettings.IsGcmAlgorithm(settings.EncryptionAlgorithm))
             {
                 var validationElement = element.Element("validation");
-                options.ValidationAlgorithm = (ValidationAlgorithm)Enum.Parse(typeof(ValidationAlgorithm), (string)validationElement.Attribute("algorithm"));
+                settings.ValidationAlgorithm = (ValidationAlgorithm)Enum.Parse(typeof(ValidationAlgorithm), (string)validationElement.Attribute("algorithm"));
             }
 
             Secret masterKey = ((string)element.Elements("masterKey").Single()).ToSecret();
-            return new AuthenticatedEncryptorDescriptor(options, masterKey, _services);
+            return new AuthenticatedEncryptorDescriptor(settings, masterKey, _services);
         }
     }
 }

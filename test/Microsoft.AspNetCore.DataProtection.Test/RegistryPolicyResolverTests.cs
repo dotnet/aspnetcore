@@ -78,14 +78,14 @@ namespace Microsoft.AspNetCore.DataProtection
             });
 
             var services = serviceCollection.BuildServiceProvider();
-            var expectedConfiguration = new CngCbcAuthenticatedEncryptorConfiguration(new CngCbcAuthenticatedEncryptionOptions());
+            var expectedConfiguration = new CngCbcAuthenticatedEncryptorConfiguration(new CngCbcAuthenticatedEncryptionSettings());
             var actualConfiguration = (CngCbcAuthenticatedEncryptorConfiguration)services.GetService<IAuthenticatedEncryptorConfiguration>();
 
-            Assert.Equal(expectedConfiguration.Options.EncryptionAlgorithm, actualConfiguration.Options.EncryptionAlgorithm);
-            Assert.Equal(expectedConfiguration.Options.EncryptionAlgorithmKeySize, actualConfiguration.Options.EncryptionAlgorithmKeySize);
-            Assert.Equal(expectedConfiguration.Options.EncryptionAlgorithmProvider, actualConfiguration.Options.EncryptionAlgorithmProvider);
-            Assert.Equal(expectedConfiguration.Options.HashAlgorithm, actualConfiguration.Options.HashAlgorithm);
-            Assert.Equal(expectedConfiguration.Options.HashAlgorithmProvider, actualConfiguration.Options.HashAlgorithmProvider);
+            Assert.Equal(expectedConfiguration.Settings.EncryptionAlgorithm, actualConfiguration.Settings.EncryptionAlgorithm);
+            Assert.Equal(expectedConfiguration.Settings.EncryptionAlgorithmKeySize, actualConfiguration.Settings.EncryptionAlgorithmKeySize);
+            Assert.Equal(expectedConfiguration.Settings.EncryptionAlgorithmProvider, actualConfiguration.Settings.EncryptionAlgorithmProvider);
+            Assert.Equal(expectedConfiguration.Settings.HashAlgorithm, actualConfiguration.Settings.HashAlgorithm);
+            Assert.Equal(expectedConfiguration.Settings.HashAlgorithmProvider, actualConfiguration.Settings.HashAlgorithmProvider);
         }
 
         [ConditionalFact]
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.DataProtection
             });
 
             var services = serviceCollection.BuildServiceProvider();
-            var expectedConfiguration = new CngCbcAuthenticatedEncryptorConfiguration(new CngCbcAuthenticatedEncryptionOptions()
+            var expectedConfiguration = new CngCbcAuthenticatedEncryptorConfiguration(new CngCbcAuthenticatedEncryptionSettings()
             {
                 EncryptionAlgorithm = "enc-alg",
                 EncryptionAlgorithmKeySize = 2048,
@@ -114,11 +114,11 @@ namespace Microsoft.AspNetCore.DataProtection
             });
             var actualConfiguration = (CngCbcAuthenticatedEncryptorConfiguration)services.GetService<IAuthenticatedEncryptorConfiguration>();
 
-            Assert.Equal(expectedConfiguration.Options.EncryptionAlgorithm, actualConfiguration.Options.EncryptionAlgorithm);
-            Assert.Equal(expectedConfiguration.Options.EncryptionAlgorithmKeySize, actualConfiguration.Options.EncryptionAlgorithmKeySize);
-            Assert.Equal(expectedConfiguration.Options.EncryptionAlgorithmProvider, actualConfiguration.Options.EncryptionAlgorithmProvider);
-            Assert.Equal(expectedConfiguration.Options.HashAlgorithm, actualConfiguration.Options.HashAlgorithm);
-            Assert.Equal(expectedConfiguration.Options.HashAlgorithmProvider, actualConfiguration.Options.HashAlgorithmProvider);
+            Assert.Equal(expectedConfiguration.Settings.EncryptionAlgorithm, actualConfiguration.Settings.EncryptionAlgorithm);
+            Assert.Equal(expectedConfiguration.Settings.EncryptionAlgorithmKeySize, actualConfiguration.Settings.EncryptionAlgorithmKeySize);
+            Assert.Equal(expectedConfiguration.Settings.EncryptionAlgorithmProvider, actualConfiguration.Settings.EncryptionAlgorithmProvider);
+            Assert.Equal(expectedConfiguration.Settings.HashAlgorithm, actualConfiguration.Settings.HashAlgorithm);
+            Assert.Equal(expectedConfiguration.Settings.HashAlgorithmProvider, actualConfiguration.Settings.HashAlgorithmProvider);
         }
 
         [ConditionalFact]
@@ -132,12 +132,12 @@ namespace Microsoft.AspNetCore.DataProtection
             });
 
             var services = serviceCollection.BuildServiceProvider();
-            var expectedConfiguration = new CngGcmAuthenticatedEncryptorConfiguration(new CngGcmAuthenticatedEncryptionOptions());
+            var expectedConfiguration = new CngGcmAuthenticatedEncryptorConfiguration(new CngGcmAuthenticatedEncryptionSettings());
             var actualConfiguration = (CngGcmAuthenticatedEncryptorConfiguration)services.GetService<IAuthenticatedEncryptorConfiguration>();
 
-            Assert.Equal(expectedConfiguration.Options.EncryptionAlgorithm, actualConfiguration.Options.EncryptionAlgorithm);
-            Assert.Equal(expectedConfiguration.Options.EncryptionAlgorithmKeySize, actualConfiguration.Options.EncryptionAlgorithmKeySize);
-            Assert.Equal(expectedConfiguration.Options.EncryptionAlgorithmProvider, actualConfiguration.Options.EncryptionAlgorithmProvider);
+            Assert.Equal(expectedConfiguration.Settings.EncryptionAlgorithm, actualConfiguration.Settings.EncryptionAlgorithm);
+            Assert.Equal(expectedConfiguration.Settings.EncryptionAlgorithmKeySize, actualConfiguration.Settings.EncryptionAlgorithmKeySize);
+            Assert.Equal(expectedConfiguration.Settings.EncryptionAlgorithmProvider, actualConfiguration.Settings.EncryptionAlgorithmProvider);
         }
 
         [ConditionalFact]
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.DataProtection
             });
 
             var services = serviceCollection.BuildServiceProvider();
-            var expectedConfiguration = new CngGcmAuthenticatedEncryptorConfiguration(new CngGcmAuthenticatedEncryptionOptions()
+            var expectedConfiguration = new CngGcmAuthenticatedEncryptorConfiguration(new CngGcmAuthenticatedEncryptionSettings()
             {
                 EncryptionAlgorithm = "enc-alg",
                 EncryptionAlgorithmKeySize = 2048,
@@ -162,9 +162,9 @@ namespace Microsoft.AspNetCore.DataProtection
             });
             var actualConfiguration = (CngGcmAuthenticatedEncryptorConfiguration)services.GetService<IAuthenticatedEncryptorConfiguration>();
 
-            Assert.Equal(expectedConfiguration.Options.EncryptionAlgorithm, actualConfiguration.Options.EncryptionAlgorithm);
-            Assert.Equal(expectedConfiguration.Options.EncryptionAlgorithmKeySize, actualConfiguration.Options.EncryptionAlgorithmKeySize);
-            Assert.Equal(expectedConfiguration.Options.EncryptionAlgorithmProvider, actualConfiguration.Options.EncryptionAlgorithmProvider);
+            Assert.Equal(expectedConfiguration.Settings.EncryptionAlgorithm, actualConfiguration.Settings.EncryptionAlgorithm);
+            Assert.Equal(expectedConfiguration.Settings.EncryptionAlgorithmKeySize, actualConfiguration.Settings.EncryptionAlgorithmKeySize);
+            Assert.Equal(expectedConfiguration.Settings.EncryptionAlgorithmProvider, actualConfiguration.Settings.EncryptionAlgorithmProvider);
         }
 
         [ConditionalFact]
@@ -178,12 +178,12 @@ namespace Microsoft.AspNetCore.DataProtection
             });
 
             var services = serviceCollection.BuildServiceProvider();
-            var expectedConfiguration = new ManagedAuthenticatedEncryptorConfiguration(new ManagedAuthenticatedEncryptionOptions());
+            var expectedConfiguration = new ManagedAuthenticatedEncryptorConfiguration(new ManagedAuthenticatedEncryptionSettings());
             var actualConfiguration = (ManagedAuthenticatedEncryptorConfiguration)services.GetService<IAuthenticatedEncryptorConfiguration>();
 
-            Assert.Equal(expectedConfiguration.Options.EncryptionAlgorithmType, actualConfiguration.Options.EncryptionAlgorithmType);
-            Assert.Equal(expectedConfiguration.Options.EncryptionAlgorithmKeySize, actualConfiguration.Options.EncryptionAlgorithmKeySize);
-            Assert.Equal(expectedConfiguration.Options.ValidationAlgorithmType, actualConfiguration.Options.ValidationAlgorithmType);
+            Assert.Equal(expectedConfiguration.Settings.EncryptionAlgorithmType, actualConfiguration.Settings.EncryptionAlgorithmType);
+            Assert.Equal(expectedConfiguration.Settings.EncryptionAlgorithmKeySize, actualConfiguration.Settings.EncryptionAlgorithmKeySize);
+            Assert.Equal(expectedConfiguration.Settings.ValidationAlgorithmType, actualConfiguration.Settings.ValidationAlgorithmType);
         }
 
         [ConditionalFact]
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.DataProtection
             });
 
             var services = serviceCollection.BuildServiceProvider();
-            var expectedConfiguration = new ManagedAuthenticatedEncryptorConfiguration(new ManagedAuthenticatedEncryptionOptions()
+            var expectedConfiguration = new ManagedAuthenticatedEncryptorConfiguration(new ManagedAuthenticatedEncryptionSettings()
             {
                 EncryptionAlgorithmType = typeof(TripleDES),
                 EncryptionAlgorithmKeySize = 2048,
@@ -208,9 +208,9 @@ namespace Microsoft.AspNetCore.DataProtection
             });
             var actualConfiguration = (ManagedAuthenticatedEncryptorConfiguration)services.GetService<IAuthenticatedEncryptorConfiguration>();
 
-            Assert.Equal(expectedConfiguration.Options.EncryptionAlgorithmType, actualConfiguration.Options.EncryptionAlgorithmType);
-            Assert.Equal(expectedConfiguration.Options.EncryptionAlgorithmKeySize, actualConfiguration.Options.EncryptionAlgorithmKeySize);
-            Assert.Equal(expectedConfiguration.Options.ValidationAlgorithmType, actualConfiguration.Options.ValidationAlgorithmType);
+            Assert.Equal(expectedConfiguration.Settings.EncryptionAlgorithmType, actualConfiguration.Settings.EncryptionAlgorithmType);
+            Assert.Equal(expectedConfiguration.Settings.EncryptionAlgorithmKeySize, actualConfiguration.Settings.EncryptionAlgorithmKeySize);
+            Assert.Equal(expectedConfiguration.Settings.ValidationAlgorithmType, actualConfiguration.Settings.ValidationAlgorithmType);
         }
 
         private static void RunTestWithRegValues(IServiceCollection services, Dictionary<string, object> regValues)
