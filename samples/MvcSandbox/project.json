@@ -15,8 +15,7 @@
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    "Microsoft.Extensions.Logging.Console": "1.0.0-*"
   },
   "tools": {
     "dotnet-razor-tooling": "1.0.0-*"
@@ -24,7 +23,10 @@
   "frameworks": {
     "net451": {},
     "dnxcore50": {
-      "imports": "portable-net451+win8"
+      "imports": "portable-net451+win8",
+      "dependencies": {
+        "NETStandard.Library": "1.0.0-*"
+      }
     }
   },
   "exclude": [

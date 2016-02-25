@@ -16,7 +16,7 @@
     "dnxcore50": {
       "imports": "portable-net451+win8",
       "dependencies": {
-        "Microsoft.NETCore.Platforms": "1.0.1-*"
+        "NETStandard.Library": "1.0.0-*"
       }
     }
   }
