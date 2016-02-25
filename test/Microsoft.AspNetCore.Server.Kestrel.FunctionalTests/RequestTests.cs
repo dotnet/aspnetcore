@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
@@ -11,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             return TestRemoteIPAddress("localhost", requestAddress, expectAddress);
         }
 
-        [Fact]
+        [ConditionalFact]
         [IPv6SupportedCondition]
         public Task RemoteIPv6Address()
         {
@@ -166,10 +166,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         {
                             break;
                         }
-                        
+
                         response.Append(Encoding.ASCII.GetString(buffer, 0, length));
                     }
-                    
+
                     Assert.StartsWith("HTTP/1.1 200 OK", response.ToString());
                 }
             }
