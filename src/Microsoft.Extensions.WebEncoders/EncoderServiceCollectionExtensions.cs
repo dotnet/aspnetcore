@@ -9,6 +9,9 @@ using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Extension methods for setting up web encoding services in an <see cref="IServiceCollection" />.
+    /// </summary>
     public static class EncoderServiceCollectionExtensions
     {
         /// <summary>
@@ -17,24 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/> instance after the encoders have been added.</returns>
-        public static IServiceCollection AddWebEncoders(this IServiceCollection services)
-        {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            return AddWebEncoders(services, configureOptions: null);
-        }
-
-        /// <summary>
-        /// Adds <see cref="HtmlEncoder"/>, <see cref="JavaScriptEncoder"/> and <see cref="UrlEncoder"/>
-        /// to the specified <paramref name="services" />.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="configureOptions">A callback to configure <see cref="WebEncoderOptions"/>.</param>
-        /// <returns>The <see cref="IServiceCollection"/> instance after the encoders have been added.</returns>
-        public static IServiceCollection AddWebEncoders(this IServiceCollection services, Action<WebEncoderOptions> configureOptions)
+        public static void AddWebEncoders(this IServiceCollection services)
         {
             if (services == null)
             {
@@ -51,13 +37,28 @@ namespace Microsoft.Extensions.DependencyInjection
                 CreateFactory(() => JavaScriptEncoder.Default, settings => JavaScriptEncoder.Create(settings)));
             services.TryAddSingleton(
                 CreateFactory(() => UrlEncoder.Default, settings => UrlEncoder.Create(settings)));
+        }
 
-            if (configureOptions != null)
+        /// <summary>
+        /// Adds <see cref="HtmlEncoder"/>, <see cref="JavaScriptEncoder"/> and <see cref="UrlEncoder"/>
+        /// to the specified <paramref name="services" />.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="setupAction">An <see cref="Action{WebEncoderOptions}"/> to configure the provided <see cref="WebEncoderOptions"/>.</param>
+        public static void AddWebEncoders(this IServiceCollection services, Action<WebEncoderOptions> setupAction)
+        {
+            if (services == null)
             {
-                services.Configure(configureOptions);
+                throw new ArgumentNullException(nameof(services));
             }
 
-            return services;
+            if (setupAction == null)
+            {
+                throw new ArgumentNullException(nameof(setupAction));
+            }
+
+            services.AddWebEncoders();
+            services.Configure(setupAction);
         }
 
         private static Func<IServiceProvider, TService> CreateFactory<TService>(
