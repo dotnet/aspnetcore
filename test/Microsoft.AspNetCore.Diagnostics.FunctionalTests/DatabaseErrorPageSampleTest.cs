@@ -4,6 +4,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests
@@ -17,7 +18,9 @@ namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests
 
         public HttpClient Client { get; }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task DatabaseErrorPage_ShowsError()
         {
             // Arrange
