@@ -8,7 +8,7 @@ using Microsoft.Extensions.Localization;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Extension methods for adding localization servics to the DI container.
+    /// Extension methods for setting up localization services in an <see cref="IServiceCollection" />.
     /// </summary>
     public static class LocalizationServiceCollectionExtensions
     {
@@ -16,24 +16,25 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds services required for application localization.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddLocalization(this IServiceCollection services)
+        public static void AddLocalization(this IServiceCollection services)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
 
-            return AddLocalization(services, setupAction: null);
+            services.AddOptions();
+
+            services.TryAddSingleton<IStringLocalizerFactory, ResourceManagerStringLocalizerFactory>();
+            services.TryAddTransient(typeof(IStringLocalizer<>), typeof(StringLocalizer<>));
         }
 
         /// <summary>
         /// Adds services required for application localization.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-        /// <param name="setupAction">An action to configure the <see cref="LocalizationOptions"/>.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddLocalization(
+        /// <param name="setupAction">An <see cref="Action{LocalizationOptions}"/> to configure the <see cref="LocalizationOptions"/>.</param>
+        public static void AddLocalization(
             this IServiceCollection services,
             Action<LocalizationOptions> setupAction)
         {
@@ -41,21 +42,13 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(services));
             }
-
-            services.TryAdd(new ServiceDescriptor(
-                typeof(IStringLocalizerFactory),
-                typeof(ResourceManagerStringLocalizerFactory),
-                ServiceLifetime.Singleton));
-            services.TryAdd(new ServiceDescriptor(
-                typeof(IStringLocalizer<>),
-                typeof(StringLocalizer<>),
-                ServiceLifetime.Transient));
-
-            if (setupAction != null)
+            if (setupAction == null)
             {
-                services.Configure(setupAction);
+                throw new ArgumentNullException(nameof(setupAction));
             }
-            return services;
+
+            services.AddLocalization();
+            services.Configure(setupAction);
         }
     }
 }
