@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.Testing
 
             if (hostProcess.ExitCode != 0)
             {
-                throw new Exception(string.Format("dnu publish exited with exit code : {0}", hostProcess.ExitCode));
+                throw new Exception($"{DotnetCommandName} publish exited with exit code : {hostProcess.ExitCode}");
             }
 
             DeploymentParameters.ApplicationPath =
