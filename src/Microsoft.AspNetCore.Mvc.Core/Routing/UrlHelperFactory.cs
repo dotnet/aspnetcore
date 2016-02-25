@@ -1,6 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core;
+
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
     /// <summary>
@@ -11,7 +15,31 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <inheritdoc />
         public IUrlHelper GetUrlHelper(ActionContext context)
         {
-            return new UrlHelper(context);
+            var httpContext = context.HttpContext;
+
+            if (httpContext == null)
+            {
+                throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(ActionContext.HttpContext),
+                    nameof(ActionContext)));
+            }
+
+            if (httpContext.Items == null)
+            {
+                throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(HttpContext.Items),
+                    nameof(HttpContext)));
+            }
+
+            // Perf: Create only one UrlHelper per context
+            var urlHelper = httpContext.Items[typeof(IUrlHelper)] as IUrlHelper;
+            if (urlHelper == null)
+            {
+                urlHelper = new UrlHelper(context);
+                httpContext.Items[typeof(IUrlHelper)] = urlHelper;
+            }
+
+            return urlHelper;
         }
     }
 }

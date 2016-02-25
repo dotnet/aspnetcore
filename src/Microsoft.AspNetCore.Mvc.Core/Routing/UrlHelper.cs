@@ -15,6 +15,10 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     /// </summary>
     public class UrlHelper : IUrlHelper
     {
+
+        // Perf: Share the StringBuilder object across multiple calls of GenerateURL for this UrlHelper
+        private StringBuilder _stringBuilder;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UrlHelper"/> class using the specified action context and
         /// action selector.
@@ -201,6 +205,16 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             });
         }
 
+        private StringBuilder GetStringBuilder()
+        {
+            if(_stringBuilder == null)
+            {
+                _stringBuilder = new StringBuilder();
+            }
+
+            return _stringBuilder;
+        }
+
         /// <summary>
         /// Generates the URL using the specified components.
         /// </summary>
@@ -219,29 +233,38 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // VirtualPathData.VirtualPath returns string.Empty instead of null.
             Debug.Assert(pathData.VirtualPath != null);
 
-            var builder = new StringBuilder();
-            if (string.IsNullOrEmpty(protocol) && string.IsNullOrEmpty(host))
+            var builder = GetStringBuilder();
+            try
             {
-                AppendPathAndFragment(builder, pathData, fragment);
-                // We're returning a partial URL (just path + query + fragment), but we still want it to be rooted.
-                if (builder.Length == 0 || builder[0] != '/')
+                if (string.IsNullOrEmpty(protocol) && string.IsNullOrEmpty(host))
                 {
-                    builder.Insert(0, '/');
+                    AppendPathAndFragment(builder, pathData, fragment);
+                    // We're returning a partial URL (just path + query + fragment), but we still want it to be rooted.
+                    if (builder.Length == 0 || builder[0] != '/')
+                    {
+                        builder.Insert(0, '/');
+                    }
                 }
+                else
+                {
+                    protocol = string.IsNullOrEmpty(protocol) ? "http" : protocol;
+                    builder.Append(protocol);
+
+                    builder.Append("://");
+
+                    host = string.IsNullOrEmpty(host) ? HttpContext.Request.Host.Value : host;
+                    builder.Append(host);
+                    AppendPathAndFragment(builder, pathData, fragment);
+                }
+
+                var path = builder.ToString();
+                return path;
             }
-            else
+            finally
             {
-                protocol = string.IsNullOrEmpty(protocol) ? "http" : protocol;
-                builder.Append(protocol);
-
-                builder.Append("://");
-
-                host = string.IsNullOrEmpty(host) ? HttpContext.Request.Host.Value : host;
-                builder.Append(host);
-                AppendPathAndFragment(builder, pathData, fragment);
+                // Clear the StringBuilder so that it can reused for the next call.
+                builder.Clear();
             }
-
-            return builder.ToString();
         }
     }
 }

@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -120,6 +121,8 @@ namespace Microsoft.AspNetCore.Mvc
                        .Returns(response);
             httpContext.SetupGet(o => o.RequestServices)
                        .Returns(serviceProvider);
+            httpContext.SetupGet(o => o.Items)
+                       .Returns(new ItemsDictionary());
             httpContext.Setup(o => o.Request.PathBase)
                        .Returns(new PathString(appRoot));
 
