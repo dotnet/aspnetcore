@@ -6,8 +6,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
+    /// <summary>
+    /// Allows fine grained configuration of MVC services.
+    /// </summary>
     public class MvcBuilder : IMvcBuilder
     {
+        /// <summary>
+        /// Initializes a new <see cref="MvcBuilder"/> instance.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
         public MvcBuilder(IServiceCollection services)
         {
             if (services == null)
@@ -18,6 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Services = services;
         }
 
+        /// <inheritdoc />
         public IServiceCollection Services { get; }
     }
 }

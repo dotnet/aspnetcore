@@ -22,8 +22,16 @@ using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Extension methods for setting up essential MVC services in an <see cref="IServiceCollection" />.
+    /// </summary>
     public static class MvcCoreServiceCollectionExtensions
     {
+        /// <summary>
+        /// Adds essential MVC services to the specified <see cref="IServiceCollection" />.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        /// <returns>An <see cref="IMvcCoreBuilder"/> that can be used to further configure the MVC services.</returns>
         public static IMvcCoreBuilder AddMvcCore(this IServiceCollection services)
         {
             if (services == null)
@@ -31,9 +39,18 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            return AddMvcCore(services, setupAction: null);
+            ConfigureDefaultServices(services);
+            AddMvcCoreServices(services);
+
+            return new MvcCoreBuilder(services);
         }
 
+        /// <summary>
+        /// Adds essential MVC services to the specified <see cref="IServiceCollection" />.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        /// <param name="setupAction">An <see cref="Action{MvcOptions}"/> to configure the provided <see cref="MvcOptions"/>.</param>
+        /// <returns>An <see cref="IMvcCoreBuilder"/> that can be used to further configure the MVC services.</returns>
         public static IMvcCoreBuilder AddMvcCore(
             this IServiceCollection services,
             Action<MvcOptions> setupAction)
@@ -43,16 +60,15 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            ConfigureDefaultServices(services);
-
-            AddMvcCoreServices(services);
-
-            if (setupAction != null)
+            if (setupAction == null)
             {
-                services.Configure(setupAction);
+                throw new ArgumentNullException(nameof(setupAction));
             }
 
-            return new MvcCoreBuilder(services);
+            var builder = services.AddMvcCore();
+            services.Configure(setupAction);
+
+            return builder;
         }
 
         // To enable unit testing

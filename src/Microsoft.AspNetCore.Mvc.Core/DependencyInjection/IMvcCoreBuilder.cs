@@ -3,8 +3,14 @@
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// An interface for configuring essential MVC services.
+    /// </summary>
     public interface IMvcCoreBuilder
     {
+        /// <summary>
+        /// Gets the <see cref="IServiceCollection"/> where essential MVC services are configured.
+        /// </summary>
         IServiceCollection Services { get; }
     }
 }

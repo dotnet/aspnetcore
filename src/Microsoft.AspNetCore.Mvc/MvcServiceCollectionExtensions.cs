@@ -16,24 +16,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds MVC services to the specified <see cref="IServiceCollection" />.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <returns>An <see cref="IMvcBuilder"/> that can be used to further configure the MVC services.</returns>
         public static IMvcBuilder AddMvc(this IServiceCollection services)
-        {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            return AddMvc(services, setupAction: null);
-        }
-
-        /// <summary>
-        /// Adds MVC services to the specified <see cref="IServiceCollection" />.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-        /// <param name="setupAction">An action delegate to configure the provided <see cref="MvcOptions"/>.</param>
-        /// <returns>A reference to this instance after the operation has completed.</returns>
-        public static IMvcBuilder AddMvc(this IServiceCollection services, Action<MvcOptions> setupAction)
         {
             if (services == null)
             {
@@ -60,11 +44,31 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.AddCors();
 
-            if (setupAction != null)
+            return new MvcBuilder(builder.Services);
+        }
+
+        /// <summary>
+        /// Adds MVC services to the specified <see cref="IServiceCollection" />.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        /// <param name="setupAction">An <see cref="Action{MvcOptions}"/> to configure the provided <see cref="MvcOptions"/>.</param>
+        /// <returns>An <see cref="IMvcBuilder"/> that can be used to further configure the MVC services.</returns>
+        public static IMvcBuilder AddMvc(this IServiceCollection services, Action<MvcOptions> setupAction)
+        {
+            if (services == null)
             {
-                builder.Services.Configure(setupAction);
+                throw new ArgumentNullException(nameof(services));
             }
-            return new MvcBuilder(services);
+
+            if (setupAction == null)
+            {
+                throw new ArgumentNullException(nameof(setupAction));
+            }
+
+            var builder = services.AddMvc();
+            builder.Services.Configure(setupAction);
+
+            return builder;
         }
     }
 }
