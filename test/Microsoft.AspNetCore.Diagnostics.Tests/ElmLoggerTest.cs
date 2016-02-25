@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Diagnostics.Elm;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics.Tests
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
             // Arrange
             var store = new ElmStore();
             var options = new ElmOptions() { Filter = filter ?? _filter };
-            var provider = new ElmLoggerProvider(store, options);
+            var provider = new ElmLoggerProvider(store, Options.Create(options));
             var logger = (ElmLogger)provider.CreateLogger(name ?? _name);
 
             return new Tuple<ElmLogger, ElmStore>(logger, store);

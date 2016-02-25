@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
             optionsMock
                 .SetupGet(o => o.Value)
                 .Returns(new ElmOptions());
-            factory.AddProvider(new ElmLoggerProvider(elmStore, optionsMock.Object.Value));
+            factory.AddProvider(new ElmLoggerProvider(elmStore, optionsMock.Object));
 
             RequestDelegate next = _ =>
             {
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
             optionsMock
                 .SetupGet(o => o.Value)
                 .Returns(new ElmOptions());
-            factory.AddProvider(new ElmLoggerProvider(elmStore, optionsMock.Object.Value));
+            factory.AddProvider(new ElmLoggerProvider(elmStore, optionsMock.Object));
 
             RequestDelegate next = _ =>
             {
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
             optionsMock
                 .SetupGet(o => o.Value)
                 .Returns(new ElmOptions());
-            factory.AddProvider(new ElmLoggerProvider(elmStore, optionsMock.Object.Value));
+            factory.AddProvider(new ElmLoggerProvider(elmStore, optionsMock.Object));
 
             RequestDelegate next = _ =>
             {
@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
             // Arrange
             var context = new DefaultHttpContext();
             var loggerFactory = new LoggerFactory();
-            loggerFactory.AddProvider(new ElmLoggerProvider(new ElmStore(), new ElmOptions()));
+            loggerFactory.AddProvider(new ElmLoggerProvider(new ElmStore(), Options.Create(new ElmOptions())));
 
             // Act & Assert
             var errorPageMiddleware = new ElmCaptureMiddleware((innerContext) =>
@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
             };
             context.Features.Set<IHttpRequestIdentifierFeature>(requestIdentifierFeature);
             var loggerFactory = new LoggerFactory();
-            loggerFactory.AddProvider(new ElmLoggerProvider(new ElmStore(), new ElmOptions()));
+            loggerFactory.AddProvider(new ElmLoggerProvider(new ElmStore(), Options.Create(new ElmOptions())));
 
             var errorPageMiddleware = new ElmCaptureMiddleware((innerContext) =>
             {
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
             var requestIdentifierFeature = new HttpRequestIdentifierFeature() { TraceIdentifier = requestId };
             context.Features.Set<IHttpRequestIdentifierFeature>(requestIdentifierFeature);
             var loggerFactory = new LoggerFactory();
-            loggerFactory.AddProvider(new ElmLoggerProvider(new ElmStore(), new ElmOptions()));
+            loggerFactory.AddProvider(new ElmLoggerProvider(new ElmStore(), Options.Create(new ElmOptions())));
 
             var errorPageMiddleware = new ElmCaptureMiddleware((innerContext) =>
             {

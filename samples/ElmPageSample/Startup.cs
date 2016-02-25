@@ -12,9 +12,7 @@ namespace ElmPageSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddElm();
-
-            services.ConfigureElm(elmOptions =>
+            services.AddElm(elmOptions =>
             {
                 elmOptions.Filter = (loggerName, loglevel) => loglevel == LogLevel.Debug;
             });

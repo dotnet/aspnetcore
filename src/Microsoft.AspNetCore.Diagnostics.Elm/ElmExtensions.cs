@@ -23,9 +23,8 @@ namespace Microsoft.AspNetCore.Builder
 
             // add the elm provider to the factory here so the logger can start capturing logs immediately
             var factory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
-            var store = app.ApplicationServices.GetRequiredService<ElmStore>();
-            var options = app.ApplicationServices.GetService<IOptions<ElmOptions>>();
-            factory.AddProvider(new ElmLoggerProvider(store, options?.Value ?? new ElmOptions()));
+            var provider = app.ApplicationServices.GetRequiredService<ElmLoggerProvider>();
+            factory.AddProvider(provider);
 
             return app.UseMiddleware<ElmCaptureMiddleware>();
         }

@@ -3,45 +3,50 @@
 
 using System;
 using Microsoft.AspNetCore.Diagnostics.Elm;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Extension methods for setting up Elm services in an <see cref="IServiceCollection" />.
+    /// </summary>
     public static class ElmServiceCollectionExtensions
     {
         /// <summary>
-        /// Registers an <see cref="ElmStore"/> and configures default <see cref="ElmOptions"/>.
+        /// Adds error logging middleware services to the specified <see cref="IServiceCollection" />.
         /// </summary>
-        public static IServiceCollection AddElm(this IServiceCollection services)
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        public static void AddElm(this IServiceCollection services)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
-            
-            services.AddSingleton<ElmStore>();
-            return services;
+
+            services.AddOptions();
+            services.TryAddSingleton<ElmStore>();
+            services.TryAddSingleton<ElmLoggerProvider>();
         }
 
         /// <summary>
-        /// Configures a set of <see cref="ElmOptions"/> for the application.
+        /// Adds error logging middleware services to the specified <see cref="IServiceCollection" />.
         /// </summary>
-        /// <param name="services">The services available in the application.</param>
-        /// <param name="configureOptions">The <see cref="ElmOptions"/> which need to be configured.</param>
-        public static void ConfigureElm(
-            this IServiceCollection services,
-            Action<ElmOptions> configureOptions)
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        /// <param name="setupAction">An <see cref="Action{ElmOptions}"/> to configure the provided <see cref="ElmOptions"/>.</param>
+        public static void AddElm(this IServiceCollection services, Action<ElmOptions> setupAction)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
 
-            if (configureOptions == null)
+            if (setupAction == null)
             {
-                throw new ArgumentNullException(nameof(configureOptions));
+                throw new ArgumentNullException(nameof(setupAction));
             }
 
-            services.Configure(configureOptions);
+            services.AddElm();
+            services.Configure(setupAction);
         }
     }
 }

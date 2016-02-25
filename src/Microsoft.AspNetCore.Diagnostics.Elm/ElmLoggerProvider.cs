@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Diagnostics.Elm
 {
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Elm
         private readonly ElmStore _store;
         private readonly ElmOptions _options;
 
-        public ElmLoggerProvider(ElmStore store, ElmOptions options)
+        public ElmLoggerProvider(ElmStore store, IOptions<ElmOptions> options)
         {
             if (store == null)
             {
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Elm
             }
 
             _store = store;
-            _options = options;
+            _options = options.Value;
         }
 
         public ILogger CreateLogger(string name)
