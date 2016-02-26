@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DNX451
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -10,11 +9,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.PortableExecutable;
+#if DOTNET5_6
+using System.Runtime.Loader;
+#endif
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Dnx.Compilation.CSharp;
 using Microsoft.Extensions.CompilationAbstractions;
@@ -35,19 +36,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private readonly ILibraryExporter _libraryExporter;
         private readonly RazorViewEngineOptions _options;
         private readonly Lazy<List<MetadataReference>> _applicationReferences;
+#if DOTNET5_6
+        private readonly RazorLoadContext _razorLoadContext;
+#endif
 
         /// <summary>
         /// Initalizes a new instance of the <see cref="DnxRoslynCompilationService"/> class.
         /// </summary>
         /// <param name="environment">The environment for the executing application.</param>
         /// <param name="libraryExporter">The library manager that provides export and reference information.</param>
-        /// <param name="host">The <see cref="IMvcRazorHost"/> that was used to generate the code.</param>
         /// <param name="optionsAccessor">Accessor to <see cref="RazorViewEngineOptions"/>.</param>
         /// <param name="fileProviderAccessor">The <see cref="IRazorViewEngineFileProviderAccessor"/>.</param>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public DnxRoslynCompilationService(IApplicationEnvironment environment,
+        public DnxRoslynCompilationService(
+            IApplicationEnvironment environment,
             ILibraryExporter libraryExporter,
-            IMvcRazorHost host,
             IOptions<RazorViewEngineOptions> optionsAccessor,
             IRazorViewEngineFileProviderAccessor fileProviderAccessor)
         {
@@ -55,6 +57,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             _libraryExporter = libraryExporter;
             _options = optionsAccessor.Value;
             _applicationReferences = new Lazy<List<MetadataReference>>(GetApplicationReferences);
+
+#if DOTNET5_6
+            _razorLoadContext = new RazorLoadContext();
+#endif
         }
 
         public CompilationResult Compile(RelativeFileInfo fileInfo, string compilationContent)
@@ -143,7 +149,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         private Assembly LoadStream(MemoryStream ms, MemoryStream assemblySymbols)
         {
+#if DOTNET5_6
+            return _razorLoadContext.Load(ms, assemblySymbols);
+#else
             return Assembly.Load(ms.ToArray(), assemblySymbols?.ToArray());
+#endif
         }
 
         private List<MetadataReference> GetApplicationReferences()
@@ -234,6 +244,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             return metadata.GetReference(filePath: path);
         }
+#if DOTNET5_6
+        private class RazorLoadContext : AssemblyLoadContext
+        {
+            protected override Assembly Load(AssemblyName assemblyName)
+            {
+                return Default.LoadFromAssemblyName(assemblyName);
+            }
+
+            public Assembly Load(Stream assembly, Stream assemblySymbols)
+            {
+                return LoadFromStream(assembly, assemblySymbols);
+            }
+        }
+#endif
     }
 }
-#endif

@@ -21,7 +21,12 @@
     "dotnet-razor-tooling": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "dnx451": {
+      "dependencies": {
+        "Microsoft.AspNetCore.Mvc.Dnx": "1.0.0-*"
+      }
+    },
+    "net451": { },
     "dnxcore50": {
       "imports": "portable-net451+win8",
       "dependencies": {

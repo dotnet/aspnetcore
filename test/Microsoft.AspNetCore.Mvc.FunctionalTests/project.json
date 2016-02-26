@@ -67,8 +67,7 @@
     },
     "dnx451": {
       "dependencies": {
-        "Microsoft.Dnx.Compilation.CSharp.Common": "1.0.0-*",
-        "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*",
+        "Microsoft.AspNetCore.Mvc.Dnx": "1.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
       }
     },

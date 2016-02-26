@@ -1,0 +1,27 @@
+{
+  "description": "Bridge for keeping compat with DNX.",
+  "version": "1.0.0-*",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/mvc"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [ "CS1591" ],
+    "xmlDoc": true
+  },
+  "dependencies": {
+    "Microsoft.AspNetCore.Mvc.Razor": "1.0.0-*",
+    "Microsoft.Dnx.Compilation.CSharp.Common": "1.0.0-*",
+    "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
+    "Microsoft.Extensions.PlatformAbstractions.Dnx": "1.0.0-*"
+  },
+  "frameworks": {
+    "dnx451": {},
+    "dotnet5.6": {
+      "imports": "portable-net451+win8"
+    }
+  }
+}
