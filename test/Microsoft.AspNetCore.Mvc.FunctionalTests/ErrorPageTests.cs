@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-#if !DNXCORE50
+#if !NETSTANDARDAPP1_5
 using Microsoft.AspNetCore.Testing.xunit;
 #endif
 using Xunit;
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
-#if DNXCORE50
+#if NETSTANDARDAPP1_5
         [Theory]
 #else
         [ConditionalTheory]

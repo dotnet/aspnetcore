@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-#if DOTNET5_4
+#if NETSTANDARD1_3
 using System.Reflection;
 #endif
 using Microsoft.AspNetCore.Mvc.ModelBinding;

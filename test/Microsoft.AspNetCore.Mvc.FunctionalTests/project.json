@@ -57,13 +57,16 @@
     "test": "xunit.runner.aspnet"
   },
   "frameworks": {
-    "dnxcore50": {
+    "netstandardapp1.5": {
       "dependencies": {
         "Microsoft.Dnx.Compilation.CSharp.Common": "1.0.0-*",
         "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*",
         "dotnet-test-xunit": "1.0.0-dev-*"
       },
-      "imports": "portable-net451+win8"
+      "imports": [
+        "dnxcore50",
+        "portable-net451+win8"
+      ]
     },
     "dnx451": {
       "dependencies": {
@@ -71,7 +74,7 @@
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
       }
     },
-    "net451": { }
+    "net451": {}
   },
   "exclude": [
     "wwwroot",

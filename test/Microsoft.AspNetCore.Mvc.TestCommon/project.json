@@ -3,10 +3,13 @@
   "shared": "**/*.cs",
   "frameworks": {
     "net451": {},
-    "dotnet5.4": {
+    "netstandard1.3": {
       "dependencies": {
         "System.Runtime": "4.1.0-*"
-      }
+      },
+      "imports": [
+        "dotnet5.4"
+      ]
     }
   }
 }

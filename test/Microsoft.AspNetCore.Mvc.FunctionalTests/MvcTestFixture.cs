@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         private readonly TestServer _server;
 
         public MvcTestFixture()
-#if DNXCORE50
+#if NETSTANDARDAPP1_5
             : this(Path.Combine("..", "..", "..", "..", "..", "WebSites"))
 #else
             : this(Path.Combine("..", "..", "..", "WebSites"))

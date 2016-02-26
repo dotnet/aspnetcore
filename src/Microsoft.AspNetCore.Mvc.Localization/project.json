@@ -4,7 +4,9 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "dependencies": {
@@ -19,8 +21,11 @@
   },
   "frameworks": {
     "net451": {},
-    "dotnet5.6": {
-      "imports": "portable-net45+win8"
+    "netstandard1.5": {
+      "imports": [
+        "dotnet5.6",
+        "portable-net45+win8"
+      ]
     }
   },
   "exclude": [

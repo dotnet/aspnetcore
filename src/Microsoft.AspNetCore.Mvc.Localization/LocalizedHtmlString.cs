@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization
     /// </summary>
     public class LocalizedHtmlString : IHtmlContent
     {
-#if DOTNET5_5
+#if NETSTANDARD1_4
         private static readonly object[] EmptyArguments = Array.Empty<object>();
 #else
         private static readonly object[] EmptyArguments = new object[0];

@@ -15,8 +15,11 @@
   },
   "frameworks": {
     "net451": {},
-    "dnxcore50": {
-      "imports": "portable-net451+win8"
+    "netstandardapp1.5": {
+      "imports": [
+        "dnxcore50",
+        "portable-net451+win8"
+      ]
     }
   }
 }

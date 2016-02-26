@@ -19,7 +19,7 @@ namespace System.Net.Http
     /// </summary>
     public static class HttpRequestMessageExtensions
     {
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
 
         /// <summary>
         /// Helper method for creating an <see cref="HttpResponseMessage"/> message with a "416 (Requested Range Not

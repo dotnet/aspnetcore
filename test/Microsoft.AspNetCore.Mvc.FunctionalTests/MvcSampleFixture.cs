@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
     public class MvcSampleFixture<TStartup> : MvcTestFixture<TStartup>
     {
         public MvcSampleFixture()
-#if DNXCORE50
+#if NETSTANDARDAPP1_5
             :base("../../../../../../samples/")
 #else
             : base("../../../../samples/")

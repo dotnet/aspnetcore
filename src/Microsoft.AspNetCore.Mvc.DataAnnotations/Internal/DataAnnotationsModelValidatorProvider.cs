@@ -3,7 +3,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
-#if DOTNET5_4
+#if NETSTANDARD1_3
 using System.Reflection;
 #endif
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;

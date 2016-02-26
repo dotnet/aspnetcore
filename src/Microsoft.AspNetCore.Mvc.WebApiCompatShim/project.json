@@ -8,7 +8,9 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "dependencies": {
@@ -29,8 +31,11 @@
         "System.Xml": ""
       }
     },
-    "dotnet5.4": {
-      "imports": "portable-net451+win8",
+    "netstandard1.3": {
+      "imports": [
+        "dotnet5.4",
+        "portable-net451+win8"
+      ],
       "dependencies": {
         "System.Net.Http": "4.0.1-*",
         "System.Runtime.Serialization.Xml": "4.1.0-*",

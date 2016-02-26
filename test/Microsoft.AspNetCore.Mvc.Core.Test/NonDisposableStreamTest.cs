@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class NonDisposableStreamTest
     {
-#if !DNXCORE50
+#if !NETSTANDARDAPP1_5
         [Fact]
         public void InnerStreamIsOpenOnClose()
         {
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             nonDisposableStream.Dispose();
         }
 
-#if !DNXCORE50
+#if !NETSTANDARDAPP1_5
         [Fact]
         public void InnerStreamIsNotFlushedOnClose()
         {

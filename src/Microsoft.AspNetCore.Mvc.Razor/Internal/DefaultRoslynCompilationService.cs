@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.PortableExecutable;
-#if DOTNET5_6
+#if NETSTANDARD1_5
 using System.Runtime.Loader;
 #endif
 using System.Text;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private readonly ILogger _logger;
         private readonly DependencyContext _dependencyContext;
 
-#if DOTNET5_6
+#if NETSTANDARD1_5
         private readonly RazorLoadContext _razorLoadContext;
 #endif
 
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             _compilationOptions = optionsAccessor.Value.CompilationOptions;
             _logger = loggerFactory.CreateLogger<DefaultRoslynCompilationService>();
 
-#if DOTNET5_6
+#if NETSTANDARD1_5
             _razorLoadContext = new RazorLoadContext();
 #endif
 
@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 mappedLineSpan.EndLinePosition.Character + 1);
         }
 
-#if DOTNET5_6
+#if NETSTANDARD1_5
         private class RazorLoadContext : AssemblyLoadContext
         {
             protected override Assembly Load(AssemblyName assemblyName)

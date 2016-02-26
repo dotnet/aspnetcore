@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-#if DOTNET5_4
+#if NETSTANDARD1_3
 using System.Reflection;
 #endif
 using System.Threading.Tasks;

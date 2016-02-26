@@ -23,13 +23,16 @@
         ]
       }
     },
-    "dnxcore50": {
+    "netstandardapp1.5": {
       "compilationOptions": {
         "define": [
-          "DNXCORE50_CUSTOM_DEFINE"
+          "NETSTANDARDAPP1_5_CUSTOM_DEFINE"
         ]
       },
-      "imports": "portable-net451+win8"
+      "imports": [
+        "dnxcore50",
+        "portable-net451+win8"
+      ]
     }
   }
 }
