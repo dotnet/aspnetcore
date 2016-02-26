@@ -122,8 +122,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             var unparsedContentLength = headers.HeaderContentLength.ToString();
             if (unparsedContentLength.Length > 0)
             {
-                int contentLength;
-                if (!int.TryParse(unparsedContentLength, out contentLength) || contentLength < 0)
+                long contentLength;
+                if (!long.TryParse(unparsedContentLength, out contentLength) || contentLength < 0)
                 {
                     context.ReportCorruptedHttpRequest(new BadHttpRequestException("Invalid content length."));
                     return new ForContentLength(keepAlive, 0, context);
@@ -166,10 +166,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         private class ForContentLength : MessageBody
         {
-            private readonly int _contentLength;
-            private int _inputLength;
+            private readonly long _contentLength;
+            private long _inputLength;
 
-            public ForContentLength(bool keepAlive, int contentLength, Frame context)
+            public ForContentLength(bool keepAlive, long contentLength, Frame context)
                 : base(context)
             {
                 RequestKeepAlive = keepAlive;
@@ -181,7 +181,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 var input = _context.SocketInput;
 
-                var limit = buffer.Array == null ? _inputLength : Math.Min(buffer.Count, _inputLength);
+                var inputLengthLimit = (int)Math.Min(_inputLength, int.MaxValue);
+                var limit = buffer.Array == null ? inputLengthLimit : Math.Min(buffer.Count, inputLengthLimit);
                 if (limit == 0)
                 {
                     return 0;

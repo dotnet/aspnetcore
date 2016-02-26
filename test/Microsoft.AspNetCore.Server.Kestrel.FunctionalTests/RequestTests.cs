@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
+using System;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Sockets;
@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -24,16 +23,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task LargeUpload()
         {
             var port = PortManager.GetPort();
-            var config = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string>
-                {
-                    { "server.urls", $"http://localhost:{port}/" }
-                })
-                .Build();
-
             var builder = new WebHostBuilder()
-                .UseConfiguration(config)
                 .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseUrls($"http://localhost:{port}/")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -76,6 +68,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Fails on Mono on Mac because it is not 64-bit.")]
+        public async Task LargeMultipartUpload()
+        {
+            var port = PortManager.GetPort();
+            var builder = new WebHostBuilder()
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseUrls($"http://localhost:{port}/")
+                .Configure(app =>
+                {
+                    app.Run(async context =>
+                    {
+                        long total = 0;
+                        var bytes = new byte[1024];
+                        var count = await context.Request.Body.ReadAsync(bytes, 0, bytes.Length);
+                        while (count > 0)
+                        {
+                            total += count;
+                            count = await context.Request.Body.ReadAsync(bytes, 0, bytes.Length);
+                        }
+                        await context.Response.WriteAsync(total.ToString(CultureInfo.InvariantCulture));
+                    });
+                });
+
+            using (var host = builder.Build())
+            {
+                host.Start();
+
+                using (var client = new HttpClient())
+                {
+                    using (var form = new MultipartFormDataContent())
+                    {
+                        const int oneMegabyte = 1024 * 1024;
+                        const int files = 2048;
+                        var bytes = new byte[oneMegabyte];
+
+                        for (int i = 0; i < files; i++)
+                        {
+                            var fileName = Guid.NewGuid().ToString();
+                            form.Add(new ByteArrayContent(bytes), "file", fileName);
+                        }
+
+                        var length = form.Headers.ContentLength.Value;
+                        var response = await client.PostAsync($"http://localhost:{port}/", form);
+                        response.EnsureSuccessStatusCode();
+                        Assert.Equal(length.ToString(CultureInfo.InvariantCulture), await response.Content.ReadAsStringAsync());
+                    }
+                }
+            }
+        }
+
         [Theory]
         [InlineData("127.0.0.1", "127.0.0.1")]
         [InlineData("localhost", "127.0.0.1")]
@@ -95,14 +138,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task DoesNotHangOnConnectionCloseRequest()
         {
             var port = PortManager.GetPort();
-            var config = new ConfigurationBuilder().AddInMemoryCollection(
-                new Dictionary<string, string> {
-                    { "server.urls", $"http://localhost:{port}" }
-                }).Build();
-
             var builder = new WebHostBuilder()
-                .UseConfiguration(config)
                 .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseUrls($"http://localhost:{port}")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -129,14 +167,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public void RequestPathIsNormalized()
         {
             var port = PortManager.GetPort();
-            var config = new ConfigurationBuilder().AddInMemoryCollection(
-                new Dictionary<string, string> {
-                    { "server.urls", $"http://localhost:{port}/\u0041\u030A" }
-                }).Build();
-
             var builder = new WebHostBuilder()
-                .UseConfiguration(config)
                 .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseUrls($"http://localhost:{port}/\u0041\u030A")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -178,14 +211,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private async Task TestRemoteIPAddress(string registerAddress, string requestAddress, string expectAddress)
         {
             var port = PortManager.GetPort();
-            var config = new ConfigurationBuilder().AddInMemoryCollection(
-                new Dictionary<string, string> {
-                    { "server.urls", $"http://{registerAddress}:{port}" }
-                }).Build();
-
             var builder = new WebHostBuilder()
-                .UseConfiguration(config)
                 .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseUrls($"http://{registerAddress}:{port}")
                 .Configure(app =>
                 {
                     app.Run(async context =>
