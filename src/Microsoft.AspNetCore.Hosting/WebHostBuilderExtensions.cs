@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         public static IWebHostBuilder UseConfiguration(this IWebHostBuilder builder, IConfiguration configuration)
         {
-            foreach (var setting in configuration.GetFlattenedSettings())
+            foreach (var setting in configuration.AsEnumerable())
             {
                 builder.UseSetting(setting.Key, setting.Value);
             }
