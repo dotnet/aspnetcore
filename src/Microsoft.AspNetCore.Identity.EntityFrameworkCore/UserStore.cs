@@ -503,7 +503,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             return false;
         }
 
-        private void ThrowIfDisposed()
+        protected void ThrowIfDisposed()
         {
             if (_disposed)
             {

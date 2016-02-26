@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             return Task.FromResult(0);
         }
 
-        private void ThrowIfDisposed()
+        protected void ThrowIfDisposed()
         {
             if (_disposed)
             {
