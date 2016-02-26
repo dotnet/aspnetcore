@@ -53,7 +53,8 @@ namespace Microsoft.AspNetCore.Server.Testing
             string executableArgs = string.Empty;
             if (DeploymentParameters.PublishApplicationBeforeDeployment)
             {
-                executableName = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, new DirectoryInfo(DeploymentParameters.ApplicationPath).Name);
+                var executableExtension = DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? ".exe" : "";
+                executableName = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, new DirectoryInfo(DeploymentParameters.ApplicationPath).Name + executableExtension);
             }
             else
             {
