@@ -386,8 +386,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             {
                 if (entry.RequiredLinkValues.ContainsKey(kvp.Key))
                 {
-                    var parameter = entry.Template.Parameters
-                        .FirstOrDefault(p => string.Equals(p.Name, kvp.Key, StringComparison.OrdinalIgnoreCase));
+                    var parameter = entry.Template.GetParameter(kvp.Key);
 
                     if (parameter == null)
                     {

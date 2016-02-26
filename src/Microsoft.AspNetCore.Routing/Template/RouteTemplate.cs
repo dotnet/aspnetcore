@@ -59,5 +59,24 @@ namespace Microsoft.AspNetCore.Routing.Template
         {
             return string.Join(SeparatorString, Segments.Select(s => s.DebuggerToString()));
         }
+
+        /// <summary>
+        /// Gets the parameter matching the given name.
+        /// </summary>
+        /// <param name="name">The name of the parameter to match.</param>
+        /// <returns>The matching parameter or <c>null</c> if no parameter matches the given name.</returns>
+        public TemplatePart GetParameter(string name)
+        {
+            for (var i = 0; i < Parameters.Count; i++)
+            {
+                var parameter = Parameters[i];
+                if (string.Equals(parameter.Name, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return parameter;
+                }
+            }
+
+            return null;
+        }
     }
 }
