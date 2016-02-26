@@ -331,7 +331,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         /// </remarks>
         /// <param name="begin">The iterator from which to start the known string lookup.</param>
         /// <param name="scan">If we found a valid method, then scan will be updated to new position</param>
-        /// <param name="knownMethod">A reference to a pre-allocated known string, if the input matches any.</param>
+        /// <param name="knownVersion">A reference to a pre-allocated known string, if the input matches any.</param>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
         public static bool GetKnownVersion(this MemoryPoolIterator2 begin, ref MemoryPoolIterator2 scan, out string knownVersion)
         {
