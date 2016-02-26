@@ -84,5 +84,10 @@ if [ -z "$DOTNET_REFERENCE_ASSEMBLIES_PATH" ]; then
         export DOTNET_REFERENCE_ASSEMBLIES_PATH="/usr/lib/mono/xbuild-frameworks"
     fi
 fi
+
+if [ "$(uname)" == "Darwin" ]; then
+    ulimit -n 2048
+fi
+
 echo "Using Reference Assemblies from: $DOTNET_REFERENCE_ASSEMBLIES_PATH"
 mono $sakeFolder/tools/Sake.exe -I $thisDir -f $makeFilePath $targets
