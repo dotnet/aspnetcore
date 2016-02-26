@@ -757,7 +757,23 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                                 RazorResources.FormatParseError_UnexpectedEndTag("p"),
                                 absoluteIndex: 31, lineIndex: 0, columnIndex: 31, length: 1)
                         }
-                    }
+                    },
+                    {
+                        "<p class=some=thing attr=\"@value\"></p>",
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p",
+                                new List<KeyValuePair<string, SyntaxTreeNode>>
+                                {
+                                    new KeyValuePair<string, SyntaxTreeNode>("class", factory.Markup("some"))
+                                })),
+                        new []
+                        {
+                            new RazorError(
+                                "TagHelper attributes must be well-formed.",
+                                new SourceLocation(13, 0, 13),
+                                length: 13)
+                        }
+                    },
                 };
             }
         }

@@ -105,6 +105,11 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                     attributes.Add(
                         new KeyValuePair<string, SyntaxTreeNode>(result.AttributeName, result.AttributeValueNode));
                 }
+                else
+                {
+                    // Error occured while parsing the attribute. Don't try parsing the rest to avoid misleading errors.
+                    break;
+                }
             }
 
             return attributes;
@@ -205,10 +210,6 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                 }
                 else if (symbol.Type == HtmlSymbolType.Equals)
                 {
-                    Debug.Assert(
-                        name != null,
-                        "Name should never be null here. The parser should guarantee an attribute has a name.");
-
                     // We've captured all leading whitespace and the attribute name.
                     // We're now at: " asp-for|='...'" or " asp-for|=..."
                     // The goal here is to consume the equal sign and the optional single/double-quote.
