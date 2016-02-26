@@ -25,9 +25,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public MvcTestFixture()
 #if DNXCORE50
-            : this("../../../../../Websites/")
+            : this(Path.Combine("..", "..", "..", "..", "..", "WebSites"))
 #else
-            : this("../../../Websites/")
+            : this(Path.Combine("..", "..", "..", "WebSites"))
 #endif
         {
         }
