@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         /// </summary>
         private class ForChunkedEncoding : MessageBody
         {
-            private static Vector<byte> _vectorCRs = new Vector<byte>((byte)'\r');
+            private Vector<byte> _vectorCRs = new Vector<byte>((byte)'\r');
 
             private int _inputLength;
             private Mode _mode = Mode.Prefix;
