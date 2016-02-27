@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
             if (Type != null)
             {
-                if (Type.GetTypeInfo().IsAssignableFrom(context.Key.ModelType.GetTypeInfo()))
+                if (Type.IsAssignableFrom(context.Key.ModelType))
                 {
                     context.ValidationMetadata.ValidateChildren = false;
                 }

@@ -5,7 +5,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+#if DOTNET5_6
 using System.Reflection;
+#endif
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
@@ -95,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Metadata.IsEnumerableType is similar but does not take runtime type into account.
             var realModelType = For.ModelExplorer.ModelType;
             _allowMultiple = typeof(string) != realModelType &&
-                typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(realModelType.GetTypeInfo());
+                typeof(IEnumerable).IsAssignableFrom(realModelType);
             _currentValues = Generator.GetCurrentValues(
                 ViewContext,
                 For.ModelExplorer,

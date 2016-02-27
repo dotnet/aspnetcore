@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if DOTNET5_4
 using System.Reflection;
+#endif
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,8 +54,7 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(predicateProviderType));
             }
 
-            if (!typeof(IPropertyBindingPredicateProvider).GetTypeInfo()
-                    .IsAssignableFrom(predicateProviderType.GetTypeInfo()))
+            if (!typeof(IPropertyBindingPredicateProvider).IsAssignableFrom(predicateProviderType))
             {
                 var message = Resources.FormatPropertyBindingPredicateProvider_WrongType(
                     predicateProviderType.FullName,

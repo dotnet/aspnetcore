@@ -228,9 +228,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 }
             }
 
-            if (typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(fieldTypeInfo))
+            if (typeof(IEnumerable).IsAssignableFrom(fieldType))
             {
-                if (typeof(IEnumerable<IFormFile>).GetTypeInfo().IsAssignableFrom(fieldTypeInfo))
+                if (typeof(IEnumerable<IFormFile>).IsAssignableFrom(fieldType))
                 {
                     yield return IEnumerableOfIFormFileName;
 
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
                 yield return "Collection";
             }
-            else if (typeof(IFormFile) != fieldType && typeof(IFormFile).GetTypeInfo().IsAssignableFrom(fieldTypeInfo))
+            else if (typeof(IFormFile) != fieldType && typeof(IFormFile).IsAssignableFrom(fieldType))
             {
                 yield return nameof(IFormFile);
             }

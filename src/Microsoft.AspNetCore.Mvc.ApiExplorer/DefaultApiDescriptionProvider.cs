@@ -4,10 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if DOTNET5_4
 using System.Reflection;
+#endif
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -135,9 +136,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     apiDescription.SupportedResponseFormats.Add(format);
                 }
             }
-            
+
             // It would be possible here to configure an action with multiple body parameters, in which case you
-            // could end up with duplicate data. 
+            // could end up with duplicate data.
             foreach (var parameter in apiDescription.ParameterDescriptions.Where(p => p.Source == BindingSource.Body))
             {
                 var formats = GetRequestFormats(action, requestMetadataAttributes, parameter.Type);
@@ -427,7 +428,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             // If the method is declared to return IActionResult or a derived class, that information
             // isn't valuable to the formatter.
-            if (typeof(IActionResult).GetTypeInfo().IsAssignableFrom(unwrappedType.GetTypeInfo()))
+            if (typeof(IActionResult).IsAssignableFrom(unwrappedType))
             {
                 return null;
             }
@@ -577,7 +578,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             public ParameterDescriptor Parameter { get; }
 
-            // Avoid infinite recursion by tracking properties. 
+            // Avoid infinite recursion by tracking properties.
             private HashSet<PropertyKey> Visited { get; }
 
             public void WalkParameter(ApiParameterDescriptionContext context)

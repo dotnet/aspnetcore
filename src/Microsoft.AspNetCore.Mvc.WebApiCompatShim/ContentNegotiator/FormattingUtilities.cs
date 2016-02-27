@@ -124,7 +124,7 @@ namespace System.Net.Http
         /// </returns>
         public static bool IsJTokenType(Type type)
         {
-            return typeof(JToken).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo());
+            return typeof(JToken).IsAssignableFrom(type);
         }
 
         /// <summary>

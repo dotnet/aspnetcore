@@ -907,22 +907,6 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// The binding context has a ModelType of '{0}', but this binder can only operate on models of type '{1}'.
-        /// </summary>
-        internal static string ModelBinderUtil_ModelTypeIsWrong
-        {
-            get { return GetString("ModelBinderUtil_ModelTypeIsWrong"); }
-        }
-
-        /// <summary>
-        /// The binding context has a ModelType of '{0}', but this binder can only operate on models of type '{1}'.
-        /// </summary>
-        internal static string FormatModelBinderUtil_ModelTypeIsWrong(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ModelBinderUtil_ModelTypeIsWrong"), p0, p1);
-        }
-
-        /// <summary>
         /// A value for the '{0}' property was not provided.
         /// </summary>
         internal static string ModelBinding_MissingBindRequiredMember

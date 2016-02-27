@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                     nameof(ViewComponentDescriptor)));
             }
 
-            var isAsync = typeof(Task).GetTypeInfo().IsAssignableFrom(methodInfo.ReturnType.GetTypeInfo());
+            var isAsync = typeof(Task).IsAssignableFrom(methodInfo.ReturnType);
             IViewComponentResult result;
             if (isAsync)
             {

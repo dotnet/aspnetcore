@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+#if DOTNET5_4
 using System.Reflection;
+#endif
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -143,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Unwrap potential Task<T> types.
             var actualReturnType = GetTaskInnerTypeOrNull(declaredReturnType) ?? declaredReturnType;
             if (actionReturnValue == null &&
-                typeof(IActionResult).GetTypeInfo().IsAssignableFrom(actualReturnType.GetTypeInfo()))
+                typeof(IActionResult).IsAssignableFrom(actualReturnType))
             {
                 throw new InvalidOperationException(
                     Resources.FormatActionResult_ActionReturnValueCannotBeNull(actualReturnType));

@@ -13,7 +13,6 @@ using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -741,35 +740,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             if (bindingContext.ModelMetadata == null)
             {
                 throw new ArgumentException(Resources.ModelBinderUtil_ModelMetadataCannotBeNull, nameof(bindingContext));
-            }
-        }
-
-        internal static void ValidateBindingContext(
-            ModelBindingContext bindingContext,
-            Type requiredType,
-            bool allowNullModel)
-        {
-            ValidateBindingContext(bindingContext);
-
-            if (bindingContext.ModelType != requiredType)
-            {
-                var message = Resources.FormatModelBinderUtil_ModelTypeIsWrong(bindingContext.ModelType, requiredType);
-                throw new ArgumentException(message, nameof(bindingContext));
-            }
-
-            if (!allowNullModel && bindingContext.Model == null)
-            {
-                var message = Resources.FormatModelBinderUtil_ModelCannotBeNull(requiredType);
-                throw new ArgumentException(message, nameof(bindingContext));
-            }
-
-            if (bindingContext.Model != null &&
-                !bindingContext.ModelType.GetTypeInfo().IsAssignableFrom(requiredType.GetTypeInfo()))
-            {
-                var message = Resources.FormatModelBinderUtil_ModelInstanceIsWrong(
-                    bindingContext.Model.GetType(),
-                    requiredType);
-                throw new ArgumentException(message, nameof(bindingContext));
             }
         }
 

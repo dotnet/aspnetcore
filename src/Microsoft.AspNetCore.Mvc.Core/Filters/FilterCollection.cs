@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.ObjectModel;
+#if DOTNET5_4
 using System.Reflection;
+#endif
 using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.Filters
@@ -99,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                 throw new ArgumentNullException(nameof(filterType));
             }
 
-            if (!typeof(IFilterMetadata).GetTypeInfo().IsAssignableFrom(filterType.GetTypeInfo()))
+            if (!typeof(IFilterMetadata).IsAssignableFrom(filterType))
             {
                 var message = Resources.FormatTypeMustDeriveFromType(
                     filterType.FullName,

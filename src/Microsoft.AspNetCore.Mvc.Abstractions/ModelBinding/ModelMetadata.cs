@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 var enumerableType = ClosedGenericMatcher.ExtractGenericInterface(ModelType, typeof(IEnumerable<>));
                 ElementType = enumerableType?.GenericTypeArguments[0];
 
-                if (ElementType == null && typeof(IEnumerable).IsAssignableFrom(ModelType))
+                if (ElementType == null)
                 {
                     // ModelType implements IEnumerable but not IEnumerable<T>.
                     ElementType = typeof(object);

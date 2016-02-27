@@ -294,9 +294,6 @@
   <data name="ModelBinderUtil_ModelMetadataCannotBeNull" xml:space="preserve">
     <value>The binding context cannot have a null ModelMetadata.</value>
   </data>
-  <data name="ModelBinderUtil_ModelTypeIsWrong" xml:space="preserve">
-    <value>The binding context has a ModelType of '{0}', but this binder can only operate on models of type '{1}'.</value>
-  </data>
   <data name="ModelBinding_MissingBindRequiredMember" xml:space="preserve">
     <value>A value for the '{0}' property was not provided.</value>
   </data>
