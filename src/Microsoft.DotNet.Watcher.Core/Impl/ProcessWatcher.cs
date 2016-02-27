@@ -59,26 +59,34 @@ namespace Microsoft.DotNet.Watcher.Core
                 return;
             }
 
-            ProcessStartInfo startInfo;
-
             if (_isWindows)
             {
-                startInfo = new ProcessStartInfo()
+                var startInfo = new ProcessStartInfo()
                 {
                     FileName = "taskkill",
                     Arguments = $"/T /F /PID {processId}",
                 };
+                var killProcess =  Process.Start(startInfo);
+                killProcess.WaitForExit();
             }
             else
             {
-                startInfo = new ProcessStartInfo()
+                var killSubProcessStartInfo = new ProcessStartInfo
                 {
                     FileName = "pkill",
                     Arguments = $"-TERM -P {processId}",
                 };
+                var killSubProcess = Process.Start(killSubProcessStartInfo);
+                killSubProcess.WaitForExit();
+                
+                var killProcessStartInfo = new ProcessStartInfo
+                {
+                    FileName = "kill",
+                    Arguments = $"-TERM {processId}",
+                };
+                var killProcess = Process.Start(killProcessStartInfo);
+                killProcess.WaitForExit();
             }
-            var killProcess =  Process.Start(startInfo);
-            killProcess.WaitForExit();
         }
     }
 }
