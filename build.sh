@@ -1,45 +1,35 @@
 #!/usr/bin/env bash
+repoFolder="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $repoFolder
 
-buildFolder=.build
-koreBuildFolder=$buildFolder/KoreBuild-dotnet
-
-nugetPath=$buildFolder/nuget.exe
-
-if test `uname` = Darwin; then
-    cachedir=~/Library/Caches/KBuild
-else
-    if [ -z $XDG_DATA_HOME ]; then
-        cachedir=$HOME/.local/share
-    else
-        cachedir=$XDG_DATA_HOME;
-    fi
+koreBuildZip="https://github.com/aspnet/KoreBuild/archive/dev.zip"
+if [ ! -z $KOREBUILD_ZIP ]; then
+    koreBuildZip=$KOREBUILD_ZIP
 fi
-mkdir -p $cachedir
-nugetVersion=latest
-cacheNuget=$cachedir/nuget.$nugetVersion.exe
 
-nugetUrl=https://dist.nuget.org/win-x86-commandline/$nugetVersion/nuget.exe
+buildFolder=".build"
+buildFile="$buildFolder/KoreBuild.sh"
 
 if test ! -d $buildFolder; then
+    echo "Downloading KoreBuild from $koreBuildZip"
+    
+    tempFolder="/tmp/KoreBuild-$(uuidgen)"    
+    mkdir $tempFolder
+    
+    localZipFile="$tempFolder/korebuild.zip"
+    
+    wget -O $localZipFile $koreBuildZip 2>/dev/null || curl -o $localZipFile --location $koreBuildZip /dev/null
+    unzip -q -d $tempFolder $localZipFile
+  
     mkdir $buildFolder
-fi
-
-if test ! -f $nugetPath; then
-    if test ! -f $cacheNuget; then
-        wget -O $cacheNuget $nugetUrl 2>/dev/null || curl -o $cacheNuget --location $nugetUrl /dev/null
+    cp -r $tempFolder/**/build/** $buildFolder
+    
+    chmod +x $buildFile
+    
+    # Cleanup
+    if test ! -d $tempFolder; then
+        rm -rf $tempFolder  
     fi
-
-    cp $cacheNuget $nugetPath
 fi
 
-if test ! -d $koreBuildFolder; then
-    mono $nugetPath install KoreBuild-dotnet -ExcludeVersion -o $buildFolder -nocache -pre
-    chmod +x $koreBuildFolder/build/KoreBuild.sh
-fi
-
-makeFile=makefile.shade
-if [ ! -e $makeFile ]; then
-    makeFile=$koreBuildFolder/build/makefile.shade
-fi
-
-./$koreBuildFolder/build/KoreBuild.sh -n $nugetPath -m $makeFile "$@"
+$buildFile -r $repoFolder "$@"
