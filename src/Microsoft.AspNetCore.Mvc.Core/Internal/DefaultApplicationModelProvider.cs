@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Internal;
@@ -50,46 +49,44 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             foreach (var controllerType in context.ControllerTypes)
             {
-                var controllerModels = BuildControllerModels(controllerType);
-                if (controllerModels != null)
+                var controllerModel = CreateControllerModel(controllerType);
+                if (controllerModel == null)
                 {
-                    foreach (var controllerModel in controllerModels)
+                    continue;
+                }
+
+                context.Result.Controllers.Add(controllerModel);
+                controllerModel.Application = context.Result;
+
+                foreach (var propertyHelper in PropertyHelper.GetProperties(controllerType.AsType()))
+                {
+                    var propertyInfo = propertyHelper.Property;
+                    var propertyModel = CreatePropertyModel(propertyInfo);
+                    if (propertyModel != null)
                     {
-                        context.Result.Controllers.Add(controllerModel);
-                        controllerModel.Application = context.Result;
+                        propertyModel.Controller = controllerModel;
+                        controllerModel.ControllerProperties.Add(propertyModel);
+                    }
+                }
 
-                        foreach (var propertyHelper in PropertyHelper.GetProperties(controllerType.AsType()))
+                foreach (var methodInfo in controllerType.AsType().GetMethods())
+                {
+                    var actionModel = CreateActionModel(controllerType, methodInfo);
+                    if (actionModel == null)
+                    {
+                        continue;
+                    }
+
+                    actionModel.Controller = controllerModel;
+                    controllerModel.Actions.Add(actionModel);
+
+                    foreach (var parameterInfo in actionModel.ActionMethod.GetParameters())
+                    {
+                        var parameterModel = CreateParameterModel(parameterInfo);
+                        if (parameterModel != null)
                         {
-                            var propertyInfo = propertyHelper.Property;
-                            var propertyModel = CreatePropertyModel(propertyInfo);
-                            if (propertyModel != null)
-                            {
-                                propertyModel.Controller = controllerModel;
-                                controllerModel.ControllerProperties.Add(propertyModel);
-                            }
-                        }
-
-                        foreach (var methodInfo in controllerType.AsType().GetMethods())
-                        {
-                            var actionModels = BuildActionModels(controllerType, methodInfo);
-                            if (actionModels != null)
-                            {
-                                foreach (var actionModel in actionModels)
-                                {
-                                    actionModel.Controller = controllerModel;
-                                    controllerModel.Actions.Add(actionModel);
-
-                                    foreach (var parameterInfo in actionModel.ActionMethod.GetParameters())
-                                    {
-                                        var parameterModel = CreateParameterModel(parameterInfo);
-                                        if (parameterModel != null)
-                                        {
-                                            parameterModel.Action = actionModel;
-                                            actionModel.Parameters.Add(parameterModel);
-                                        }
-                                    }
-                                }
-                            }
+                            parameterModel.Action = actionModel;
+                            actionModel.Parameters.Add(parameterModel);
                         }
                     }
                 }
@@ -100,25 +97,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public virtual void OnProvidersExecuted(ApplicationModelProviderContext context)
         {
             // Intentionally empty.
-        }
-
-        /// <summary>
-        /// Creates the <see cref="ControllerModel"/> instances for the given controller <see cref="TypeInfo"/>.
-        /// </summary>
-        /// <param name="typeInfo">The controller <see cref="TypeInfo"/>.</param>
-        /// <returns>
-        /// A set of <see cref="ControllerModel"/> instances for the given controller <see cref="TypeInfo"/> or
-        /// <c>null</c> if the <paramref name="typeInfo"/> does not represent a controller.
-        /// </returns>
-        protected virtual IEnumerable<ControllerModel> BuildControllerModels(TypeInfo typeInfo)
-        {
-            if (typeInfo == null)
-            {
-                throw new ArgumentNullException(nameof(typeInfo));
-            }
-
-            var controllerModel = CreateControllerModel(typeInfo);
-            yield return controllerModel;
         }
 
         /// <summary>
@@ -177,20 +155,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     filteredAttributes.Add(attribute);
                 }
             }
+
             filteredAttributes.AddRange(routeAttributes);
 
             attributes = filteredAttributes.ToArray();
 
             var controllerModel = new ControllerModel(typeInfo, attributes);
-            AddRange(
-                controllerModel.AttributeRoutes, routeAttributes.Select(a => new AttributeRouteModel(a)));
+
+            AddRange(controllerModel.Selectors, CreateSelectors(attributes));
 
             controllerModel.ControllerName =
                 typeInfo.Name.EndsWith("Controller", StringComparison.OrdinalIgnoreCase) ?
                     typeInfo.Name.Substring(0, typeInfo.Name.Length - "Controller".Length) :
                     typeInfo.Name;
 
-            AddRange(controllerModel.ActionConstraints, attributes.OfType<IActionConstraintMetadata>());
             AddRange(controllerModel.Filters, attributes.OfType<IFilterMetadata>());
             AddRange(controllerModel.RouteConstraints, attributes.OfType<IRouteConstraintProvider>());
 
@@ -250,15 +228,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
 
         /// <summary>
-        /// Creates the <see cref="ControllerModel"/> instances for the given action <see cref="MethodInfo"/>.
+        /// Creates the <see cref="ActionModel"/> instance for the given action <see cref="MethodInfo"/>.
         /// </summary>
         /// <param name="typeInfo">The controller <see cref="TypeInfo"/>.</param>
         /// <param name="methodInfo">The action <see cref="MethodInfo"/>.</param>
         /// <returns>
-        /// A set of <see cref="ActionModel"/> instances for the given action <see cref="MethodInfo"/> or
+        /// An <see cref="ActionModel"/> instance for the given action <see cref="MethodInfo"/> or
         /// <c>null</c> if the <paramref name="methodInfo"/> does not represent an action.
         /// </returns>
-        protected virtual IEnumerable<ActionModel> BuildActionModels(
+        protected virtual ActionModel CreateActionModel(
             TypeInfo typeInfo,
             MethodInfo methodInfo)
         {
@@ -274,9 +252,44 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             if (!IsAction(typeInfo, methodInfo))
             {
-                return Enumerable.Empty<ActionModel>();
+                return null;
             }
 
+            // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
+            // is needed to so that the result of ToArray() is object
+            var attributes = methodInfo.GetCustomAttributes(inherit: true).OfType<object>().ToArray();
+
+            var actionModel = new ActionModel(methodInfo, attributes);
+
+            AddRange(actionModel.Filters, attributes.OfType<IFilterMetadata>());
+
+            var actionName = attributes.OfType<ActionNameAttribute>().FirstOrDefault();
+            if (actionName?.Name != null)
+            {
+                actionModel.ActionName = actionName.Name;
+            }
+            else
+            {
+                actionModel.ActionName = methodInfo.Name;
+            }
+
+            var apiVisibility = attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
+            if (apiVisibility != null)
+            {
+                actionModel.ApiExplorer.IsVisible = !apiVisibility.IgnoreApi;
+            }
+
+            var apiGroupName = attributes.OfType<IApiDescriptionGroupNameProvider>().FirstOrDefault();
+            if (apiGroupName != null)
+            {
+                actionModel.ApiExplorer.GroupName = apiGroupName.GroupName;
+            }
+
+            AddRange(actionModel.RouteConstraints, attributes.OfType<IRouteConstraintProvider>());
+
+            //TODO: modify comment
+            // Now we need to determine the action selection info (cross-section of routes and constraints)
+            //
             // For attribute routes on a action, we want want to support 'overriding' routes on a
             // virtual method, but allow 'overriding'. So we need to walk up the hierarchy looking
             // for the first definition to define routes.
@@ -309,10 +322,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 currentMethodInfo = nextMethodInfo;
             }
 
-            // CoreCLR returns IEnumerable<Attribute> from GetCustomAttributes - the OfType<object>
-            // is needed to so that the result of ToArray() is object
-            var attributes = methodInfo.GetCustomAttributes(inherit: true).OfType<object>().ToArray();
-
             // This is fairly complicated so that we maintain referential equality between items in
             // ActionModel.Attributes and ActionModel.Attributes[*].Attribute.
             var applicableAttributes = new List<object>();
@@ -327,134 +336,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     applicableAttributes.Add(attribute);
                 }
             }
+
             applicableAttributes.AddRange(routeAttributes);
+            AddRange(actionModel.Selectors, CreateSelectors(applicableAttributes));
 
-            attributes = applicableAttributes.ToArray();
-
-            // Route attributes create multiple actions, we want to split the set of
-            // attributes based on these so each action only has the attributes that affect it.
-            //
-            // The set of route attributes are split into those that 'define' a route versus those that are
-            // 'silent'.
-            //
-            // We need to define an action for each attribute that 'defines' a route, and a single action
-            // for all of the ones that don't (if any exist).
-            //
-            // If the attribute that 'defines' a route is NOT an IActionHttpMethodProvider, then we'll include with
-            // it, any IActionHttpMethodProvider that are 'silent' IRouteTemplateProviders. In this case the 'extra'
-            // action for silent route providers isn't needed.
-            //
-            // Ex:
-            // [HttpGet]
-            // [AcceptVerbs("POST", "PUT")]
-            // [HttpPost("Api/Things")]
-            // public void DoThing()
-            //
-            // This will generate 2 actions:
-            // 1. [HttpPost("Api/Things")]
-            // 2. [HttpGet], [AcceptVerbs("POST", "PUT")]
-            //
-            // Note that having a route attribute that doesn't define a route template _might_ be an error. We
-            // don't have enough context to really know at this point so we just pass it on.
-            var routeProviders = new List<object>();
-
-            var createActionForSilentRouteProviders = false;
-            foreach (var attribute in attributes)
-            {
-                var routeTemplateProvider = attribute as IRouteTemplateProvider;
-                if (routeTemplateProvider != null)
-                {
-                    if (IsSilentRouteAttribute(routeTemplateProvider))
-                    {
-                        createActionForSilentRouteProviders = true;
-                    }
-                    else
-                    {
-                        routeProviders.Add(attribute);
-                    }
-                }
-            }
-
-            foreach (var routeProvider in routeProviders)
-            {
-                // If we see an attribute like
-                // [Route(...)]
-                //
-                // Then we want to group any attributes like [HttpGet] with it.
-                //
-                // Basically...
-                //
-                // [HttpGet]
-                // [HttpPost("Products")]
-                // public void Foo() { }
-                //
-                // Is two actions. And...
-                //
-                // [HttpGet]
-                // [Route("Products")]
-                // public void Foo() { }
-                //
-                // Is one action.
-                if (!(routeProvider is IActionHttpMethodProvider))
-                {
-                    createActionForSilentRouteProviders = false;
-                }
-            }
-
-            var actionModels = new List<ActionModel>();
-            if (routeProviders.Count == 0 && !createActionForSilentRouteProviders)
-            {
-                actionModels.Add(CreateActionModel(methodInfo, attributes));
-            }
-            else
-            {
-                // Each of these routeProviders are the ones that actually have routing information on them
-                // something like [HttpGet] won't show up here, but [HttpGet("Products")] will.
-                foreach (var routeProvider in routeProviders)
-                {
-                    var filteredAttributes = new List<object>();
-                    foreach (var attribute in attributes)
-                    {
-                        if (attribute == routeProvider)
-                        {
-                            filteredAttributes.Add(attribute);
-                        }
-                        else if (routeProviders.Contains(attribute))
-                        {
-                            // Exclude other route template providers
-                        }
-                        else if (
-                            routeProvider is IActionHttpMethodProvider &&
-                            attribute is IActionHttpMethodProvider)
-                        {
-                            // Exclude other http method providers if this route is an
-                            // http method provider.
-                        }
-                        else
-                        {
-                            filteredAttributes.Add(attribute);
-                        }
-                    }
-
-                    actionModels.Add(CreateActionModel(methodInfo, filteredAttributes));
-                }
-
-                if (createActionForSilentRouteProviders)
-                {
-                    var filteredAttributes = new List<object>();
-                    foreach (var attribute in attributes)
-                    {
-                        if (!routeProviders.Contains(attribute))
-                        {
-                            filteredAttributes.Add(attribute);
-                        }
-                    }
-
-                    actionModels.Add(CreateActionModel(methodInfo, filteredAttributes));
-                }
-            }
-
-            return actionModels;
+            return actionModel;
         }
 
         /// <summary>
@@ -526,83 +412,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         /// <summary>
-        /// Creates an <see cref="ActionModel"/> for the given <see cref="MethodInfo"/>.
-        /// </summary>
-        /// <param name="methodInfo">The <see cref="MethodInfo"/>.</param>
-        /// <param name="attributes">The set of attributes to use as metadata.</param>
-        /// <returns>An <see cref="ActionModel"/> for the given <see cref="MethodInfo"/>.</returns>
-        /// <remarks>
-        /// An action-method in code may expand into multiple <see cref="ActionModel"/> instances depending on how
-        /// the action is routed. In the case of multiple routing attributes, this method will invoked be once for
-        /// each action that can be created.
-        ///
-        /// If overriding this method, use the provided <paramref name="attributes"/> list to find metadata related to
-        /// the action being created.
-        /// </remarks>
-        protected virtual ActionModel CreateActionModel(
-            MethodInfo methodInfo,
-            IReadOnlyList<object> attributes)
-        {
-            if (methodInfo == null)
-            {
-                throw new ArgumentNullException(nameof(methodInfo));
-            }
-
-            if (attributes == null)
-            {
-                throw new ArgumentNullException(nameof(attributes));
-            }
-
-            var actionModel = new ActionModel(methodInfo, attributes);
-
-            AddRange(actionModel.ActionConstraints, attributes.OfType<IActionConstraintMetadata>());
-            AddRange(actionModel.Filters, attributes.OfType<IFilterMetadata>());
-
-            var actionName = attributes.OfType<ActionNameAttribute>().FirstOrDefault();
-            if (actionName?.Name != null)
-            {
-                actionModel.ActionName = actionName.Name;
-            }
-            else
-            {
-                actionModel.ActionName = methodInfo.Name;
-            }
-
-            var apiVisibility = attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
-            if (apiVisibility != null)
-            {
-                actionModel.ApiExplorer.IsVisible = !apiVisibility.IgnoreApi;
-            }
-
-            var apiGroupName = attributes.OfType<IApiDescriptionGroupNameProvider>().FirstOrDefault();
-            if (apiGroupName != null)
-            {
-                actionModel.ApiExplorer.GroupName = apiGroupName.GroupName;
-            }
-
-            var httpMethods = attributes.OfType<IActionHttpMethodProvider>();
-            AddRange(actionModel.HttpMethods,
-                httpMethods
-                    .Where(a => a.HttpMethods != null)
-                    .SelectMany(a => a.HttpMethods)
-                    .Distinct());
-
-            AddRange(actionModel.RouteConstraints, attributes.OfType<IRouteConstraintProvider>());
-
-            var routeTemplateProvider =
-                attributes
-                .OfType<IRouteTemplateProvider>()
-                .SingleOrDefault(a => !IsSilentRouteAttribute(a));
-
-            if (routeTemplateProvider != null)
-            {
-                actionModel.AttributeRouteModel = new AttributeRouteModel(routeTemplateProvider);
-            }
-
-            return actionModel;
-        }
-
-        /// <summary>
         /// Creates a <see cref="ParameterModel"/> for the given <see cref="ParameterInfo"/>.
         /// </summary>
         /// <param name="parameterInfo">The <see cref="ParameterInfo"/>.</param>
@@ -625,6 +434,160 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             parameterModel.ParameterName = parameterInfo.Name;
 
             return parameterModel;
+        }
+
+        private IList<SelectorModel> CreateSelectors(IList<object> attributes)
+        {
+            // Route attributes create multiple selector models, we want to split the set of
+            // attributes based on these so each selector only has the attributes that affect it.
+            //
+            // The set of route attributes are split into those that 'define' a route versus those that are
+            // 'silent'.
+            //
+            // We need to define a selector for each attribute that 'defines' a route, and a single selector
+            // for all of the ones that don't (if any exist).
+            //
+            // If the attribute that 'defines' a route is NOT an IActionHttpMethodProvider, then we'll include with
+            // it, any IActionHttpMethodProvider that are 'silent' IRouteTemplateProviders. In this case the 'extra'
+            // action for silent route providers isn't needed.
+            //
+            // Ex:
+            // [HttpGet]
+            // [AcceptVerbs("POST", "PUT")]
+            // [HttpPost("Api/Things")]
+            // public void DoThing()
+            //
+            // This will generate 2 selectors:
+            // 1. [HttpPost("Api/Things")]
+            // 2. [HttpGet], [AcceptVerbs("POST", "PUT")]
+            //
+            // Note that having a route attribute that doesn't define a route template _might_ be an error. We
+            // don't have enough context to really know at this point so we just pass it on.
+            var routeProviders = new List<IRouteTemplateProvider>();
+
+            var createSelectorForSilentRouteProviders = false;
+            foreach (var attribute in attributes)
+            {
+                var routeTemplateProvider = attribute as IRouteTemplateProvider;
+                if (routeTemplateProvider != null)
+                {
+                    if (IsSilentRouteAttribute(routeTemplateProvider))
+                    {
+                        createSelectorForSilentRouteProviders = true;
+                    }
+                    else
+                    {
+                        routeProviders.Add(routeTemplateProvider);
+                    }
+                }
+            }
+
+            foreach (var routeProvider in routeProviders)
+            {
+                // If we see an attribute like
+                // [Route(...)]
+                //
+                // Then we want to group any attributes like [HttpGet] with it.
+                //
+                // Basically...
+                //
+                // [HttpGet]
+                // [HttpPost("Products")]
+                // public void Foo() { }
+                //
+                // Is two selectors. And...
+                //
+                // [HttpGet]
+                // [Route("Products")]
+                // public void Foo() { }
+                //
+                // Is one selector.
+                if (!(routeProvider is IActionHttpMethodProvider))
+                {
+                    createSelectorForSilentRouteProviders = false;
+                }
+            }
+
+            var selectorModels = new List<SelectorModel>();
+            if (routeProviders.Count == 0 && !createSelectorForSilentRouteProviders)
+            {
+                // Simple case, all attributes apply
+                selectorModels.Add(CreateSelectorModel(route: null, attributes: attributes));
+            }
+            else
+            {
+                // Each of these routeProviders are the ones that actually have routing information on them
+                // something like [HttpGet] won't show up here, but [HttpGet("Products")] will.
+                foreach (var routeProvider in routeProviders)
+                {
+                    var filteredAttributes = new List<object>();
+                    foreach (var attribute in attributes)
+                    {
+                        if (attribute == routeProvider)
+                        {
+                            filteredAttributes.Add(attribute);
+                        }
+                        else if (routeProviders.Contains(attribute))
+                        {
+                            // Exclude other route template providers
+                        }
+                        else if (
+                            routeProvider is IActionHttpMethodProvider &&
+                            attribute is IActionHttpMethodProvider)
+                        {
+                            // Exclude other http method providers if this route is an
+                            // http method provider.
+                        }
+                        else
+                        {
+                            filteredAttributes.Add(attribute);
+                        }
+                    }
+
+                    selectorModels.Add(CreateSelectorModel(routeProvider, filteredAttributes));
+                }
+
+                if (createSelectorForSilentRouteProviders)
+                {
+                    var filteredAttributes = new List<object>();
+                    foreach (var attribute in attributes)
+                    {
+                        if (!routeProviders.Contains(attribute))
+                        {
+                            filteredAttributes.Add(attribute);
+                        }
+                    }
+
+                    selectorModels.Add(CreateSelectorModel(route: null, attributes: filteredAttributes));
+                }
+            }
+
+            return selectorModels;
+        }
+
+        private static SelectorModel CreateSelectorModel(IRouteTemplateProvider route, IList<object> attributes)
+        {
+            var selectorModel = new SelectorModel();
+            if (route != null)
+            {
+                selectorModel.AttributeRouteModel = new AttributeRouteModel(route);
+            }
+
+            AddRange(selectorModel.ActionConstraints, attributes.OfType<IActionConstraintMetadata>());
+
+            // Simple case, all HTTP method attributes apply
+            var httpMethods = attributes
+                .OfType<IActionHttpMethodProvider>()
+                .SelectMany(a => a.HttpMethods)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            if (httpMethods.Length > 0)
+            {
+                selectorModel.ActionConstraints.Add(new HttpMethodActionConstraint(httpMethods));
+            }
+
+            return selectorModel;
         }
 
         private bool IsIDisposableMethod(MethodInfo methodInfo, TypeInfo typeInfo)

@@ -8,7 +8,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Options;
@@ -112,13 +111,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var model = builder.CreateControllerModel(typeInfo);
 
             // Assert
-            Assert.Equal(2, model.AttributeRoutes.Count);
+            var attributeRoutes = GetAttributeRoutes(model.Selectors);
+            Assert.Equal(2, attributeRoutes.Count);
             Assert.Equal(2, model.Attributes.Count);
 
-            var route = Assert.Single(model.AttributeRoutes, r => r.Template == "A");
+            var route = Assert.Single(attributeRoutes, r => r.Template == "A");
             Assert.Contains(route.Attribute, model.Attributes);
 
-            route = Assert.Single(model.AttributeRoutes, r => r.Template == "B");
+            route = Assert.Single(attributeRoutes, r => r.Template == "B");
             Assert.Contains(route.Attribute, model.Attributes);
         }
 
@@ -133,13 +133,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var model = builder.CreateControllerModel(typeInfo);
 
             // Assert
-            Assert.Equal(2, model.AttributeRoutes.Count);
+            var attributeRoutes = GetAttributeRoutes(model.Selectors);
+            Assert.Equal(2, attributeRoutes.Count);
             Assert.Equal(2, model.Attributes.Count);
 
-            var route = Assert.Single(model.AttributeRoutes, r => r.Template == "C");
+            var route = Assert.Single(attributeRoutes, r => r.Template == "C");
             Assert.Contains(route.Attribute, model.Attributes);
 
-            route = Assert.Single(model.AttributeRoutes, r => r.Template == "D");
+            route = Assert.Single(attributeRoutes, r => r.Template == "D");
             Assert.Contains(route.Attribute, model.Attributes);
         }
 
@@ -413,7 +414,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void BuildActionModels_ConventionallyRoutedAction_WithoutHttpConstraints()
+        public void CreateActionModel_ConventionallyRoutedAction_WithoutHttpConstraints()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -421,18 +422,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionName = nameof(ConventionallyRoutedController.Edit);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
+            var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
-            var action = Assert.Single(actions);
-            Assert.Equal("Edit", action.ActionName);
-            Assert.Empty(action.HttpMethods);
-            Assert.Null(action.AttributeRouteModel);
+            Assert.NotNull(action);
+            Assert.Equal(actionName, action.ActionName);
             Assert.Empty(action.Attributes);
+            Assert.Single(action.Selectors);
+            Assert.Empty(action.Selectors[0].ActionConstraints.OfType<HttpMethodActionConstraint>());
+            Assert.Empty(GetAttributeRoutes(action.Selectors));
         }
 
         [Fact]
-        public void BuildActionModels_ConventionallyRoutedAction_WithHttpConstraints()
+        public void CreateActionModel_ConventionallyRoutedAction_WithHttpConstraints()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -440,20 +442,23 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionName = nameof(ConventionallyRoutedController.Update);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
+            var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
-            var action = Assert.Single(actions);
-            Assert.Contains("PUT", action.HttpMethods);
-            Assert.Contains("PATCH", action.HttpMethods);
+            Assert.NotNull(action);
+            Assert.Single(action.Selectors);
+            var methodConstraint = Assert.Single(
+                action.Selectors[0].ActionConstraints.OfType<HttpMethodActionConstraint>());
+            Assert.Contains("PUT", methodConstraint.HttpMethods);
+            Assert.Contains("PATCH", methodConstraint.HttpMethods);
 
-            Assert.Equal("Update", action.ActionName);
-            Assert.Null(action.AttributeRouteModel);
+            Assert.Equal(actionName, action.ActionName);
+            Assert.Empty(GetAttributeRoutes(action.Selectors));
             Assert.IsType<CustomHttpMethodsAttribute>(Assert.Single(action.Attributes));
         }
 
         [Fact]
-        public void BuildActionModels_ConventionallyRoutedActionWithHttpConstraints_AndInvalidRouteTemplateProvider()
+        public void CreateActionModel_ConventionallyRoutedActionWithHttpConstraints_AndInvalidRouteTemplateProvider()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -461,21 +466,24 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionName = nameof(ConventionallyRoutedController.Delete);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
+            var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
-            var action = Assert.Single(actions);
-            Assert.Contains("DELETE", action.HttpMethods);
-            Assert.Contains("HEAD", action.HttpMethods);
+            Assert.NotNull(action);
+            Assert.Single(action.Selectors);
+            var methodConstraint = Assert.Single(
+                action.Selectors[0].ActionConstraints.OfType<HttpMethodActionConstraint>());
+            Assert.Contains("DELETE", methodConstraint.HttpMethods);
+            Assert.Contains("HEAD", methodConstraint.HttpMethods);
 
-            Assert.Equal("Delete", action.ActionName);
-            Assert.Null(action.AttributeRouteModel);
+            Assert.Equal(actionName, action.ActionName);
+            Assert.Empty(GetAttributeRoutes(action.Selectors));
             Assert.Single(action.Attributes.OfType<HttpDeleteAttribute>());
             Assert.Single(action.Attributes.OfType<HttpHeadAttribute>());
         }
 
         [Fact]
-        public void BuildActionModels_ConventionallyRoutedAction_WithMultipleHttpConstraints()
+        public void CreateActionModel_ConventionallyRoutedAction_WithMultipleHttpConstraints()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -483,19 +491,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionName = nameof(ConventionallyRoutedController.Details);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
+            var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
-            var action = Assert.Single(actions);
-            Assert.Contains("GET", action.HttpMethods);
-            Assert.Contains("POST", action.HttpMethods);
-            Assert.Contains("HEAD", action.HttpMethods);
-            Assert.Equal("Details", action.ActionName);
-            Assert.Null(action.AttributeRouteModel);
+            Assert.NotNull(action);
+            Assert.Single(action.Selectors);
+            var methodConstraint = Assert.Single(
+                action.Selectors[0].ActionConstraints.OfType<HttpMethodActionConstraint>());
+            Assert.Contains("GET", methodConstraint.HttpMethods);
+            Assert.Contains("POST", methodConstraint.HttpMethods);
+            Assert.Contains("HEAD", methodConstraint.HttpMethods);
+            Assert.Equal(actionName, action.ActionName);
+            Assert.Empty(GetAttributeRoutes(action.Selectors));
         }
 
         [Fact]
-        public void BuildActionModels_ConventionallyRoutedAction_WithMultipleOverlappingHttpConstraints()
+        public void CreateActionModel_ConventionallyRoutedAction_WithMultipleOverlappingHttpConstraints()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -503,19 +514,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionName = nameof(ConventionallyRoutedController.List);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
+            var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
-            var action = Assert.Single(actions);
-            Assert.Contains("GET", action.HttpMethods);
-            Assert.Contains("PUT", action.HttpMethods);
-            Assert.Contains("POST", action.HttpMethods);
-            Assert.Equal("List", action.ActionName);
-            Assert.Null(action.AttributeRouteModel);
+            Assert.NotNull(action);
+            Assert.Single(action.Selectors);
+            var methodConstraint = Assert.Single(
+                action.Selectors[0].ActionConstraints.OfType<HttpMethodActionConstraint>());
+            Assert.Contains("GET", methodConstraint.HttpMethods);
+            Assert.Contains("PUT", methodConstraint.HttpMethods);
+            Assert.Contains("POST", methodConstraint.HttpMethods);
+            Assert.Equal(actionName, action.ActionName);
+            Assert.Empty(GetAttributeRoutes(action.Selectors));
         }
 
         [Fact]
-        public void BuildActionModels_AttributeRouteOnAction()
+        public void CreateActionModel_AttributeRouteOnAction()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -523,24 +537,27 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionName = nameof(NoRouteAttributeOnControllerController.Edit);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
+            var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
-            var action = Assert.Single(actions);
+            Assert.NotNull(action);
+            Assert.Single(action.Selectors);
+            var methodConstraint = Assert.Single(
+                action.Selectors[0].ActionConstraints.OfType<HttpMethodActionConstraint>());
 
-            Assert.Equal("Edit", action.ActionName);
+            Assert.Equal(actionName, action.ActionName);
 
-            var httpMethod = Assert.Single(action.HttpMethods);
+            var httpMethod = Assert.Single(methodConstraint.HttpMethods);
             Assert.Equal("HEAD", httpMethod);
 
-            Assert.NotNull(action.AttributeRouteModel);
-            Assert.Equal("Change", action.AttributeRouteModel.Template);
+            var attributeRoute = Assert.Single(GetAttributeRoutes(action.Selectors));
+            Assert.Equal("Change", attributeRoute.Template);
 
             Assert.IsType<HttpHeadAttribute>(Assert.Single(action.Attributes));
         }
 
         [Fact]
-        public void BuildActionModels_AttributeRouteOnAction_RouteAttribute()
+        public void CreateActionModel_AttributeRouteOnAction_RouteAttribute()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -548,23 +565,23 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionName = nameof(NoRouteAttributeOnControllerController.Update);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
+            var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
-            var action = Assert.Single(actions);
+            Assert.NotNull(action);
+            Assert.Single(action.Selectors);
+            Assert.Empty(action.Selectors[0].ActionConstraints);
 
-            Assert.Equal("Update", action.ActionName);
+            Assert.Equal(actionName, action.ActionName);
 
-            Assert.Empty(action.HttpMethods);
-
-            Assert.NotNull(action.AttributeRouteModel);
-            Assert.Equal("Update", action.AttributeRouteModel.Template);
+            var attributeRoute = Assert.Single(GetAttributeRoutes(action.Selectors));
+            Assert.Equal("Update", attributeRoute.Template);
 
             Assert.IsType<RouteAttribute>(Assert.Single(action.Attributes));
         }
 
         [Fact]
-        public void BuildActionModels_AttributeRouteOnAction_AcceptVerbsAttributeWithTemplate()
+        public void CreateActionModel_AttributeRouteOnAction_AcceptVerbsAttributeWithTemplate()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -572,23 +589,28 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionName = nameof(NoRouteAttributeOnControllerController.List);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
+            var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
-            var action = Assert.Single(actions);
+            Assert.NotNull(action);
+            Assert.Single(action.Selectors);
+            var methodConstraint = Assert.Single(
+                action.Selectors[0].ActionConstraints.OfType<HttpMethodActionConstraint>());
 
-            Assert.Equal("List", action.ActionName);
+            Assert.Equal(actionName, action.ActionName);
 
-            Assert.Equal(new[] { "GET", "HEAD" }, action.HttpMethods.OrderBy(m => m, StringComparer.Ordinal));
+            Assert.Equal(
+                new[] { "GET", "HEAD" },
+                methodConstraint.HttpMethods.OrderBy(m => m, StringComparer.Ordinal));
 
-            Assert.NotNull(action.AttributeRouteModel);
-            Assert.Equal("ListAll", action.AttributeRouteModel.Template);
+            var attributeRoute = Assert.Single(GetAttributeRoutes(action.Selectors));
+            Assert.Equal("ListAll", attributeRoute.Template);
 
             Assert.IsType<AcceptVerbsAttribute>(Assert.Single(action.Attributes));
         }
 
         [Fact]
-        public void BuildActionModels_AttributeRouteOnAction_CreatesOneActionInforPerRouteTemplate()
+        public void CreateActionModel_AttributeRouteOnAction_CreatesOneActionInforPerRouteTemplate()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -596,30 +618,35 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionName = nameof(NoRouteAttributeOnControllerController.Index);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
+            var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
-            Assert.Equal(2, actions.Count());
+            Assert.NotNull(action);
+            Assert.Equal(actionName, action.ActionName);
+            Assert.NotNull(action.Attributes);
+            Assert.Equal(2, action.Attributes.Count);
+            Assert.Single(action.Attributes.OfType<HttpGetAttribute>());
+            Assert.Single(action.Attributes.OfType<HttpPostAttribute>());
+            Assert.Equal(2, action.Selectors.Count);
 
-            foreach (var action in actions)
+            foreach (var actionSelectorModel in action.Selectors)
             {
-                Assert.Equal("Index", action.ActionName);
-                Assert.NotNull(action.AttributeRouteModel);
+                Assert.NotNull(actionSelectorModel.AttributeRouteModel);
             }
 
-            var list = Assert.Single(actions, ai => ai.AttributeRouteModel.Template.Equals("List"));
-            var listMethod = Assert.Single(list.HttpMethods);
+            var selectorModel = Assert.Single(action.Selectors, ai => ai.AttributeRouteModel?.Template == "List");
+            var methodConstraint = Assert.Single(selectorModel.ActionConstraints.OfType<HttpMethodActionConstraint>());
+            var listMethod = Assert.Single(methodConstraint.HttpMethods);
             Assert.Equal("POST", listMethod);
-            Assert.IsType<HttpPostAttribute>(Assert.Single(list.Attributes));
 
-            var all = Assert.Single(actions, ai => ai.AttributeRouteModel.Template.Equals("All"));
-            var allMethod = Assert.Single(all.HttpMethods);
+            var all = Assert.Single(action.Selectors, ai => ai.AttributeRouteModel?.Template == "All");
+            methodConstraint = Assert.Single(all.ActionConstraints.OfType<HttpMethodActionConstraint>());
+            var allMethod = Assert.Single(methodConstraint.HttpMethods);
             Assert.Equal("GET", allMethod);
-            Assert.IsType<HttpGetAttribute>(Assert.Single(all.Attributes));
         }
 
         [Fact]
-        public void BuildActionModels_NoRouteOnController_AllowsConventionallyRoutedActions_OnTheSameController()
+        public void CreateActionModel_NoRouteOnController_AllowsConventionallyRoutedActions_OnTheSameController()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -627,77 +654,74 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionName = nameof(NoRouteAttributeOnControllerController.Remove);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
+            var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
-            var action = Assert.Single(actions);
+            Assert.NotNull(action);
 
-            Assert.Equal("Remove", action.ActionName);
-
-            Assert.Empty(action.HttpMethods);
-
-            Assert.Null(action.AttributeRouteModel);
-
+            Assert.Equal(actionName, action.ActionName);
             Assert.Empty(action.Attributes);
+            Assert.Single(action.Selectors);
+            Assert.Empty(action.Selectors[0].ActionConstraints);
+            Assert.Null(action.Selectors[0].AttributeRouteModel);
         }
 
         [Theory]
         [InlineData(typeof(SingleRouteAttributeController))]
         [InlineData(typeof(MultipleRouteAttributeController))]
-        public void BuildActionModels_RouteAttributeOnController_CreatesAttributeRoute_ForNonAttributedActions(Type controller)
+        public void CreateActionModel_RouteAttributeOnController_CreatesAttributeRoute_ForNonAttributedActions(Type controller)
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
             var typeInfo = controller.GetTypeInfo();
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod("Delete"));
+            var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod("Delete"));
 
             // Assert
-            var action = Assert.Single(actions);
+            Assert.NotNull(action);
 
             Assert.Equal("Delete", action.ActionName);
 
-            Assert.Empty(action.HttpMethods);
-
-            Assert.Null(action.AttributeRouteModel);
-
+            Assert.Single(action.Selectors);
+            Assert.Empty(action.Selectors[0].ActionConstraints);
+            Assert.Empty(GetAttributeRoutes(action.Selectors));
             Assert.Empty(action.Attributes);
         }
 
         [Theory]
         [InlineData(typeof(SingleRouteAttributeController))]
         [InlineData(typeof(MultipleRouteAttributeController))]
-        public void BuildActionModels_RouteOnController_CreatesOneActionInforPerRouteTemplateOnAction(Type controller)
+        public void CreateActionModel_RouteOnController_CreatesOneActionInforPerRouteTemplateOnAction(Type controller)
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
             var typeInfo = controller.GetTypeInfo();
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod("Index"));
+            var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod("Index"));
 
             // Assert
-            Assert.Equal(2, actions.Count());
+            Assert.NotNull(action.Attributes);
+            Assert.Equal(2, action.Attributes.Count);
+            Assert.Equal(2, action.Selectors.Count);
+            Assert.Equal("Index", action.ActionName);
 
-            foreach (var action in actions)
+            foreach (var selectorModel in action.Selectors)
             {
-                Assert.Equal("Index", action.ActionName);
-
-                var httpMethod = Assert.Single(action.HttpMethods);
+                var methodConstraint = Assert.Single(selectorModel.ActionConstraints.OfType<HttpMethodActionConstraint>());
+                var httpMethod = Assert.Single(methodConstraint.HttpMethods);
                 Assert.Equal("GET", httpMethod);
 
-                Assert.NotNull(action.AttributeRouteModel.Template);
-
-                Assert.IsType<HttpGetAttribute>(Assert.Single(action.Attributes));
+                Assert.NotNull(selectorModel.AttributeRouteModel.Template);
             }
 
-            Assert.Single(actions, ai => ai.AttributeRouteModel.Template.Equals("List"));
-            Assert.Single(actions, ai => ai.AttributeRouteModel.Template.Equals("All"));
+            Assert.Single(action.Selectors, ai => ai.AttributeRouteModel.Template.Equals("List"));
+            Assert.Single(action.Selectors, ai => ai.AttributeRouteModel.Template.Equals("All"));
         }
 
         [Fact]
-        public void BuildActionModels_MixedHttpVerbsAndRoutes_EmptyVerbWithRoute()
+        public void CreateActionModel_MixedHttpVerbsAndRoutes_EmptyVerbWithRoute()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -705,16 +729,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionName = nameof(MixedHttpVerbsAndRouteAttributeController.VerbAndRoute);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
+            var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
-            var action = Assert.Single(actions);
-            Assert.Equal<string>(new string[] { "GET" }, action.HttpMethods);
-            Assert.Equal("Products", action.AttributeRouteModel.Template);
+            Assert.NotNull(action);
+            Assert.Single(action.Selectors);
+            var methodConstraint = Assert.Single(
+                action.Selectors[0].ActionConstraints.OfType<HttpMethodActionConstraint>());
+            Assert.Equal<string>(new string[] { "GET" }, methodConstraint.HttpMethods);
+            var attributeRoute = Assert.Single(GetAttributeRoutes(action.Selectors));
+            Assert.Equal("Products", attributeRoute.Template);
         }
 
         [Fact]
-        public void BuildActionModels_MixedHttpVerbsAndRoutes_MultipleEmptyVerbsWithMultipleRoutes()
+        public void CreateActionModel_MixedHttpVerbsAndRoutes_MultipleEmptyVerbsWithMultipleRoutes()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -722,21 +750,23 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionName = nameof(MixedHttpVerbsAndRouteAttributeController.MultipleVerbsAndRoutes);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
+            var actions = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
-            Assert.Equal(2, actions.Count());
+            Assert.Equal(2, actions.Selectors.Count);
 
             // OrderBy is used because the order of the results may very depending on the platform / client.
-            var action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "Products");
-            Assert.Equal(new[] { "GET", "POST" }, action.HttpMethods.OrderBy(key => key, StringComparer.Ordinal));
+            var selectorModel = Assert.Single(actions.Selectors, a => a.AttributeRouteModel.Template == "Products");
+            var methodConstraint = Assert.Single(selectorModel.ActionConstraints.OfType<HttpMethodActionConstraint>());
+            Assert.Equal(new[] { "GET", "POST" }, methodConstraint.HttpMethods.OrderBy(key => key, StringComparer.Ordinal));
 
-            action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "v2/Products");
-            Assert.Equal(new[] { "GET", "POST" }, action.HttpMethods.OrderBy(key => key, StringComparer.Ordinal));
+            selectorModel = Assert.Single(actions.Selectors, a => a.AttributeRouteModel.Template == "v2/Products");
+            methodConstraint = Assert.Single(selectorModel.ActionConstraints.OfType<HttpMethodActionConstraint>());
+            Assert.Equal(new[] { "GET", "POST" }, methodConstraint.HttpMethods.OrderBy(key => key, StringComparer.Ordinal));
         }
 
         [Fact]
-        public void BuildActionModels_MixedHttpVerbsAndRoutes_MultipleEmptyAndNonEmptyVerbsWithMultipleRoutes()
+        public void CreateActionModel_MixedHttpVerbsAndRoutes_MultipleEmptyAndNonEmptyVerbsWithMultipleRoutes()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -744,23 +774,26 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionName = nameof(MixedHttpVerbsAndRouteAttributeController.MultipleVerbsWithAnyWithoutTemplateAndRoutes);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
+            var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
-            Assert.Equal(3, actions.Count());
+            Assert.Equal(3, action.Selectors.Count);
 
-            var action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "Products");
-            Assert.Equal<string>(new string[] { "GET" }, action.HttpMethods);
+            var selectorModel = Assert.Single(action.Selectors, s => s.AttributeRouteModel.Template == "Products");
+            var methodConstraint = Assert.Single(selectorModel.ActionConstraints.OfType<HttpMethodActionConstraint>());
+            Assert.Equal<string>(new string[] { "GET" }, methodConstraint.HttpMethods);
 
-            action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "v2/Products");
-            Assert.Equal<string>(new string[] { "GET" }, action.HttpMethods);
+            selectorModel = Assert.Single(action.Selectors, s => s.AttributeRouteModel.Template == "v2/Products");
+            methodConstraint = Assert.Single(selectorModel.ActionConstraints.OfType<HttpMethodActionConstraint>());
+            Assert.Equal<string>(new string[] { "GET" }, methodConstraint.HttpMethods);
 
-            action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "Products/Buy");
-            Assert.Equal<string>(new string[] { "POST" }, action.HttpMethods);
+            selectorModel = Assert.Single(action.Selectors, s => s.AttributeRouteModel.Template == "Products/Buy");
+            methodConstraint = Assert.Single(selectorModel.ActionConstraints.OfType<HttpMethodActionConstraint>());
+            Assert.Equal<string>(new string[] { "POST" }, methodConstraint.HttpMethods);
         }
 
         [Fact]
-        public void BuildActionModels_MixedHttpVerbsAndRoutes_MultipleEmptyAndNonEmptyVerbs()
+        public void CreateActionModel_MixedHttpVerbsAndRoutes_MultipleEmptyAndNonEmptyVerbs()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -768,20 +801,23 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionName = nameof(MixedHttpVerbsAndRouteAttributeController.Invalid);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
+            var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
-            Assert.Equal(2, actions.Count());
+            Assert.NotNull(action);
+            Assert.Equal(2, action.Selectors.Count);
 
-            var action = Assert.Single(actions, a => a.AttributeRouteModel?.Template == "Products");
-            Assert.Equal<string>(new string[] { "POST" }, action.HttpMethods);
+            var selectorModel = Assert.Single(action.Selectors, s => s.AttributeRouteModel?.Template == "Products");
+            var methodConstraint = Assert.Single(selectorModel.ActionConstraints.OfType<HttpMethodActionConstraint>());
+            Assert.Equal<string>(new string[] { "POST" }, methodConstraint.HttpMethods);
 
-            action = Assert.Single(actions, a => a.AttributeRouteModel?.Template == null);
-            Assert.Equal<string>(new string[] { "GET" }, action.HttpMethods);
+            selectorModel = Assert.Single(action.Selectors, s => s.AttributeRouteModel?.Template == null);
+            methodConstraint = Assert.Single(selectorModel.ActionConstraints.OfType<HttpMethodActionConstraint>());
+            Assert.Equal<string>(new string[] { "GET" }, methodConstraint.HttpMethods);
         }
 
         [Fact]
-        public void BuildActionModels_InheritedAttributeRoutes()
+        public void CreateActionModel_InheritedAttributeRoutes()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -789,22 +825,21 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionName = nameof(DerivedClassInheritsAttributeRoutesController.Edit);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
+            var actions = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
-            Assert.Equal(2, actions.Count());
+            Assert.Equal(2, actions.Attributes.Count);
+            Assert.Equal(2, actions.Selectors.Count);
 
-            var action = Assert.Single(actions, a => a.AttributeRouteModel?.Template == "A");
-            Assert.Equal(1, action.Attributes.Count);
-            Assert.Contains(action.AttributeRouteModel.Attribute, action.Attributes);
+            var selectorModel = Assert.Single(actions.Selectors, a => a.AttributeRouteModel?.Template == "A");
+            Assert.Contains(selectorModel.AttributeRouteModel.Attribute, actions.Attributes);
 
-            action = Assert.Single(actions, a => a.AttributeRouteModel?.Template == "B");
-            Assert.Equal(1, action.Attributes.Count);
-            Assert.Contains(action.AttributeRouteModel.Attribute, action.Attributes);
+            selectorModel = Assert.Single(actions.Selectors, a => a.AttributeRouteModel?.Template == "B");
+            Assert.Contains(selectorModel.AttributeRouteModel.Attribute, actions.Attributes);
         }
 
         [Fact]
-        public void BuildActionModels_InheritedAttributeRoutesOverridden()
+        public void CreateActionModel_InheritedAttributeRoutesOverridden()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -812,18 +847,25 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionName = nameof(DerivedClassOverridesAttributeRoutesController.Edit);
 
             // Act
-            var actions = builder.BuildActionModels(typeInfo, typeInfo.AsType().GetMethod(actionName));
+            var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
 
             // Assert
-            Assert.Equal(2, actions.Count());
+            Assert.Equal(4, action.Attributes.Count);
+            Assert.Equal(2, action.Selectors.Count);
 
-            var action = Assert.Single(actions, a => a.AttributeRouteModel?.Template == "C");
-            Assert.Equal(1, action.Attributes.Count);
-            Assert.Contains(action.AttributeRouteModel.Attribute, action.Attributes);
+            var selectorModel = Assert.Single(action.Selectors, a => a.AttributeRouteModel?.Template == "C");
+            Assert.Contains(selectorModel.AttributeRouteModel.Attribute, action.Attributes);
 
-            action = Assert.Single(actions, a => a.AttributeRouteModel?.Template == "D");
-            Assert.Equal(1, action.Attributes.Count);
-            Assert.Contains(action.AttributeRouteModel.Attribute, action.Attributes);
+            selectorModel = Assert.Single(action.Selectors, a => a.AttributeRouteModel?.Template == "D");
+            Assert.Contains(selectorModel.AttributeRouteModel.Attribute, action.Attributes);
+        }
+
+        private IList<AttributeRouteModel> GetAttributeRoutes(IList<SelectorModel> selectors)
+        {
+            return selectors
+                .Where(sm => sm.AttributeRouteModel != null)
+                .Select(sm => sm.AttributeRouteModel)
+                .ToList();
         }
 
         private class BaseClassWithAttributeRoutesController
@@ -1223,29 +1265,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             public MvcOptions Options { get; }
 
-            public new IEnumerable<ControllerModel> BuildControllerModels(TypeInfo typeInfo)
-            {
-                return base.BuildControllerModels(typeInfo);
-            }
-
             public new ControllerModel CreateControllerModel(TypeInfo typeInfo)
             {
                 return base.CreateControllerModel(typeInfo);
             }
 
+            public new ActionModel CreateActionModel(TypeInfo typeInfo, MethodInfo methodInfo)
+            {
+                return base.CreateActionModel(typeInfo, methodInfo);
+            }
+
             public new PropertyModel CreatePropertyModel(PropertyInfo propertyInfo)
             {
                 return base.CreatePropertyModel(propertyInfo);
-            }
-
-            public new IEnumerable<ActionModel> BuildActionModels(TypeInfo typeInfo, MethodInfo methodInfo)
-            {
-                return base.BuildActionModels(typeInfo, methodInfo);
-            }
-
-            public new ActionModel CreateActionModel(MethodInfo methodInfo, IReadOnlyList<object> attributes)
-            {
-                return base.CreateActionModel(methodInfo, attributes);
             }
 
             public new bool IsAction(TypeInfo typeInfo, MethodInfo methodInfo)

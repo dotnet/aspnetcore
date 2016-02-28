@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing.Tree;
 
@@ -47,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             foreach (var controller in application.Controllers)
             {
-                // Only add properties which are explictly marked to bind.
+                // Only add properties which are explicitly marked to bind.
                 // The attribute check is required for ModelBinder attribute.
                 var controllerPropertyDescriptors = controller.ControllerProperties
                     .Where(p => p.BindingInfo != null)
@@ -128,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     // Add a route constraint with DenyKey for each constraint in the set to all the
                     // actions that don't have that constraint. For example, if a controller defines
                     // an area constraint, all actions that don't belong to an area must have a route
-                    // constraint that prevents them from matching an incomming request.
+                    // constraint that prevents them from matching an incoming request.
                     AddRemovalConstraints(actionDescriptor, removalConstraints);
                 }
                 else
@@ -185,67 +184,87 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ControllerModel controller,
             ActionModel action)
         {
+            var controllerAttributeRoutes = controller.Selectors
+                .Where(sm => sm.AttributeRouteModel != null)
+                .Select(sm => sm.AttributeRouteModel)
+                .ToList();
+
             var actionDescriptors = new List<ControllerActionDescriptor>();
 
-            // We check the action to see if the template allows combination behavior
-            // (It doesn't start with / or ~/) so that in the case where we have multiple
-            // [Route] attributes on the controller we don't end up creating multiple
-            if (action.AttributeRouteModel != null &&
-                action.AttributeRouteModel.IsAbsoluteTemplate)
+            foreach (var actionSelectorModel in action.Selectors)
             {
-                // We're overriding the attribute routes on the controller, so filter out any metadata
-                // from controller level routes.
-                var actionDescriptor = CreateActionDescriptor(
-                    action,
-                    controllerAttributeRoute: null);
+                var actionAttributeRoute = actionSelectorModel.AttributeRouteModel;
 
-                actionDescriptors.Add(actionDescriptor);
-
-                // If we're using an attribute route on the controller, then filter out any additional
-                // metadata from the 'other' attribute routes.
-                var controllerFilters = controller.Filters
-                    .Where(c => !(c is IRouteTemplateProvider));
-                AddActionFilters(actionDescriptor, action.Filters, controllerFilters, application.Filters);
-
-                var controllerConstraints = controller.ActionConstraints
-                    .Where(c => !(c is IRouteTemplateProvider));
-                AddActionConstraints(actionDescriptor, action, controllerConstraints);
-            }
-            else if (controller.AttributeRoutes != null &&
-                controller.AttributeRoutes.Count > 0)
-            {
-                // We're using the attribute routes from the controller
-                foreach (var controllerAttributeRoute in controller.AttributeRoutes)
+                // We check the action to see if the template allows combination behavior
+                // (It doesn't start with / or ~/) so that in the case where we have multiple
+                // [Route] attributes on the controller we don't end up creating multiple
+                if (actionAttributeRoute != null && actionAttributeRoute.IsAbsoluteTemplate)
                 {
+                    // We're overriding the attribute routes on the controller, so filter out any metadata
+                    // from controller level routes.
                     var actionDescriptor = CreateActionDescriptor(
                         action,
-                        controllerAttributeRoute);
+                        actionAttributeRoute,
+                        controllerAttributeRoute: null);
 
                     actionDescriptors.Add(actionDescriptor);
 
+                    AddActionFilters(actionDescriptor, action.Filters, controller.Filters, application.Filters);
+
                     // If we're using an attribute route on the controller, then filter out any additional
                     // metadata from the 'other' attribute routes.
-                    var controllerFilters = controller.Filters
-                        .Where(c => c == controllerAttributeRoute?.Attribute || !(c is IRouteTemplateProvider));
-                    AddActionFilters(actionDescriptor, action.Filters, controllerFilters, application.Filters);
+                    IList<IActionConstraintMetadata> controllerConstraints = null;
+                    if (controller.Selectors.Count > 0)
+                    {
+                        controllerConstraints = controller.Selectors[0].ActionConstraints
+                            .Where(constraint => !(constraint is IRouteTemplateProvider)).ToList();
+                    }
 
-                    var controllerConstraints = controller.ActionConstraints
-                        .Where(c => c == controllerAttributeRoute?.Attribute || !(c is IRouteTemplateProvider));
-                    AddActionConstraints(actionDescriptor, action, controllerConstraints);
+                    AddActionConstraints(actionDescriptor, action, actionSelectorModel, controllerConstraints);
                 }
-            }
-            else
-            {
-                // No attribute routes on the controller
-                var actionDescriptor = CreateActionDescriptor(
-                    action,
-                    controllerAttributeRoute: null);
-                actionDescriptors.Add(actionDescriptor);
+                else if (controllerAttributeRoutes.Count > 0)
+                {
+                    // We're using the attribute routes from the controller
+                    foreach (var controllerSelectorModel in controller.Selectors)
+                    {
+                        var controllerAttributeRoute = controllerSelectorModel.AttributeRouteModel;
 
-                // If there's no attribute route on the controller, then we can use all of the filters/constraints
-                // on the controller.
-                AddActionFilters(actionDescriptor, action.Filters, controller.Filters, application.Filters);
-                AddActionConstraints(actionDescriptor, action, controller.ActionConstraints);
+                        var actionDescriptor = CreateActionDescriptor(
+                            action,
+                            actionAttributeRoute,
+                            controllerAttributeRoute);
+
+                        actionDescriptors.Add(actionDescriptor);
+
+                        AddActionFilters(actionDescriptor, action.Filters, controller.Filters, application.Filters);
+
+                        // If we're using an attribute route on the controller, then filter out any additional
+                        // metadata from the 'other' attribute routes.
+                        var controllerConstraints = controllerSelectorModel.ActionConstraints
+                            .Where(c => c == controllerAttributeRoute?.Attribute || !(c is IRouteTemplateProvider));
+                        AddActionConstraints(actionDescriptor, action, actionSelectorModel, controllerConstraints);
+                    }
+                }
+                else
+                {
+                    // No attribute routes on the controller
+                    var actionDescriptor = CreateActionDescriptor(
+                        action,
+                        actionAttributeRoute,
+                        controllerAttributeRoute: null);
+                    actionDescriptors.Add(actionDescriptor);
+
+                    IList<IActionConstraintMetadata> controllerConstraints = null;
+                    if (controller.Selectors.Count > 0)
+                    {
+                        controllerConstraints = controller.Selectors[0].ActionConstraints;
+                    }
+
+                    // If there's no attribute route on the controller, then we use all of the filters/constraints
+                    // on the controller regardless.
+                    AddActionFilters(actionDescriptor, action.Filters, controller.Filters, application.Filters);
+                    AddActionConstraints(actionDescriptor, action, actionSelectorModel, controllerConstraints);
+                }
             }
 
             return actionDescriptors;
@@ -253,6 +272,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private static ControllerActionDescriptor CreateActionDescriptor(
             ActionModel action,
+            AttributeRouteModel actionAttributeRoute,
             AttributeRouteModel controllerAttributeRoute)
         {
             var parameterDescriptors = new List<ParameterDescriptor>();
@@ -262,17 +282,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameterDescriptors.Add(parameterDescriptor);
             }
 
-            var attributeRouteInfo = CreateAttributeRouteInfo(
-                action.AttributeRouteModel,
-                controllerAttributeRoute);
-
             var actionDescriptor = new ControllerActionDescriptor()
             {
                 Name = action.ActionName,
                 MethodInfo = action.ActionMethod,
                 Parameters = parameterDescriptors,
                 RouteConstraints = new List<RouteDataActionConstraint>(),
-                AttributeRouteInfo = attributeRouteInfo,
+                AttributeRouteInfo = CreateAttributeRouteInfo(actionAttributeRoute, controllerAttributeRoute)
             };
 
             actionDescriptor.DisplayName = string.Format(
@@ -316,15 +332,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ControllerModel controller,
             ActionModel action)
         {
-            var isVisible = 
-                action.ApiExplorer?.IsVisible ?? 
-                controller.ApiExplorer?.IsVisible ?? 
+            var isVisible =
+                action.ApiExplorer?.IsVisible ??
+                controller.ApiExplorer?.IsVisible ??
                 application.ApiExplorer?.IsVisible ??
                 false;
 
-            var isVisibleSetOnActionOrController = 
-                action.ApiExplorer?.IsVisible ?? 
-                controller.ApiExplorer?.IsVisible ?? 
+            var isVisibleSetOnActionOrController =
+                action.ApiExplorer?.IsVisible ??
+                controller.ApiExplorer?.IsVisible ??
                 false;
 
             // ApiExplorer isn't supported on conventional-routed actions, but we still allow you to configure
@@ -417,19 +433,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static void AddActionConstraints(
             ControllerActionDescriptor actionDescriptor,
             ActionModel action,
+            SelectorModel selectorModel,
             IEnumerable<IActionConstraintMetadata> controllerConstraints)
         {
             var constraints = new List<IActionConstraintMetadata>();
 
-            var httpMethods = action.HttpMethods;
-            if (httpMethods != null && httpMethods.Count > 0)
+            if (selectorModel.ActionConstraints != null)
             {
-                constraints.Add(new HttpMethodActionConstraint(httpMethods));
-            }
-
-            if (action.ActionConstraints != null)
-            {
-                constraints.AddRange(action.ActionConstraints);
+                constraints.AddRange(selectorModel.ActionConstraints);
             }
 
             if (controllerConstraints != null)
@@ -449,7 +460,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ControllerModel controller,
             ActionModel action)
         {
-            // Apply all the constraints defined on the action, then controller (for example, [Area]) 
+            // Apply all the constraints defined on the action, then controller (for example, [Area])
             // to the actions. Also keep track of all the constraints that require preventing actions
             // without the constraint to match. For example, actions without an [Area] attribute on their
             // controller should not match when a value has been given for area when matching a url or
@@ -557,7 +568,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             foreach (var constraint in actionDescriptor.RouteConstraints)
             {
                 // We don't need to do anything with attribute routing for 'catch all' behavior. Order
-                // and predecedence of attribute routes allow this kind of behavior.
+                // and precedence of attribute routes allow this kind of behavior.
                 if (constraint.KeyHandling == RouteKeyHandling.RequireKey ||
                     constraint.KeyHandling == RouteKeyHandling.DenyKey)
                 {

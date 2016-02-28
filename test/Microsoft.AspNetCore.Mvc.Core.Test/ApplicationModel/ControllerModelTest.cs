@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             action.Controller = controller;
 
             var route = new AttributeRouteModel(new HttpGetAttribute("api/Products"));
-            controller.AttributeRoutes.Add(route);
+            controller.Selectors.Add(new SelectorModel() { AttributeRouteModel = route });
 
             var apiExplorer = controller.ApiExplorer;
             controller.ApiExplorer.GroupName = "group";
@@ -39,10 +39,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // Assert
             Assert.NotSame(action, controller2.Actions[0]);
-            Assert.NotSame(route, controller2.AttributeRoutes[0]);
+            Assert.NotNull(controller2.Selectors);
+            Assert.Single(controller2.Selectors);
+            Assert.NotSame(route, controller2.Selectors[0].AttributeRouteModel);
             Assert.NotSame(apiExplorer, controller2.ApiExplorer);
 
-            Assert.NotSame(controller.ActionConstraints, controller2.ActionConstraints);
+            Assert.NotSame(controller.Selectors[0].ActionConstraints, controller2.Selectors[0].ActionConstraints);
             Assert.NotSame(controller.Actions, controller2.Actions);
             Assert.NotSame(controller.Attributes, controller2.Attributes);
             Assert.NotSame(controller.Filters, controller2.Filters);
@@ -61,7 +63,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     new MyFilterAttribute(),
                 });
 
-            controller.ActionConstraints.Add(new HttpMethodActionConstraint(new string[] { "GET" }));
+            var selectorModel = new SelectorModel();
+            selectorModel.ActionConstraints.Add(new HttpMethodActionConstraint(new string[] { "GET" }));
+            controller.Selectors.Add(selectorModel);
             controller.Application = new ApplicationModel();
             controller.ControllerName = "cool";
             controller.Filters.Add(new MyFilterAttribute());
@@ -77,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             foreach (var property in typeof(ControllerModel).GetProperties())
             {
                 if (property.Name.Equals("Actions") ||
-                    property.Name.Equals("AttributeRoutes") ||
+                    property.Name.Equals("Selectors") ||
                     property.Name.Equals("ApiExplorer") ||
                     property.Name.Equals("ControllerProperties"))
                 {

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public void CopyConstructor_DoesDeepCopyOfOtherModels()
         {
             // Arrange
-            var action = new ActionModel(typeof(TestController).GetMethod("Edit"),
+            var action = new ActionModel(typeof(TestController).GetMethod(nameof(TestController.Edit)),
                                          new List<object>());
 
             var parameter = new ParameterModel(action.ActionMethod.GetParameters()[0],
@@ -26,7 +26,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             action.Parameters.Add(parameter);
 
             var route = new AttributeRouteModel(new HttpGetAttribute("api/Products"));
-            action.AttributeRouteModel = route;
+            action.Selectors.Add(new SelectorModel()
+            {
+                AttributeRouteModel = route
+            });
 
             var apiExplorer = action.ApiExplorer;
             apiExplorer.IsVisible = false;
@@ -38,7 +41,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // Assert
             Assert.NotSame(action, action2.Parameters[0]);
             Assert.NotSame(apiExplorer, action2.ApiExplorer);
-            Assert.NotSame(route, action2.AttributeRouteModel);
+            Assert.NotSame(action.Selectors, action2.Selectors);
+            Assert.NotNull(action2.Selectors);
+            Assert.Single(action2.Selectors);
+            Assert.NotSame(route, action2.Selectors[0].AttributeRouteModel);
         }
 
         [Fact]
@@ -53,13 +59,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     new MyFilterAttribute(),
                 });
 
-            action.ActionConstraints.Add(new HttpMethodActionConstraint(new string[] { "GET" }));
+            var selectorModel = new SelectorModel();
+            selectorModel.ActionConstraints.Add(new HttpMethodActionConstraint(new string[] { "GET" }));
+            action.Selectors.Add(selectorModel);
             action.ActionName = "Edit";
 
             action.Controller = new ControllerModel(typeof(TestController).GetTypeInfo(),
                                                     new List<object>());
             action.Filters.Add(new MyFilterAttribute());
-            action.HttpMethods.Add("GET");
             action.RouteConstraints.Add(new MyRouteConstraintAttribute());
             action.Properties.Add(new KeyValuePair<object, object>("test key", "test value"));
 
@@ -71,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             {
                 // Reflection is used to make sure the test fails when a new property is added.
                 if (property.Name.Equals("ApiExplorer") ||
-                    property.Name.Equals("AttributeRouteModel") ||
+                    property.Name.Equals("Selectors") ||
                     property.Name.Equals("Parameters"))
                 {
                     // This test excludes other ApplicationModel objects on purpose because we deep copy them.

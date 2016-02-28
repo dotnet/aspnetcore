@@ -416,13 +416,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var conventional = Assert.Single(model.Controllers,
                 c => c.ControllerName == "ConventionallyRouted");
-            Assert.Empty(conventional.AttributeRoutes);
+            Assert.Empty(conventional.Selectors.Where(sm => sm.AttributeRouteModel != null));
             Assert.Single(conventional.Actions);
 
             var attributeRouted = Assert.Single(model.Controllers,
                 c => c.ControllerName == "AttributeRouted");
             Assert.Single(attributeRouted.Actions);
-            Assert.Single(attributeRouted.AttributeRoutes);
+            Assert.Single(attributeRouted.Selectors.Where(sm => sm.AttributeRouteModel != null));
 
             var empty = Assert.Single(model.Controllers,
                 c => c.ControllerName == "Empty");
@@ -449,10 +449,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal(2, controller.Actions.Count);
 
             var getPerson = Assert.Single(controller.Actions, a => a.ActionName == "GetPerson");
-            Assert.Empty(getPerson.HttpMethods);
+            Assert.Empty(getPerson.Selectors[0].ActionConstraints.OfType<HttpMethodActionConstraint>());
 
             var showPeople = Assert.Single(controller.Actions, a => a.ActionName == "ShowPeople");
-            Assert.Empty(showPeople.HttpMethods);
+            Assert.Empty(showPeople.Selectors[0].ActionConstraints.OfType<HttpMethodActionConstraint>());
         }
 
         [Fact]
@@ -486,11 +486,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             var controller = Assert.Single(model.Controllers);
 
-            var attributeRouteModel = Assert.Single(controller.AttributeRoutes);
-            Assert.Equal("api/Token/[key]/[controller]", attributeRouteModel.Template);
+            var selectorModel = Assert.Single(controller.Selectors.Where(sm => sm.AttributeRouteModel != null));
+            Assert.Equal("api/Token/[key]/[controller]", selectorModel.AttributeRouteModel.Template);
 
             var action = Assert.Single(controller.Actions);
-            Assert.Equal("stub/[action]", action.AttributeRouteModel.Template);
+            var actionSelectorModel = Assert.Single(action.Selectors.Where(sm => sm.AttributeRouteModel != null));
+            Assert.Equal("stub/[action]", actionSelectorModel.AttributeRouteModel.Template);
         }
 
         [Fact]
@@ -567,7 +568,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var descriptors = provider.GetDescriptors();
 
             // Assert
-            var actions = descriptors.Where(d => d.Name == "AcceptVerbs");
+            var actions = descriptors.Where(d => d.Name == nameof(MultiRouteAttributesController.AcceptVerbs));
             Assert.Equal(2, actions.Count());
 
             foreach (var action in actions)
@@ -1300,28 +1301,26 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var model = provider.BuildModel();
 
             // Assert
-            var actions = Assert.Single(model.Controllers).Actions;
-            Assert.Equal(2, actions.Count());
+            var controllerModel = Assert.Single(model.Controllers);
+            var actionModel = Assert.Single(controllerModel.Actions);
+            Assert.Equal(3, actionModel.Attributes.Count);
+            Assert.Equal(2, actionModel.Attributes.OfType<RouteAndConstraintAttribute>().Count());
+            Assert.Single(actionModel.Attributes.OfType<ConstraintAttribute>());
+            Assert.Equal(2, actionModel.Selectors.Count);
 
-            var action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "R1");
+            var selectorModel = Assert.Single(
+                actionModel.Selectors.Where(sm => sm.AttributeRouteModel?.Template == "R1"));
 
-            Assert.Equal(2, action.Attributes.Count);
-            Assert.Single(action.Attributes, a => a is RouteAndConstraintAttribute);
-            Assert.Single(action.Attributes, a => a is ConstraintAttribute);
+            Assert.Equal(2, selectorModel.ActionConstraints.Count);
+            Assert.Single(selectorModel.ActionConstraints.OfType<RouteAndConstraintAttribute>());
+            Assert.Single(selectorModel.ActionConstraints.OfType<ConstraintAttribute>());
 
-            Assert.Equal(2, action.ActionConstraints.Count);
-            Assert.Single(action.ActionConstraints, a => a is RouteAndConstraintAttribute);
-            Assert.Single(action.ActionConstraints, a => a is ConstraintAttribute);
+            selectorModel = Assert.Single(
+                actionModel.Selectors.Where(sm => sm.AttributeRouteModel?.Template == "R2"));
 
-            action = Assert.Single(actions, a => a.AttributeRouteModel.Template == "R2");
-
-            Assert.Equal(2, action.Attributes.Count);
-            Assert.Single(action.Attributes, a => a is RouteAndConstraintAttribute);
-            Assert.Single(action.Attributes, a => a is ConstraintAttribute);
-
-            Assert.Equal(2, action.ActionConstraints.Count);
-            Assert.Single(action.ActionConstraints, a => a is RouteAndConstraintAttribute);
-            Assert.Single(action.ActionConstraints, a => a is ConstraintAttribute);
+            Assert.Equal(2, selectorModel.ActionConstraints.Count);
+            Assert.Single(selectorModel.ActionConstraints.OfType<RouteAndConstraintAttribute>());
+            Assert.Single(selectorModel.ActionConstraints.OfType<ConstraintAttribute>());
         }
 
         [Fact]

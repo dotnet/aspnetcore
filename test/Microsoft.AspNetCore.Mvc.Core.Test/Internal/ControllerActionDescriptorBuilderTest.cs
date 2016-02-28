@@ -40,8 +40,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             controller.Application = applicationModel;
             applicationModel.Controllers.Add(controller);
 
-            var methodInfo = typeof(TestController).GetMethod("SomeAction");
+            var methodInfo = typeof(TestController).GetMethod(nameof(TestController.SomeAction));
             var actionModel = new ActionModel(methodInfo, new List<object>() { });
+            actionModel.Selectors.Add(new SelectorModel());
             actionModel.Controller = controller;
             controller.Actions.Add(actionModel);
 
@@ -71,8 +72,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             controller.Application = applicationModel;
             applicationModel.Controllers.Add(controller);
 
-            var methodInfo = typeof(TestController).GetMethod("SomeAction");
+            var methodInfo = typeof(TestController).GetMethod(nameof(TestController.SomeAction));
             var actionModel = new ActionModel(methodInfo, new List<object>() { });
+            actionModel.Selectors.Add(new SelectorModel());
             actionModel.Controller = controller;
             controller.Actions.Add(actionModel);
 
@@ -96,8 +98,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             controller.Properties["test"] = "controller";
             applicationModel.Controllers.Add(controller);
 
-            var methodInfo = typeof(TestController).GetMethod("SomeAction");
+            var methodInfo = typeof(TestController).GetMethod(nameof(TestController.SomeAction));
             var actionModel = new ActionModel(methodInfo, new List<object>() { });
+            actionModel.Selectors.Add(new SelectorModel());
             actionModel.Controller = controller;
             controller.Actions.Add(actionModel);
 
@@ -121,8 +124,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             controller.Properties["test"] = "controller";
             applicationModel.Controllers.Add(controller);
 
-            var methodInfo = typeof(TestController).GetMethod("SomeAction");
+            var methodInfo = typeof(TestController).GetMethod(nameof(TestController.SomeAction));
             var actionModel = new ActionModel(methodInfo, new List<object>() { });
+            actionModel.Selectors.Add(new SelectorModel());
             actionModel.Controller = controller;
             actionModel.Properties["test"] = "action";
             controller.Actions.Add(actionModel);

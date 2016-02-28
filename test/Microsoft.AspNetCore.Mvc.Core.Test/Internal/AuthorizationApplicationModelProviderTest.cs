@@ -51,7 +51,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var controller = Assert.Single(context.Result.Controllers);
             var action = Assert.Single(controller.Actions);
             Assert.Equal("Authorize", action.ActionName);
-            Assert.Null(action.AttributeRouteModel);
+
+            var attributeRoutes = action.Selectors.Where(sm => sm.AttributeRouteModel != null);
+            Assert.Empty(attributeRoutes);
             var authorizeFilters = action.Filters.OfType<AuthorizeFilter>();
             Assert.Single(authorizeFilters);
             Assert.Equal(3, authorizeFilters.First().Policy.Requirements.Count);

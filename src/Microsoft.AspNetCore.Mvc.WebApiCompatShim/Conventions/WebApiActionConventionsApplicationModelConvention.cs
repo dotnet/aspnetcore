@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
@@ -64,34 +64,55 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 
         private bool IsActionAttributeRouted(ActionModel action)
         {
-            if (action.Controller.AttributeRoutes.Count > 0)
+            foreach (var controllerSelectorModel in action.Controller.Selectors)
             {
-                return true;
+                if (controllerSelectorModel.AttributeRouteModel?.Template != null)
+                {
+                    return true;
+                }
             }
 
-            return action.AttributeRouteModel?.Template != null;
+            foreach (var actionSelectorModel in action.Selectors)
+            {
+                if (actionSelectorModel.AttributeRouteModel?.Template != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void SetHttpMethodFromConvention(ActionModel action)
         {
-            if (action.HttpMethods.Count > 0)
+            foreach (var selector in action.Selectors)
             {
-                // If the HttpMethods are set from attributes, don't override it with the convention
-                return;
+                if (selector.ActionConstraints.OfType<HttpMethodActionConstraint>().Count() > 0)
+                {
+                    // If the HttpMethods are set from attributes, don't override it with the convention
+                    return;
+                }
             }
 
-            // The Method name is used to infer verb constraints. Changing the action name has not impact.
+            // The Method name is used to infer verb constraints. Changing the action name has no impact.
             foreach (var verb in SupportedHttpMethodConventions)
             {
                 if (action.ActionMethod.Name.StartsWith(verb, StringComparison.OrdinalIgnoreCase))
                 {
-                    action.HttpMethods.Add(verb);
+                    foreach (var selector in action.Selectors)
+                    {
+                        selector.ActionConstraints.Add(new HttpMethodActionConstraint(new[] { verb }));
+                    }
+
                     return;
                 }
             }
 
             // If no convention matches, then assume POST
-            action.HttpMethods.Add("POST");
+            foreach (var actionSelectorModel in action.Selectors)
+            {
+                actionSelectorModel.ActionConstraints.Add(new HttpMethodActionConstraint(new[] { "POST" }));
+            }
         }
 
         private class UnnamedActionRouteConstraint : IRouteConstraintProvider

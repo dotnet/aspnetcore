@@ -18,7 +18,10 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 
             if (IsConventionApplicable(action.Controller))
             {
-                action.ActionConstraints.Add(new OverloadActionConstraint());
+                foreach (var actionSelectorModel in action.Selectors)
+                {
+                    actionSelectorModel.ActionConstraints.Add(new OverloadActionConstraint());
+                }
             }
         }
 
