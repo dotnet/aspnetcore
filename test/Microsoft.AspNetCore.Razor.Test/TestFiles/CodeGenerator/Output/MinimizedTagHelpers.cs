@@ -14,7 +14,12 @@ namespace TestOutput
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperRunner __tagHelperRunner = null;
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager __tagHelperScopeManager = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager();
         private global::TestNamespace.CatchAllTagHelper __TestNamespace_CatchAllTagHelper = null;
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("catchall-unbound-required");
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("class", new global::Microsoft.AspNetCore.Html.HtmlEncodedString("btn"));
         private global::TestNamespace.InputTagHelper __TestNamespace_InputTagHelper = null;
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_2 = new Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("input-unbound-required");
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_3 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("catchall-unbound-required", new global::Microsoft.AspNetCore.Html.HtmlEncodedString("hello"));
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_4 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("input-unbound-required", new global::Microsoft.AspNetCore.Html.HtmlEncodedString("hello2"));
         #line hidden
         public MinimizedTagHelpers()
         {
@@ -36,8 +41,8 @@ namespace TestOutput
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
                 __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
-                __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw("btn"));
-                __tagHelperExecutionContext.AddMinimizedHtmlAttribute("catchall-unbound-required");
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_1);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 Instrumentation.BeginContext(96, 59, false);
                 Write(__tagHelperExecutionContext.Output);
@@ -53,9 +58,9 @@ namespace TestOutput
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
                 __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
                 __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
-                __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw("btn"));
-                __tagHelperExecutionContext.AddMinimizedHtmlAttribute("catchall-unbound-required");
-                __tagHelperExecutionContext.AddMinimizedHtmlAttribute("input-unbound-required");
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_1);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_2);
                 __TestNamespace_InputTagHelper.BoundRequiredString = "hello";
                 __tagHelperExecutionContext.AddTagHelperAttribute("input-bound-required-string", __TestNamespace_InputTagHelper.BoundRequiredString);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
@@ -73,9 +78,9 @@ namespace TestOutput
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
                 __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
                 __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
-                __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw("btn"));
-                __tagHelperExecutionContext.AddMinimizedHtmlAttribute("catchall-unbound-required");
-                __tagHelperExecutionContext.AddMinimizedHtmlAttribute("input-unbound-required");
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_1);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_2);
                 __TestNamespace_CatchAllTagHelper.BoundRequiredString = "world";
                 __tagHelperExecutionContext.AddTagHelperAttribute("catchall-bound-string", __TestNamespace_CatchAllTagHelper.BoundRequiredString);
                 __TestNamespace_InputTagHelper.BoundRequiredString = "hello2";
@@ -95,10 +100,10 @@ namespace TestOutput
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
                 __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
                 __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
-                __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw("btn"));
-                __tagHelperExecutionContext.AddHtmlAttribute("catchall-unbound-required", Html.Raw("hello"));
-                __tagHelperExecutionContext.AddHtmlAttribute("input-unbound-required", Html.Raw("hello2"));
-                __tagHelperExecutionContext.AddMinimizedHtmlAttribute("catchall-unbound-required");
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_1);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_3);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_4);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
                 __TestNamespace_InputTagHelper.BoundRequiredString = "world";
                 __tagHelperExecutionContext.AddTagHelperAttribute("input-bound-required-string", __TestNamespace_InputTagHelper.BoundRequiredString);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
@@ -113,7 +118,7 @@ namespace TestOutput
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
-            __tagHelperExecutionContext.AddMinimizedHtmlAttribute("catchall-unbound-required");
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {

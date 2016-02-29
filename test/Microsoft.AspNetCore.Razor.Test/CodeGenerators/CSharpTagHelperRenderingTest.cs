@@ -582,14 +582,14 @@ namespace Microsoft.AspNetCore.Razor.Test.Generator
                                 generatedCharacterOffsetIndex: 47,
                                 contentLength: 17),
                             BuildLineMapping(
-                                documentAbsoluteIndex: 202,
+                                documentAbsoluteIndex: 220,
                                 documentLineIndex: 5,
                                 generatedAbsoluteIndex: 1293,
                                 generatedLineIndex: 31,
                                 characterOffsetIndex: 38,
                                 contentLength: 23),
                             BuildLineMapping(
-                                documentAbsoluteIndex: 285,
+                                documentAbsoluteIndex: 303,
                                 documentLineIndex: 6,
                                 documentCharacterOffsetIndex: 40,
                                 generatedAbsoluteIndex: 1934,

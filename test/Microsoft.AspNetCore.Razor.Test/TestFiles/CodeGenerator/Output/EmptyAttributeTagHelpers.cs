@@ -15,6 +15,7 @@ namespace TestOutput
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager __tagHelperScopeManager = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager();
         private global::TestNamespace.InputTagHelper __TestNamespace_InputTagHelper = null;
         private global::TestNamespace.InputTagHelper2 __TestNamespace_InputTagHelper2 = null;
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("class", new global::Microsoft.AspNetCore.Html.HtmlEncodedString(""));
         private global::TestNamespace.PTagHelper __TestNamespace_PTagHelper = null;
         #line hidden
         public EmptyAttributeTagHelpers()
@@ -44,7 +45,7 @@ __TestNamespace_InputTagHelper2.Checked = ;
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("checked", __TestNamespace_InputTagHelper2.Checked);
-            __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw(""));
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(38, 34, false);
             Write(__tagHelperExecutionContext.Output);
@@ -73,7 +74,7 @@ __TestNamespace_InputTagHelper2.Checked = ;
 #line default
 #line hidden
                 __tagHelperExecutionContext.AddTagHelperAttribute("checked", __TestNamespace_InputTagHelper2.Checked);
-                __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw(""));
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 Instrumentation.BeginContext(98, 34, false);
                 Write(__tagHelperExecutionContext.Output);

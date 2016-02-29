@@ -98,6 +98,34 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
             }
         }
 
+        public static bool TryGetPlainTextValue(Chunk chunk, out string plainText)
+        {
+            var parentChunk = chunk as ParentChunk;
+
+            plainText = null;
+
+            if (parentChunk == null || parentChunk.Children.Count != 1)
+            {
+                return false;
+            }
+
+            LiteralChunk literalChildChunk;
+            if ((literalChildChunk = parentChunk.Children[0] as LiteralChunk) != null)
+            {
+                plainText = literalChildChunk.Text;
+                return true;
+            }
+
+            ParentLiteralChunk parentLiteralChunk;
+            if ((parentLiteralChunk = parentChunk.Children[0] as ParentLiteralChunk) != null)
+            {
+                plainText = parentLiteralChunk.GetText();
+                return true;
+            }
+
+            return false;
+        }
+
         internal static string GetVariableName(TagHelperDescriptor descriptor)
         {
             return "__" + descriptor.TypeName.Replace('.', '_');
@@ -450,6 +478,15 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                     .WriteStringLiteral(attributeName)
                     .WriteEndMethodInvocation();
             }
+            else if (attributeValueChunk is PreallocatedTagHelperAttributeChunk)
+            {
+                _writer
+                    .WriteStartInstanceMethodInvocation(
+                        ExecutionContextVariableName,
+                        _tagHelperContext.ExecutionContextAddHtmlAttributeMethodName)
+                    .Write(((PreallocatedTagHelperAttributeChunk)attributeValueChunk).AttributeVariableAccessor)
+                    .WriteEndMethodInvocation();
+            }
             else
             {
                 string textValue = null;
@@ -737,34 +774,6 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
             if (parentChunk != null)
             {
                 return parentChunk.Children.Any(child => child is DynamicCodeAttributeChunk);
-            }
-
-            return false;
-        }
-
-        private static bool TryGetPlainTextValue(Chunk chunk, out string plainText)
-        {
-            var parentChunk = chunk as ParentChunk;
-
-            plainText = null;
-
-            if (parentChunk == null || parentChunk.Children.Count != 1)
-            {
-                return false;
-            }
-
-            LiteralChunk literalChildChunk;
-            if ((literalChildChunk = parentChunk.Children[0] as LiteralChunk) != null)
-            {
-                plainText = literalChildChunk.Text;
-                return true;
-            }
-
-            ParentLiteralChunk parentLiteralChunk;
-            if ((parentLiteralChunk = parentChunk.Children[0] as ParentLiteralChunk) != null)
-            {
-                plainText = parentLiteralChunk.GetText();
-                return true;
             }
 
             return false;

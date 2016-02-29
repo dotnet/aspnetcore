@@ -15,6 +15,10 @@ namespace TestOutput
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager __tagHelperScopeManager = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager();
         private global::TestNamespace.InputTagHelper1 __TestNamespace_InputTagHelper1 = null;
         private global::TestNamespace.InputTagHelper2 __TestNamespace_InputTagHelper2 = null;
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", new global::Microsoft.AspNetCore.Html.HtmlEncodedString("checkbox"));
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", new global::Microsoft.AspNetCore.Html.HtmlEncodedString("password"));
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_2 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", new global::Microsoft.AspNetCore.Html.HtmlEncodedString("radio"));
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_3 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("int-prefix-salt", new global::Microsoft.AspNetCore.Html.HtmlEncodedString("8"));
         #line hidden
         public PrefixedAttributeTagHelpers()
         {
@@ -52,7 +56,7 @@ namespace TestOutput
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper1);
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
-            __tagHelperExecutionContext.AddHtmlAttribute("type", Html.Raw("checkbox"));
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
 #line 16 "PrefixedAttributeTagHelpers.cshtml"
 __TestNamespace_InputTagHelper1.IntDictionaryProperty = intDictionary;
 
@@ -90,7 +94,7 @@ __TestNamespace_InputTagHelper1.IntDictionaryProperty = intDictionary;
             {
                 throw new InvalidOperationException(FormatInvalidIndexerAssignment("int-prefix-garlic", "TestNamespace.InputTagHelper2", "IntDictionaryProperty"));
             }
-            __tagHelperExecutionContext.AddHtmlAttribute("type", Html.Raw("password"));
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_1);
 #line 17 "PrefixedAttributeTagHelpers.cshtml"
 __TestNamespace_InputTagHelper1.IntDictionaryProperty = intDictionary;
 
@@ -143,7 +147,7 @@ __TestNamespace_InputTagHelper1.IntDictionaryProperty = intDictionary;
             {
                 throw new InvalidOperationException(FormatInvalidIndexerAssignment("string-prefix-grabber", "TestNamespace.InputTagHelper2", "StringDictionaryProperty"));
             }
-            __tagHelperExecutionContext.AddHtmlAttribute("type", Html.Raw("radio"));
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_2);
 #line 19 "PrefixedAttributeTagHelpers.cshtml"
 __TestNamespace_InputTagHelper1.IntProperty = 42;
 
@@ -165,7 +169,7 @@ __TestNamespace_InputTagHelper1.IntDictionaryProperty["salt"] = 37;
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("int-prefix-pepper", __TestNamespace_InputTagHelper1.IntDictionaryProperty["pepper"]);
             __TestNamespace_InputTagHelper2.IntDictionaryProperty["pepper"] = __TestNamespace_InputTagHelper1.IntDictionaryProperty["pepper"];
-            __tagHelperExecutionContext.AddHtmlAttribute("int-prefix-salt", Html.Raw("8"));
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_3);
             __TestNamespace_InputTagHelper1.StringProperty = "string";
             __tagHelperExecutionContext.AddTagHelperAttribute("string-prefix-grabber", __TestNamespace_InputTagHelper1.StringProperty);
             __TestNamespace_InputTagHelper2.StringDictionaryProperty["grabber"] = __TestNamespace_InputTagHelper1.StringProperty;

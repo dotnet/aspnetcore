@@ -146,12 +146,8 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 throw new ArgumentNullException(nameof(name));
             }
 
-            EnsureHtmlAttributes();
-            EnsureAllAttributes();
-
             var attribute = new TagHelperAttribute(name);
-            _htmlAttributes.Add(attribute);
-            _allAttributes.Add(attribute);
+            AddHtmlAttribute(attribute);
         }
 
         /// <summary>
@@ -166,10 +162,24 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 throw new ArgumentNullException(nameof(name));
             }
 
+            var attribute = new TagHelperAttribute(name, value);
+            AddHtmlAttribute(attribute);
+        }
+
+        /// <summary>
+        /// Tracks the HTML attribute.
+        /// </summary>
+        /// <param name="attribute">The <see cref="TagHelperAttribute"/> to track.</param>
+        public void AddHtmlAttribute(TagHelperAttribute attribute)
+        {
+            if (attribute == null)
+            {
+                throw new ArgumentNullException(nameof(attribute));
+            }
+
             EnsureHtmlAttributes();
             EnsureAllAttributes();
 
-            var attribute = new TagHelperAttribute(name, value);
             _htmlAttributes.Add(attribute);
             _allAttributes.Add(attribute);
         }

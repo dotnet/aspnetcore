@@ -38,6 +38,8 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
             TagHelperOutputIsContentModifiedPropertyName = "IsContentModified";
             TagHelperOutputContentPropertyName = "Content";
             TagHelperOutputGetChildContentAsyncMethodName = "GetChildContentAsync";
+            TagHelperAttributeTypeName = "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute";
+            EncodedHtmlStringTypeName = "Microsoft.AspNetCore.Html.HtmlEncodedString";
         }
 
         /// <summary>
@@ -211,5 +213,15 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
         /// tag helper child content.
         /// </summary>
         public string TagHelperOutputGetChildContentAsyncMethodName { get; set; }
+
+        /// <summary>
+        /// The name of the type used to represent tag helper attributes.
+        /// </summary>
+        public string TagHelperAttributeTypeName { get; set; }
+
+        /// <summary>
+        /// The name of the type used to represent encoded content.
+        /// </summary>
+        public string EncodedHtmlStringTypeName { get; set; }
     }
 }
