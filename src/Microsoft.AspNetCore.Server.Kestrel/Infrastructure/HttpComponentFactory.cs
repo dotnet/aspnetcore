@@ -34,9 +34,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             return streams;
         }
 
-        public void DisposeStreams(Streams streams, bool poolingPermitted)
+        public void DisposeStreams(Streams streams)
         {
-            if (poolingPermitted && _streamPool.Count < ServerInformation.PoolingParameters.MaxPooledStreams)
+            if (_streamPool.Count < ServerInformation.PoolingParameters.MaxPooledStreams)
             {
                 streams.Uninitialize();
 
@@ -58,9 +58,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             return headers;
         }
 
-        public void DisposeHeaders(Headers headers, bool poolingPermitted)
+        public void DisposeHeaders(Headers headers)
         {
-            if (poolingPermitted && _headerPool.Count < ServerInformation.PoolingParameters.MaxPooledHeaders)
+            if (_headerPool.Count < ServerInformation.PoolingParameters.MaxPooledHeaders)
             {
                 headers.Uninitialize();
 

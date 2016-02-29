@@ -3,18 +3,20 @@
 
 using System;
 using System.IO;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Exceptions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
     public abstract class MessageBody
     {
-        private readonly FrameContext _context;
+        private readonly Frame _context;
         private int _send100Continue = 1;
 
-        protected MessageBody(FrameContext context)
+        protected MessageBody(Frame context)
         {
             _context = context;
         }
@@ -99,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         public static MessageBody For(
             string httpVersion,
             FrameRequestHeaders headers,
-            FrameContext context)
+            Frame context)
         {
             // see also http://tools.ietf.org/html/rfc2616#section-4.4
 
@@ -114,13 +116,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             var transferEncoding = headers.HeaderTransferEncoding.ToString();
             if (transferEncoding.Length > 0)
             {
-                return new ForChunkedEncoding(keepAlive, context);
+                return new ForChunkedEncoding(keepAlive, headers, context);
             }
 
-            var contentLength = headers.HeaderContentLength.ToString();
-            if (contentLength.Length > 0)
+            var unparsedContentLength = headers.HeaderContentLength.ToString();
+            if (unparsedContentLength.Length > 0)
             {
-                return new ForContentLength(keepAlive, int.Parse(contentLength), context);
+                int contentLength;
+                if (!int.TryParse(unparsedContentLength, out contentLength) || contentLength < 0)
+                {
+                    context.ReportCorruptedHttpRequest(new BadHttpRequestException("Invalid content length."));
+                    return new ForContentLength(keepAlive, 0, context);
+                }
+                else
+                {
+                    return new ForContentLength(keepAlive, contentLength, context);
+                }
             }
 
             if (keepAlive)
@@ -131,9 +142,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             return new ForRemainingData(context);
         }
 
+        private int ThrowBadRequestException(string message)
+        {
+            // returns int so can be used as item non-void function
+            var ex =  new BadHttpRequestException(message);
+            _context.ReportCorruptedHttpRequest(ex);
+
+            throw ex;
+        }
+
         private class ForRemainingData : MessageBody
         {
-            public ForRemainingData(FrameContext context)
+            public ForRemainingData(Frame context)
                 : base(context)
             {
             }
@@ -149,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             private readonly int _contentLength;
             private int _inputLength;
 
-            public ForContentLength(bool keepAlive, int contentLength, FrameContext context)
+            public ForContentLength(bool keepAlive, int contentLength, Frame context)
                 : base(context)
             {
                 RequestKeepAlive = keepAlive;
@@ -176,7 +196,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     _inputLength -= actual;
                     if (actual == 0)
                     {
-                        throw new InvalidDataException("Unexpected end of request content");
+                        ThrowBadRequestException("Unexpected end of request content");
                     }
                     return actual;
                 }
@@ -192,7 +212,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 _inputLength -= actual;
                 if (actual == 0)
                 {
-                    throw new InvalidDataException("Unexpected end of request content");
+                    ThrowBadRequestException("Unexpected end of request content");
                 }
 
                 return actual;
@@ -204,188 +224,337 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         /// </summary>
         private class ForChunkedEncoding : MessageBody
         {
+            private Vector<byte> _vectorCRs = new Vector<byte>((byte)'\r');
+
             private int _inputLength;
+            private Mode _mode = Mode.Prefix;
+            private FrameRequestHeaders _requestHeaders;
 
-            private Mode _mode = Mode.ChunkPrefix;
-
-            public ForChunkedEncoding(bool keepAlive, FrameContext context)
+            public ForChunkedEncoding(bool keepAlive, FrameRequestHeaders headers, Frame context)
                 : base(context)
             {
                 RequestKeepAlive = keepAlive;
+                _requestHeaders = headers;
             }
+
             public override ValueTask<int> ReadAsyncImplementation(ArraySegment<byte> buffer, CancellationToken cancellationToken)
             {
-                return ReadAsyncAwaited(buffer, cancellationToken);
+                return ReadStateMachineAsync(_context.SocketInput, buffer, cancellationToken);
             }
 
-            private async Task<int> ReadAsyncAwaited(ArraySegment<byte> buffer, CancellationToken cancellationToken)
+            private async Task<int> ReadStateMachineAsync(SocketInput input, ArraySegment<byte> buffer, CancellationToken cancellationToken)
             {
-                var input = _context.SocketInput;
-
-                while (_mode != Mode.Complete)
+                while (_mode < Mode.Trailer)
                 {
-                    while (_mode == Mode.ChunkPrefix)
+                    while (_mode == Mode.Prefix)
                     {
-                        var chunkSize = 0;
-                        if (!TakeChunkedLine(input, ref chunkSize))
+                        ParseChunkedPrefix(input);
+                        if (_mode != Mode.Prefix)
                         {
-                            await input;
+                            break;
                         }
-                        else if (chunkSize == 0)
-                        {
-                            _mode = Mode.Complete;
-                        }
-                        else
-                        {
-                            _mode = Mode.ChunkData;
-                        }
-                        _inputLength = chunkSize;
+
+                        await GetDataAsync(input);
                     }
-                    while (_mode == Mode.ChunkData)
+
+                    while (_mode == Mode.Extension)
                     {
-                        var limit = buffer.Array == null ? _inputLength : Math.Min(buffer.Count, _inputLength);
-                        if (limit != 0)
+                        ParseExtension(input);
+                        if (_mode != Mode.Extension)
                         {
-                            await input;
+                            break;
                         }
 
-                        var begin = input.ConsumingStart();
-                        int actual;
-                        var end = begin.CopyTo(buffer.Array, buffer.Offset, limit, out actual);
-                        _inputLength -= actual;
-                        input.ConsumingComplete(end, end);
+                        await GetDataAsync(input);
+                    }
 
-                        if (_inputLength == 0)
-                        {
-                            _mode = Mode.ChunkSuffix;
-                        }
+                    while (_mode == Mode.Data)
+                    {
+                        int actual = ReadChunkedData(input, buffer.Array, buffer.Offset, buffer.Count);
                         if (actual != 0)
                         {
                             return actual;
                         }
+                        else if (_mode != Mode.Data)
+                        {
+                            break;
+                        }
+
+                        await GetDataAsync(input);
                     }
-                    while (_mode == Mode.ChunkSuffix)
+
+                    while (_mode == Mode.Suffix)
                     {
-                        var scan = input.ConsumingStart();
-                        var consumed = scan;
-                        var ch1 = scan.Take();
-                        var ch2 = scan.Take();
-                        if (ch1 == -1 || ch2 == -1)
+                        ParseChunkedSuffix(input);
+                        if (_mode != Mode.Suffix)
                         {
-                            input.ConsumingComplete(consumed, scan);
-                            await input;
+                            break;
                         }
-                        else if (ch1 == '\r' && ch2 == '\n')
-                        {
-                            input.ConsumingComplete(scan, scan);
-                            _mode = Mode.ChunkPrefix;
-                        }
-                        else
-                        {
-                            throw new NotImplementedException("INVALID REQUEST FORMAT");
-                        }
+
+                        await GetDataAsync(input);
                     }
+                }
+
+                // Chunks finished, parse trailers
+                while (_mode == Mode.Trailer)
+                {
+                    ParseChunkedTrailer(input);
+                    if (_mode != Mode.Trailer)
+                    {
+                        break;
+                    }
+
+                    await GetDataAsync(input);
+                }
+
+                if (_mode == Mode.TrailerHeaders)
+                {
+                    while (!_context.TakeMessageHeaders(input, _requestHeaders))
+                    {
+                        await GetDataAsync(input);
+                    }
+
+                    _mode = Mode.Complete;
                 }
 
                 return 0;
             }
 
-            private static bool TakeChunkedLine(SocketInput baton, ref int chunkSizeOut)
+            private void ParseChunkedPrefix(SocketInput input)
             {
-                var scan = baton.ConsumingStart();
+                var scan = input.ConsumingStart();
                 var consumed = scan;
                 try
                 {
-                    var ch0 = scan.Take();
-                    var chunkSize = 0;
-                    var mode = 0;
-                    while (ch0 != -1)
+                    var ch1 = scan.Take();
+                    var ch2 = scan.Take();
+                    if (ch1 == -1 || ch2 == -1)
                     {
-                        var ch1 = scan.Take();
-                        if (ch1 == -1)
-                        {
-                            return false;
-                        }
-
-                        if (mode == 0)
-                        {
-                            if (ch0 >= '0' && ch0 <= '9')
-                            {
-                                chunkSize = chunkSize * 0x10 + (ch0 - '0');
-                            }
-                            else if (ch0 >= 'A' && ch0 <= 'F')
-                            {
-                                chunkSize = chunkSize * 0x10 + (ch0 - ('A' - 10));
-                            }
-                            else if (ch0 >= 'a' && ch0 <= 'f')
-                            {
-                                chunkSize = chunkSize * 0x10 + (ch0 - ('a' - 10));
-                            }
-                            else
-                            {
-                                throw new NotImplementedException("INVALID REQUEST FORMAT");
-                            }
-                            mode = 1;
-                        }
-                        else if (mode == 1)
-                        {
-                            if (ch0 >= '0' && ch0 <= '9')
-                            {
-                                chunkSize = chunkSize * 0x10 + (ch0 - '0');
-                            }
-                            else if (ch0 >= 'A' && ch0 <= 'F')
-                            {
-                                chunkSize = chunkSize * 0x10 + (ch0 - ('A' - 10));
-                            }
-                            else if (ch0 >= 'a' && ch0 <= 'f')
-                            {
-                                chunkSize = chunkSize * 0x10 + (ch0 - ('a' - 10));
-                            }
-                            else if (ch0 == ';')
-                            {
-                                mode = 2;
-                            }
-                            else if (ch0 == '\r' && ch1 == '\n')
-                            {
-                                consumed = scan;
-                                chunkSizeOut = chunkSize;
-                                return true;
-                            }
-                            else
-                            {
-                                throw new NotImplementedException("INVALID REQUEST FORMAT");
-                            }
-                        }
-                        else if (mode == 2)
-                        {
-                            if (ch0 == '\r' && ch1 == '\n')
-                            {
-                                consumed = scan;
-                                chunkSizeOut = chunkSize;
-                                return true;
-                            }
-                            else
-                            {
-                                // chunk-extensions not currently parsed
-                            }
-                        }
-
-                        ch0 = ch1;
+                        return;
                     }
-                    return false;
+
+                    var chunkSize = CalculateChunkSize(ch1, 0);
+                    ch1 = ch2;
+
+                    do
+                    {
+                        if (ch1 == ';')
+                        {
+                            consumed = scan;
+
+                            _inputLength = chunkSize;
+                            _mode = Mode.Extension;
+                            return;
+                        }
+
+                        ch2 = scan.Take();
+                        if (ch2 == -1)
+                        {
+                            return;
+                        }
+
+                        if (ch1 == '\r' && ch2 == '\n')
+                        {
+                            consumed = scan;
+                            _inputLength = chunkSize;
+
+                            if (chunkSize > 0)
+                            {
+                                _mode = Mode.Data;
+                            }
+                            else
+                            {
+                                _mode = Mode.Trailer;
+                            }
+
+                            return;
+                        }
+
+                        chunkSize = CalculateChunkSize(ch1, chunkSize);
+                        ch1 = ch2;
+                    } while (ch1 != -1);
                 }
                 finally
                 {
-                    baton.ConsumingComplete(consumed, scan);
+                    input.ConsumingComplete(consumed, scan);
+                }
+            }
+
+            private void ParseExtension(SocketInput input)
+            {
+                var scan = input.ConsumingStart();
+                var consumed = scan;
+                try
+                {
+                    // Chunk-extensions not currently parsed
+                    // Just drain the data
+                    do
+                    {
+                        if (scan.Seek(ref _vectorCRs) == -1)
+                        {
+                            // End marker not found yet
+                            consumed = scan;
+                            return;
+                        };
+
+                        var ch1 = scan.Take();
+                        var ch2 = scan.Take();
+
+                        if (ch2 == '\n')
+                        {
+                            consumed = scan;
+                            if (_inputLength > 0)
+                            {
+                                _mode = Mode.Data;
+                            }
+                            else
+                            {
+                                _mode = Mode.Trailer;
+                            }
+                        }
+                        else if (ch2 == -1)
+                        {
+                            return;
+                        }
+                    } while (_mode == Mode.Extension);
+                }
+                finally
+                {
+                    input.ConsumingComplete(consumed, scan);
+                }
+            }
+
+            private int ReadChunkedData(SocketInput input, byte[] buffer, int offset, int count)
+            {
+                var scan = input.ConsumingStart();
+                int actual;
+                try
+                {
+                    var limit = buffer == null ? _inputLength : Math.Min(count, _inputLength);
+                    scan = scan.CopyTo(buffer, offset, limit, out actual);
+                    _inputLength -= actual;
+                }
+                finally
+                {
+                    input.ConsumingComplete(scan, scan);
+                }
+
+                if (_inputLength == 0)
+                {
+                    _mode = Mode.Suffix;
+                }
+                else if (actual == 0)
+                {
+                    ThrowIfRequestIncomplete(input);
+                }
+
+                return actual;
+            }
+
+            private void ParseChunkedSuffix(SocketInput input)
+            {
+                var scan = input.ConsumingStart();
+                var consumed = scan;
+                try
+                {
+                    var ch1 = scan.Take();
+                    var ch2 = scan.Take();
+                    if (ch1 == -1 || ch2 == -1)
+                    {
+                        return;
+                    }
+                    else if (ch1 == '\r' && ch2 == '\n')
+                    {
+                        consumed = scan;
+                        _mode = Mode.Prefix;
+                    }
+                    else
+                    {
+                        ThrowBadRequestException("Bad chunk suffix");
+                    }
+                }
+                finally
+                {
+                    input.ConsumingComplete(consumed, scan);
+                }
+            }
+
+            private void ParseChunkedTrailer(SocketInput input)
+            {
+                var scan = input.ConsumingStart();
+                var consumed = scan;
+                try
+                {
+                    var ch1 = scan.Take();
+                    var ch2 = scan.Take();
+
+                    if (ch1 == -1 || ch2 == -1)
+                    {
+                        return;
+                    }
+                    else if (ch1 == '\r' && ch2 == '\n')
+                    {
+                        consumed = scan;
+                        _mode = Mode.Complete;
+                    }
+                    else
+                    {
+                        _mode = Mode.TrailerHeaders;
+                    }
+                }
+                finally
+                {
+                    input.ConsumingComplete(consumed, scan);
+                }
+            }
+
+            private int CalculateChunkSize(int extraHexDigit, int currentParsedSize)
+            {
+                checked
+                {
+                    if (extraHexDigit >= '0' && extraHexDigit <= '9')
+                    {
+                        return currentParsedSize * 0x10 + (extraHexDigit - '0');
+                    }
+                    else if (extraHexDigit >= 'A' && extraHexDigit <= 'F')
+                    {
+                        return currentParsedSize * 0x10 + (extraHexDigit - ('A' - 10));
+                    }
+                    else if (extraHexDigit >= 'a' && extraHexDigit <= 'f')
+                    {
+                        return currentParsedSize * 0x10 + (extraHexDigit - ('a' - 10));
+                    }
+                    else
+                    {
+                        return ThrowBadRequestException("Bad chunk size data");
+                    }
+                }
+            }
+
+            private SocketInput GetDataAsync(SocketInput input)
+            {
+                ThrowIfRequestIncomplete(input);
+
+                return input;
+            }
+
+            private void ThrowIfRequestIncomplete(SocketInput input)
+            {
+                if (input.RemoteIntakeFin)
+                {
+                    ThrowBadRequestException("Chunked request incomplete");
                 }
             }
 
             private enum Mode
             {
-                ChunkPrefix,
-                ChunkData,
-                ChunkSuffix,
-                Complete,
+                Prefix,
+                Extension,
+                Data,
+                Suffix,
+                Trailer,
+                TrailerHeaders,
+                Complete
             };
         }
     }

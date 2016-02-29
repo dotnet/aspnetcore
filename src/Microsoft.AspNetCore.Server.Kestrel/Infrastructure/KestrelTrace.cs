@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel
@@ -24,6 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         private static readonly Action<ILogger, string, Exception> _connectionError;
         private static readonly Action<ILogger, string, int, Exception> _connectionDisconnectedWrite;
         private static readonly Action<ILogger, Exception> _notAllConnectionsClosedGracefully;
+        private static readonly Action<ILogger, string, string, Exception> _connectionBadRequest;
 
         protected readonly ILogger _logger;
 
@@ -45,6 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             _connectionError = LoggerMessage.Define<string>(LogLevel.Information, 14, @"Connection id ""{ConnectionId}"" communication error");
             _connectionDisconnectedWrite = LoggerMessage.Define<string, int>(LogLevel.Debug, 15, @"Connection id ""{ConnectionId}"" write of ""{count}"" bytes to disconnected client.");
             _notAllConnectionsClosedGracefully = LoggerMessage.Define(LogLevel.Debug, 16, "Some connections failed to close gracefully during server shutdown.");
+            _connectionBadRequest = LoggerMessage.Define<string, string>(LogLevel.Information, 17, @"Connection id ""{ConnectionId}"" bad request data: ""{message}""");
         }
 
         public KestrelTrace(ILogger logger)
@@ -133,6 +136,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         public virtual void NotAllConnectionsClosedGracefully()
         {
             _notAllConnectionsClosedGracefully(_logger, null);
+        }
+
+        public void ConnectionBadRequest(string connectionId, BadHttpRequestException ex)
+        {
+            _connectionBadRequest(_logger, connectionId, ex.Message, ex);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)

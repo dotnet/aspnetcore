@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -12,11 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
-using Microsoft.AspNetCore.Server.Kestrel.Filter;
-using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Networking;
-using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -284,27 +278,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task Http10TransferEncoding(ServiceContext testContext)
-        {
-            using (var server = new TestServer(App, testContext))
-            {
-                using (var connection = new TestConnection(server.Port))
-                {
-                    await connection.Send(
-                        "POST / HTTP/1.0",
-                        "Transfer-Encoding: chunked",
-                        "",
-                        "5", "Hello", "6", " World", "0\r\n");
-                    await connection.ReceiveEnd(
-                        "HTTP/1.0 200 OK",
-                        "",
-                        "Hello World");
-                }
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
         public async Task Http10KeepAlive(ServiceContext testContext)
         {
             using (var server = new TestServer(AppChunked, testContext))
@@ -376,38 +349,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Connection: keep-alive",
                         "",
                         "Hello WorldPOST / HTTP/1.0",
-                        "",
-                        "Goodbye");
-                    await connection.Receive(
-                        "HTTP/1.0 200 OK",
-                        "Connection: keep-alive",
-                        "Content-Length: 11",
-                        "",
-                        "Hello World");
-                    await connection.ReceiveEnd(
-                        "HTTP/1.0 200 OK",
-                        "Content-Length: 7",
-                        "",
-                        "Goodbye");
-                }
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
-        public async Task Http10KeepAliveTransferEncoding(ServiceContext testContext)
-        {
-            using (var server = new TestServer(AppChunked, testContext))
-            {
-                using (var connection = new TestConnection(server.Port))
-                {
-                    await connection.SendEnd(
-                        "POST / HTTP/1.0",
-                        "Transfer-Encoding: chunked",
-                        "Connection: keep-alive",
-                        "",
-                        "5", "Hello", "6", " World", "0",
-                        "POST / HTTP/1.0",
                         "",
                         "Goodbye");
                     await connection.Receive(
@@ -945,52 +886,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task RequestBodyIsConsumedAutomaticallyIfAppDoesntConsumeItFully(ServiceContext testContext)
-        {
-            using (var server = new TestServer(async httpContext =>
-            {
-                var response = httpContext.Response;
-                var request = httpContext.Request;
-
-                Assert.Equal("POST", request.Method);
-
-                response.Headers.Clear();
-                response.Headers["Content-Length"] = new[] { "11" };
-
-                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11);
-            }, testContext))
-            {
-                using (var connection = new TestConnection(server.Port))
-                {
-                    await connection.SendEnd(
-                        "POST / HTTP/1.1",
-                        "Content-Length: 5",
-                        "",
-                        "HelloPOST / HTTP/1.1",
-                        "Transfer-Encoding: chunked",
-                        "",
-                        "C", "HelloChunked", "0",
-                        "POST / HTTP/1.1",
-                        "Content-Length: 7",
-                        "",
-                        "Goodbye");
-                    await connection.ReceiveEnd(
-                        "HTTP/1.1 200 OK",
-                        "Content-Length: 11",
-                        "",
-                        "Hello WorldHTTP/1.1 200 OK",
-                        "Content-Length: 11",
-                        "",
-                        "Hello WorldHTTP/1.1 200 OK",
-                        "Content-Length: 11",
-                        "",
-                        "Hello World");
-                }
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
         public async Task RequestsCanBeAbortedMidRead(ServiceContext testContext)
         {
             var readTcs = new TaskCompletionSource<object>();
@@ -1121,39 +1016,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await Assert.ThrowsAsync<TaskCanceledException>(async () => await writeTcs.Task);
                 // RequestAborted tripped
                 Assert.True(registrationWh.Wait(1000));
-            }
-        }
-
-        private class TestApplicationErrorLogger : ILogger
-        {
-            public int ApplicationErrorsLogged { get; set; }
-
-            public IDisposable BeginScopeImpl(object state)
-            {
-                return new Disposable(() => { });
-            }
-
-            public bool IsEnabled(LogLevel logLevel)
-            {
-                return true;
-            }
-
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-            {
-                // Application errors are logged using 13 as the eventId.
-                if (eventId.Id == 13)
-                {
-                    ApplicationErrorsLogged++;
-                }
-            }
-        }
-
-        private class PassThroughConnectionFilter : IConnectionFilter
-        {
-            public Task OnConnectionAsync(ConnectionFilterContext context)
-            {
-                context.Connection = new LoggingStream(context.Connection, new TestApplicationErrorLogger());
-                return TaskUtilities.CompletedTask;
             }
         }
     }
