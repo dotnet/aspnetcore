@@ -143,14 +143,14 @@ using Microsoft.Extensions.Logging
 <html>
 <head>
     <meta charset=""utf-8"" />
-    <title>ASP.NET Logs</title>
+    <title>ASP.NET Core Logs</title>
     <script src=""http://ajax.aspnetcdn.com/ajax/jquery/jquery-2.1.1.min.js""></script>
     <style>
         <%$ include: Shared.css % > <%$ include: DetailsPage.css % >
     </style>
 </head>
 <body>
-    <h1>ASP.NET Logs</h1>
+    <h1>ASP.NET Core Logs</h1>
 ");
 #line 99 "DetailsPage.cshtml"
     
@@ -423,9 +423,9 @@ using Microsoft.Extensions.Logging
 #line hidden
 
             WriteLiteral("                    <option");
-            BeginWriteAttribute("value", " value=\"", 7693, "\"", 7713, 1);
+            BeginWriteAttribute("value", " value=\"", 7715, "\"", 7735, 1);
 #line 226 "DetailsPage.cshtml"
-WriteAttributeValue("", 7701, severityInt, 7701, 12, false);
+WriteAttributeValue("", 7723, severityInt, 7723, 12, false);
 
 #line default
 #line hidden
@@ -446,9 +446,9 @@ WriteAttributeValue("", 7701, severityInt, 7701, 12, false);
 #line hidden
 
             WriteLiteral("                    <option");
-            BeginWriteAttribute("value", " value=\"", 7842, "\"", 7862, 1);
+            BeginWriteAttribute("value", " value=\"", 7864, "\"", 7884, 1);
 #line 230 "DetailsPage.cshtml"
-WriteAttributeValue("", 7850, severityInt, 7850, 12, false);
+WriteAttributeValue("", 7872, severityInt, 7872, 12, false);
 
 #line default
 #line hidden
@@ -468,9 +468,9 @@ WriteAttributeValue("", 7850, severityInt, 7850, 12, false);
 #line hidden
 
             WriteLiteral("        </select>\r\n        <input type=\"text\" name=\"name\"");
-            BeginWriteAttribute("value", " value=\"", 7975, "\"", 8008, 1);
+            BeginWriteAttribute("value", " value=\"", 7997, "\"", 8030, 1);
 #line 234 "DetailsPage.cshtml"
-WriteAttributeValue("", 7983, Model.Options.NamePrefix, 7983, 25, false);
+WriteAttributeValue("", 8005, Model.Options.NamePrefix, 8005, 25, false);
 
 #line default
 #line hidden

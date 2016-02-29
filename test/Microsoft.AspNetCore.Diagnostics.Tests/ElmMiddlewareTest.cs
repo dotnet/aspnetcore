@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
 
                 // Assert
                 contextMock.VerifyGet(c => c.Request.Query, Times.AtLeastOnce());
-                Assert.True(response.Contains("<title>ASP.NET Logs</title>"));
+                Assert.True(response.Contains("<title>ASP.NET Core Logs</title>"));
             }
         }
 

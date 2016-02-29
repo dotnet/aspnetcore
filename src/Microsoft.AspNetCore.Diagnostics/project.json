@@ -1,6 +1,11 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 Middleware for exception handling, exception display pages, and diagnostics information.",
+  "description": "ASP.NET Core middleware for exception handling, exception display pages, and diagnostics information. Includes developer exception page middleware, exception handler middleware, runtime info middleware, status code page middleware, and welcome page middleware",
+  "tags": [
+    "aspnetcore",
+    "diagnostics"
+  ],
+
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
@@ -24,7 +29,7 @@
     "System.Diagnostics.DiagnosticSource": "4.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
         "System.Reflection.Extensions": "4.0.1-*"

@@ -179,7 +179,7 @@ using Microsoft.Extensions.Logging
 <html>
 <head>
     <meta charset=""utf-8"" />
-    <title>ASP.NET Logs</title>
+    <title>ASP.NET Core Logs</title>
     <script src=""//ajax.aspnetcdn.com/ajax/jquery/jquery-2.1.1.min.js""></script>
     <style>
         body {\r\n    font-size: .813em;\r\n    white-space: nowrap;\r\n    margin: 20px;\r\n}\r\n\r\ncol:nth-child(2n) {\r\n    background-color: #FAFAFA;\r\n}\r\n\r\nform { \r\n    display: inline-block; \r\n}\r\n\r\nh1 {\r\n    margin-left: 25px;\r\n}\r\n\r\ntable {\r\n    margin: 0px auto;\r\n    border-collapse: collapse;\r\n    border-spacing: 0px;\r\n    table-layout: fixed;\r\n    width: 100%;\r\n}\r\n\r\ntd, th {\r\n    padding: 4px;\r\n}\r\n\r\nthead {\r\n    font-size: 1em;\r\n    font-family: Arial;\r\n}\r\n\r\ntr {\r\n    height: 23px;\r\n}\r\n\r\n#requestHeader {\r\n    border-bottom: solid 1px gray;\r\n    border-top: solid 1px gray;\r\n    margin-bottom: 2px;\r\n    font-size: 1em;\r\n    line-height: 2em;\r\n}\r\n\r\n.collapse {\r\n    color: black;\r\n    float: right;\r\n    font-weight: normal;\r\n    width: 1em;\r\n}\r\n\r\n.date, .time {\r\n    width: 70px; \r\n}\r\n\r\n.logHeader {\r\n    border-bottom: 1px solid lightgray;\r\n    color: gray;\r\n    text-align: left;\r\n}\r\n\r\n.logState {\r\n    text-overflow: ellipsis;\r\n    overflow: hidden;\r\n}\r\n\r\n.logTd {\r\n    border-left: 1px solid gray;\r\n    padding: 0px;\r\n}\r\n\r\n.logs {\r\n    width: 80%;\r\n}\r\n\r\n.logRow:hover {\r\n    background-color: #D6F5FF;\r\n}\r\n\r\n.requestRow>td {\r\n    border-bottom: solid 1px gray;\r\n}\r\n\r\n.severity {\r\n    width: 80px;\r\n}\r\n\r\n.summary {\r\n    color: black;\r\n    line-height: 1.8em;\r\n}\r\n\r\n.summary>th {\r\n    font-weight: normal;\r\n}\r\n\r\n.tab {\r\n    margin-left: 30px;\r\n}\r\n\r\n#viewOptions {\r\n    margin: 20px;\r\n}\r\n\r\n#viewOptions > * {\r\n    margin: 5px;\r\n}
@@ -187,7 +187,7 @@ using Microsoft.Extensions.Logging
     </style>
 </head>
 <body>
-    <h1>ASP.NET Logs</h1>
+    <h1>ASP.NET Core Logs</h1>
     <form id=""viewOptions"" method=""get"">
         <select name=""level"">
 ");
@@ -208,9 +208,9 @@ using Microsoft.Extensions.Logging
 #line hidden
 
             WriteLiteral("                    <option");
-            BeginWriteAttribute("value", " value=\"", 4904, "\"", 4924, 1);
+            BeginWriteAttribute("value", " value=\"", 4926, "\"", 4946, 1);
 #line 138 "LogPage.cshtml"
-WriteAttributeValue("", 4912, severityInt, 4912, 12, false);
+WriteAttributeValue("", 4934, severityInt, 4934, 12, false);
 
 #line default
 #line hidden
@@ -231,9 +231,9 @@ WriteAttributeValue("", 4912, severityInt, 4912, 12, false);
 #line hidden
 
             WriteLiteral("                    <option");
-            BeginWriteAttribute("value", " value=\"", 5053, "\"", 5073, 1);
+            BeginWriteAttribute("value", " value=\"", 5075, "\"", 5095, 1);
 #line 142 "LogPage.cshtml"
-WriteAttributeValue("", 5061, severityInt, 5061, 12, false);
+WriteAttributeValue("", 5083, severityInt, 5083, 12, false);
 
 #line default
 #line hidden
@@ -253,9 +253,9 @@ WriteAttributeValue("", 5061, severityInt, 5061, 12, false);
 #line hidden
 
             WriteLiteral("        </select>\r\n        <input type=\"text\" name=\"name\"");
-            BeginWriteAttribute("value", " value=\"", 5186, "\"", 5219, 1);
+            BeginWriteAttribute("value", " value=\"", 5208, "\"", 5241, 1);
 #line 146 "LogPage.cshtml"
-WriteAttributeValue("", 5194, Model.Options.NamePrefix, 5194, 25, false);
+WriteAttributeValue("", 5216, Model.Options.NamePrefix, 5216, 25, false);
 
 #line default
 #line hidden
@@ -315,16 +315,16 @@ WriteAttributeValue("", 5194, Model.Options.NamePrefix, 5194, 25, false);
 #line hidden
 
             WriteLiteral("                        \t<td><a");
-            BeginWriteAttribute("href", " href=\"", 6283, "\"", 6303, 1);
+            BeginWriteAttribute("href", " href=\"", 6305, "\"", 6325, 1);
 #line 178 "LogPage.cshtml"
-WriteAttributeValue("", 6290, activityPath, 6290, 13, false);
+WriteAttributeValue("", 6312, activityPath, 6312, 13, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("title", " title=\"", 6304, "\"", 6335, 1);
+            BeginWriteAttribute("title", " title=\"", 6326, "\"", 6357, 1);
 #line 178 "LogPage.cshtml"
-WriteAttributeValue("", 6312, activity.HttpInfo.Path, 6312, 23, false);
+WriteAttributeValue("", 6334, activity.HttpInfo.Path, 6334, 23, false);
 
 #line default
 #line hidden
@@ -363,16 +363,16 @@ WriteAttributeValue("", 6312, activity.HttpInfo.Path, 6312, 23, false);
 #line hidden
 
             WriteLiteral("                            <td colspan=\"4\"><a");
-            BeginWriteAttribute("href", " href=\"", 6725, "\"", 6745, 1);
+            BeginWriteAttribute("href", " href=\"", 6747, "\"", 6767, 1);
 #line 185 "LogPage.cshtml"
-WriteAttributeValue("", 6732, activityPath, 6732, 13, false);
+WriteAttributeValue("", 6754, activityPath, 6754, 13, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("title", " title=\"", 6746, "\"", 6774, 1);
+            BeginWriteAttribute("title", " title=\"", 6768, "\"", 6796, 1);
 #line 185 "LogPage.cshtml"
-WriteAttributeValue("", 6754, activity.Root.State, 6754, 20, false);
+WriteAttributeValue("", 6776, activity.Root.State, 6776, 20, false);
 
 #line default
 #line hidden
@@ -393,9 +393,9 @@ WriteAttributeValue("", 6754, activity.Root.State, 6754, 20, false);
 #line hidden
 
             WriteLiteral("                            <td colspan=\"4\"><a");
-            BeginWriteAttribute("href", " href=\"", 6937, "\"", 6957, 1);
+            BeginWriteAttribute("href", " href=\"", 6959, "\"", 6979, 1);
 #line 189 "LogPage.cshtml"
-WriteAttributeValue("", 6944, activityPath, 6944, 13, false);
+WriteAttributeValue("", 6966, activityPath, 6966, 13, false);
 
 #line default
 #line hidden

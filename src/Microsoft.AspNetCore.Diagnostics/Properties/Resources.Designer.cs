@@ -427,7 +427,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         }
 
         /// <summary>
-        /// Learn more about the Microsoft ASP.NET 5 components
+        /// Learn more about the Microsoft ASP.NET Core components
         /// </summary>
         internal static string WelcomeLearnMicrosoftAspNet
         {
@@ -435,7 +435,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         }
 
         /// <summary>
-        /// Learn more about the Microsoft ASP.NET 5 components
+        /// Learn more about the Microsoft ASP.NET Core components
         /// </summary>
         internal static string FormatWelcomeLearnMicrosoftAspNet()
         {
@@ -507,7 +507,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         }
 
         /// <summary>
-        /// Your ASP.NET 5 application has been successfully started
+        /// Your ASP.NET Core application has been successfully started
         /// </summary>
         internal static string WelcomeStarted
         {
@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         }
 
         /// <summary>
-        /// Your ASP.NET 5 application has been successfully started
+        /// Your ASP.NET Core application has been successfully started
         /// </summary>
         internal static string FormatWelcomeStarted()
         {
@@ -523,7 +523,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         }
 
         /// <summary>
-        /// Your ASP.NET 5 application has been successfully started.
+        /// Your ASP.NET Core application has been successfully started.
         /// </summary>
         internal static string WelcomeTitle
         {
@@ -531,7 +531,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         }
 
         /// <summary>
-        /// Your ASP.NET 5 application has been successfully started.
+        /// Your ASP.NET Core application has been successfully started.
         /// </summary>
         internal static string FormatWelcomeTitle()
         {

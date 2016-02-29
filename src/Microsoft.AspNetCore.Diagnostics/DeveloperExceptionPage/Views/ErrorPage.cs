@@ -69,9 +69,9 @@ using Microsoft.AspNetCore.Diagnostics
 #line hidden
 
             WriteLiteral("<!DOCTYPE html>\r\n<html");
-            BeginWriteAttribute("lang", " lang=\"", 497, "\"", 558, 1);
+            BeginWriteAttribute("lang", " lang=\"", 505, "\"", 566, 1);
 #line 22 "ErrorPage.cshtml"
-WriteAttributeValue("", 504, CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, 504, 54, false);
+WriteAttributeValue("", 512, CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, 512, 54, false);
 
 #line default
 #line hidden
@@ -154,9 +154,9 @@ WriteAttributeValue("", 504, CultureInfo.CurrentUICulture.TwoLetterISOLanguageNa
 #line default
 #line hidden
             WriteLiteral(" in <code");
-            BeginWriteAttribute("title", " title=\"", 1874, "\"", 1898, 1);
+            BeginWriteAttribute("title", " title=\"", 1882, "\"", 1906, 1);
 #line 49 "ErrorPage.cshtml"
-WriteAttributeValue("", 1882, firstFrame.File, 1882, 16, false);
+WriteAttributeValue("", 1890, firstFrame.File, 1890, 16, false);
 
 #line default
 #line hidden
@@ -283,9 +283,9 @@ WriteAttributeValue("", 1882, firstFrame.File, 1882, 16, false);
 #line hidden
 
             WriteLiteral("                            <li class=\"frame\"");
-            BeginWriteAttribute("tabindex", " tabindex=\"", 3302, "\"", 3322, 1);
+            BeginWriteAttribute("tabindex", " tabindex=\"", 3310, "\"", 3330, 1);
 #line 85 "ErrorPage.cshtml"
-WriteAttributeValue("", 3313, tabIndex, 3313, 9, false);
+WriteAttributeValue("", 3321, tabIndex, 3321, 9, false);
 
 #line default
 #line hidden
@@ -333,9 +333,9 @@ WriteAttributeValue("", 3313, tabIndex, 3313, 9, false);
 #line default
 #line hidden
             WriteLiteral(" in <code");
-            BeginWriteAttribute("title", " title=\"", 3717, "\"", 3736, 1);
+            BeginWriteAttribute("title", " title=\"", 3725, "\"", 3744, 1);
 #line 93 "ErrorPage.cshtml"
-WriteAttributeValue("", 3725, frame.File, 3725, 11, false);
+WriteAttributeValue("", 3733, frame.File, 3733, 11, false);
 
 #line default
 #line hidden
@@ -382,9 +382,9 @@ WriteAttributeValue("", 3725, frame.File, 3725, 11, false);
 #line hidden
 
             WriteLiteral("                                            <ol");
-            BeginWriteAttribute("start", " start=\"", 4167, "\"", 4196, 1);
+            BeginWriteAttribute("start", " start=\"", 4175, "\"", 4204, 1);
 #line 101 "ErrorPage.cshtml"
-WriteAttributeValue("", 4175, frame.PreContextLine, 4175, 21, false);
+WriteAttributeValue("", 4183, frame.PreContextLine, 4183, 21, false);
 
 #line default
 #line hidden
@@ -424,9 +424,9 @@ WriteAttributeValue("", 4175, frame.PreContextLine, 4175, 21, false);
 #line hidden
 
             WriteLiteral("\r\n                                        <ol");
-            BeginWriteAttribute("start", " start=\"", 4635, "\"", 4654, 1);
+            BeginWriteAttribute("start", " start=\"", 4643, "\"", 4662, 1);
 #line 109 "ErrorPage.cshtml"
-WriteAttributeValue("", 4643, frame.Line, 4643, 11, false);
+WriteAttributeValue("", 4651, frame.Line, 4651, 11, false);
 
 #line default
 #line hidden
@@ -473,9 +473,9 @@ WriteAttributeValue("", 4643, frame.Line, 4643, 11, false);
 #line hidden
 
             WriteLiteral("                                            <ol");
-            BeginWriteAttribute("start", " start=\'", 5147, "\'", 5172, 1);
+            BeginWriteAttribute("start", " start=\'", 5155, "\'", 5180, 1);
 #line 118 "ErrorPage.cshtml"
-WriteAttributeValue("", 5155, frame.Line + 1, 5155, 17, false);
+WriteAttributeValue("", 5163, frame.Line + 1, 5163, 17, false);
 
 #line default
 #line hidden

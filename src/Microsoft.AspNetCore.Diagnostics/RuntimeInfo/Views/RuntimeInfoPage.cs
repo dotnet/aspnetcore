@@ -67,9 +67,9 @@ using Microsoft.Extensions.PlatformAbstractions;
 #line hidden
 
             WriteLiteral("<!DOCTYPE html>\r\n<html");
-            BeginWriteAttribute("lang", " lang=\"", 449, "\"", 510, 1);
+            BeginWriteAttribute("lang", " lang=\"", 457, "\"", 518, 1);
 #line 21 "RuntimeInfoPage.cshtml"
-WriteAttributeValue("", 456, CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, 456, 54, false);
+WriteAttributeValue("", 464, CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, 464, 54, false);
 
 #line default
 #line hidden

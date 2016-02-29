@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests
             // Assert
             var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Contains("Your ASP.NET 5 application has been successfully started", body);
+            Assert.Contains("Your ASP.NET Core application has been successfully started", body);
         }
     }
 }

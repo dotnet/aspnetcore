@@ -135,9 +135,9 @@ using Microsoft.AspNetCore.Diagnostics
 #line hidden
 
             WriteLiteral("                    <li class=\"frame\"");
-            BeginWriteAttribute("tabindex", " tabindex=\"", 1269, "\"", 1289, 1);
+            BeginWriteAttribute("tabindex", " tabindex=\"", 1273, "\"", 1293, 1);
 #line 41 "CompilationErrorPage.cshtml"
-WriteAttributeValue("", 1280, tabIndex, 1280, 9, false);
+WriteAttributeValue("", 1284, tabIndex, 1284, 9, false);
 
 #line default
 #line hidden
@@ -205,9 +205,9 @@ WriteAttributeValue("", 1280, tabIndex, 1280, 9, false);
 #line hidden
 
             WriteLiteral("                                    <ol");
-            BeginWriteAttribute("start", " start=\"", 1813, "\"", 1842, 1);
+            BeginWriteAttribute("start", " start=\"", 1817, "\"", 1846, 1);
 #line 53 "CompilationErrorPage.cshtml"
-WriteAttributeValue("", 1821, frame.PreContextLine, 1821, 21, false);
+WriteAttributeValue("", 1825, frame.PreContextLine, 1825, 21, false);
 
 #line default
 #line hidden
@@ -247,9 +247,9 @@ WriteAttributeValue("", 1821, frame.PreContextLine, 1821, 21, false);
 #line hidden
 
             WriteLiteral("                                <ol");
-            BeginWriteAttribute("start", " start=\"", 2223, "\"", 2242, 1);
+            BeginWriteAttribute("start", " start=\"", 2227, "\"", 2246, 1);
 #line 60 "CompilationErrorPage.cshtml"
-WriteAttributeValue("", 2231, frame.Line, 2231, 11, false);
+WriteAttributeValue("", 2235, frame.Line, 2235, 11, false);
 
 #line default
 #line hidden
@@ -296,9 +296,9 @@ WriteAttributeValue("", 2231, frame.Line, 2231, 11, false);
 #line hidden
 
             WriteLiteral("                                    <ol");
-            BeginWriteAttribute("start", " start=\'", 2669, "\'", 2694, 1);
+            BeginWriteAttribute("start", " start=\'", 2673, "\'", 2698, 1);
 #line 68 "CompilationErrorPage.cshtml"
-WriteAttributeValue("", 2677, frame.Line + 1, 2677, 17, false);
+WriteAttributeValue("", 2681, frame.Line + 1, 2681, 17, false);
 
 #line default
 #line hidden

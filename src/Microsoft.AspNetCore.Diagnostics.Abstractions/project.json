@@ -1,6 +1,11 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 diagnostics middleware abstractions.",
+  "description": "ASP.NET Core diagnostics middleware abstractions and feature interface definitions.",
+  "tags": [
+    "aspnetcore",
+    "diagnostics"
+  ],
+
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/diagnostics"
@@ -14,7 +19,7 @@
     "xmlDoc": true
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
         "System.Resources.ResourceManager": "4.0.1-*"
