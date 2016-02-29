@@ -72,7 +72,7 @@ var buildTarget = "compile"
 
 #verify-all .pull .change-default-build-target-to-verify .build-all
 
-#build-and-install-all .pull .change-default-build-target-for-coherence-build .build-all
+#build-and-install-all .change-default-build-target-for-coherence-build .build-all
 
 #smoke-test-mono .pull .fix-project-json .change-default-build-target-to-verify .build-all
 
@@ -95,7 +95,7 @@ var buildTarget = "compile"
     }
 
 #change-default-build-target-for-coherence-build
-    - buildTarget = "compile nuget-install";
+    - buildTarget = Environment.GetEnvironmentVariable("KOREBUILD_BUILD_TARGETS") ?? "compile nuget-install";
 
 #init
     @{
@@ -321,6 +321,8 @@ var buildTarget = "compile"
     @{
         var failed = new Dictionary<string, Exception>();
         var skipped = new List<string>();
+        var ciVolatileShare = Environment.GetEnvironmentVariable("CI_VOLATILE_SHARE");
+        var nugetExe = Environment.GetEnvironmentVariable("PUSH_NUGET_EXE");
         
         foreach(var repo in repositories)
         {
@@ -351,6 +353,19 @@ var buildTarget = "compile"
                 else
                 {
                     Exec("build.cmd", buildTarget, repo);
+                }
+                
+                if (!string.IsNullOrEmpty(ciVolatileShare))
+                {
+                    Log.Info("Publishing packages to " + ciVolatileShare);
+                    if (string.IsNullOrEmpty(nugetExe))
+                    {
+                        Log.Warn("PUSH_NUGET_EXE not specified.");
+                    }
+                    else
+                    {
+                        NuGetPackagesAdd(Path.Combine(repo, "artifacts", "build"), ciVolatileShare);
+                    }
                 }
 
                 Log.Info(string.Format("Build {0} succeeded", repo));
@@ -446,6 +461,8 @@ var buildTarget = "compile"
         }
     }
 
+macro name='ExecClr' program='string' commandline='string'
+    exec-clr
 
 macro name='GitPull' gitUri='string' gitBranch='string' gitFolder='string'
     git-pull
@@ -467,6 +484,9 @@ macro name='GitCommand' gitFolder='string' gitCommand='string'
 
 macro name='Exec' program='string' commandline='string' workingdir='string'
     exec
+    
+macro name='NuGetPackagesAdd' sourcePackagesDir='string' targetPackagesDir='string'
+    nuget-packages-add
 
 functions
     @{

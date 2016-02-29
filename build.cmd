@@ -20,4 +20,4 @@ IF EXIST packages\Sake goto run
 .nuget\NuGet.exe install Sake -ExcludeVersion -Out packages
 
 :run
-packages\Sake\tools\Sake.exe -I build -f makefile.shade %*
+packages\Sake\tools\Sake.exe -I KoreBuild-dotnet\build -f makefile.shade %*
