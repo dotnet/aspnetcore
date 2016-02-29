@@ -35,7 +35,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         private Queue<Work> _workRunning = new Queue<Work>(1024);
         private Queue<CloseHandle> _closeHandleAdding = new Queue<CloseHandle>(256);
         private Queue<CloseHandle> _closeHandleRunning = new Queue<CloseHandle>(256);
-        private readonly object _workSync = new Object();
+        private readonly object _workSync = new object();
+        private readonly object _startSync = new object();
         private bool _stopImmediate = false;
         private bool _initCompleted = false;
         private ExceptionDispatchInfo _closeError;
@@ -84,9 +85,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         public void Stop(TimeSpan timeout)
         {
-            if (!_initCompleted)
+            lock (_startSync)
             {
-                return;
+                if (!_initCompleted)
+                {
+                    return;
+                }
             }
 
             if (_thread.IsAlive)
@@ -209,20 +213,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         private void ThreadStart(object parameter)
         {
-            var tcs = (TaskCompletionSource<int>)parameter;
-            try
+            lock (_startSync)
             {
-                _loop.Init(_engine.Libuv);
-                _post.Init(_loop, OnPost, EnqueueCloseHandle);
-                tcs.SetResult(0);
+                var tcs = (TaskCompletionSource<int>)parameter;
+                try
+                {
+                    _loop.Init(_engine.Libuv);
+                    _post.Init(_loop, OnPost, EnqueueCloseHandle);
+                    _initCompleted = true;
+                    tcs.SetResult(0);
+                }
+                catch (Exception ex)
+                {
+                    tcs.SetException(ex);
+                    return;
+                }
             }
-            catch (Exception ex)
-            {
-                tcs.SetException(ex);
-                return;
-            }
-
-            _initCompleted = true;
 
             try
             {
