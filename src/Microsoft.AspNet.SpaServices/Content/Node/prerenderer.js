@@ -31,7 +31,7 @@ function loadViaTypeScript(module, filename) {
     // First perform a minimal transpilation from TS code to ES2015. This is very fast (doesn't involve type checking)
     // and is unlikely to need any special compiler options
     var src = fs.readFileSync(filename, 'utf8');
-    var compilerOptions = { jsx: ts.JsxEmit.Preserve, module: ts.ModuleKind.ES2015, target: ts.ScriptTarget.ES6 };
+    var compilerOptions = { jsx: ts.JsxEmit.Preserve, module: ts.ModuleKind.ES2015, target: ts.ScriptTarget.ES6, emitDecoratorMetadata: true };
     var es6Code = ts.transpile(src, compilerOptions, 'test.tsx', /* diagnostics */ []);
     
     // Second, process the ES2015 via Babel. We have to do this (instead of going directly from TS to ES5) because
@@ -116,6 +116,7 @@ function renderToString(callback, bootModulePath, bootModuleExport, absoluteRequ
     var params = {
         location: url.parse(requestPathAndQuery),
         url: requestPathAndQuery,
+        absoluteUrl: absoluteRequestUrl,
         domainTasks: domainTaskCompletionPromise
     };
 

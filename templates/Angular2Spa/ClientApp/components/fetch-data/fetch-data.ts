@@ -1,5 +1,5 @@
 import * as ng from 'angular2/core';
-import fetch from 'isomorphic-fetch';
+import { Http } from 'angular2/http';
 
 @ng.Component({
   selector: 'fetch-data'
@@ -10,12 +10,10 @@ import fetch from 'isomorphic-fetch';
 export class FetchData {
     public forecasts: WeatherForecast[];
     
-    constructor() {
-        fetch('/api/SampleData/WeatherForecasts')
-            .then(response => response.json())
-            .then((data: WeatherForecast[]) => {
-                this.forecasts = data;
-            });
+    constructor(http: Http) {
+        http.get('/api/SampleData/WeatherForecasts').subscribe(result => {
+            this.forecasts = result.json(); 
+        });
     }
 }
 

@@ -19,7 +19,7 @@ module.exports = merge({
         ]
     },
     entry: {
-        main: ['./ClientApp/boot.ts'],
+        main: ['./ClientApp/boot-client.ts'],
         vendor: ['angular2/bundles/angular2-polyfills.js', 'bootstrap', 'bootstrap/dist/css/bootstrap.css', 'style-loader', 'jquery', 'angular2/core', 'angular2/common', 'angular2/http', 'angular2/router', 'angular2/platform/browser']
     },
     output: {
