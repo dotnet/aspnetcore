@@ -7,6 +7,9 @@
   "installed": {
     "requirejs/require.d.ts": {
       "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
+    },
+    "isomorphic-fetch/isomorphic-fetch.d.ts": {
+      "commit": "4d2d0653003a4d1df4d7c68054cce4f4ace58bdf"
     }
   }
 }

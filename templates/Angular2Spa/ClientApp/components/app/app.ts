@@ -1,9 +1,9 @@
 import * as ng from 'angular2/core';
 import * as router from 'angular2/router';
 import { Http, HTTP_BINDINGS } from 'angular2/http';
-import { NavMenu } from '../nav-menu/nav-menu.ts';
-import { Home } from '../home/home.ts';
-import { About } from '../about/about';
+import { NavMenu } from '../nav-menu/nav-menu';
+import { Home } from '../home/home';
+import { FetchData } from '../fetch-data/fetch-data';
 import { Counter } from '../counter/counter';
 
 @ng.Component({
@@ -11,8 +11,8 @@ import { Counter } from '../counter/counter';
 })
 @router.RouteConfig([
     { path: '/', component: Home, name: 'Home' },
-    { path: '/about', component: About, name: 'About' },
-    { path: '/counter', component: Counter, name: 'Counter' }
+    { path: '/counter', component: Counter, name: 'Counter' },
+    { path: '/fetch-data', component: FetchData, name: 'FetchData' }
 ])
 @ng.View({
     template: require('./app.html'),
