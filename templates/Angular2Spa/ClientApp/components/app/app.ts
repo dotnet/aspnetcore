@@ -1,6 +1,7 @@
 import * as ng from 'angular2/core';
 import * as router from 'angular2/router';
 import { Http, HTTP_BINDINGS } from 'angular2/http';
+import { NavMenu } from '../nav-menu/nav-menu.ts';
 import { Home } from '../home/home.ts';
 import { About } from '../about/about';
 import { Counter } from '../counter/counter';
@@ -16,7 +17,7 @@ import { Counter } from '../counter/counter';
 @ng.View({
     template: require('./app.html'),
     styles: [require('./app.css')],
-    directives: [router.ROUTER_DIRECTIVES]
+    directives: [NavMenu, router.ROUTER_DIRECTIVES]
 })
 export class App {
 }

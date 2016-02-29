@@ -1,28 +1,10 @@
-<div class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" [routerLink]="['/Home']">WebApplicationBasic</a>
+<div class='container-fluid'> 
+    <div class='row'>
+        <div class='col-sm-3'>
+            <nav-menu></nav-menu>
         </div>
-        <div class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
-                <li><a [routerLink]="['/Home']">Home</a></li>
-                <li><a [routerLink]="['/About']">About</a></li>
-                <li><a [routerLink]="['/Counter']">Counter</a></li>
-            </ul>
+        <div class='col-sm-9 body-content'>
+            <router-outlet></router-outlet>
         </div>
     </div>
-</div>
-
-<div class="container body-content">
-    <router-outlet></router-outlet>
-    <hr />
-    <footer>
-        <p>&copy; 2016 - WebApplicationBasic</p>
-    </footer>
 </div>
