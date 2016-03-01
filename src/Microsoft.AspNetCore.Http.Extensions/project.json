@@ -8,7 +8,9 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "dependencies": {
@@ -19,10 +21,13 @@
   },
   "frameworks": {
     "net451": {},
-    "dotnet5.4": {
+    "netstandard1.3": {
       "dependencies": {
         "System.IO.FileSystem": "4.0.1-*"
-      }
+      },
+      "imports": [
+        "dotnet5.4"
+      ]
     }
   }
 }

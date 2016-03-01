@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http.Internal
     public class RequestCookieCollection : IRequestCookieCollection
     {
         public static readonly RequestCookieCollection Empty = new RequestCookieCollection();
-#if DOTNET5_4
+#if NETSTANDARD1_3
         private static readonly string[] EmptyKeys = Array.Empty<string>();
 #else
         private static readonly string[] EmptyKeys = new string[0];

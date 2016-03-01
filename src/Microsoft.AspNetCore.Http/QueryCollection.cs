@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.Internal
     public class QueryCollection : IQueryCollection
     {
         public static readonly QueryCollection Empty = new QueryCollection();
-#if DOTNET5_4
+#if NETSTANDARD1_3
         private static readonly string[] EmptyKeys = Array.Empty<string>();
         private static readonly StringValues[] EmptyValues = Array.Empty<StringValues>();
 #else

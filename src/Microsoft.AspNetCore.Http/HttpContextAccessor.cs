@@ -5,7 +5,7 @@ using System;
 #if NET451
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting;
-#elif DOTNET5_4
+#elif NETSTANDARD1_3
 using System.Threading;
 #endif
 
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             }
         }
 
-#elif DOTNET5_4
+#elif NETSTANDARD1_3
         private AsyncLocal<HttpContext> _httpContextCurrent = new AsyncLocal<HttpContext>();
         public HttpContext HttpContext
         {
