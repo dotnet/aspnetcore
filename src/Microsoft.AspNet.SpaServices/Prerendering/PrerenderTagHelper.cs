@@ -17,12 +17,16 @@ namespace Microsoft.AspNet.SpaServices.Prerendering
         
         const string PrerenderModuleAttributeName = "asp-prerender-module";
         const string PrerenderExportAttributeName = "asp-prerender-export";
+        const string PrerenderWebpackConfigAttributeName = "asp-prerender-webpack-config";
         
         [HtmlAttributeName(PrerenderModuleAttributeName)]
         public string ModuleName { get; set; }
         
         [HtmlAttributeName(PrerenderExportAttributeName)]
         public string ExportName { get; set; }
+        
+        [HtmlAttributeName(PrerenderWebpackConfigAttributeName)]
+        public string WebpackConfigPath { get; set; }
 
         private IHttpContextAccessor contextAccessor;
         private INodeServices nodeServices;
@@ -48,13 +52,15 @@ namespace Microsoft.AspNet.SpaServices.Prerendering
             var request = this.contextAccessor.HttpContext.Request;
             var result = await Prerenderer.RenderToString(
                 nodeServices: this.nodeServices,
-                componentModuleName: this.ModuleName,
-                componentExportName: this.ExportName,
+                bootModule: new JavaScriptModuleExport(this.ModuleName) {
+                    exportName = this.ExportName,
+                    webpackConfig = this.WebpackConfigPath
+                },
                 requestAbsoluteUrl: UriHelper.GetEncodedUrl(this.contextAccessor.HttpContext.Request),
                 requestPathAndQuery: request.Path + request.QueryString.Value);
             output.Content.SetHtmlContent(result.Html);
             
-            // Also attach any specific globals to the 'window' object. This is useful for transferring
+            // Also attach any specified globals to the 'window' object. This is useful for transferring
             // general state between server and client.
             if (result.Globals != null) {
                 var stringBuilder = new StringBuilder();

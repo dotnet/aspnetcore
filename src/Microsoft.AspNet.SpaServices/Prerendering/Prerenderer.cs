@@ -16,12 +16,21 @@ namespace Microsoft.AspNet.SpaServices.Prerendering
             });
         }
         
-        public static async Task<RenderToStringResult> RenderToString(INodeServices nodeServices, string componentModuleName, string componentExportName, string requestAbsoluteUrl, string requestPathAndQuery) {
+        public static async Task<RenderToStringResult> RenderToString(INodeServices nodeServices, JavaScriptModuleExport bootModule, string requestAbsoluteUrl, string requestPathAndQuery) {
             return await nodeServices.InvokeExport<RenderToStringResult>(nodeScript.Value.FileName, "renderToString", 
-                /* bootModulePath */ componentModuleName,
-                /* bootModuleExport */ componentExportName,
-                /* absoluteRequestUrl */ requestAbsoluteUrl,
-                /* requestPathAndQuery */ requestPathAndQuery);
+                bootModule,
+                requestAbsoluteUrl,
+                requestPathAndQuery);
+        }
+    }
+    
+    public class JavaScriptModuleExport {
+        public string moduleName { get; private set; }
+        public string exportName { get; set; }
+        public string webpackConfig { get; set; }
+        
+        public JavaScriptModuleExport(string moduleName) {
+            this.moduleName = moduleName;
         }
     }
     
