@@ -1,9 +1,11 @@
 var path = require('path');
 var webpack = require('webpack');
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var merge = require('extendify')({ isDeep: true, arrays: 'concat' });
 var devConfig = require('./webpack.config.dev');
 var prodConfig = require('./webpack.config.prod');
 var isDevelopment = process.env.ASPNET_ENV === 'Development';
+var extractCSS = new ExtractTextPlugin('site.css');
 
 module.exports = merge({
     resolve: {
@@ -11,14 +13,12 @@ module.exports = merge({
     },
     module: {
         loaders: [
-            { test: /\.ts(x?)$/, include: /ClientApp/, loader: 'babel-loader' },
             { test: /\.ts(x?)$/, include: /ClientApp/, loader: 'ts-loader' },
-            { test: /\.(png|woff|woff2|eot|ttf|svg)$/, loader: 'url-loader?limit=100000' }
+            { test: /\.css/, loader: extractCSS.extract(['css']) }
         ]
     },
     entry: {
-        main: ['./ClientApp/App.ts'],
-        vendor: ['bootstrap', 'bootstrap/dist/css/bootstrap.css', 'style-loader', 'jquery']
+        main: ['./ClientApp/App.ts']
     },
     output: {
         path: path.join(__dirname, 'wwwroot', 'dist'),
@@ -26,8 +26,10 @@ module.exports = merge({
         publicPath: '/dist/'
     },
     plugins: [
-        new webpack.ProvidePlugin({ $: 'jquery', jQuery: 'jquery' }), // Maps these identifiers to the jQuery package (because Bootstrap expects it to be a global variable)
-        new webpack.optimize.OccurenceOrderPlugin(),
-        new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.js') // Moves vendor content out of other bundles
+        extractCSS,
+        new webpack.DllReferencePlugin({
+            context: __dirname,
+            manifest: require('./wwwroot/dist/vendor-manifest.json')
+        })
     ]
 }, isDevelopment ? devConfig : prodConfig);

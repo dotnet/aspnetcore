@@ -2,8 +2,6 @@
   "name": "WebApplicationBasic",
   "version": "0.0.0",
   "devDependencies": {
-    "babel-loader": "^6.2.3",
-    "babel-preset-es2015": "^6.5.0",
     "bootstrap": "^3.3.6",
     "css-loader": "^0.23.1",
     "extendify": "^1.0.0",
@@ -15,8 +13,5 @@
     "typescript": "^1.8.2",
     "url-loader": "^0.5.7",
     "webpack": "^1.12.14"
-  },
-  "dependencies": {
-    "babel-core": "^6.5.2"
   }
 }
