@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
         private static DirectoryInfo GetDefaultKeyStorageDirectory()
         {
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
             // Environment.GetFolderPath returns null if the user profile isn't loaded.
             string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             if (!String.IsNullOrEmpty(folderPath))

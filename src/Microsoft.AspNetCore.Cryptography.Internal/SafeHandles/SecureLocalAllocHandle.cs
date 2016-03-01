@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
 using System.Runtime.ConstrainedExecution;
 #endif
 
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
             return newHandle;
         }
 
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 #endif
         private void AllocateImpl(IntPtr cb)

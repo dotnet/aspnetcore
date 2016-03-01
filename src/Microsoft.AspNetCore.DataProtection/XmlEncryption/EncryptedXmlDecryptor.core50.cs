@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DOTNET5_4
+#if NETSTANDARD1_3
 // [[ISSUE60]] Remove this entire file when Core CLR gets support for EncryptedXml.
 // This is just a dummy implementation of the class that always throws.
 // The only reason it's here (albeit internal) is to provide a nice error message if key

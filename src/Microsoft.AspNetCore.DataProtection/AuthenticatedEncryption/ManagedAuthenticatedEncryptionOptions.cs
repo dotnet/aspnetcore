@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             if (EncryptionAlgorithmType == typeof(Aes))
             {
                 Func<Aes> factory = null;
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
                 if (OSVersionUtil.IsWindows())
                 {
                     // If we're on desktop CLR and running on Windows, use the FIPS-compliant implementation.

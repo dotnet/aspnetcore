@@ -11,13 +11,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Win32;
 
-#if !DOTNET5_4 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
+#if !NETSTANDARD1_3 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
 using System.Security.Cryptography.X509Certificates;
 #endif
 
 namespace Microsoft.AspNetCore.DataProtection
 {
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
     /// <summary>
     /// Provides access to configuration for the data protection system, which allows the
     /// developer to configure default cryptographic algorithms, key storage locations,
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.DataProtection
             return this;
         }
 
-#if !DOTNET5_4 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
+#if !NETSTANDARD1_3 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
 
         /// <summary>
         /// Configures keys to be encrypted to a given certificate before being persisted to storage.

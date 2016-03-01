@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
         private static string GetLocalApplicationData()
         {
-#if DNXCORE50
+#if NETSTANDARDAPP1_5
             return Environment.GetEnvironmentVariable("LOCALAPPDATA");
 #else
             return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);

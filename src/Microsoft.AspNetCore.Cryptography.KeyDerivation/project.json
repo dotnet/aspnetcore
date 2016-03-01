@@ -10,19 +10,24 @@
   },
   "frameworks": {
     "net451": {},
-    "dotnet5.4": {
+    "netstandard1.3": {
       "dependencies": {
         "System.Runtime.Extensions": "4.1.0-*",
         "System.Security.Cryptography.Algorithms": "4.0.0-*",
         "System.Text.Encoding.Extensions": "4.0.11-*"
-      }
+      },
+      "imports": [
+        "dotnet5.4"
+      ]
     }
   },
   "compilationOptions": {
     "allowUnsafe": true,
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   }
 }

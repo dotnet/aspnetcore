@@ -12,13 +12,13 @@ using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
 using Microsoft.Win32.SafeHandles;
 
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
 using System.Runtime.ConstrainedExecution;
 #endif
 
 namespace Microsoft.AspNetCore.Cryptography
 {
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
     [SuppressUnmanagedCodeSecurity]
 #endif
     internal unsafe static class UnsafeNativeMethods
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Cryptography
             [In] uint dwFlags);
 
         [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375399(v=vs.85).aspx
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Cryptography
             [In] IntPtr hHash);
 
         [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375404(v=vs.85).aspx
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Cryptography
          */
 
         [DllImport(NCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         // http://msdn.microsoft.com/en-us/library/windows/desktop/hh706799(v=vs.85).aspx

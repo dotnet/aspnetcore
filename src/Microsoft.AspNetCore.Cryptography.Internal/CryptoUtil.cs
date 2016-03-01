@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.Internal;
 
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
 using System.Runtime.ConstrainedExecution;
 #endif
 
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Cryptography
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         public static bool TimeConstantBuffersAreEqual(byte* bufA, byte* bufB, uint count)

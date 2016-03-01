@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
 // These classes allow using the C# string interpolation feature from .NET 4.5.1.
 // They're slimmed-down versions of the classes that exist in .NET 4.6.
 

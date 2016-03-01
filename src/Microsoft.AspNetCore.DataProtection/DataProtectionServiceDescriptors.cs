@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.Extensions.Options;
 using Microsoft.Win32;
 
-#if !DOTNET5_4 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
+#if !NETSTANDARD1_3 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
 using System.Security.Cryptography.X509Certificates;
 #endif
 
@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return ServiceDescriptor.Singleton<IAuthenticatedEncryptorConfiguration>(options.ToConfiguration);
         }
 
-#if !DOTNET5_4 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
+#if !NETSTANDARD1_3 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
         /// <summary>
         /// An <see cref="ICertificateResolver"/> backed by the default implementation.
         /// </summary>
@@ -118,7 +118,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return ServiceDescriptor.Singleton<IKeyManager>(services => new XmlKeyManager(services));
         }
 
-#if !DOTNET5_4 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
+#if !NETSTANDARD1_3 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
 
         /// <summary>
         /// An <see cref="IXmlEncryptor"/> backed by an X.509 certificate.
