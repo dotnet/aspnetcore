@@ -16,8 +16,9 @@ namespace Microsoft.AspNet.SpaServices.Prerendering
             });
         }
 
-        public static async Task<RenderToStringResult> RenderToString(INodeServices nodeServices, JavaScriptModuleExport bootModule, string requestAbsoluteUrl, string requestPathAndQuery) {
+        public static async Task<RenderToStringResult> RenderToString(string applicationBasePath, INodeServices nodeServices, JavaScriptModuleExport bootModule, string requestAbsoluteUrl, string requestPathAndQuery) {
             return await nodeServices.InvokeExport<RenderToStringResult>(nodeScript.Value.FileName, "renderToString",
+                applicationBasePath,
                 bootModule,
                 requestAbsoluteUrl,
                 requestPathAndQuery);

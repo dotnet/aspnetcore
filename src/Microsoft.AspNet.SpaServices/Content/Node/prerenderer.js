@@ -69,19 +69,19 @@ var domain = require('domain');
 var domainTask = require('domain-task');
 var baseUrl = require('domain-task/fetch').baseUrl;
 
-function findBootModule(bootModule, callback) {
-    var bootModuleNameFullPath = path.resolve(process.cwd(), bootModule.moduleName);
+function findBootModule(applicationBasePath, bootModule, callback) {
+    var bootModuleNameFullPath = path.resolve(applicationBasePath, bootModule.moduleName);
     if (bootModule.webpackConfig) {
-        var webpackConfigFullPath = path.resolve(process.cwd(), bootModule.webpackConfig);
+        var webpackConfigFullPath = path.resolve(applicationBasePath, bootModule.webpackConfig);
         loadViaWebpack(webpackConfigFullPath, bootModuleNameFullPath, callback);
     } else {
         callback(null, require(bootModuleNameFullPath));
     }
 }
 
-function findBootFunc(bootModule, callback) {
+function findBootFunc(applicationBasePath, bootModule, callback) {
     // First try to load the module (possibly via Webpack)
-    findBootModule(bootModule, function(findBootModuleError, foundBootModule) {
+    findBootModule(applicationBasePath, bootModule, function(findBootModuleError, foundBootModule) {
         if (findBootModuleError) {
             callback(findBootModuleError);
             return;
@@ -113,8 +113,8 @@ function findBootFunc(bootModule, callback) {
     });
 }
 
-function renderToString(callback, bootModule, absoluteRequestUrl, requestPathAndQuery) {
-    findBootFunc(bootModule, function (findBootFuncError, bootFunc) {
+function renderToString(callback, applicationBasePath, bootModule, absoluteRequestUrl, requestPathAndQuery) {
+    findBootFunc(applicationBasePath, bootModule, function (findBootFuncError, bootFunc) {
         if (findBootFuncError) {
             callback(findBootFuncError);
             return;

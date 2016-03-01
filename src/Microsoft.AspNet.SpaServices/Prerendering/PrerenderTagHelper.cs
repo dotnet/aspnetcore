@@ -28,21 +28,23 @@ namespace Microsoft.AspNet.SpaServices.Prerendering
         [HtmlAttributeName(PrerenderWebpackConfigAttributeName)]
         public string WebpackConfigPath { get; set; }
 
+        private string applicationBasePath;
         private IHttpContextAccessor contextAccessor;
         private INodeServices nodeServices;
 
         public PrerenderTagHelper(IServiceProvider serviceProvider, IHttpContextAccessor contextAccessor)
         {
+            var appEnv = (IApplicationEnvironment)serviceProvider.GetService(typeof(IApplicationEnvironment));
             this.contextAccessor = contextAccessor;
             this.nodeServices = (INodeServices)serviceProvider.GetService(typeof (INodeServices)) ?? fallbackNodeServices;
+            this.applicationBasePath = appEnv.ApplicationBasePath;
 
             // Consider removing the following. Having it means you can get away with not putting app.AddNodeServices()
             // in your startup file, but then again it might be confusing that you don't need to.
             if (this.nodeServices == null) {
-                var appEnv = (IApplicationEnvironment)serviceProvider.GetService(typeof(IApplicationEnvironment));
                 this.nodeServices = fallbackNodeServices = Configuration.CreateNodeServices(new NodeServicesOptions {
                     HostingModel = NodeHostingModel.Http,
-                    ProjectPath = appEnv.ApplicationBasePath
+                    ProjectPath = this.applicationBasePath
                 });
             }
         }
@@ -51,6 +53,7 @@ namespace Microsoft.AspNet.SpaServices.Prerendering
         {
             var request = this.contextAccessor.HttpContext.Request;
             var result = await Prerenderer.RenderToString(
+                applicationBasePath: this.applicationBasePath,
                 nodeServices: this.nodeServices,
                 bootModule: new JavaScriptModuleExport(this.ModuleName) {
                     exportName = this.ExportName,
