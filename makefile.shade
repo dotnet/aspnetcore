@@ -323,6 +323,8 @@ var buildTarget = "compile"
         var skipped = new List<string>();
         var ciVolatileShare = Environment.GetEnvironmentVariable("CI_VOLATILE_SHARE");
         var nugetExe = Environment.GetEnvironmentVariable("PUSH_NUGET_EXE");
+        var universeArtifacts = Path.Combine("artifacts", "build");
+        Directory.CreateDirectory(universeArtifacts);
         
         foreach(var repo in repositories)
         {
@@ -356,16 +358,24 @@ var buildTarget = "compile"
                 }
                 
                 var repoArtifacts = Path.Combine(repo, "artifacts", "build");
-                if (!string.IsNullOrEmpty(ciVolatileShare) && Directory.Exists(repoArtifacts))
+                if (Directory.Exists(repoArtifacts))
                 {
-                    Log.Info("Publishing packages to " + ciVolatileShare);
-                    if (string.IsNullOrEmpty(nugetExe))
+                    foreach (var source in Directory.EnumerateFiles(repoArtifacts, "*.nupkg"))
                     {
-                        Log.Warn("PUSH_NUGET_EXE not specified.");
+                        File.Copy(source, Path.Combine(universeArtifacts, Path.GetFileName(source)), overwrite: true);
                     }
-                    else
+
+                    if (!string.IsNullOrEmpty(ciVolatileShare))
                     {
-                        NuGetPackagesAdd(repoArtifacts, ciVolatileShare);
+                        Log.Info("Publishing packages to " + ciVolatileShare);
+                        if (string.IsNullOrEmpty(nugetExe))
+                        {
+                            Log.Warn("PUSH_NUGET_EXE not specified.");
+                        }
+                        else
+                        {
+                            NuGetPackagesAdd(repoArtifacts, ciVolatileShare);
+                        }
                     }
                 }
 
