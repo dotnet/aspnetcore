@@ -11,8 +11,7 @@ module.exports = merge({
     },
     module: {
         loaders: [
-            { test: /\.ts(x?)$/, include: /ClientApp/, loader: 'babel-loader' },
-            { test: /\.ts(x?)$/, include: /ClientApp/, loader: 'ts-loader' },
+            { test: /\.ts$/, include: /ClientApp/, loader: 'ts-loader' },
             { test: /\.(png|woff|woff2|eot|ttf|svg)$/, loader: 'url-loader?limit=100000' },
             { test: /\.css$/, include: /ClientApp/, loader: 'raw-loader' },
             { test: /\.html$/, loader: 'raw-loader' }
