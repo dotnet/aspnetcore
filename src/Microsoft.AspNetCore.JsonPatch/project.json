@@ -3,7 +3,9 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "repository": {
@@ -15,7 +17,7 @@
   },
   "frameworks": {
     "net451": {},
-    "dotnet5.4": {
+    "netstandard1.3": {
       "dependencies": {
         "Microsoft.CSharp": "4.0.1-*",
         "System.Collections.Concurrent": "4.0.12-*",
@@ -27,7 +29,10 @@
         "System.Runtime.Serialization.Primitives": "4.1.0-*",
         "System.Text.Encoding.Extensions": "4.0.11-*"
       },
-      "imports": "portable-net451+win8"
+      "imports": [
+        "dotnet5.4",
+        "portable-net451+win8"
+      ]
     }
   }
 }
