@@ -2,7 +2,8 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "target": "es5",
-    "sourceMap": true
+    "sourceMap": true,
+    "skipDefaultLibCheck": true
   },
   "exclude": [
       "node_modules"
