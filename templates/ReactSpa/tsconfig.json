@@ -3,7 +3,8 @@
     "moduleResolution": "node",
     "target": "es6",
     "jsx": "preserve",
-    "sourceMap": true
+    "sourceMap": true,
+    "skipDefaultLibCheck": true
   },
   "exclude": [
       "node_modules"
