@@ -45,7 +45,7 @@ namespace Microsoft.Net.Http.Server
             : base(errorCode, message)
         {
         }
-#if DOTNET5_4
+#if NETSTANDARD1_3
         public int ErrorCode
 #else
         // the base class returns the HResult with this property

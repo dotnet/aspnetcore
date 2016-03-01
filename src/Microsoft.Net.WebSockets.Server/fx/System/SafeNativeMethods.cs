@@ -21,7 +21,7 @@
 // </copyright>                                                                
 //------------------------------------------------------------------------------
 
-#if DOTNET5_4
+#if NETSTANDARD1_3
 using System.Runtime.InteropServices;
 using System.Text;
 

@@ -32,7 +32,7 @@ namespace Microsoft.Net.Http.Server
             get
             {
                 return Environment.HasShutdownStarted
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
                     || AppDomain.CurrentDomain.IsFinalizingForUnload()
 #endif
                     ;

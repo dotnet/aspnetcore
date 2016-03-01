@@ -120,7 +120,7 @@ namespace Microsoft.Net.Http.Server
             var boundHandle = responseStream.RequestContext.Server.BoundHandle;
 
             int bufferSize = 1024 * 64; // TODO: Validate buffer size choice.
-#if DOTNET5_4
+#if NETSTANDARD1_3
             _fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize /*, useAsync: true*/); // Extremely expensive.
 #else
             // It's too expensive to validate anything before opening the file. Open the file and then check the lengths.

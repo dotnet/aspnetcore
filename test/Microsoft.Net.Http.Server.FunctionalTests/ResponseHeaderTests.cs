@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
@@ -217,7 +217,7 @@ namespace Microsoft.Net.Http.Server
                 Assert.Equal(0, response.ContentLength);
                 Assert.NotNull(response.Headers["Date"]);
                 Assert.Equal("Microsoft-HTTPAPI/2.0", response.Headers["Server"]);
-#if DNXCORE50 // WebHeaderCollection.GetValues() not available in CoreCLR.
+#if NETSTANDARDAPP1_5 // WebHeaderCollection.GetValues() not available in CoreCLR.
                 Assert.Equal("custom1, and custom2, custom3", response.Headers["WWW-Authenticate"]);
 #else
                 Assert.Equal(new string[] { "custom1, and custom2", "custom3" }, response.Headers.GetValues("WWW-Authenticate"));
@@ -246,7 +246,7 @@ namespace Microsoft.Net.Http.Server
                 Assert.Equal(0, response.ContentLength);
                 Assert.NotNull(response.Headers["Date"]);
                 Assert.Equal("Microsoft-HTTPAPI/2.0", response.Headers["Server"]);
-#if DNXCORE50 // WebHeaderCollection.GetValues() not available in CoreCLR.
+#if NETSTANDARDAPP1_5 // WebHeaderCollection.GetValues() not available in CoreCLR.
                 Assert.Equal("custom1, and custom2, custom3", response.Headers["Custom-Header1"]);
 #else
                 Assert.Equal(new string[] { "custom1, and custom2", "custom3" }, response.Headers.GetValues("Custom-Header1"));

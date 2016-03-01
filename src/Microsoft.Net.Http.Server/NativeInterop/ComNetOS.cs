@@ -32,7 +32,7 @@ namespace Microsoft.Net.Http.Server
 
         static ComNetOS()
         {
-#if DOTNET5_4
+#if NETSTANDARD1_3
             // TODO: SkipIOCPCallbackOnSuccess doesn't work on Win7. Need a way to detect Win7 vs 8+.
             IsWin8orLater = false;
 #else

@@ -379,7 +379,7 @@ namespace Microsoft.Net.Http.Server
             throw new InvalidOperationException(Resources.Exception_WriteOnlyStream);
         }
 
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             throw new InvalidOperationException(Resources.Exception_WriteOnlyStream);
@@ -468,7 +468,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-#if DOTNET5_4
+#if NETSTANDARD1_3
         public unsafe IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
 #else
         public override unsafe IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
@@ -476,7 +476,7 @@ namespace Microsoft.Net.Http.Server
         {
             return WriteAsync(buffer, offset, count).ToIAsyncResult(callback, state);
         }
-#if DOTNET5_4
+#if NETSTANDARD1_3
         public void EndWrite(IAsyncResult asyncResult)
 #else
         public override void EndWrite(IAsyncResult asyncResult)

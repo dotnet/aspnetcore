@@ -28,7 +28,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Net.WebSockets
 {
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2237:MarkISerializableTypesWithSerializable")]
 #endif
     internal sealed class WebSocketException : Win32Exception
@@ -115,7 +115,7 @@ namespace Microsoft.Net.WebSockets
             : base(message, innerException)
         { 
         }
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
         public override int ErrorCode
         {
             get

@@ -31,7 +31,7 @@
 **
 =============================================================================*/
 
-#if DOTNET5_4
+#if NETSTANDARD1_3
 
 namespace System.Runtime.InteropServices
 {

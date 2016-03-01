@@ -8,12 +8,14 @@
     "allowUnsafe": true,
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "frameworks": {
     "net451": {},
-    "dotnet5.4": {
+    "netstandard1.3": {
       "dependencies": {
         "System.Collections": "4.0.11-*",
         "System.Linq": "4.1.0-*",
@@ -25,7 +27,10 @@
         "System.Threading.Tasks": "4.0.11-*",
         "System.Threading.Timer": "4.0.1-*",
         "System.Threading.ThreadPool": "4.0.10-*"
-      }
+      },
+      "imports": [
+        "dotnet5.4"
+      ]
     }
   }
 }
