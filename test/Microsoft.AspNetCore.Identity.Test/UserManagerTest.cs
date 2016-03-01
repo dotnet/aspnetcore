@@ -36,13 +36,15 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var services = new ServiceCollection()
                     .AddTransient<IUserStore<TestUser>, NoopUserStore>()
-                    .AddSingleton<IHttpContextAccessor, HttpContextAccessor>()
-                    .AddLogging();
+                    .AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            services.AddLogging();
+
             services.AddIdentity<TestUser, TestRole>()
                 .AddUserManager<CustomUserManager>()
                 .AddRoleManager<CustomRoleManager>();
             var provider = services.BuildServiceProvider();
-            Assert.Same(provider.GetRequiredService<UserManager<TestUser>>(), 
+            Assert.Same(provider.GetRequiredService<UserManager<TestUser>>(),
                 provider.GetRequiredService<CustomUserManager>());
             Assert.Same(provider.GetRequiredService<RoleManager<TestRole>>(),
                 provider.GetRequiredService<CustomRoleManager>());
@@ -461,7 +463,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var pwd = "password";
             var hashed = "hashed";
             var rehashed = "rehashed";
-            
+
             store.Setup(s => s.GetPasswordHashAsync(user, CancellationToken.None))
                 .ReturnsAsync(hashed)
                 .Verifiable();
@@ -679,7 +681,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task ResetTokenCallNoopForTokenValueZero()
         {
-            var user = new TestUser() { UserName = Guid.NewGuid().ToString()};
+            var user = new TestUser() { UserName = Guid.NewGuid().ToString() };
             var store = new Mock<IUserLockoutStore<TestUser>>();
             store.Setup(x => x.ResetAccessFailedCountAsync(user, It.IsAny<CancellationToken>())).Returns(() =>
                {

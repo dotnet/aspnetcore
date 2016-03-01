@@ -24,13 +24,14 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             var services = new ServiceCollection();
 
             services
-                .AddLogging()
                 .AddEntityFramework()
                 .AddSqlServer()
                 .AddDbContext<IdentityDbContext>(o => o.UseSqlServer(fixture.ConnectionString))
                 .ServiceCollection()
                 .AddIdentity<IdentityUser, IdentityRole>()
                 .AddEntityFrameworkStores<IdentityDbContext>();
+
+            services.AddLogging();
 
             var provider = services.BuildServiceProvider();
             _builder = new ApplicationBuilder(provider);
