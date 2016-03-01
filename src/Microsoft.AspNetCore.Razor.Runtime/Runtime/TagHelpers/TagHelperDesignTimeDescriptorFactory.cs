@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if !DOTNET5_4 // Cannot accurately resolve the location of the documentation XML file in coreclr.
+#if !NETSTANDARD1_3 // Cannot accurately resolve the location of the documentation XML file in coreclr.
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

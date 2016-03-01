@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if DNXCORE50
+#if NETSTANDARDAPP1_5
 using System.Reflection;
 #endif
 using Microsoft.AspNetCore.Razor.CodeGenerators;

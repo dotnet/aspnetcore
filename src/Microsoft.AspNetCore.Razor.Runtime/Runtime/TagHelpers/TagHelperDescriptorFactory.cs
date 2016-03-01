@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 RegexOptions.None,
                 Constants.RegexMatchTimeout);
 
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
         private readonly TagHelperDesignTimeDescriptorFactory _designTimeDescriptorFactory;
 #endif
         private readonly bool _designTime;
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         /// </param>
         public TagHelperDescriptorFactory(bool designTime)
         {
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
             if (designTime)
             {
                 _designTimeDescriptorFactory = new TagHelperDesignTimeDescriptorFactory();
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         {
             TagHelperDesignTimeDescriptor typeDesignTimeDescriptor = null;
 
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
             if (_designTime)
             {
                 typeDesignTimeDescriptor = _designTimeDescriptorFactory.CreateDescriptor(type);
@@ -706,7 +706,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         {
             TagHelperAttributeDesignTimeDescriptor propertyDesignTimeDescriptor = null;
 
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
             if (_designTime)
             {
                 propertyDesignTimeDescriptor = _designTimeDescriptorFactory.CreateAttributeDescriptor(property);
