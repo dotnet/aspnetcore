@@ -6,8 +6,7 @@ import * as router from 'angular2/router';
 })
 @ng.View({
   template: require('./nav-menu.html'),
-  directives: [router.ROUTER_DIRECTIVES],
-  styles: [require('./nav-menu.css')]
+  directives: [router.ROUTER_DIRECTIVES]
 })
 export class NavMenu {
 }

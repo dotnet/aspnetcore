@@ -1,15 +1,7 @@
 var webpack = require('webpack');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
-var extractCSS = new ExtractTextPlugin('site.css');
 
 module.exports = {
-    module: {
-        loaders: [
-            { test: /\.css/, exclude: /ClientApp/, loader: extractCSS.extract(['css']) },
-        ]
-    },
     plugins: [
-        extractCSS,            
         new webpack.optimize.UglifyJsPlugin({
             minimize: true,
             mangle: false // Due to https://github.com/angular/angular/issues/6678

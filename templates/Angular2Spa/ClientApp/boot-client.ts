@@ -1,4 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.css';
+import './styles/site.css';
 
 import { bootstrap } from 'angular2/platform/browser';
 import { FormBuilder } from 'angular2/common';

@@ -1,3 +1,10 @@
+@media (max-width: 767px) {
+    /* On small screens, the nav menu spans the full width of the screen. Leave a space for it. */
+    .body-content {
+        padding-top: 50px;
+    }
+}
+
 .main-nav li .glyphicon {
     margin-right: 10px;
 }
@@ -9,7 +16,6 @@
     background-color: #4189C7;
     color: white;
 }
-
 
 /* Keep the nav menu independent of scrolling and on top of other items */
 .main-nav {

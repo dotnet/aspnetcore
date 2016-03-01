@@ -16,7 +16,6 @@ import { Counter } from '../counter/counter';
 ])
 @ng.View({
     template: require('./app.html'),
-    styles: [require('./app.css')],
     directives: [NavMenu, router.ROUTER_DIRECTIVES]
 })
 export class App {
