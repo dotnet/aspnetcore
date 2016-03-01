@@ -33,7 +33,7 @@ namespace LocalizationSample
                 new CultureInfo("zh"),
                 new CultureInfo("zh-CN")
             };
-#if !DNXCORE50
+#if !NETSTANDARDAPP1_5
             supportedCultures.Add(new CultureInfo("zh-CHT"));
 #endif
             var options = new RequestLocalizationOptions {

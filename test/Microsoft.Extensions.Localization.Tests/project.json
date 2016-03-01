@@ -7,11 +7,14 @@
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "Microsoft.Extensions.Localization": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
-    "xunit": "2.1.0-*",
+    "xunit": "2.1.0-*"
   },
   "frameworks": {
-    "dnxcore50": {
-      "imports": "portable-net451+win8",
+    "netstandardapp1.5": {
+      "imports": [
+        "dnxcore50",
+        "portable-net451+win8"
+      ],
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
         "System.Resources.Writer": "4.0.0-*",
