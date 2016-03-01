@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Testing
 
         protected void PickRuntime()
         {
-            TargetFrameworkName = DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? "dnx451" : "dnxcore50";
+            TargetFrameworkName = DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? "dnx451" : "netstandardapp1.5";
 
             Logger.LogInformation($"Pick target framework {TargetFrameworkName}");
         }

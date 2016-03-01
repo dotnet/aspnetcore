@@ -5,8 +5,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Server.Testing.Common;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Server.Testing
 {
@@ -54,7 +55,17 @@ namespace Microsoft.AspNetCore.Server.Testing
             if (DeploymentParameters.PublishApplicationBeforeDeployment)
             {
                 var executableExtension = DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? ".exe" : "";
-                executableName = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, new DirectoryInfo(DeploymentParameters.ApplicationPath).Name + executableExtension);
+                var executable = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, new DirectoryInfo(DeploymentParameters.ApplicationPath).Name + executableExtension);
+                
+                if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr && PlatformServices.Default.Runtime.OperatingSystemPlatform != Platform.Windows)
+                {
+                    executableName = "mono";
+                    executableArgs = executable;
+                }
+                else
+                {
+                    executableName = executable;
+                }
             }
             else
             {
