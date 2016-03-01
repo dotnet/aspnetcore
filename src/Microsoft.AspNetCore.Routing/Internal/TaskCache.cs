@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 {
     public static class TaskCache
     {
-#if DOTNET5_4
+#if NETSTANDARD1_3
         public static readonly Task CompletedTask = Task.CompletedTask;
 #else
         public static readonly Task CompletedTask = Task.FromResult(0);
