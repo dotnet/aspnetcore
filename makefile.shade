@@ -355,7 +355,8 @@ var buildTarget = "compile"
                     Exec("build.cmd", buildTarget, repo);
                 }
                 
-                if (!string.IsNullOrEmpty(ciVolatileShare))
+                var repoArtifacts = Path.Combine(repo, "artifacts", "build");
+                if (!string.IsNullOrEmpty(ciVolatileShare) && Directory.Exists(repoArtifacts))
                 {
                     Log.Info("Publishing packages to " + ciVolatileShare);
                     if (string.IsNullOrEmpty(nugetExe))
@@ -364,7 +365,7 @@ var buildTarget = "compile"
                     }
                     else
                     {
-                        NuGetPackagesAdd(Path.Combine(repo, "artifacts", "build"), ciVolatileShare);
+                        NuGetPackagesAdd(repoArtifacts, ciVolatileShare);
                     }
                 }
 
