@@ -3,7 +3,9 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "description": "ASP.NET 5 helpers to deploy applications to IIS Express, IIS, WebListener and Kestrel for testing.",
@@ -23,10 +25,10 @@
         "Microsoft.Web.Administration": "7.0.0"
       },
       "frameworkAssemblies": {
-        "System.Net.Http": "",
+        "System.Net.Http": ""
       }
     },
-    "dnxcore50": {
+    "netstandardapp1.5": {
       "dependencies": {
         "System.Diagnostics.Process": "4.1.0-*",
         "System.IO.FileSystem": "4.0.1-*",
@@ -37,7 +39,10 @@
         "System.Threading": "4.0.11-*",
         "System.Threading.Thread": "4.0.0-*"
       },
-      "imports": "portable-net45+win8"
+      "imports": [
+        "dnxcore50",
+        "portable-net45+win8"
+      ]
     }
   }
 }

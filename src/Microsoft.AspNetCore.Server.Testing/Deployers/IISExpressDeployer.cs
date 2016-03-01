@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.Testing
 #if NET451
             SetEnvironmentVariable(startInfo.EnvironmentVariables, "PATH", startInfo.EnvironmentVariables["PATH"]);
             SetEnvironmentVariable(startInfo.EnvironmentVariables, "DNX_APPBASE", DeploymentParameters.ApplicationPath);
-#elif DOTNET5_4
+#elif NETSTANDARD1_3
             SetEnvironmentVariable(startInfo.Environment, "PATH", startInfo.Environment["PATH"]);
             SetEnvironmentVariable(startInfo.Environment, "DNX_APPBASE", DeploymentParameters.ApplicationPath);
 #endif
