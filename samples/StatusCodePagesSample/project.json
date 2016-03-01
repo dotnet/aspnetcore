@@ -13,7 +13,9 @@
   "compilationOptions": {
     "emitEntryPoint": true
   },
-  "commands": { "web": "StatusCodePagesSample" },
+  "commands": {
+    "web": "StatusCodePagesSample"
+  },
   "dependencies": {
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
     "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
@@ -21,7 +23,11 @@
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
-    "dnx451": { },
-    "dnxcore50": { }
+    "dnx451": {},
+    "netstandardapp1.5": {
+      "imports": [
+        "dnxcore50"
+      ]
+    }
   }
 }
