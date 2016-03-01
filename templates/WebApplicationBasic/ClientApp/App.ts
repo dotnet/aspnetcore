@@ -1,4 +1,4 @@
-import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap';
 import './css/site.css';
 
 // Replace with your TypeScript code
