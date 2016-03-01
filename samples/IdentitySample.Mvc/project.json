@@ -40,8 +40,11 @@
         "System.Reflection": ""
       }
     },
-    "dnxcore50": {
-      "imports": "portable-net45+win8"
+    "netstandardapp1.5": {
+      "imports": [
+        "dnxcore50",
+        "portable-net45+win8"
+      ]
     }
   },
   "exclude": [
@@ -56,5 +59,7 @@
       "gulp min"
     ]
   },
-  "content": ["appsettings.json"]
+  "content": [
+    "appsettings.json"
+  ]
 }
