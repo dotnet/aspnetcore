@@ -30,6 +30,22 @@ function loadViaWebpackNoCache(webpackConfigPath, modulePath) {
         webpackConfig.plugins = webpackConfig.plugins.filter(function(plugin) {
             return !(plugin instanceof webpack.optimize.CommonsChunkPlugin);
         });
+        
+        // The typical use case for DllReferencePlugin is for referencing vendor modules. In a Node
+        // environment, it doesn't make sense to load them from a DLL bundle, nor would that even
+        // work, because then you'd get different module instances depending on whether a module
+        // was referenced via a normal CommonJS 'require' or via Webpack. So just remove any
+        // DllReferencePlugin from the config.
+        // If someone wanted to load their own DLL modules (not an NPM module) via DllReferencePlugin,
+        // that scenario is not supported today. We would have to add some extra option to the
+        // asp-prerender tag helper to let you specify a list of DLL bundles that should be evaluated
+        // in this context. But even then you'd need special DLL builds for the Node environment so that
+        // external dependencies were fetched via CommonJS requires, so it's unclear how that could work.
+        // The ultimate escape hatch here is just prebuilding your code as part of the application build
+        // and *not* using asp-prerender-webpack-config at all, then you can do anything you want.
+        webpackConfig.plugins = webpackConfig.plugins.filter(function(plugin) {
+            return !(plugin instanceof webpack.DllReferencePlugin);
+        });
 
         // Create a compiler instance that stores its output in memory, then load its output
         var compiler = webpack(webpackConfig);

@@ -2,7 +2,8 @@
     ViewData["Title"] = "Home Page";
 }
 
-<app>Loading...</app>
+<app asp-prerender-module="ClientApp/boot-server"
+     asp-prerender-webpack-config="webpack.config.js">Loading...</app>
 
 <script src="~/dist/vendor.js" asp-append-version="true"></script>
 @section scripts {
