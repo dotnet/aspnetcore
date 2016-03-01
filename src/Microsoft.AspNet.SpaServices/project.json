@@ -15,7 +15,6 @@
   "dependencies": {
     "Microsoft.AspNet.Mvc": "6.0.0-rc1-final",
     "Microsoft.AspNet.Routing": "1.0.0-rc1-final",
-    "Microsoft.AspNet.Proxy": "1.0.0-rc1-final",
     "Microsoft.AspNet.NodeServices": "1.0.0-alpha7"
   },
   "frameworks": {

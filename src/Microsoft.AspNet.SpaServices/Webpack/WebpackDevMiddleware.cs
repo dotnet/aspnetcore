@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.NodeServices;
-using Microsoft.AspNet.Proxy;
 using Microsoft.AspNet.SpaServices.Webpack;
 using Microsoft.Extensions.PlatformAbstractions;
 using Newtonsoft.Json;
@@ -12,8 +11,10 @@ namespace Microsoft.AspNet.Builder
 {
     public static class WebpackDevMiddleware
     {
+        const string WebpackDevMiddlewareScheme = "http";
         const string WebpackDevMiddlewareHostname = "localhost";
         const string WebpackHotMiddlewareEndpoint = "/__webpack_hmr";
+        const string DefaultConfigFile = "webpack.config.js";
 
         public static void UseWebpackDevMiddleware(this IApplicationBuilder appBuilder, WebpackDevMiddlewareOptions options = null) {
             // Validate options
@@ -41,25 +42,21 @@ namespace Microsoft.AspNet.Builder
 
             // Tell Node to start the server hosting webpack-dev-middleware
             var devServerOptions = new {
-                webpackConfigPath = Path.Combine(appEnv.ApplicationBasePath, "webpack.config.js"),
+                webpackConfigPath = Path.Combine(appEnv.ApplicationBasePath, options.ConfigFile ?? DefaultConfigFile),
                 suppliedOptions = options ?? new WebpackDevMiddlewareOptions()
             };
             var devServerInfo = nodeServices.InvokeExport<WebpackDevServerInfo>(nodeScript.FileName, "createWebpackDevServer", JsonConvert.SerializeObject(devServerOptions)).Result;
 
             // Proxy the corresponding requests through ASP.NET and into the Node listener
-            appBuilder.Map(devServerInfo.PublicPath, builder => {
-                builder.RunProxy(new ProxyOptions {
-                    Host = WebpackDevMiddlewareHostname,
-                    Port = devServerInfo.Port.ToString()
-                });
-            });
+            var proxyOptions = new ConditionalProxyMiddlewareOptions(WebpackDevMiddlewareScheme, WebpackDevMiddlewareHostname, devServerInfo.Port.ToString());
+            appBuilder.UseMiddleware<ConditionalProxyMiddleware>(devServerInfo.PublicPath, proxyOptions);
 
             // While it would be nice to proxy the /__webpack_hmr requests too, these return an EventStream,
             // and the Microsoft.Aspnet.Proxy code doesn't handle that entirely - it throws an exception after
             // a while. So, just serve a 302 for those.
             appBuilder.Map(WebpackHotMiddlewareEndpoint, builder => {
                 builder.Use(next => async ctx => {
-                    ctx.Response.Redirect($"http://localhost:{ devServerInfo.Port.ToString() }{ WebpackHotMiddlewareEndpoint }");
+                    ctx.Response.Redirect($"{ WebpackDevMiddlewareScheme }://{ WebpackDevMiddlewareHostname }:{ devServerInfo.Port.ToString() }{ WebpackHotMiddlewareEndpoint }");
                     await Task.Yield();
                 });
             });
