@@ -12,13 +12,11 @@ module.exports = merge({
     module: {
         loaders: [
             { test: /\.ts(x?)$/, include: /ClientApp/, loader: 'babel-loader' },
-            { test: /\.ts(x?)$/, include: /ClientApp/, loader: 'ts-loader' },
-            { test: /\.(png|woff|woff2|eot|ttf|svg)$/, loader: 'url-loader?limit=100000' }
+            { test: /\.ts(x?)$/, include: /ClientApp/, loader: 'ts-loader' }
         ]
     },
     entry: {
         main: ['./ClientApp/boot.tsx'],
-        vendor: ['bootstrap', 'bootstrap/dist/css/bootstrap.css', 'react', 'react-dom', 'react-router', 'style-loader', 'jquery']
     },
     output: {
         path: path.join(__dirname, 'wwwroot', 'dist'),
@@ -26,8 +24,9 @@ module.exports = merge({
         publicPath: '/dist/'
     },
     plugins: [
-        new webpack.ProvidePlugin({ $: 'jquery', jQuery: 'jquery' }), // Maps these identifiers to the jQuery package (because Bootstrap expects it to be a global variable)
-        new webpack.optimize.OccurenceOrderPlugin(),
-        new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.js') // Moves vendor content out of other bundles
+        new webpack.DllReferencePlugin({
+            context: __dirname,
+            manifest: require('./wwwroot/dist/vendor-manifest.json')
+        })
     ]
 }, isDevelopment ? devConfig : prodConfig);
