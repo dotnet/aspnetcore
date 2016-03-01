@@ -2,7 +2,8 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div id="react-app" asp-prerender-module="ReactApp/boot-server"></div>
+<div id="react-app" asp-prerender-module="ReactApp/boot-server"
+                    asp-prerender-webpack-config="webpack.config.js"></div>
 
 @section scripts {
     <script src="/dist/vendor.bundle.js"></script>

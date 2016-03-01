@@ -9,10 +9,13 @@
     "formsy-react-components": "^0.6.3",
     "griddle-react": "^0.3.1",
     "history": "^1.12.6",
+    "memory-fs": "^0.3.0",
     "react": "^0.14.7",
     "react-dom": "^0.14.7",
     "react-router": "^2.0.0-rc5",
-    "underscore": "^1.8.3"
+    "require-from-string": "^1.1.0",
+    "underscore": "^1.8.3",
+    "webpack-externals-plugin": "^1.0.0"
   },
   "devDependencies": {
     "babel-loader": "^6.2.1",
