@@ -10,13 +10,13 @@ export default function (params: any): Promise<{ html: string, globals?: any }> 
     const serverBindings = [
         ngRouter.ROUTER_BINDINGS,
         ngUniversal.HTTP_PROVIDERS,
-        ngCore.provide(BASE_URL, { useValue: params.absoluteUrl }),
-        ngCore.provide(ngUniversal.REQUEST_URL, { useValue: params.url }),
+        ngUniversal.SERVER_LOCATION_PROVIDERS,
         ngCore.provide(ngRouter.APP_BASE_HREF, { useValue: '/' }),
-        ngUniversal.SERVER_LOCATION_PROVIDERS
+        ngCore.provide(BASE_URL, { useValue: params.absoluteUrl }),
+        ngCore.provide(ngUniversal.REQUEST_URL, { useValue: params.url })
     ];
 
     return ngUniversalRender.renderToString(App, serverBindings).then(html => {
-        return { html, globals: {}};
+        return { html };
     });
 }
