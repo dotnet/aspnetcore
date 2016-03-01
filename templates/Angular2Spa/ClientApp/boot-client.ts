@@ -1,4 +1,4 @@
-import 'bootstrap/dist/css/bootstrap.css';
+import 'angular2/bundles/angular2-polyfills.js';
 import './styles/site.css';
 
 import { bootstrap } from 'angular2/platform/browser';

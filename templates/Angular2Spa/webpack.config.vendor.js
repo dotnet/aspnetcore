@@ -15,7 +15,7 @@ module.exports = {
         ]
     },
     entry: {
-        vendor: ['bootstrap', 'bootstrap/dist/css/bootstrap.css', 'react', 'react-dom', 'react-router', 'style-loader', 'jquery'],
+        vendor: ['angular2/bundles/angular2-polyfills.js', 'bootstrap', 'bootstrap/dist/css/bootstrap.css', 'style-loader', 'jquery', 'angular2/core', 'angular2/common', 'angular2/http', 'angular2/router', 'angular2/platform/browser']
     },
     output: {
         path: path.join(__dirname, 'wwwroot', 'dist'),
@@ -31,6 +31,10 @@ module.exports = {
             name: '[name]_[hash]'
         })
     ].concat(isDevelopment ? [] : [
-        new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false } })
+        new webpack.optimize.UglifyJsPlugin({
+            compress: { warnings: false },
+            minimize: true,
+            mangle: true // Due to https://github.com/angular/angular/issues/6678
+        })
     ])
 };

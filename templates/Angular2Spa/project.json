@@ -43,8 +43,11 @@
     "**.vspscc"
   ],
   "scripts": {
-    "prepublish": [
+    "prepare": [
       "npm install",
+      "webpack --config webpack.config.vendor.js"
+    ],
+    "prepublish": [
       "webpack"
     ]
   }
