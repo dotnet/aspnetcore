@@ -8,18 +8,18 @@
             <option *ngFor="#artist of artists" [value]="artist.ArtistId">{{ artist.Name }}</option>
         </select>
     </form-field>
-    
+
     <form-field label="Genre" [validate]="form.controls.GenreId">
         <select class="form-control" ngControl="GenreId">
             <option value="0">-- choose Genre --</option>
             <option *ngFor="#genre of genres" [value]="genre.GenreId">{{ genre.Name }}</option>
         </select>
     </form-field>
-    
+
     <form-field label="Title" [validate]="form.controls.Title">
         <input class="form-control" type="text" ngControl="Title">
     </form-field>
-    
+
     <form-field label="Price" [validate]="form.controls.Price">
         <div class="input-group">
             <span class="input-group-addon">$</span>
@@ -30,7 +30,7 @@
     <form-field label="Album Art URL" [validate]="form.controls.AlbumArtUrl">
         <input class="form-control" ngControl="AlbumArtUrl">
     </form-field>
-    
+
     <form-field label="Album Art">
         <img src="{{ form.controls.AlbumArtUrl.value }}">
     </form-field>

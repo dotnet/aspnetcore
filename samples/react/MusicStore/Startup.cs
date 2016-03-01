@@ -41,7 +41,7 @@ namespace MusicStore
             // Uncomment the following line to add Web API services which makes it easier to port Web API 2 controllers.
             // You will also need to add the Microsoft.AspNet.Mvc.WebApiCompatShim package to the 'dependencies' section of project.json.
             // services.AddWebApiConventions();
-            
+
             // Add EF services to the service container
             services.AddEntityFramework()
                 .AddSqlite()
@@ -78,7 +78,7 @@ namespace MusicStore
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(LogLevel.Warning);
-            
+
             // Initialize the sample data
             SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();
 
@@ -89,7 +89,7 @@ namespace MusicStore
             }
 
             app.UseIISPlatformHandler();
-            
+
             // In dev mode, the JS/TS/etc is compiled and served dynamically and supports hot replacement.
             // In production, we assume you've used webpack to emit the prebuilt content to disk.
             if (env.IsDevelopment()) {
@@ -105,7 +105,7 @@ namespace MusicStore
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
-                
+
                 routes.MapSpaFallbackRoute(
                     name: "spa-fallback",
                     defaults: new { controller = "Home", action = "Index" });

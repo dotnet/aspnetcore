@@ -26,7 +26,7 @@ function loadViaWebpackNoCache(webpackConfigPath, modulePath) {
         webpackConfig.plugins = webpackConfig.plugins || [];
         webpackConfig.plugins.push(new ExternalsPlugin({ type: 'commonjs', include: /node_modules/ }));
 
-        // The CommonsChunkPlugin is not compatible with a CommonJS environment like Node, nor is it needed in that case 
+        // The CommonsChunkPlugin is not compatible with a CommonJS environment like Node, nor is it needed in that case
         webpackConfig.plugins = webpackConfig.plugins.filter(function(plugin) {
             return !(plugin instanceof webpack.optimize.CommonsChunkPlugin);
         });
@@ -70,7 +70,7 @@ var domainTask = require('domain-task');
 var baseUrl = require('domain-task/fetch').baseUrl;
 
 function findBootModule(bootModule, callback) {
-    var bootModuleNameFullPath = path.resolve(process.cwd(), bootModule.moduleName); 
+    var bootModuleNameFullPath = path.resolve(process.cwd(), bootModule.moduleName);
     if (bootModule.webpackConfig) {
         var webpackConfigFullPath = path.resolve(process.cwd(), bootModule.webpackConfig);
         loadViaWebpack(webpackConfigFullPath, bootModuleNameFullPath, callback);
@@ -86,7 +86,7 @@ function findBootFunc(bootModule, callback) {
             callback(findBootModuleError);
             return;
         }
-        
+
         // Now try to pick out the function they want us to invoke
         var bootFunc;
         if (bootModule.exportName) {
@@ -99,7 +99,7 @@ function findBootFunc(bootModule, callback) {
             // Native default export
             bootFunc = foundBootModule;
         }
-        
+
         // Validate the result
         if (typeof bootFunc !== 'function') {
             if (bootModule.exportName) {
@@ -119,7 +119,7 @@ function renderToString(callback, bootModule, absoluteRequestUrl, requestPathAnd
             callback(findBootFuncError);
             return;
         }
-        
+
         // Prepare a promise that will represent the completion of all domain tasks in this execution context.
         // The boot code will wait for this before performing its final render.
         var domainTaskCompletionPromiseResolve;
@@ -138,10 +138,10 @@ function renderToString(callback, bootModule, absoluteRequestUrl, requestPathAnd
             // Workaround for Node bug where native Promise continuations lose their domain context
             // (https://github.com/nodejs/node-v0.x-archive/issues/8648)
             bindPromiseContinuationsToDomain(domainTaskCompletionPromise, domain.active);
-            
+
             // Make the base URL available to the 'domain-tasks/fetch' helper within this execution context
             baseUrl(absoluteRequestUrl);
-            
+
             // Actually perform the rendering
             bootFunc(params).then(function(successResult) {
                 callback(null, { html: successResult.html, globals: successResult.globals });
@@ -156,12 +156,12 @@ function renderToString(callback, bootModule, absoluteRequestUrl, requestPathAnd
             } else {
                 domainTaskCompletionPromiseResolve();
             }
-        });        
+        });
     });
 }
 
 function bindPromiseContinuationsToDomain(promise, domainInstance) {
-    var originalThen = promise.then; 
+    var originalThen = promise.then;
     promise.then = function then(resolve, reject) {
         if (typeof resolve === 'function') { resolve = domainInstance.bind(resolve); }
         if (typeof reject === 'function') { reject = domainInstance.bind(reject); }

@@ -2,7 +2,7 @@ import * as ng from 'angular2/core';
 import { Http } from 'angular2/http';
 import { AlbumTile } from '../album-tile/album-tile';
 import * as models from '../../../models/models';
- 
+
 @ng.Component({
   selector: 'home'
 })
@@ -15,7 +15,7 @@ export class Home {
 
     constructor(http: Http) {
         http.get('/api/albums/mostPopular').subscribe(result => {
-            this.mostPopular = result.json(); 
+            this.mostPopular = result.json();
         });
     }
 }

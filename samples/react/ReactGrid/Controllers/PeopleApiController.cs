@@ -16,14 +16,14 @@ namespace ReactExample.Controllers
             }
         }
     }
-    
+
     public class PersonDto {
         public string name { get; set; }
         public string city { get; set; }
         public string state { get; set; }
         public string country { get; set; }
         public string company { get; set; }
-        
+
         [Range(1, 10)]
         public int favoriteNumber { get; set; }
     }

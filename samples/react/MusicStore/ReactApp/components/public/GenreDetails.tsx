@@ -13,7 +13,7 @@ class GenreDetails extends React.Component<GenreDetailsProps, void> {
     componentWillMount() {
         this.props.requestGenreDetails(parseInt(this.props.params.genreId));
     }
-    
+
     componentWillReceiveProps(nextProps: GenreDetailsProps) {
         this.props.requestGenreDetails(parseInt(nextProps.params.genreId));
     }

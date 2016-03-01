@@ -91,7 +91,7 @@ Note that to run the React example, you'll also need to run `webpack` from the `
    ```
 
 4. Where applicable, build the project. For example, the Angular example uses Gulp, so you'll need to execute `gulp`, whereas the React example uses Webpack, so you'll need to execute `webpack`. The ES2015 example does not need to be built.
- 
+
    If you don't already have it, install the applicable build tool first (e.g., `npm install -g webpack`).
 
 5. Run the project (and wait until it displays the message `Application started`)

@@ -8,7 +8,7 @@ import * as ng from 'angular2/core';
 })
 export class Counter {
     public currentCount = 0;
-    
+
     public incrementCounter() {
         this.currentCount++;
     }

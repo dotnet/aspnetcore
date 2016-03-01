@@ -32,7 +32,7 @@
 <div class="btn-group">
     <button class="btn btn-default" [disabled]="!canGoBack" (click)="goToPage(1)">First</button>
     <button class="btn btn-default" [disabled]="!canGoBack" (click)="goToPage(pageIndex - 1)">Previous</button>
-    <button class="btn" *ngFor="#page of pageLinks" 
+    <button class="btn" *ngFor="#page of pageLinks"
                         [ngClass]="{ 'btn-info': page.isCurrent, 'btn-default': !page.isCurrent }"
                         (click)="goToPage(page.index)">
         {{ page.text }}

@@ -52,7 +52,7 @@ namespace ReactExample
                 // send the request to the following path or controller action.
                 app.UseExceptionHandler("/Home/Error");
             }
-            
+
             // In dev mode, the JS/TS/etc is compiled and served dynamically and supports hot replacement.
             // In production, we assume you've used webpack to emit the prebuilt content to disk.
             if (env.IsDevelopment()) {

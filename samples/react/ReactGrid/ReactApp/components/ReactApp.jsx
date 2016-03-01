@@ -6,7 +6,7 @@ import { PersonEditor } from './PersonEditor.jsx';
 export const routes = <Route>
     <Route path="/" component={ PeopleGrid } />
     <Route path="/:pageIndex" component={ PeopleGrid } />
-    <Route path="/edit/:personId" component={ PersonEditor } />    
+    <Route path="/edit/:personId" component={ PersonEditor } />
 </Route>;
 
 export class ReactApp extends React.Component {

@@ -5,7 +5,7 @@ export class CustomPager extends React.Component {
     pageChange(event) {
         this.props.setPage(parseInt(event.target.getAttribute("data-value")));
     }
-    
+
     render() {
         var previous = null;
         var next = null;

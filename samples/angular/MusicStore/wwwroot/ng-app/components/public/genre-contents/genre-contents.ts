@@ -16,7 +16,7 @@ export class GenreContents {
 
     constructor(http: Http, routeParam: router.RouteParams) {
         http.get(`/api/genres/${ routeParam.params['genreId'] }/albums`).subscribe(result => {
-            this.albums = result.json(); 
+            this.albums = result.json();
         });
     }
 }

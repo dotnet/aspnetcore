@@ -19,21 +19,21 @@ namespace Microsoft.AspNet.NodeServices {
     {
         private SemaphoreSlim _invocationSemaphore = new SemaphoreSlim(1);
         private TaskCompletionSource<string> _currentInvocationResult;
-        
-        private readonly static JsonSerializerSettings jsonSerializerSettings =  new JsonSerializerSettings { 
-            ContractResolver = new CamelCasePropertyNamesContractResolver() 
+
+        private readonly static JsonSerializerSettings jsonSerializerSettings =  new JsonSerializerSettings {
+            ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
-		
+
 		public InputOutputStreamNodeInstance(string projectPath)
             : base(EmbeddedResourceReader.Read(typeof(InputOutputStreamNodeInstance), "/Content/Node/entrypoint-stream.js"), projectPath)
         {
 		}
-        
+
         public override async Task<T> Invoke<T>(NodeInvocationInfo invocationInfo) {
             await this._invocationSemaphore.WaitAsync();
             try {
                 await this.EnsureReady();
-                
+
                 var payloadJson = JsonConvert.SerializeObject(invocationInfo, jsonSerializerSettings);
                 var nodeProcess = this.NodeProcess;
                 this._currentInvocationResult = new TaskCompletionSource<string>();
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.NodeServices {
                 this._currentInvocationResult = null;
             }
         }
-        
+
         protected override void OnOutputDataReceived(string outputData) {
             if (this._currentInvocationResult != null) {
                 this._currentInvocationResult.SetResult(outputData);

@@ -47,7 +47,7 @@ namespace Webpack
             }
 
             app.UseIISPlatformHandler();
-            
+
             if (env.IsDevelopment()) {
                 app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
                     HotModuleReplacement = true

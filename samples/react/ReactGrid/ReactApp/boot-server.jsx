@@ -16,7 +16,7 @@ export default function renderApp (params) {
             const app = <RouterContext {...renderProps} />;
 
             // Render it as an HTML string which can be injected into the response
-            const html = renderToString(app); 
+            const html = renderToString(app);
             resolve({ html });
         });
     });

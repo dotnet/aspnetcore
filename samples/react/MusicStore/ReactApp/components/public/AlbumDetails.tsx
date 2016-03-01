@@ -22,9 +22,9 @@ class AlbumDetails extends React.Component<AlbumDetailsProps, void> {
             const albumData = this.props.album;
             return <div>
                 <h2>{ albumData.Title }</h2>
-                
+
                 <p><img alt={ albumData.Title } src={ albumData.AlbumArtUrl } /></p>
-                
+
                 <div id="album-details">
                     <p>
                         <em>Genre:</em>

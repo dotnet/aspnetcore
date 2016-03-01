@@ -56,23 +56,23 @@ namespace ES2015Example
                 // send the request to the following path or controller action.
                 app.UseExceptionHandler("/Home/Error");
             }
-            
+
             // Dynamically transpile any .js files under the '/js/' directory
             app.Use(next => async context => {
                 var requestPath = context.Request.Path.Value;
                 if (requestPath.StartsWith("/js/") && requestPath.EndsWith(".js")) {
-                    var fileInfo = env.WebRootFileProvider.GetFileInfo(requestPath); 
+                    var fileInfo = env.WebRootFileProvider.GetFileInfo(requestPath);
                     if (fileInfo.Exists) {
                         var transpiled = await nodeServices.Invoke<string>("transpilation.js", fileInfo.PhysicalPath, requestPath);
                         await context.Response.WriteAsync(transpiled);
                         return;
                     }
                 }
-                
+
                 // Not a JS file, or doesn't exist - let some other middleware handle it
                 await next.Invoke(context);
             });
-            
+
             // Add static files to the request pipeline.
             app.UseStaticFiles();
 

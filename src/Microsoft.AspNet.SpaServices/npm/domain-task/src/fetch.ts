@@ -1,5 +1,5 @@
 import * as url from 'url';
-import * as domain from 'domain'; 
+import * as domain from 'domain';
 import * as domainContext from 'domain-context';
 import { addTask } from './main';
 const isomorphicFetch = require('isomorphic-fetch');
@@ -37,7 +37,7 @@ function issueRequest(baseUrl: string, req: string | Request, init?: RequestInit
     if (!init.headers['Connection']) {
         init.headers['Connection'] = 'keep-alive';
     }
-    
+
     return isomorphicFetch(req, init);
 }
 
@@ -57,6 +57,6 @@ export function baseUrl(url?: string): string {
             noDomainBaseUrl = url;
         }
     }
-    
+
     return domain.active ? domainContext.get(domainTaskStateKey) : noDomainBaseUrl;
 }

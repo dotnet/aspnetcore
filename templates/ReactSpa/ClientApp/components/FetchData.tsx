@@ -7,7 +7,7 @@ interface FetchDataExampleState {
 
 export class FetchData extends React.Component<any, FetchDataExampleState> {
     constructor() {
-        super();        
+        super();
         this.state = { forecasts: [], loading: true };
 
         fetch('/api/SampleData/WeatherForecasts')
@@ -21,7 +21,7 @@ export class FetchData extends React.Component<any, FetchDataExampleState> {
         let contents = this.state.loading
             ? <p><em>Loading...</em></p>
             : FetchData.renderForecastsTable(this.state.forecasts);
-        
+
         return <div>
             <h1>Weather forecast</h1>
             <p>This component demonstrates fetching data from the server.</p>

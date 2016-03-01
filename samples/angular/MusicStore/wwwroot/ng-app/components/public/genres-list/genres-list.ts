@@ -15,7 +15,7 @@ export class GenresList {
 
     constructor(http: Http) {
         http.get('/api/genres').subscribe(result => {
-            this.genres = result.json(); 
+            this.genres = result.json();
         });
     }
 }

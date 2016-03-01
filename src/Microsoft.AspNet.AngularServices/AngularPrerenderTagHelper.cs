@@ -12,13 +12,13 @@ namespace Microsoft.AspNet.AngularServices
     public class AngularPrerenderTagHelper : TagHelper
     {
         static INodeServices fallbackNodeServices; // Used only if no INodeServices was registered with DI
-        
+
         const string PrerenderModuleAttributeName = "asp-ng2-prerender-module";
         const string PrerenderExportAttributeName = "asp-ng2-prerender-export";
-        
+
         [HtmlAttributeName(PrerenderModuleAttributeName)]
         public string ModuleName { get; set; }
-        
+
         [HtmlAttributeName(PrerenderExportAttributeName)]
         public string ExportName { get; set; }
 
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.AngularServices
         {
             this.contextAccessor = contextAccessor;
             this.nodeServices = (INodeServices)serviceProvider.GetService(typeof (INodeServices)) ?? fallbackNodeServices;
-            
+
             // Consider removing the following. Having it means you can get away with not putting app.AddNodeServices()
             // in your startup file, but then again it might be confusing that you don't need to.
             if (this.nodeServices == null) {

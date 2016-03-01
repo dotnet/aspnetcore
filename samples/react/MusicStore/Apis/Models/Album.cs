@@ -7,7 +7,7 @@ namespace MusicStore.Models
     {
         public Album()
         {
-            // TODO: Temporary hack to populate the orderdetails until EF does this automatically. 
+            // TODO: Temporary hack to populate the orderdetails until EF does this automatically.
             OrderDetails = new List<OrderDetail>();
         }
 

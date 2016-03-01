@@ -33,18 +33,18 @@ namespace Microsoft.AspNet.Builder
                 // TODO: Consider supporting this. The {*clientRoute} part should be added immediately before the '?'
                 throw new ArgumentException("SPA fallback route templates don't support querystrings");
             }
-            
+
             if (templatePrefix.Contains("#")) {
                 throw new ArgumentException("SPA fallback route templates should not include # characters. The hash part of a URI does not get sent to the server.");
             }
-            
+
             if (templatePrefix != string.Empty && !templatePrefix.EndsWith("/")) {
                 templatePrefix += "/";
             }
 
             return templatePrefix + $"{{*{ ClientRouteTokenName }}}";
         }
-        
+
         private static IDictionary<string, object> ObjectToDictionary(object value)
         {
             return value as IDictionary<string, object> ?? new RouteValueDictionary(value);

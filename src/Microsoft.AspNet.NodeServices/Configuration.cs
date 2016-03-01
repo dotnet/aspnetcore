@@ -8,11 +8,11 @@ namespace Microsoft.AspNet.NodeServices {
             HostingModel = NodeHostingModel.Http,
             WatchFileExtensions = defaultWatchFileExtensions
         };
-        
+
         public static void AddNodeServices(this IServiceCollection serviceCollection) {
             AddNodeServices(serviceCollection, defaultOptions);
         }
-        
+
         public static void AddNodeServices(this IServiceCollection serviceCollection, NodeServicesOptions options) {
             serviceCollection.AddSingleton(typeof(INodeServices), (serviceProvider) => {
                 var appEnv = serviceProvider.GetRequiredService<IApplicationEnvironment>();
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.NodeServices {
         public NodeHostingModel HostingModel { get; set; }
         public string ProjectPath { get; set; }
         public string[] WatchFileExtensions { get; set; }
-        
+
         public NodeServicesOptions() {
             this.HostingModel = NodeHostingModel.Http;
         }

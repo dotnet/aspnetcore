@@ -38,7 +38,7 @@ export function run<T>(codeToRun: () => T, completionCallback: (error: any) => v
         try {
             domainContext.set(domainTasksStateKey, state);
             synchronousResult = codeToRun();
-            
+
             // If no tasks were registered synchronously, then we're done already
             if (state.numRemainingTasks === 0 && !state.hasIssuedSuccessCallback) {
                 state.hasIssuedSuccessCallback = true;
@@ -48,7 +48,7 @@ export function run<T>(codeToRun: () => T, completionCallback: (error: any) => v
             state.completionCallback(ex);
         }
     });
-    
+
     return synchronousResult;
 }
 

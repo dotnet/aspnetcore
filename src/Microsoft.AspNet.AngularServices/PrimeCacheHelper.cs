@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.AngularServices {
             // TODO: Consider deduplicating the PrimeCache calls (that is, if there are multiple requests to precache
             // the same URL, only return nonempty for one of them). This will make it easier to auto-prime-cache any
             // HTTP requests made during server-side rendering, without risking unnecessary duplicate requests.
-            
+
             if (string.IsNullOrEmpty(url)) {
                 throw new ArgumentException("Value cannot be null or empty", "url");
             }

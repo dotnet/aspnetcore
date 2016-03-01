@@ -11,7 +11,7 @@ import * as models from '../../../models/models';
 })
 export class AlbumDetails {
     public albumData: models.Album;
-    
+
     constructor(http: Http, routeParam: router.RouteParams) {
         http.get('/api/albums/' + routeParam.params['albumId']).subscribe(result => {
             this.albumData = result.json();

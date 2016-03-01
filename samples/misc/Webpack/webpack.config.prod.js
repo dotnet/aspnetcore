@@ -9,7 +9,7 @@ module.exports = {
         ]
     },
     plugins: [
-        extractLESS,            
+        extractLESS,
         new webpack.optimize.UglifyJsPlugin({ minimize: true })
     ]
 };

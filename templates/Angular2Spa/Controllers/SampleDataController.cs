@@ -13,7 +13,7 @@ namespace WebApplicationBasic.Controllers
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
-        
+
         [HttpGet, Route("[action]")]
         public IEnumerable<WeatherForecast> WeatherForecasts()
         {
@@ -25,13 +25,13 @@ namespace WebApplicationBasic.Controllers
                 Summary = Summaries[rng.Next(Summaries.Length)]
             });
         }
-        
+
         public class WeatherForecast
         {
             public string DateFormatted { get; set; }
             public int TemperatureC { get; set; }
             public string Summary { get; set; }
-            
+
             public int TemperatureF
             {
                 get

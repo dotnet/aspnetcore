@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.NodeServices {
                 return this._nodeProcess;
             }
         }
-        
+
         public OutOfProcessNodeInstance(string entryPointScript, string projectPath, string commandLineArguments = null)
         {
             this._childProcessLauncherLock = new object();
@@ -32,13 +32,13 @@ namespace Microsoft.AspNet.NodeServices {
             this._projectPath = projectPath;
             this._commandLineArguments = commandLineArguments ?? string.Empty;
         }
-        
+
         public abstract Task<T> Invoke<T>(NodeInvocationInfo invocationInfo);
-        
+
         public Task<T> Invoke<T>(string moduleName, params object[] args) {
             return this.InvokeExport<T>(moduleName, null, args);
         }
-    
+
         public async Task<T> InvokeExport<T>(string moduleName, string exportedFunctionName, params object[] args) {
             return await this.Invoke<T>(new NodeInvocationInfo {
                 ModuleName = moduleName,
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.NodeServices {
                         RedirectStandardInput = true,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
-                        WorkingDirectory = this._projectPath 
+                        WorkingDirectory = this._projectPath
                     };
 
                     // Append projectPath to NODE_PATH so it can locate node_modules

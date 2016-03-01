@@ -18,7 +18,7 @@ function findAngularComponent(options) {
         // If exportName is specified explicitly, use it
         return getExportOrThrow(loadedModule, resolvedPath, options.exportName);
     } else if (typeof loadedModule === 'function') {
-        // Otherwise, if the module itself is a function, assume that is the component 
+        // Otherwise, if the module itself is a function, assume that is the component
         return loadedModule;
     } else if (typeof loadedModule.default === 'function') {
         // Otherwise, if the module has a default export which is a function, assume that is the component

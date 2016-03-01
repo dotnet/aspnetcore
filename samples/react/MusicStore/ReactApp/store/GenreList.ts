@@ -31,7 +31,7 @@ class ReceiveGenresList extends Action {
 // ACTION CREATORS - These are functions exposed to UI components that will trigger a state transition.
 // They don't directly mutate state, but they can have external side-effects (such as loading data).
 
-export const actionCreators = {    
+export const actionCreators = {
     requestGenresList: (): ActionCreator => (dispatch, getState) => {
         if (!getState().genreList.isLoaded) {
             fetch('/api/genres')

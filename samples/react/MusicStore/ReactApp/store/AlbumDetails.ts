@@ -47,7 +47,7 @@ class ReceiveAlbumDetails extends Action {
 // ACTION CREATORS - These are functions exposed to UI components that will trigger a state transition.
 // They don't directly mutate state, but they can have external side-effects (such as loading data).
 
-export const actionCreators = {    
+export const actionCreators = {
     requestAlbumDetails: (albumId: number): ActionCreator => (dispatch, getState) => {
         // Only load if it's not already loaded (or currently being loaded)
         if (albumId !== getState().albumDetails.requestedAlbumId) {
@@ -59,7 +59,7 @@ export const actionCreators = {
                         dispatch(new ReceiveAlbumDetails(album));
                     }
                 });
-            
+
             dispatch(new RequestAlbumDetails(albumId));
         }
     }

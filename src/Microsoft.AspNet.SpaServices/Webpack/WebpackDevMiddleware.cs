@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Builder
                     throw new ArgumentException("To enable ReactHotModuleReplacement, you must also enable HotModuleReplacement.");
                 }
             }
-            
+
             // Unlike other consumers of NodeServices, WebpackDevMiddleware dosen't share Node instances, nor does it
             // use your DI configuration. It's important for WebpackDevMiddleware to have its own private Node instance
             // because it must *not* restart when files change (if it did, you'd lose all the benefits of Webpack
@@ -46,14 +46,14 @@ namespace Microsoft.AspNet.Builder
             };
             var devServerInfo = nodeServices.InvokeExport<WebpackDevServerInfo>(nodeScript.FileName, "createWebpackDevServer", JsonConvert.SerializeObject(devServerOptions)).Result;
 
-            // Proxy the corresponding requests through ASP.NET and into the Node listener 
+            // Proxy the corresponding requests through ASP.NET and into the Node listener
             appBuilder.Map(devServerInfo.PublicPath, builder => {
                 builder.RunProxy(new ProxyOptions {
                     Host = WebpackDevMiddlewareHostname,
                     Port = devServerInfo.Port.ToString()
                 });
             });
-            
+
             // While it would be nice to proxy the /__webpack_hmr requests too, these return an EventStream,
             // and the Microsoft.Aspnet.Proxy code doesn't handle that entirely - it throws an exception after
             // a while. So, just serve a 302 for those.
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Builder
                 });
             });
         }
-        
+
         #pragma warning disable CS0649
         class WebpackDevServerInfo {
             public int Port;

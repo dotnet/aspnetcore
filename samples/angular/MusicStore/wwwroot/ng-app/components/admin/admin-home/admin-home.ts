@@ -17,5 +17,5 @@ import { AlbumEdit } from '../album-edit/album-edit';
   directives: [router.ROUTER_DIRECTIVES]
 })
 export class AdminHome {
-    
+
 }

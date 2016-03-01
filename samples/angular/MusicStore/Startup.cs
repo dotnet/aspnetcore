@@ -44,7 +44,7 @@ namespace MusicStore
             // Uncomment the following line to add Web API services which makes it easier to port Web API 2 controllers.
             // You will also need to add the Microsoft.AspNet.Mvc.WebApiCompatShim package to the 'dependencies' section of project.json.
             // services.AddWebApiConventions();
-            
+
             // Add EF services to the service container
             services.AddEntityFramework()
                 .AddSqlite()
@@ -82,7 +82,7 @@ namespace MusicStore
         {
             // Initialize the sample data
             SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();
-            
+
             loggerFactory.MinimumLevel = LogLevel.Warning;
             loggerFactory.AddConsole();
             loggerFactory.AddDebug();
@@ -103,7 +103,7 @@ namespace MusicStore
                 // send the request to the following path or controller action.
                 app.UseExceptionHandler("/Home/Error");
             }
-            
+
             // Add static files to the request pipeline.
             app.UseStaticFiles();
 
@@ -112,7 +112,7 @@ namespace MusicStore
             {
                 // Matches requests that correspond to an existent controller/action pair
                 routes.MapRoute("default", "{controller}/{action}/{id:int?}");
-                
+
                 // Matches any other request that doesn't appear to have a filename extension (defined as 'having a dot in the last URI segment').
                 // This means you'll correctly get 404s for /some/dir/non-existent-image.png instead of returning the SPA HTML.
                 // However, it means requests like /customers/isaac.newton will *not* be mapped into the SPA, so if you need to accept

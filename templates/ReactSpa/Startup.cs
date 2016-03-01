@@ -51,7 +51,7 @@ namespace WebApplicationBasic
             }
 
             app.UseIISPlatformHandler();
-            
+
             if (env.IsDevelopment())
             {
                 app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
@@ -68,7 +68,7 @@ namespace WebApplicationBasic
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
-                    
+
                 routes.MapSpaFallbackRoute(
                     name: "spa-fallback",
                     defaults: new { controller = "Home", action = "Index" });

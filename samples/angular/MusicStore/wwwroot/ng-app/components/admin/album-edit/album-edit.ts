@@ -55,7 +55,7 @@ export class AlbumEdit {
             Price: fb.control('', Validators.compose([Validators.required, AlbumEdit._validatePrice])),
             AlbumArtUrl: fb.control('', Validators.required)
         });
-        
+
         this.form.valueChanges.subscribe(() => {
             this.changesSaved = false;
         });
@@ -70,7 +70,7 @@ export class AlbumEdit {
         if (this.form.valid) {
             var controls = this.form.controls;
             var albumId = this.originalAlbum.AlbumId;
-            
+
             this._putJson(`/api/albums/${ albumId }/update`, this.form.value).subscribe(successResponse => {
                 this.changesSaved = true;
             }, errorResponse => {
@@ -82,7 +82,7 @@ export class AlbumEdit {
     private static _validatePrice(control: Control): { [key: string]: boolean } {
         return /^\d+\.\d+$/.test(control.value) ? null : { Price: true };
     }
-    
+
     // Need feedback on whether this really is the easiest way to PUT some JSON
     private _putJson(url: string, body: any): Observable<Response> {
         return this._http.put(url, JSON.stringify(body), {

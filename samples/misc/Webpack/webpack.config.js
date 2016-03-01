@@ -14,7 +14,7 @@ module.exports = merge({
         ],
     },
     entry: {
-        main: ['./Clientside/App.ts'] 
+        main: ['./Clientside/App.ts']
     },
     output: {
         path: path.join(__dirname, 'wwwroot', 'dist'),

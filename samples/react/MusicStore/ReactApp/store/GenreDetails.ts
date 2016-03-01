@@ -35,7 +35,7 @@ class ReceiveGenreDetails extends Action {
 // ACTION CREATORS - These are functions exposed to UI components that will trigger a state transition.
 // They don't directly mutate state, but they can have external side-effects (such as loading data).
 
-export const actionCreators = {    
+export const actionCreators = {
     requestGenreDetails: (genreId: number): ActionCreator => (dispatch, getState) => {
         // Only load if it's not already loaded (or currently being loaded)
         if (genreId !== getState().genreDetails.requestedGenreId) {
@@ -44,10 +44,10 @@ export const actionCreators = {
                 .then(albums => {
                     // Only replace state if it's still the most recent request
                     if (genreId === getState().genreDetails.requestedGenreId) {
-                        dispatch(new ReceiveGenreDetails(genreId, albums)); 
+                        dispatch(new ReceiveGenreDetails(genreId, albums));
                     }
                 });
-            
+
             dispatch(new RequestGenreDetails(genreId));
         }
     }

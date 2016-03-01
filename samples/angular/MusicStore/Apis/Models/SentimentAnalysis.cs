@@ -8,9 +8,9 @@ namespace MusicStore.Models
     public static class SentimentAnalysis
     {
         private static string[] positiveSentimentWords = new[] { "happy", "fun", "joy", "love", "delight", "bunny", "bunnies", "asp.net" };
-        
+
         private static string[] negativeSentimentWords = new[] { "sad", "pain", "despair", "hate", "scorn", "death", "package management" };
-        
+
         public static SentimentResult GetSentiment(string text) {
             var numPositiveWords = CountWordOccurrences(text, positiveSentimentWords);
             var numNegativeWords = CountWordOccurrences(text, negativeSentimentWords);

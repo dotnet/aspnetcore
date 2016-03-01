@@ -21,7 +21,7 @@ export default function (params: any): Promise<{ html: string }> {
             const app = (
                 <Provider store={ store }>
                     <RouterContext {...renderProps} />
-                </Provider>                
+                </Provider>
             );
 
             // Perform an initial render that will cause any async tasks (e.g., data access) to begin

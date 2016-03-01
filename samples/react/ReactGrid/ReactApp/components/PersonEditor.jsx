@@ -8,11 +8,11 @@ export class PersonEditor extends React.Component {
         super();
         this.state = { savedChanges: false };
     }
-    
+
     onChange() {
         this.setState({ savedChanges: false });
     }
-    
+
     submit(model, reset, setErrors) {
         PersonEditor.sendJson('put', `/api/people/${ this.props.params.personId }`, model).then(response => {
             if (response.ok) {
@@ -23,7 +23,7 @@ export class PersonEditor extends React.Component {
             }
         });
     }
-    
+
     render() {
         var personId = parseInt(this.props.params.personId);
         var person = fakeData.filter(p => p.id === personId)[0];
@@ -46,12 +46,12 @@ export class PersonEditor extends React.Component {
             </Formsy.Form>
         </div>;
     }
-    
+
     static sendJson(method, url, object) {
         return fetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(object) 
+            body: JSON.stringify(object)
         });
     }
 }

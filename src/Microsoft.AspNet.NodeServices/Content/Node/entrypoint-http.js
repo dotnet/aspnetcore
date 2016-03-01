@@ -24,7 +24,7 @@ var server = http.createServer(function(req, res) {
                 hasSentResult = true;
                 if (errorValue) {
                     res.statusCode = 500;
-                    
+
                     if (errorValue.stack) {
                       res.end(errorValue.stack);
                     } else {
@@ -41,19 +41,19 @@ var server = http.createServer(function(req, res) {
                 }
             }
         };
-        
+
         try {
             func.apply(null, [callback].concat(bodyJson.args));
         } catch (synchronousException) {
             callback(synchronousException, null);
-        }     
+        }
     });
 });
 
 server.listen(requestedPortOrZero, 'localhost', function () {
     // Signal to HttpNodeHost which port it should make its HTTP connections on
     console.log('[Microsoft.AspNet.NodeServices.HttpNodeHost:Listening on port ' + server.address().port + '\]');
-    
+
     // Signal to the NodeServices base class that we're ready to accept invocations
     console.log('[Microsoft.AspNet.NodeServices:Listening]');
 });

@@ -20,7 +20,7 @@ builder.config({
 var entryPoint = 'dist/Exports';
 var tasks = [
     builder.bundle(entryPoint, './bundles/angular2-aspnet.js'),
-    builder.bundle(entryPoint, './bundles/angular2-aspnet.min.js', { minify: true })    
+    builder.bundle(entryPoint, './bundles/angular2-aspnet.min.js', { minify: true })
 ];
 
 Promise.all(tasks)

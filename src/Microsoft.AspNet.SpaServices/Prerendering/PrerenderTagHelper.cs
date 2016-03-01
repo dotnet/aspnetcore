@@ -14,17 +14,17 @@ namespace Microsoft.AspNet.SpaServices.Prerendering
     public class PrerenderTagHelper : TagHelper
     {
         static INodeServices fallbackNodeServices; // Used only if no INodeServices was registered with DI
-        
+
         const string PrerenderModuleAttributeName = "asp-prerender-module";
         const string PrerenderExportAttributeName = "asp-prerender-export";
         const string PrerenderWebpackConfigAttributeName = "asp-prerender-webpack-config";
-        
+
         [HtmlAttributeName(PrerenderModuleAttributeName)]
         public string ModuleName { get; set; }
-        
+
         [HtmlAttributeName(PrerenderExportAttributeName)]
         public string ExportName { get; set; }
-        
+
         [HtmlAttributeName(PrerenderWebpackConfigAttributeName)]
         public string WebpackConfigPath { get; set; }
 
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SpaServices.Prerendering
         {
             this.contextAccessor = contextAccessor;
             this.nodeServices = (INodeServices)serviceProvider.GetService(typeof (INodeServices)) ?? fallbackNodeServices;
-            
+
             // Consider removing the following. Having it means you can get away with not putting app.AddNodeServices()
             // in your startup file, but then again it might be confusing that you don't need to.
             if (this.nodeServices == null) {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.SpaServices.Prerendering
                 requestAbsoluteUrl: UriHelper.GetEncodedUrl(this.contextAccessor.HttpContext.Request),
                 requestPathAndQuery: request.Path + request.QueryString.Value);
             output.Content.SetHtmlContent(result.Html);
-            
+
             // Also attach any specified globals to the 'window' object. This is useful for transferring
             // general state between server and client.
             if (result.Globals != null) {

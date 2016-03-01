@@ -42,7 +42,7 @@ export const actionCreators = {
             fetch('/api/albums/mostPopular')
                 .then(results => results.json())
                 .then(albums => dispatch(new ReceiveFeaturedAlbums(albums)));
-            
+
             return dispatch(new RequestFeaturedAlbums());
         }
     }

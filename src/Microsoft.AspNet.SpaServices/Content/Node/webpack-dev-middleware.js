@@ -10,10 +10,10 @@ module.exports = {
         if (!publicPath) {
             throw new Error('To use the Webpack dev server, you must specify a value for \'publicPath\' on the \'output\' section of your webpack.config.');
         }
-        
+
         var enableHotModuleReplacement = options.suppliedOptions.HotModuleReplacement;
         var enableReactHotModuleReplacement = options.suppliedOptions.ReactHotModuleReplacement;
- 
+
         var app = new express();
         var listener = app.listen(defaultPort, function() {
             // Build the final Webpack config based on supplied options
@@ -22,9 +22,9 @@ module.exports = {
                 webpackConfig.plugins.push(
                     new webpack.HotModuleReplacementPlugin()
                 );
-                
+
                 if (enableReactHotModuleReplacement) {
-                    addReactHotModuleReplacementBabelTransform(webpackConfig);                    
+                    addReactHotModuleReplacementBabelTransform(webpackConfig);
                 }
             }
 
@@ -53,7 +53,7 @@ function addReactHotModuleReplacementBabelTransform(webpackConfig) {
         if (loaderConfig.loader && loaderConfig.loader.match(/\bbabel-loader\b/)) {
             // Ensure the babel-loader options includes a 'query'
             var query = loaderConfig.query = loaderConfig.query || {};
-            
+
             // Ensure Babel plugins includes 'react-transform'
             var plugins = query.plugins = query.plugins || [];
             if (!plugins.some(function(pluginConfig) {
@@ -61,7 +61,7 @@ function addReactHotModuleReplacementBabelTransform(webpackConfig) {
             })) {
                 plugins.push(['react-transform', {}]);
             }
-            
+
             // Ensure 'react-transform' plugin is configured to use 'react-transform-hmr'
             plugins.forEach(function(pluginConfig) {
                 if (pluginConfig && pluginConfig[0] === 'react-transform') {
@@ -86,6 +86,6 @@ function removeTrailingSlash(str) {
     if (str.lastIndexOf('/') === str.length - 1) {
         str = str.substring(0, str.length - 1);
     }
-    
+
     return str;
 }

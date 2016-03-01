@@ -11,7 +11,7 @@ import { AbstractControl } from 'angular2/common';
 export class FormField {
     public errorMessages: string[] = [];
     private validate: AbstractControl;
-    
+
     private ngDoCheck() {
         var errors = (this.validate && this.validate.dirty && this.validate.errors) || {};
         this.errorMessages = Object.keys(errors).map(key => {

@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.NodeServices {
         public string FileName { get; private set; }
 
         private bool _disposedValue;
-        
+
         public StringAsTempFile(string content) {
             this.FileName = Path.GetTempFileName();
             File.WriteAllText(this.FileName, content);

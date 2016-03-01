@@ -10,7 +10,7 @@ export default function configureStore(history: HistoryModule.History, initialSt
     const reduxRouterMiddleware = syncHistory(history);
     const middlewares = [thunk, reduxRouterMiddleware, typedToPlain];
     const devToolsExtension = null;//(window as any).devToolsExtension; // If devTools is installed, connect to it
-  
+
     const finalCreateStore = compose(
         applyMiddleware(...middlewares),
         devToolsExtension ? devToolsExtension() : f => f
@@ -20,10 +20,10 @@ export default function configureStore(history: HistoryModule.History, initialSt
     const allReducers = buildRootReducer(Store.reducers);
 
     const store = finalCreateStore(allReducers, initialState) as Redux.Store;
-  
+
     // Required for replaying actions from devtools to work
     reduxRouterMiddleware.listenForReplays(store);
-  
+
     // Enable Webpack hot module replacement for reducers
     if (module.hot) {
         module.hot.accept('./store', () => {

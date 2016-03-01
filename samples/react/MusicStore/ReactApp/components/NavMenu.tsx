@@ -1,4 +1,4 @@
-import * as React from 'react';                                                                                                                                                                    
+import * as React from 'react';
 import { Navbar, Nav, NavItem, NavDropdown, MenuItem } from 'react-bootstrap';
 import { Link } from 'react-router';
 import { LinkContainer } from 'react-router-bootstrap';
@@ -25,7 +25,7 @@ class NavMenu extends React.Component<NavMenuProps, void> {
                             {genres.map(genre =>
                                 <LinkContainer key={ genre.GenreId } to={ `/genre/${ genre.GenreId }` }>
                                     <MenuItem>{ genre.Name }</MenuItem>
-                                </LinkContainer>     
+                                </LinkContainer>
                             )}
                             <MenuItem divider />
                             <LinkContainer to={ '/genres' }><MenuItem>More…</MenuItem></LinkContainer>
@@ -43,7 +43,7 @@ class NavMenu extends React.Component<NavMenuProps, void> {
 // Selects which part of global state maps to this component, and defines a type for the resulting props
 const provider = provide(
     (state: ApplicationState) => state.genreList,
-    GenreList.actionCreators    
+    GenreList.actionCreators
 );
 type NavMenuProps = typeof provider.allProps;
 export default provider.connect(NavMenu);
