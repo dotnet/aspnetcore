@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.WebSockets.Protocol.Test
             return _readStream.Read(buffer, offset, count);
         }
 
-#if !DNXCORE50
+#if !NETSTANDARDAPP1_5
         public override int ReadByte()
         {
             return _readStream.ReadByte();
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.WebSockets.Protocol.Test
             _writeStream.Write(buffer, offset, count);
         }
 
-#if !DNXCORE50
+#if !NETSTANDARDAPP1_5
         public override void WriteByte(byte value)
         {
             _writeStream.WriteByte(value);
