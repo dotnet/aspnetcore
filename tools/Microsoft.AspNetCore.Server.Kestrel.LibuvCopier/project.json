@@ -8,12 +8,15 @@
     "Newtonsoft.Json": "8.0.2"
   },
   "frameworks": {
-    "dnxcore50": {
+    "netstandardapp1.5": {
       "dependencies": {
         "NETStandard.Library": "1.0.0-*",
         "System.Dynamic.Runtime": "4.0.11-*"
-      }
+      },
+      "imports": [
+        "dnxcore50"
+      ]
     },
-    "dnx451": { }
+    "dnx451": {}
   }
 }

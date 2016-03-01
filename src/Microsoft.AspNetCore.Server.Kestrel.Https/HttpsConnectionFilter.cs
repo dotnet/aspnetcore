@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                             X509Certificate2 certificate2 = certificate as X509Certificate2;
                             if (certificate2 == null)
                             {
-#if DOTNET5_4
+#if NETSTANDARD1_3
                                 // conversion X509Certificate to X509Certificate2 not supported
                                 // https://github.com/dotnet/corefx/issues/4510
                                 return false;

@@ -1,24 +1,27 @@
 {
-    "version": "1.0.0-*",
-    "compilationOptions": {
-        "emitEntryPoint": true
+  "version": "1.0.0-*",
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+  "dependencies": {
+    "Microsoft.AspNetCore.Http.Features": "1.0.0-*",
+    "Microsoft.AspNetCore.Hosting": "1.0.0-*"
+  },
+  "frameworks": {
+    "netstandardapp1.5": {
+      "dependencies": {
+        "NETStandard.Library": "1.0.0-*"
+      },
+      "imports": [
+        "dnxcore50"
+      ]
     },
-    "dependencies": {
-        "Microsoft.AspNetCore.Http.Features": "1.0.0-*",
-        "Microsoft.AspNetCore.Hosting": "1.0.0-*"
-    },
-    "frameworks": {
-        "dnxcore50": {
-            "dependencies": {
-                "NETStandard.Library": "1.0.0-*"
-            }
-        },
-        "dnx451": {
-            "frameworkAssemblies": {
-                "System.Runtime": "",
-                "System.Text.Encoding": "",
-                "System.Threading.Tasks": ""
-            }
-        }
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Runtime": "",
+        "System.Text.Encoding": "",
+        "System.Threading.Tasks": ""
+      }
     }
+  }
 }
