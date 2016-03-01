@@ -18,7 +18,7 @@ module.exports = merge({
     },
     entry: {
         main: ['./ClientApp/boot.tsx'],
-        vendor: ['bootstrap', 'bootstrap/dist/css/bootstrap.css', 'style-loader', 'jquery']
+        vendor: ['bootstrap', 'bootstrap/dist/css/bootstrap.css', 'react', 'react-dom', 'react-router', 'style-loader', 'jquery']
     },
     output: {
         path: path.join(__dirname, 'wwwroot', 'dist'),
