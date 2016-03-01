@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Localization.Test
             var collection = new ServiceCollection();
 
             // Act
-            collection.AddLocalization();
+            LocalizationServiceCollectionExtensions.AddLocalizationServices(collection);
 
             // Assert
             var services = collection.ToList();
@@ -39,7 +39,9 @@ namespace Microsoft.Extensions.Localization.Test
             var collection = new ServiceCollection();
 
             // Act
-            collection.AddLocalization(options => options.ResourcesPath = "Resources");
+            LocalizationServiceCollectionExtensions.AddLocalizationServices(
+                collection,
+                options => options.ResourcesPath = "Resources");
 
             // Assert
             var services = collection.ToList();

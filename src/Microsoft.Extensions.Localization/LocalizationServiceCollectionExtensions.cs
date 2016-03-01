@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -25,15 +25,16 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddOptions();
 
-            services.TryAddSingleton<IStringLocalizerFactory, ResourceManagerStringLocalizerFactory>();
-            services.TryAddTransient(typeof(IStringLocalizer<>), typeof(StringLocalizer<>));
+            AddLocalizationServices(services);
         }
 
         /// <summary>
         /// Adds services required for application localization.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-        /// <param name="setupAction">An <see cref="Action{LocalizationOptions}"/> to configure the <see cref="LocalizationOptions"/>.</param>
+        /// <param name="setupAction">
+        /// An <see cref="Action{LocalizationOptions}"/> to configure the <see cref="LocalizationOptions"/>.
+        /// </param>
         public static void AddLocalization(
             this IServiceCollection services,
             Action<LocalizationOptions> setupAction)
@@ -42,12 +43,27 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(services));
             }
+
             if (setupAction == null)
             {
                 throw new ArgumentNullException(nameof(setupAction));
             }
 
-            services.AddLocalization();
+            AddLocalizationServices(services, setupAction);
+        }
+
+        // To enable unit testing
+        internal static void AddLocalizationServices(IServiceCollection services)
+        {
+            services.TryAddSingleton<IStringLocalizerFactory, ResourceManagerStringLocalizerFactory>();
+            services.TryAddTransient(typeof(IStringLocalizer<>), typeof(StringLocalizer<>));
+        }
+
+        internal static void AddLocalizationServices(
+            IServiceCollection services,
+            Action<LocalizationOptions> setupAction)
+        {
+            AddLocalizationServices(services);
             services.Configure(setupAction);
         }
     }
