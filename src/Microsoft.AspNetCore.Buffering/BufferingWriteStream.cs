@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Buffering
                 return _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
             }
         }
-#if !DOTNET5_4
+#if !NETSTANDARD1_3
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             if (_isBuffering)
