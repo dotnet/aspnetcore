@@ -1,6 +1,5 @@
 {
   "version": "1.0.0-*",
-
   "dependencies": {
     "Microsoft.AspNetCore.Antiforgery": "1.0.0-*",
     "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
@@ -11,22 +10,21 @@
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Newtonsoft.Json": "8.0.2"
   },
-
   "compilationOptions": {
     "emitEntryPoint": true
   },
-
   "commands": {
     "web": "AntiforgerySample"
   },
-
   "frameworks": {
-    "dnx451": { },
-    "dnxcore50": {
-      "imports": "portable-net451+win8"
+    "dnx451": {},
+    "netstandardapp1.5": {
+      "imports": [
+        "dnxcore50",
+        "portable-net451+win8"
+      ]
     }
   },
-
   "publishExclude": [
     "node_modules",
     "bower_components",
