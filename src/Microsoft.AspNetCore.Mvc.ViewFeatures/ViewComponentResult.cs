@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc
                     writer,
                     htmlHelperOptions);
 
-                (viewComponentHelper as ICanHasViewContext)?.Contextualize(viewContext);
+                (viewComponentHelper as IViewContextAware)?.Contextualize(viewContext);
                 var result = await GetViewComponentResult(viewComponentHelper, logger);
 
                 result.WriteTo(writer, htmlEncoder);

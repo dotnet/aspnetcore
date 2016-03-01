@@ -3,21 +3,17 @@
 
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders.Testing;
@@ -323,6 +319,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        private class MyService : IViewContextAware
         private class HasIncorrectViewDataPropertyType : RazorPage<MyModel>
         {
             [RazorInject]
@@ -385,7 +382,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
         }
 
-        private class MyService : ICanHasViewContext
+        private class MyService : IViewContextAware
         {
             public ViewContext ViewContext { get; private set; }
 

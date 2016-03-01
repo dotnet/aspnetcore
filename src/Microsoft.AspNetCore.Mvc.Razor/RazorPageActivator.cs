@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
@@ -123,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 valueAccessor = context =>
                 {
                     var serviceProvider = context.HttpContext.RequestServices;
-                    var factory = (IUrlHelperFactory)serviceProvider.GetRequiredService(typeof(IUrlHelperFactory));
+                    var factory = serviceProvider.GetRequiredService<IUrlHelperFactory>();
                     return factory.GetUrlHelper(context);
                 };
             }
@@ -133,11 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 {
                     var serviceProvider = context.HttpContext.RequestServices;
                     var value = serviceProvider.GetRequiredService(property.PropertyType);
-                    var canHasViewContext = value as ICanHasViewContext;
-                    if (canHasViewContext != null)
-                    {
-                        canHasViewContext.Contextualize(context);
-                    }
+                    (value as IViewContextAware)?.Contextualize(context);
 
                     return value;
                 };

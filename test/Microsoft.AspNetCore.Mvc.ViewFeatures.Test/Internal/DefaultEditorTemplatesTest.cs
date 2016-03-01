@@ -917,7 +917,7 @@ Environment.NewLine;
             public string OrderedProperty1 { get; set; }
         }
 
-        private class StubbyHtmlHelper : IHtmlHelper, ICanHasViewContext
+        private class StubbyHtmlHelper : IHtmlHelper, IViewContextAware
         {
             private readonly IHtmlHelper _innerHelper;
 
@@ -969,7 +969,7 @@ Environment.NewLine;
 
             public void Contextualize(ViewContext viewContext)
             {
-                (_innerHelper as ICanHasViewContext)?.Contextualize(viewContext);
+                (_innerHelper as IViewContextAware)?.Contextualize(viewContext);
             }
 
             public IHtmlContent ActionLink(

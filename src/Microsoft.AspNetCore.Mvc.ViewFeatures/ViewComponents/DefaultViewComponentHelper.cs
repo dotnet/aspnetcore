@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
     /// <summary>
     /// Default implementation for <see cref="IViewComponentHelper"/>.
     /// </summary>
-    public class DefaultViewComponentHelper : IViewComponentHelper, ICanHasViewContext
+    public class DefaultViewComponentHelper : IViewComponentHelper, IViewContextAware
     {
         private readonly IViewComponentDescriptorCollectionProvider _descriptorProvider;
         private readonly HtmlEncoder _htmlEncoder;

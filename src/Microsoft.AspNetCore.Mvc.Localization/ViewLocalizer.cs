@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization
     /// An <see cref="IViewLocalizer"/> implementation that derives the resource location from the executing view's
     /// file path.
     /// </summary>
-    public class ViewLocalizer : IViewLocalizer, ICanHasViewContext
+    public class ViewLocalizer : IViewLocalizer, IViewContextAware
     {
         private readonly IHtmlLocalizerFactory _localizerFactory;
         private readonly string _applicationName;

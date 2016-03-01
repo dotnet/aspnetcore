@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     /// <summary>
     /// Default implementation of <see cref="IHtmlHelper"/>.
     /// </summary>
-    public class HtmlHelper : IHtmlHelper, ICanHasViewContext
+    public class HtmlHelper : IHtmlHelper, IViewContextAware
     {
         public static readonly string ValidationInputCssClassName = "input-validation-error";
         public static readonly string ValidationInputValidCssClassName = "input-validation-valid";
