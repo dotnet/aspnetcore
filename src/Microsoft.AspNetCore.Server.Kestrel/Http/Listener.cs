@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }, this);
             }
 
-            Memory2.Dispose();
+            Memory.Dispose();
             ListenSocket = null;
         }
     }

@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
     /// Slab tracking object used by the byte buffer memory pool. A slab is a large allocation which is divided into smaller blocks. The
     /// individual blocks are then treated as independant array segments.
     /// </summary>
-    public class MemoryPoolSlab2 : IDisposable
+    public class MemoryPoolSlab : IDisposable
     {
         /// <summary>
         /// This handle pins the managed array in memory until the slab is disposed. This prevents it from being
@@ -41,14 +41,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         /// </summary>
         private bool _disposedValue = false; // To detect redundant calls
 
-        public static MemoryPoolSlab2 Create(int length)
+        public static MemoryPoolSlab Create(int length)
         {
             // allocate and pin requested memory length
             var array = new byte[length];
             var gcHandle = GCHandle.Alloc(array, GCHandleType.Pinned);
 
             // allocate and return slab tracking object
-            return new MemoryPoolSlab2
+            return new MemoryPoolSlab
             {
                 Array = array,
                 _gcHandle = gcHandle,
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         }
 
         // override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        ~MemoryPoolSlab2()
+        ~MemoryPoolSlab()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(false);

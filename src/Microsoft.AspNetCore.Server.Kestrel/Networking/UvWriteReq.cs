@@ -41,8 +41,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
 
         public unsafe void Write(
             UvStreamHandle handle,
-            MemoryPoolIterator2 start,
-            MemoryPoolIterator2 end,
+            MemoryPoolIterator start,
+            MemoryPoolIterator end,
             int nBuffers,
             Action<UvWriteReq, int, Exception, object> callback,
             object state)

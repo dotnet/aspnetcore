@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             // Arrange
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
-            using (var memory2 = new MemoryPool2())
+            using (var memory2 = new MemoryPool())
             using (var socketInput = new SocketInput(memory2, ltp))
             {
                 var task0Threw = false;
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void ConsumingOutOfOrderFailsGracefully()
         {
-            var defultIter = new MemoryPoolIterator2();
+            var defultIter = new MemoryPoolIterator();
 
             // Calling ConsumingComplete without a preceding calling to ConsumingStart fails
             using (var socketInput = new SocketInput(null, null))

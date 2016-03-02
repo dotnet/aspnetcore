@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private const int _initialTaskQueues = 64;
         private const int _maxPooledWriteContexts = 32;
 
-        private static readonly WaitCallback _returnBlocks = (state) => ReturnBlocks((MemoryPoolBlock2)state);
+        private static readonly WaitCallback _returnBlocks = (state) => ReturnBlocks((MemoryPoolBlock)state);
         private static readonly Action<object> _connectionCancellation = (state) => ((SocketOutput)state).CancellationTriggered();
 
         private readonly KestrelThread _thread;
@@ -34,10 +34,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         // _head does not require a lock, since it is only used in the ctor and uv thread.
         private readonly object _returnLock = new object();
 
-        private MemoryPoolBlock2 _head;
-        private MemoryPoolBlock2 _tail;
+        private MemoryPoolBlock _head;
+        private MemoryPoolBlock _tail;
 
-        private MemoryPoolIterator2 _lastStart;
+        private MemoryPoolIterator _lastStart;
 
         // This locks access to to all of the below fields
         private readonly object _contextLock = new object();
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         public SocketOutput(
             KestrelThread thread,
             UvStreamHandle socket,
-            MemoryPool2 memory,
+            MemoryPool memory,
             Connection connection,
             string connectionId,
             IKestrelTrace log,
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
         }
 
-        public MemoryPoolIterator2 ProducingStart()
+        public MemoryPoolIterator ProducingStart()
         {
             lock (_returnLock)
             {
@@ -230,16 +230,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                 if (_tail == null)
                 {
-                    return default(MemoryPoolIterator2);
+                    return default(MemoryPoolIterator);
                 }
 
-                _lastStart = new MemoryPoolIterator2(_tail, _tail.End);
+                _lastStart = new MemoryPoolIterator(_tail, _tail.End);
 
                 return _lastStart;
             }
         }
 
-        public void ProducingComplete(MemoryPoolIterator2 end)
+        public void ProducingComplete(MemoryPoolIterator end)
         {
             Debug.Assert(!_lastStart.IsDefault);
 
@@ -254,9 +254,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             ProducingCompleteNoPreComplete(end);
         }
 
-        private void ProducingCompleteNoPreComplete(MemoryPoolIterator2 end)
+        private void ProducingCompleteNoPreComplete(MemoryPoolIterator end)
         {
-            MemoryPoolBlock2 blockToReturn = null;
+            MemoryPoolBlock blockToReturn = null;
 
 
             lock (_returnLock)
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     blockToReturn = _lastStart.Block;
                 }
 
-                _lastStart = default(MemoryPoolIterator2);
+                _lastStart = default(MemoryPoolIterator);
             }
 
             if (blockToReturn != null)
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
         }
 
-        private static void ReturnBlocks(MemoryPoolBlock2 block)
+        private static void ReturnBlocks(MemoryPoolBlock block)
         {
             while (block != null)
             {
@@ -496,7 +496,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             return WriteAsync(buffer, cancellationToken, chunk);
         }
 
-        private static void BytesBetween(MemoryPoolIterator2 start, MemoryPoolIterator2 end, out int bytes, out int buffers)
+        private static void BytesBetween(MemoryPoolIterator start, MemoryPoolIterator end, out int bytes, out int buffers)
         {
             if (start.Block == end.Block)
             {
@@ -520,13 +520,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         private class WriteContext
         {
-            private static WaitCallback _returnWrittenBlocks = (state) => ReturnWrittenBlocks((MemoryPoolBlock2)state);
+            private static WaitCallback _returnWrittenBlocks = (state) => ReturnWrittenBlocks((MemoryPoolBlock)state);
             private static WaitCallback _completeWrite = (state) => ((WriteContext)state).CompleteOnThreadPool();
 
             private SocketOutput Self;
             private UvWriteReq _writeReq;
-            private MemoryPoolIterator2 _lockedStart;
-            private MemoryPoolIterator2 _lockedEnd;
+            private MemoryPoolIterator _lockedStart;
+            private MemoryPoolIterator _lockedEnd;
             private int _bufferCount;
 
             public int ByteCount;
@@ -698,7 +698,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 ThreadPool.QueueUserWorkItem(_returnWrittenBlocks, _lockedStart.Block);
             }
 
-            private static void ReturnWrittenBlocks(MemoryPoolBlock2 block)
+            private static void ReturnWrittenBlocks(MemoryPoolBlock block)
             {
                 while (block != null)
                 {
@@ -722,16 +722,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     return;
                 }
 
-                _lockedStart = new MemoryPoolIterator2(head, head.Start);
-                _lockedEnd = new MemoryPoolIterator2(tail, tail.End);
+                _lockedStart = new MemoryPoolIterator(head, head.Start);
+                _lockedEnd = new MemoryPoolIterator(tail, tail.End);
 
                 BytesBetween(_lockedStart, _lockedEnd, out ByteCount, out _bufferCount);
             }
 
             public void Reset()
             {
-                _lockedStart = default(MemoryPoolIterator2);
-                _lockedEnd = default(MemoryPoolIterator2);
+                _lockedStart = default(MemoryPoolIterator);
+                _lockedEnd = default(MemoryPoolIterator);
                 _bufferCount = 0;
                 ByteCount = 0;
 

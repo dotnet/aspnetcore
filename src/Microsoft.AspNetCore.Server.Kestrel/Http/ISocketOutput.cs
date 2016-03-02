@@ -18,10 +18,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         /// <summary>
         /// Returns an iterator pointing to the tail of the response buffer. Response data can be appended
-        /// manually or by using <see cref="MemoryPoolIterator2.CopyFrom(ArraySegment{byte})"/>.
-        /// Be careful to ensure all appended blocks are backed by a <see cref="MemoryPoolSlab2"/>. 
+        /// manually or by using <see cref="MemoryPoolIterator.CopyFrom(ArraySegment{byte})"/>.
+        /// Be careful to ensure all appended blocks are backed by a <see cref="MemoryPoolSlab"/>. 
         /// </summary>
-        MemoryPoolIterator2 ProducingStart();
+        MemoryPoolIterator ProducingStart();
 
         /// <summary>
         /// Commits the response data appended to the iterator returned from <see cref="ProducingStart"/>.
@@ -30,6 +30,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         /// or <see cref="WriteAsync(ArraySegment{byte}, bool, CancellationToken)"/> is called afterwards.
         /// </summary>
         /// <param name="end">Points to the end of the committed data.</param>
-        void ProducingComplete(MemoryPoolIterator2 end);
+        void ProducingComplete(MemoryPoolIterator end);
     }
 }

@@ -120,16 +120,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.Equal(expect, result);
         }
 
-        private MemoryPoolIterator2 BuildSample(string data)
+        private MemoryPoolIterator BuildSample(string data)
         {
             var store = data.Select(c => (byte)c).ToArray();
-            var mem = MemoryPoolBlock2.Create(new ArraySegment<byte>(store), IntPtr.Zero, null, null);
+            var mem = MemoryPoolBlock.Create(new ArraySegment<byte>(store), IntPtr.Zero, null, null);
             mem.End = store.Length;
 
             return mem.GetIterator();
         }
 
-        private MemoryPoolIterator2 GetIterator(MemoryPoolIterator2 begin, int displacement)
+        private MemoryPoolIterator GetIterator(MemoryPoolIterator begin, int displacement)
         {
             var result = begin;
             for (int i = 0; i < displacement; ++i)

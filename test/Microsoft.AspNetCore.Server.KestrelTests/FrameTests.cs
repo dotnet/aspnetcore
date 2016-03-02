@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool2())
+            using (var pool = new MemoryPool())
             using (var socketInput = new SocketInput(pool, ltp))
             {
                 var connectionContext = new ConnectionContext()

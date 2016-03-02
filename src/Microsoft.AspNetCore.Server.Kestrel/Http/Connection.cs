@@ -46,8 +46,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
             ConnectionId = GenerateConnectionId(Interlocked.Increment(ref _lastConnectionId));
 
-            _rawSocketInput = new SocketInput(Memory2, ThreadPool);
-            _rawSocketOutput = new SocketOutput(Thread, _socket, Memory2, this, ConnectionId, Log, ThreadPool, WriteReqPool);
+            _rawSocketInput = new SocketInput(Memory, ThreadPool);
+            _rawSocketOutput = new SocketOutput(Thread, _socket, Memory, this, ConnectionId, Log, ThreadPool, WriteReqPool);
         }
 
         // Internal for testing
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                     if (_filterContext.Connection != _libuvStream)
                     {
-                        var filteredStreamAdapter = new FilteredStreamAdapter(_filterContext.Connection, Memory2, Log, ThreadPool);
+                        var filteredStreamAdapter = new FilteredStreamAdapter(_filterContext.Connection, Memory, Log, ThreadPool);
 
                         SocketInput = filteredStreamAdapter.SocketInput;
                         SocketOutput = filteredStreamAdapter.SocketOutput;

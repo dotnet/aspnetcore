@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var memory = new MemoryPool2())
+            using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var memory = new MemoryPool2())
+            using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var memory = new MemoryPool2())
+            using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var memory = new MemoryPool2())
+            using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var memory = new MemoryPool2())
+            using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
@@ -423,7 +423,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var memory = new MemoryPool2())
+            using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
@@ -509,7 +509,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var memory = new MemoryPool2())
+            using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
@@ -529,7 +529,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 block2.End = block2.Data.Offset + block2.Data.Count;
                 start.Block.Next = block2;
 
-                var end = new MemoryPoolIterator2(block2, block2.End);
+                var end = new MemoryPoolIterator(block2, block2.End);
 
                 socketOutput.ProducingComplete(end);
 

@@ -47,14 +47,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             return new ArraySegment<byte>(bytes, offset, 10 - offset);
         }
 
-        public static int WriteBeginChunkBytes(ref MemoryPoolIterator2 start, int dataCount)
+        public static int WriteBeginChunkBytes(ref MemoryPoolIterator start, int dataCount)
         {
             var chunkSegment = BeginChunkBytes(dataCount);
             start.CopyFrom(chunkSegment);
             return chunkSegment.Count;
         }
 
-        public static void WriteEndChunkBytes(ref MemoryPoolIterator2 start)
+        public static void WriteEndChunkBytes(ref MemoryPoolIterator start)
         {
             start.CopyFrom(_endChunkBytes);
         }

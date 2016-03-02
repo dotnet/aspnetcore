@@ -17,12 +17,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
         private static readonly byte[] _nullBuffer = new byte[0];
 
         private readonly Stream _outputStream;
-        private readonly MemoryPool2 _memory;
-        private MemoryPoolBlock2 _producingBlock;
+        private readonly MemoryPool _memory;
+        private MemoryPoolBlock _producingBlock;
 
         private object _writeLock = new object();
 
-        public StreamSocketOutput(Stream outputStream, MemoryPool2 memory)
+        public StreamSocketOutput(Stream outputStream, MemoryPool memory)
         {
             _outputStream = outputStream;
             _memory = memory;
@@ -54,13 +54,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
             return TaskUtilities.CompletedTask;
         }
 
-        public MemoryPoolIterator2 ProducingStart()
+        public MemoryPoolIterator ProducingStart()
         {
             _producingBlock = _memory.Lease();
-            return new MemoryPoolIterator2(_producingBlock);
+            return new MemoryPoolIterator(_producingBlock);
         }
 
-        public void ProducingComplete(MemoryPoolIterator2 end)
+        public void ProducingComplete(MemoryPoolIterator end)
         {
             var block = _producingBlock;
             while (block != end.Block)

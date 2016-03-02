@@ -64,13 +64,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var writeRequest = new UvWriteReq(new KestrelTrace(new TestKestrelTrace()));
                 writeRequest.Init(loop);
-                var block = MemoryPoolBlock2.Create(
+                var block = MemoryPoolBlock.Create(
                     new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }),
                     dataPtr: IntPtr.Zero,
                     pool: null,
                     slab: null);
-                var start = new MemoryPoolIterator2(block, 0);
-                var end = new MemoryPoolIterator2(block, block.Data.Count);
+                var start = new MemoryPoolIterator(block, 0);
+                var end = new MemoryPoolIterator(block, block.Data.Count);
                 writeRequest.Write(
                     serverConnectionPipe,
                     start, 

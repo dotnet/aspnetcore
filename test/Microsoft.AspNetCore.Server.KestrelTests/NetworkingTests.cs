@@ -178,13 +178,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                             {
                                 var req = new UvWriteReq(new KestrelTrace(new TestKestrelTrace()));
                                 req.Init(loop);
-                                var block = MemoryPoolBlock2.Create(
+                                var block = MemoryPoolBlock.Create(
                                     new ArraySegment<byte>(new byte[] { 65, 66, 67, 68, 69 }),
                                     dataPtr: IntPtr.Zero,
                                     pool: null,
                                     slab: null);
-                                var start = new MemoryPoolIterator2(block, 0);
-                                var end = new MemoryPoolIterator2(block, block.Data.Count);
+                                var start = new MemoryPoolIterator(block, 0);
+                                var end = new MemoryPoolIterator(block, block.Data.Count);
                                 req.Write(
                                     tcp2,
                                     start,

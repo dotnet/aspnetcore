@@ -390,7 +390,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
         }}
         {(loop.ClassName == "FrameResponseHeaders" ? $@"
-        protected void CopyToFast(ref MemoryPoolIterator2 output)
+        protected void CopyToFast(ref MemoryPoolIterator output)
         {{
             {Each(loop.Headers, header => $@"
                 if ({header.TestBit()}) 

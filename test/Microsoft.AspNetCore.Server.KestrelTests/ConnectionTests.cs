@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var mockLibuv = new MockLibuv();
             
-            using (var memory = new MemoryPool2())
+            using (var memory = new MemoryPool())
             using (var engine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 engine.Start(count: 1);
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     FrameFactory = connectionContext => new Frame<HttpContext>(
                         new DummyApplication(httpContext => TaskUtilities.CompletedTask), connectionContext),
-                    Memory2 = memory,
+                    Memory = memory,
                     ServerAddress = ServerAddress.FromUrl($"http://localhost:{TestServer.GetNextPort()}"),
                     Thread = engine.Threads[0]
                 };

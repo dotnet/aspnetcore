@@ -6,12 +6,12 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
-    public class MemoryPoolBlock2Tests
+    public class MemoryPoolBlockTests
     {
         [Fact]
         public void SeekWorks()
         {
-            using (var pool = new MemoryPool2())
+            using (var pool = new MemoryPool())
             {
                 var block = pool.Lease(256);
                 foreach (var ch in Enumerable.Range(0, 256).Select(x => (byte)x))
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Console.WriteLine($"Vector.IsHardwareAccelerated == {Vector.IsHardwareAccelerated}");
             Console.WriteLine($"Vector<byte>.Count == {Vector<byte>.Count}");
 
-            using (var pool = new MemoryPool2())
+            using (var pool = new MemoryPool())
             {
                 var block1 = pool.Lease(256);
                 var block2 = block1.Next = pool.Lease(256);
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void GetLengthBetweenIteratorsWorks()
         {
-            using (var pool = new MemoryPool2())
+            using (var pool = new MemoryPool())
             {
                 var block = pool.Lease(256);
                 block.End += 256;
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        private void TestAllLengths(MemoryPoolBlock2 block, int lengths)
+        private void TestAllLengths(MemoryPoolBlock block, int lengths)
         {
             for (var firstIndex = 0; firstIndex <= lengths; ++firstIndex)
             {
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void AddDoesNotAdvanceAtEndOfCurrentBlock()
         {
-            using (var pool = new MemoryPool2())
+            using (var pool = new MemoryPool())
             {
                 var block1 = pool.Lease(256);
                 var block2 = block1.Next = pool.Lease(256);
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void CopyToCorrectlyTraversesBlocks()
         {
-            using (var pool = new MemoryPool2())
+            using (var pool = new MemoryPool())
             {
                 var block1 = pool.Lease(128);
                 var block2 = block1.Next = pool.Lease(128);
@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void CopyFromCorrectlyTraversesBlocks()
         {
-            using (var pool = new MemoryPool2())
+            using (var pool = new MemoryPool())
             {
                 var block1 = pool.Lease(128);
                 var start = block1.GetIterator();
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void IsEndCorrectlyTraversesBlocks()
         {
-            using (var pool = new MemoryPool2())
+            using (var pool = new MemoryPool())
             {
                 var block1 = pool.Lease(128);
                 var block2 = block1.Next = pool.Lease(128);
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        private void AssertIterator(MemoryPoolIterator2 iter, MemoryPoolBlock2 block, int index)
+        private void AssertIterator(MemoryPoolIterator iter, MemoryPoolBlock block, int index)
         {
             Assert.Same(block, iter.Block);
             Assert.Equal(index, iter.Index);

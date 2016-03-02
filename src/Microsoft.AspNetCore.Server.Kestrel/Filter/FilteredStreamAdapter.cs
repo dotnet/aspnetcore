@@ -15,12 +15,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
         private readonly Stream _filteredStream;
         private readonly Stream _socketInputStream;
         private readonly IKestrelTrace _log;
-        private readonly MemoryPool2 _memory;
-        private MemoryPoolBlock2 _block;
+        private readonly MemoryPool _memory;
+        private MemoryPoolBlock _block;
 
         public FilteredStreamAdapter(
             Stream filteredStream,
-            MemoryPool2 memory,
+            MemoryPool memory,
             IKestrelTrace logger,
             IThreadPool threadPool)
         {

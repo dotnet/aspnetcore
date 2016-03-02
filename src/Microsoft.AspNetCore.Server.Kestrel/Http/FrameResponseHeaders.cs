@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             return GetEnumerator();
         }
 
-        public void CopyTo(ref MemoryPoolIterator2 output)
+        public void CopyTo(ref MemoryPoolIterator output)
         {
             CopyToFast(ref output);
             if (MaybeUnknown != null)

@@ -16,20 +16,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private static readonly Action _awaitableIsCompleted = () => { };
         private static readonly Action _awaitableIsNotCompleted = () => { };
 
-        private readonly MemoryPool2 _memory;
+        private readonly MemoryPool _memory;
         private readonly IThreadPool _threadPool;
         private readonly ManualResetEventSlim _manualResetEvent = new ManualResetEventSlim(false, 0);
 
         private Action _awaitableState;
         private Exception _awaitableError;
 
-        private MemoryPoolBlock2 _head;
-        private MemoryPoolBlock2 _tail;
-        private MemoryPoolBlock2 _pinned;
+        private MemoryPoolBlock _head;
+        private MemoryPoolBlock _tail;
+        private MemoryPoolBlock _pinned;
 
         private int _consumingState;
 
-        public SocketInput(MemoryPool2 memory, IThreadPool threadPool)
+        public SocketInput(MemoryPool memory, IThreadPool threadPool)
         {
             _memory = memory;
             _threadPool = threadPool;
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public bool IsCompleted => ReferenceEquals(_awaitableState, _awaitableIsCompleted);
 
-        public MemoryPoolBlock2 IncomingStart()
+        public MemoryPoolBlock IncomingStart()
         {
             const int minimumSize = 2048;
 
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     _tail = _memory.Lease();
                 }
 
-                var iterator = new MemoryPoolIterator2(_tail, _tail.End);
+                var iterator = new MemoryPoolIterator(_tail, _tail.End);
                 iterator.CopyFrom(buffer, offset, count);
 
                 if (_head == null)
@@ -148,22 +148,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
         }
 
-        public MemoryPoolIterator2 ConsumingStart()
+        public MemoryPoolIterator ConsumingStart()
         {
             if (Interlocked.CompareExchange(ref _consumingState, 1, 0) != 0)
             {
                 throw new InvalidOperationException("Already consuming input.");
             }
 
-            return new MemoryPoolIterator2(_head);
+            return new MemoryPoolIterator(_head);
         }
 
         public void ConsumingComplete(
-            MemoryPoolIterator2 consumed,
-            MemoryPoolIterator2 examined)
+            MemoryPoolIterator consumed,
+            MemoryPoolIterator examined)
         {
-            MemoryPoolBlock2 returnStart = null;
-            MemoryPoolBlock2 returnEnd = null;
+            MemoryPoolBlock returnStart = null;
+            MemoryPoolBlock returnEnd = null;
 
             if (!consumed.IsDefault)
             {

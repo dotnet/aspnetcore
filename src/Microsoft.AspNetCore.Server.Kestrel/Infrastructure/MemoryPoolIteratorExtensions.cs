@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 {
-    public static class MemoryPoolIterator2Extensions
+    public static class MemoryPoolIteratorExtensions
     {
         private static readonly Encoding _utf8 = Encoding.UTF8;
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
         private readonly static Tuple<long, long, string>[] _knownMethods = new Tuple<long, long, string>[8];
 
-        static MemoryPoolIterator2Extensions()
+        static MemoryPoolIteratorExtensions()
         {
             _knownMethods[0] = Tuple.Create(_mask4Chars, _httpPutMethodLong, HttpPutMethod);
             _knownMethods[1] = Tuple.Create(_mask5Chars, _httpPostMethodLong, HttpPostMethod);
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             }
         }
 
-        public unsafe static string GetAsciiString(this MemoryPoolIterator2 start, MemoryPoolIterator2 end)
+        public unsafe static string GetAsciiString(this MemoryPoolIterator start, MemoryPoolIterator end)
         {
             if (start.IsDefault || end.IsDefault)
             {
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             return asciiString;
         }
 
-        public static string GetUtf8String(this MemoryPoolIterator2 start, MemoryPoolIterator2 end)
+        public static string GetUtf8String(this MemoryPoolIterator start, MemoryPoolIterator end)
         {
             if (start.IsDefault || end.IsDefault)
             {
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             }
         }
 
-        public static ArraySegment<byte> GetArraySegment(this MemoryPoolIterator2 start, MemoryPoolIterator2 end)
+        public static ArraySegment<byte> GetArraySegment(this MemoryPoolIterator start, MemoryPoolIterator end)
         {
             if (start.IsDefault || end.IsDefault)
             {
@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         /// <param name="scan">If we found a valid method, then scan will be updated to new position</param>
         /// <param name="knownMethod">A reference to a pre-allocated known string, if the input matches any.</param>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
-        public static bool GetKnownMethod(this MemoryPoolIterator2 begin, ref MemoryPoolIterator2 scan, out string knownMethod)
+        public static bool GetKnownMethod(this MemoryPoolIterator begin, ref MemoryPoolIterator scan, out string knownMethod)
         {
             knownMethod = null;
             var value = begin.PeekLong();
@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         /// <param name="scan">If we found a valid method, then scan will be updated to new position</param>
         /// <param name="knownVersion">A reference to a pre-allocated known string, if the input matches any.</param>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
-        public static bool GetKnownVersion(this MemoryPoolIterator2 begin, ref MemoryPoolIterator2 scan, out string knownVersion)
+        public static bool GetKnownVersion(this MemoryPoolIterator begin, ref MemoryPoolIterator scan, out string knownVersion)
         {
             knownVersion = null;
             var value = begin.PeekLong();

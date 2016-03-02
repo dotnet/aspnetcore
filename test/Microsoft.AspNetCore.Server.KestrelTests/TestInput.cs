@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     class TestInput : IConnectionControl, IFrameControl, IDisposable
     {
-        private MemoryPool2 _memoryPool;
+        private MemoryPool _memoryPool;
 
         public TestInput()
         {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             };
             FrameContext = new Frame<object>(null, context);
 
-            _memoryPool = new MemoryPool2();
+            _memoryPool = new MemoryPool();
             FrameContext.SocketInput = new SocketInput(_memoryPool, ltp);
         }
 

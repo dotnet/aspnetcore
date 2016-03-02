@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
     /// Block tracking object used by the byte buffer memory pool. A slab is a large allocation which is divided into smaller blocks. The
     /// individual blocks are then treated as independant array segments.
     /// </summary>
-    public class MemoryPoolBlock2
+    public class MemoryPoolBlock
     {
         /// <summary>
         /// If this block represents a one-time-use memory object, this GCHandle will hold that memory object at a fixed address
@@ -33,19 +33,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         /// <summary>
         /// This object cannot be instantiated outside of the static Create method
         /// </summary>
-        protected MemoryPoolBlock2()
+        protected MemoryPoolBlock()
         {
         }
 
         /// <summary>
         /// Back-reference to the memory pool which this block was allocated from. It may only be returned to this pool.
         /// </summary>
-        public MemoryPool2 Pool { get; private set; }
+        public MemoryPool Pool { get; private set; }
 
         /// <summary>
         /// Back-reference to the slab from which this block was taken, or null if it is one-time-use memory.
         /// </summary>
-        public MemoryPoolSlab2 Slab { get; private set; }
+        public MemoryPoolSlab Slab { get; private set; }
 
         /// <summary>
         /// Convenience accessor
@@ -72,9 +72,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         /// working memory. The "active" memory is grown when bytes are copied in, End is increased, and Next is assigned. The "active" 
         /// memory is shrunk when bytes are consumed, Start is increased, and blocks are returned to the pool.
         /// </summary>
-        public MemoryPoolBlock2 Next { get; set; }
+        public MemoryPoolBlock Next { get; set; }
 
-        ~MemoryPoolBlock2()
+        ~MemoryPoolBlock()
         {
             Debug.Assert(!_pinHandle.IsAllocated, "Ad-hoc memory block wasn't unpinned");
             Debug.Assert(Slab == null || !Slab.IsActive, "Block being garbage collected instead of returned to pool");
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
             if (Slab != null && Slab.IsActive)
             {
-                Pool.Return(new MemoryPoolBlock2
+                Pool.Return(new MemoryPoolBlock
                 {
                     _dataArrayPtr = _dataArrayPtr,
                     Data = Data,
@@ -130,13 +130,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             }
         }
 
-        public static MemoryPoolBlock2 Create(
+        public static MemoryPoolBlock Create(
             ArraySegment<byte> data,
             IntPtr dataPtr,
-            MemoryPool2 pool,
-            MemoryPoolSlab2 slab)
+            MemoryPool pool,
+            MemoryPoolSlab slab)
         {
-            return new MemoryPoolBlock2
+            return new MemoryPoolBlock
             {
                 Data = data,
                 _dataArrayPtr = dataPtr,
@@ -170,9 +170,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         /// acquires a cursor pointing into this block at the Start of "active" byte information
         /// </summary>
         /// <returns></returns>
-        public MemoryPoolIterator2 GetIterator()
+        public MemoryPoolIterator GetIterator()
         {
-            return new MemoryPoolIterator2(this);
+            return new MemoryPoolIterator(this);
         }
     }
 }

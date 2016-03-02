@@ -8993,7 +8993,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
         }
         
-        protected void CopyToFast(ref MemoryPoolIterator2 output)
+        protected void CopyToFast(ref MemoryPoolIterator output)
         {
             
                 if (((_bits & 1L) != 0)) 

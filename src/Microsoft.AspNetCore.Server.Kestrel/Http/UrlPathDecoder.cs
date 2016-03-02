@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         /// <param name="start">The iterator points to the beginning of the sequence.</param>
         /// <param name="end">The iterator points to the byte behind the end of the sequence.</param>
         /// <returns>The iterator points to the byte behind the end of the processed sequence.</returns>
-        public static MemoryPoolIterator2 Unescape(MemoryPoolIterator2 start, MemoryPoolIterator2 end)
+        public static MemoryPoolIterator Unescape(MemoryPoolIterator start, MemoryPoolIterator end)
         {
             // the slot to read the input
             var reader = start;
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         /// <param name="reader">The iterator point to the first % char</param>
         /// <param name="writer">The place to write to</param>
         /// <param name="end">The end of the sequence</param>
-        private static bool DecodeCore(ref MemoryPoolIterator2 reader, ref MemoryPoolIterator2 writer, MemoryPoolIterator2 end)
+        private static bool DecodeCore(ref MemoryPoolIterator reader, ref MemoryPoolIterator writer, MemoryPoolIterator end)
         {
             // preserves the original head. if the percent-encodings cannot be interpreted as sequence of UTF-8 octets,
             // bytes from this till the last scanned one will be copied to the memory pointed by writer.
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             return true;
         }
 
-        private static void Copy(MemoryPoolIterator2 head, MemoryPoolIterator2 tail, ref MemoryPoolIterator2 writer)
+        private static void Copy(MemoryPoolIterator head, MemoryPoolIterator tail, ref MemoryPoolIterator writer)
         {
             while (!CompareIterators(ref head, ref tail))
             {
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         /// <param name="scan">The value to read</param>
         /// <param name="end">The end of the sequence</param>
         /// <returns>The unescaped byte if success. Otherwise return -1.</returns>
-        private static int UnescapePercentEncoding(ref MemoryPoolIterator2 scan, MemoryPoolIterator2 end)
+        private static int UnescapePercentEncoding(ref MemoryPoolIterator scan, MemoryPoolIterator end)
         {
             if (scan.Take() != '%')
             {
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         /// <param name="scan">The value to read</param>
         /// <param name="end">The end of the sequence</param>
         /// <returns>The hexadecimal value if successes, otherwise -1.</returns>
-        private static int ReadHex(ref MemoryPoolIterator2 scan, MemoryPoolIterator2 end)
+        private static int ReadHex(ref MemoryPoolIterator scan, MemoryPoolIterator end)
         {
             if (CompareIterators(ref scan, ref end))
             {
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             return false;
         }
 
-        private static bool CompareIterators(ref MemoryPoolIterator2 lhs, ref MemoryPoolIterator2 rhs)
+        private static bool CompareIterators(ref MemoryPoolIterator lhs, ref MemoryPoolIterator rhs)
         {
             // uses ref parameter to save cost of copying
             return (lhs.Block == rhs.Block) && (lhs.Index == rhs.Index);

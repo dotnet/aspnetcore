@@ -7,19 +7,19 @@ using System.Numerics;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 {
-    public struct MemoryPoolIterator2
+    public struct MemoryPoolIterator
     {
         private static readonly int _vectorSpan = Vector<byte>.Count;
 
-        private MemoryPoolBlock2 _block;
+        private MemoryPoolBlock _block;
         private int _index;
 
-        public MemoryPoolIterator2(MemoryPoolBlock2 block)
+        public MemoryPoolIterator(MemoryPoolBlock block)
         {
             _block = block;
             _index = _block?.Start ?? 0;
         }
-        public MemoryPoolIterator2(MemoryPoolBlock2 block, int index)
+        public MemoryPoolIterator(MemoryPoolBlock block, int index)
         {
             _block = block;
             _index = index;
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             }
         }
 
-        public MemoryPoolBlock2 Block => _block;
+        public MemoryPoolBlock Block => _block;
 
         public int Index => _index;
 
@@ -634,7 +634,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             }
         }
 
-        public int GetLength(MemoryPoolIterator2 end)
+        public int GetLength(MemoryPoolIterator end)
         {
             if (IsDefault || end.IsDefault)
             {
@@ -666,7 +666,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             }
         }
 
-        public MemoryPoolIterator2 CopyTo(byte[] array, int offset, int count, out int actual)
+        public MemoryPoolIterator CopyTo(byte[] array, int offset, int count, out int actual)
         {
             if (IsDefault)
             {
@@ -687,7 +687,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                     {
                         Buffer.BlockCopy(block.Array, index, array, offset, remaining);
                     }
-                    return new MemoryPoolIterator2(block, index + remaining);
+                    return new MemoryPoolIterator(block, index + remaining);
                 }
                 else if (block.Next == null)
                 {
@@ -696,7 +696,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                     {
                         Buffer.BlockCopy(block.Array, index, array, offset, following);
                     }
-                    return new MemoryPoolIterator2(block, index + following);
+                    return new MemoryPoolIterator(block, index + following);
                 }
                 else
                 {

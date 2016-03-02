@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         public ListenerContext(ServiceContext serviceContext) 
             : base(serviceContext)
         {
-            Memory2 = new MemoryPool2();
+            Memory = new MemoryPool();
             WriteReqPool = new Queue<UvWriteReq>(SocketOutput.MaxPooledWriteReqs);
         }
 
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             ServerAddress = listenerContext.ServerAddress;
             Thread = listenerContext.Thread;
-            Memory2 = listenerContext.Memory2;
+            Memory = listenerContext.Memory;
             ConnectionManager = listenerContext.ConnectionManager;
             WriteReqPool = listenerContext.WriteReqPool;
             Log = listenerContext.Log;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public KestrelThread Thread { get; set; }
 
-        public MemoryPool2 Memory2 { get; set; }
+        public MemoryPool Memory { get; set; }
 
         public ConnectionManager ConnectionManager { get; set; }
 

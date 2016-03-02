@@ -6,13 +6,13 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
-    public class MemoryPoolIterator2Tests : IDisposable
+    public class MemoryPoolIteratorTests : IDisposable
     {
-        private readonly MemoryPool2 _pool;
+        private readonly MemoryPool _pool;
 
-        public MemoryPoolIterator2Tests()
+        public MemoryPoolIteratorTests()
         {
-            _pool = new MemoryPool2();
+            _pool = new MemoryPool();
         }
 
         public void Dispose()
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             for (int i = 0; i < Vector<byte>.Count; i++)
             {
                 Vector<byte> vector = new Vector<byte>(bytes);
-                Assert.Equal(i, MemoryPoolIterator2.FindFirstEqualByte(ref vector));
+                Assert.Equal(i, MemoryPoolIterator.FindFirstEqualByte(ref vector));
                 bytes[i] = 0;
             }
 
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 bytes[i] = 1;
                 Vector<byte> vector = new Vector<byte>(bytes);
-                Assert.Equal(i, MemoryPoolIterator2.FindFirstEqualByte(ref vector));
+                Assert.Equal(i, MemoryPoolIterator.FindFirstEqualByte(ref vector));
                 bytes[i] = 0;
             }
         }
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             for (int i = 0; i < Vector<byte>.Count; i++)
             {
                 Vector<byte> vector = new Vector<byte>(bytes);
-                Assert.Equal(i, MemoryPoolIterator2.FindFirstEqualByteSlow(ref vector));
+                Assert.Equal(i, MemoryPoolIterator.FindFirstEqualByteSlow(ref vector));
                 bytes[i] = 0;
             }
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 bytes[i] = 1;
                 Vector<byte> vector = new Vector<byte>(bytes);
-                Assert.Equal(i, MemoryPoolIterator2.FindFirstEqualByteSlow(ref vector));
+                Assert.Equal(i, MemoryPoolIterator.FindFirstEqualByteSlow(ref vector));
                 bytes[i] = 0;
             }
         }
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void Put()
         {
-            var blocks = new MemoryPoolBlock2[4];
+            var blocks = new MemoryPoolBlock[4];
             for (var i = 0; i < 4; ++i)
             {
                 blocks[i] = _pool.Lease(16);
@@ -286,15 +286,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [InlineData("CONNECT / HTTP/1.1", ' ', true, MemoryPoolIterator2Extensions.HttpConnectMethod)]
-        [InlineData("DELETE / HTTP/1.1", ' ', true, MemoryPoolIterator2Extensions.HttpDeleteMethod)]
-        [InlineData("GET / HTTP/1.1", ' ', true, MemoryPoolIterator2Extensions.HttpGetMethod)]
-        [InlineData("HEAD / HTTP/1.1", ' ', true, MemoryPoolIterator2Extensions.HttpHeadMethod)]
-        [InlineData("PATCH / HTTP/1.1", ' ', true, MemoryPoolIterator2Extensions.HttpPatchMethod)]
-        [InlineData("POST / HTTP/1.1", ' ', true, MemoryPoolIterator2Extensions.HttpPostMethod)]
-        [InlineData("PUT / HTTP/1.1", ' ', true, MemoryPoolIterator2Extensions.HttpPutMethod)]
-        [InlineData("OPTIONS / HTTP/1.1", ' ', true, MemoryPoolIterator2Extensions.HttpOptionsMethod)]
-        [InlineData("TRACE / HTTP/1.1", ' ', true, MemoryPoolIterator2Extensions.HttpTraceMethod)]
+        [InlineData("CONNECT / HTTP/1.1", ' ', true, MemoryPoolIteratorExtensions.HttpConnectMethod)]
+        [InlineData("DELETE / HTTP/1.1", ' ', true, MemoryPoolIteratorExtensions.HttpDeleteMethod)]
+        [InlineData("GET / HTTP/1.1", ' ', true, MemoryPoolIteratorExtensions.HttpGetMethod)]
+        [InlineData("HEAD / HTTP/1.1", ' ', true, MemoryPoolIteratorExtensions.HttpHeadMethod)]
+        [InlineData("PATCH / HTTP/1.1", ' ', true, MemoryPoolIteratorExtensions.HttpPatchMethod)]
+        [InlineData("POST / HTTP/1.1", ' ', true, MemoryPoolIteratorExtensions.HttpPostMethod)]
+        [InlineData("PUT / HTTP/1.1", ' ', true, MemoryPoolIteratorExtensions.HttpPutMethod)]
+        [InlineData("OPTIONS / HTTP/1.1", ' ', true, MemoryPoolIteratorExtensions.HttpOptionsMethod)]
+        [InlineData("TRACE / HTTP/1.1", ' ', true, MemoryPoolIteratorExtensions.HttpTraceMethod)]
         [InlineData("GET/ HTTP/1.1", ' ', false, null)]
         [InlineData("get / HTTP/1.1", ' ', false, null)]
         [InlineData("GOT / HTTP/1.1", ' ', false, null)]
@@ -324,8 +324,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [InlineData("HTTP/1.0\r", '\r', true, MemoryPoolIterator2Extensions.Http10Version)]
-        [InlineData("HTTP/1.1\r", '\r', true, MemoryPoolIterator2Extensions.Http11Version)]
+        [InlineData("HTTP/1.0\r", '\r', true, MemoryPoolIteratorExtensions.Http10Version)]
+        [InlineData("HTTP/1.1\r", '\r', true, MemoryPoolIteratorExtensions.Http11Version)]
         [InlineData("HTTP/3.0\r", '\r', false, null)]
         [InlineData("http/1.0\r", '\r', false, null)]
         [InlineData("http/1.1\r", '\r', false, null)]

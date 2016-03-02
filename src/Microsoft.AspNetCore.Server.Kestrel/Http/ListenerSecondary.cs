@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 FreeBuffer();
             }
 
-            Memory2.Dispose();
+            Memory.Dispose();
         }
     }
 }
