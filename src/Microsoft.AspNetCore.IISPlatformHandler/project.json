@@ -3,15 +3,13 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [
-      "CS1591"
-    ],
+    "nowarn": [ "CS1591" ],
     "xmlDoc": true
   },
   "description": "ASP.NET 5 components for working with the IIS HttpPlatformHandler module.",
   "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/IISIntegration"
+      "type": "git",
+      "url": "git://github.com/aspnet/IISIntegration"
   },
   "dependencies": {
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*",
@@ -25,14 +23,11 @@
     }
   },
   "frameworks": {
-    "net451": {},
-    "netstandard1.3": {
+    "net451": { },
+    "dotnet5.4": {
       "dependencies": {
         "System.Security.Principal.Windows": "4.0.0-*"
-      },
-      "imports": [
-        "dotnet5.4"
-      ]
+      }
     }
   }
 }

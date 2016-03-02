@@ -7,11 +7,8 @@
     "xunit": "2.1.0"
   },
   "frameworks": {
-    "netstandardapp1.5": {
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ],
+    "dnxcore50": {
+      "imports": "portable-net451+win8",
       "dependencies": {
         "dotnet-test-xunit": "1.0.0-dev-*"
       }
@@ -22,5 +19,5 @@
       }
     }
   },
-  "testRunner": "xunit"
+    "testRunner": "xunit"
 }
