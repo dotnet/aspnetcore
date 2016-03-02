@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Builder;
@@ -199,10 +200,9 @@ namespace Microsoft.AspNetCore.Hosting
                 if (defaultPlatformServices.Application != null)
                 {
                     var appEnv = defaultPlatformServices.Application;
-                    if (!string.IsNullOrEmpty(_options.ApplicationBasePath))
-                    {
-                        appEnv = new WrappedApplicationEnvironment(_options.ApplicationBasePath, appEnv);
-                    }
+                    var applicationBasePath = ResolveApplicationBasePath(_options.ApplicationBasePath, appEnv.ApplicationBasePath);
+                    var startupAssemblyName = ResolveStartupAssemblyName() ?? appEnv.ApplicationName;
+                    appEnv = new WrappedApplicationEnvironment(applicationBasePath, startupAssemblyName, defaultPlatformServices.Application);
 
                     services.TryAddSingleton(appEnv);
                 }
@@ -221,12 +221,59 @@ namespace Microsoft.AspNetCore.Hosting
             return services;
         }
 
+        private string ResolveApplicationBasePath(string applicationBasePath, string basePath)
+        {
+            if (_startup != null)
+            {
+                var startupAssemblyLocation = _startup.ConfigureDelegate.Target.GetType().GetTypeInfo().Assembly.Location;
+                if (!string.IsNullOrEmpty(startupAssemblyLocation))
+                {
+                    return Path.GetDirectoryName(startupAssemblyLocation);
+                }
+            }
+            else if (_startupType != null)
+            {
+                var startupAssemblyLocation = _startupType.GetTypeInfo().Assembly.Location;
+                if (!string.IsNullOrEmpty(startupAssemblyLocation)) 
+                {
+                    return Path.GetDirectoryName(startupAssemblyLocation);
+                }
+            }
+
+            if (string.IsNullOrEmpty(applicationBasePath))
+            {
+                return basePath;
+            }
+            if (Path.IsPathRooted(applicationBasePath))
+            {
+                return applicationBasePath;
+            }
+            return Path.Combine(Path.GetFullPath(basePath), applicationBasePath);
+        }
+
+        private string ResolveStartupAssemblyName()
+        {
+            if (_startup != null)
+            {
+                return _startup.ConfigureDelegate.Target.GetType().GetTypeInfo().Assembly.GetName().Name;
+            }
+            if (_startupType != null)
+            {
+                return _startupType.GetTypeInfo().Assembly.GetName().Name;
+            }
+            if (!string.IsNullOrEmpty(_options.Application))
+            {
+                return _options.Application;
+            }
+            return null;
+        }
+
         private class WrappedApplicationEnvironment : IApplicationEnvironment
         {
-            public WrappedApplicationEnvironment(string applicationBasePath, IApplicationEnvironment env)
+            public WrappedApplicationEnvironment(string applicationBasePath, string applicationName, IApplicationEnvironment env)
             {
-                ApplicationBasePath = ResolvePath(applicationBasePath, env.ApplicationBasePath);
-                ApplicationName = env.ApplicationName;
+                ApplicationBasePath = applicationBasePath;
+                ApplicationName = applicationName;
                 ApplicationVersion = env.ApplicationVersion;
                 RuntimeFramework = env.RuntimeFramework;
             }
@@ -238,16 +285,6 @@ namespace Microsoft.AspNetCore.Hosting
             public string ApplicationVersion { get; }
 
             public FrameworkName RuntimeFramework { get; }
-        }
-
-        private static string ResolvePath(string applicationBasePath, string basePath)
-        {
-            if (Path.IsPathRooted(applicationBasePath))
-            {
-                return applicationBasePath;
-            }
-
-            return Path.Combine(Path.GetFullPath(basePath), applicationBasePath);
         }
     }
 }

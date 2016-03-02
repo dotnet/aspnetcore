@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
+using System.Reflection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -317,6 +318,53 @@ namespace Microsoft.AspNetCore.Hosting
             var basePath = host.Services.GetRequiredService<IApplicationEnvironment>().ApplicationBasePath;
             Assert.True(Path.IsPathRooted(basePath));
             Assert.EndsWith(Path.DirectorySeparatorChar + "bar", basePath);
+        }
+
+        [Fact]
+        public void DefaultApplicationNameToStartupAssemblyName()
+        {
+            var builder = new ConfigurationBuilder();
+            var host = new WebHostBuilder()
+                .UseServer(new TestServer())
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
+                .UseApplicationBasePath("/foo/bar")
+                .Build();
+
+            var appEnv = host.Services.GetService<IApplicationEnvironment>();
+            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", appEnv.ApplicationName);
+            Assert.Equal("/foo/bar", appEnv.ApplicationBasePath);
+        }
+
+        [Fact]
+        public void DefaultApplicationNameToStartupType()
+        {
+            var builder = new ConfigurationBuilder();
+            var host = new WebHostBuilder()
+                .UseServer(new TestServer())
+                .UseStartup<StartupNoServices>()
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests.NonExistent")
+                .UseApplicationBasePath("/foo/bar")
+                .Build();
+
+            var appEnv = host.Services.GetService<IApplicationEnvironment>();
+            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", appEnv.ApplicationName);
+            Assert.Equal(Path.GetDirectoryName(typeof(WebHostBuilderTests).GetTypeInfo().Assembly.Location), appEnv.ApplicationBasePath);
+        }
+
+        [Fact]
+        public void DefaultApplicationNameAndBasePathToStartupMethods()
+        {
+            var builder = new ConfigurationBuilder();
+            var host = new WebHostBuilder()
+                .UseServer(new TestServer())
+                .Configure(app => { })
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests.NonExistent")
+                .UseApplicationBasePath("/foo/bar")
+                .Build();
+
+            var appEnv = host.Services.GetService<IApplicationEnvironment>();
+            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", appEnv.ApplicationName);
+            Assert.Equal(Path.GetDirectoryName(typeof(WebHostBuilderTests).GetTypeInfo().Assembly.Location), appEnv.ApplicationBasePath);
         }
 
         private IWebHostBuilder CreateWebHostBuilder()
