@@ -13,10 +13,11 @@ namespace Microsoft.AspNetCore.Identity
     /// </summary>
     public class IdentityCookieOptions
     {
-        private static readonly string DefaultApplicationScheme = typeof(IdentityCookieOptions).Namespace + ".Application";
-        private static readonly string DefaultExternalScheme = typeof(IdentityCookieOptions).Namespace + ".External";
-        private static readonly string DefaultTwoFactorRememberMeScheme = typeof(IdentityCookieOptions).Namespace + ".TwoFactorRememberMe";
-        private static readonly string DefaultTwoFactorUserIdScheme = typeof(IdentityCookieOptions).Namespace + ".TwoFactorUserId";
+        private static readonly string CookiePrefix = ".AspNetCore.Identity";
+        private static readonly string DefaultApplicationScheme = CookiePrefix + ".Application";
+        private static readonly string DefaultExternalScheme = CookiePrefix + ".External";
+        private static readonly string DefaultTwoFactorRememberMeScheme = CookiePrefix + ".TwoFactorRememberMe";
+        private static readonly string DefaultTwoFactorUserIdScheme = CookiePrefix + ".TwoFactorUserId";
 
         public IdentityCookieOptions()
         {
