@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http.Authentication;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Base Options for all authentication middleware
+    /// Base Options for all authentication middleware.
     /// </summary>
     public abstract class AuthenticationOptions
     {

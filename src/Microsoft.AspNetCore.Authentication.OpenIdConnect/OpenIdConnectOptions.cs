@@ -17,7 +17,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Configuration options for <see cref="OpenIdConnectOptions"/>
+    /// Configuration options for <see cref="OpenIdConnectMiddleware"/>
     /// </summary>
     public class OpenIdConnectOptions : RemoteAuthenticationOptions
     {

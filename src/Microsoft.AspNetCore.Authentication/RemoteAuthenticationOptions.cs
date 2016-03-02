@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Authentication;
 
 namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// Contains the options used by the <see cref="RemoteAuthenticationHandler"/>.
+    /// </summary>
     public class RemoteAuthenticationOptions : AuthenticationOptions
     {
         /// <summary>
