@@ -17,8 +17,15 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Internal
             Action<LocalizationOptions> setupAction)
         {
             AddMvcLocalizationServices(services, format, setupAction);
-
-            services.AddLocalization(setupAction);
+            
+            if (setupAction == null)
+            {
+                services.AddLocalization();
+            }
+            else
+            {
+                services.AddLocalization(setupAction);
+            }
         }
 
         // To enable unit testing only 'MVC' specific services
