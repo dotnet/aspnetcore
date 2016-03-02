@@ -1,31 +1,35 @@
 #!/usr/bin/env bash
+repoFolder="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $repoFolder
 
-if test `uname` = Darwin; then
-    cachedir=~/Library/Caches/KBuild
-else
-    if [ -z $XDG_DATA_HOME ]; then
-        cachedir=$HOME/.local/share
-    else
-        cachedir=$XDG_DATA_HOME;
+koreBuildZip="https://github.com/aspnet/KoreBuild/archive/dev.zip"
+if [ ! -z $KOREBUILD_ZIP ]; then
+    koreBuildZip=$KOREBUILD_ZIP
+fi
+
+buildFolder=".build"
+buildFile="$buildFolder/KoreBuild.sh"
+
+if test ! -d $buildFolder; then
+    echo "Downloading KoreBuild from $koreBuildZip"
+    
+    tempFolder="/tmp/KoreBuild-$(uuidgen)"    
+    mkdir $tempFolder
+    
+    localZipFile="$tempFolder/korebuild.zip"
+    
+    wget -O $localZipFile $koreBuildZip 2>/dev/null || curl -o $localZipFile --location $koreBuildZip /dev/null
+    unzip -q -d $tempFolder $localZipFile
+  
+    mkdir $buildFolder
+    cp -r $tempFolder/**/build/** $buildFolder
+    
+    chmod +x $buildFile
+    
+    # Cleanup
+    if test ! -d $tempFolder; then
+        rm -rf $tempFolder  
     fi
 fi
-mkdir -p $cachedir
-nugetVersion=latest
-cachePath=$cachedir/nuget.$nugetVersion.exe
 
-url=https://dist.nuget.org/win-x86-commandline/$nugetVersion/nuget.exe
-
-if test ! -f $cachePath; then
-    wget -O $cachePath $url 2>/dev/null || curl -o $cachePath --location $url /dev/null
-fi
-
-if test ! -e .nuget; then
-    mkdir .nuget
-    cp $cachePath .nuget/nuget.exe
-fi
-
-if test ! -d packages/Sake; then
-    mono .nuget/nuget.exe install Sake -ExcludeVersion -Source https://www.nuget.org/api/v2/ -Out packages
-fi
-
-mono packages/Sake/tools/Sake.exe -I build -f makefile.shade "$@"
+$buildFile -r $repoFolder "$@"

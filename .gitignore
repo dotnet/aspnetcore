@@ -16,3 +16,4 @@ node_modules
 *.snk
 .nuget/NuGet.exe
 project.lock.json
+.build

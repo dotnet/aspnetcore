@@ -1,4 +1,0 @@
-
-var gitCommand='config ${gitOptionName} ${gitOptionValue}'
-
-git 
