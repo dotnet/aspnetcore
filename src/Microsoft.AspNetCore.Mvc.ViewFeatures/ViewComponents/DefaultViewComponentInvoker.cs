@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
     public class DefaultViewComponentInvoker : IViewComponentInvoker
     {
         private readonly IViewComponentFactory _viewComponentFactory;
+        private readonly ViewComponentInvokerCache _viewComponentInvokerCache;
         private readonly DiagnosticSource _diagnosticSource;
         private readonly ILogger _logger;
 
@@ -27,16 +28,23 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         /// Initializes a new instance of <see cref="DefaultViewComponentInvoker"/>.
         /// </summary>
         /// <param name="viewComponentFactory">The <see cref="IViewComponentFactory"/>.</param>
+        /// <param name="viewComponentInvokerCache">The <see cref="ViewComponentInvokerCache"/>.</param>
         /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         public DefaultViewComponentInvoker(
             IViewComponentFactory viewComponentFactory,
+            ViewComponentInvokerCache viewComponentInvokerCache,
             DiagnosticSource diagnosticSource,
             ILogger logger)
         {
             if (viewComponentFactory == null)
             {
                 throw new ArgumentNullException(nameof(viewComponentFactory));
+            }
+
+            if (viewComponentInvokerCache == null)
+            {
+                throw new ArgumentNullException(nameof(viewComponentInvokerCache));
             }
 
             if (diagnosticSource == null)
@@ -50,6 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             }
 
             _viewComponentFactory = viewComponentFactory;
+            _viewComponentInvokerCache = viewComponentInvokerCache;
             _diagnosticSource = diagnosticSource;
             _logger = logger;
         }
@@ -95,11 +104,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 var method = context.ViewComponentDescriptor.MethodInfo;
                 var arguments = ControllerActionExecutor.PrepareArguments(context.Arguments, method.GetParameters());
 
+                var methodExecutor = _viewComponentInvokerCache.GetViewComponentMethodExecutor(context);
+
                 _diagnosticSource.BeforeViewComponent(context, component);
                 _logger.ViewComponentExecuting(context, arguments);
 
                 var startTimestamp = _logger.IsEnabled(LogLevel.Debug) ? Stopwatch.GetTimestamp() : 0;
-                var result = await ControllerActionExecutor.ExecuteAsync(method, component, arguments);
+                var result = await ControllerActionExecutor.ExecuteAsync(methodExecutor, component, arguments);
 
                 var viewComponentResult = CoerceToViewComponentResult(result);
                 _logger.ViewComponentExecuted(context, startTimestamp, viewComponentResult);
@@ -121,6 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 var arguments = ControllerActionExecutor.PrepareArguments(
                     context.Arguments,
                     method.GetParameters());
+                var methodExecutor = _viewComponentInvokerCache.GetViewComponentMethodExecutor(context);
 
                 _diagnosticSource.BeforeViewComponent(context, component);
                 _logger.ViewComponentExecuting(context, arguments);
@@ -129,16 +141,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 object result;
                 try
                 {
-                    result = method.Invoke(component, arguments);
+                    result = methodExecutor.Execute(component, arguments);
                 }
-                catch (TargetInvocationException ex)
+                finally
                 {
                     _viewComponentFactory.ReleaseViewComponent(context, component);
-
-                    // Preserve callstack of any user-thrown exceptions.
-                    var exceptionInfo = ExceptionDispatchInfo.Capture(ex.InnerException);
-                    exceptionInfo.Throw();
-                    return null; // Unreachable
                 }
 
                 var viewComponentResult = CoerceToViewComponentResult(result);

@@ -33,22 +33,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private delegate dynamic ReturnTaskAsDynamicValue(int i, string s);
 
         [Fact]
-        public async Task AsyncAction_WithVoidReturnType()
-        {
-            // Arrange
-            var methodWithVoidReturnType = new MethodWithVoidReturnType(TestController.VoidAction);
-
-            // Act
-            var result = await ControllerActionExecutor.ExecuteAsync(
-                                                        methodWithVoidReturnType.GetMethodInfo(),
-                                                        null,
-                                                        (IDictionary<string, object>)null);
-
-            // Assert
-            Assert.Same(null, result);
-        }
-
-        [Fact]
         public async Task AsyncAction_TaskReturnType()
         {
             // Arrange
@@ -57,12 +41,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionParameters = new Dictionary<string, object> { { "i", inputParam1 }, { "s", inputParam2 } };
 
             var methodWithTaskReturnType = new MethodWithTaskReturnType(_controller.TaskAction);
-
-            // Act
-            var result = await ControllerActionExecutor.ExecuteAsync(
-                                                            methodWithTaskReturnType.GetMethodInfo(),
-                                                            _controller,
-                                                            actionParameters);
+            var result = await ExecuteAction(
+                methodWithTaskReturnType,
+                _controller,
+                actionParameters);
 
             // Assert
             Assert.Same(null, result);
@@ -79,11 +61,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var methodWithTaskOfIntReturnType = new MethodWithTaskOfIntReturnType(_controller.TaskValueTypeAction);
 
             // Act
-            var result = await ControllerActionExecutor.ExecuteAsync(
-                                                        methodWithTaskOfIntReturnType.GetMethodInfo(),
-                                                        _controller,
-                                                        actionParameters);
-
+            var result = await ExecuteAction(
+                methodWithTaskOfIntReturnType,
+                _controller,
+                actionParameters);
             // Assert
             Assert.Equal(inputParam1, result);
         }
@@ -99,10 +80,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var methodWithTaskOfTaskOfIntReturnType = new MethodWithTaskOfTaskOfIntReturnType(_controller.TaskOfTaskAction);
 
             // Act
-            var result = await (Task<int>)(await ControllerActionExecutor.ExecuteAsync(
-                                                                        methodWithTaskOfTaskOfIntReturnType.GetMethodInfo(),
-                                                                        _controller,
-                                                                        actionParameters));
+            var result = await (Task<int>)( await ExecuteAction(
+                methodWithTaskOfTaskOfIntReturnType,
+                _controller,
+                actionParameters));
 
             // Assert
             Assert.Equal(inputParam1, result);
@@ -120,9 +101,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Act and Assert
             await Assert.ThrowsAsync<NotImplementedException>(
-                    () => ControllerActionExecutor.ExecuteAsync(methodWithTaskOfIntReturnType.GetMethodInfo(),
-                                                               _controller,
-                                                               actionParameters));
+                    () => ExecuteAction(
+                        methodWithTaskOfIntReturnType,
+                        _controller,
+                        actionParameters));
         }
 
         [Fact]
@@ -137,9 +119,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Act & Assert
             await Assert.ThrowsAsync<NotImplementedException>(
-                        () => ControllerActionExecutor.ExecuteAsync(methodWithTaskOfIntReturnType.GetMethodInfo(),
-                                                                   _controller,
-                                                                   actionParameters));
+                        () => ExecuteAction(
+                            methodWithTaskOfIntReturnType,
+                            _controller,
+                            actionParameters));
         }
 
         [Fact]
@@ -155,8 +138,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<ArgumentException>(
-                () => ControllerActionExecutor.ExecuteAsync(
-                    methodWithTaskOfIntReturnType.GetMethodInfo(),
+                () => ExecuteAction(
+                    methodWithTaskOfIntReturnType,
                     _controller,
                     actionParameters));
             Assert.Equal(expectedException, ex.Message);
@@ -170,11 +153,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var syncMethod = new SyncMethod(_controller.Echo);
 
             // Act
-            var result = await ControllerActionExecutor.ExecuteAsync(
-                                                syncMethod.GetMethodInfo(),
-                                                _controller,
-                                                new Dictionary<string, object>() { { "input", inputString } });
-
+            var result = await ExecuteAction(
+                syncMethod,
+                _controller,
+                new Dictionary<string, object>() { { "input", inputString } });
             // Assert
             Assert.Equal(inputString, result);
         }
@@ -188,10 +170,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Act & Assert
             await Assert.ThrowsAsync<NotImplementedException>(
-                        () => ControllerActionExecutor.ExecuteAsync(
-                                                syncMethod.GetMethodInfo(),
-                                                _controller,
-                                                new Dictionary<string, object>() { { "input", inputString } }));
+                        () => ExecuteAction(
+                            syncMethod,
+                            _controller,
+                            new Dictionary<string, object>() { { "input", inputString } }));
         }
 
         [Fact]
@@ -201,8 +183,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var syncMethod = new SyncMethod(_controller.EchoWithDefaultValue);
 
             // Act
-            var result = await ControllerActionExecutor.ExecuteAsync(
-                syncMethod.GetMethodInfo(),
+            var result = await ExecuteAction(
+                syncMethod,
                 _controller,
                 new Dictionary<string, object>());
 
@@ -217,8 +199,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var syncMethod = new SyncMethod(_controller.EchoWithDefaultValue);
 
             // Act
-            var result = await ControllerActionExecutor.ExecuteAsync(
-                syncMethod.GetMethodInfo(),
+            var result = await ExecuteAction(
+                syncMethod,
                 _controller,
                 new object[] { null, });
 
@@ -233,8 +215,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var syncMethod = new SyncMethod(_controller.EchoWithDefaultValueAndAttribute);
 
             // Act
-            var result = await ControllerActionExecutor.ExecuteAsync(
-                syncMethod.GetMethodInfo(),
+            var result = await ExecuteAction(
+                syncMethod,
                 _controller,
                 new Dictionary<string, object>());
 
@@ -249,8 +231,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var syncMethod = new SyncMethod(_controller.EchoWithDefaultValueAndAttribute);
 
             // Act
-            var result = await ControllerActionExecutor.ExecuteAsync(
-                syncMethod.GetMethodInfo(),
+            var result = await ExecuteAction(
+                syncMethod,
                 _controller,
                 new Dictionary<string, object>() { { "input", null } });
 
@@ -276,8 +258,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => ControllerActionExecutor.ExecuteAsync(
-                    methodWithCutomTaskReturnType.GetMethodInfo(),
+                () => ExecuteAction(
+                    methodWithCutomTaskReturnType,
                     _controller,
                     actionParameters));
             Assert.Equal(expectedException, ex.Message);
@@ -299,8 +281,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => ControllerActionExecutor.ExecuteAsync(
-                    methodWithCutomTaskOfTReturnType.GetMethodInfo(),
+                () => ExecuteAction(
+                    methodWithCutomTaskOfTReturnType,
                     _controller,
                     actionParameters));
             Assert.Equal(expectedException, ex.Message);
@@ -325,8 +307,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => ControllerActionExecutor.ExecuteAsync(
-                    methodWithUnwrappedTask.GetMethodInfo(),
+                () => ExecuteAction(
+                    methodWithUnwrappedTask,
                     _controller,
                     actionParameters));
             Assert.Equal(expectedException, ex.Message);
@@ -348,10 +330,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-               () => ControllerActionExecutor.ExecuteAsync(
-                    dynamicTaskMethod.GetMethodInfo(),
-                    _controller,
-                    actionParameters));
+               () => ExecuteAction(
+                   dynamicTaskMethod,
+                   _controller,
+                   actionParameters));
             Assert.Equal(expectedException, ex.Message);
         }
 
@@ -367,10 +349,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var methodWithTaskOfIntReturnType = new MethodWithTaskOfIntReturnType(_controller.TaskValueTypeAction);
 
             // Act
-            var result = await ControllerActionExecutor.ExecuteAsync(
-                                                        methodWithTaskOfIntReturnType.GetMethodInfo(),
-                                                        _controller,
-                                                        actionParameters);
+            var result = await ExecuteAction(
+                methodWithTaskOfIntReturnType,
+                _controller,
+                actionParameters);
 
             // Assert
             Assert.Equal(inputParam1, result);
@@ -383,32 +365,48 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var inputParam2 = "Second Parameter";
 
             var actionParameters = new Dictionary<string, object> { { "i", "Some Invalid Value" }, { "s", inputParam2 } };
-            var methodWithTaskOfIntReturnType = new MethodWithTaskOfIntReturnType(_controller.TaskValueTypeAction);
-            var message = TestPlatformHelper.IsMono ? "Object type {0} cannot be converted to target type: {1}" :
-                                                      "Object of type '{0}' cannot be converted to type '{1}'.";
-            var expectedException = string.Format(
-                CultureInfo.CurrentCulture,
-                message,
-                typeof(string),
-                typeof(int));
+            var methodWithTaskOfIntReturnType = new MethodWithTaskOfIntReturnType(_controller.TaskValueTypeAction);            
 
             // Act & Assert
             // If it is an unrecognized derived type we throw an InvalidOperationException.
-            var ex = await Assert.ThrowsAsync<ArgumentException>(
-                () => ControllerActionExecutor.ExecuteAsync(
-                        methodWithTaskOfIntReturnType.GetMethodInfo(),
-                        _controller,
-                        actionParameters));
+            var ex = await Assert.ThrowsAsync<InvalidCastException>(
+                () => ExecuteAction(
+                    methodWithTaskOfIntReturnType,
+                    _controller,
+                    actionParameters));
+        }
 
-            Assert.Equal(expectedException, ex.Message);
+        private async Task<object> ExecuteAction(
+            Delegate methodDelegate,
+            TestController controller,
+            IDictionary<string, object> actionParameters)
+        {
+            var executor = ObjectMethodExecutor.Create(methodDelegate.GetMethodInfo(), _controller.GetType().GetTypeInfo());
+
+            var result = await ControllerActionExecutor.ExecuteAsync(
+                executor,
+                controller,
+                actionParameters);
+
+            return result;
+        }
+
+        private async Task<object> ExecuteAction(
+            Delegate methodDelegate,
+            TestController controller,
+            object[] actionParameters)
+        {
+            var executor = ObjectMethodExecutor.Create(methodDelegate.GetMethodInfo(), _controller.GetType().GetTypeInfo());
+
+            var result = await ControllerActionExecutor.ExecuteAsync(
+                executor,
+                controller,
+                actionParameters);
+            return result;
         }
 
         public class TestController
         {
-            public static void VoidAction()
-            {
-            }
-
 #pragma warning disable 1998
             public async Task TaskAction(int i, string s)
             {

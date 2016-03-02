@@ -129,7 +129,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // These are stateless
             services.TryAddSingleton<IControllerActionArgumentBinder, ControllerArgumentBinder>();
-            services.TryAddSingleton<FilterCache>();
+            services.TryAddSingleton<ControllerActionInvokerCache>();
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IFilterProvider, DefaultFilterProvider>());
 

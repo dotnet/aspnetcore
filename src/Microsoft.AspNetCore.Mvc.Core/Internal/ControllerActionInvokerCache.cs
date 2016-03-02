@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
-    public class FilterCache
+    public class ControllerActionInvokerCache
     {
         private readonly IFilterMetadata[] EmptyFilterArray = new IFilterMetadata[0];
 
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private volatile InnerCache _currentCache;
 
-        public FilterCache(
+        public ControllerActionInvokerCache(
             IActionDescriptorCollectionProvider collectionProvider,
             IEnumerable<IFilterProvider> filterProviders)
         {
@@ -45,16 +45,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        public IFilterMetadata[] GetFilters(ActionContext actionContext)
+        public Entry GetCacheEntry(ControllerContext controllerContext)
         {
             var cache = CurrentCache;
-            var actionDescriptor = actionContext.ActionDescriptor;
+            var actionDescriptor = controllerContext.ActionDescriptor;
 
-            CacheEntry entry;
+            Entry entry;
             if (cache.Entries.TryGetValue(actionDescriptor, out entry))
             {
-                return GetFiltersFromEntry(entry, actionContext);
+                return entry;
             }
+
+            var executor = ObjectMethodExecutor.Create(actionDescriptor.MethodInfo, actionDescriptor.ControllerTypeInfo);
 
             var items = new List<FilterItem>(actionDescriptor.FilterDescriptors.Count);
             for (var i = 0; i < actionDescriptor.FilterDescriptors.Count; i++)
@@ -62,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 items.Add(new FilterItem(actionDescriptor.FilterDescriptors[i]));
             }
 
-            ExecuteProviders(actionContext, items);
+            ExecuteProviders(controllerContext, items);
 
             var filters = ExtractFilters(items);
 
@@ -79,30 +81,42 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             if (allFiltersCached)
             {
-                entry = new CacheEntry(filters);
+                entry = new Entry(filters, null, executor);
             }
             else
             {
-                entry = new CacheEntry(items);
+                entry = new Entry(null, items, executor);
             }
 
             cache.Entries.TryAdd(actionDescriptor, entry);
-            return filters;
+            return entry;
         }
 
-        private IFilterMetadata[] GetFiltersFromEntry(CacheEntry entry, ActionContext actionContext)
+        public IFilterMetadata[] GetFilters(ControllerContext controllerContext)
         {
-            Debug.Assert(entry.Filters != null || entry.Items != null);
+            var entry = GetCacheEntry(controllerContext);
+            return GetFiltersFromEntry(entry, controllerContext);
+        }
+
+        public ObjectMethodExecutor GetControllerActionMethodExecutor(ControllerContext controllerContext)
+        {
+            var entry = GetCacheEntry(controllerContext);
+            return entry.ActionMethodExecutor;
+        }
+
+        public IFilterMetadata[] GetFiltersFromEntry(Entry entry, ActionContext actionContext)
+        {
+            Debug.Assert(entry.Filters != null || entry.FilterItems != null);
 
             if (entry.Filters != null)
             {
                 return entry.Filters;
             }
 
-            var items = new List<FilterItem>(entry.Items.Count);
-            for (var i = 0; i < entry.Items.Count; i++)
+            var items = new List<FilterItem>(entry.FilterItems.Count);
+            for (var i = 0; i < entry.FilterItems.Count; i++)
             {
-                var item = entry.Items[i];
+                var item = entry.FilterItems[i];
                 if (item.IsReusable)
                 {
                     items.Add(item);
@@ -172,29 +186,25 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 Version = version;
             }
 
-            public ConcurrentDictionary<ActionDescriptor, CacheEntry> Entries { get; } = 
-                new ConcurrentDictionary<ActionDescriptor, CacheEntry>();
+            public ConcurrentDictionary<ActionDescriptor, Entry> Entries { get; } = 
+                new ConcurrentDictionary<ActionDescriptor, Entry>();
 
             public int Version { get; }
         }
 
-        private struct CacheEntry
+        public struct Entry
         {
-            public CacheEntry(IFilterMetadata[] filters)
+            public Entry(IFilterMetadata[] filters, List<FilterItem> items, ObjectMethodExecutor executor)
             {
+                FilterItems = items;
                 Filters = filters;
-                Items = null;
+                ActionMethodExecutor = executor;
             }
-
-            public CacheEntry(List<FilterItem> items)
-            {
-                Items = items;
-                Filters = null;
-            }
-
             public IFilterMetadata[] Filters { get; }
 
-            public List<FilterItem> Items { get; }
+            public List<FilterItem> FilterItems { get; }
+
+            public ObjectMethodExecutor ActionMethodExecutor { get; }
         }
     }
 }

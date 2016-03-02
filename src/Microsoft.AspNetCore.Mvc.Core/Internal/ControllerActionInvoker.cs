@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public ControllerActionInvoker(
             ActionContext actionContext,
-            FilterCache filterCache,
+            ControllerActionInvokerCache controllerActionInvokerCache,
             IControllerFactory controllerFactory,
             ControllerActionDescriptor descriptor,
             IReadOnlyList<IInputFormatter> inputFormatters,
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             int maxModelValidationErrors)
             : base(
                   actionContext,
-                  filterCache,
+                  controllerActionInvokerCache,
                   inputFormatters,
                   modelBinders,
                   modelValidatorProviders,
@@ -96,6 +96,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             var actionMethodInfo = _descriptor.MethodInfo;
+
+            var methodExecutor = GetControllerActionMethodExecutor();
+
             var arguments = ControllerActionExecutor.PrepareArguments(
                 actionExecutingContext.ActionArguments,
                 actionMethodInfo.GetParameters());
@@ -103,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Logger.ActionMethodExecuting(actionExecutingContext, arguments);
 
             var actionReturnValue = await ControllerActionExecutor.ExecuteAsync(
-                actionMethodInfo,
+                methodExecutor,
                 actionExecutingContext.Controller,
                 arguments);
 

@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public abstract class FilterActionInvoker : IActionInvoker
     {
-        private readonly FilterCache _filterCache;
+        private readonly ControllerActionInvokerCache _controllerActionInvokerCache;
         private readonly IReadOnlyList<IInputFormatter> _inputFormatters;
         private readonly IReadOnlyList<IModelBinder> _modelBinders;
         private readonly IReadOnlyList<IModelValidatorProvider> _modelValidatorProviders;
@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private readonly int _maxModelValidationErrors;
 
         private IFilterMetadata[] _filters;
+        private ObjectMethodExecutor _controllerActionMethodExecutor;
         private FilterCursor _cursor;
 
         private AuthorizationFilterContext _authorizationContext;
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public FilterActionInvoker(
             ActionContext actionContext,
-            FilterCache filterCache,
+            ControllerActionInvokerCache controllerActionInvokerCache,
             IReadOnlyList<IInputFormatter> inputFormatters,
             IReadOnlyList<IModelBinder> modelBinders,
             IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
@@ -58,9 +59,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(actionContext));
             }
 
-            if (filterCache == null)
+            if (controllerActionInvokerCache == null)
             {
-                throw new ArgumentNullException(nameof(filterCache));
+                throw new ArgumentNullException(nameof(controllerActionInvokerCache));
             }
 
             if (inputFormatters == null)
@@ -95,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             Context = new ControllerContext(actionContext);
 
-            _filterCache = filterCache;
+            _controllerActionInvokerCache = controllerActionInvokerCache;
             _inputFormatters = inputFormatters;
             _modelBinders = modelBinders;
             _modelValidatorProviders = modelValidatorProviders;
@@ -130,7 +131,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public virtual async Task InvokeAsync()
         {
-            _filters = GetFilters();
+            var cacheEntry = _controllerActionInvokerCache.GetCacheEntry(Context);
+            _filters = _controllerActionInvokerCache.GetFiltersFromEntry(cacheEntry, Context);
+            _controllerActionMethodExecutor = cacheEntry.ActionMethodExecutor;
             _cursor = new FilterCursor(_filters);
 
             Context.ModelState.MaxAllowedErrors = _maxModelValidationErrors;
@@ -177,9 +180,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private IFilterMetadata[] GetFilters()
+        protected ObjectMethodExecutor GetControllerActionMethodExecutor()
         {
-            return _filterCache.GetFilters(Context);
+            return _controllerActionMethodExecutor;
         }
 
         private Task InvokeAllAuthorizationFiltersAsync()

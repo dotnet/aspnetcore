@@ -1977,6 +1977,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 actionDescriptor.MethodInfo = typeof(ControllerActionInvokerTest).GetMethod("ActionMethod");
             }
+            actionDescriptor.ControllerTypeInfo = typeof(ControllerActionInvokerTest).GetTypeInfo();
 
             var httpContext = new Mock<HttpContext>(MockBehavior.Loose);
 
@@ -2224,11 +2225,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private static FilterCache CreateFilterCache(IFilterProvider[] filterProviders = null)
+        private static ControllerActionInvokerCache CreateFilterCache(IFilterProvider[] filterProviders = null)
         {
             var services = new ServiceCollection().BuildServiceProvider();
             var descriptorProvider = new ActionDescriptorCollectionProvider(services);
-            return new FilterCache(descriptorProvider, filterProviders.AsEnumerable() ?? new List<IFilterProvider>());
+            return new ControllerActionInvokerCache(descriptorProvider, filterProviders.AsEnumerable() ?? new List<IFilterProvider>());
         }
 
         private class TestControllerActionInvoker : ControllerActionInvoker

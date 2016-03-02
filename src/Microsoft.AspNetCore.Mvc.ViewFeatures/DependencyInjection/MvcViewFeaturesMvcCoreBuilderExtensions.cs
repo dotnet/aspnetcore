@@ -127,6 +127,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 IViewComponentDescriptorCollectionProvider,
                 DefaultViewComponentDescriptorCollectionProvider>();
 
+            services.TryAddSingleton<ViewComponentInvokerCache>();
             services.TryAddTransient<IViewComponentDescriptorProvider, DefaultViewComponentDescriptorProvider>();
             services.TryAddSingleton<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
             services.TryAddTransient<IViewComponentHelper, DefaultViewComponentHelper>();

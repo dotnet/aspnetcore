@@ -26,36 +26,25 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         public static Task<object> ExecuteAsync(
-            MethodInfo actionMethodInfo,
+            ObjectMethodExecutor actionMethodExecutor,
             object instance,
             IDictionary<string, object> actionArguments)
         {
-            var orderedArguments = PrepareArguments(actionArguments, actionMethodInfo.GetParameters());
-            return ExecuteAsync(actionMethodInfo, instance, orderedArguments);
+            var orderedArguments = PrepareArguments(actionArguments, actionMethodExecutor.MethodInfo.GetParameters());
+            return ExecuteAsync(actionMethodExecutor, instance, orderedArguments);
         }
 
         public static Task<object> ExecuteAsync(
-            MethodInfo actionMethodInfo,
+            ObjectMethodExecutor actionMethodExecutor,
             object instance,
             object[] orderedActionArguments)
         {
-            object invocationResult = null;
-            try
-            {
-                invocationResult = actionMethodInfo.Invoke(instance, orderedActionArguments);
-            }
-            catch (TargetInvocationException targetInvocationException)
-            {
-                // Capturing the exception and the original callstack and rethrow for external exception handlers.
-                var exceptionDispatchInfo = ExceptionDispatchInfo.Capture(targetInvocationException.InnerException);
-                exceptionDispatchInfo.Throw();
-            }
-
+            object invocationResult = actionMethodExecutor.Execute(instance, orderedActionArguments);
             return CoerceResultToTaskAsync(
                 invocationResult,
-                actionMethodInfo.ReturnType,
-                actionMethodInfo.Name,
-                actionMethodInfo.DeclaringType);
+                actionMethodExecutor.MethodInfo.ReturnType,
+                actionMethodExecutor.MethodInfo.Name,
+                actionMethodExecutor.MethodInfo.DeclaringType);
         }
 
         // We need to CoerceResult as the object value returned from methodInfo.Invoke has to be cast to a Task<T>.

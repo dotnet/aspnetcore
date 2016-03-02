@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Reflection;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -12,7 +13,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
-    public class FilterCacheTest
+    public class ControllerActionInvokerCacheTest
     {
         [Fact]
         public void GetFilters_CachesAllFilters()
@@ -28,9 +29,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     new FilterDescriptor(new TestFilter(), FilterScope.Action),
                     new FilterDescriptor(new TestFilter(), FilterScope.Action),
                 },
+                MethodInfo = typeof(ControllerActionInvokerCache).GetMethod(
+                    nameof(ControllerActionInvokerCache.GetControllerActionMethodExecutor)),
+                ControllerTypeInfo = typeof(ControllerActionInvokerCache).GetTypeInfo()
             };
 
-            var context = new ActionContext(new DefaultHttpContext(), new RouteData(), action);
+            var context = new ControllerContext(new ActionContext(
+                new DefaultHttpContext(),
+                new RouteData(),
+                action));
 
             // Act - 1
             var filters1 = cache.GetFilters(context);
@@ -66,9 +73,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     new FilterDescriptor(new TestFilterFactory() { IsReusable = true }, FilterScope.Action),
                     new FilterDescriptor(new TestFilter(), FilterScope.Action),
                 },
+                MethodInfo = typeof(ControllerActionInvokerCache).GetMethod(
+                    nameof(ControllerActionInvokerCache.GetControllerActionMethodExecutor)),
+                ControllerTypeInfo = typeof(ControllerActionInvokerCache).GetTypeInfo()
             };
 
-            var context = new ActionContext(new DefaultHttpContext(), new RouteData(), action);
+            var context = new ControllerContext(new ActionContext(
+                new DefaultHttpContext(),
+                new RouteData(),
+                action));
 
             // Act - 1
             var filters1 = cache.GetFilters(context);
@@ -104,9 +117,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     new FilterDescriptor(new TestFilterFactory() { IsReusable = false }, FilterScope.Action),
                     new FilterDescriptor(new TestFilter(), FilterScope.Action),
                 },
+                MethodInfo = typeof(ControllerActionInvokerCache).GetMethod(
+                    nameof(ControllerActionInvokerCache.GetControllerActionMethodExecutor)),
+                ControllerTypeInfo = typeof(ControllerActionInvokerCache).GetTypeInfo()
             };
 
-            var context = new ActionContext(new DefaultHttpContext(), new RouteData(), action);
+            var context = new ControllerContext(new ActionContext(
+                new DefaultHttpContext(),
+                new RouteData(),
+                action));
 
             // Act - 1
             var filters1 = cache.GetFilters(context);
@@ -128,6 +147,46 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 f => Assert.Same(filters1[1], f)); // Cached
         }
 
+        [Fact]
+        public void GetControllerActionMethodExecutor_CachesExecutor()
+        {
+            // Arrange
+            var services = CreateServices();
+            var cache = CreateCache(new DefaultFilterProvider());
+
+            var action = new ControllerActionDescriptor()
+            {
+                FilterDescriptors = new[]
+                {
+                    new FilterDescriptor(new TestFilterFactory() { IsReusable = false }, FilterScope.Action),
+                    new FilterDescriptor(new TestFilter(), FilterScope.Action),
+                },
+                MethodInfo = typeof(ControllerActionInvokerCache).GetMethod(
+                    nameof(ControllerActionInvokerCache.GetControllerActionMethodExecutor)),
+                ControllerTypeInfo = typeof(ControllerActionInvokerCache).GetTypeInfo()
+
+            };
+
+            var context = new ControllerContext(
+                new ActionContext(new DefaultHttpContext(),
+                new RouteData(),
+                action));
+
+            // Act - 1            
+            var executor1 = cache.GetControllerActionMethodExecutor(context);
+
+            Assert.NotNull(executor1);
+
+            var filters1 = cache.GetFilters(context);
+
+            Assert.NotNull(filters1);
+
+            // Act - 2
+            var executor2 = cache.GetControllerActionMethodExecutor(context);
+
+            Assert.Same(executor1, executor2);
+        }
+
         private class TestFilter : IFilterMetadata
         {
         }
@@ -147,11 +206,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return new ServiceCollection().BuildServiceProvider();
         }
 
-        private static FilterCache CreateCache(params IFilterProvider[] providers)
+        private static ControllerActionInvokerCache CreateCache(params IFilterProvider[] providers)
         {
             var services = CreateServices();
             var descriptorProvider = new ActionDescriptorCollectionProvider(services);
-            return new FilterCache(descriptorProvider, providers);
+            return new ControllerActionInvokerCache(descriptorProvider, providers);
         }
     }
 }

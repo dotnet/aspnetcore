@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     {
         private readonly IControllerActionArgumentBinder _argumentBinder;
         private readonly IControllerFactory _controllerFactory;
-        private readonly FilterCache _filterCache;
+        private readonly ControllerActionInvokerCache _controllerActionInvokerCache;
         private readonly IReadOnlyList<IInputFormatter> _inputFormatters;
         private readonly IReadOnlyList<IModelBinder> _modelBinders;
         private readonly IReadOnlyList<IModelValidatorProvider> _modelValidatorProviders;
@@ -30,14 +30,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public ControllerActionInvokerProvider(
             IControllerFactory controllerFactory,
-            FilterCache filterCache,
+            ControllerActionInvokerCache controllerActionInvokerCache,
             IControllerActionArgumentBinder argumentBinder,
             IOptions<MvcOptions> optionsAccessor,
             ILoggerFactory loggerFactory,
             DiagnosticSource diagnosticSource)
         {
             _controllerFactory = controllerFactory;
-            _filterCache = filterCache;
+            _controllerActionInvokerCache = controllerActionInvokerCache;
             _argumentBinder = argumentBinder;
             _inputFormatters = optionsAccessor.Value.InputFormatters.ToArray();
             _modelBinders = optionsAccessor.Value.ModelBinders.ToArray();
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 context.Result = new ControllerActionInvoker(
                     context.ActionContext,
-                    _filterCache,
+                    _controllerActionInvokerCache,
                     _controllerFactory,
                     actionDescriptor,
                     _inputFormatters,

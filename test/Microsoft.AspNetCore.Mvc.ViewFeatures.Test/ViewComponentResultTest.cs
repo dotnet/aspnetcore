@@ -518,6 +518,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             var services = new ServiceCollection();
             services.AddSingleton<DiagnosticSource>(diagnosticSource);
+            services.AddSingleton<ViewComponentInvokerCache>();
             services.AddSingleton<IOptions<MvcViewOptions>, TestOptionsManager<MvcViewOptions>>();
             services.AddTransient<IViewComponentHelper, DefaultViewComponentHelper>();
             services.AddSingleton<IViewComponentSelector, DefaultViewComponentSelector>();
