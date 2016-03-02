@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.PortableExecutable;
-#if DOTNET5_6
+#if NETSTANDARD1_5
 using System.Runtime.Loader;
 #endif
 using System.Text;
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private readonly ILibraryExporter _libraryExporter;
         private readonly RazorViewEngineOptions _options;
         private readonly Lazy<List<MetadataReference>> _applicationReferences;
-#if DOTNET5_6
+#if NETSTANDARD1_5
         private readonly RazorLoadContext _razorLoadContext;
 #endif
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             _options = optionsAccessor.Value;
             _applicationReferences = new Lazy<List<MetadataReference>>(GetApplicationReferences);
 
-#if DOTNET5_6
+#if NETSTANDARD1_5
             _razorLoadContext = new RazorLoadContext();
 #endif
         }
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         private Assembly LoadStream(MemoryStream ms, MemoryStream assemblySymbols)
         {
-#if DOTNET5_6
+#if NETSTANDARD1_5
             return _razorLoadContext.Load(ms, assemblySymbols);
 #else
             return Assembly.Load(ms.ToArray(), assemblySymbols?.ToArray());
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             return metadata.GetReference(filePath: path);
         }
-#if DOTNET5_6
+#if NETSTANDARD1_5
         private class RazorLoadContext : AssemblyLoadContext
         {
             protected override Assembly Load(AssemblyName assemblyName)

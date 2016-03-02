@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if DOTNET5_4
+#if NETSTANDARD1_3
 using System.Reflection;
 #endif
 using Microsoft.AspNetCore.Mvc.Core;
