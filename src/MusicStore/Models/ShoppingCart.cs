@@ -10,25 +10,25 @@ namespace MusicStore.Models
     public class ShoppingCart
     {
         private readonly MusicStoreContext _dbContext;
-        private string ShoppingCartId { get; set; }
+        private readonly string _shoppingCartId;
 
-        public ShoppingCart(MusicStoreContext dbContext)
+        private ShoppingCart(MusicStoreContext dbContext, string id)
         {
             _dbContext = dbContext;
+            _shoppingCartId = id;
         }
 
-        public static ShoppingCart GetCart(MusicStoreContext db, HttpContext context)
-        {
-            var cart = new ShoppingCart(db);
-            cart.ShoppingCartId = cart.GetCartId(context);
-            return cart;
-        }
+        public static ShoppingCart GetCart(MusicStoreContext db, HttpContext context) 
+            => GetCart(db, GetCartId(context));
+
+        public static ShoppingCart GetCart(MusicStoreContext db, string cartId)
+            => new ShoppingCart(db, cartId);
 
         public void AddToCart(Album album)
         {
             // Get the matching cart and album instances
             var cartItem = _dbContext.CartItems.SingleOrDefault(
-                c => c.CartId == ShoppingCartId
+                c => c.CartId == _shoppingCartId
                 && c.AlbumId == album.AlbumId);
 
             if (cartItem == null)
@@ -37,7 +37,7 @@ namespace MusicStore.Models
                 cartItem = new CartItem
                 {
                     AlbumId = album.AlbumId,
-                    CartId = ShoppingCartId,
+                    CartId = _shoppingCartId,
                     Count = 1,
                     DateCreated = DateTime.Now
                 };
@@ -55,7 +55,7 @@ namespace MusicStore.Models
         {
             // Get the cart
             var cartItem = _dbContext.CartItems.Single(
-                cart => cart.CartId == ShoppingCartId
+                cart => cart.CartId == _shoppingCartId
                 && cart.CartItemId == id);
 
             int itemCount = 0;
@@ -76,39 +76,45 @@ namespace MusicStore.Models
             return itemCount;
         }
 
-        public void EmptyCart()
+        public async void EmptyCart()
         {
-            var cartItems = _dbContext.CartItems.Where(cart => cart.CartId == ShoppingCartId).ToArray();
+            var cartItems = await _dbContext
+                .CartItems
+                .Where(cart => cart.CartId == _shoppingCartId)
+                .ToArrayAsync();
+
             _dbContext.CartItems.RemoveRange(cartItems);
         }
 
-        public async Task<List<CartItem>> GetCartItems()
+        public Task<List<CartItem>> GetCartItems()
         {
-            return await _dbContext.CartItems.
-                Where(cart => cart.CartId == ShoppingCartId).
+            return _dbContext.CartItems.
+                Where(cart => cart.CartId == _shoppingCartId).
                 Include(c => c.Album).
                 ToListAsync();
         }
 
-        public async Task<int> GetCount()
+        public Task<int> GetCount()
         {
             // Get the count of each item in the cart and sum them up
-            return await (from cartItem in _dbContext.CartItems
-                          where cartItem.CartId == ShoppingCartId
-                          select cartItem.Count).SumAsync();
+            return _dbContext
+                .CartItems
+                .Where(c => c.CartId == _shoppingCartId)
+                .Select(c => c.Count)
+                .SumAsync();
         }
 
-        public async Task<decimal> GetTotal()
+        public Task<decimal> GetTotal()
         {
             // Multiply album price by count of that album to get 
             // the current price for each of those albums in the cart
             // sum all album price totals to get the cart total
 
-            // TODO: Use nav prop traversal instead of joins (EF #https://github.com/aspnet/EntityFramework/issues/325)
-            return await (from cartItem in _dbContext.CartItems
-                          join album in _dbContext.Albums on cartItem.AlbumId equals album.AlbumId
-                          where cartItem.CartId == ShoppingCartId
-                          select cartItem.Count * album.Price).SumAsync();
+            return _dbContext.CartItems
+                .Include(c => c.Album)
+                .Where(c => c.CartId == _shoppingCartId)
+                .Select(c => c.Album.Price * c.Count)
+                .SumAsync();
         }
 
         public async Task<int> CreateOrder(Order order)
@@ -148,7 +154,7 @@ namespace MusicStore.Models
         }
 
         // We're using HttpContextBase to allow access to sessions.
-        private string GetCartId(HttpContext context)
+        private static string GetCartId(HttpContext context)
         {
             var cartId = context.Session.GetString("Session");
 

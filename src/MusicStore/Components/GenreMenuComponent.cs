@@ -26,16 +26,13 @@ namespace MusicStore.Components
 
         private async Task<List<Genre>> GetGenres()
         {
-            // TODO [EF] We don't query related data as yet, so the OrderByDescending isn't doing anything
-            //var genres = _dbContext.Genres
-            //.OrderByDescending(
-            //    g => g.Albums.Sum(
-            //    a => a.OrderDetails.Sum(
-            //    od => od.Quantity)))
-            //.Take(9)
-            //.ToList();
-
-            return await DbContext.Genres.Take(9).ToListAsync();
+            return await DbContext.Genres
+                .Include(g => g.Albums).ThenInclude(a => a.OrderDetails)
+                // TODO use nested sum https://github.com/aspnet/EntityFramework/issues/3792
+                //.OrderByDescending(
+                //    g => g.Albums.Sum(a => a.OrderDetails.Sum(od => od.Quantity)))
+                .Take(9)
+                .ToListAsync();
         }
     }
 }

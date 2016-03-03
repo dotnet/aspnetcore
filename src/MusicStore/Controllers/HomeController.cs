@@ -60,9 +60,8 @@ namespace MusicStore.Controllers
             // Group the order details by album and return
             // the albums with the highest count
 
-            // TODO [EF] We don't query related data as yet, so the OrderByDescending isn't doing anything
             return await dbContext.Albums
-                .OrderByDescending(a => a.OrderDetails.Count())
+                .OrderByDescending(a => a.OrderDetails.Count)
                 .Take(count)
                 .ToListAsync();
         }

@@ -913,12 +913,9 @@ namespace MusicStore.Models
                         new Artist { Name = "אריק אינשטיין"}
                     };
 
-                    // TODO [EF] Swap to store generated keys when available
-                    int artistId = 1;
                     artists = new Dictionary<string, Artist>();
                     foreach (Artist artist in artistsList)
                     {
-                        artist.ArtistId = artistId++;
                         artists.Add(artist.Name, artist);
                     }
                 }
@@ -954,15 +951,9 @@ namespace MusicStore.Models
                     };
 
                     genres = new Dictionary<string, Genre>();
-                    // TODO [EF] Swap to store generated keys when available
-                    int genreId = 1;
+
                     foreach (Genre genre in genresList)
                     {
-                        genre.GenreId = genreId++;
-
-                        // TODO [EF] Remove when null values are supported by update pipeline
-                        genre.Description = genre.Name + " is great music (if you like it).";
-
                         genres.Add(genre.Name, genre);
                     }
                 }

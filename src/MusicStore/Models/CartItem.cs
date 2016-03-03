@@ -5,6 +5,7 @@ namespace MusicStore.Models
 {
     public class CartItem
     {
+        [Key]
         public int CartItemId { get; set; }
 
         [Required]
