@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         private static readonly Action<ILogger, string, int, Exception> _connectionWroteFin;
         private static readonly Action<ILogger, string, Exception> _connectionKeepAlive;
         private static readonly Action<ILogger, string, Exception> _connectionDisconnect;
+        private static readonly Action<ILogger, Exception> _applicationError;
+        private static readonly Action<ILogger, string, Exception> _applicationErrorWithId;
         private static readonly Action<ILogger, string, Exception> _connectionError;
         private static readonly Action<ILogger, string, int, Exception> _connectionDisconnectedWrite;
         private static readonly Action<ILogger, Exception> _notAllConnectionsClosedGracefully;
@@ -43,7 +45,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             _connectionDisconnect = LoggerMessage.Define<string>(LogLevel.Debug, 10, @"Connection id ""{ConnectionId}"" disconnecting.");
             // ConnectionWrite: Reserved: 11
             // ConnectionWriteCallback: Reserved: 12
-            // ApplicationError: Reserved: 13 - LoggerMessage.Define overload not present 
+            _applicationError = LoggerMessage.Define(LogLevel.Error, 13, "An unhandled exception thrown by the application.");
+            _applicationErrorWithId = LoggerMessage.Define<string>(LogLevel.Error, 13, @"Connection id ""{ConnectionId}"" unhandled exception thrown by the application.");
             _connectionError = LoggerMessage.Define<string>(LogLevel.Information, 14, @"Connection id ""{ConnectionId}"" communication error");
             _connectionDisconnectedWrite = LoggerMessage.Define<string, int>(LogLevel.Debug, 15, @"Connection id ""{ConnectionId}"" write of ""{count}"" bytes to disconnected client.");
             _notAllConnectionsClosedGracefully = LoggerMessage.Define(LogLevel.Debug, 16, "Some connections failed to close gracefully during server shutdown.");
@@ -120,7 +123,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         public virtual void ApplicationError(Exception ex)
         {
-            _logger.LogError(13, ex, "An unhandled exception was thrown by the application.");
+            _applicationError(_logger, ex);
+        }
+
+        public virtual void ApplicationError(string connectionId, Exception ex)
+        {
+            _applicationErrorWithId(_logger, connectionId, ex);
         }
 
         public virtual void ConnectionError(string connectionId, Exception ex)

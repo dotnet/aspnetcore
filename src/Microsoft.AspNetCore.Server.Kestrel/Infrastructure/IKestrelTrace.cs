@@ -39,5 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         void NotAllConnectionsClosedGracefully();
 
         void ApplicationError(Exception ex);
+
+        void ApplicationError(string connectionId, Exception ex);
     }
 }

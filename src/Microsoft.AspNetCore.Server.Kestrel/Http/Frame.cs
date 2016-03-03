@@ -1015,7 +1015,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 _applicationException = new AggregateException(_applicationException, ex);
             }
 
-            Log.ApplicationError(ex);
+            Log.ApplicationError(ConnectionId, ex);
         }
 
         private enum HttpVersionType
