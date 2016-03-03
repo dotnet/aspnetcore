@@ -5,7 +5,6 @@
     "ElmPageSample": "1.0.0",
     "ExceptionHandlerSample": "1.0.0",
     "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Core": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
