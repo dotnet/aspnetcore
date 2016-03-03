@@ -1,30 +1,33 @@
-dnx-watch
+dotnet-watch
 ===
-`dnx-watch` is a file watcher for `dnx` that restarts the specified application when changes in the source code are detected. Its' purpose is to replace `dnx --watch`.
+`dotnet-watch` is a file watcher for `dotnet` that restarts the specified application when changes in the source code are detected.
 
 ### How To Install
-From a console window run the following command `dnu commands install Microsoft.Dnx.Watcher` 
-Then the `dnx-watch` command will become available.
 
-To install the latest unstable release add the following parameter to the command `--fallbacksource https://myget.org/F/aspnetvnext/api/v3/index.json`
+Add `dotnet-watch` to the `tools` section of your `project.json` file:
+
+```
+{
+...
+  "tools": {
+    "dotnet-watch": "1.0.0-*"
+  }
+...
+}
+```
 
 ### How To Use
-`dnx-watch <arguments>`
 
-Example:
+```dotnet watch <watcher args> -- <app args>```
 
-* To run the command `kestrel` in the current folder: `dnx-watch kestrel`
-* To run the command kestrel in a different folder: `dnx-watch --project C:\myproject --dnx-args kestrel`
-* To run the command kestrel in a different folder with extra arguments: `dnx-watch --project C:\myproject --dnx-args kestrel arg1 arg2`
+- `dotnet watch` (runs the application without arguments)
+- `dotnet watch foo bar` (runs the application with the arguments `foo bar`)
+- `dotnet watch --exit-on-change -- foo bar` (runs the application with the arguments `foo bar`. In addition, it passes `--exit-on-change` to the watcher).
+- `dotnet watch --command test -- -parallel none` (runs `dotnet test` with the arguments `-parallel none`)
 
 AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/fxhto3omtehio3aj/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/dnx-watch/branch/dev)
 
-Travis:   [![Travis](https://travis-ci.org/aspnet/dnx-watch.svg?branch=dev)](https://travis-ci.org/aspnet/dnx-watch)
+Travis:   [![Travis](https://travis-ci.org/aspnet/dotnet-watch.svg?branch=dev)](https://travis-ci.org/aspnet/dotnet-watch)
 
-
-### Remarks:
-
-* Everything after `--dnx-args` is passed to dnx and ignored by the watcher.
-* The watcher always passes `--project` to dnx. Do not pass it as a `--dnx-args` argument.
 
 This project is part of ASP.NET 5. You can find samples, documentation and getting started instructions for ASP.NET 5 at the [Home](https://github.com/aspnet/home) repo.
