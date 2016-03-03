@@ -3,6 +3,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
+    "Microsoft.AspNetCore.Localization": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Testing": "1.0.0-*",
     "Microsoft.Extensions.Logging": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",

@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 {
                     var deploymentResult = deployer.Deploy();
 
-                    var cookie = new Cookie("ASPNET_CULTURE", "c=" + locale + "|uic=" + locale);
+                    var cookie = new Cookie(CookieRequestCultureProvider.DefaultCookieName, "c=" + locale + "|uic=" + locale);
                     var cookieContainer = new CookieContainer();
                     cookieContainer.Add(new Uri(deploymentResult.ApplicationBaseUri), cookie);
 

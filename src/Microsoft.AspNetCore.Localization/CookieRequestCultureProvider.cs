@@ -2,11 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Globalization;
 
 namespace Microsoft.AspNetCore.Localization
 {
@@ -20,9 +17,9 @@ namespace Microsoft.AspNetCore.Localization
         private static readonly string _uiCulturePrefix = "uic=";
 
         /// <summary>
-        /// Represent the default cookie name used to track the user's preferred culture information, which is "ASPNET_CULTURE".
+        /// Represent the default cookie name used to track the user's preferred culture information, which is ".AspNetCore.Culture".
         /// </summary>
-        public static readonly string DefaultCookieName = "ASPNET_CULTURE";
+        public static readonly string DefaultCookieName = ".AspNetCore.Culture";
 
         /// <summary>
         /// The name of the cookie that contains the user's preferred culture information.
