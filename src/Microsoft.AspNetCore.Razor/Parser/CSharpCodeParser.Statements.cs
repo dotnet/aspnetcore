@@ -654,7 +654,7 @@ namespace Microsoft.AspNetCore.Razor.Parser
                 {
                     Context.Source.Position = bookmark;
                     NextToken();
-                    AcceptUntil(CSharpSymbolType.LessThan, CSharpSymbolType.RightBrace);
+                    AcceptUntil(CSharpSymbolType.LessThan, CSharpSymbolType.LeftBrace, CSharpSymbolType.RightBrace);
                     return;
                 }
             }

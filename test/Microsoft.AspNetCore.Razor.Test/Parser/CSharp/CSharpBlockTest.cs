@@ -16,6 +16,20 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser.CSharp
     public class CSharpBlockTest : CsHtmlCodeParserTestBase
     {
         [Fact]
+        public void ParseBlock_NestedCodeBlockWithCSharpAt()
+        {
+            ParseBlockTest("{ if (true) { var val = @x; if (val != 3) { } } }",
+                new StatementBlock(
+                    Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                    Factory
+                        .Code(" if (true) { var val = @x; if (val != 3) { } } ")
+                        .AsStatement()
+                        .Accepts(AcceptedCharacters.Any)
+                        .AutoCompleteWith(autoCompleteString: null, atEndOfSpan: false),
+                    Factory.MetaCode("}").Accepts(AcceptedCharacters.None)));
+        }
+
+        [Fact]
         public void ParseBlock_NestedCodeBlockWithMarkupSetsDotAsMarkup()
         {
             ParseBlockTest("if (true) { @if(false) { <div>@something.</div> } }",
