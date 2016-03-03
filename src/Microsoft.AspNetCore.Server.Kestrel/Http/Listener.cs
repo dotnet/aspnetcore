@@ -98,9 +98,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     listener._closed = true;
 
                     listener.ConnectionManager.WalkConnectionsAndClose();
-                }, this);
+                }, this).ConfigureAwait(false);
 
-                await ConnectionManager.WaitForConnectionCloseAsync();
+                await ConnectionManager.WaitForConnectionCloseAsync().ConfigureAwait(false);
 
                 await Thread.PostAsync(state =>
                 {
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     {
                         writeReqPool.Dequeue().Dispose();
                     }
-                }, this);
+                }, this).ConfigureAwait(false);
             }
 
             Memory.Dispose();

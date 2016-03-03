@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             // Call base first so the ListenSocket gets closed and doesn't
             // try to dispatch connections to closed pipes.
-            await base.DisposeAsync();
+            await base.DisposeAsync().ConfigureAwait(false);
 
             if (Thread.FatalError == null && ListenPipe != null)
             {
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     {
                         dispatchPipe.Dispose();
                     }
-                }, this);
+                }, this).ConfigureAwait(false);
             }
         }
     }
