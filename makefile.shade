@@ -56,9 +56,7 @@ var buildTarget = "compile"
 
 #pack
     directory create='${TARGET_DIR}'
-    nuget-pack nuspecFile='${Path.Combine(BASE_DIR, "KoreBuild.nuspec")}' packageVersion='${VERSION}' outputDir='${TARGET_DIR}'
-    nuget-pack nuspecFile='${Path.Combine(BASE_DIR, "KoreBuild-dotnet", "KoreBuild-dotnet.nuspec")}' packageVersion='${VERSION}' outputDir='${TARGET_DIR}'
-
+  
 #pack-install .pack
     nuget-local-publish sourcePackagesDir='${TARGET_DIR}'
 
