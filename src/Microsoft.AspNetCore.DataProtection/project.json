@@ -20,6 +20,7 @@
     "net451": {
       "frameworkAssemblies": {
         "System.IO": "",
+        "System.Runtime": "",
         "System.Security": "",
         "System.Xml": "",
         "System.Xml.Linq": ""
