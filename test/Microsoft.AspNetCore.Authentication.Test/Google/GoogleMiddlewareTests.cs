@@ -793,7 +793,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         {
                             var authContext = new AuthenticateContext(TestExtensions.CookieAuthenticationScheme);
                             await context.Authentication.AuthenticateAsync(authContext);
-                            var tokens = AuthenticationToken.GetTokens(new AuthenticationProperties(authContext.Properties));
+                            var tokens = new AuthenticationProperties(authContext.Properties).GetTokens();
                             res.Describe(tokens);
                         }
                         else if (req.Path == new PathString("/me"))

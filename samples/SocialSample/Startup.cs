@@ -322,10 +322,10 @@ namespace CookieSample
 
                 await context.Response.WriteAsync("Tokens:<br>");
                 
-                await context.Response.WriteAsync("Access Token: " + await AuthenticationToken.GetTokenAsync(context, CookieAuthenticationDefaults.AuthenticationScheme, "access_token") + "<br>");
-                await context.Response.WriteAsync("Refresh Token: " + await AuthenticationToken.GetTokenAsync(context, CookieAuthenticationDefaults.AuthenticationScheme, "refresh_token") + "<br>");
-                await context.Response.WriteAsync("Token Type: " + await AuthenticationToken.GetTokenAsync(context, CookieAuthenticationDefaults.AuthenticationScheme, "token_type") + "<br>");
-                await context.Response.WriteAsync("expires_at: " + await AuthenticationToken.GetTokenAsync(context, CookieAuthenticationDefaults.AuthenticationScheme, "expires_at") + "<br>");
+                await context.Response.WriteAsync("Access Token: " + await context.Authentication.GetTokenAsync("access_token") + "<br>");
+                await context.Response.WriteAsync("Refresh Token: " + await context.Authentication.GetTokenAsync("refresh_token") + "<br>");
+                await context.Response.WriteAsync("Token Type: " + await context.Authentication.GetTokenAsync("token_type") + "<br>");
+                await context.Response.WriteAsync("expires_at: " + await context.Authentication.GetTokenAsync("expires_at") + "<br>");
                 await context.Response.WriteAsync("<a href=\"/logout\">Logout</a>");
                 await context.Response.WriteAsync("</body></html>");
             });
