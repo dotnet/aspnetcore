@@ -114,7 +114,6 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                     },
                 };
             }
-
         }
 
         [Fact]
