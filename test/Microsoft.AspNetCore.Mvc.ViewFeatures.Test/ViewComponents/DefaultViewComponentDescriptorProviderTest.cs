@@ -93,11 +93,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             Assert.Equal(expected, ex.Message);
         }
 
-        [Fact]
-        public void GetViewComponents_ThrowsIfInvokeReturnsATask()
+        [Theory]
+        [InlineData(typeof(TaskReturningInvokeViewComponent))]
+        [InlineData(typeof(GenericTaskReturningInvokeViewComponent))]
+        public void GetViewComponents_ThrowsIfInvokeReturnsATask(Type type)
         {
             // Arrange
-            var type = typeof(TaskReturningInvokeViewComponent);
             var expected = $"Method 'Invoke' of view component '{type}' cannot return a Task.";
             var provider = CreateProvider(type);
 
@@ -187,6 +188,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         public class TaskReturningInvokeViewComponent
         {
             public Task Invoke() => Task.FromResult(0);
+        }
+
+        public class GenericTaskReturningInvokeViewComponent
+        {
+            public Task<int> Invoke() => Task.FromResult(0);
         }
 
         public class VoidReturningInvokeViewComponent

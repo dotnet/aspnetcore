@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
@@ -217,6 +218,70 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             Assert.IsType<ViewDataDictionary<string>>(viewContext.ViewData);
         }
 
+        [Fact]
+        public void Activate_Throws_WhenViewDataPropertyHasIncorrectType()
+        {
+            // Arrange
+            var activator = new RazorPageActivator(new EmptyModelMetadataProvider());
+            var instance = new HasIncorrectViewDataPropertyType();
+
+            var collection = new ServiceCollection();
+            collection
+                .AddSingleton<HtmlEncoder>(new HtmlTestEncoder())
+                .AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore.Mvc"));
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = collection.BuildServiceProvider(),
+            };
+
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            var viewContext = new ViewContext(
+                actionContext,
+                Mock.Of<IView>(),
+                new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                Mock.Of<ITempDataDictionary>(),
+                TextWriter.Null,
+                new HtmlHelperOptions());
+
+            // Act & Assert
+            Assert.Throws<InvalidCastException>(() => activator.Activate(instance, viewContext));
+        }
+
+        [Fact]
+        public void Activate_CanGetUrlHelperFromDependencyInjection()
+        {
+            // Arrange
+            var activator = new RazorPageActivator(new EmptyModelMetadataProvider());
+            var instance = new HasUnusualIUrlHelperProperty();
+
+            // IUrlHelperFactory should not be used. But set it up to match a real configuration.
+            var collection = new ServiceCollection();
+            collection
+                .AddSingleton<IUrlHelperFactory, UrlHelperFactory>()
+                .AddSingleton<HtmlEncoder>(new HtmlTestEncoder())
+                .AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore.Mvc"))
+                .AddSingleton<IUrlHelperWrapper, UrlHelperWrapper>();
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = collection.BuildServiceProvider(),
+            };
+
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            var viewContext = new ViewContext(
+                actionContext,
+                Mock.Of<IView>(),
+                new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                Mock.Of<ITempDataDictionary>(),
+                TextWriter.Null,
+                new HtmlHelperOptions());
+
+            // Act
+            activator.Activate(instance, viewContext);
+
+            // Assert
+            Assert.NotNull(instance.UrlHelper);
+        }
+
         private abstract class TestPageBase<TModel> : RazorPage<TModel>
         {
             [RazorInject]
@@ -256,6 +321,68 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 throw new NotImplementedException();
             }
+        }
+
+        private class HasIncorrectViewDataPropertyType : RazorPage<MyModel>
+        {
+            [RazorInject]
+            public ViewDataDictionary<object> MoreViewData { get; set; }
+
+            public override Task ExecuteAsync()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class HasUnusualIUrlHelperProperty : RazorPage<MyModel>
+        {
+            [RazorInject]
+            public IUrlHelperWrapper UrlHelper { get; set; }
+
+            public override Task ExecuteAsync()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class UrlHelperWrapper : IUrlHelperWrapper
+        {
+            public ActionContext ActionContext
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public string Action(UrlActionContext actionContext)
+            {
+                throw new NotImplementedException();
+            }
+
+            public string Content(string contentPath)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool IsLocalUrl(string url)
+            {
+                throw new NotImplementedException();
+            }
+
+            public string Link(string routeName, object values)
+            {
+                throw new NotImplementedException();
+            }
+
+            public string RouteUrl(UrlRouteContext routeContext)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private interface IUrlHelperWrapper : IUrlHelper
+        {
         }
 
         private class MyService : ICanHasViewContext

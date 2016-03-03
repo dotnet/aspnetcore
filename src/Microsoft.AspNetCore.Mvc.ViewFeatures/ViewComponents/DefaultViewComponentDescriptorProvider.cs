@@ -115,13 +115,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             }
             else
             {
+                // Will invoke synchronously. Method must not return void, Task or Task<T>.
                 if (selectedMethod.ReturnType == typeof(void))
                 {
                     throw new InvalidOperationException(Resources.FormatViewComponent_SyncMethod_ShouldReturnValue(
                         SyncMethodName,
                         componentName));
                 }
-                else if (selectedMethod.ReturnType.IsAssignableFrom(typeof(Task)))
+                else if (typeof(Task).IsAssignableFrom(selectedMethod.ReturnType))
                 {
                     throw new InvalidOperationException(Resources.FormatViewComponent_SyncMethod_CannotReturnTask(
                         SyncMethodName,

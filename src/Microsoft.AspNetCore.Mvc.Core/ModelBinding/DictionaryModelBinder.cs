@@ -113,10 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return collection.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
             }
 
-            var newCollection = CreateInstance(targetType);
-            CopyToModel(newCollection, collection);
-
-            return newCollection;
+            return base.ConvertToCollectionType(targetType, collection);
         }
 
         /// <inheritdoc />
@@ -128,7 +125,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return new Dictionary<TKey, TValue>();
             }
 
-            return CreateInstance(targetType);
+            return base.CreateEmptyCollection(targetType);
+        }
+
+        public override bool CanCreateInstance(Type targetType)
+        {
+            if (targetType.IsAssignableFrom(typeof(Dictionary<TKey, TValue>)))
+            {
+                // Simple case such as IDictionary<TKey, TValue>.
+                return true;
+            }
+
+            return base.CanCreateInstance(targetType);
         }
     }
 }

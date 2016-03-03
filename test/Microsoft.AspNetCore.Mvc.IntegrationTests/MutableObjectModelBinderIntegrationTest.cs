@@ -517,17 +517,14 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = Assert.IsType<Order4>(modelBindingResult.Model);
             Assert.NotNull(model.Customer);
             Assert.Equal("bill", model.Customer.Name);
-            Assert.Empty(model.Customer.Documents);
+            Assert.Null(model.Customer.Documents);
 
-            Assert.Equal(2, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
-            var entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Documents").Value;
-            Assert.Null(entry.AttemptedValue); // FormFile entries don't include the model.
-            Assert.Null(entry.RawValue);
-
-            entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Name").Value;
+            var kvp = Assert.Single(modelState);
+            Assert.Equal("parameter.Customer.Name", kvp.Key);
+            var entry = kvp.Value;
             Assert.Equal("bill", entry.AttemptedValue);
             Assert.Equal("bill", entry.RawValue);
         }

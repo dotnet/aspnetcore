@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 #if NETSTANDARD1_3
 using System.Reflection;
 #endif
@@ -28,8 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             // This method is optimized to use cached tasks when possible and avoid allocating
-            // using Task.FromResult. If you need to make changes of this nature, profile
-            // allocations afterwards and look for Task<ModelBindingResult>.
+            // using Task.FromResult or async state machines.
 
             var allowedBindingSource = bindingContext.BindingSource;
             if (allowedBindingSource == null ||
@@ -41,34 +38,37 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             var request = bindingContext.OperationBindingContext.HttpContext.Request;
-            var modelMetadata = bindingContext.ModelMetadata;
 
             // Property name can be null if the model metadata represents a type (rather than a property or parameter).
             var headerName = bindingContext.FieldName;
-            object model = null;
-            if (bindingContext.ModelType == typeof(string))
+
+            object model;
+            if (ModelBindingHelper.CanGetCompatibleCollection<string>(bindingContext))
             {
-                string value = request.Headers[headerName];
-                if (value != null)
+                if (bindingContext.ModelType == typeof(string))
                 {
-                    model = value;
+                    var value = request.Headers[headerName];
+                    model = (string)value;
+                }
+                else
+                {
+                    var values = request.Headers.GetCommaSeparatedValues(headerName);
+                    model = GetCompatibleCollection(bindingContext, values);
                 }
             }
-            else if (typeof(IEnumerable<string>).IsAssignableFrom(bindingContext.ModelType))
+            else
             {
-                var values = request.Headers.GetCommaSeparatedValues(headerName);
-                if (values.Length > 0)
-                {
-                    model = ModelBindingHelper.ConvertValuesToCollectionType(
-                        bindingContext.ModelType,
-                        values);
-                }
+                // An unsupported datatype or a new collection is needed (perhaps because target type is an array) but
+                // can't assign it to the property.
+                model = null;
             }
 
             if (model == null)
             {
+                // Silently fail if unable to create an instance or use the current instance. Also reach here in the
+                // typeof(string) case if the header does not exist in the request and in the
+                // typeof(IEnumerable<string>) case if the header does not exist and this is not a top-level object.
                 bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
-                return TaskCache.CompletedTask;
             }
             else
             {
@@ -78,8 +78,32 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     request.Headers[headerName]);
 
                 bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
-                return TaskCache.CompletedTask;
             }
+
+            return TaskCache.CompletedTask;
+        }
+
+        private static object GetCompatibleCollection(ModelBindingContext bindingContext, string[] values)
+        {
+            // Almost-always success if IsTopLevelObject.
+            if (!bindingContext.IsTopLevelObject && values.Length == 0)
+            {
+                return null;
+            }
+
+            if (bindingContext.ModelType.IsAssignableFrom(typeof(string[])))
+            {
+                // Array we already have is compatible.
+                return values;
+            }
+
+            var collection = ModelBindingHelper.GetCompatibleCollection<string>(bindingContext, values.Length);
+            for (int i = 0; i < values.Length; i++)
+            {
+                collection.Add(values[i]);
+            }
+
+            return collection;
         }
     }
 }

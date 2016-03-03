@@ -77,6 +77,150 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Skipped, modelState[key].ValidationState);
         }
 
+        private class ListContainer1
+        {
+            [ModelBinder(Name = "files")]
+            public List<IFormFile> ListProperty { get; set; }
+        }
+
+        [Fact]
+        public async Task BindCollectionProperty_WithData_IsBound()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo(),
+                ParameterType = typeof(ListContainer1),
+            };
+
+            var data = "some data";
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request => UpdateRequest(request, data, "files"));
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // Act
+            var result = await argumentBinder.BindModelAsync(parameter, operationContext) ??
+                default(ModelBindingResult);
+
+            // Assert
+            Assert.True(result.IsModelSet);
+
+            // Model
+            var boundContainer = Assert.IsType<ListContainer1>(result.Model);
+            Assert.NotNull(boundContainer);
+            Assert.NotNull(boundContainer.ListProperty);
+            var file = Assert.Single(boundContainer.ListProperty);
+            Assert.Equal("form-data; name=files; filename=text.txt", file.ContentDisposition);
+            using (var reader = new StreamReader(file.OpenReadStream()))
+            {
+                Assert.Equal(data, reader.ReadToEnd());
+            }
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+            var kvp = Assert.Single(modelState);
+            Assert.Equal("files", kvp.Key);
+            var modelStateEntry = kvp.Value;
+            Assert.NotNull(modelStateEntry);
+            Assert.Empty(modelStateEntry.Errors);
+            Assert.Equal(ModelValidationState.Skipped, modelStateEntry.ValidationState);
+            Assert.Null(modelStateEntry.AttemptedValue);
+            Assert.Null(modelStateEntry.RawValue);
+        }
+
+        [Fact]
+        public async Task BindCollectionProperty_NoData_IsNotBound()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo(),
+                ParameterType = typeof(ListContainer1),
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request => UpdateRequest(request, data: null, name: null));
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // Act
+            var result = await argumentBinder.BindModelAsync(parameter, operationContext) ??
+                default(ModelBindingResult);
+
+            // Assert
+            Assert.True(result.IsModelSet);
+
+            // Model (bound to an empty collection)
+            var boundContainer = Assert.IsType<ListContainer1>(result.Model);
+            Assert.NotNull(boundContainer);
+            Assert.Null(boundContainer.ListProperty);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+            Assert.Empty(modelState);
+        }
+
+        private class ListContainer2
+        {
+            [ModelBinder(Name = "files")]
+            public List<IFormFile> ListProperty { get; } = new List<IFormFile>
+            {
+                new FormFile(new MemoryStream(), baseStreamOffset: 0, length: 0, name: "file", fileName: "file1"),
+                new FormFile(new MemoryStream(), baseStreamOffset: 0, length: 0, name: "file", fileName: "file2"),
+                new FormFile(new MemoryStream(), baseStreamOffset: 0, length: 0, name: "file", fileName: "file3"),
+            };
+        }
+
+        [Fact]
+        public async Task BindReadOnlyCollectionProperty_WithData_IsBound()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo(),
+                ParameterType = typeof(ListContainer2),
+            };
+
+            var data = "some data";
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request => UpdateRequest(request, data, "files"));
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // Act
+            var result = await argumentBinder.BindModelAsync(parameter, operationContext) ??
+                default(ModelBindingResult);
+
+            // Assert
+            Assert.True(result.IsModelSet);
+
+            // Model
+            var boundContainer = Assert.IsType<ListContainer2>(result.Model);
+            Assert.NotNull(boundContainer);
+            Assert.NotNull(boundContainer.ListProperty);
+            var file = Assert.Single(boundContainer.ListProperty);
+            Assert.Equal("form-data; name=files; filename=text.txt", file.ContentDisposition);
+            using (var reader = new StreamReader(file.OpenReadStream()))
+            {
+                Assert.Equal(data, reader.ReadToEnd());
+            }
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+            var kvp = Assert.Single(modelState);
+            Assert.Equal("files", kvp.Key);
+            var modelStateEntry = kvp.Value;
+            Assert.NotNull(modelStateEntry);
+            Assert.Empty(modelStateEntry.Errors);
+            Assert.Equal(ModelValidationState.Skipped, modelStateEntry.ValidationState);
+            Assert.Null(modelStateEntry.AttemptedValue);
+            Assert.Null(modelStateEntry.RawValue);
+        }
+
         [Fact]
         public async Task BindParameter_WithData_GetsBound()
         {
@@ -149,7 +293,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ??
+                default(ModelBindingResult);
 
             // Assert
             Assert.Equal(default(ModelBindingResult), modelBindingResult);

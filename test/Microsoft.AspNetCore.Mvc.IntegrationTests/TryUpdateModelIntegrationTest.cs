@@ -3,9 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features.Internal;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests
@@ -957,6 +962,65 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // ModelState
             Assert.True(modelState.IsValid);
             Assert.Empty(modelState);
+        }
+
+        [Fact]
+        public async Task TryUpdateModelAsync_TopLevelFormFileCollection_IsBound()
+        {
+            // Arrange
+            var data = "some data";
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request => UpdateRequest(request, data, "files"));
+            var modelState = operationContext.ActionContext.ModelState;
+            var model = new List<IFormFile>
+            {
+                new FormFile(new MemoryStream(), baseStreamOffset: 0, length: 0, name: "file", fileName: "file1"),
+                new FormFile(new MemoryStream(), baseStreamOffset: 0, length: 0, name: "file", fileName: "file2"),
+                new FormFile(new MemoryStream(), baseStreamOffset: 0, length: 0, name: "file", fileName: "file3"),
+            };
+
+            // Act
+            var result = await TryUpdateModel(model, prefix: "files", operationContext: operationContext);
+
+            // Assert
+            Assert.True(result);
+
+            // Model
+            var file = Assert.Single(model);
+            Assert.Equal("form-data; name=files; filename=text.txt", file.ContentDisposition);
+            using (var reader = new StreamReader(file.OpenReadStream()))
+            {
+                Assert.Equal(data, reader.ReadToEnd());
+            }
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+            var kvp = Assert.Single(modelState);
+            Assert.Equal("files", kvp.Key);
+            var modelStateEntry = kvp.Value;
+            Assert.NotNull(modelStateEntry);
+            Assert.Empty(modelStateEntry.Errors);
+            Assert.Equal(ModelValidationState.Skipped, modelStateEntry.ValidationState);
+            Assert.Null(modelStateEntry.AttemptedValue);
+            Assert.Null(modelStateEntry.RawValue);
+        }
+
+        private void UpdateRequest(HttpRequest request, string data, string name)
+        {
+            const string fileName = "text.txt";
+            var fileCollection = new FormFileCollection();
+            var formCollection = new FormCollection(new Dictionary<string, StringValues>(), fileCollection);
+
+            request.Form = formCollection;
+            request.ContentType = "multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq";
+
+            request.Headers["Content-Disposition"] = $"form-data; name={name}; filename={fileName}";
+
+            var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(data));
+            fileCollection.Add(new FormFile(memoryStream, 0, data.Length, name, fileName)
+            {
+                Headers = request.Headers
+            });
         }
 
         private class CustomReadOnlyCollection<T> : ICollection<T>

@@ -110,10 +110,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             Func<ViewContext, object> valueAccessor;
             if (typeof(ViewDataDictionary).IsAssignableFrom(property.PropertyType))
             {
+                // Logic looks reversed in condition above but is OK. Support only properties of base
+                // ViewDataDictionary type and activationInfo.ViewDataDictionaryType. VDD<AnotherType> will fail when
+                // assigning to the property (InvalidCastException) and that's fine.
                 valueAccessor = context => context.ViewData;
             }
-            else if (typeof(IUrlHelper).IsAssignableFrom(property.PropertyType))
+            else if (property.PropertyType == typeof(IUrlHelper))
             {
+                // W.r.t. specificity of above condition: Users are much more likely to inject their own
+                // IUrlHelperFactory than to create a class implementing IUrlHelper (or a sub-interface) and inject
+                // that. But the second scenario is supported. (Note the class must implement ICanHasViewContext.)
                 valueAccessor = context =>
                 {
                     var serviceProvider = context.HttpContext.RequestServices;

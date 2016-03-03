@@ -317,8 +317,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     { typeof(List<int>), true },
                     { typeof(LinkedList<int>), true },
                     { typeof(ISet<int>), false },
-                    { typeof(ListWithInternalConstructor<int>), false },
-                    { typeof(ListWithThrowingConstructor<int>), false },
                 };
             }
         }
@@ -445,23 +443,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             public int Id { get; set; }
 
             public string Name { get; set; }
-        }
-
-        private class ListWithInternalConstructor<T> : List<T>
-        {
-            internal ListWithInternalConstructor()
-                : base()
-            {
-            }
-        }
-
-        private class ListWithThrowingConstructor<T> : List<T>
-        {
-            public ListWithThrowingConstructor()
-                : base()
-            {
-                throw new RankException("No, don't do this.");
-            }
         }
     }
 }

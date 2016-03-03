@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 #if NETSTANDARD1_3
@@ -12,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -30,72 +30,111 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             // This method is optimized to use cached tasks when possible and avoid allocating
-            // using Task.FromResult. If you need to make changes of this nature, profile
-            // allocations afterwards and look for Task<ModelBindingResult>.
+            // using Task.FromResult or async state machines.
 
-            if (bindingContext.ModelType != typeof(IFormFile) &&
-                !typeof(IEnumerable<IFormFile>).IsAssignableFrom(bindingContext.ModelType))
+            var modelType = bindingContext.ModelType;
+            if (modelType != typeof(IFormFile) && !typeof(IEnumerable<IFormFile>).IsAssignableFrom(modelType))
             {
+                // Not a type this model binder supports. Let other binders run.
                 return TaskCache.CompletedTask;
             }
 
-            return BindModelCoreAsync(bindingContext);
+            var createFileCollection = modelType == typeof(IFormFileCollection) &&
+                !bindingContext.ModelMetadata.IsReadOnly;
+            if (!createFileCollection && !ModelBindingHelper.CanGetCompatibleCollection<IFormFile>(bindingContext))
+            {
+                // Silently fail and stop other model binders running if unable to create an instance or use the
+                // current instance.
+                bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+                return TaskCache.CompletedTask;
+            }
+
+            ICollection<IFormFile> postedFiles;
+            if (createFileCollection)
+            {
+                postedFiles = new List<IFormFile>();
+            }
+            else
+            {
+                postedFiles = ModelBindingHelper.GetCompatibleCollection<IFormFile>(bindingContext);
+            }
+
+            return BindModelCoreAsync(bindingContext, postedFiles);
         }
 
-        private async Task BindModelCoreAsync(ModelBindingContext bindingContext)
+        private async Task BindModelCoreAsync(ModelBindingContext bindingContext, ICollection<IFormFile> postedFiles)
         {
-            // If we're at the top level, then use the FieldName (paramter or property name).
+            Debug.Assert(postedFiles != null);
+
+            // If we're at the top level, then use the FieldName (parameter or property name).
             // This handles the fact that there will be nothing in the ValueProviders for this parameter
             // and so we'll do the right thing even though we 'fell-back' to the empty prefix.
             var modelName = bindingContext.IsTopLevelObject
                 ? bindingContext.BinderModelName ?? bindingContext.FieldName
                 : bindingContext.ModelName;
 
+            await GetFormFilesAsync(modelName, bindingContext, postedFiles);
+
             object value;
             if (bindingContext.ModelType == typeof(IFormFile))
             {
-                var postedFiles = await GetFormFilesAsync(modelName, bindingContext);
-                value = postedFiles.FirstOrDefault();
-            }
-            else if (typeof(IEnumerable<IFormFile>).IsAssignableFrom(bindingContext.ModelType))
-            {
-                var postedFiles = await GetFormFilesAsync(modelName, bindingContext);
-                value = ModelBindingHelper.ConvertValuesToCollectionType(bindingContext.ModelType, postedFiles);
-            }
-            else
-            {
-                // This binder does not support the requested type.
-                Debug.Fail("We shouldn't be called without a matching type.");
-                return;
-            }
-
-            if (value == null)
-            {
-                bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
-                return;
-            }
-            else
-            {
-                bindingContext.ValidationState.Add(value, new ValidationStateEntry()
+                if (postedFiles.Count == 0)
                 {
-                    Key = modelName,
-                    SuppressValidation = true
-                });
+                    // Silently fail if the named file does not exist in the request.
+                    bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+                    return;
+                }
 
-                bindingContext.ModelState.SetModelValue(
-                    modelName,
-                    rawValue: null,
-                    attemptedValue: null);
-
-                bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, value);
-                return;
+                value = postedFiles.First();
             }
+            else
+            {
+                if (postedFiles.Count == 0 && !bindingContext.IsTopLevelObject)
+                {
+                    // Silently fail if no files match. Will bind to an empty collection (treat empty as a success
+                    // case and not reach here) if binding to a top-level object.
+                    bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+                    return;
+                }
+
+                // Perform any final type mangling needed.
+                var modelType = bindingContext.ModelType;
+                if (modelType == typeof(IFormFile[]))
+                {
+                    Debug.Assert(postedFiles is List<IFormFile>);
+                    value = ((List<IFormFile>)postedFiles).ToArray();
+                }
+                else if (modelType == typeof(IFormFileCollection))
+                {
+                    Debug.Assert(postedFiles is List<IFormFile>);
+                    value = new FileCollection((List<IFormFile>)postedFiles);
+                }
+                else
+                {
+                    value = postedFiles;
+                }
+            }
+
+            bindingContext.ValidationState.Add(value, new ValidationStateEntry()
+            {
+                Key = modelName,
+                SuppressValidation = true
+            });
+
+            bindingContext.ModelState.SetModelValue(
+                modelName,
+                rawValue: null,
+                attemptedValue: null);
+
+            bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, value);
         }
 
-        private async Task<List<IFormFile>> GetFormFilesAsync(string modelName, ModelBindingContext bindingContext)
+        private async Task GetFormFilesAsync(
+            string modelName,
+            ModelBindingContext bindingContext,
+            ICollection<IFormFile> postedFiles)
         {
             var request = bindingContext.OperationBindingContext.HttpContext.Request;
-            var postedFiles = new List<IFormFile>();
             if (request.HasFormContentType)
             {
                 var form = await request.ReadFormAsync();
@@ -114,8 +153,45 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     }
                 }
             }
+        }
 
-            return postedFiles;
+        private class FileCollection : ReadOnlyCollection<IFormFile>, IFormFileCollection
+        {
+            public FileCollection(List<IFormFile> list)
+                : base(list)
+            {
+            }
+
+            public IFormFile this[string name] => GetFile(name);
+
+            public IFormFile GetFile(string name)
+            {
+                for (var i = 0; i < Items.Count; i++)
+                {
+                    var file = Items[i];
+                    if (string.Equals(name, file.Name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return file;
+                    }
+                }
+
+                return null;
+            }
+
+            public IReadOnlyList<IFormFile> GetFiles(string name)
+            {
+                var files = new List<IFormFile>();
+                for (var i = 0; i < Items.Count; i++)
+                {
+                    var file = Items[i];
+                    if (string.Equals(name, file.Name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        files.Add(file);
+                    }
+                }
+
+                return files;
+            }
         }
     }
 }

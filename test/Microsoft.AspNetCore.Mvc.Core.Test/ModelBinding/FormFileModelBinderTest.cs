@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -43,9 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public async Task FormFileModelBinder_ExpectMultipleFiles_BindSuccessful()
         {
             // Arrange
-            var formFiles = new FormFileCollection();
-            formFiles.Add(GetMockFormFile("file", "file1.txt"));
-            formFiles.Add(GetMockFormFile("file", "file2.txt"));
+            var formFiles = GetTwoFiles();
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
             var bindingContext = GetBindingContext(typeof(IEnumerable<IFormFile>), httpContext);
             var binder = new FormFileModelBinder();
@@ -66,13 +63,38 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Equal(2, files.Count);
         }
 
+        [Theory]
+        [InlineData(typeof(IFormFile[]))]
+        [InlineData(typeof(ICollection<IFormFile>))]
+        [InlineData(typeof(IList<IFormFile>))]
+        [InlineData(typeof(IFormFileCollection))]
+        [InlineData(typeof(List<IFormFile>))]
+        [InlineData(typeof(LinkedList<IFormFile>))]
+        [InlineData(typeof(FileList))]
+        [InlineData(typeof(FormFileCollection))]
+        public async Task FormFileModelBinder_BindsFiles_ForCollectionsItCanCreate(Type destinationType)
+        {
+            // Arrange
+            var binder = new FormFileModelBinder();
+            var formFiles = GetTwoFiles();
+            var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+            var bindingContext = GetBindingContext(destinationType, httpContext);
+
+            // Act
+            var result = await binder.BindModelResultAsync(bindingContext);
+
+            // Assert
+            Assert.NotEqual(default(ModelBindingResult), result);
+            Assert.True(result.IsModelSet);
+            Assert.IsAssignableFrom(destinationType, result.Model);
+            Assert.Equal(formFiles, result.Model as IEnumerable<IFormFile>);
+        }
+
         [Fact]
         public async Task FormFileModelBinder_ExpectSingleFile_BindFirstFile()
         {
             // Arrange
-            var formFiles = new FormFileCollection();
-            formFiles.Add(GetMockFormFile("file", "file1.txt"));
-            formFiles.Add(GetMockFormFile("file", "file2.txt"));
+            var formFiles = GetTwoFiles();
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
             var bindingContext = GetBindingContext(typeof(IFormFile), httpContext);
             var binder = new FormFileModelBinder();
@@ -86,8 +108,26 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Equal("file1.txt", file.FileName);
         }
 
+        [Theory]
+        [InlineData(typeof(string))]
+        [InlineData(typeof(IEnumerable<string>))]
+        public async Task FormFileModelBinder_ReturnsNothing_ForUnsupportedDestinationTypes(Type destinationType)
+        {
+            // Arrange
+            var formFiles = GetTwoFiles();
+            var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+            var bindingContext = GetBindingContext(destinationType, httpContext);
+            var binder = new FormFileModelBinder();
+
+            // Act
+            var result = await binder.BindModelResultAsync(bindingContext);
+
+            // Assert
+            Assert.Equal(default(ModelBindingResult), result);
+        }
+
         [Fact]
-        public async Task FormFileModelBinder_ReturnsNothing_WhenNoFilePosted()
+        public async Task FormFileModelBinder_ReturnsFailedResult_WhenNoFilePosted()
         {
             // Arrange
             var formFiles = new FormFileCollection();
@@ -100,11 +140,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.NotEqual(default(ModelBindingResult), result);
+            Assert.False(result.IsModelSet);
             Assert.Null(result.Model);
         }
 
         [Fact]
-        public async Task FormFileModelBinder_ReturnsNothing_WhenNamesDontMatch()
+        public async Task FormFileModelBinder_ReturnsFailedResult_WhenNamesDoNotMatch()
         {
             // Arrange
             var formFiles = new FormFileCollection();
@@ -118,6 +159,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.NotEqual(default(ModelBindingResult), result);
+            Assert.False(result.IsModelSet);
             Assert.Null(result.Model);
         }
 
@@ -151,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task FormFileModelBinder_ReturnsNothing_WithEmptyContentDisposition()
+        public async Task FormFileModelBinder_ReturnsFailedResult_WithEmptyContentDisposition()
         {
             // Arrange
             var formFiles = new FormFileCollection();
@@ -165,11 +207,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.NotEqual(default(ModelBindingResult), result);
+            Assert.False(result.IsModelSet);
             Assert.Null(result.Model);
         }
 
         [Fact]
-        public async Task FormFileModelBinder_ReturnsNothing_WithNoFileNameAndZeroLength()
+        public async Task FormFileModelBinder_ReturnsFailedResult_WithNoFileNameAndZeroLength()
         {
             // Arrange
             var formFiles = new FormFileCollection();
@@ -183,15 +226,75 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.NotEqual(default(ModelBindingResult), result);
+            Assert.False(result.IsModelSet);
             Assert.Null(result.Model);
+        }
+
+        [Fact]
+        public async Task FormFileModelBinder_ReturnsFailedResult_ForReadOnlyDestination()
+        {
+            // Arrange
+            var binder = new FormFileModelBinder();
+            var formFiles = GetTwoFiles();
+            var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+            var bindingContext = GetBindingContextForReadOnlyArray(httpContext);
+
+            // Act
+            var result = await binder.BindModelResultAsync(bindingContext);
+
+            // Assert
+            Assert.NotEqual(default(ModelBindingResult), result);
+            Assert.False(result.IsModelSet);
+            Assert.Null(result.Model);
+        }
+
+        [Fact]
+        public async Task FormFileModelBinder_ReturnsFailedResult_ForCollectionsItCannotCreate()
+        {
+            // Arrange
+            var binder = new FormFileModelBinder();
+            var formFiles = GetTwoFiles();
+            var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+            var bindingContext = GetBindingContext(typeof(ISet<IFormFile>), httpContext);
+
+            // Act
+            var result = await binder.BindModelResultAsync(bindingContext);
+
+            // Assert
+            Assert.NotEqual(default(ModelBindingResult), result);
+            Assert.False(result.IsModelSet);
+            Assert.Null(result.Model);
+        }
+
+        private static DefaultModelBindingContext GetBindingContextForReadOnlyArray(HttpContext httpContext)
+        {
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForProperty<ModelWithReadOnlyArray>(nameof(ModelWithReadOnlyArray.ArrayProperty))
+                .BindingDetails(bd => bd.BindingSource = BindingSource.Header);
+            var modelMetadata = metadataProvider.GetMetadataForProperty(
+                typeof(ModelWithReadOnlyArray),
+                nameof(ModelWithReadOnlyArray.ArrayProperty));
+
+            return GetBindingContext(metadataProvider, modelMetadata, httpContext);
         }
 
         private static DefaultModelBindingContext GetBindingContext(Type modelType, HttpContext httpContext)
         {
             var metadataProvider = new EmptyModelMetadataProvider();
+            var metadata = metadataProvider.GetMetadataForType(modelType);
+
+            return GetBindingContext(metadataProvider, metadata, httpContext);
+        }
+
+        private static DefaultModelBindingContext GetBindingContext(
+            IModelMetadataProvider metadataProvider,
+            ModelMetadata metadata,
+            HttpContext httpContext)
+        {
             var bindingContext = new DefaultModelBindingContext
             {
-                ModelMetadata = metadataProvider.GetMetadataForType(modelType),
+                ModelMetadata = metadata,
                 ModelName = "file",
                 ModelState = new ModelStateDictionary(),
                 OperationBindingContext = new OperationBindingContext
@@ -218,6 +321,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return httpContext.Object;
         }
 
+        private static FormFileCollection GetTwoFiles()
+        {
+            var formFiles = new FormFileCollection
+            {
+                GetMockFormFile("file", "file1.txt"),
+                GetMockFormFile("file", "file2.txt"),
+            };
+
+            return formFiles;
+        }
+
         private static IFormCollection GetMockFormCollection(FormFileCollection formFiles)
         {
             var formCollection = new Mock<IFormCollection>();
@@ -232,6 +346,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             formFile.Setup(f => f.FileName).Returns(filename);
 
             return formFile.Object;
+        }
+
+        private class ModelWithReadOnlyArray
+        {
+            public IFormFile[] ArrayProperty { get; }
+        }
+
+        private class FileList : List<IFormFile>
+        {
         }
     }
 }

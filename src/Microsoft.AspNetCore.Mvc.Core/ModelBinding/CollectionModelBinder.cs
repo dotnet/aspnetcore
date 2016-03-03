@@ -7,9 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-#if NETSTANDARD1_3
 using System.Reflection;
-#endif
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -45,7 +43,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     }
 
                     bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
-                    return;
                 }
 
                 return;
@@ -85,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             if (valueProviderResult != ValueProviderResult.None)
             {
-                // If we did simple binding, then modelstate should be updated to reflect what we bound for ModelName. 
+                // If we did simple binding, then modelstate should be updated to reflect what we bound for ModelName.
                 // If we did complex binding, there will already be an entry for each index.
                 bindingContext.ModelState.SetModelValue(
                     bindingContext.ModelName,
@@ -93,13 +90,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
-            return;
         }
 
         /// <inheritdoc />
         public virtual bool CanCreateInstance(Type targetType)
         {
-            return CreateEmptyCollection(targetType) != null;
+            if (targetType.IsAssignableFrom(typeof(List<TElement>)))
+            {
+                // Simple case such as ICollection<TElement>, IEnumerable<TElement> and IList<TElement>.
+                return true;
+            }
+
+            return targetType.GetTypeInfo().IsClass &&
+                !targetType.GetTypeInfo().IsAbstract &&
+                typeof(ICollection<TElement>).IsAssignableFrom(targetType);
         }
 
         /// <summary>
@@ -126,15 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <returns>An instance of <paramref name="targetType"/>.</returns>
         protected object CreateInstance(Type targetType)
         {
-            try
-            {
-                return Activator.CreateInstance(targetType);
-            }
-            catch (Exception)
-            {
-                // Details of exception are not important.
-                return null;
-            }
+            return Activator.CreateInstance(targetType);
         }
 
         // Used when the ValueProvider contains the collection to be bound as a single element, e.g. the raw value

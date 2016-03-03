@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -81,11 +82,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(Person)
             };
 
-            // Do not add any headers.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request => {
-                request.Headers.Add("Header", new[] { "someValue" });
-            });
-
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request => request.Headers.Add("Header", new[] { "someValue" }));
             var modelState = operationContext.ActionContext.ModelState;
 
             // Act
@@ -152,6 +150,102 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Valid, entry.Value.ValidationState);
             Assert.Equal("someValue", entry.Value.AttemptedValue);
             Assert.Equal(new string[] { "someValue" }, entry.Value.RawValue);
+        }
+
+        private class ListContainer1
+        {
+            [FromHeader(Name = "Header")]
+            public List<string> ListProperty { get; set; }
+        }
+
+        [Fact]
+        public async Task BindCollectionPropertyFromHeader_WithData_IsBound()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo(),
+                ParameterType = typeof(ListContainer1),
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request => request.Headers.Add("Header", new[] { "someValue" }));
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // Act
+            var result = await argumentBinder.BindModelAsync(parameter, operationContext) ??
+                default(ModelBindingResult);
+
+            // Assert
+            Assert.True(result.IsModelSet);
+
+            // Model
+            var boundContainer = Assert.IsType<ListContainer1>(result.Model);
+            Assert.NotNull(boundContainer);
+            Assert.NotNull(boundContainer.ListProperty);
+            var entry = Assert.Single(boundContainer.ListProperty);
+            Assert.Equal("someValue", entry);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+            var kvp = Assert.Single(modelState);
+            Assert.Equal("Header", kvp.Key);
+            var modelStateEntry = kvp.Value;
+            Assert.NotNull(modelStateEntry);
+            Assert.Empty(modelStateEntry.Errors);
+            Assert.Equal(ModelValidationState.Valid, modelStateEntry.ValidationState);
+            Assert.Equal("someValue", modelStateEntry.AttemptedValue);
+            Assert.Equal(new[] { "someValue" }, modelStateEntry.RawValue);
+        }
+
+        private class ListContainer2
+        {
+            [FromHeader(Name = "Header")]
+            public List<string> ListProperty { get; } = new List<string> { "One", "Two", "Three" };
+        }
+
+        [Fact]
+        public async Task BindReadOnlyCollectionPropertyFromHeader_WithData_IsBound()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo(),
+                ParameterType = typeof(ListContainer2),
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request => request.Headers.Add("Header", new[] { "someValue" }));
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // Act
+            var result = await argumentBinder.BindModelAsync(parameter, operationContext) ??
+                default(ModelBindingResult);
+
+            // Assert
+            Assert.True(result.IsModelSet);
+
+            // Model
+            var boundContainer = Assert.IsType<ListContainer2>(result.Model);
+            Assert.NotNull(boundContainer);
+            Assert.NotNull(boundContainer.ListProperty);
+            var entry = Assert.Single(boundContainer.ListProperty);
+            Assert.Equal("someValue", entry);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+            var kvp = Assert.Single(modelState);
+            Assert.Equal("Header", kvp.Key);
+            var modelStateEntry = kvp.Value;
+            Assert.NotNull(modelStateEntry);
+            Assert.Empty(modelStateEntry.Errors);
+            Assert.Equal(ModelValidationState.Valid, modelStateEntry.ValidationState);
+            Assert.Equal("someValue", modelStateEntry.AttemptedValue);
+            Assert.Equal(new[] { "someValue" }, modelStateEntry.RawValue);
         }
 
         [Theory]

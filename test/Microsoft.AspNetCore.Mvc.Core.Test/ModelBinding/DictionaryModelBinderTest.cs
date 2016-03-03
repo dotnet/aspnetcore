@@ -388,9 +388,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
                     { typeof(IDictionary<int, int>), true },
                     { typeof(Dictionary<int, int>), true },
                     { typeof(SortedDictionary<int, int>), true },
-                    { typeof(IList<KeyValuePair<int, int>>), false },
-                    { typeof(DictionaryWithInternalConstructor<int, int>), false },
-                    { typeof(DictionaryWithThrowingConstructor<int, int>), false },
+                    { typeof(IList<KeyValuePair<int, int>>), true },
+                    { typeof(ISet<KeyValuePair<int, int>>), false },
                 };
             }
         }
@@ -552,23 +551,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             public override string ToString()
             {
                 return $"{{{ Id }, '{ Name }'}}";
-            }
-        }
-
-        private class DictionaryWithInternalConstructor<TKey, TValue> : Dictionary<TKey, TValue>
-        {
-            internal DictionaryWithInternalConstructor()
-                : base()
-            {
-            }
-        }
-
-        private class DictionaryWithThrowingConstructor<TKey, TValue> : Dictionary<TKey, TValue>
-        {
-            public DictionaryWithThrowingConstructor()
-                : base()
-            {
-                throw new RankException("No, don't do this.");
             }
         }
     }
