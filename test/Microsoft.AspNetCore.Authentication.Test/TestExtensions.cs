@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -63,5 +64,23 @@ namespace Microsoft.AspNetCore.Authentication
             var xmlBytes = Encoding.UTF8.GetBytes(xml.ToString());
             res.Body.Write(xmlBytes, 0, xmlBytes.Length);
         }
+
+        public static void Describe(this HttpResponse res, IEnumerable<AuthenticationToken> tokens)
+        {
+            res.StatusCode = 200;
+            res.ContentType = "text/xml";
+            var xml = new XElement("xml");
+            if (tokens != null)
+            {
+                foreach (var token in tokens)
+                {
+                    xml.Add(new XElement("token", new XAttribute("name", token.Name),
+                        new XAttribute("value", token.Value)));
+                }
+            }
+            var xmlBytes = Encoding.UTF8.GetBytes(xml.ToString());
+            res.Body.Write(xmlBytes, 0, xmlBytes.Length);
+        }
+
     }
 }

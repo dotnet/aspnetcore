@@ -46,5 +46,17 @@ namespace Microsoft.AspNetCore.Authentication
             }
             return claim.Attribute("value").Value;
         }
+
+        public string FindTokenValue(string name)
+        {
+            var claim = ResponseElement.Elements("token")
+                .SingleOrDefault(elt => elt.Attribute("name").Value == name);
+            if (claim == null)
+            {
+                return null;
+            }
+            return claim.Attribute("value").Value;
+        }
+
     }
 }

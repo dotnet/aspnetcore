@@ -88,10 +88,12 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             },
             Options.ClaimsIssuer);
 
-            if (Options.SaveTokensAsClaims)
+            if (Options.SaveTokens)
             {
-                identity.AddClaim(new Claim("access_token", accessToken.Token, ClaimValueTypes.String, Options.ClaimsIssuer));
-                identity.AddClaim(new Claim("access_token_secret", accessToken.TokenSecret, ClaimValueTypes.String, Options.ClaimsIssuer));
+                properties.StoreTokens(new [] {
+                    new AuthenticationToken { Name = "access_token", Value = accessToken.Token },
+                    new AuthenticationToken { Name = "access_token_secret", Value = accessToken.TokenSecret }
+                });
             }
 
             return AuthenticateResult.Success(await CreateTicketAsync(identity, properties, accessToken));

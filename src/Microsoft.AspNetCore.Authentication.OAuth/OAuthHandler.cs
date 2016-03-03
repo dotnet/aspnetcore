@@ -85,21 +85,19 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
             var identity = new ClaimsIdentity(Options.ClaimsIssuer);
 
-            if (Options.SaveTokensAsClaims)
+            if (Options.SaveTokens)
             {
-                identity.AddClaim(new Claim("access_token", tokens.AccessToken,
-                                            ClaimValueTypes.String, Options.ClaimsIssuer));
+                var authTokens = new List<AuthenticationToken>();
 
+                authTokens.Add(new AuthenticationToken { Name = "access_token", Value = tokens.AccessToken });
                 if (!string.IsNullOrEmpty(tokens.RefreshToken))
                 {
-                    identity.AddClaim(new Claim("refresh_token", tokens.RefreshToken,
-                                                ClaimValueTypes.String, Options.ClaimsIssuer));
+                    authTokens.Add(new AuthenticationToken { Name = "refresh_token", Value = tokens.RefreshToken });
                 }
 
                 if (!string.IsNullOrEmpty(tokens.TokenType))
                 {
-                    identity.AddClaim(new Claim("token_type", tokens.TokenType,
-                                                ClaimValueTypes.String, Options.ClaimsIssuer));
+                    authTokens.Add(new AuthenticationToken { Name = "token_type", Value = tokens.TokenType });
                 }
 
                 if (!string.IsNullOrEmpty(tokens.ExpiresIn))
@@ -107,13 +105,18 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     int value;
                     if (int.TryParse(tokens.ExpiresIn, NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
                     {
-                        var expiresAt = Options.SystemClock.UtcNow + TimeSpan.FromSeconds(value);
                         // https://www.w3.org/TR/xmlschema-2/#dateTime
                         // https://msdn.microsoft.com/en-us/library/az4se3k1(v=vs.110).aspx
-                        identity.AddClaim(new Claim("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture),
-                                                    ClaimValueTypes.DateTime, Options.ClaimsIssuer));
+                        var expiresAt = Options.SystemClock.UtcNow + TimeSpan.FromSeconds(value);
+                        authTokens.Add(new AuthenticationToken
+                        {
+                            Name = "expires_at",
+                            Value = expiresAt.ToString("o", CultureInfo.InvariantCulture)
+                        });
                     }
                 }
+
+                properties.StoreTokens(authTokens);
             }
 
             return AuthenticateResult.Success(await CreateTicketAsync(identity, properties, tokens));

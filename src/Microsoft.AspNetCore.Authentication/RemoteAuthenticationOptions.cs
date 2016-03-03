@@ -52,18 +52,18 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// Defines whether access and refresh tokens should be stored in the
-        /// <see cref="ClaimsPrincipal"/> after a successful authorization with the remote provider.
-        /// This property is set to <c>false</c> by default to reduce
-        /// the size of the final authentication cookie.
-        /// </summary>
-        public bool SaveTokensAsClaims { get; set; }
-
-        /// <summary>
         /// Gets or sets the time limit for completing the authentication flow (15 minutes by default).
         /// </summary>
         public TimeSpan RemoteAuthenticationTimeout { get; set; } = TimeSpan.FromMinutes(15);
 
         public IRemoteAuthenticationEvents Events = new RemoteAuthenticationEvents();
+
+        /// <summary>
+        /// Defines whether access and refresh tokens should be stored in the
+        /// <see cref="AuthenticationProperties"/> after a successful authorization.
+        /// This property is set to <c>false</c> by default to reduce
+        /// the size of the final authentication cookie.
+        /// </summary>
+        public bool SaveTokens { get; set; }
     }
 }

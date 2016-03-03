@@ -292,6 +292,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             {
                 ClientId = "Test Id",
                 ClientSecret = "Test Secret",
+                SaveTokens = true,
                 StateDataFormat = stateFormat,
                 ClaimsIssuer = claimsIssuer,
                 BackchannelHttpHandler = new TestHttpMessageHandler
@@ -334,6 +335,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                     }
                 }
             });
+
             var properties = new AuthenticationProperties();
             var correlationKey = ".xsrf";
             var correlationValue = "TestCorrelationId";
@@ -361,6 +363,12 @@ namespace Microsoft.AspNetCore.Authentication.Google
 
             // Ensure claims transformation 
             Assert.Equal("yup", transaction.FindClaimValue("xform"));
+
+            transaction = await server.SendAsync("https://example.com/tokens", authCookie);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+            Assert.Equal("Test Access Token", transaction.FindTokenValue("access_token"));
+            Assert.Equal("Bearer", transaction.FindTokenValue("token_type"));
+            Assert.NotNull(transaction.FindTokenValue("expires_at"));
         }
 
         // REVIEW: Fix this once we revisit error handling to not blow up
@@ -780,6 +788,13 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         if (req.Path == new PathString("/challenge"))
                         {
                             await context.Authentication.ChallengeAsync("Google");
+                        }
+                        else if (req.Path == new PathString("/tokens"))
+                        {
+                            var authContext = new AuthenticateContext(TestExtensions.CookieAuthenticationScheme);
+                            await context.Authentication.AuthenticateAsync(authContext);
+                            var tokens = AuthenticationToken.GetTokens(new AuthenticationProperties(authContext.Properties));
+                            res.Describe(tokens);
                         }
                         else if (req.Path == new PathString("/me"))
                         {

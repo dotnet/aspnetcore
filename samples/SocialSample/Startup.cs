@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
@@ -71,13 +72,13 @@ namespace CookieSample
 
             // You must first create an app with facebook and add it's ID and Secret to your config.json or user-secrets.
             // https://developers.facebook.com/apps/
-            app.UseFacebookAuthentication(new FacebookOptions
-            {
-                AppId = Configuration["facebook:appid"],
-                AppSecret = Configuration["facebook:appsecret"],
-                Scope = { "email" },
-                Fields = { "name", "email" }
-            });
+            //app.UseFacebookAuthentication(new FacebookOptions
+            //{
+            //    AppId = Configuration["facebook:appid"],
+            //    AppSecret = Configuration["facebook:appsecret"],
+            //    Scope = { "email" },
+            //    Fields = { "name", "email" }
+            //});
 
             // See config.json
             app.UseOAuthAuthentication(new OAuthOptions
@@ -90,7 +91,7 @@ namespace CookieSample
                 AuthorizationEndpoint = GoogleDefaults.AuthorizationEndpoint,
                 TokenEndpoint = GoogleDefaults.TokenEndpoint,
                 Scope = { "openid", "profile", "email" },
-                SaveTokensAsClaims = true
+                SaveTokens = true
             });
 
             // See config.json
@@ -146,27 +147,27 @@ namespace CookieSample
             The sample app can then be run via:
              dnx web
             */
-            app.UseOAuthAuthentication(new OAuthOptions
-            {
-                AuthenticationScheme = "Microsoft-AccessToken",
-                DisplayName = "MicrosoftAccount-AccessToken - Requires project changes",
-                ClientId = Configuration["msa:clientid"],
-                ClientSecret = Configuration["msa:clientsecret"],
-                CallbackPath = new PathString("/signin-microsoft-token"),
-                AuthorizationEndpoint = MicrosoftAccountDefaults.AuthorizationEndpoint,
-                TokenEndpoint = MicrosoftAccountDefaults.TokenEndpoint,
-                Scope = { "wl.basic" },
-                SaveTokensAsClaims = true
-            });
+            //app.UseOAuthAuthentication(new OAuthOptions
+            //{
+            //    AuthenticationScheme = "Microsoft-AccessToken",
+            //    DisplayName = "MicrosoftAccount-AccessToken - Requires project changes",
+            //    ClientId = Configuration["msa:clientid"],
+            //    ClientSecret = Configuration["msa:clientsecret"],
+            //    CallbackPath = new PathString("/signin-microsoft-token"),
+            //    AuthorizationEndpoint = MicrosoftAccountDefaults.AuthorizationEndpoint,
+            //    TokenEndpoint = MicrosoftAccountDefaults.TokenEndpoint,
+            //    Scope = { "wl.basic" },
+            //    SaveTokens = true
+            //});
 
-            //// You must first create an app with live.com and add it's ID and Secret to your config.json or user-secrets.
-            app.UseMicrosoftAccountAuthentication(new MicrosoftAccountOptions
-            {
-                DisplayName = "MicrosoftAccount - Requires project changes",
-                ClientId = Configuration["msa:clientid"],
-                ClientSecret = Configuration["msa:clientsecret"],
-                Scope = { "wl.emails" }
-            });
+            ////// You must first create an app with live.com and add it's ID and Secret to your config.json or user-secrets.
+            //app.UseMicrosoftAccountAuthentication(new MicrosoftAccountOptions
+            //{
+            //    DisplayName = "MicrosoftAccount - Requires project changes",
+            //    ClientId = Configuration["msa:clientid"],
+            //    ClientSecret = Configuration["msa:clientsecret"],
+            //    Scope = { "wl.emails" }
+            //});
 
             // See config.json
             // https://github.com/settings/applications/
@@ -179,7 +180,7 @@ namespace CookieSample
                 CallbackPath = new PathString("/signin-github-token"),
                 AuthorizationEndpoint = "https://github.com/login/oauth/authorize",
                 TokenEndpoint = "https://github.com/login/oauth/access_token",
-                SaveTokensAsClaims = true
+                SaveTokens = true
             });
 
             // See config.json
@@ -318,6 +319,13 @@ namespace CookieSample
                 {
                     await context.Response.WriteAsync(claim.Type + ": " + claim.Value + "<br>");
                 }
+
+                await context.Response.WriteAsync("Tokens:<br>");
+                
+                await context.Response.WriteAsync("Access Token: " + await AuthenticationToken.GetTokenAsync(context, CookieAuthenticationDefaults.AuthenticationScheme, "access_token") + "<br>");
+                await context.Response.WriteAsync("Refresh Token: " + await AuthenticationToken.GetTokenAsync(context, CookieAuthenticationDefaults.AuthenticationScheme, "refresh_token") + "<br>");
+                await context.Response.WriteAsync("Token Type: " + await AuthenticationToken.GetTokenAsync(context, CookieAuthenticationDefaults.AuthenticationScheme, "token_type") + "<br>");
+                await context.Response.WriteAsync("expires_at: " + await AuthenticationToken.GetTokenAsync(context, CookieAuthenticationDefaults.AuthenticationScheme, "expires_at") + "<br>");
                 await context.Response.WriteAsync("<a href=\"/logout\">Logout</a>");
                 await context.Response.WriteAsync("</body></html>");
             });
