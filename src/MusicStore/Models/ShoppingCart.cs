@@ -76,7 +76,7 @@ namespace MusicStore.Models
             return itemCount;
         }
 
-        public async void EmptyCart()
+        public async Task EmptyCart()
         {
             var cartItems = await _dbContext
                 .CartItems
@@ -147,7 +147,7 @@ namespace MusicStore.Models
             order.Total = orderTotal;
 
             // Empty the shopping cart
-            EmptyCart();
+            await EmptyCart();
 
             // Return the OrderId as the confirmation number
             return order.OrderId;
