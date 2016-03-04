@@ -35,8 +35,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private readonly Lazy<bool> _supportsPdbGeneration = new Lazy<bool>(SymbolsUtility.SupportsSymbolsGeneration);
         private readonly ConcurrentDictionary<string, AssemblyMetadata> _metadataFileCache =
             new ConcurrentDictionary<string, AssemblyMetadata>(StringComparer.OrdinalIgnoreCase);
-
-        private readonly IApplicationEnvironment _environment;
         private readonly IFileProvider _fileProvider;
         private readonly Lazy<List<MetadataReference>> _applicationReferences;
         private readonly Action<RoslynCompilationContext> _compilationCallback;
@@ -61,21 +59,33 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             IOptions<RazorViewEngineOptions> optionsAccessor,
             IRazorViewEngineFileProviderAccessor fileProviderAccessor,
             ILoggerFactory loggerFactory)
+            : this(
+                  GetDependencyContext(environment),
+                  optionsAccessor.Value,
+                  fileProviderAccessor,
+                  loggerFactory)
         {
-            _environment = environment;
+        }
+
+        // Internal for unit testing
+        internal DefaultRoslynCompilationService(
+            DependencyContext dependencyContext,
+            RazorViewEngineOptions viewEngineOptions,
+            IRazorViewEngineFileProviderAccessor fileProviderAccessor,
+            ILoggerFactory loggerFactory)
+        {
+            _dependencyContext = dependencyContext;
             _applicationReferences = new Lazy<List<MetadataReference>>(GetApplicationReferences);
             _fileProvider = fileProviderAccessor.FileProvider;
-            _compilationCallback = optionsAccessor.Value.CompilationCallback;
-            _parseOptions = optionsAccessor.Value.ParseOptions;
-            _compilationOptions = optionsAccessor.Value.CompilationOptions;
+            _compilationCallback = viewEngineOptions.CompilationCallback;
+            _parseOptions = viewEngineOptions.ParseOptions;
+            _compilationOptions = viewEngineOptions.CompilationOptions;
             _logger = loggerFactory.CreateLogger<DefaultRoslynCompilationService>();
 
 #if NETSTANDARD1_5
             _razorLoadContext = new RazorLoadContext();
 #endif
 
-            var applicationAssembly = Assembly.Load(new AssemblyName(environment.ApplicationName));
-            _dependencyContext = DependencyContext.Load(applicationAssembly);
         }
 
         /// <inheritdoc />
@@ -186,7 +196,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             return compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(rewrittenTrees);
         }
 
-        private CompilationResult GetCompilationFailedResult(
+        // Internal for unit testing
+        internal CompilationResult GetCompilationFailedResult(
             string relativePath,
             string compilationContent,
             string assemblyName,
@@ -236,16 +247,30 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         private List<MetadataReference> GetApplicationReferences()
         {
+            var metadataReferences = new List<MetadataReference>();
             if (_dependencyContext == null)
             {
                 // Avoid null ref if the entry point does not have DependencyContext specified.
-                return new List<MetadataReference>();
+                return metadataReferences;
             }
 
-            return _dependencyContext.CompileLibraries
-                .SelectMany(library => library.ResolveReferencePaths())
-                .Select(CreateMetadataFileReference)
-                .ToList();
+            for (var i = 0; i < _dependencyContext.CompileLibraries.Count; i++)
+            {
+                var library = _dependencyContext.CompileLibraries[i];
+                IEnumerable<string> referencePaths;
+                try
+                {
+                    referencePaths = library.ResolveReferencePaths();
+                }
+                catch (InvalidOperationException)
+                {
+                    continue;
+                }
+
+                metadataReferences.AddRange(referencePaths.Select(CreateMetadataFileReference));
+            }
+
+            return metadataReferences;
         }
 
         private MetadataReference CreateMetadataFileReference(string path)
@@ -299,6 +324,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 mappedLineSpan.StartLinePosition.Character + 1,
                 mappedLineSpan.EndLinePosition.Line + 1,
                 mappedLineSpan.EndLinePosition.Character + 1);
+        }
+
+        private static DependencyContext GetDependencyContext(IApplicationEnvironment environment)
+        {
+            if (environment.ApplicationName != null)
+            {
+                var applicationAssembly = Assembly.Load(new AssemblyName(environment.ApplicationName));
+                return DependencyContext.Load(applicationAssembly);
+            }
+
+            return null;
         }
 
 #if NETSTANDARD1_5

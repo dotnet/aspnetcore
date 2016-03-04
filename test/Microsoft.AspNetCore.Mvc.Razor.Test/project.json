@@ -1,5 +1,6 @@
 {
   "compilationOptions": {
+    "preserveCompilationContext": true,
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   },
