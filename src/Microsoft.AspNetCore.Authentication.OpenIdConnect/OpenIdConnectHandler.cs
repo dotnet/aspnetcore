@@ -726,6 +726,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                     tokens.Add(new AuthenticationToken { Name = "expires_at", Value = expiresAt.ToString("o", CultureInfo.InvariantCulture) });
                 }
             }
+
+            properties.StoreTokens(tokens);
         }
 
         /// <summary>
