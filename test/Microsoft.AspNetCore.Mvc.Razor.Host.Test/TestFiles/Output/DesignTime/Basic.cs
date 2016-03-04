@@ -2,7 +2,7 @@ namespace Asp
 {
     using System.Threading.Tasks;
 
-    public class ASPV_testfiles_input_basic_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
+    public class testfiles_input_basic_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         private static object @__o;
         private void @__RazorDesignTimeHelpers__()
@@ -11,7 +11,7 @@ namespace Asp
             #pragma warning restore 219
         }
         #line hidden
-        public ASPV_testfiles_input_basic_cshtml()
+        public testfiles_input_basic_cshtml()
         {
         }
         #line hidden

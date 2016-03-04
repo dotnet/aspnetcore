@@ -2,7 +2,7 @@ namespace Asp
 {
     using System.Threading.Tasks;
 
-    public class ASPV_TestFiles_Input_MultipleModels_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<System.Collections.IEnumerable>
+    public class TestFiles_Input_MultipleModels_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<System.Collections.IEnumerable>
     {
         private static object @__o;
         private void @__RazorDesignTimeHelpers__()
@@ -16,7 +16,7 @@ var __modelHelper = default(System.Collections.IEnumerable);
             #pragma warning restore 219
         }
         #line hidden
-        public ASPV_TestFiles_Input_MultipleModels_cshtml()
+        public TestFiles_Input_MultipleModels_cshtml()
         {
         }
         #line hidden

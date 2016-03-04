@@ -2,7 +2,7 @@ namespace Asp
 {
     using System.Threading.Tasks;
 
-    public class ASPV_testfiles_input_injectwithsemicolon_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<MyModel>
+    public class testfiles_input_injectwithsemicolon_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<MyModel>
     {
         private static object @__o;
         private void @__RazorDesignTimeHelpers__()
@@ -16,7 +16,7 @@ var __modelHelper = default(MyModel);
             #pragma warning restore 219
         }
         #line hidden
-        public ASPV_testfiles_input_injectwithsemicolon_cshtml()
+        public testfiles_input_injectwithsemicolon_cshtml()
         {
         }
         #line hidden

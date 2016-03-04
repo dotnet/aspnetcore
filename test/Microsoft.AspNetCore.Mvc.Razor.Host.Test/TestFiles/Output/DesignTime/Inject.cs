@@ -8,7 +8,7 @@ using MyNamespace
     ;
     using System.Threading.Tasks;
 
-    public class ASPV_testfiles_input_inject_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
+    public class testfiles_input_inject_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         private static object @__o;
         private void @__RazorDesignTimeHelpers__()
@@ -17,7 +17,7 @@ using MyNamespace
             #pragma warning restore 219
         }
         #line hidden
-        public ASPV_testfiles_input_inject_cshtml()
+        public testfiles_input_inject_cshtml()
         {
         }
         #line hidden

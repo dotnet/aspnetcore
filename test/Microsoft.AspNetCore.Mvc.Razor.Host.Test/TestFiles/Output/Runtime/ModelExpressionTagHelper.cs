@@ -8,7 +8,7 @@ namespace Asp
     using Microsoft.AspNetCore.Mvc.Rendering;
     using System.Threading.Tasks;
 
-    public class ASPV_TestFiles_Input_ModelExpressionTagHelper_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime>
+    public class TestFiles_Input_ModelExpressionTagHelper_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime>
     {
         #line hidden
         #pragma warning disable 0414
@@ -19,7 +19,7 @@ namespace Asp
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager __tagHelperScopeManager = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager();
         private global::Microsoft.AspNetCore.Mvc.Razor.InputTestTagHelper __Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper = null;
         #line hidden
-        public ASPV_TestFiles_Input_ModelExpressionTagHelper_cshtml()
+        public TestFiles_Input_ModelExpressionTagHelper_cshtml()
         {
         }
         #line hidden

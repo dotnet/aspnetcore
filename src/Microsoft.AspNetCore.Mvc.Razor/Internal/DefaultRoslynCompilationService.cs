@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private readonly IApplicationEnvironment _environment;
         private readonly IFileProvider _fileProvider;
         private readonly Lazy<List<MetadataReference>> _applicationReferences;
-        private readonly string _classPrefix;
         private readonly Action<RoslynCompilationContext> _compilationCallback;
         private readonly CSharpParseOptions _parseOptions;
         private readonly CSharpCompilationOptions _compilationOptions;
@@ -54,13 +53,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// Initalizes a new instance of the <see cref="DefaultRoslynCompilationService"/> class.
         /// </summary>
         /// <param name="environment">The environment for the executing application.</param>
-        /// <param name="host">The <see cref="IMvcRazorHost"/> that was used to generate the code.</param>
         /// <param name="optionsAccessor">Accessor to <see cref="RazorViewEngineOptions"/>.</param>
         /// <param name="fileProviderAccessor">The <see cref="IRazorViewEngineFileProviderAccessor"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public DefaultRoslynCompilationService(
             IApplicationEnvironment environment,
-            IMvcRazorHost host,
             IOptions<RazorViewEngineOptions> optionsAccessor,
             IRazorViewEngineFileProviderAccessor fileProviderAccessor,
             ILoggerFactory loggerFactory)
@@ -68,7 +65,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             _environment = environment;
             _applicationReferences = new Lazy<List<MetadataReference>>(GetApplicationReferences);
             _fileProvider = fileProviderAccessor.FileProvider;
-            _classPrefix = host.MainClassNamePrefix;
             _compilationCallback = optionsAccessor.Value.CompilationCallback;
             _parseOptions = optionsAccessor.Value.ParseOptions;
             _compilationOptions = optionsAccessor.Value.CompilationOptions;
@@ -158,10 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                         assembly = LoadStream(ms, assemblySymbols: null);
                     }
 
-                    var type = assembly
-                        .GetExportedTypes()
-                        .First(t => t.Name.StartsWith(_classPrefix, StringComparison.Ordinal));
-
+                    var type = assembly.GetExportedTypes().FirstOrDefault(a => !a.IsNested);
                     _logger.GeneratedCodeToAssemblyCompilationEnd(fileInfo.RelativePath, startTimestamp);
 
                     return new CompilationResult(type);

@@ -182,12 +182,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             get { return "dynamic"; }
         }
 
-        /// <inheritdoc />
-        public string MainClassNamePrefix
-        {
-            get { return "ASPV_"; }
-        }
-
         /// <summary>
         /// Gets the list of chunks that are injected by default by this host.
         /// </summary>
@@ -263,8 +257,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <inheritdoc />
         public GeneratorResults GenerateCode(string rootRelativePath, Stream inputStream)
         {
-            // Adding a prefix so that the main view class can be easily identified.
-            var className = MainClassNamePrefix + ParserHelpers.SanitizeClassName(rootRelativePath);
+            var className = ParserHelpers.SanitizeClassName(rootRelativePath);
             var engine = new RazorTemplateEngine(this);
             return engine.GenerateCode(inputStream, className, DefaultNamespace, rootRelativePath);
         }

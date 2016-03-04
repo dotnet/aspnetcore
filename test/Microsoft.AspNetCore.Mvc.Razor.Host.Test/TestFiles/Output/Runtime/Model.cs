@@ -8,10 +8,10 @@ namespace Asp
     using Microsoft.AspNetCore.Mvc.Rendering;
     using System.Threading.Tasks;
 
-    public class ASPV_TestFiles_Input_Model_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<System.Collections.IEnumerable>
+    public class TestFiles_Input_Model_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<System.Collections.IEnumerable>
     {
         #line hidden
-        public ASPV_TestFiles_Input_Model_cshtml()
+        public TestFiles_Input_Model_cshtml()
         {
         }
         #line hidden

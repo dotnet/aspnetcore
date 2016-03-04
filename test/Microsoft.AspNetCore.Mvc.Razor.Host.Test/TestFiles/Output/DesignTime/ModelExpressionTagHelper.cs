@@ -7,7 +7,7 @@ namespace Asp
     using Microsoft.AspNetCore.Mvc.Rendering;
     using System.Threading.Tasks;
 
-    public class ASPV_testfiles_input_modelexpressiontaghelper_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime>
+    public class testfiles_input_modelexpressiontaghelper_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime>
     {
         private static object @__o;
         private void @__RazorDesignTimeHelpers__()
@@ -25,7 +25,7 @@ var __modelHelper = default(DateTime);
         #line hidden
         private global::Microsoft.AspNetCore.Mvc.Razor.InputTestTagHelper __Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper = null;
         #line hidden
-        public ASPV_testfiles_input_modelexpressiontaghelper_cshtml()
+        public testfiles_input_modelexpressiontaghelper_cshtml()
         {
         }
         #line hidden
