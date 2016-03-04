@@ -9,9 +9,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Microsoft.Net.WebSockets")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Microsoft.Net.WebSockets")]
-[assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
