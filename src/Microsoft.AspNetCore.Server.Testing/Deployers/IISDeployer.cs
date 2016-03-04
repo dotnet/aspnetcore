@@ -36,8 +36,6 @@ namespace Microsoft.AspNetCore.Server.Testing
 
             _application = new IISApplication(DeploymentParameters, Logger);
 
-            PickRuntime();
-
             // Publish to IIS root\application folder.
             DotnetPublish(publishRoot: _application.WebSiteRootFolder);
 

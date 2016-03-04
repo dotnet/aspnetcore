@@ -74,6 +74,8 @@ namespace Microsoft.AspNetCore.Server.Testing
         /// </summary>
         public bool PublishApplicationBeforeDeployment { get; set; }
 
+        public string PublishTargetFramework { get; set; }
+
         public string PublishedApplicationRootPath { get; set; }
 
         /// <summary>

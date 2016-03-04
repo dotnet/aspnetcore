@@ -37,24 +37,20 @@ namespace Microsoft.AspNetCore.Server.Testing
 
         protected ILogger Logger { get; }
 
-        protected string TargetFrameworkName { get; private set; }
-
         public abstract DeploymentResult Deploy();
-
-        protected void PickRuntime()
-        {
-            TargetFrameworkName = DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? "dnx451" : "netstandardapp1.5";
-
-            Logger.LogInformation($"Pick target framework {TargetFrameworkName}");
-        }
 
         protected void DotnetPublish(string publishRoot = null)
         {
+            if (string.IsNullOrEmpty(DeploymentParameters.PublishTargetFramework))
+            {
+                throw new Exception($"A target framework must be specified in the deployment parameters for applications that require publishing before deployment");
+            }
+
             DeploymentParameters.PublishedApplicationRootPath = publishRoot ?? Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
             var parameters = $"publish {DeploymentParameters.ApplicationPath}"
                 + $" -o {DeploymentParameters.PublishedApplicationRootPath}"
-                + $" --framework {TargetFrameworkName}";
+                + $" --framework {DeploymentParameters.PublishTargetFramework}";
 
             Logger.LogInformation($"Executing command {DotnetCommandName} {parameters}");
 

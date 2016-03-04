@@ -27,8 +27,6 @@ namespace Microsoft.AspNetCore.Server.Testing
             // Start timer
             StartTimer();
 
-            PickRuntime();
-
             // For now we always auto-publish. Otherwise we'll have to write our own local web.config for the HttpPlatformHandler
             DeploymentParameters.PublishApplicationBeforeDeployment = true;
             if (DeploymentParameters.PublishApplicationBeforeDeployment)
