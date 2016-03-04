@@ -20,16 +20,13 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
             Console.WriteLine($"The temporary test folder is {TempFolder}");
 
             WorkFolder = Path.Combine(TempFolder, "work");
-            PackagesFolder = Path.Combine(TempFolder, "packages");
-
+         
             CreateTestDirectory();
         }
 
-        public string TempFolder { get; } = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        public string TempFolder { get; } = Path.Combine(Path.GetDirectoryName(FindNugetConfig()), "testWorkDir" , Guid.NewGuid().ToString());
 
         public string WorkFolder { get; }
-
-        public string PackagesFolder { get; }
 
         public void AddProject(string projectFolder)
         {
@@ -95,6 +92,8 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
         private void CreateTestDirectory()
         {
             Directory.CreateDirectory(WorkFolder);
+            File.WriteAllText(Path.Combine(WorkFolder, "global.json"), "{}");
+
             var nugetConfigFilePath = FindNugetConfig();
 
             var tempNugetConfigFile = Path.Combine(WorkFolder, NugetConfigFileName);
@@ -114,7 +113,7 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
             return Process.Start(psi);
         }
 
-        private string FindNugetConfig()
+        private static string FindNugetConfig()
         {
             var currentDirPath = Directory.GetCurrentDirectory();
 

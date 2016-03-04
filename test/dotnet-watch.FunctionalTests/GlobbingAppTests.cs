@@ -16,12 +16,14 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
         private static readonly TimeSpan _negativeTestWaitTime = TimeSpan.FromSeconds(10);
 
         // Change a file included in compilation
-        [Fact(Skip = "Disabled temporary")]
+        [Fact]
         public void ChangeCompiledFile()
         {
             using (var scenario = new GlobbingAppScenario())
             using (var wait = new WaitForFileToChange(scenario.StartedFile))
             {
+                scenario.Start();
+
                 var fileToChange = Path.Combine(scenario.TestAppFolder, "include", "Foo.cs");
                 var programCs = File.ReadAllText(fileToChange);
                 File.WriteAllText(fileToChange, programCs);
@@ -34,13 +36,15 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
         }
 
         // Add a file to a folder included in compilation
-        [Fact(Skip = "Disabled temporary")]
+        [Fact]
         public void AddCompiledFile()
         {
             // Add a file in a folder that's included in compilation
             using (var scenario = new GlobbingAppScenario())
             using (var wait = new WaitForFileToChange(scenario.StartedFile))
             {
+                scenario.Start();
+
                 var fileToChange = Path.Combine(scenario.TestAppFolder, "include", "Bar.cs");
                 File.WriteAllText(fileToChange, "");
 
@@ -51,12 +55,14 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
         }
 
         // Delete a file included in compilation
-        [Fact(Skip = "Disabled temporary")]
+        [Fact]
         public void DeleteCompiledFile()
         {
             using (var scenario = new GlobbingAppScenario())
             using (var wait = new WaitForFileToChange(scenario.StartedFile))
             {
+                scenario.Start();
+
                 var fileToChange = Path.Combine(scenario.TestAppFolder, "include", "Foo.cs");
                 File.Delete(fileToChange);
 
@@ -67,13 +73,14 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
         }
 
         // Rename a file included in compilation
-        [Fact(Skip = "Disabled temporary")]
+        [Fact]
         public void RenameCompiledFile()
         {
             using (var scenario = new GlobbingAppScenario())
-
             using (var wait = new WaitForFileToChange(scenario.StatusFile))
             {
+                scenario.Start();
+
                 var oldFile = Path.Combine(scenario.TestAppFolder, "include", "Foo.cs");
                 var newFile = Path.Combine(scenario.TestAppFolder, "include", "Foo_new.cs");
                 File.Move(oldFile, newFile);
@@ -85,19 +92,20 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
         }
 
         // Add a file that's in a included folder but not matching the globbing pattern
-        [Fact(Skip = "Disabled temporary")]
+        [Fact]
         public void ChangeNonCompiledFile()
         {
             using (var scenario = new GlobbingAppScenario())
-            using (var wait = new WaitForFileToChange(scenario.StartedFile))
             {
+                scenario.Start();
+
                 var ids = File.ReadAllLines(scenario.StatusFile);
                 var procId = int.Parse(ids[0]);
 
                 var changedFile = Path.Combine(scenario.TestAppFolder, "include", "not_compiled.css");
                 File.WriteAllText(changedFile, "");
 
-                Console.WriteLine($"Waiting {_negativeTestWaitTime} seconds to see if the app restarts");
+                Console.WriteLine($"Waiting {_negativeTestWaitTime.TotalSeconds} seconds to see if the app restarts");
                 Waiters.WaitForProcessToStop(
                     procId,
                     _negativeTestWaitTime,
@@ -107,27 +115,25 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
         }
 
         // Change a file that's in an excluded folder
-        [Fact(Skip = "Disabled temporary")]
+        [Fact]
         public void ChangeExcludedFile()
         {
             using (var scenario = new GlobbingAppScenario())
             {
-                // Then wait for it to restart when we change a file that's included in the compilation files
-                using (var wait = new WaitForFileToChange(scenario.StartedFile))
-                {
-                    var ids = File.ReadAllLines(scenario.StatusFile);
-                    var procId = int.Parse(ids[0]);
-                  
-                    var changedFile = Path.Combine(scenario.TestAppFolder, "exclude", "Baz.cs");
-                    File.WriteAllText(changedFile, "");
+                scenario.Start();
 
-                    Console.WriteLine($"Waiting {_negativeTestWaitTime} seconds to see if the app restarts");
-                    Waiters.WaitForProcessToStop(
-                        procId,
-                        _negativeTestWaitTime,
-                        expectedToStop: false,
-                        errorMessage: "Test app restarted");
-                }
+                var ids = File.ReadAllLines(scenario.StatusFile);
+                var procId = int.Parse(ids[0]);
+
+                var changedFile = Path.Combine(scenario.TestAppFolder, "exclude", "Baz.cs");
+                File.WriteAllText(changedFile, "");
+
+                Console.WriteLine($"Waiting {_negativeTestWaitTime.TotalSeconds} seconds to see if the app restarts");
+                Waiters.WaitForProcessToStop(
+                    procId,
+                    _negativeTestWaitTime,
+                    expectedToStop: false,
+                    errorMessage: "Test app restarted");
             }
         }
 
@@ -146,7 +152,10 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
                 _scenario.Restore();
 
                 TestAppFolder = Path.Combine(_scenario.WorkFolder, TestAppName);
+            }
 
+            public void Start()
+            {
                 // Wait for the process to start
                 using (var wait = new WaitForFileToChange(StartedFile))
                 {

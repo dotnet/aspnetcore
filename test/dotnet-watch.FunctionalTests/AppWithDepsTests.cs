@@ -13,19 +13,22 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
         private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(30);
 
         // Change a file included in compilation
-        [Fact(Skip = "Disabled temporary")]
+        [Fact]
         public void ChangeFileInDependency()
         {
             using (var scenario = new AppWithDepsScenario())
-            using (var wait = new WaitForFileToChange(scenario.StartedFile))
             {
-                var fileToChange = Path.Combine(scenario.DependencyFolder, "Foo.cs");
-                var programCs = File.ReadAllText(fileToChange);
-                File.WriteAllText(fileToChange, programCs);
+                scenario.Start();
+                using (var wait = new WaitForFileToChange(scenario.StartedFile))
+                {
+                    var fileToChange = Path.Combine(scenario.DependencyFolder, "Foo.cs");
+                    var programCs = File.ReadAllText(fileToChange);
+                    File.WriteAllText(fileToChange, programCs);
 
-                wait.Wait(_defaultTimeout,
-                    expectedToChange: true,
-                    errorMessage: $"Process did not restart because {scenario.StartedFile} was not changed");
+                    wait.Wait(_defaultTimeout,
+                        expectedToChange: true,
+                        errorMessage: $"Process did not restart because {scenario.StartedFile} was not changed");
+                }
             }
         }
 
@@ -51,7 +54,10 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
 
                 AppWithDepsFolder = Path.Combine(_scenario.WorkFolder, AppWithDeps);
                 DependencyFolder = Path.Combine(_scenario.WorkFolder, Dependency);
+            }
 
+            public void Start()
+            {
                 // Wait for the process to start
                 using (var wait = new WaitForFileToChange(StatusFile))
                 {

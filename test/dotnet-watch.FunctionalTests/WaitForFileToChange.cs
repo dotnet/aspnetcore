@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
         private readonly FileSystemWatcher _watcher;
         private readonly string _expectedFile;
 
-        private readonly ManualResetEvent _changed = new ManualResetEvent(false);
+        private ManualResetEvent _changed = new ManualResetEvent(false);
 
         public WaitForFileToChange(string file)
         {
@@ -30,23 +30,33 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
             if (e.FullPath.Equals(_expectedFile, StringComparison.Ordinal))
             {
                 Waiters.WaitForFileToBeReadable(_expectedFile, TimeSpan.FromSeconds(10));
-                _changed.Set();
+                _changed?.Set();
             }
         }
 
         public void Wait(TimeSpan timeout, bool expectedToChange, string errorMessage)
         {
-            var changed = _changed.WaitOne(timeout);
-            if (changed != expectedToChange)
+            if (_changed != null)
             {
-                throw new Exception(errorMessage);
+                var changed = _changed.WaitOne(timeout);
+                if (changed != expectedToChange)
+                {
+                    throw new Exception(errorMessage);
+                }
             }
         }
 
         public void Dispose()
         {
+            _watcher.EnableRaisingEvents = false;
+
+            _watcher.Changed -= WatcherEvent;
+            _watcher.Created -= WatcherEvent;
+
             _watcher.Dispose();
             _changed.Dispose();
+
+            _changed = null;
         }
     }
 }

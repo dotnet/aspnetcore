@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
     {
         private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(30);
 
-        [Fact(Skip = "Disabled temporary")]
+        [Fact]
         public void RestartProcessOnFileChange()
         {
             using (var scenario = new NoDepsAppScenario())
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
             }
         }
 
-        [Fact(Skip = "Disabled temporary")]
+        [Fact]
         public void RestartProcessThatTerminatesAfterFileChange()
         {
             using (var scenario = new NoDepsAppScenario())
@@ -91,7 +91,7 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
         }
 
 
-        [Fact(Skip = "Disabled temporary")]
+        [Fact]
         public void ExitOnChange()
         {
             using (var scenario = new NoDepsAppScenario())

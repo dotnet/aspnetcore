@@ -96,8 +96,17 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
 
         private void DisposeWatcher(string directory)
         {
-            _watchers[directory].Dispose();
+            var watcher = _watchers[directory];
             _watchers.Remove(directory);
+
+            watcher.EnableRaisingEvents = false;
+
+            watcher.Changed -= WatcherChangedHandler;
+            watcher.Created -= WatcherChangedHandler;
+            watcher.Deleted -= WatcherChangedHandler;
+            watcher.Renamed -= WatcherRenamedHandler;
+
+            watcher.Dispose();
         }
 
         private void EnsureNotDisposed()
