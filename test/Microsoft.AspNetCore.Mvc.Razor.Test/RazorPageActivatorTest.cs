@@ -319,7 +319,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
-        private class MyService : IViewContextAware
         private class HasIncorrectViewDataPropertyType : RazorPage<MyModel>
         {
             [RazorInject]

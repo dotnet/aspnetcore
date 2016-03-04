@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -148,7 +149,8 @@ expander-partial";
             // Arrange
             var cultureCookie = "c=" + value + "|uic=" + value;
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/TemplateExpander");
-            request.Headers.Add("Cookie", new CookieHeaderValue("ASPNET_CULTURE", cultureCookie).ToString());
+            request.Headers.Add("Cookie",
+                new CookieHeaderValue(CookieRequestCultureProvider.DefaultCookieName, cultureCookie).ToString());
 
             // Act
             var response = await Client.SendAsync(request);
@@ -289,7 +291,8 @@ index-content";
             // Arrange
             var cultureCookie = "c=" + value + "|uic=" + value;
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/TemplateExpander/ViewWithLayout");
-            request.Headers.Add("Cookie", new CookieHeaderValue("ASPNET_CULTURE", cultureCookie).ToString());
+            request.Headers.Add("Cookie",
+                new CookieHeaderValue(CookieRequestCultureProvider.DefaultCookieName, cultureCookie).ToString());
 
             // Act
             var response = await Client.SendAsync(request);

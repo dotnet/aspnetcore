@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -61,7 +62,7 @@ mypartial
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/");
             request.Headers.Add(
                 "Cookie",
-                new CookieHeaderValue("ASPNET_CULTURE", cultureCookie).ToString());
+                new CookieHeaderValue(CookieRequestCultureProvider.DefaultCookieName, cultureCookie).ToString());
 
             // Act
             var response = await Client.SendAsync(request);
@@ -99,7 +100,7 @@ mypartial
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Home/Locpage");
             request.Headers.Add(
                 "Cookie",
-                new CookieHeaderValue("ASPNET_CULTURE", cultureCookie).ToString());
+                new CookieHeaderValue(CookieRequestCultureProvider.DefaultCookieName, cultureCookie).ToString());
 
             // Act
             var response = await Client.SendAsync(request);
@@ -126,7 +127,7 @@ mypartial
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Home/GetInvalidUser");
             request.Headers.Add(
                 "Cookie",
-                new CookieHeaderValue("ASPNET_CULTURE", cultureCookie).ToString());
+                new CookieHeaderValue(CookieRequestCultureProvider.DefaultCookieName, cultureCookie).ToString());
 
             // Act
             var response = await Client.SendAsync(request);

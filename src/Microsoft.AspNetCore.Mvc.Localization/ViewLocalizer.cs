@@ -8,7 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.PlatformAbstractions;
 
