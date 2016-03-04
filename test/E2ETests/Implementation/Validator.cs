@@ -37,7 +37,7 @@ namespace E2ETests
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                Console.WriteLine("Home page content : {0}", responseContent);
+                _logger.LogInformation("Home page content : {0}", responseContent);
             }
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -177,6 +177,7 @@ namespace E2ETests
 
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = await _httpClient.PostAsync("Account/Register", content);
+            await ThrowIfResponseStatusNotOk(response);
             responseContent = await response.Content.ReadAsStringAsync();
             Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNetCore.Microsoft.AspNetCore.Identity.Application"));
             Assert.Contains("<div class=\"text-danger validation-summary-errors\" data-valmsg-summary=\"true\"><ul><li>The password and confirmation password do not match.</li>", responseContent, StringComparison.OrdinalIgnoreCase);
@@ -492,7 +493,11 @@ namespace E2ETests
         {
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                _logger.LogError(await response.Content.ReadAsStringAsync());
+                _logger.LogError(
+                    "Headers: {0}",
+                    string.Join("\n", response.Headers.Select(h => h.Key + "=" + string.Join(",", h.Value))));
+                var content = await response.Content.ReadAsStringAsync();
+                _logger.LogError("Content: Length={0}\n{1}", content.Length, content);
                 throw new Exception(string.Format("Received the above response with status code : {0}", response.StatusCode));
             }
         }

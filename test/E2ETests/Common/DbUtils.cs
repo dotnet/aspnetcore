@@ -1,5 +1,6 @@
 using System;
 using System.Data.SqlClient;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 
 namespace E2ETests
@@ -9,14 +10,28 @@ namespace E2ETests
     /// </summary>
     public class DbUtils
     {
-        public const string CONNECTION_STRING_FORMAT = "Server=(localdb)\\MSSQLLocalDB;Database={0};Trusted_Connection=True;MultipleActiveResultSets=true;Connect Timeout=30;";
+        private const string BaseConnString = @"Server=(localdb)\MSSQLLocalDB;Trusted_Connection=True;MultipleActiveResultSets=true;Connect Timeout=30;";
+
+        public static string CreateConnectionString(string dbName)
+            => new SqlConnectionStringBuilder(BaseConnString)
+            {
+                InitialCatalog = dbName
+            }.ToString();
+
+        public static string GetUniqueName()
+            => "MusicStore_Test_" + Guid.NewGuid().ToString().Replace("-", string.Empty);
 
         public static void DropDatabase(string databaseName, ILogger logger)
         {
+            if (Helpers.RunningOnMono
+                || !TestPlatformHelper.IsWindows)
+            {
+                return;
+            }
             try
             {
                 logger.LogInformation("Trying to drop database '{0}'", databaseName);
-                using (var conn = new SqlConnection(string.Format(CONNECTION_STRING_FORMAT, "master")))
+                using (var conn = new SqlConnection(CreateConnectionString("master")))
                 {
                     conn.Open();
 

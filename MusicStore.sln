@@ -35,6 +35,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Facebook", "Facebook", "{B5
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{E839AEB0-7926-4FEE-B22C-11AF7EF5D4BF}"
+	ProjectSection(SolutionItems) = preProject
+		shared\MusicStoreConfig.cs = shared\MusicStoreConfig.cs
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{78715843-B625-414E-9074-56908C48EF28}"
 	ProjectSection(SolutionItems) = preProject

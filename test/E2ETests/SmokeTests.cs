@@ -2,19 +2,27 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using E2ETests.Common;
 using Microsoft.AspNetCore.Server.Testing;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace E2ETests
 {
     // Uses ports ranging 5001 - 5025.
     // TODO: temporarily disabling these tests as dotnet xunit runner does not support 32-bit yet.
     // public
-    class SmokeTests_X86
+    class SmokeTests_X86 : IDisposable
     {
+        private readonly XunitLogger _logger;
+
+        public SmokeTests_X86(ITestOutputHelper output)
+        {
+            _logger = new XunitLogger(output, LogLevel.Information);
+        }
+
         [ConditionalTheory, Trait("E2Etests", "Smoke")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
@@ -28,7 +36,7 @@ namespace E2ETests
             RuntimeArchitecture architecture,
             string applicationBaseUrl)
         {
-            var smokeTestRunner = new SmokeTests();
+            var smokeTestRunner = new SmokeTests(_logger);
             await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
@@ -41,13 +49,25 @@ namespace E2ETests
             RuntimeArchitecture architecture,
             string applicationBaseUrl)
         {
-            var smokeTestRunner = new SmokeTests();
+            var smokeTestRunner = new SmokeTests(_logger);
             await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
+        }
+
+        public void Dispose()
+        {
+            _logger.Dispose();
         }
     }
 
-    public class SmokeTests_X64
+    public class SmokeTests_X64 : IDisposable
     {
+        private readonly XunitLogger _logger;
+
+        public SmokeTests_X64(ITestOutputHelper output)
+        {
+            _logger = new XunitLogger(output, LogLevel.Information);
+        }
+
         [ConditionalTheory, Trait("E2Etests", "Smoke")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
@@ -61,7 +81,7 @@ namespace E2ETests
             RuntimeArchitecture architecture,
             string applicationBaseUrl)
         {
-            var smokeTestRunner = new SmokeTests();
+            var smokeTestRunner = new SmokeTests(_logger);
             await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
@@ -74,13 +94,24 @@ namespace E2ETests
             RuntimeArchitecture architecture,
             string applicationBaseUrl)
         {
-            var smokeTestRunner = new SmokeTests();
+            var smokeTestRunner = new SmokeTests(_logger);
             await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
+        }
+        public void Dispose()
+        {
+            _logger.Dispose();
         }
     }
 
-    class SmokeTests_OnIIS
+    class SmokeTests_OnIIS : IDisposable
     {
+        private readonly XunitLogger _logger;
+
+        public SmokeTests_OnIIS(ITestOutputHelper output)
+        {
+            _logger = new XunitLogger(output, LogLevel.Information);
+        }
+
         [ConditionalTheory, Trait("E2Etests", "Smoke")]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -94,14 +125,26 @@ namespace E2ETests
             RuntimeArchitecture architecture,
             string applicationBaseUrl)
         {
-            var smokeTestRunner = new SmokeTests();
+            var smokeTestRunner = new SmokeTests(_logger);
             await smokeTestRunner.SmokeTestSuite(
                 serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource: true);
+        }
+
+        public void Dispose()
+        {
+            _logger.Dispose();
         }
     }
 
     public class SmokeTests
     {
+        private ILogger _logger;
+
+        public SmokeTests(ILogger logger)
+        {
+            _logger = logger;
+        }
+
         public async Task SmokeTestSuite(
             ServerType serverType,
             RuntimeFlavor donetFlavor,
@@ -109,13 +152,9 @@ namespace E2ETests
             string applicationBaseUrl,
             bool noSource = false)
         {
-            var logger = new LoggerFactory()
-                           .AddConsole(LogLevel.Information)
-                           .CreateLogger($"Smoke:{serverType}:{donetFlavor}:{architecture}");
-
-            using (logger.BeginScope("SmokeTestSuite"))
+            using (_logger.BeginScope("SmokeTestSuite"))
             {
-                var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
+                var musicStoreDbName = DbUtils.GetUniqueName();
 
                 var deploymentParameters = new DeploymentParameters(
                     Helpers.GetApplicationPath(), serverType, donetFlavor, architecture)
@@ -126,26 +165,20 @@ namespace E2ETests
                     PublishTargetFramework = donetFlavor == RuntimeFlavor.Clr ? "dnx451" : "netstandardapp1.5",
                     UserAdditionalCleanup = parameters =>
                     {
-                        if (!Helpers.RunningOnMono
-                            && TestPlatformHelper.IsWindows
-                            && parameters.ServerType != ServerType.IIS)
-                        {
-                            // Mono uses InMemoryStore
-                            DbUtils.DropDatabase(musicStoreDbName, logger);
-                        }
+                        DbUtils.DropDatabase(musicStoreDbName, _logger);
                     }
                 };
 
                 // Override the connection strings using environment based configuration
                 deploymentParameters.EnvironmentVariables
                     .Add(new KeyValuePair<string, string>(
-                        "SQLAZURECONNSTR_DefaultConnection",
-                        string.Format(DbUtils.CONNECTION_STRING_FORMAT, musicStoreDbName)));
+                        MusicStore.StoreConfig.ConnectionStringKey,
+                        DbUtils.CreateConnectionString(musicStoreDbName)));
 
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
+                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, _logger))
                 {
                     var deploymentResult = deployer.Deploy();
-                    Helpers.SetInMemoryStoreForIIS(deploymentParameters, logger);
+                    Helpers.SetInMemoryStoreForIIS(deploymentParameters, _logger);
 
                     var httpClientHandler = new HttpClientHandler()
                     {
@@ -163,12 +196,12 @@ namespace E2ETests
                     var response = await RetryHelper.RetryRequest(async () =>
                     {
                         return await httpClient.GetAsync(string.Empty);
-                    }, logger: logger, cancellationToken: deploymentResult.HostShutdownToken);
+                    }, logger: _logger, cancellationToken: deploymentResult.HostShutdownToken);
 
                     Assert.False(response == null, "Response object is null because the client could not " +
                         "connect to the server after multiple retries");
 
-                    var validator = new Validator(httpClient, httpClientHandler, logger, deploymentResult);
+                    var validator = new Validator(httpClient, httpClientHandler, _logger, deploymentResult);
 
                     await validator.VerifyHomePage(response);
 
@@ -255,7 +288,7 @@ namespace E2ETests
                     // MicrosoftAccountLogin
                     await validator.LoginWithMicrosoftAccount();
 
-                    logger.LogInformation("Variation completed successfully.");
+                    _logger.LogInformation("Variation completed successfully.");
                 }
             }
         }

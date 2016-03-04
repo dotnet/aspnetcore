@@ -3,17 +3,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using E2ETests.Common;
 using Microsoft.AspNetCore.Server.Testing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace E2ETests
 {
     // Uses ports ranging 5025 - 5039.
-    public class PublishAndRunTests_OnX64
+    public class PublishAndRunTests_OnX64 : IDisposable
     {
+        private readonly XunitLogger _logger;
+
+        public PublishAndRunTests_OnX64(ITestOutputHelper output)
+        {
+            _logger = new XunitLogger(output, LogLevel.Information);
+        }
+
         [ConditionalTheory, Trait("E2Etests", "PublishAndRun")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
@@ -28,7 +37,7 @@ namespace E2ETests
             string applicationBaseUrl,
             bool noSource)
         {
-            var testRunner = new PublishAndRunTests();
+            var testRunner = new PublishAndRunTests(_logger);
             await testRunner.Publish_And_Run_Tests(
                 serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
         }
@@ -43,16 +52,28 @@ namespace E2ETests
             string applicationBaseUrl,
             bool noSource)
         {
-            var testRunner = new PublishAndRunTests();
+            var testRunner = new PublishAndRunTests(_logger);
             await testRunner.Publish_And_Run_Tests(
                 serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
+        }
+
+        public void Dispose()
+        {
+            _logger.Dispose();
         }
     }
 
     // TODO: temporarily disabling x86 tests as dotnet xunit test runner currently does not support 32-bit
     // public
-    class PublishAndRunTests_OnX86
+    class PublishAndRunTests_OnX86 : IDisposable
     {
+        private readonly XunitLogger _logger;
+
+        public PublishAndRunTests_OnX86(ITestOutputHelper output)
+        {
+            _logger = new XunitLogger(output, LogLevel.Information);
+        }
+
         [ConditionalTheory, Trait("E2Etests", "PublishAndRun")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
@@ -67,7 +88,7 @@ namespace E2ETests
             string applicationBaseUrl,
             bool noSource)
         {
-            var testRunner = new PublishAndRunTests();
+            var testRunner = new PublishAndRunTests(_logger);
             await testRunner.Publish_And_Run_Tests(
                 serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
         }
@@ -82,14 +103,26 @@ namespace E2ETests
             string applicationBaseUrl,
             bool noSource)
         {
-            var testRunner = new PublishAndRunTests();
+            var testRunner = new PublishAndRunTests(_logger);
             await testRunner.Publish_And_Run_Tests(
                 serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
+        }
+
+        public void Dispose()
+        {
+            _logger.Dispose();
         }
     }
 
     public class PublishAndRunTests
     {
+        private ILogger _logger;
+
+        public PublishAndRunTests(ILogger logger)
+        {
+            _logger = logger;
+        }
+
         public async Task Publish_And_Run_Tests(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
@@ -97,14 +130,9 @@ namespace E2ETests
             string applicationBaseUrl,
             bool noSource)
         {
-            var logger = new LoggerFactory()
-                            .AddConsole(LogLevel.Information)
-                            .CreateLogger($"Publish:{serverType}:{runtimeFlavor}:{architecture}:{noSource}");
-
-            using (logger.BeginScope("Publish_And_Run_Tests"))
+            using (_logger.BeginScope("Publish_And_Run_Tests"))
             {
-                var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
-                var connectionString = string.Format(DbUtils.CONNECTION_STRING_FORMAT, musicStoreDbName);
+                var musicStoreDbName = DbUtils.GetUniqueName();
 
                 var deploymentParameters = new DeploymentParameters(
                     Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
@@ -114,22 +142,17 @@ namespace E2ETests
                     PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "dnx451" : "netstandardapp1.5",
                     UserAdditionalCleanup = parameters =>
                     {
-                        if (!Helpers.RunningOnMono
-                            && TestPlatformHelper.IsWindows)
-                        {
-                            // Mono uses InMemoryStore
-                            DbUtils.DropDatabase(musicStoreDbName, logger);
-                        }
+                        DbUtils.DropDatabase(musicStoreDbName, _logger);
                     }
                 };
 
                 // Override the connection strings using environment based configuration
                 deploymentParameters.EnvironmentVariables
                     .Add(new KeyValuePair<string, string>(
-                        "SQLAZURECONNSTR_DefaultConnection",
-                        string.Format(DbUtils.CONNECTION_STRING_FORMAT, musicStoreDbName)));
+                        MusicStore.StoreConfig.ConnectionStringKey,
+                        DbUtils.CreateConnectionString(musicStoreDbName)));
 
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
+                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, _logger))
                 {
                     var deploymentResult = deployer.Deploy();
                     var httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true, AllowAutoRedirect = false };
@@ -139,15 +162,12 @@ namespace E2ETests
                     // Request to base address and check if various parts of the body are rendered &
                     // measure the cold startup time.
                     // Add retry logic since tests are flaky on mono due to connection issues
-                    var response = await RetryHelper.RetryRequest(async () =>
-                    {
-                        return await httpClient.GetAsync(string.Empty);
-                    }, logger: logger, cancellationToken: deploymentResult.HostShutdownToken);
+                    var response = await RetryHelper.RetryRequest(async () => await httpClient.GetAsync(string.Empty), logger: _logger, cancellationToken: deploymentResult.HostShutdownToken);
 
                     Assert.False(response == null, "Response object is null because the client could not " +
                         "connect to the server after multiple retries");
 
-                    var validator = new Validator(httpClient, httpClientHandler, logger, deploymentResult);
+                    var validator = new Validator(httpClient, httpClientHandler, _logger, deploymentResult);
                     await validator.VerifyHomePage(response);
 
                     // Static files are served?
@@ -162,7 +182,7 @@ namespace E2ETests
                         }
                     }
 
-                    logger.LogInformation("Variation completed successfully.");
+                    _logger.LogInformation("Variation completed successfully.");
                 }
             }
         }

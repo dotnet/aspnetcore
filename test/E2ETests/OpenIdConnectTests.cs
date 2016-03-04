@@ -2,17 +2,26 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using E2ETests.Common;
 using Microsoft.AspNetCore.Server.Testing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace E2ETests
 {
     // Uses ports ranging 5040 - 5049.
-    public class OpenIdConnectTests
+    public class OpenIdConnectTests : IDisposable
     {
+        private readonly XunitLogger _logger;
+
+        public OpenIdConnectTests(ITestOutputHelper output)
+        {
+            _logger = new XunitLogger(output, LogLevel.Information);
+        }
+
         [ConditionalTheory(Skip = "Temporarily skipped the test to fix potential product issue"), Trait("E2Etests", "E2Etests")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
@@ -47,14 +56,9 @@ namespace E2ETests
 
         private async Task OpenIdConnectTestSuite(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
-            var logger = new LoggerFactory()
-                            .AddConsole(LogLevel.Information)
-                            .CreateLogger(string.Format("OpenId:{0}:{1}:{2}", serverType, runtimeFlavor, architecture));
-
-            using (logger.BeginScope("OpenIdConnectTestSuite"))
+            using (_logger.BeginScope("OpenIdConnectTestSuite"))
             {
-                var musicStoreDbName = Guid.NewGuid().ToString().Replace("-", string.Empty);
-                var connectionString = string.Format(DbUtils.CONNECTION_STRING_FORMAT, musicStoreDbName);
+                var musicStoreDbName = DbUtils.GetUniqueName();
 
                 var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
                 {
@@ -64,22 +68,17 @@ namespace E2ETests
                     EnvironmentName = "OpenIdConnectTesting",
                     UserAdditionalCleanup = parameters =>
                     {
-                        if (!Helpers.RunningOnMono
-                            && TestPlatformHelper.IsWindows)
-                        {
-                            // Mono uses InMemoryStore
-                            DbUtils.DropDatabase(musicStoreDbName, logger);
-                        }
+                        DbUtils.DropDatabase(musicStoreDbName, _logger);
                     }
                 };
 
                 // Override the connection strings using environment based configuration
                 deploymentParameters.EnvironmentVariables
                     .Add(new KeyValuePair<string, string>(
-                        "SQLAZURECONNSTR_DefaultConnection",
-                        string.Format(DbUtils.CONNECTION_STRING_FORMAT, musicStoreDbName)));
+                        MusicStore.StoreConfig.ConnectionStringKey,
+                        DbUtils.CreateConnectionString(musicStoreDbName)));
 
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
+                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, _logger))
                 {
                     var deploymentResult = deployer.Deploy();
                     var httpClientHandler = new HttpClientHandler() { AllowAutoRedirect = false };
@@ -89,20 +88,25 @@ namespace E2ETests
                     var response = await RetryHelper.RetryRequest(async () =>
                     {
                         return await httpClient.GetAsync(string.Empty);
-                    }, logger: logger, cancellationToken: deploymentResult.HostShutdownToken);
+                    }, logger: _logger, cancellationToken: deploymentResult.HostShutdownToken);
 
                     Assert.False(response == null, "Response object is null because the client could not " +
                         "connect to the server after multiple retries");
 
-                    var validator = new Validator(httpClient, httpClientHandler, logger, deploymentResult);
+                    var validator = new Validator(httpClient, httpClientHandler, _logger, deploymentResult);
                     await validator.VerifyHomePage(response);
 
                     // OpenIdConnect login.
                     await validator.LoginWithOpenIdConnect();
 
-                    logger.LogInformation("Variation completed successfully.");
+                    _logger.LogInformation("Variation completed successfully.");
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            _logger.Dispose();
         }
     }
 }
