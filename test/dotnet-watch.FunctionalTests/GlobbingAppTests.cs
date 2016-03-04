@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
         private static readonly TimeSpan _negativeTestWaitTime = TimeSpan.FromSeconds(10);
 
         // Change a file included in compilation
-        [Fact]
+        [Fact(Skip = "Disabled temporary")]
         public void ChangeCompiledFile()
         {
             using (var scenario = new GlobbingAppScenario())
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
         }
 
         // Add a file to a folder included in compilation
-        [Fact]
+        [Fact(Skip = "Disabled temporary")]
         public void AddCompiledFile()
         {
             // Add a file in a folder that's included in compilation
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
         }
 
         // Delete a file included in compilation
-        [Fact]
+        [Fact(Skip = "Disabled temporary")]
         public void DeleteCompiledFile()
         {
             using (var scenario = new GlobbingAppScenario())
@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
         }
 
         // Rename a file included in compilation
-        [Fact]
+        [Fact(Skip = "Disabled temporary")]
         public void RenameCompiledFile()
         {
             using (var scenario = new GlobbingAppScenario())
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
         }
 
         // Add a file that's in a included folder but not matching the globbing pattern
-        [Fact]
+        [Fact(Skip = "Disabled temporary")]
         public void ChangeNonCompiledFile()
         {
             using (var scenario = new GlobbingAppScenario())
@@ -107,7 +107,7 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
         }
 
         // Change a file that's in an excluded folder
-        [Fact]
+        [Fact(Skip = "Disabled temporary")]
         public void ChangeExcludedFile()
         {
             using (var scenario = new GlobbingAppScenario())
