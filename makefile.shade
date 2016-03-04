@@ -11,6 +11,7 @@ use namespace='System.Text'
 use namespace='System.Text.RegularExpressions'
 use namespace='System.Threading.Tasks'
 use import="BuildEnv"
+use import="Json"
 
 functions
     @{
@@ -56,7 +57,7 @@ var buildTarget = "compile"
 
 #pack
     directory create='${TARGET_DIR}'
-  
+
 #pack-install .pack
     nuget-local-publish sourcePackagesDir='${TARGET_DIR}'
 
@@ -70,7 +71,67 @@ var buildTarget = "compile"
 
 #verify-all .pull .change-default-build-target-to-verify .build-all
 
-#build-and-install-all .change-default-build-target-for-coherence-build .build-all
+#ci-build
+    @{
+        var ciVolatileShare = Environment.GetEnvironmentVariable("CI_VOLATILE_SHARE");
+        var nugetExe = Path.Combine(".build", "nuget.exe");
+        var universeArtifacts = Path.Combine("artifacts", "build");
+        Directory.CreateDirectory(universeArtifacts);
+        buildTarget = Environment.GetEnvironmentVariable("KOREBUILD_BUILD_TARGETS") ?? "--quiet compile nuget-install";
+        var blockLogger = Log as IBlockLogger;
+
+        var batchedRepos = GetBuildGraph();
+        Log.Info("Building repositories in batches: ");
+        foreach (var repos in batchedRepos)
+        {
+            Log.Info(string.Format("{0} - {1}", repos.Key, string.Join(", ", repos)));
+        }
+
+        foreach (var batch in batchedRepos)
+        {
+            Parallel.ForEach(batch, repo =>
+            {
+                var blockName = string.Format("Building {0}", repo);
+
+                if (blockLogger != null)
+                {
+                    blockLogger.StartBlock(blockName);
+                }
+
+                Log.Info(blockName);
+                Exec(CreateBuildWithFlowId(repo), buildTarget, repo);
+
+                var repoArtifacts = Path.Combine(repo, "artifacts", "build");
+                if (Directory.Exists(repoArtifacts))
+                {
+                    foreach (var source in Directory.EnumerateFiles(repoArtifacts, "*.nupkg"))
+                    {
+                        File.Copy(source, Path.Combine(universeArtifacts, Path.GetFileName(source)), overwrite: true);
+                    }
+
+                    if (!string.IsNullOrEmpty(ciVolatileShare))
+                    {
+                        Log.Info("Publishing packages to " + ciVolatileShare);
+                        if (string.IsNullOrEmpty(nugetExe))
+                        {
+                            Log.Warn("PUSH_NUGET_EXE not specified.");
+                        }
+                        else
+                        {
+                            NuGetPackagesAdd(repoArtifacts, ciVolatileShare);
+                        }
+                    }
+                }
+
+                Log.Info(string.Format("Build {0} succeeded", repo));
+
+                if (blockLogger != null)
+                {
+                    blockLogger.EndBlock(blockName);
+                }
+            });
+        }
+    }
 
 #smoke-test-mono .pull .fix-project-json .change-default-build-target-to-verify .build-all
 
@@ -323,7 +384,7 @@ var buildTarget = "compile"
         var nugetExe = Environment.GetEnvironmentVariable("PUSH_NUGET_EXE");
         var universeArtifacts = Path.Combine("artifacts", "build");
         Directory.CreateDirectory(universeArtifacts);
-        
+
         foreach(var repo in repositories)
         {
             var blockName = string.Format("Building {0}", repo);
@@ -354,7 +415,7 @@ var buildTarget = "compile"
                 {
                     Exec("build.cmd", buildTarget, repo);
                 }
-                
+
                 var repoArtifacts = Path.Combine(repo, "artifacts", "build");
                 if (Directory.Exists(repoArtifacts))
                 {
@@ -493,7 +554,7 @@ macro name='GitCommand' gitFolder='string' gitCommand='string'
 
 macro name='Exec' program='string' commandline='string' workingdir='string'
     exec
-    
+
 macro name='NuGetPackagesAdd' sourcePackagesDir='string' targetPackagesDir='string'
     nuget-packages-add
 
@@ -779,5 +840,164 @@ functions
             }
 
             return reposToBuild.ToList();
+        }
+
+        static IList<IGrouping<int, string>> GetBuildGraph()
+        {
+            var repositoryLookup = new List<RepositoryInfo>();
+            foreach (var repo in GetRepositoriesToBuild())
+            {
+                var info = new RepositoryInfo { Name = repo };
+                var srcDir = Path.Combine(repo, "src");
+
+                if (Directory.Exists(srcDir))
+                {
+                    foreach (var directory in Directory.EnumerateDirectories(srcDir))
+                    {
+                        info.RepositoryNames.Add(Path.GetFileName(directory));
+                        var projectJson = Path.Combine(directory, "project.json");
+                        if (File.Exists(projectJson))
+                        {
+                            GetDependencies(projectJson, info.DependencyNames);
+                        }
+                    }
+                }
+
+                var otherDirs = new[] { "test", "samples" };
+                for (var i = 0; i < otherDirs.Length; i++)
+                {
+                    var otherDir = Path.Combine(repo, otherDirs[i]);
+                    if (Directory.Exists(otherDir))
+                    {
+                        foreach (var directory in Directory.EnumerateDirectories(otherDir))
+                        {
+                            var projectJson = Path.Combine(directory, "project.json");
+                            if (File.Exists(projectJson))
+                            {
+                                GetDependencies(projectJson, info.DependencyNames);
+                            }
+                        }
+                    }
+                }
+
+                info.DependencyNames.ExceptWith(info.RepositoryNames);
+                repositoryLookup.Add(info);
+            }
+
+            foreach (var info in repositoryLookup)
+            {
+                foreach (var item in info.DependencyNames)
+                {
+                    var dependency = repositoryLookup.Find(r => r.RepositoryNames.Contains(item));
+                    if (dependency != null)
+                    {
+                        // Testing has odd cyclic dependencies
+                        if (string.Equals(info.Name, "Testing", StringComparison.OrdinalIgnoreCase) &&
+                            string.Equals(dependency.Name, "aspnet.xunit", StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        if (string.Equals(dependency.Name, "Testing", StringComparison.OrdinalIgnoreCase) &&
+                            (string.Equals(info.Name, "Common", StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(info.Name, "PlatformAbstractions", StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(info.Name, "Logging", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            continue;
+                        }
+
+                        info.Dependencies.Add(dependency);
+                    }
+                }
+            }
+
+            return repositoryLookup.GroupBy(r => r.Order, r => r.Name).OrderBy(r => r.Key).ToArray();
+        }
+
+        static void GetDependencies(string projectJsonPath, HashSet<string> dependencies)
+        {
+            var project = (JsonObject)Json.Deserialize(File.ReadAllText(projectJsonPath));
+            var dependenciesNode = project.ValueAsJsonObject("dependencies");
+            AddKeys(dependencies, dependenciesNode);
+
+            var frameworkNodes = project.ValueAsJsonObject("frameworks");
+            if (frameworkNodes != null)
+            {
+                foreach (var framework in frameworkNodes.Keys)
+                {
+                    dependenciesNode = frameworkNodes.ValueAsJsonObject(framework).ValueAsJsonObject("dependencies");
+                    AddKeys(dependencies, dependenciesNode);
+                }
+            }
+
+            AddKeys(dependencies, project.ValueAsJsonObject("tools"));
+        }
+
+        static void AddKeys(HashSet<string> target, JsonObject source)
+        {
+            if (source != null)
+            {
+                foreach (var key in source.Keys)
+                {
+                    target.Add(key);
+                }
+            }
+        }
+
+        string CreateBuildWithFlowId(string repo)
+        {
+            string output;
+            if (IsLinux)
+            {
+                output = Path.Combine(repo, "build-with-flow-id.sh");
+                File.WriteAllText(
+                    output,
+                    string.Format("export KOREBUILD_FLOWID=KOREBUILD_{0}\nbuild.sh \"$@\"", repo));
+                Exec("chmod", string.Format("--reference={0} {1}", Path.Combine(repo, "build.sh"), output), "");
+            }
+            else
+            {
+                output = Path.Combine(repo, "build-with-flow-id.cmd");
+                File.WriteAllText(
+                    output,
+                    string.Format("set KOREBUILD_FLOWID=KOREBUILD_{0}& call build.cmd %*", repo));
+            }
+
+            return Path.GetFullPath(output);
+        }
+
+        private class RepositoryInfo
+        {
+            public string Name;
+
+            public HashSet<string> RepositoryNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            public HashSet<string> DependencyNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            public HashSet<RepositoryInfo> Dependencies = new HashSet<RepositoryInfo>();
+
+            public int Order
+            {
+                get
+                {
+                    if (string.Equals("Testing", Name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Testing has a cyclic dependency with Common, PlatformAbstractions and Logging.
+                        return 2;
+                    }
+
+                    if (Dependencies.Count > 0)
+                    {
+                        return 1 + Dependencies.Max(d => d.Order);
+                    }
+
+                    return 1;
+                }
+            }
+
+            public override string ToString()
+            {
+                return Name;
+            }
         }
     }
