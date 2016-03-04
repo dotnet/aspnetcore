@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "GET / HTTP/1.1",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
                         "Transfer-Encoding: chunked",
                         "",
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
 
                     // Headers are sent before connection is closed, but chunked body terminator isn't sent
-                    await connection.ReceiveEnd(
+                    await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
                         "Transfer-Encoding: chunked",
                         "",

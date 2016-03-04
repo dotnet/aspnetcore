@@ -126,6 +126,25 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.Equal("", text);
         }
 
+        public async Task ReceiveForcedEnd(params string[] lines)
+        {
+            await Receive(lines);
+
+            try
+            {
+                var ch = new char[128];
+                var count = await _reader.ReadAsync(ch, 0, 128);
+                var text = new string(ch, 0, count);
+                Assert.Equal("", text);
+            }
+            catch (IOException)
+            {
+                // The server is forcefully closing the connection so an IOException:
+                // "Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host."
+                // isn't guaranteed but not unexpected.
+            }
+        }
+
         public static Socket CreateConnectedLoopbackSocket(int port)
         {
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);

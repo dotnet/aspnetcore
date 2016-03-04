@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = new TestConnection(server.Port))
                 {
-                    await connection.Send(
+                    await connection.SendEnd(
                         "POST / HTTP/1.0",
                         "Content-Length: 11",
                         "",
@@ -638,7 +638,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "GET / HTTP/1.1",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
                         "Content-Length: 11",
                         "",
@@ -680,7 +680,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "GET / HTTP/1.1",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
                         "Content-Length: 11",
                         "",
@@ -870,7 +870,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "GET / HTTP/1.1",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
                         "Content-Length: 11",
                         "",
@@ -941,7 +941,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "");
 
-                    await connection.ReceiveEnd(
+                    await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
                         "Content-Length: 5",
                         "",

@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "HTTP/1.1 400 Bad Request",
                         "");
                     await connection.ReceiveStartsWith("Date:");
-                    await connection.ReceiveEnd(
+                    await connection.ReceiveForcedEnd(
                         "Content-Length: 0",
                         "Server: Kestrel",
                         "",
@@ -417,7 +417,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "HTTP/1.1 400 Bad Request",
                         "");
                     await connection.ReceiveStartsWith("Date:");
-                    await connection.ReceiveEnd(
+                    await connection.ReceiveForcedEnd(
                         "Content-Length: 0",
                         "Server: Kestrel",
                         "",
