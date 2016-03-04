@@ -19,8 +19,8 @@ namespace MusicStore.Mocks.MicrosoftAccount
             {
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "Access token is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.RefreshToken == "ValidRefreshToken", "Refresh token is not valid");
-                Helpers.ThrowIfConditionFailed(() => MicrosoftAccountHelper.GetGivenName(context.User) == "AspnetvnextTest", "Email is not valid");
-                Helpers.ThrowIfConditionFailed(() => MicrosoftAccountHelper.GetSurname(context.User) == "AspnetvnextTest", "Email is not valid");
+                Helpers.ThrowIfConditionFailed(() => MicrosoftAccountHelper.GetGivenName(context.User) == "AspnetvnextTest", "Given name is not valid");
+                Helpers.ThrowIfConditionFailed(() => MicrosoftAccountHelper.GetSurname(context.User) == "AspnetvnextTest", "Surname is not valid");
                 Helpers.ThrowIfConditionFailed(() => MicrosoftAccountHelper.GetId(context.User) == "fccf9a24999f4f4f", "Id is not valid");
                 Helpers.ThrowIfConditionFailed(() => MicrosoftAccountHelper.GetDisplayName(context.User) == "AspnetvnextTest AspnetvnextTest", "Name is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.ExpiresIn.Value == TimeSpan.FromSeconds(3600), "ExpiresIn is not valid");

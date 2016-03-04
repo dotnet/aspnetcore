@@ -19,7 +19,7 @@ namespace MusicStore.Mocks.MicrosoftAccount
         {
             var response = new HttpResponseMessage();
 
-            if (request.RequestUri.AbsoluteUri.StartsWith("https://login.live.com/oauth20_token.srf"))
+            if (request.RequestUri.AbsoluteUri.StartsWith("https://login.microsoftonline.com/common/oauth2/v2.0/token"))
             {
                 var formData = new FormCollection(await FormReader.ReadFormAsync(await request.Content.ReadAsStreamAsync()));
                 if (formData["grant_type"] == "authorization_code")
@@ -29,7 +29,7 @@ namespace MusicStore.Mocks.MicrosoftAccount
                         if (formData["redirect_uri"].Count > 0 && ((string)formData["redirect_uri"]).EndsWith("signin-microsoft") &&
                            formData["client_id"] == "[ClientId]" && formData["client_secret"] == "[ClientSecret]")
                         {
-                            response.Content = new StringContent("{\"token_type\":\"bearer\",\"expires_in\":3600,\"scope\":\"wl.basic\",\"access_token\":\"ValidAccessToken\",\"refresh_token\":\"ValidRefreshToken\",\"authentication_token\":\"ValidAuthenticationToken\"}");
+                            response.Content = new StringContent("{\"token_type\":\"bearer\",\"expires_in\":3600,\"scope\":\"https://graph.microsoft.com/user.read\",\"access_token\":\"ValidAccessToken\",\"refresh_token\":\"ValidRefreshToken\",\"authentication_token\":\"ValidAuthenticationToken\"}");
                             return response;
                         }
                     }
@@ -38,11 +38,11 @@ namespace MusicStore.Mocks.MicrosoftAccount
                 response.StatusCode = (HttpStatusCode)400;
                 return response;
             }
-            else if (request.RequestUri.AbsoluteUri.StartsWith("https://apis.live.net/v5.0/me"))
+            else if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.microsoft.com/v1.0/me"))
             {
                 if (request.Headers.Authorization.Parameter == "ValidAccessToken")
                 {
-                    response.Content = new StringContent("{\r   \"id\": \"fccf9a24999f4f4f\", \r   \"name\": \"AspnetvnextTest AspnetvnextTest\", \r   \"first_name\": \"AspnetvnextTest\", \r   \"last_name\": \"AspnetvnextTest\", \r   \"link\": \"https://profile.live.com/\", \r   \"gender\": null, \r   \"locale\": \"en_US\", \r   \"updated_time\": \"2013-08-27T22:18:14+0000\"\r}");
+                    response.Content = new StringContent("{\r   \"id\": \"fccf9a24999f4f4f\", \r   \"displayName\": \"AspnetvnextTest AspnetvnextTest\", \r   \"givenName\": \"AspnetvnextTest\", \r   \"surname\": \"AspnetvnextTest\", \r   \"link\": \"https://profile.live.com/\", \r   \"gender\": null, \r   \"locale\": \"en_US\", \r   \"updated_time\": \"2013-08-27T22:18:14+0000\"\r}");
                 }
                 else
                 {
