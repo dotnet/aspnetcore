@@ -6,3 +6,5 @@ using System.Resources;
 
 [assembly: AssemblyMetadata("Serviceable", "True")]
 [assembly: NeutralResourcesLanguage("en-us")]
+[assembly: AssemblyCompany("Microsoft Corporation.")]
+[assembly: AssemblyCopyright("© Microsoft Corporation. All rights reserved.")]
