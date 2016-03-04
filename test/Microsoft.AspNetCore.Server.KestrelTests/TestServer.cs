@@ -34,19 +34,24 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         public TestServer(RequestDelegate app, ServiceContext context, string serverAddress)
         {
-            Create(app, context, serverAddress);
-        }
-
-        public void Create(RequestDelegate app, ServiceContext context, string serverAddress)
-        {
             context.FrameFactory = connectionContext =>
             {
                 return new Frame<HttpContext>(new DummyApplication(app), connectionContext);
             };
-            _engine = new KestrelEngine(context);
-            _engine.Start(1);
-            _address = ServerAddress.FromUrl(serverAddress);
-            _server = _engine.CreateServer(_address);
+
+            try
+            {
+                _engine = new KestrelEngine(context);
+                _engine.Start(1);
+                _address = ServerAddress.FromUrl(serverAddress);
+                _server = _engine.CreateServer(_address);
+            }
+            catch
+            {
+                _server?.Dispose();
+                _engine?.Dispose();
+                throw;
+            }
         }
 
         public void Dispose()
