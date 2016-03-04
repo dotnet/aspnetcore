@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public HttpsConnectionFilterOptions()
         {
             ClientCertificateMode = ClientCertificateMode.NoCertificate;
-            SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Tls;
+            SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11;
         }
 
         public X509Certificate2 ServerCertificate { get; set; }

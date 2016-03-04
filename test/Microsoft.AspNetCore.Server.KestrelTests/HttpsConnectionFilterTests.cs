@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,6 +23,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class HttpsConnectionFilterTests
     {
+#if NET451
+        static HttpsConnectionFilterTests()
+        {
+            // SecurityProtocolType values below not available in Mono < 4.3 
+            const int SecurityProtocolTypeTls11 = 768;
+            const int SecurityProtocolTypeTls12 = 3072;
+            ServicePointManager.SecurityProtocol |= (SecurityProtocolType)(SecurityProtocolTypeTls12 | SecurityProtocolTypeTls11); 
+        }
+#endif
+
         private async Task App(HttpContext httpContext)
         {
             var request = httpContext.Request;
@@ -231,9 +242,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     {
                         await client.ConnectAsync("127.0.0.1", server.Port);
 
-                        SslStream stream = new SslStream(client.GetStream(), false, (sender, certificate, chain, errors) => true,
+                        var stream = new SslStream(client.GetStream(), false, (sender, certificate, chain, errors) => true,
                             (sender, host, certificates, certificate, issuers) => new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"));
-                        await stream.AuthenticateAsClientAsync("localhost");
+                        await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
 
                         var request = Encoding.UTF8.GetBytes("GET / HTTP/1.0\r\n\r\n");
                         await stream.WriteAsync(request, 0, request.Length);
@@ -291,6 +302,59 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         var result = await client.GetAsync(serverAddress);
 
                         Assert.Equal("https", await result.Content.ReadAsStringAsync());
+                    }
+                }
+            }
+            finally
+            {
+#if NET451
+                ServicePointManager.ServerCertificateValidationCallback -= validationCallback;
+#endif
+            }
+        }
+
+
+        [Fact]
+        public async Task DoesNotSupportTls10()
+        {
+            RemoteCertificateValidationCallback validationCallback =
+                    (sender, cert, chain, sslPolicyErrors) => true;
+
+            try
+            {
+#if NET451
+                ServicePointManager.ServerCertificateValidationCallback += validationCallback;
+#endif
+
+                var serverAddress = $"https://localhost:{TestServer.GetNextPort()}/";
+                var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
+                    new HttpsConnectionFilterOptions
+                    {
+                        ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"),
+                        ClientCertificateMode = ClientCertificateMode.RequireCertificate,
+                        ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
+                    },
+                    new NoOpConnectionFilter())
+                );
+
+                RequestDelegate app = context =>
+                {
+                    return context.Response.WriteAsync("hello world");
+                };
+
+                using (var server = new TestServer(app, serviceContext, serverAddress))
+                {
+                    // SslStream is used to ensure the certificate is actually passed to the server
+                    // HttpClient might not send the certificate because it is invalid or it doesn't match any
+                    // of the certificate authorities sent by the server in the SSL handshake.
+                    using (var client = new TcpClient())
+                    {
+                        await client.ConnectAsync("127.0.0.1", server.Port);
+
+                        var stream = new SslStream(client.GetStream(), false, (sender, certificate, chain, errors) => true,
+                            (sender, host, certificates, certificate, issuers) => new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"));
+                        await Assert.ThrowsAsync(typeof(IOException), async () =>
+                            await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls, false));
                     }
                 }
             }
