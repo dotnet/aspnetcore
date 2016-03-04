@@ -8,3 +8,4 @@ using System.Resources;
 [assembly: NeutralResourcesLanguage("en-us")]
 [assembly: AssemblyCompany("Microsoft Corporation.")]
 [assembly: AssemblyCopyright("© Microsoft Corporation. All rights reserved.")]
+[assembly: AssemblyProduct("Microsoft ASP.NET Core")]
