@@ -8,6 +8,10 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     public interface ISession
     {
+        string Id { get; }
+
+        IEnumerable<string> Keys { get; }
+
         Task LoadAsync();
 
         Task CommitAsync();
@@ -19,7 +23,5 @@ namespace Microsoft.AspNetCore.Http.Features
         void Remove(string key);
 
         void Clear();
-
-        IEnumerable<string> Keys { get; }
     }
 }

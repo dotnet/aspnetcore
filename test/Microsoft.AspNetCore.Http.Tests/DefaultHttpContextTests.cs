@@ -288,6 +288,8 @@ namespace Microsoft.AspNetCore.Http.Internal
             private Dictionary<string, byte[]> _store
                 = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
 
+            public string Id { get; set; }
+
             public IEnumerable<string> Keys { get { return _store.Keys; } }
 
             public void Clear()
