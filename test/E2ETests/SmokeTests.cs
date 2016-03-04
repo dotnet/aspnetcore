@@ -243,7 +243,7 @@ namespace E2ETests
                     await validator.SignOutUser("Administrator");
 
                     // Google login
-                    await validator.LoginWithGoogle();
+                    //await validator.LoginWithGoogle();
 
                     // Facebook login
                     await validator.LoginWithFacebook();
