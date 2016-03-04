@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authentication;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Contains the options used by the <see cref="RemoteAuthenticationHandler"/>.
+    /// Contains the options used by the <see cref="RemoteAuthenticationHandler{T}"/>.
     /// </summary>
     public class RemoteAuthenticationOptions : AuthenticationOptions
     {
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Defines whether access and refresh tokens should be stored in the
-        /// <see cref="AuthenticationProperties"/> after a successful authorization.
+        /// <see cref="Http.Authentication.AuthenticationProperties"/> after a successful authorization.
         /// This property is set to <c>false</c> by default to reduce
         /// the size of the final authentication cookie.
         /// </summary>

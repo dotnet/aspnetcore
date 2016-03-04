@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// <param name="context">The HTTP request context</param>
         /// <param name="options">The cookie middleware options</param>
         /// <param name="redirectUri">The initial redirect URI</param>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
         [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "2#", Justification = "Represents header value")]
         public CookieRedirectContext(HttpContext context, CookieAuthenticationOptions options, string redirectUri, AuthenticationProperties properties)
             : base(context, options)

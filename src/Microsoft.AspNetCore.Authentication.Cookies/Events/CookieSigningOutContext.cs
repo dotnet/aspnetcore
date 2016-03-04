@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// </summary>
         /// <param name="context"></param>
         /// <param name="options"></param>
+        /// <param name="properties"></param>
         /// <param name="cookieOptions"></param>
         public CookieSigningOutContext(
             HttpContext context, 

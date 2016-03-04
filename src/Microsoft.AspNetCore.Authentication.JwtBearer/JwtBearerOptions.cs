@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Defines whether the bearer token should be stored in the
-        /// <see cref="AuthenticationProperties"/> after a successful authorization.
+        /// <see cref="Http.Authentication.AuthenticationProperties"/> after a successful authorization.
         /// </summary>
         public bool SaveToken { get; set; } = true;
     }

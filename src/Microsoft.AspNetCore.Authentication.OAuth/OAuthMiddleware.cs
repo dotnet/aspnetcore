@@ -21,11 +21,13 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
     public class OAuthMiddleware<TOptions> : AuthenticationMiddleware<TOptions> where TOptions : OAuthOptions, new()
     {
         /// <summary>
-        /// Initializes a new <see cref="OAuthAuthenticationMiddleware"/>.
+        /// Initializes a new <see cref="OAuthMiddleware{T}"/>.
         /// </summary>
         /// <param name="next">The next middleware in the HTTP pipeline to invoke.</param>
         /// <param name="dataProtectionProvider"></param>
         /// <param name="loggerFactory"></param>
+        /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
+        /// <param name="sharedOptions">The <see cref="SharedAuthenticationOptions"/> configuration options for this middleware.</param>
         /// <param name="options">Configuration options for the middleware.</param>
         public OAuthMiddleware(
             RequestDelegate next,
@@ -127,9 +129,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         protected HttpClient Backchannel { get; private set; }
 
         /// <summary>
-        /// Provides the <see cref="AuthenticationHandler"/> object for processing authentication-related requests.
+        /// Provides the <see cref="AuthenticationHandler{T}"/> object for processing authentication-related requests.
         /// </summary>
-        /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="OAuthOptions"/> supplied to the constructor.</returns>
+        /// <returns>An <see cref="AuthenticationHandler{T}"/> configured with the <see cref="OAuthOptions"/> supplied to the constructor.</returns>
         protected override AuthenticationHandler<TOptions> CreateHandler()
         {
             return new OAuthHandler<TOptions>(Backchannel);

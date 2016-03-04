@@ -1,12 +1,7 @@
 {
     "adx": { // Packages written by the ADX team and that ship on NuGet.org
         "rules": [
-            "AssemblyHasDocumentFileRule",
-            "AssemblyHasVersionAttributesRule",
-            "AssemblyHasServicingAttributeRule",
-            "AssemblyHasNeutralResourcesLanguageAttributeRule",
-            "SatellitePackageRule",
-            "StrictSemanticVersionValidationRule"
+            "AdxVerificationCompositeRule"
         ],
         "packages": {
             "Microsoft.AspNetCore.Authentication": { },
@@ -19,17 +14,13 @@
             "Microsoft.AspNetCore.Authentication.OpenIdConnect": { },
             "Microsoft.AspNetCore.Authentication.Twitter": { },
             "Microsoft.AspNetCore.Authorization": { },
-            "Microsoft.AspNetCore.CookiePolicy": { }
+            "Microsoft.AspNetCore.CookiePolicy": { },
+            "Microsoft.Owin.Security.Interop": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
         "rules": [
-            "AssemblyHasDocumentFileRule",
-            "AssemblyHasVersionAttributesRule",
-            "AssemblyHasServicingAttributeRule",
-            "AssemblyHasNeutralResourcesLanguageAttributeRule",
-            "SatellitePackageRule",
-            "StrictSemanticVersionValidationRule"
+            "DefaultCompositeRule"
         ]
     }
 }

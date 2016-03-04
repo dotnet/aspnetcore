@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// Creates a new context object.
         /// </summary>
         /// <param name="context">The HTTP request context.</param>
+        /// <param name="options">The <see cref="OAuthOptions"/>.</param>
         /// <param name="properties">The authentication properties of the challenge.</param>
         /// <param name="redirectUri">The initial redirect URI.</param>
         public OAuthRedirectToAuthorizationContext(HttpContext context, OAuthOptions options, AuthenticationProperties properties, string redirectUri)

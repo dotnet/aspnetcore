@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
     /// <summary>
-    /// Specifies callback methods which the <see cref="OAuthMiddleware"/> invokes to enable developer control over the authentication process.
+    /// Specifies callback methods which the <see cref="OAuthMiddleware{T}"/> invokes to enable developer control over the authentication process.
     /// </summary>
     public interface IOAuthEvents : IRemoteAuthenticationEvents
     {
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <summary>
         /// Called when a Challenge causes a redirect to the authorize endpoint.
         /// </summary>
-        /// <param name="context">Contains redirect URI and <see cref="AuthenticationProperties"/> of the challenge.</param>
+        /// <param name="context">Contains redirect URI and <see cref="Http.Authentication.AuthenticationProperties"/> of the challenge.</param>
         Task RedirectToAuthorizationEndpoint(OAuthRedirectToAuthorizationContext context);
     }
 }

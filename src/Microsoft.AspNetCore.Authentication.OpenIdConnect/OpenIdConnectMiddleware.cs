@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <param name="services"></param>
         /// <param name="sharedOptions"></param>
         /// <param name="options"></param>
+        /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]
         public OpenIdConnectMiddleware(
             RequestDelegate next,
@@ -172,9 +173,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         protected HtmlEncoder HtmlEncoder { get; private set; }
 
         /// <summary>
-        /// Provides the <see cref="AuthenticationHandler"/> object for processing authentication-related requests.
+        /// Provides the <see cref="AuthenticationHandler{T}"/> object for processing authentication-related requests.
         /// </summary>
-        /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="OpenIdConnectOptions"/> supplied to the constructor.</returns>
+        /// <returns>An <see cref="AuthenticationHandler{T}"/> configured with the <see cref="OpenIdConnectOptions"/> supplied to the constructor.</returns>
         protected override AuthenticationHandler<OpenIdConnectOptions> CreateHandler()
         {
             return new OpenIdConnectHandler(Backchannel, HtmlEncoder);

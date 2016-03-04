@@ -28,14 +28,14 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <summary>
         /// Invoked after the provider successfully authenticates a user.
         /// </summary>
-        /// <param name="context">Contains information about the login session as well as the user <see cref="ClaimsIdentity"/>.</param>
+        /// <param name="context">Contains information about the login session as well as the user <see cref="System.Security.Claims.ClaimsIdentity"/>.</param>
         /// <returns>A <see cref="Task"/> representing the completed operation.</returns>
         public virtual Task CreatingTicket(OAuthCreatingTicketContext context) => OnCreatingTicket(context);
 
         /// <summary>
         /// Called when a Challenge causes a redirect to authorize endpoint in the OAuth middleware.
         /// </summary>
-        /// <param name="context">Contains redirect URI and <see cref="AuthenticationProperties"/> of the challenge.</param>
+        /// <param name="context">Contains redirect URI and <see cref="Http.Authentication.AuthenticationProperties"/> of the challenge.</param>
         public virtual Task RedirectToAuthorizationEndpoint(OAuthRedirectToAuthorizationContext context) => OnRedirectToAuthorizationEndpoint(context);
     }
 }

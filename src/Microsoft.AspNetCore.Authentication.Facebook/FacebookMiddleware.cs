@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         /// <param name="encoder"></param>
         /// <param name="sharedOptions"></param>
         /// <param name="options">Configuration options for the middleware.</param>
-        /// <param name="configureOptions"></param>
         public FacebookMiddleware(
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,
@@ -79,9 +78,9 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         }
 
         /// <summary>
-        /// Provides the <see cref="AuthenticationHandler"/> object for processing authentication-related requests.
+        /// Provides the <see cref="AuthenticationHandler{T}"/> object for processing authentication-related requests.
         /// </summary>
-        /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="FacebookOptions"/> supplied to the constructor.</returns>
+        /// <returns>An <see cref="AuthenticationHandler{T}"/> configured with the <see cref="FacebookOptions"/> supplied to the constructor.</returns>
         protected override AuthenticationHandler<FacebookOptions> CreateHandler()
         {
             return new FacebookHandler(Backchannel);

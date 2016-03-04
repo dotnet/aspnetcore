@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         /// Initializes a <see cref="TwitterCreatingTicketContext"/>
         /// </summary>
         /// <param name="context">The HTTP environment</param>
+        /// <param name="options">The options for Twitter</param>
         /// <param name="userId">Twitter user ID</param>
         /// <param name="screenName">Twitter screen name</param>
         /// <param name="accessToken">Twitter access token</param>

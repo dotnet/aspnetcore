@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Http.Authentication;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Configuration options for <see cref="OAuthMiddleware"/>.
+    /// Configuration options for <see cref="OAuthMiddleware{T}"/>.
     /// </summary>
     public class OAuthOptions : RemoteAuthenticationOptions
     {

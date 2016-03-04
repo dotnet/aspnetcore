@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Builder
         /// Adds the <see cref="OpenIdConnectMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables OpenID Connect authentication capabilities.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
-        /// <param name="configureOptions">A <see cref="OpenIdConnectOptions"/> that specifies options for the middleware.</param>
+        /// <param name="options">A <see cref="OpenIdConnectOptions"/> that specifies options for the middleware.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseOpenIdConnectAuthentication(this IApplicationBuilder app, OpenIdConnectOptions options)
         {

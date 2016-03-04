@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// <summary>
         /// Checks if a user meets a specific requirement for the specified resource
         /// </summary>
+        /// <param name="service">The <see cref="IAuthorizationService"/>.</param>
         /// <param name="user"></param>
         /// <param name="resource"></param>
         /// <param name="requirement"></param>

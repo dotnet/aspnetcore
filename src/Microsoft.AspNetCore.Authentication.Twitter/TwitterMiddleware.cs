@@ -31,7 +31,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         /// <param name="encoder"></param>
         /// <param name="sharedOptions"></param>
         /// <param name="options">Configuration options for the middleware</param>
-        /// <param name="configureOptions"></param>
         public TwitterMiddleware(
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,
@@ -115,9 +114,9 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         }
 
         /// <summary>
-        /// Provides the <see cref="AuthenticationHandler"/> object for processing authentication-related requests.
+        /// Provides the <see cref="AuthenticationHandler{T}"/> object for processing authentication-related requests.
         /// </summary>
-        /// <returns>An <see cref="AuthenticationHandler"/> configured with the <see cref="TwitterOptions"/> supplied to the constructor.</returns>
+        /// <returns>An <see cref="AuthenticationHandler{T}"/> configured with the <see cref="TwitterOptions"/> supplied to the constructor.</returns>
         protected override AuthenticationHandler<TwitterOptions> CreateHandler()
         {
             return new TwitterHandler(_httpClient);

@@ -579,8 +579,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <summary>
         /// Redeems the authorization code for tokens at the token endpoint
         /// </summary>
-        /// <param name="authorizationCode">The authorization code to redeem.</param>
-        /// <param name="redirectUri">Uri that was passed in the request sent for the authorization code.</param>
+        /// <param name="tokenEndpointRequest">The request that will be sent to the token endpoint and is available for customization.</param>
         /// <returns>OpenIdConnect message that has tokens inside it.</returns>
         protected virtual async Task<OpenIdConnectMessage> RedeemAuthorizationCodeAsync(OpenIdConnectMessage tokenEndpointRequest)
         {
@@ -598,6 +597,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// Goes to UserInfo endpoint to retrieve additional claims and add any unique claims to the given identity.
         /// </summary>
         /// <param name="message">message that is being processed</param>
+        /// <param name="jwt">The <see cref="JwtSecurityToken"/>.</param>
         /// <param name="ticket">authentication ticket with claims principal and identities</param>
         /// <returns>Authentication ticket with identity with additional claims, if any.</returns>
         protected virtual async Task<AuthenticateResult> GetUserInformationAsync(OpenIdConnectMessage message, JwtSecurityToken jwt, AuthenticationTicket ticket)
@@ -689,7 +689,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <summary>
         /// Save the tokens contained in the <see cref="OpenIdConnectMessage"/> in the <see cref="ClaimsPrincipal"/>.
         /// </summary>
-        /// <param name="principal">The principal in which tokens are saved.</param>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/> in which tokens are saved.</param>
         /// <param name="message">The OpenID Connect response.</param>
         private void SaveTokens(AuthenticationProperties properties, OpenIdConnectMessage message)
         {
@@ -734,7 +734,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// Adds the nonce to <see cref="HttpResponse.Cookies"/>.
         /// </summary>
         /// <param name="nonce">the nonce to remember.</param>
-        /// <remarks><see cref="HttpResponse.Cookies.Append"/>is called to add a cookie with the name: 'OpenIdConnectAuthenticationDefaults.Nonce + <see cref="OpenIdConnectOptions.StringDataFormat.Protect"/>(nonce)'.
+        /// <remarks><see cref="M:IResponseCookies.Append"/> of <see cref="HttpResponse.Cookies"/> is called to add a cookie with the name: 'OpenIdConnectAuthenticationDefaults.Nonce + <see cref="M:ISecureDataFormat{TData}.Protect"/>(nonce)' of <see cref="OpenIdConnectOptions.StringDataFormat"/>.
         /// The value of the cookie is: "N".</remarks>
         private void WriteNonceCookie(string nonce)
         {
@@ -759,8 +759,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// </summary>
         /// <param name="nonce">the nonce that we are looking for.</param>
         /// <returns>echos 'nonce' if a cookie is found that matches, null otherwise.</returns>
-        /// <remarks>Examine <see cref="HttpRequest.Cookies.Keys"/> that start with the prefix: 'OpenIdConnectAuthenticationDefaults.Nonce'. 
-        /// <see cref="OpenIdConnectOptions.StringDataFormat.Unprotect"/> is used to obtain the actual 'nonce'. If the nonce is found, then <see cref="HttpResponse.Cookies.Delete"/> is called.</remarks>
+        /// <remarks>Examine <see cref="IRequestCookieCollection.Keys"/> of <see cref="HttpRequest.Cookies"/> that start with the prefix: 'OpenIdConnectAuthenticationDefaults.Nonce'. 
+        /// <see cref="M:ISecureDataFormat{TData}.Unprotect"/> of <see cref="OpenIdConnectOptions.StringDataFormat"/> is used to obtain the actual 'nonce'. If the nonce is found, then <see cref="M:IResponseCookies.Delete"/> of <see cref="HttpResponse.Cookies"/> is called.</remarks>
         private string ReadNonceCookie(string nonce)
         {
             if (nonce == null)

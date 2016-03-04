@@ -64,6 +64,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="options">The original options passed by the application control behavior</param>
         /// <param name="context">The utility object to observe the current request and response</param>
         /// <param name="logger">The logging factory used to create loggers</param>
+        /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
         /// <returns>async completion</returns>
         public async Task InitializeAsync(TOptions options, HttpContext context, ILogger logger, UrlEncoder encoder)
         {

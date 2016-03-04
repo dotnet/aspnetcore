@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// Called to replace the claims principal. The supplied principal will replace the value of the 
         /// Principal property, which determines the identity of the authenticated request.
         /// </summary>
-        /// <param name="identity">The identity used as the replacement</param>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> used as the replacement</param>
         public void ReplacePrincipal(ClaimsPrincipal principal)
         {
             Principal = principal;
