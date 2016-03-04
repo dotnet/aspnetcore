@@ -72,13 +72,14 @@ namespace CookieSample
 
             // You must first create an app with facebook and add it's ID and Secret to your config.json or user-secrets.
             // https://developers.facebook.com/apps/
-            //app.UseFacebookAuthentication(new FacebookOptions
-            //{
-            //    AppId = Configuration["facebook:appid"],
-            //    AppSecret = Configuration["facebook:appsecret"],
-            //    Scope = { "email" },
-            //    Fields = { "name", "email" }
-            //});
+            app.UseFacebookAuthentication(new FacebookOptions
+            {
+                AppId = Configuration["facebook:appid"],
+                AppSecret = Configuration["facebook:appsecret"],
+                Scope = { "email" },
+                Fields = { "name", "email" },
+                SaveTokens = true,
+            });
 
             // See config.json
             app.UseOAuthAuthentication(new OAuthOptions
@@ -100,6 +101,7 @@ namespace CookieSample
             {
                 ClientId = Configuration["google:clientid"],
                 ClientSecret = Configuration["google:clientsecret"],
+                SaveTokens = true,
                 Events = new OAuthEvents()
                 {
                     OnRemoteFailure = ctx =>
@@ -118,6 +120,7 @@ namespace CookieSample
             {
                 ConsumerKey = Configuration["twitter:consumerkey"],
                 ConsumerSecret = Configuration["twitter:consumersecret"],
+                SaveTokens = true,
                 Events = new TwitterEvents()
                 {
                     OnRemoteFailure = ctx =>
@@ -195,6 +198,7 @@ namespace CookieSample
                 TokenEndpoint = "https://github.com/login/oauth/access_token",
                 UserInformationEndpoint = "https://api.github.com/user",
                 ClaimsIssuer = "OAuth2-Github",
+                SaveTokens = true,
                 // Retrieving user information is unique to each provider.
                 Events = new OAuthEvents
                 {
