@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public static void ApplicationError(this ILogger logger, Exception exception)
         {
-            logger.LogError(
+            logger.LogCritical(
                 eventId: LoggerEventIds.ApplicationStartupException,
                 message: "Application startup exception",
                 exception: exception);
