@@ -37,11 +37,11 @@ namespace Microsoft.AspNetCore.Session
             }
         }
 
-        public ISession Create(string sessionId, TimeSpan idleTimeout, Func<bool> tryEstablishSession, bool isNewSessionKey)
+        public ISession Create(string sessionKey, TimeSpan idleTimeout, Func<bool> tryEstablishSession, bool isNewSessionKey)
         {
-            if (string.IsNullOrEmpty(sessionId))
+            if (string.IsNullOrEmpty(sessionKey))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(sessionId));
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(sessionKey));
             }
 
             if (tryEstablishSession == null)
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Session
                 throw new ArgumentNullException(nameof(tryEstablishSession));
             }
 
-            return new DistributedSession(_cache, sessionId, idleTimeout, tryEstablishSession, _loggerFactory, isNewSessionKey);
+            return new DistributedSession(_cache, sessionKey, idleTimeout, tryEstablishSession, _loggerFactory, isNewSessionKey);
         }
     }
 }

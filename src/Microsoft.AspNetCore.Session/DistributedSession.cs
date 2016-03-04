@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
@@ -15,11 +16,14 @@ namespace Microsoft.AspNetCore.Session
 {
     public class DistributedSession : ISession
     {
-        private const byte SerializationRevision = 1;
+        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
+        private const int IdByteCount = 16;
+
+        private const byte SerializationRevision = 2;
         private const int KeyLengthLimit = ushort.MaxValue;
 
         private readonly IDistributedCache _cache;
-        private readonly string _sessionId;
+        private readonly string _sessionKey;
         private readonly TimeSpan _idleTimeout;
         private readonly Func<bool> _tryEstablishSession;
         private readonly IDictionary<EncodedKey, byte[]> _store;
@@ -27,10 +31,12 @@ namespace Microsoft.AspNetCore.Session
         private bool _isModified;
         private bool _loaded;
         private bool _isNewSessionKey;
+        private string _sessionId;
+        private byte[] _sessionIdBytes;
 
         public DistributedSession(
             IDistributedCache cache,
-            string sessionId,
+            string sessionKey,
             TimeSpan idleTimeout,
             Func<bool> tryEstablishSession,
             ILoggerFactory loggerFactory,
@@ -41,9 +47,9 @@ namespace Microsoft.AspNetCore.Session
                 throw new ArgumentNullException(nameof(cache));
             }
 
-            if (string.IsNullOrEmpty(sessionId))
+            if (string.IsNullOrEmpty(sessionKey))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(sessionId));
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(sessionKey));
             }
 
             if (tryEstablishSession == null)
@@ -57,12 +63,39 @@ namespace Microsoft.AspNetCore.Session
             }
 
             _cache = cache;
-            _sessionId = sessionId;
+            _sessionKey = sessionKey;
             _idleTimeout = idleTimeout;
             _tryEstablishSession = tryEstablishSession;
             _store = new Dictionary<EncodedKey, byte[]>();
             _logger = loggerFactory.CreateLogger<DistributedSession>();
             _isNewSessionKey = isNewSessionKey;
+        }
+
+        public string Id
+        {
+            get
+            {
+                Load(); // TODO: Silent failure
+                if (_sessionId == null)
+                {
+                    _sessionId = new Guid(IdBytes).ToString();
+                }
+                return _sessionId;
+            }
+        }
+
+        private byte[] IdBytes
+        {
+            get
+            {
+                Load(); // TODO: Silent failure
+                if (_sessionIdBytes == null)
+                {
+                    _sessionIdBytes = new byte[IdByteCount];
+                    CryptoRandom.GetBytes(_sessionIdBytes);
+                }
+                return _sessionIdBytes;
+            }
         }
 
         public IEnumerable<string> Keys
@@ -122,7 +155,16 @@ namespace Microsoft.AspNetCore.Session
         {
             if (!_loaded)
             {
-                LoadAsync().GetAwaiter().GetResult();
+                var data = _cache.Get(_sessionKey);
+                if (data != null)
+                {
+                    Deserialize(new MemoryStream(data));
+                }
+                else if (!_isNewSessionKey)
+                {
+                    _logger.AccessingExpiredSession(_sessionKey);
+                }
+                _loaded = true;
             }
         }
 
@@ -132,14 +174,14 @@ namespace Microsoft.AspNetCore.Session
         {
             if (!_loaded)
             {
-                var data = await _cache.GetAsync(_sessionId);
+                var data = await _cache.GetAsync(_sessionKey);
                 if (data != null)
                 {
                     Deserialize(new MemoryStream(data));
                 }
                 else if (!_isNewSessionKey)
                 {
-                    _logger.AccessingExpiredSession(_sessionId);
+                    _logger.AccessingExpiredSession(_sessionKey);
                 }
                 _loaded = true;
             }
@@ -149,29 +191,35 @@ namespace Microsoft.AspNetCore.Session
         {
             if (_isModified)
             {
-                var data = await _cache.GetAsync(_sessionId);
+                var data = await _cache.GetAsync(_sessionKey);
                 if (_logger.IsEnabled(LogLevel.Information) && data == null)
                 {
-                    _logger.SessionStarted(_sessionId);
+                    _logger.SessionStarted(_sessionKey, Id);
                 }
                 _isModified = false;
 
                 var stream = new MemoryStream();
                 Serialize(stream);
                 await _cache.SetAsync(
-                    _sessionId,
+                    _sessionKey,
                     stream.ToArray(),
                     new DistributedCacheEntryOptions().SetSlidingExpiration(_idleTimeout));
+
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.SessionStored(_sessionKey, Id, _store.Count);
+                }
             }
             else
             {
-                await _cache.RefreshAsync(_sessionId);
+                await _cache.RefreshAsync(_sessionKey);
             }
         }
 
         // Format:
         // Serialization revision: 1 byte, range 0-255
         // Entry count: 3 bytes, range 0-16,777,215
+        // SessionId: IdByteCount bytes (16)
         // foreach entry:
         //   key name byte length: 2 bytes, range 0-65,535
         //   UTF-8 encoded key name byte[]
@@ -181,6 +229,7 @@ namespace Microsoft.AspNetCore.Session
         {
             output.WriteByte(SerializationRevision);
             SerializeNumAs3Bytes(output, _store.Count);
+            output.Write(IdBytes, 0, IdByteCount);
 
             foreach (var entry in _store)
             {
@@ -203,12 +252,20 @@ namespace Microsoft.AspNetCore.Session
             }
 
             int expectedEntries = DeserializeNumFrom3Bytes(content);
+            _sessionIdBytes = ReadBytes(content, IdByteCount);
+
             for (int i = 0; i < expectedEntries; i++)
             {
                 int keyLength = DeserializeNumFrom2Bytes(content);
                 var key = new EncodedKey(ReadBytes(content, keyLength));
                 int dataLength = DeserializeNumFrom4Bytes(content);
                 _store[key] = ReadBytes(content, dataLength);
+            }
+
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _sessionId = new Guid(_sessionIdBytes).ToString();
+                _logger.SessionLoaded(_sessionKey, _sessionId, expectedEntries);
             }
         }
 

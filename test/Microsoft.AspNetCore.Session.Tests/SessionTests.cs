@@ -262,9 +262,11 @@ namespace Microsoft.AspNetCore.Session
 
                 var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
 
-                Assert.Single(sessionLogMessages);
+                Assert.Equal(2, sessionLogMessages.Length);
                 Assert.Contains("started", sessionLogMessages[0].State.ToString());
                 Assert.Equal(LogLevel.Information, sessionLogMessages[0].LogLevel);
+                Assert.Contains("stored", sessionLogMessages[1].State.ToString());
+                Assert.Equal(LogLevel.Debug, sessionLogMessages[1].LogLevel);
             }
         }
 
@@ -315,11 +317,13 @@ namespace Microsoft.AspNetCore.Session
 
                 var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
 
-                Assert.Equal(2, sessionLogMessages.Length);
+                Assert.Equal(3, sessionLogMessages.Length);
                 Assert.Contains("started", sessionLogMessages[0].State.ToString());
-                Assert.Contains("expired", sessionLogMessages[1].State.ToString());
+                Assert.Contains("stored", sessionLogMessages[1].State.ToString());
+                Assert.Contains("expired", sessionLogMessages[2].State.ToString());
                 Assert.Equal(LogLevel.Information, sessionLogMessages[0].LogLevel);
-                Assert.Equal(LogLevel.Warning, sessionLogMessages[1].LogLevel);
+                Assert.Equal(LogLevel.Debug, sessionLogMessages[1].LogLevel);
+                Assert.Equal(LogLevel.Warning, sessionLogMessages[2].LogLevel);
             }
         }
 
