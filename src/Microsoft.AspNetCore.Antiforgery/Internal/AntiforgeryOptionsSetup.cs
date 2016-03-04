@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             if (options.CookieName == null)
             {
                 var applicationId = dataProtectionOptions.ApplicationDiscriminator ?? string.Empty;
-                options.CookieName = ComputeCookieName(applicationId);
+                options.CookieName = AntiforgeryOptions.DefaultCookiePrefix + ComputeCookieName(applicationId);
             }
         }
 

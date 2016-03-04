@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
     public class AntiforgeryOptionsSetupTest
     {
         [Theory]
-        [InlineData("HelloWorldApp", "tGmK82_ckDw")]
-        [InlineData("TodoCalendar", "7mK1hBEBwYs")]
+        [InlineData("HelloWorldApp", ".AspNetCore.Antiforgery.tGmK82_ckDw")]
+        [InlineData("TodoCalendar", ".AspNetCore.Antiforgery.7mK1hBEBwYs")]
         public void AntiforgeryOptionsSetup_SetsDefaultCookieName_BasedOnApplicationId(
             string applicationId,
             string expectedCookieName)

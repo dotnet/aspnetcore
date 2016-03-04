@@ -17,10 +17,16 @@ namespace Microsoft.AspNetCore.Antiforgery
         private string _formFieldName = AntiforgeryTokenFieldName;
 
         /// <summary>
+        /// The default cookie prefix, which is ".AspNetCore.Antiforgery.".
+        /// </summary>
+        public static readonly string DefaultCookiePrefix = ".AspNetCore.Antiforgery.";
+
+        /// <summary>
         /// Specifies the name of the cookie that is used by the antiforgery system.
         /// </summary>
         /// <remarks>
-        /// If an explicit name is not provided, the system will automatically generate a name.
+        /// If an explicit name is not provided, the system will automatically generate a
+        /// unique name that begins with <see cref="DefaultCookiePrefix"/>.
         /// </remarks>
         public string CookieName
         {
