@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,9 +11,8 @@ namespace Microsoft.AspNetCore.WebUtilities
 {
     internal class MultipartReaderStream : Stream
     {
+        private readonly MultipartBoundary _boundary;
         private readonly BufferedReadStream _innerStream;
-        private readonly byte[] _boundaryBytes;
-        private readonly int _finalBoundaryLength;
         private readonly long _innerOffset;
         private long _position;
         private long _observedLength;
@@ -25,8 +23,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// </summary>
         /// <param name="stream">The <see cref="BufferedReadStream"/>.</param>
         /// <param name="boundary">The boundary pattern to use.</param>
-        /// <param name="expectLeadingCrlf">Specifies whether a leading crlf should be expected.</param>
-        public MultipartReaderStream(BufferedReadStream stream, string boundary, bool expectLeadingCrlf = true)
+        public MultipartReaderStream(BufferedReadStream stream, MultipartBoundary boundary)
         {
             if (stream == null)
             {
@@ -40,15 +37,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             _innerStream = stream;
             _innerOffset = _innerStream.CanSeek ? _innerStream.Position : 0;
-            if (expectLeadingCrlf)
-            {
-                _boundaryBytes = Encoding.UTF8.GetBytes("\r\n--" + boundary);
-            }
-            else
-            {
-                _boundaryBytes = Encoding.UTF8.GetBytes("--" + boundary);
-            }
-            _finalBoundaryLength = _boundaryBytes.Length + 2; // Include the final '--' terminator.
+            _boundary = boundary;
         }
 
         public bool FinalBoundaryFound { get; private set; }
@@ -205,7 +194,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             PositionInnerStream();
-            if (!_innerStream.EnsureBuffered(_finalBoundaryLength))
+            if (!_innerStream.EnsureBuffered(_boundary.FinalBoundaryLength))
             {
                 throw new IOException("Unexpected end of stream.");
             }
@@ -215,7 +204,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             int matchOffset;
             int matchCount;
             int read;
-            if (SubMatch(bufferedData, _boundaryBytes, out matchOffset, out matchCount))
+            if (SubMatch(bufferedData, _boundary.BoundaryBytes, out matchOffset, out matchCount))
             {
                 // We found a possible match, return any data before it.
                 if (matchOffset > bufferedData.Offset)
@@ -223,12 +212,12 @@ namespace Microsoft.AspNetCore.WebUtilities
                     read = _innerStream.Read(buffer, offset, Math.Min(count, matchOffset - bufferedData.Offset));
                     return UpdatePosition(read);
                 }
-                Debug.Assert(matchCount == _boundaryBytes.Length);
+                Debug.Assert(matchCount == _boundary.BoundaryBytes.Length);
 
                 // "The boundary may be followed by zero or more characters of
                 // linear whitespace. It is then terminated by either another CRLF"
                 // or -- for the final boundary.
-                byte[] boundary = new byte[_boundaryBytes.Length];
+                byte[] boundary = new byte[_boundary.BoundaryBytes.Length];
                 read = _innerStream.Read(boundary, 0, boundary.Length);
                 Debug.Assert(read == boundary.Length); // It should have all been buffered
                 var remainder = _innerStream.ReadLine(lengthLimit: 100); // Whitespace may exceed the buffer.
@@ -256,7 +245,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             PositionInnerStream();
-            if (!await _innerStream.EnsureBufferedAsync(_finalBoundaryLength, cancellationToken))
+            if (!await _innerStream.EnsureBufferedAsync(_boundary.FinalBoundaryLength, cancellationToken))
             {
                 throw new IOException("Unexpected end of stream.");
             }
@@ -266,7 +255,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             int matchOffset;
             int matchCount;
             int read;
-            if (SubMatch(bufferedData, _boundaryBytes, out matchOffset, out matchCount))
+            if (SubMatch(bufferedData, _boundary.BoundaryBytes, out matchOffset, out matchCount))
             {
                 // We found a possible match, return any data before it.
                 if (matchOffset > bufferedData.Offset)
@@ -275,12 +264,12 @@ namespace Microsoft.AspNetCore.WebUtilities
                     read = _innerStream.Read(buffer, offset, Math.Min(count, matchOffset - bufferedData.Offset));
                     return UpdatePosition(read);
                 }
-                Debug.Assert(matchCount == _boundaryBytes.Length);
+                Debug.Assert(matchCount == _boundary.BoundaryBytes.Length);
 
                 // "The boundary may be followed by zero or more characters of
                 // linear whitespace. It is then terminated by either another CRLF"
                 // or -- for the final boundary.
-                byte[] boundary = new byte[_boundaryBytes.Length];
+                byte[] boundary = new byte[_boundary.BoundaryBytes.Length];
                 read = _innerStream.Read(boundary, 0, boundary.Length);
                 Debug.Assert(read == boundary.Length); // It should have all been buffered
                 var remainder = await _innerStream.ReadLineAsync(lengthLimit: 100, cancellationToken: cancellationToken); // Whitespace may exceed the buffer.
@@ -300,18 +289,44 @@ namespace Microsoft.AspNetCore.WebUtilities
             return UpdatePosition(read);
         }
 
-        // Does Segment1 contain all of segment2, or does it end with the start of segment2?
+        // Does segment1 contain all of matchBytes, or does it end with the start of matchBytes?
         // 1: AAAAABBBBBCCCCC
         // 2:      BBBBB
         // Or:
         // 1: AAAAABBB
         // 2:      BBBBB
-        private static bool SubMatch(ArraySegment<byte> segment1, byte[] matchBytes, out int matchOffset, out int matchCount)
+        private bool SubMatch(ArraySegment<byte> segment1, byte[] matchBytes, out int matchOffset, out int matchCount)
         {
+            // clear matchCount to zero
             matchCount = 0;
-            for (matchOffset = segment1.Offset; matchOffset < segment1.Offset + segment1.Count; matchOffset++)
+
+            // case 1: does segment1 fully contain matchBytes?
             {
-                int countLimit = segment1.Offset - matchOffset + segment1.Count;
+                var matchBytesLengthMinusOne = matchBytes.Length - 1;
+                var matchBytesLastByte = matchBytes[matchBytesLengthMinusOne];
+                var segmentEndMinusMatchBytesLength = segment1.Offset + segment1.Count - matchBytes.Length;
+
+                matchOffset = segment1.Offset;
+                while (matchOffset < segmentEndMinusMatchBytesLength)
+                {
+                    var lookaheadTailChar = segment1.Array[matchOffset + matchBytesLengthMinusOne];
+                    if (lookaheadTailChar == matchBytesLastByte &&
+                        CompareBuffers(segment1.Array, matchOffset, matchBytes, 0, matchBytesLengthMinusOne) == 0)
+                    {
+                        matchCount = matchBytes.Length;
+                        return true;
+                    }
+                    matchOffset += _boundary.GetSkipValue(lookaheadTailChar);
+                }
+            }
+
+            // case 2: does segment1 end with the start of matchBytes?
+            var segmentEnd = segment1.Offset + segment1.Count;
+
+            matchCount = 0;
+            for (; matchOffset < segmentEnd; matchOffset++)
+            {
+                var countLimit = segmentEnd - matchOffset;
                 for (matchCount = 0; matchCount < matchBytes.Length && matchCount < countLimit; matchCount++)
                 {
                     if (matchBytes[matchCount] != segment1.Array[matchOffset + matchCount])
@@ -326,6 +341,18 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
             }
             return matchCount > 0;
+        }
+
+        private static int CompareBuffers(byte[] buffer1, int offset1, byte[] buffer2, int offset2, int count)
+        {
+            for (; count-- > 0; offset1++, offset2++)
+            {
+                if (buffer1[offset1] != buffer2[offset2])
+                {
+                    return buffer1[offset1] - buffer2[offset2];
+                }
+            }
+            return 0;
         }
     }
 }

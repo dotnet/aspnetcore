@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private const int DefaultBufferSize = 1024 * 4;
 
         private readonly BufferedReadStream _stream;
-        private readonly string _boundary;
+        private readonly MultipartBoundary _boundary;
         private MultipartReaderStream _currentStream;
 
         public MultipartReader(string boundary, Stream stream)
@@ -42,9 +42,9 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new ArgumentOutOfRangeException(nameof(bufferSize), bufferSize, "Insufficient buffer space, the buffer must be larger than the boundary: " + boundary);
             }
             _stream = new BufferedReadStream(stream, bufferSize);
-            _boundary = boundary;
+            _boundary = new MultipartBoundary(boundary, false);
             // This stream will drain any preamble data and remove the first boundary marker.
-            _currentStream = new MultipartReaderStream(_stream, _boundary, expectLeadingCrlf: false);
+            _currentStream = new MultipartReaderStream(_stream, _boundary);
         }
 
         /// <summary>
@@ -69,6 +69,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 return null;
             }
             var headers = await ReadHeadersAsync(cancellationToken);
+            _boundary.ExpectLeadingCrlf = true;
             _currentStream = new MultipartReaderStream(_stream, _boundary);
             long? baseStreamOffset = _stream.CanSeek ? (long?)_stream.Position : null;
             return new MultipartSection() { Headers = headers, Body = _currentStream, BaseStreamOffset = baseStreamOffset };
