@@ -59,6 +59,7 @@ namespace E2ETests
                 var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
                 {
                     PublishApplicationBeforeDeployment = true,
+                    PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "dnx451" : "netstandardapp1.5",
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "OpenIdConnectTesting",
                     UserAdditionalCleanup = parameters =>

@@ -123,6 +123,7 @@ namespace E2ETests
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "SocialTesting",
                     PublishApplicationBeforeDeployment = true,
+                    PublishTargetFramework = donetFlavor == RuntimeFlavor.Clr ? "dnx451" : "netstandardapp1.5",
                     UserAdditionalCleanup = parameters =>
                     {
                         if (!Helpers.RunningOnMono

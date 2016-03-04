@@ -111,6 +111,7 @@ namespace E2ETests
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     PublishApplicationBeforeDeployment = true,
+                    PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "dnx451" : "netstandardapp1.5",
                     UserAdditionalCleanup = parameters =>
                     {
                         if (!Helpers.RunningOnMono
