@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.IISPlatformHandler.FunctionalTests
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
                     ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
                     SiteName = "HttpTestSite", // This is configured in the Http.config
+                    PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "dnx451" : "dnxcore50"
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
