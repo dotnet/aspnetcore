@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Options for all of the static file middleware components
     /// </summary>
-    public class FileServerOptions : SharedOptionsBase<FileServerOptions>
+    public class FileServerOptions : SharedOptionsBase
     {
         /// <summary>
         /// Creates a combined options class for all of the static file middleware components.

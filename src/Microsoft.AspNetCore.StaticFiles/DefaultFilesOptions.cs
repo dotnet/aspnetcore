@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Options for selecting default file names.
     /// </summary>
-    public class DefaultFilesOptions : SharedOptionsBase<DefaultFilesOptions>
+    public class DefaultFilesOptions : SharedOptionsBase
     {
         /// <summary>
         /// Configuration for the DefaultFilesMiddleware.

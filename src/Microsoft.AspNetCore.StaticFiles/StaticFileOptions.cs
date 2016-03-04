@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Options for serving static files
     /// </summary>
-    public class StaticFileOptions : SharedOptionsBase<StaticFileOptions>
+    public class StaticFileOptions : SharedOptionsBase
     {
         /// <summary>
         /// Defaults to all request paths
@@ -25,8 +25,6 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="sharedOptions"></param>
         public StaticFileOptions(SharedOptions sharedOptions) : base(sharedOptions)
         {
-            ContentTypeProvider = new FileExtensionContentTypeProvider();
-
             OnPrepareResponse = _ => { };
         }
 

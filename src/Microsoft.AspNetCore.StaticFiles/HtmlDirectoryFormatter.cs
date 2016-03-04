@@ -23,6 +23,15 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private HtmlEncoder _htmlEncoder;
 
+        public HtmlDirectoryFormatter(HtmlEncoder encoder)
+        {
+            if (encoder == null)
+            {
+                throw new ArgumentNullException(nameof(encoder));
+            }
+            _htmlEncoder = encoder;
+        } 
+
         /// <summary>
         /// Generates an HTML view for a directory.
         /// </summary>
@@ -35,11 +44,6 @@ namespace Microsoft.AspNetCore.StaticFiles
             if (contents == null)
             {
                 throw new ArgumentNullException(nameof(contents));
-            }
-
-            if (_htmlEncoder == null)
-            {
-                _htmlEncoder = context.RequestServices.GetRequiredService<HtmlEncoder>();
             }
 
             context.Response.ContentType = TextHtmlUtf8;

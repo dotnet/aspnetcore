@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -20,14 +21,17 @@ namespace Microsoft.AspNetCore.StaticFiles
         private readonly DirectoryBrowserOptions _options;
         private readonly PathString _matchUrl;
         private readonly RequestDelegate _next;
+        private readonly IDirectoryFormatter _formatter;
+        private readonly IFileProvider _fileProvider;
 
         /// <summary>
         /// Creates a new instance of the SendFileMiddleware.
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
         /// <param name="hostingEnv">The <see cref="IHostingEnvironment"/> used by this middleware.</param>
+        /// <param name="encoder">The <see cref="HtmlEncoder"/> used by the default <see cref="HtmlDirectoryFormatter"/>.</param>
         /// <param name="options">The configuration for this middleware.</param>
-        public DirectoryBrowserMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, IOptions<DirectoryBrowserOptions> options)
+        public DirectoryBrowserMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, HtmlEncoder encoder, IOptions<DirectoryBrowserOptions> options)
         {
             if (next == null)
             {
@@ -39,19 +43,20 @@ namespace Microsoft.AspNetCore.StaticFiles
                 throw new ArgumentNullException(nameof(hostingEnv));
             }
 
+            if (encoder == null)
+            {
+                throw new ArgumentNullException(nameof(encoder));
+            }
+
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (options.Value.Formatter == null)
-            {
-                throw new ArgumentException(Resources.Args_NoFormatter);
-            }
-
             _next = next;
             _options = options.Value;
-            _options.ResolveFileProvider(hostingEnv);
+            _fileProvider = _options.FileProvider ?? Helpers.ResolveFileProvider(hostingEnv);
+            _formatter = options.Value.Formatter ?? new HtmlDirectoryFormatter(encoder);
             _matchUrl = _options.RequestPath;
         }
 
@@ -78,7 +83,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                     return Constants.CompletedTask;
                 }
 
-                return _options.Formatter.GenerateContentAsync(context, contents);
+                return _formatter.GenerateContentAsync(context, contents);
             }
 
             return _next(context);
@@ -86,7 +91,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private bool TryGetDirectoryInfo(PathString subpath, out IDirectoryContents contents)
         {
-            contents = _options.FileProvider.GetDirectoryContents(subpath.Value);
+            contents = _fileProvider.GetDirectoryContents(subpath.Value);
             return contents.Exists;
         }
     }

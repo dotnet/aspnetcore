@@ -22,9 +22,10 @@ namespace Microsoft.AspNetCore.StaticFiles
         [Fact]
         public async Task NullArguments()
         {
-            Assert.Throws<ArgumentException>(() => StaticFilesTestServer.Create(
+            // No exception, default provided
+            StaticFilesTestServer.Create(
                 app => app.UseDirectoryBrowser(new DirectoryBrowserOptions { Formatter = null }),
-            services => services.AddDirectoryBrowser()));
+            services => services.AddDirectoryBrowser());
 
             // No exception, default provided
             StaticFilesTestServer.Create(

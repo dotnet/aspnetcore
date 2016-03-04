@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 
@@ -11,8 +10,7 @@ namespace Microsoft.AspNetCore.StaticFiles.Infrastructure
     /// <summary>
     /// Options common to several middleware components
     /// </summary>
-    /// <typeparam name="T">The type of the subclass</typeparam>
-    public abstract class SharedOptionsBase<T>
+    public abstract class SharedOptionsBase
     {
         /// <summary>
         /// Creates an new instance of the SharedOptionsBase.
@@ -49,18 +47,6 @@ namespace Microsoft.AspNetCore.StaticFiles.Infrastructure
         {
             get { return SharedOptions.FileProvider; }
             set { SharedOptions.FileProvider = value; }
-        }
-
-        internal void ResolveFileProvider(IHostingEnvironment hostingEnv)
-        {
-            if (FileProvider == null)
-            {
-                FileProvider = hostingEnv.WebRootFileProvider;
-                if (FileProvider == null)
-                {
-                    throw new InvalidOperationException("Missing FileProvider.");
-                }
-            }
         }
     }
 }

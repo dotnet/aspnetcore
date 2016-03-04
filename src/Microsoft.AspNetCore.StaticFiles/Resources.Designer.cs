@@ -11,22 +11,6 @@ namespace Microsoft.AspNetCore.StaticFiles
             = new ResourceManager("Microsoft.AspNetCore.StaticFiles.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// No IContentTypeProvider was specified.
-        /// </summary>
-        internal static string Args_NoContentTypeProvider
-        {
-            get { return GetString("Args_NoContentTypeProvider"); }
-        }
-
-        /// <summary>
-        /// No IContentTypeProvider was specified.
-        /// </summary>
-        internal static string FormatArgs_NoContentTypeProvider()
-        {
-            return GetString("Args_NoContentTypeProvider");
-        }
-
-        /// <summary>
         /// No formatter provided.
         /// </summary>
         internal static string Args_NoFormatter

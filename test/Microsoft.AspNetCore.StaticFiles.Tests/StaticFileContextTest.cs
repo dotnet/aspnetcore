@@ -21,8 +21,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         {
             // Arrange
             var options = new StaticFileOptions();
-            options.FileProvider = new TestFileProvider();
-            var context = new StaticFileContext(new DefaultHttpContext(), options, PathString.Empty, NullLogger.Instance);
+            var context = new StaticFileContext(new DefaultHttpContext(), options, PathString.Empty, NullLogger.Instance, new TestFileProvider(), new FileExtensionContentTypeProvider());
 
             // Act
             var validateResult = context.ValidatePath();
@@ -43,11 +42,10 @@ namespace Microsoft.AspNetCore.StaticFiles
             {
                 LastModified = new DateTimeOffset(2014, 1, 2, 3, 4, 5, TimeSpan.Zero)
             });
-            options.FileProvider = fileProvider;
             var pathString = new PathString("/test");
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Path = new PathString("/test/foo.txt");
-            var context = new StaticFileContext(httpContext, options, pathString, NullLogger.Instance);
+            var context = new StaticFileContext(httpContext, options, pathString, NullLogger.Instance, fileProvider, new FileExtensionContentTypeProvider());
 
             // Act
             context.ValidatePath();
