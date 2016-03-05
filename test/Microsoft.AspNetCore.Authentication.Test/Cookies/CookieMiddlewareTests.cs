@@ -293,16 +293,16 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 Transformer = new ClaimsTransformer
                 {
-                    OnTransform = p =>
+                    OnTransform = context =>
                     {
-                        if (!p.Identities.Any(i => i.AuthenticationType == "xform"))
+                        if (!context.Principal.Identities.Any(i => i.AuthenticationType == "xform"))
                         {
                             // REVIEW: Xform runs twice, once on Authenticate, and then once from the middleware
                             var id = new ClaimsIdentity("xform");
                             id.AddClaim(new Claim("xform", "yup"));
-                            p.AddIdentity(id);
+                            context.Principal.AddIdentity(id);
                         }
-                        return Task.FromResult(p);
+                        return Task.FromResult(context.Principal);
                     }
                 }
             });

@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
         /// <param name="transform">A function that asynchronously transforms one <see cref="ClaimsPrincipal"/> to another.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
-        public static IApplicationBuilder UseClaimsTransformation(this IApplicationBuilder app, Func<ClaimsPrincipal, Task<ClaimsPrincipal>> transform)
+        public static IApplicationBuilder UseClaimsTransformation(this IApplicationBuilder app, Func<ClaimsTransformationContext, Task<ClaimsPrincipal>> transform)
         {
             if (app == null)
             {
@@ -46,12 +46,12 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(transform));
             }
 
-            return app.UseClaimsTransformation(new ClaimsTransformationOptions 
+            return app.UseClaimsTransformation(new ClaimsTransformationOptions
             {
                 Transformer = new ClaimsTransformer { OnTransform = transform }
             });
         }
-        
+
         /// <summary>
         /// Adds the <see cref="ClaimsTransformationMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables claims transformation capabilities.
         /// </summary>

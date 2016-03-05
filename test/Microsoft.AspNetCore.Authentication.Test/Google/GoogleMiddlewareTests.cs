@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 ClientId = "Test Id",
                 ClientSecret = "Test Secret"
             },
-            async context => 
+            async context =>
             {
                 var req = context.Request;
                 var res = context.Response;
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             {
                 var transaction = await sendTask;
                 Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-                Assert.Equal("/error?FailureMessage=OMG"+UrlEncoder.Default.Encode(";Description=SoBad;Uri=foobar"), transaction.Response.Headers.GetValues("Location").First());
+                Assert.Equal("/error?FailureMessage=OMG" + UrlEncoder.Default.Encode(";Description=SoBad;Uri=foobar"), transaction.Response.Headers.GetValues("Location").First());
             }
             else
             {
@@ -774,12 +774,12 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         AutomaticAuthenticate = true
                     });
                     app.UseGoogleAuthentication(options);
-                    app.UseClaimsTransformation(p =>
+                    app.UseClaimsTransformation(context =>
                     {
                         var id = new ClaimsIdentity("xform");
                         id.AddClaim(new Claim("xform", "yup"));
-                        p.AddIdentity(id);
-                        return Task.FromResult(p);
+                        context.Principal.AddIdentity(id);
+                        return Task.FromResult(context.Principal);
                     });
                     app.Use(async (context, next) =>
                     {

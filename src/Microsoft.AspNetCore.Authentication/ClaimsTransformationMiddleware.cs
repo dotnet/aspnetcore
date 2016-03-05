@@ -35,13 +35,17 @@ namespace Microsoft.AspNetCore.Authentication
 
         public async Task Invoke(HttpContext context)
         {
-            var handler = new ClaimsTransformationHandler(Options.Transformer);
+            var handler = new ClaimsTransformationHandler(Options.Transformer, context);
             handler.RegisterAuthenticationHandler(context.GetAuthentication());
             try
             {
                 if (Options.Transformer != null)
                 {
-                    context.User = await Options.Transformer.TransformAsync(context.User);
+                    var transformationContext = new ClaimsTransformationContext(context)
+                    {
+                        Principal = context.User
+                    };
+                    context.User = await Options.Transformer.TransformAsync(transformationContext);
                 }
                 await _next(context);
             }

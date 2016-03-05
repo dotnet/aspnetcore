@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Provides a central transformation point to change the specified principal.
         /// </summary>
-        /// <param name="principal">The principal to transform.</param>
+        /// <param name="context"><see cref="ClaimsTransformationContext"/> containing principal to transform and current HttpContext.</param>
         /// <returns>The transformed principal.</returns>
-        Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal);
+        Task<ClaimsPrincipal> TransformAsync(ClaimsTransformationContext context);
     }
 }

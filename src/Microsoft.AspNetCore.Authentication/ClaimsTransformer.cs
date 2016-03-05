@@ -9,11 +9,11 @@ namespace Microsoft.AspNetCore.Authentication
 {
     public class ClaimsTransformer : IClaimsTransformer
     {
-        public Func<ClaimsPrincipal, Task<ClaimsPrincipal>> OnTransform { get; set; }
+        public Func<ClaimsTransformationContext, Task<ClaimsPrincipal>> OnTransform { get; set; }
 
-        public virtual Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
+        public virtual Task<ClaimsPrincipal> TransformAsync(ClaimsTransformationContext context)
         {
-            return OnTransform?.Invoke(principal) ?? Task.FromResult(principal);
+            return OnTransform?.Invoke(context) ?? Task.FromResult(context.Principal);
         }
     }
 }
