@@ -12,6 +12,8 @@ namespace MusicStore.Controllers
 
         public IEnumerable<string> Keys { get { return _store.Keys; } }
 
+        public string Id { get; set; }
+
         public void Clear()
         {
             _store.Clear();
