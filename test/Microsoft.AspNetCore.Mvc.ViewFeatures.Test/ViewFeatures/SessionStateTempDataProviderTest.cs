@@ -396,6 +396,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             public IEnumerable<string> Keys { get { return _innerDictionary.Keys; } }
 
+            public string Id => "TestId";
+
             public Task LoadAsync()
             {
                 return Task.FromResult(0);
