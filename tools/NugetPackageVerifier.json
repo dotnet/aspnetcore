@@ -4,11 +4,74 @@
             "SigningVerificationCompositeRule"
         ],
         "packages": {
-            "dotnet-ef": {},
-            "dotnet-publish-iis": {},
-            "dotnet-razor-tooling": {},
-            "dotnet-test-xunit": {},
-            "dotnet-watch": {},
+            "dotnet-aspnet-codegenerator": {
+             "NUSPEC_COPYRIGHT": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             },
+             "NUSPEC_LICENSEURL": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             },
+             "NUSPEC_ICONURL": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             },
+             "NUSPEC_PROJECTURL": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             },
+             "NUSPEC_ACCEPTLICENSE": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             }
+            },
+            "dotnet-publish-iis": {
+             "NUSPEC_COPYRIGHT": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             },
+             "NUSPEC_LICENSEURL": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             },
+             "NUSPEC_ICONURL": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             },
+             "NUSPEC_PROJECTURL": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             },
+             "NUSPEC_ACCEPTLICENSE": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             }
+            },
+            "dotnet-razor-tooling": {
+             "NUSPEC_COPYRIGHT": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             },
+             "NUSPEC_LICENSEURL": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             },
+             "NUSPEC_ICONURL": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             },
+             "NUSPEC_PROJECTURL": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             },
+             "NUSPEC_ACCEPTLICENSE": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             }
+            },
+            "dotnet-watch": {
+             "NUSPEC_COPYRIGHT": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             },
+             "NUSPEC_LICENSEURL": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             },
+             "NUSPEC_ICONURL": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             },
+             "NUSPEC_PROJECTURL": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             },
+             "NUSPEC_ACCEPTLICENSE": {
+               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+             }
+            },
             "dnx-clr-win-x64": {
                 "SIGN_AUTHENTICODE": {
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
@@ -104,6 +167,7 @@
             "Microsoft.AspNetCore.Localization": {},
             "Microsoft.AspNetCore.MiddlewareAnalysis": {},
             "Microsoft.AspNetCore.Mvc": {},
+            "Microsoft.AspNetCore.Mvc.Dnx": {},
             "Microsoft.AspNetCore.Mvc.Abstractions": {},
             "Microsoft.AspNetCore.Mvc.ApiExplorer": {},
             "Microsoft.AspNetCore.Mvc.Core": {},
@@ -281,6 +345,7 @@
             "NonAdxVerificationCompositeRule"
         ],
         "packages": {
+            "dotnet-test-xunit": {},
             "Microsoft.Cci": {},
             "Microsoft.CodeAnalysis": {},
             "Microsoft.CodeAnalysis.Common": {},

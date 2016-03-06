@@ -49,7 +49,8 @@
 
         <ItemGroup>
             <UnsignedPackages
-                Include="$(DropSource)**\dotnet-ef.*.nupkg;
+                Include="$(DropSource)**\dotnet-aspnet-codegenerator.*.nupkg;
+                         $(DropSource)**\dotnet-ef.*.nupkg;
                          $(DropSource)**\dotnet-publish-iis.*.nupkg;
                          $(DropSource)**\dotnet-razor-tooling.*.nupkg;
                          $(DropSource)**\dotnet-sql-cache.*.nupkg;
@@ -92,6 +93,7 @@
                 Include="$(UnsignedPackagesPath)**\AspNet.Loader*.dll;
                          $(UnsignedPackagesPath)**\dnx*.dll;
                          $(UnsignedPackagesPath)**\dnx*.exe;
+                         $(UnsignedPackagesPath)**\dotnet-aspnet-codegenerator.dll;
                          $(UnsignedPackagesPath)**\dotnet-ef.dll;
                          $(UnsignedPackagesPath)**\dotnet-publish-iis.dll;
                          $(UnsignedPackagesPath)**\dotnet-razor-tooling.dll;
@@ -186,6 +188,7 @@
     <Target Name="UpdateLicenseURLs" DependsOnTargets="SignFiles">
         <ItemGroup>
             <NuSpecEULA Include="$(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore*.nuspec;
+                                 $(UnsignedPackagesPath)**\dotnet-aspnet-codegenerator*.nuspec;
                                  $(UnsignedPackagesPath)**\dotnet-ef*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.nuspec;
@@ -193,6 +196,7 @@
                                  $(UnsignedPackagesPath)**\dnx*.nuspec;
                                  $(UnsignedPackagesPath)**\dotnet-sql-cache.nuspec;
                                  $(UnsignedPackagesPath)**\dotnet-user-secrets.nuspec;
+                                 $(UnsignedPackagesPath)**\dotnet-watch.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.AspNetCore*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Dnx.*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Extensions.*.nuspec;
@@ -202,6 +206,7 @@
                                  $(UnsignedPackagesPath)**\StyleCop.KRules*.nuspec"/>
 
             <NuSpecEULA Include="$(UnsignedSymbolPackagesPath)**\Microsoft.EntityFrameworkCore*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\dotnet-aspnet-codegenerator*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\dotnet-ef*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\Microsoft.Data.Sqlite*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.nuspec;
@@ -209,6 +214,7 @@
                                  $(UnsignedSymbolPackagesPath)**\dnx*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\dotnet-sql-cache.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\dotnet-user-secrets.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\dotnet-watch.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\Microsoft.AspNetCore*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\Microsoft.Dnx.*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\Microsoft.Extensions.*.nuspec;
