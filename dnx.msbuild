@@ -57,7 +57,6 @@
                          $(DropSource)**\dotnet-user-secrets.*.nupkg;
                          $(DropSource)**\dotnet-watch.*.nupkg;
                          $(DropSource)**\dnx*.nupkg;
-                         $(DropSource)**\KoreBuild*.nupkg;
                          $(DropSource)**\Microsoft.AspNetCore*.nupkg;
                          $(DropSource)**\Microsoft.AspNet.SignalR.Client.Cpp.*.nupkg;
                          $(DropSource)**\Microsoft.Data.Sqlite*.nupkg;
@@ -191,7 +190,6 @@
                                  $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.nuspec;
                                  $(UnsignedPackagesPath)**\dnvm.*.nuspec;
-                                 $(UnsignedPackagesPath)**\KoreBuild*.nuspec;
                                  $(UnsignedPackagesPath)**\dnx*.nuspec;
                                  $(UnsignedPackagesPath)**\dotnet-sql-cache.nuspec;
                                  $(UnsignedPackagesPath)**\dotnet-user-secrets.nuspec;
@@ -208,7 +206,6 @@
                                  $(UnsignedSymbolPackagesPath)**\Microsoft.Data.Sqlite*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\dnvm.*.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\KoreBuild*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\dnx*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\dotnet-sql-cache.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\dotnet-user-secrets.nuspec;
