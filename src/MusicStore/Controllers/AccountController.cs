@@ -383,7 +383,7 @@ namespace MusicStore.Controllers
                 ViewBag.ReturnUrl = returnUrl;
                 ViewBag.LoginProvider = loginInfo.LoginProvider;
                 // REVIEW: handle case where email not in claims?
-                var email = loginInfo.ExternalPrincipal.FindFirstValue(ClaimTypes.Email);
+                var email = loginInfo.Principal.FindFirstValue(ClaimTypes.Email);
                 return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email });
             }
         }
@@ -413,7 +413,7 @@ namespace MusicStore.Controllers
 
 #if TESTING
                 //Just for automated testing adding a claim named 'ManageStore' - Not required for production
-                var manageClaim = info.ExternalPrincipal.Claims.Where(c => c.Type == "ManageStore").FirstOrDefault();
+                var manageClaim = info.Principal.Claims.Where(c => c.Type == "ManageStore").FirstOrDefault();
                 if (manageClaim != null)
                 {
                     await UserManager.AddClaimAsync(user, manageClaim);
