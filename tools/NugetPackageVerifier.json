@@ -346,6 +346,9 @@
             "dotnet-test-xunit": {
                 "SIGN_AUTHENTICODE": {
                     "lib\\dnxcore50\\dotnet-test-xunit.dll": "Need to follow up, not from ADX team"
+                },
+                "SIGN_STRONGNAME": {
+                    "lib\\dnxcore50\\dotnet-test-xunit.dll": "Need to follow up, not from ADX team"
                 }
             },
             "Microsoft.Cci": {},
