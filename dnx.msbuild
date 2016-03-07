@@ -190,6 +190,8 @@
             <NuSpecEULA Include="$(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore*.nuspec;
                                  $(UnsignedPackagesPath)**\dotnet-aspnet-codegenerator*.nuspec;
                                  $(UnsignedPackagesPath)**\dotnet-ef*.nuspec;
+                                 $(UnsignedPackagesPath)**\dotnet-publish-iis*.nuspec;
+                                 $(UnsignedPackagesPath)**\dotnet-razor-tooling*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.nuspec;
                                  $(UnsignedPackagesPath)**\dnvm.*.nuspec;
@@ -197,6 +199,7 @@
                                  $(UnsignedPackagesPath)**\dotnet-sql-cache.nuspec;
                                  $(UnsignedPackagesPath)**\dotnet-user-secrets.nuspec;
                                  $(UnsignedPackagesPath)**\dotnet-watch.nuspec;
+                                 $(UnsignedPackagesPath)**\Microsoft.AspNet.SignalR.Client.Cpp*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.AspNetCore*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Dnx.*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Extensions.*.nuspec;
@@ -208,6 +211,8 @@
             <NuSpecEULA Include="$(UnsignedSymbolPackagesPath)**\Microsoft.EntityFrameworkCore*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\dotnet-aspnet-codegenerator*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\dotnet-ef*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\dotnet-publish-iis*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\dotnet-razor-tooling*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\Microsoft.Data.Sqlite*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\dnvm.*.nuspec;
@@ -215,6 +220,7 @@
                                  $(UnsignedSymbolPackagesPath)**\dotnet-sql-cache.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\dotnet-user-secrets.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\dotnet-watch.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\Microsoft.AspNet.SignalR.Client.Cpp*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\Microsoft.AspNetCore*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\Microsoft.Dnx.*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\Microsoft.Extensions.*.nuspec;

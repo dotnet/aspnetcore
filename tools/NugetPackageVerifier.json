@@ -4,91 +4,11 @@
             "SigningVerificationCompositeRule"
         ],
         "packages": {
-            "dotnet-aspnet-codegenerator": {
-                "NUSPEC_COPYRIGHT": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_LICENSEURL": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_ICONURL": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_PROJECTURL": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_ACCEPTLICENSE": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                }
-            },
-            "dotnet-ef": {
-                "NUSPEC_COPYRIGHT": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_LICENSEURL": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_ICONURL": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_PROJECTURL": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_ACCEPTLICENSE": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                }
-            },
-            "dotnet-publish-iis": {
-                "NUSPEC_COPYRIGHT": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_LICENSEURL": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_ICONURL": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_PROJECTURL": {
-                "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_ACCEPTLICENSE": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                }
-            },
-            "dotnet-razor-tooling": {
-                "NUSPEC_COPYRIGHT": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_LICENSEURL": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_ICONURL": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_PROJECTURL": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_ACCEPTLICENSE": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                }
-            },
-            "dotnet-watch": {
-                "NUSPEC_COPYRIGHT": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_LICENSEURL": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_ICONURL": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_PROJECTURL": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                },
-                "NUSPEC_ACCEPTLICENSE": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                }
-            },
+            "dotnet-aspnet-codegenerator": {},
+            "dotnet-ef": {},
+            "dotnet-publish-iis": {},
+            "dotnet-razor-tooling": {},
+            "dotnet-watch": {},
             "dnx-clr-win-x64": {
                 "SIGN_AUTHENTICODE": {
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
@@ -104,15 +24,13 @@
             "dnx-coreclr-darwin-x64": {
                 "SIGN_AUTHENTICODE": {
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\mscorlib.dll": "Need to follow up, not from ADX team"
+                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "dnx-coreclr-linux-x64": {
                 "SIGN_AUTHENTICODE": {
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\mscorlib.dll": "Need to follow up, not from ADX team"
+                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "dnx-coreclr-win-x64": {
@@ -141,16 +59,8 @@
             },
             "dotnet-sql-cache": {},
             "dotnet-user-secrets": {},
-            "Microsoft.AspNet.SignalR.Client.Cpp.v120.WinDesktop": {
-                "NUSPEC_ICONURL": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                }
-            },
-            "Microsoft.AspNet.SignalR.Client.Cpp.v140.WinDesktop": {
-                "NUSPEC_ICONURL": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                }
-            },
+            "Microsoft.AspNet.SignalR.Client.Cpp.v120.WinDesktop": {},
+            "Microsoft.AspNet.SignalR.Client.Cpp.v140.WinDesktop": {},
             "Microsoft.AspNetCore.Antiforgery": {},
             "Microsoft.AspNetCore.Authentication": {},
             "Microsoft.AspNetCore.Authentication.Cookies": {},
@@ -188,6 +98,7 @@
             "Microsoft.AspNetCore.Identity": {},
             "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {},
             "Microsoft.AspNetCore.IISPlatformHandler": {},
+            "Microsoft.AspNetCore.Internal.libuv-Linux": {},
             "Microsoft.AspNetCore.JsonPatch": {},
             "Microsoft.AspNetCore.Localization": {},
             "Microsoft.AspNetCore.MiddlewareAnalysis": {},
@@ -318,11 +229,6 @@
             "Microsoft.Extensions.Primitives": {},
             "Microsoft.Extensions.Testing.Abstractions": {},
             "Microsoft.Extensions.WebEncoders": {},
-            "Microsoft.Identity.Client": {
-                "NUSPEC_ICONURL": {
-                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-                }
-            },
             "Microsoft.Net.Http.Headers": {},
             "Microsoft.Net.Http.Server": {},
             "Microsoft.Net.WebSockets.Server": {},
@@ -373,9 +279,6 @@
         ],
         "packages": {
             "dotnet-test-xunit": {
-                "SIGN_AUTHENTICODE": {
-                    "lib\\dnxcore50\\dotnet-test-xunit.dll": "Need to follow up, not from ADX team"
-                },
                 "SIGN_STRONGNAME": {
                     "lib\\dnxcore50\\dotnet-test-xunit.dll": "Need to follow up, not from ADX team"
                 }
@@ -430,6 +333,7 @@
                 }
             },
             "Microsoft.Experimental.IdentityModel.Clients.ActiveDirectory": {},
+            "Microsoft.Identity.Client": {},
             "Microsoft.IdentityModel.Clients.ActiveDirectory": {},
             "Microsoft.IdentityModel.Logging": {},
             "Microsoft.IdentityModel.Protocol.Extensions": {
@@ -570,14 +474,7 @@
             "runtime.debian.8-x64.runtime.native.System.Net.Http": {},
             "runtime.debian.8-x64.runtime.native.System.Security.Cryptography": {},
             "runtime.debian.8.2-x64.Microsoft.NETCore.ConsoleHost": {},
-            "runtime.debian.8.2-x64.Microsoft.NETCore.Runtime.CoreCLR": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\debian.8.2-x64\\lib\\dotnet\\mscorlib.dll": "Need to follow up, not from ADX team"
-                },
-                "SIGN_AUTHENTICODE": {
-                    "runtimes\\debian.8.2-x64\\lib\\dotnet\\mscorlib.dll": "Need to follow up, not from ADX team"
-                }
-            },
+            "runtime.debian.8.2-x64.Microsoft.NETCore.Runtime.CoreCLR": {},
             "runtime.debian.8.2-x64.Microsoft.NETCore.TestHost": {},
             "runtime.debian.8.2-x64.runtime.native.System": {},
             "runtime.debian.8.2-x64.runtime.native.System.IO.Compression": {},
@@ -628,14 +525,7 @@
             "runtime.native.System.Net.Http": {},
             "runtime.native.System.Security.Cryptography": {},
             "runtime.osx.10.10-x64.Microsoft.DotNet.CoreHost": {},
-            "runtime.osx.10.10-x64.Microsoft.NETCore.Runtime.CoreCLR": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\osx.10.10-x64\\lib\\dotnet\\mscorlib.dll": "3rd party DLLs don't need this"
-                },
-                "SIGN_AUTHENTICODE": {
-                    "runtimes\\osx.10.10-x64\\lib\\dotnet\\mscorlib.dll": "Need to follow up, not from ADX team"
-                }
-            },
+            "runtime.osx.10.10-x64.Microsoft.NETCore.Runtime.CoreCLR": {},
             "runtime.osx.10.10-x64.runtime.native.System": {},
             "runtime.osx.10.10-x64.runtime.native.System.IO.Compression": {},
             "runtime.osx.10.10-x64.runtime.native.System.Net.Http": {},
@@ -692,14 +582,7 @@
             "runtime.OSX.10.10-x64.Microsoft.NETCore.Runtime.CoreCLR": {},
             "runtime.OSX.10.10-x64.Microsoft.NETCore.TestHost": {},
             "runtime.rhel.7-x64.Microsoft.NETCore.ConsoleHost": {},
-            "runtime.rhel.7-x64.Microsoft.NETCore.Runtime.CoreCLR": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\rhel.7-x64\\lib\\dotnet\\mscorlib.dll": "Need to follow up, not from ADX team"
-                },
-                "SIGN_AUTHENTICODE": {
-                    "runtimes\\rhel.7-x64\\lib\\dotnet\\mscorlib.dll": "Need to follow up, not from ADX team"
-                }
-            },
+            "runtime.rhel.7-x64.Microsoft.NETCore.Runtime.CoreCLR": {},
             "runtime.rhel.7-x64.Microsoft.NETCore.TestHost": {},
             "runtime.rhel.7-x64.runtime.native.System": {},
             "runtime.rhel.7-x64.runtime.native.System.IO.Compression": {},
@@ -707,14 +590,7 @@
             "runtime.rhel.7-x64.runtime.native.System.Security.Cryptography": {},
             "runtime.ubuntu.14.04-x64.Microsoft.DotNet.CoreHost": {},
             "runtime.Ubuntu.14.04-x64.Microsoft.NETCore.ConsoleHost": {},
-            "runtime.ubuntu.14.04-x64.Microsoft.NETCore.Runtime.CoreCLR": {
-                "SIGN_STRONGNAME": {
-                    "runtimes\\ubuntu.14.04-x64\\lib\\dotnet\\mscorlib.dll": "3rd party DLLs don't need this"
-                },
-                "SIGN_AUTHENTICODE": {
-                    "runtimes\\ubuntu.14.04-x64\\lib\\dotnet\\mscorlib.dll": "Need to follow up, not from ADX team"
-                }
-            },
+            "runtime.ubuntu.14.04-x64.Microsoft.NETCore.Runtime.CoreCLR": {},
             "runtime.Ubuntu.14.04-x64.Microsoft.NETCore.TestHost": {},
             "runtime.ubuntu.14.04-x64.runtime.native.System": {},
             "runtime.ubuntu.14.04-x64.runtime.native.System.IO.Compression": {},
