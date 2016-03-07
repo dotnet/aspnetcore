@@ -26,10 +26,12 @@
         "dotnet-test-xunit": "1.0.0-dev-*"
       }
     },
-    "dnx451": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Threading.Tasks": ""
+      },
       "dependencies": {
-        "Moq": "4.2.1312.1622",
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+        "Moq": "4.2.1312.1622"
       }
     }
   }
