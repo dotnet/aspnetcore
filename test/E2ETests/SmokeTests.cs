@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using E2ETests.Common;
@@ -188,7 +189,7 @@ namespace E2ETests
                     var httpClient = new HttpClient(httpClientHandler)
                     {
                         BaseAddress = new Uri(deploymentResult.ApplicationBaseUri),
-                        Timeout = TimeSpan.FromSeconds(5)
+                        Timeout = TimeSpan.FromSeconds(5),
                     };
 
                     // Request to base address and check if various parts of the body are rendered

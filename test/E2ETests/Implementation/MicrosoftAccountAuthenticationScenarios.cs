@@ -17,7 +17,7 @@ namespace E2ETests
             _httpClientHandler = new HttpClientHandler() { AllowAutoRedirect = false };
             _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
 
-            var response = await _httpClient.GetAsync("Account/Login");
+            var response = await DoGetAsync("Account/Login");
             await ThrowIfResponseStatusNotOk(response);
             var responseContent = await response.Content.ReadAsStringAsync();
             _logger.LogInformation("Signing in with Microsoft account");
@@ -29,13 +29,13 @@ namespace E2ETests
             };
 
             var content = new FormUrlEncodedContent(formParameters.ToArray());
-            response = await _httpClient.PostAsync("Account/ExternalLogin", content);
-            Assert.Equal<string>("https://login.live.com/oauth20_authorize.srf", response.Headers.Location.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));
+            response = await DoPostAsync("Account/ExternalLogin", content);
+            Assert.StartsWith("https://login.microsoftonline.com/common/oauth2/v2.0/authorize", response.Headers.Location.ToString());
             var queryItems = new QueryCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
             Assert.Equal<string>("code", queryItems["response_type"]);
             Assert.Equal<string>("[ClientId]", queryItems["client_id"]);
             Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + "signin-microsoft", queryItems["redirect_uri"]);
-            Assert.Equal<string>("wl.basic wl.signin", queryItems["scope"]);
+            Assert.Equal<string>("https://graph.microsoft.com/user.read wl.basic wl.signin", queryItems["scope"]);
             Assert.Equal<string>("ValidStateData", queryItems["state"]);
             Assert.Equal<string>("custom", queryItems["custom_redirect_uri"]);
 
@@ -46,7 +46,7 @@ namespace E2ETests
             _httpClientHandler = new HttpClientHandler() { AllowAutoRedirect = false };
             _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
 
-            response = await _httpClient.GetAsync("Account/Login");
+            response = await DoGetAsync("Account/Login");
             responseContent = await response.Content.ReadAsStringAsync();
             formParameters = new List<KeyValuePair<string, string>>
             {
@@ -56,11 +56,11 @@ namespace E2ETests
             };
 
             content = new FormUrlEncodedContent(formParameters.ToArray());
-            response = await _httpClient.PostAsync("Account/ExternalLogin", content);
-            response = await _httpClient.GetAsync(response.Headers.Location);
+            response = await DoPostAsync("Account/ExternalLogin", content);
+            response = await DoGetAsync(response.Headers.Location);
             //Post a message to the MicrosoftAccount middleware
-            response = await _httpClient.GetAsync("signin-microsoft?code=ValidCode&state=ValidStateData");
-            response = await _httpClient.GetAsync(response.Headers.Location);
+            response = await DoGetAsync("signin-microsoft?code=ValidCode&state=ValidStateData");
+            response = await DoGetAsync(response.Headers.Location);
             await ThrowIfResponseStatusNotOk(response);
             responseContent = await response.Content.ReadAsStringAsync();
 
@@ -78,21 +78,21 @@ namespace E2ETests
             };
 
             content = new FormUrlEncodedContent(formParameters.ToArray());
-            response = await _httpClient.PostAsync("Account/ExternalLoginConfirmation", content);
-            response = await _httpClient.GetAsync(response.Headers.Location);
+            response = await DoPostAsync("Account/ExternalLoginConfirmation", content);
+            response = await DoGetAsync(response.Headers.Location);
             await ThrowIfResponseStatusNotOk(response);
             responseContent = await response.Content.ReadAsStringAsync();
 
             Assert.Contains(string.Format("Hello {0}!", "microsoft@test.com"), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
             //Verify cookie sent
-            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNetCore.Microsoft.AspNetCore.Identity.Application"));
-            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNetCore.Microsoft.AspNetCore.Identity.ExternalLogin"));
+            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(IdentityCookieName));
+            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(ExternalLoginCookieName));
             _logger.LogInformation("Successfully signed in with user '{email}'", "microsoft@test.com");
 
             _logger.LogInformation("Verifying if the middleware events were fired");
             //Check for a non existing item
-            response = await _httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", "123"));
+            response = await DoGetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", "123"));
             //This action requires admin permissions. If events are fired this permission is granted
             _logger.LogInformation(await response.Content.ReadAsStringAsync());
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

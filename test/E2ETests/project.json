@@ -6,6 +6,7 @@
     "../../shared/**/*.cs"
   ],
   "dependencies": {
+    "Microsoft.AspNetCore.Identity": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.OpenIdConnect": "0.1.0-*",
     "Microsoft.AspNetCore.Server.Testing": "1.0.0-*",
     "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",

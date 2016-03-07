@@ -17,7 +17,7 @@ namespace E2ETests
             _httpClientHandler = new HttpClientHandler() { AllowAutoRedirect = false };
             _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
 
-            var response = await _httpClient.GetAsync("Account/Login");
+            var response = await DoGetAsync("Account/Login");
             await ThrowIfResponseStatusNotOk(response);
             var responseContent = await response.Content.ReadAsStringAsync();
             _logger.LogInformation("Signing in with OpenIdConnect account");
@@ -29,7 +29,7 @@ namespace E2ETests
             };
 
             var content = new FormUrlEncodedContent(formParameters.ToArray());
-            response = await _httpClient.PostAsync("Account/ExternalLogin", content);
+            response = await DoPostAsync("Account/ExternalLogin", content);
             Assert.Equal<string>("https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/oauth2/authorize", response.Headers.Location?.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));
             var queryItems = new QueryCollection(QueryHelpers.ParseQuery(response.Headers.Location?.Query));
             Assert.Equal<string>("c99497aa-3ee2-4707-b8a8-c33f51323fef", queryItems["client_id"]);
@@ -54,7 +54,7 @@ namespace E2ETests
                 new KeyValuePair<string, string>("session_state", "d0b59ffa-2df9-4d8c-b43a-2c410987f4ae")
             };
 
-            response = await _httpClient.PostAsync(string.Empty, new FormUrlEncodedContent(token.ToArray()));
+            response = await DoPostAsync(string.Empty, new FormUrlEncodedContent(token.ToArray()));
             await ThrowIfResponseStatusNotOk(response);
             responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(_deploymentResult.ApplicationBaseUri + "Account/ExternalLoginCallback?ReturnUrl=%2F", response.RequestMessage.RequestUri.AbsoluteUri);
@@ -66,26 +66,26 @@ namespace E2ETests
             };
 
             content = new FormUrlEncodedContent(formParameters.ToArray());
-            response = await _httpClient.PostAsync("Account/ExternalLoginConfirmation", content);
+            response = await DoPostAsync("Account/ExternalLoginConfirmation", content);
             await ThrowIfResponseStatusNotOk(response);
             responseContent = await response.Content.ReadAsStringAsync();
 
             Assert.Contains(string.Format("Hello {0}!", "User3@aspnettest.onmicrosoft.com"), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
             //Verify cookie sent
-            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNetCore.Microsoft.AspNetCore.Identity.Application"));
-            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNetCore.Microsoft.AspNetCore.Identity.ExternalLogin"));
+            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(IdentityCookieName));
+            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(ExternalLoginCookieName));
             _logger.LogInformation("Successfully signed in with user '{email}'", "User3@aspnettest.onmicrosoft.com");
 
             _logger.LogInformation("Verifying if the middleware events were fired");
             //Check for a non existing item
-            response = await _httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", "123"));
+            response = await DoGetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", "123"));
             //This action requires admin permissions. If events are fired this permission is granted
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             _logger.LogInformation("Middleware events were fired successfully");
 
             _logger.LogInformation("Verifying the OpenIdConnect logout flow..");
-            response = await _httpClient.GetAsync(string.Empty);
+            response = await DoGetAsync(string.Empty);
             await ThrowIfResponseStatusNotOk(response);
             responseContent = await response.Content.ReadAsStringAsync();
             ValidateLayoutPage(responseContent);
@@ -100,8 +100,8 @@ namespace E2ETests
             handler.CookieContainer.Add(new Uri(_deploymentResult.ApplicationBaseUri), _httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)));
             _httpClient = new HttpClient(handler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
 
-            response = await _httpClient.PostAsync("Account/LogOff", content);
-            Assert.Null(handler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNetCore.Microsoft.AspNetCore.Identity.Application"));
+            response = await DoPostAsync("Account/LogOff", content);
+            Assert.Null(handler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(IdentityCookieName));
             Assert.Equal<string>(
                 "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/oauth2/logout",
                 response.Headers.Location.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));
