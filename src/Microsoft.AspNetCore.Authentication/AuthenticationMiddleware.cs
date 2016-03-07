@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Authentication
                     await _next(context);
                 }
             }
-            catch (Exception)
+            finally
             {
                 try
                 {
@@ -81,9 +81,8 @@ namespace Microsoft.AspNetCore.Authentication
                 }
                 catch (Exception)
                 {
-                    // Don't mask the original exception
+                    // Don't mask the original exception, if any
                 }
-                throw;
             }
         }
 
