@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Identity
     /// </summary>
     public class IdentityCookieOptions
     {
-        private static readonly string CookiePrefix = ".AspNetCore.Identity";
+        private static readonly string CookiePrefix = "Identity";
         private static readonly string DefaultApplicationScheme = CookiePrefix + ".Application";
         private static readonly string DefaultExternalScheme = CookiePrefix + ".External";
         private static readonly string DefaultTwoFactorRememberMeScheme = CookiePrefix + ".TwoFactorRememberMe";
