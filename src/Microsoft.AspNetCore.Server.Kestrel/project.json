@@ -16,6 +16,10 @@
       "version": "1.0.0-*",
       "type": "build"
     },
+    "Microsoft.AspNetCore.Internal.libuv-Linux": {
+      "version": "1.0.0-*",
+      "type": "build"
+    },
     "Microsoft.AspNetCore.Internal.libuv-Windows": {
       "version": "1.0.0-*",
       "type": "build"
@@ -65,6 +69,8 @@
     "runtimes/win7-x64/native/": "runtimes/win7-x64/native/*",
     "runtimes/win7-x86/native/": "runtimes/win7-x86/native/*",
     "runtimes/win7-arm/native/": "runtimes/win7-arm/native/*",
-    "runtimes/osx/native/": "runtimes/osx/native/*"
+    "runtimes/osx/native/": "runtimes/osx/native/*",
+    "runtimes/rhel-x64/native/": "runtimes/rhel-x64/native/*",
+    "runtimes/debian-x64/native/": "runtimes/debian-x64/native/*"
   }
 }
