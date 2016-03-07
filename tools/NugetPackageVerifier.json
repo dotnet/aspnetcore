@@ -308,8 +308,6 @@
             "Microsoft.EntityFrameworkCore.FunctionalTests": {},
             "Microsoft.EntityFrameworkCore.Relational.FunctionalTests": {},
             "Microsoft.EntityFrameworkCore.Relational.Design.FunctionalTests": {},
-            "KoreBuild": {},
-            "KoreBuild-dotnet": {},
             "Microsoft.AspNetCore.DataProtection.Sources": {},
             "Microsoft.AspNetCore.Internal.libuv-Darwin": {},
             "Microsoft.AspNetCore.Internal.libuv-Windows": {},
@@ -345,7 +343,11 @@
             "NonAdxVerificationCompositeRule"
         ],
         "packages": {
-            "dotnet-test-xunit": {},
+            "dotnet-test-xunit": {
+                "SIGN_AUTHENTICODE": {
+                    "lib\\dnxcore50\\dotnet-test-xunit.dll": "Need to follow up, not from ADX team"
+                }
+            },
             "Microsoft.Cci": {},
             "Microsoft.CodeAnalysis": {},
             "Microsoft.CodeAnalysis.Common": {},
