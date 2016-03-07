@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             {
                 HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(901, (int)response.StatusCode);
-                Assert.Equal(string.Empty, response.ReasonPhrase);
+                Assert.True(string.IsNullOrEmpty(response.ReasonPhrase)); // https://github.com/dotnet/corefx/issues/6721
                 Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
             }
         }
