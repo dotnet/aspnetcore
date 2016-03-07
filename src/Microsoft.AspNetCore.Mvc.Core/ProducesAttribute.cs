@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Formatters.Internal;
-using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -63,6 +63,8 @@ namespace Microsoft.AspNetCore.Mvc
         public Type Type { get; set; }
 
         public MediaTypeCollection ContentTypes { get; set; }
+
+        public int StatusCode => StatusCodes.Status200OK;
 
         public override void OnResultExecuting(ResultExecutingContext context)
         {

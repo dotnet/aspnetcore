@@ -44,23 +44,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         public string RelativePath { get; set; }
 
         /// <summary>
-        /// Gets or sets <see cref="ModelMetadata"/> for the <see cref="ResponseType"/> or null.
-        /// </summary>
-        /// <remarks>
-        /// Will be null if <see cref="ResponseType"/> is null.
-        /// </remarks>
-        public ModelMetadata ResponseModelMetadata { get; set; }
-
-        /// <summary>
-        /// Gets or sets the CLR data type of the response or null.
-        /// </summary>
-        /// <remarks>
-        /// Will be null if the action returns no response, or if the response type is unclear. Use
-        /// <c>ProducesAttribute</c> on an action method to specify a response type.
-        /// </remarks>
-        public Type ResponseType { get; set; }
-
-        /// <summary>
         /// Gets the list of possible formats for a response.
         /// </summary>
         /// <remarks>
@@ -76,6 +59,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// Will be empty if the action returns no response, or if the response type is unclear. Use
         /// <c>ProducesAttribute</c> on an action method to specify a response type.
         /// </remarks>
-        public IList<ApiResponseFormat> SupportedResponseFormats { get; } = new List<ApiResponseFormat>();
+        public IList<ApiResponseType> SupportedResponseTypes { get; } = new List<ApiResponseType>();
     }
 }

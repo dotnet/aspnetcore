@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// <summary>
     /// Writes an object to the output stream.
     /// </summary>
-    public abstract class OutputFormatter : IOutputFormatter, IApiResponseFormatMetadataProvider
+    public abstract class OutputFormatter : IOutputFormatter, IApiResponseTypeMetadataProvider
     {
         /// <summary>
         /// Gets the mutable collection of media type elements supported by

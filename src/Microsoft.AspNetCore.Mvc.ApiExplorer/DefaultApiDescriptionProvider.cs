@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 #endif
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -112,37 +113,20 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             // Void /Task object/IActionResult will result in no data.
             var declaredReturnType = GetDeclaredReturnType(action);
 
-            // Now 'simulate' an action execution. This attempts to figure out to the best of our knowledge
-            // what the logical data type is using filters.
-            var runtimeReturnType = GetRuntimeReturnType(declaredReturnType, responseMetadataAttributes);
+            var runtimeReturnType = GetRuntimeReturnType(declaredReturnType);
 
-            // We might not be able to figure out a good runtime return type. If that's the case we don't
-            // provide any information about outputs. The workaround is to attribute the action.
-            if (runtimeReturnType == typeof(void))
+            var apiResponseTypes = GetApiResponseTypes(action, responseMetadataAttributes, runtimeReturnType);
+            foreach (var apiResponseType in apiResponseTypes)
             {
-                // As a special case, if the return type is void - we want to surface that information
-                // specifically, but nothing else. This can be overridden with a filter/attribute.
-                apiDescription.ResponseType = runtimeReturnType;
-            }
-            else if (runtimeReturnType != null)
-            {
-                apiDescription.ResponseType = runtimeReturnType;
-
-                apiDescription.ResponseModelMetadata = _modelMetadataProvider.GetMetadataForType(runtimeReturnType);
-
-                var formats = GetResponseFormats(action, responseMetadataAttributes, runtimeReturnType);
-                foreach (var format in formats)
-                {
-                    apiDescription.SupportedResponseFormats.Add(format);
-                }
+                apiDescription.SupportedResponseTypes.Add(apiResponseType);
             }
 
             // It would be possible here to configure an action with multiple body parameters, in which case you
             // could end up with duplicate data.
             foreach (var parameter in apiDescription.ParameterDescriptions.Where(p => p.Source == BindingSource.Body))
             {
-                var formats = GetRequestFormats(action, requestMetadataAttributes, parameter.Type);
-                foreach (var format in formats)
+                var requestFormats = GetRequestFormats(action, requestMetadataAttributes, parameter.Type);
+                foreach (var format in requestFormats)
                 {
                     apiDescription.SupportedRequestFormats.Add(format);
                 }
@@ -364,13 +348,24 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return results;
         }
 
-        private IReadOnlyList<ApiResponseFormat> GetResponseFormats(
+        private IReadOnlyList<ApiResponseType> GetApiResponseTypes(
             ControllerActionDescriptor action,
             IApiResponseMetadataProvider[] responseMetadataAttributes,
             Type type)
         {
-            var results = new List<ApiResponseFormat>();
+            var results = new List<ApiResponseType>();
 
+            // Build list of all possible return types (and status codes) for an action.
+            var objectTypes = new Dictionary<int, Type>();
+
+            if (type != null && type != typeof(void))
+            {
+                // This return type can be overriden by any response metadata
+                // attributes later if the user wishes to.
+                objectTypes[StatusCodes.Status200OK] = type;
+            }
+
+            // Get the content type that the action explicitly set to support.
             // Walk through all 'filter' attributes in order, and allow each one to see or override
             // the results of the previous ones. This is similar to the execution path for content-negotiation.
             var contentTypes = new MediaTypeCollection();
@@ -379,6 +374,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 foreach (var metadataAttribute in responseMetadataAttributes)
                 {
                     metadataAttribute.SetContentTypes(contentTypes);
+
+                    if (metadataAttribute.Type != null)
+                    {
+                        objectTypes[metadataAttribute.StatusCode] = metadataAttribute.Type;
+                    }
                 }
             }
 
@@ -387,28 +387,53 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 contentTypes.Add((string)null);
             }
 
-            foreach (var contentType in contentTypes)
-            {
-                foreach (var formatter in _outputFormatters)
-                {
-                    var responseFormatMetadataProvider = formatter as IApiResponseFormatMetadataProvider;
-                    if (responseFormatMetadataProvider != null)
-                    {
-                        var supportedTypes = responseFormatMetadataProvider.GetSupportedContentTypes(contentType, type);
+            var responseTypeMetadataProviders = _outputFormatters.OfType<IApiResponseTypeMetadataProvider>();
 
-                        if (supportedTypes != null)
+            foreach (var objectType in objectTypes)
+            {
+                if (objectType.Value == typeof(void))
+                {
+                    results.Add(new ApiResponseType()
+                    {
+                        StatusCode = objectType.Key,
+                        Type = objectType.Value
+                    });
+
+                    continue;
+                }
+
+                var apiResponseType = new ApiResponseType()
+                {
+                    Type = objectType.Value,
+                    StatusCode = objectType.Key,
+                    ModelMetadata = _modelMetadataProvider.GetMetadataForType(objectType.Value)
+                };
+
+                foreach (var contentType in contentTypes)
+                {
+                    foreach (var responseTypeMetadataProvider in responseTypeMetadataProviders)
+                    {
+                        var formatterSupportedContentTypes = responseTypeMetadataProvider.GetSupportedContentTypes(
+                            contentType,
+                            objectType.Value);
+
+                        if (formatterSupportedContentTypes == null)
                         {
-                            foreach (var supportedType in supportedTypes)
+                            continue;
+                        }
+
+                        foreach (var formatterSupportedContentType in formatterSupportedContentTypes)
+                        {
+                            apiResponseType.ApiResponseFormats.Add(new ApiResponseFormat()
                             {
-                                results.Add(new ApiResponseFormat()
-                                {
-                                    Formatter = formatter,
-                                    MediaType = supportedType,
-                                });
-                            }
+                                Formatter = (IOutputFormatter)responseTypeMetadataProvider,
+                                MediaType = formatterSupportedContentType,
+                            });
                         }
                     }
                 }
+
+                results.Add(apiResponseType);
             }
 
             return results;
@@ -445,28 +470,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return genericType?.GenericTypeArguments[0];
         }
 
-        private Type GetRuntimeReturnType(Type declaredReturnType, IApiResponseMetadataProvider[] metadataAttributes)
+        private Type GetRuntimeReturnType(Type declaredReturnType)
         {
-            // Walk through all of the filter attributes and allow them to set the type. This will execute them
-            // in filter-order allowing the desired behavior for overriding.
-            if (metadataAttributes != null)
-            {
-                Type typeSetByAttribute = null;
-                foreach (var metadataAttribute in metadataAttributes)
-                {
-                    if (metadataAttribute.Type != null)
-                    {
-                        typeSetByAttribute = metadataAttribute.Type;
-                    }
-                }
-
-                // If one of the filters set a type, then trust it.
-                if (typeSetByAttribute != null)
-                {
-                    return typeSetByAttribute;
-                }
-            }
-
             // If we get here, then a filter didn't give us an answer, so we need to figure out if we
             // want to use the declared return type.
             //

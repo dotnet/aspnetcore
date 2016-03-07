@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     /// An <see cref="Formatters.IOutputFormatter"/> should implement this interface to expose metadata information
     /// to an <c>IApiDescriptionProvider</c>.
     /// </remarks>
-    public interface IApiResponseFormatMetadataProvider
+    public interface IApiResponseTypeMetadataProvider
     {
         /// <summary>
         /// Gets a filtered list of content types which are supported by the <see cref="Formatters.IOutputFormatter"/>

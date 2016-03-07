@@ -52,8 +52,7 @@ namespace ApiExplorerWebSite
             {
                 GroupName = description.GroupName,
                 HttpMethod = description.HttpMethod,
-                RelativePath = description.RelativePath,
-                ResponseType = description.ResponseType?.FullName,
+                RelativePath = description.RelativePath
             };
 
             foreach (var parameter in description.ParameterDescriptions)
@@ -78,15 +77,24 @@ namespace ApiExplorerWebSite
                 data.ParameterDescriptions.Add(parameterData);
             }
 
-            foreach (var response in description.SupportedResponseFormats)
+            foreach (var response in description.SupportedResponseTypes)
             {
-                var responseData = new ApiExplorerResponseData()
+                var responseType = new ApiExplorerResponseType()
                 {
-                    FormatterType = response.Formatter.GetType().FullName,
-                    MediaType = response.MediaType.ToString(),
+                    StatusCode = response.StatusCode,
+                    ResponseType = response.Type?.FullName
                 };
 
-                data.SupportedResponseFormats.Add(responseData);
+                foreach(var responseFormat in response.ApiResponseFormats)
+                {
+                    responseType.ResponseFormats.Add(new ApiExplorerResponseFormat()
+                    {
+                        FormatterType = responseFormat.Formatter?.GetType().FullName,
+                        MediaType = responseFormat.MediaType
+                    });
+                }
+
+                data.SupportedResponseTypes.Add(responseType);
             }
 
             return data;
@@ -103,9 +111,7 @@ namespace ApiExplorerWebSite
 
             public string RelativePath { get; set; }
 
-            public string ResponseType { get; set; }
-
-            public List<ApiExplorerResponseData> SupportedResponseFormats { get; } = new List<ApiExplorerResponseData>();
+            public List<ApiExplorerResponseType> SupportedResponseTypes { get; } = new List<ApiExplorerResponseType>();
         }
 
         // Used to serialize data between client and server
@@ -131,7 +137,17 @@ namespace ApiExplorerWebSite
         }
 
         // Used to serialize data between client and server
-        private class ApiExplorerResponseData
+        private class ApiExplorerResponseType
+        {
+            public IList<ApiExplorerResponseFormat> ResponseFormats { get; }
+                = new List<ApiExplorerResponseFormat>();
+
+            public string ResponseType { get; set; }
+
+            public int StatusCode { get; set; }
+        }
+
+        private class ApiExplorerResponseFormat
         {
             public string MediaType { get; set; }
 
