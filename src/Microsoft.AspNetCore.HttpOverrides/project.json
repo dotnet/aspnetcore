@@ -8,7 +8,13 @@
     ],
     "xmlDoc": true
   },
-  "description": "XForward and Method override middlewares for ASP.NET",
+  "description": "ASP.NET Core basic middleware for:\r\nX-Forwarded-* headers to forward headers from a proxy.\r\nHTTP method override header.",
+  "tags": [
+    "aspnetcore",
+    "proxy",
+    "headers",
+    "xforwarded"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/basicmiddleware"
@@ -19,7 +25,7 @@
     "Microsoft.Extensions.Options": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "imports": [
         "dotnet5.4"

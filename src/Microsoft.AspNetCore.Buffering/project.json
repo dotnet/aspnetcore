@@ -8,7 +8,12 @@
     ],
     "xmlDoc": true
   },
-  "description": "ASP.NET middleware for buffering response bodies.",
+  "description": "ASP.NET Core middleware for buffering response bodies.",
+  "tags": [
+    "aspnetcore",
+    "buffer",
+    "buffering"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/basicmiddleware"
@@ -17,7 +22,7 @@
     "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "imports": [
         "dotnet5.4"
