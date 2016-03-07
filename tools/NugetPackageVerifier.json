@@ -5,72 +5,89 @@
         ],
         "packages": {
             "dotnet-aspnet-codegenerator": {
-             "NUSPEC_COPYRIGHT": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             },
-             "NUSPEC_LICENSEURL": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             },
-             "NUSPEC_ICONURL": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             },
-             "NUSPEC_PROJECTURL": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             },
-             "NUSPEC_ACCEPTLICENSE": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             }
+                "NUSPEC_COPYRIGHT": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_LICENSEURL": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_ICONURL": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_PROJECTURL": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_ACCEPTLICENSE": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                }
+            },
+            "dotnet-ef": {
+                "NUSPEC_COPYRIGHT": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_LICENSEURL": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_ICONURL": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_PROJECTURL": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_ACCEPTLICENSE": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                }
             },
             "dotnet-publish-iis": {
-             "NUSPEC_COPYRIGHT": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             },
-             "NUSPEC_LICENSEURL": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             },
-             "NUSPEC_ICONURL": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             },
-             "NUSPEC_PROJECTURL": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             },
-             "NUSPEC_ACCEPTLICENSE": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             }
+                "NUSPEC_COPYRIGHT": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_LICENSEURL": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_ICONURL": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_PROJECTURL": {
+                "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_ACCEPTLICENSE": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                }
             },
             "dotnet-razor-tooling": {
-             "NUSPEC_COPYRIGHT": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             },
-             "NUSPEC_LICENSEURL": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             },
-             "NUSPEC_ICONURL": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             },
-             "NUSPEC_PROJECTURL": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             },
-             "NUSPEC_ACCEPTLICENSE": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             }
+                "NUSPEC_COPYRIGHT": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_LICENSEURL": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_ICONURL": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_PROJECTURL": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_ACCEPTLICENSE": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                }
             },
             "dotnet-watch": {
-             "NUSPEC_COPYRIGHT": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             },
-             "NUSPEC_LICENSEURL": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             },
-             "NUSPEC_ICONURL": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             },
-             "NUSPEC_PROJECTURL": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             },
-             "NUSPEC_ACCEPTLICENSE": {
-               "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
-             }
+                "NUSPEC_COPYRIGHT": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_LICENSEURL": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_ICONURL": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_PROJECTURL": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                },
+                "NUSPEC_ACCEPTLICENSE": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                }
             },
             "dnx-clr-win-x64": {
                 "SIGN_AUTHENTICODE": {
@@ -124,8 +141,16 @@
             },
             "dotnet-sql-cache": {},
             "dotnet-user-secrets": {},
-            "Microsoft.AspNet.SignalR.Client.Cpp.v120.WinDesktop": {},
-            "Microsoft.AspNet.SignalR.Client.Cpp.v140.WinDesktop": {},
+            "Microsoft.AspNet.SignalR.Client.Cpp.v120.WinDesktop": {
+                "NUSPEC_ICONURL": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                }
+            },
+            "Microsoft.AspNet.SignalR.Client.Cpp.v140.WinDesktop": {
+                "NUSPEC_ICONURL": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                }
+            },
             "Microsoft.AspNetCore.Antiforgery": {},
             "Microsoft.AspNetCore.Authentication": {},
             "Microsoft.AspNetCore.Authentication.Cookies": {},
@@ -293,7 +318,11 @@
             "Microsoft.Extensions.Primitives": {},
             "Microsoft.Extensions.Testing.Abstractions": {},
             "Microsoft.Extensions.WebEncoders": {},
-            "Microsoft.Identity.Client": {},
+            "Microsoft.Identity.Client": {
+                "NUSPEC_ICONURL": {
+                    "*": "https://github.com/aspnet/Coherence-Signed/issues/196"
+                }
+            },
             "Microsoft.Net.Http.Headers": {},
             "Microsoft.Net.Http.Server": {},
             "Microsoft.Net.WebSockets.Server": {},
@@ -490,6 +519,7 @@
             "runtime.any.System.Runtime.Extensions": {},
             "runtime.any.System.Runtime.Handles": {},
             "runtime.any.System.Runtime.InteropServices": {},
+            "runtime.any.System.Runtime.Serialization.Primitives": {},
             "runtime.any.System.Text.Encoding": {},
             "runtime.any.System.Text.Encoding.Extensions": {},
             "runtime.any.System.Threading.Tasks": {},
@@ -514,6 +544,7 @@
             "runtime.aot.System.Runtime.Extensions": {},
             "runtime.aot.System.Runtime.Handles": {},
             "runtime.aot.System.Runtime.InteropServices": {},
+            "runtime.aot.System.Runtime.Serialization.Primitives": {},
             "runtime.aot.System.Text.Encoding": {},
             "runtime.aot.System.Text.Encoding.Extensions": {},
             "runtime.aot.System.Threading.Tasks": {},
@@ -534,6 +565,10 @@
             "runtime.centos.7.1-x64.runtime.native.System.IO.Compression": {},
             "runtime.centos.7.1-x64.runtime.native.System.Net.Http": {},
             "runtime.centos.7.1-x64.runtime.native.System.Security.Cryptography": {},
+            "runtime.debian.8-x64.runtime.native.System": {},
+            "runtime.debian.8-x64.runtime.native.System.IO.Compression": {},
+            "runtime.debian.8-x64.runtime.native.System.Net.Http": {},
+            "runtime.debian.8-x64.runtime.native.System.Security.Cryptography": {},
             "runtime.debian.8.2-x64.Microsoft.NETCore.ConsoleHost": {},
             "runtime.debian.8.2-x64.Microsoft.NETCore.Runtime.CoreCLR": {
                 "SIGN_STRONGNAME": {
@@ -695,6 +730,7 @@
             "runtime.unix.System.Globalization.Extensions": {},
             "runtime.unix.System.IO.FileSystem": {},
             "runtime.unix.System.IO.Pipes": {},
+            "runtime.unix.System.Net.NameResolution": {},
             "runtime.unix.System.Net.Ping": {},
             "runtime.unix.System.Net.Primitives": {},
             "runtime.unix.System.Net.Requests": {},
