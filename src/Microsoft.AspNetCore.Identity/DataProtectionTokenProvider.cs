@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Identity
     /// Provides protection and validation of identity tokens.
     /// </summary>
     /// <typeparam name="TUser">The type used to represent a user.</typeparam>
-    public class DataProtectorTokenProvider<TUser> : IUserTokenProvider<TUser> where TUser : class
+    public class DataProtectorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUser> where TUser : class
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DataProtectorTokenProvider{TUser}"/> class.

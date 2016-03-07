@@ -89,17 +89,9 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         public virtual int AccessFailedCount { get; set; }
 
-        /// <summary>
-        /// Navigation property for users in the role
-        /// </summary>
         public virtual ICollection<TestUserRole<TKey>> Roles { get; private set; } = new List<TestUserRole<TKey>>();
-        /// <summary>
-        /// Navigation property for users claims
-        /// </summary>
         public virtual ICollection<TestUserClaim<TKey>> Claims { get; private set; } = new List<TestUserClaim<TKey>>();
-        /// <summary>
-        /// Navigation property for users logins
-        /// </summary>
         public virtual ICollection<TestUserLogin<TKey>> Logins { get; private set; } = new List<TestUserLogin<TKey>>();
+        public virtual ICollection<TestUserToken<TKey>> Tokens { get; private set; } = new List<TestUserToken<TKey>>();
     }
 }

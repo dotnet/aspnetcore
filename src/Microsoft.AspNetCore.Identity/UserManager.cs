@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Identity
         protected const string ResetPasswordTokenPurpose = "ResetPassword";
         protected const string ConfirmEmailTokenPurpose = "EmailConfirmation";
 
-        private readonly Dictionary<string, IUserTokenProvider<TUser>> _tokenProviders =
-            new Dictionary<string, IUserTokenProvider<TUser>>();
+        private readonly Dictionary<string, IUserTwoFactorTokenProvider<TUser>> _tokenProviders =
+            new Dictionary<string, IUserTwoFactorTokenProvider<TUser>>();
 
         private TimeSpan _defaultLockout = TimeSpan.Zero;
         private bool _disposed;
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Identity
                 _context = services.GetService<IHttpContextAccessor>()?.HttpContext;
                 foreach (var providerName in Options.Tokens.ProviderMap.Keys)
                 {
-                    var provider = services.GetRequiredService(Options.Tokens.ProviderMap[providerName].ProviderType) as IUserTokenProvider<TUser>;
+                    var provider = services.GetRequiredService(Options.Tokens.ProviderMap[providerName].ProviderType) as IUserTwoFactorTokenProvider<TUser>;
                     if (provider != null)
                     {
                         RegisterTokenProvider(providerName, provider);
@@ -121,6 +121,21 @@ namespace Microsoft.AspNetCore.Identity
         internal IdentityErrorDescriber ErrorDescriber { get; set; }
 
         internal IdentityOptions Options { get; set; }
+
+        /// <summary>
+        /// Gets a flag indicating whether the backing user store supports authentication tokens.
+        /// </summary>
+        /// <value>
+        /// true if the backing user store supports  authentication tokens, otherwise false.
+        /// </value>
+        public virtual bool SupportsUserAuthenticationTokens
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return Store is IUserAuthenticationTokenStore<TUser>;
+            }
+        }
 
         /// <summary>
         /// Gets a flag indicating whether the backing user store supports two factor authentication.
@@ -1601,7 +1616,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="providerName">The name of the provider to register.</param>
         /// <param name="provider">The provider to register.</param>
-        public virtual void RegisterTokenProvider(string providerName, IUserTokenProvider<TUser> provider)
+        public virtual void RegisterTokenProvider(string providerName, IUserTwoFactorTokenProvider<TUser> provider)
         {
             ThrowIfDisposed();
             if (provider == null)
@@ -1954,6 +1969,92 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
+        /// Returns an authentication token for a user.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="loginProvider">The authentication scheme for the provider the token is associated with.</param>
+        /// <param name="tokenName">The name of the token.</param>
+        /// <returns></returns>
+        public virtual Task<string> GetAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName)
+        {
+            ThrowIfDisposed();
+            var store = GetTokenStore();
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            if (loginProvider == null)
+            {
+                throw new ArgumentNullException(nameof(loginProvider));
+            }
+            if (tokenName == null)
+            {
+                throw new ArgumentNullException(nameof(tokenName));
+            }
+
+            return store.GetTokenAsync(user, loginProvider, tokenName, CancellationToken);
+        }
+
+        /// <summary>
+        /// Sets an authentication token for a user.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="loginProvider">The authentication scheme for the provider the token is associated with.</param>
+        /// <param name="tokenName">The name of the token.</param>
+        /// <param name="tokenValue">The value of the token.</param>
+        /// <returns></returns>
+        public virtual async Task<IdentityResult> SetAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName, string tokenValue)
+        {
+            ThrowIfDisposed();
+            var store = GetTokenStore();
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            if (loginProvider == null)
+            {
+                throw new ArgumentNullException(nameof(loginProvider));
+            }
+            if (tokenName == null)
+            {
+                throw new ArgumentNullException(nameof(tokenName));
+            }
+
+            // REVIEW: should updating any tokens affect the security stamp?
+            await store.SetTokenAsync(user, loginProvider, tokenName, tokenValue, CancellationToken);
+            return await UpdateUserAsync(user);
+        }
+
+        /// <summary>
+        /// Remove an authentication token for a user.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="loginProvider">The authentication scheme for the provider the token is associated with.</param>
+        /// <param name="tokenName">The name of the token.</param>
+        /// <returns>Whether a token was removed.</returns>
+        public virtual async Task<IdentityResult> RemoveAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName)
+        {
+            ThrowIfDisposed();
+            var store = GetTokenStore();
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            if (loginProvider == null)
+            {
+                throw new ArgumentNullException(nameof(loginProvider));
+            }
+            if (tokenName == null)
+            {
+                throw new ArgumentNullException(nameof(tokenName));
+            }
+
+            await store.RemoveTokenAsync(user, loginProvider, tokenName, CancellationToken);
+            return await UpdateUserAsync(user);
+        }
+
+
+        /// <summary>
         /// Releases the unmanaged resources used by the role manager and optionally releases the managed resources.
         /// </summary>
         /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
@@ -1966,7 +2067,6 @@ namespace Microsoft.AspNetCore.Identity
             }
         }
 
-        // IUserFactorStore methods
         internal IUserTwoFactorStore<TUser> GetUserTwoFactorStore()
         {
             var cast = Store as IUserTwoFactorStore<TUser>;
@@ -1977,7 +2077,6 @@ namespace Microsoft.AspNetCore.Identity
             return cast;
         }
 
-        // IUserLockoutStore methods
         internal IUserLockoutStore<TUser> GetUserLockoutStore()
         {
             var cast = Store as IUserLockoutStore<TUser>;
@@ -1988,7 +2087,6 @@ namespace Microsoft.AspNetCore.Identity
             return cast;
         }
 
-        // IUserEmailStore methods
         internal IUserEmailStore<TUser> GetEmailStore(bool throwOnFail = true)
         {
             var cast = Store as IUserEmailStore<TUser>;
@@ -1999,7 +2097,6 @@ namespace Microsoft.AspNetCore.Identity
             return cast;
         }
 
-        // IUserPhoneNumberStore methods
         internal IUserPhoneNumberStore<TUser> GetPhoneNumberStore()
         {
             var cast = Store as IUserPhoneNumberStore<TUser>;
@@ -2010,7 +2107,6 @@ namespace Microsoft.AspNetCore.Identity
             return cast;
         }
 
-        // Two factor APIS
         internal async Task<byte[]> CreateSecurityTokenAsync(TUser user)
         {
             return Encoding.Unicode.GetBytes(await GetSecurityStampAsync(user));
@@ -2137,11 +2233,6 @@ namespace Microsoft.AspNetCore.Identity
             return IdentityResult.Success;
         }
 
-        /// <summary>
-        ///     Validate user and update. Called by other UserManager methods
-        /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
         private async Task<IdentityResult> UpdateUserAsync(TUser user)
         {
             var result = await ValidateUserInternal(user);
@@ -2154,7 +2245,16 @@ namespace Microsoft.AspNetCore.Identity
             return await Store.UpdateAsync(user, CancellationToken);
         }
 
-        // IUserPasswordStore methods
+        private IUserAuthenticationTokenStore<TUser> GetTokenStore()
+        {
+            var cast = Store as IUserAuthenticationTokenStore<TUser>;
+            if (cast == null)
+            {
+                throw new NotSupportedException("Resources.StoreNotIUserAuthenticationTokenStore");
+            }
+            return cast;
+        }
+
         private IUserPasswordStore<TUser> GetPasswordStore()
         {
             var cast = Store as IUserPasswordStore<TUser>;

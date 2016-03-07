@@ -31,10 +31,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="loginProvider">The login provide whose information should be removed.</param>
         /// <param name="providerKey">The key given by the external login provider for the specified user.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
-        /// <returns>
-        /// The <see cref="Task"/> that contains a flag the result of the asynchronous removing operation. The flag will be true if
-        /// the login information was existed and removed, otherwise false.
-        /// </returns>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         Task RemoveLoginAsync(TUser user, string loginProvider, string providerKey, CancellationToken cancellationToken);
 
         /// <summary>

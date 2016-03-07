@@ -172,6 +172,9 @@ namespace IdentitySample.Controllers
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
             if (result.Succeeded)
             {
+                // Update any authentication tokens if login succeeded
+                await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
+
                 _logger.LogInformation(5, "User logged in with {Name} provider.", info.LoginProvider);
                 return RedirectToLocal(returnUrl);
             }
@@ -188,7 +191,7 @@ namespace IdentitySample.Controllers
                 // If the user does not have an account, then ask the user to create an account.
                 ViewData["ReturnUrl"] = returnUrl;
                 ViewData["LoginProvider"] = info.LoginProvider;
-                var email = info.ExternalPrincipal.FindFirstValue(ClaimTypes.Email);
+                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
                 return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email });
             }
         }
@@ -217,6 +220,10 @@ namespace IdentitySample.Controllers
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
                         _logger.LogInformation(6, "User created an account using {Name} provider.", info.LoginProvider);
+
+                        // Update any authentication tokens as well
+                        await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
+
                         return RedirectToLocal(returnUrl);
                     }
                 }

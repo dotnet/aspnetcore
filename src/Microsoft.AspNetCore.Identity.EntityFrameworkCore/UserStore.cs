@@ -63,7 +63,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         IUserLockoutStore<TUser>,
         IUserPhoneNumberStore<TUser>,
         IQueryableUserStore<TUser>,
-        IUserTwoFactorStore<TUser>
+        IUserTwoFactorStore<TUser>,
+        IUserAuthenticationTokenStore<TUser>
         where TUser : IdentityUser<TKey>
         where TRole : IdentityRole<TKey>
         where TContext : DbContext
@@ -523,6 +524,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         private DbSet<IdentityUserClaim<TKey>> UserClaims { get { return Context.Set<IdentityUserClaim<TKey>>(); } }
         private DbSet<IdentityUserRole<TKey>> UserRoles { get { return Context.Set<IdentityUserRole<TKey>>(); } }
         private DbSet<IdentityUserLogin<TKey>> UserLogins { get { return Context.Set<IdentityUserLogin<TKey>>(); } }
+        private DbSet<IdentityUserToken<TKey>> UserTokens { get { return Context.Set<IdentityUserToken<TKey>>(); } }
 
         /// <summary>
         /// Get the claims associated with the specified <paramref name="user"/> as an asynchronous operation.
@@ -653,7 +655,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 LoginProvider = login.LoginProvider,
                 ProviderDisplayName = login.ProviderDisplayName
             };
-            // TODO: fixup so we don't have to update both
             UserLogins.Add(l);
             return Task.FromResult(false);
         }
@@ -1195,6 +1196,70 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 return await query.ToListAsync(cancellationToken);
             }
             return new List<TUser>();
+        }
+
+        private Task<IdentityUserToken<TKey>> FindToken(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
+        {
+            var userId = user.Id;
+            return UserTokens.SingleOrDefaultAsync(l => l.UserId.Equals(userId) && l.LoginProvider == loginProvider && l.Name == name, cancellationToken);
+        }
+
+        // <inheritdoc>
+        public virtual async Task SetTokenAsync(TUser user, string loginProvider, string name, string value, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            var token = await FindToken(user, loginProvider, name, cancellationToken);
+            if (token == null)
+            {
+                UserTokens.Add(new IdentityUserToken<TKey>
+                {
+                    UserId = user.Id,
+                    LoginProvider = loginProvider,
+                    Name = name,
+                    Value = value
+                });
+            }
+            else
+            {
+                token.Value = value;
+            }
+        }
+
+        public async Task RemoveTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            var userId = user.Id;
+            var entry = await UserTokens.SingleOrDefaultAsync(l => l.UserId.Equals(userId) && l.LoginProvider == loginProvider && l.Name == name, cancellationToken);
+            if (entry != null)
+            {
+                UserTokens.Remove(entry);
+            }
+        }
+
+        public async Task<string> GetTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            var entry = await FindToken(user, loginProvider, name, cancellationToken);
+            return entry?.Value;
         }
     }
 }

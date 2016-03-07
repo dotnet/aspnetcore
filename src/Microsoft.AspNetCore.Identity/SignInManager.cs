@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
@@ -460,8 +461,43 @@ namespace Microsoft.AspNetCore.Identity
             {
                 return null;
             }
-            // REVIEW: fix this wrap
-            return new ExternalLoginInfo(auth.Principal, provider, providerKey, new AuthenticationDescription(auth.Description).DisplayName);
+            return new ExternalLoginInfo(auth.Principal, provider, providerKey, new AuthenticationDescription(auth.Description).DisplayName)
+            {
+                AuthenticationTokens = new AuthenticationProperties(auth.Properties).GetTokens()
+            };
+        }
+
+        /// <summary>
+        /// Stores any authentication tokens found in the external authentication cookie into the associated user.
+        /// </summary>
+        /// <param name="externalLogin">The information from the external login provider.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the operation.</returns>
+        public virtual async Task<IdentityResult> UpdateExternalAuthenticationTokensAsync(ExternalLoginInfo externalLogin)
+        {
+            if (externalLogin == null)
+            {
+                throw new ArgumentNullException(nameof(externalLogin));
+            }
+
+            if (externalLogin.AuthenticationTokens != null && externalLogin.AuthenticationTokens.Any())
+            {
+                var user = await UserManager.FindByLoginAsync(externalLogin.LoginProvider, externalLogin.ProviderKey);
+                if (user == null)
+                {
+                    return IdentityResult.Failed();
+                }
+
+                foreach (var token in externalLogin.AuthenticationTokens)
+                {
+                    var result = await UserManager.SetAuthenticationTokenAsync(user, externalLogin.LoginProvider, token.Name, token.Value);
+                    if (!result.Succeeded)
+                    {
+                        return result;
+                    }
+                }
+            }
+
+            return IdentityResult.Success;
         }
         
         /// <summary>

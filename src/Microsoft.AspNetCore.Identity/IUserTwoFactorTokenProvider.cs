@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Identity
 {
     /// <summary>
-    /// Provides an abstraction for token generators.
+    /// Provides an abstraction for two factor token generators.
     /// </summary>
     /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
-    public interface IUserTokenProvider<TUser> where TUser : class
+    public interface IUserTwoFactorTokenProvider<TUser> where TUser : class
     {
         /// <summary>
         /// Generates a token for the specified <paramref name="user"/> and <paramref name="purpose"/>.
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Identity
         /// and validated it with the same purpose a token with the purpose of TOTP would not pass the heck even if it was
         /// for the same user.
         /// 
-        /// Implementations of <see cref="IUserTokenProvider{TUser}"/> should validate that purpose is not null or empty to
+        /// Implementations of <see cref="IUserTwoFactorTokenProvider{TUser}"/> should validate that purpose is not null or empty to
         /// help with token separation.
         /// </remarks>
         Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user);

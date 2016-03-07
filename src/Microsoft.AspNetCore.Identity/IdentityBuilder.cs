@@ -133,11 +133,11 @@ namespace Microsoft.AspNetCore.Identity
         /// Adds a token provider for the <seealso cref="UserType"/>.
         /// </summary>
         /// <param name="providerName">The name of the provider to add.</param>
-        /// <param name="provider">The type of the <see cref="IUserTokenProvider{TUser}"/> to add.</param>
+        /// <param name="provider">The type of the <see cref="IUserTwoFactorTokenProvider{TUser}"/> to add.</param>
         /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public virtual IdentityBuilder AddTokenProvider(string providerName, Type provider)
         {
-            if (!typeof(IUserTokenProvider<>).MakeGenericType(UserType).GetTypeInfo().IsAssignableFrom(provider.GetTypeInfo()))
+            if (!typeof(IUserTwoFactorTokenProvider<>).MakeGenericType(UserType).GetTypeInfo().IsAssignableFrom(provider.GetTypeInfo()))
             {
                 throw new InvalidOperationException(Resources.FormatInvalidManagerType(provider.Name, "IUserTokenProvider", UserType.Name));
             }

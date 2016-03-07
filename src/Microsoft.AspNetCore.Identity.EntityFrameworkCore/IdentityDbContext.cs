@@ -136,6 +136,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         public DbSet<IdentityUserRole<TKey>> UserRoles { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="DbSet{TEntity}"/> of User tokens.
+        /// </summary>
+        public DbSet<IdentityUserToken<TKey>> UserTokens { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="DbSet{TEntity}"/> of roles.
         /// </summary>
         public DbSet<TRole> Roles { get; set; }
@@ -206,6 +211,12 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             {
                 b.HasKey(l => new { l.LoginProvider, l.ProviderKey });
                 b.ToTable("AspNetUserLogins");
+            });
+
+            builder.Entity<IdentityUserToken<TKey>>(b =>
+            {
+                b.HasKey(l => new { l.UserId, l.LoginProvider, l.Name });
+                b.ToTable("AspNetUserTokens");
             });
         }
     }

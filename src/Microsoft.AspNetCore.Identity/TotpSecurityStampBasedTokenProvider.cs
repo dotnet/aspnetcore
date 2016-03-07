@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Identity
     /// Represents a token provider that generates time based codes using the user's security stamp.
     /// </summary>
     /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
-    public abstract class TotpSecurityStampBasedTokenProvider<TUser> : IUserTokenProvider<TUser>
+    public abstract class TotpSecurityStampBasedTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUser>
         where TUser : class
     {
         /// <summary>
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Identity
         /// and validated it with the same purpose a token with the purpose of TOTP would not pass the check even if it was
         /// for the same user.
         /// 
-        /// Implementations of <see cref="IUserTokenProvider{TUser}"/> should validate that purpose is not null or empty to
+        /// Implementations of <see cref="IUserTwoFactorTokenProvider{TUser}"/> should validate that purpose is not null or empty to
         /// help with token separation.
         /// </remarks>
         public virtual async Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user)

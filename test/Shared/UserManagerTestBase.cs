@@ -815,7 +815,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.False(await manager.IsEmailConfirmedAsync(user));
         }
 
-        private class StaticTokenProvider : IUserTokenProvider<TUser>
+        private class StaticTokenProvider : IUserTwoFactorTokenProvider<TUser>
         {
             public async Task<string> GenerateAsync(string purpose, UserManager<TUser> manager, TUser user)
             {
@@ -1907,6 +1907,30 @@ namespace Microsoft.AspNetCore.Identity.Test
             var factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
             Assert.True(!factors.Any());
+        }
+
+        [Fact]
+        public async Task CanGetSetUpdateAndRemoveUserToken()
+        {
+            if (ShouldSkipDbTests())
+            {
+                return;
+            }
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            Assert.Null(await manager.GetAuthenticationTokenAsync(user, "provider", "name"));
+            IdentityResultAssert.IsSuccess(await manager.SetAuthenticationTokenAsync(user, "provider", "name", "value"));
+            Assert.Equal("value", await manager.GetAuthenticationTokenAsync(user, "provider", "name"));
+
+            IdentityResultAssert.IsSuccess(await manager.SetAuthenticationTokenAsync(user, "provider", "name", "value2"));
+            Assert.Equal("value2", await manager.GetAuthenticationTokenAsync(user, "provider", "name"));
+
+            IdentityResultAssert.IsSuccess(await manager.RemoveAuthenticationTokenAsync(user, "whatevs", "name"));
+            Assert.Equal("value2", await manager.GetAuthenticationTokenAsync(user, "provider", "name"));
+
+            IdentityResultAssert.IsSuccess(await manager.RemoveAuthenticationTokenAsync(user, "provider", "name"));
+            Assert.Null(await manager.GetAuthenticationTokenAsync(user, "provider", "name"));
         }
 
         [Fact]

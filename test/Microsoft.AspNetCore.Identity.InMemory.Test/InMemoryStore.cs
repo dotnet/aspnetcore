@@ -23,7 +23,8 @@ namespace Microsoft.AspNetCore.Identity.InMemory
         IQueryableUserStore<TUser>,
         IUserTwoFactorStore<TUser>,
         IQueryableRoleStore<TRole>, 
-        IRoleClaimStore<TRole> 
+        IRoleClaimStore<TRole>,
+        IUserAuthenticationTokenStore<TUser> 
         where TRole : TestRole
         where TUser : TestUser
     {
@@ -497,6 +498,54 @@ namespace Microsoft.AspNetCore.Identity.InMemory
         {
             role.NormalizedName = normalizedName;
             return Task.FromResult(0);
+        }
+
+        public Task SetTokenAsync(TUser user, string loginProvider, string name, string value, CancellationToken cancellationToken)
+        {
+            var tokenEntity =
+                user.Tokens.SingleOrDefault(
+                    l =>
+                        l.TokenName == name && l.LoginProvider == loginProvider &&
+                        l.UserId == user.Id);
+            if (tokenEntity != null)
+            {
+                tokenEntity.TokenValue = value;
+            }
+            else
+            {
+                user.Tokens.Add(new TestUserToken
+                {
+                    UserId = user.Id,
+                    LoginProvider = loginProvider,
+                    TokenName = name,
+                    TokenValue = value
+                });
+            }
+            return Task.FromResult(0);
+        }
+
+        public Task RemoveTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
+        {
+            var tokenEntity =
+                user.Tokens.SingleOrDefault(
+                    l =>
+                        l.TokenName == name && l.LoginProvider == loginProvider &&
+                        l.UserId == user.Id);
+            if (tokenEntity != null)
+            {
+                user.Tokens.Remove(tokenEntity);
+            }
+            return Task.FromResult(0);
+        }
+
+        public Task<string> GetTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
+        {
+            var tokenEntity =
+                user.Tokens.SingleOrDefault(
+                    l =>
+                        l.TokenName == name && l.LoginProvider == loginProvider &&
+                        l.UserId == user.Id);
+            return Task.FromResult(tokenEntity?.TokenValue);
         }
 
         public IQueryable<TRole> Roles
