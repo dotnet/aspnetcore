@@ -1,5 +1,9 @@
 {
-  "description": "An antiforgery system for ASP.NET designed to generate and validate tokens to prevent Cross-Site Request Forgery attacks.",
+  "description": "An antiforgery system for ASP.NET Core designed to generate and validate tokens to prevent Cross-Site Request Forgery attacks.",
+  "tags": [
+    "aspnetcore",
+    "antiforgery"
+  ],
   "version": "1.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": true,
@@ -24,6 +28,6 @@
         "dotnet5.4"
       ]
     },
-    "net451": {}
+    "net451": { }
   }
 }
