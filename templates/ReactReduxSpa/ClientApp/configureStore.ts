@@ -7,7 +7,8 @@ import { typedToPlain } from 'redux-typed';
 export default function configureStore(initialState?: Store.ApplicationState) {
     // Build middleware. These are functions that can process the actions before they reach the store.
     const thunk = (thunkModule as any).default; // Workaround for TypeScript not importing thunk module as expected
-    const devToolsExtension = (window as any).devToolsExtension; // If devTools is installed, connect to it
+    const windowIfDefined = typeof window === 'undefined' ? null : window as any;
+    const devToolsExtension = windowIfDefined && windowIfDefined.devToolsExtension; // If devTools is installed, connect to it
     const createStoreWithMiddleware = compose(
         applyMiddleware(thunk, typedToPlain),
         devToolsExtension ? devToolsExtension() : f => f

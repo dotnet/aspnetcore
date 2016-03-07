@@ -33,6 +33,8 @@
     "react-router-redux": "^4.0.0",
     "redux": "^3.3.1",
     "redux-thunk": "^2.0.1",
-    "redux-typed": "^1.0.0"
+    "redux-typed": "^1.0.0",
+    "require-from-string": "^1.1.0",
+    "webpack-externals-plugin": "^1.0.0"
   }
 }
