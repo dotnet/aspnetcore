@@ -1,36 +1,36 @@
 import * as React from 'react';
+import { Link } from 'react-router';
+import { provide } from 'redux-typed';
+import { ApplicationState }  from '../store';
+import * as WeatherForecastsState from '../store/WeatherForecasts';
 
-interface FetchDataExampleState {
-    forecasts: WeatherForecast[];
-    loading: boolean;
+interface RouteParams {
+    startDateIndex: string;
 }
 
-export class FetchData extends React.Component<any, FetchDataExampleState> {
-    constructor() {
-        super();
-        this.state = { forecasts: [], loading: true };
-
-        fetch('/api/SampleData/WeatherForecasts')
-            .then(response => response.json())
-            .then((data: WeatherForecast[]) => {
-                this.setState({ forecasts: data, loading: false });
-            });
+class FetchData extends React.Component<WeatherForecastProps, void> {
+    componentWillMount() {
+        // This method runs when the component is first added to the page 
+        let startDateIndex = parseInt(this.props.params.startDateIndex) || 0;
+        this.props.requestWeatherForecasts(startDateIndex);
+    }
+    
+    componentWillReceiveProps(nextProps: WeatherForecastProps) {
+        // This method runs when incoming props (e.g., route params) change
+        let startDateIndex = parseInt(nextProps.params.startDateIndex) || 0;
+        this.props.requestWeatherForecasts(startDateIndex);
     }
 
     public render() {
-        let contents = this.state.loading
-            ? <p><em>Loading...</em></p>
-            : FetchData.renderForecastsTable(this.state.forecasts);
-
         return <div>
             <h1>Weather forecast</h1>
-            <p>This component demonstrates fetching data from the server.</p>
-            { contents }
-            <p>For more sophisticated applications, consider an architecture such as Redux or Flux for managing state. You can generate an ASP.NET Core application with React and Redux using <code>dotnet new aspnet/spa/reactredux</code> instead of using this template.</p>
+            <p>This component demonstrates fetching data from the server and working with URL parameters.</p>
+            { this.renderForecastsTable() }
+            { this.renderPagination() }
         </div>;
     }
 
-    private static renderForecastsTable(forecasts: WeatherForecast[]) {
+    private renderForecastsTable() {
         return <table className='table'>
             <thead>
                 <tr>
@@ -41,7 +41,7 @@ export class FetchData extends React.Component<any, FetchDataExampleState> {
                 </tr>
             </thead>
             <tbody>
-            {forecasts.map(forecast =>
+            {this.props.forecasts.map(forecast =>
                 <tr key={ forecast.dateFormatted }>
                     <td>{ forecast.dateFormatted }</td>
                     <td>{ forecast.temperatureC }</td>
@@ -52,11 +52,23 @@ export class FetchData extends React.Component<any, FetchDataExampleState> {
             </tbody>
         </table>;
     }
+    
+    private renderPagination() {
+        let prevStartDateIndex = this.props.startDateIndex - 5;
+        let nextStartDateIndex = this.props.startDateIndex + 5;
+
+        return <p className='clearfix text-center'>
+            <Link className='btn btn-default pull-left' to={ `/fetchdata/${ prevStartDateIndex }` }>Previous</Link>
+            <Link className='btn btn-default pull-right' to={ `/fetchdata/${ nextStartDateIndex }` }>Next</Link>
+            { this.props.isLoading ? <span>Loading...</span> : [] }
+        </p>;
+    }
 }
 
-interface WeatherForecast {
-    dateFormatted: string;
-    temperatureC: number;
-    temperatureF: number;
-    summary: string;
-}
+// Build the WeatherForecastProps type, which allows the component to be strongly typed
+const provider = provide(
+    (state: ApplicationState) => state.weatherForecasts, // Select which part of global state maps to this component
+    WeatherForecastsState.actionCreators                 // Select which action creators should be exposed to this component
+).withExternalProps<{ params: RouteParams }>();          // Also include a 'params' property on WeatherForecastProps
+type WeatherForecastProps = typeof provider.allProps;
+export default provider.connect(FetchData);

@@ -1,30 +1,27 @@
 import * as React from 'react';
+import { Link } from 'react-router';
+import { provide } from 'redux-typed';
+import { ApplicationState }  from '../store';
+import * as CounterStore from '../store/Counter';
 
-interface CounterState {
-    currentCount: number;
-}
-
-export class Counter extends React.Component<any, CounterState> {
-    constructor() {
-        super();
-        this.state = { currentCount: 0 };
-    }
-
+class Counter extends React.Component<CounterProps, void> {
     public render() {
         return <div>
             <h1>Counter</h1>
 
             <p>This is a simple example of a React component.</p>
 
-            <p>Current count: <strong>{ this.state.currentCount }</strong></p>
+            <p>Current count: <strong>{ this.props.count }</strong></p>
 
-            <button onClick={ () => { this.incrementCounter() } }>Increment</button>
+            <button onClick={ () => { this.props.increment() } }>Increment</button>
         </div>;
     }
-
-    incrementCounter() {
-        this.setState({
-            currentCount: this.state.currentCount + 1
-        });
-    }
 }
+
+// Build the CounterProps type, which allows the component to be strongly typed
+const provider = provide(
+    (state: ApplicationState) => state.counter, // Select which part of global state maps to this component
+    CounterStore.actionCreators                 // Select which action creators should be exposed to this component
+);
+type CounterProps = typeof provider.allProps;
+export default provider.connect(Counter);

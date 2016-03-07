@@ -3,6 +3,7 @@
     "moduleResolution": "node",
     "target": "es6",
     "jsx": "preserve",
+    "experimentalDecorators": true,
     "sourceMap": true,
     "skipDefaultLibCheck": true
   },

@@ -11,6 +11,7 @@ module.exports = {
     plugins: [
         extractCSS,
         new webpack.optimize.OccurenceOrderPlugin(),
-        new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false } })
+        new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false } }),
+        new webpack.DefinePlugin({ 'process.env.NODE_ENV': '"production"' })
     ]
 };

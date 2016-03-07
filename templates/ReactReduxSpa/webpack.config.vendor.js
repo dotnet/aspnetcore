@@ -31,6 +31,7 @@ module.exports = {
             name: '[name]_[hash]'
         })
     ].concat(isDevelopment ? [] : [
-        new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false } })
+        new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false } }),
+        new webpack.DefinePlugin({ 'process.env.NODE_ENV': '"production"' })
     ])
 };
