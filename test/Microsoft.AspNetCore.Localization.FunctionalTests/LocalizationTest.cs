@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
     {
         private static readonly string _applicationPath =
 #if NET451
-            Path.GetFullPath(Path.Combine("..", "..", "..", "LocalizationWebsite"));
+            Path.GetFullPath(Path.Combine("..", "..", "..", "..", "..", "LocalizationWebsite"));
 #else
             Path.GetFullPath(Path.Combine("..", "LocalizationWebsite"));
 #endif
