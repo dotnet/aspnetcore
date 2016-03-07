@@ -1,7 +1,8 @@
 {
   "compilationOptions": {
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "preserveCompilationContext": true
   },
   "dependencies": {
     "Microsoft.AspNetCore.Http": "1.0.0-*",

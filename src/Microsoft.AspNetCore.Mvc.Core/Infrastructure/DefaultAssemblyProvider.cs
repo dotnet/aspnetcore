@@ -25,9 +25,17 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// </summary>
         /// <param name="environment">The <see cref="IApplicationEnvironment"/>.</param>
         public DefaultAssemblyProvider(IApplicationEnvironment environment)
+            : this(
+                  Assembly.Load(new AssemblyName(environment.ApplicationName)),
+                  DependencyContext.Load(Assembly.Load(new AssemblyName(environment.ApplicationName))))
         {
-            _entryAssembly = Assembly.Load(new AssemblyName(environment.ApplicationName));
-            _dependencyContext = DependencyContext.Load(_entryAssembly);
+        }
+
+        // Internal for unit testing.
+        internal DefaultAssemblyProvider(Assembly entryAssembly, DependencyContext dependencyContext)
+        {
+            _entryAssembly = entryAssembly;
+            _dependencyContext = dependencyContext;
         }
 
         /// <summary>
@@ -78,7 +86,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// while ignoring MVC assemblies.
         /// </summary>
         /// <returns>A set of <see cref="Library"/>.</returns>
-        protected virtual IEnumerable<RuntimeLibrary> GetCandidateLibraries()
+        // Internal for unit testing
+        protected internal virtual IEnumerable<RuntimeLibrary> GetCandidateLibraries()
         {
             if (ReferenceAssemblies == null)
             {
