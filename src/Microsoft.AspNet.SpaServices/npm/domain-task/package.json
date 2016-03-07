@@ -1,6 +1,6 @@
 {
   "name": "domain-task",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tracks outstanding operations for a logical thread of execution",
   "main": "main.js",
   "scripts": {

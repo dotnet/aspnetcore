@@ -9,14 +9,17 @@ export function addTask(task: PromiseLike<any>) {
             state.numRemainingTasks++;
             task.then(() => {
                 // The application may have other listeners chained to this promise *after*
-                // this listener. Since we don't want the combined task to complete until
-                // all the handlers for child tasks have finished, delay the following by
-                // one tick.
+                // this listener, which may in turn register further tasks. Since we don't 
+                // want the combined task to complete until all the handlers for child tasks
+                // have finished, delay the response to give time for more tasks to be added
+                // synchronously.
                 setTimeout(() => {
                     state.numRemainingTasks--;
                     if (state.numRemainingTasks === 0 && !state.hasIssuedSuccessCallback) {
                         state.hasIssuedSuccessCallback = true;
-                        state.completionCallback(/* error */ null);
+                        setTimeout(() => {
+                            state.completionCallback(/* error */ null);
+                        }, 0);
                     }
                 }, 0);
             }, (error) => {
@@ -42,7 +45,9 @@ export function run<T>(codeToRun: () => T, completionCallback: (error: any) => v
             // If no tasks were registered synchronously, then we're done already
             if (state.numRemainingTasks === 0 && !state.hasIssuedSuccessCallback) {
                 state.hasIssuedSuccessCallback = true;
-                state.completionCallback(/* error */ null);
+                setTimeout(() => {
+                    state.completionCallback(/* error */ null);
+                }, 0);
             }
         } catch(ex) {
             state.completionCallback(ex);
