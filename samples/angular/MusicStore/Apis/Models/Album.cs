@@ -23,7 +23,7 @@ namespace MusicStore.Models
         public string Title { get; set; }
 
         [Required]
-        [RangeAttribute(typeof(double), "0.01", "100")] // Long-form constructor to work around https://github.com/dotnet/coreclr/issues/2172
+        [RangeAttribute(typeof(decimal), "0.01", "100")] // Long-form constructor to work around https://github.com/dotnet/coreclr/issues/2172
         [DataType(DataType.Currency)]
         public decimal Price { get; set; }
 
