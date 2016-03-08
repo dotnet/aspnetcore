@@ -8,14 +8,15 @@ using Microsoft.AspNetCore.Server.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Internal;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Xunit;
 
 namespace E2ETests
 {
     public partial class Validator
     {
-        private static readonly string IdentityCookieName = new IdentityCookieOptions().ApplicationCookieAuthenticationScheme;
-        private static readonly string ExternalLoginCookieName = new IdentityCookieOptions().ExternalCookieAuthenticationScheme;
+        private static readonly string IdentityCookieName = CookieAuthenticationDefaults.CookiePrefix + new IdentityCookieOptions().ApplicationCookieAuthenticationScheme;
+        private static readonly string ExternalLoginCookieName = CookieAuthenticationDefaults.CookiePrefix + new IdentityCookieOptions().ExternalCookieAuthenticationScheme;
         private HttpClient _httpClient;
 
         private HttpClientHandler _httpClientHandler;
