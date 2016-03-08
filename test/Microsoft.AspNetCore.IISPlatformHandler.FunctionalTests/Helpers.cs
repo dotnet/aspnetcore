@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.IISPlatformHandler.FunctionalTests
     {
         public static string GetTestSitesPath()
         {
-            return Path.GetFullPath(Path.Combine("..", "..", "..", "TestSites"));
+            return Path.GetFullPath(Path.Combine("..", "..", "..", "..", "..", "TestSites"));
         }
     }
 }
