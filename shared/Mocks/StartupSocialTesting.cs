@@ -89,7 +89,8 @@ namespace MusicStore
             services.AddSingleton<IMemoryCache, MemoryCache>();
 
             // Add session related services.
-            services.AddCaching();
+            services.AddMemoryCache();
+            services.AddDistributedMemoryCache();
             services.AddSession();
 
             // Add the system clock service

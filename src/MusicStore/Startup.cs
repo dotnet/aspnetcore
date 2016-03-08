@@ -76,7 +76,8 @@ namespace MusicStore
             services.AddMvc();
 
             // Add memory cache services
-            services.AddCaching();
+            services.AddMemoryCache();
+            services.AddDistributedMemoryCache();
 
             // Add session related services.
             services.AddSession();
