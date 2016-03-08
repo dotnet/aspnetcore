@@ -731,10 +731,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                 var needDecode = false;
                 var chFound = scan.Seek(ref _vectorSpaces, ref _vectorQuestionMarks, ref _vectorPercentages);
-                if (chFound == '%')
+                if (chFound == -1)
+                {
+                    return false;
+                }
+                else if (chFound == '%')
                 {
                     needDecode = true;
                     chFound = scan.Seek(ref _vectorSpaces, ref _vectorQuestionMarks);
+                    if (chFound == -1)
+                    {
+                        return false;
+                    }
                 }
 
                 var pathBegin = begin;
@@ -851,7 +859,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 while (!scan.IsEnd)
                 {
                     var beginName = scan;
-                    scan.Seek(ref _vectorColons, ref _vectorCRs);
+                    if (scan.Seek(ref _vectorColons, ref _vectorCRs) == -1)
+                    {
+                        return false;
+                    }
                     var endName = scan;
 
                     chFirst = scan.Take();
@@ -885,13 +896,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             var scanAhead = scan;
                             var chAhead = scanAhead.Take();
-                            if (chAhead == '\n')
+                            if (chAhead == -1)
+                            {
+                                return false;
+                            }
+                            else if (chAhead == '\n')
                             {
                                 chAhead = scanAhead.Take();
-                                // If the "\r\n" isn't part of "linear whitespace",
-                                // then this header has no value.
-                                if (chAhead != ' ' && chAhead != '\t')
+                                if (chAhead == -1)
                                 {
+                                    return false;
+                                }
+                                else if (chAhead != ' ' && chAhead != '\t')
+                                {
+                                    // If the "\r\n" isn't part of "linear whitespace",
+                                    // then this header has no value.
                                     break;
                                 }
                             }
@@ -899,6 +918,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                         beginValue = scan;
                         chSecond = scan.Take();
+
+                        if (chSecond == -1)
+                        {
+                            return false;
+                        }
                     }
                     scan = beginValue;
 
@@ -912,10 +936,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         }
 
                         var endValue = scan;
-                        chFirst = scan.Take(); // expecting: /r
-                        chSecond = scan.Take(); // expecting: /n
+                        chFirst = scan.Take(); // expecting: \r
+                        chSecond = scan.Take(); // expecting: \n
 
-                        if (chSecond != '\n')
+                        if (chSecond == -1)
+                        {
+                            return false;
+                        }
+                        else if (chSecond != '\n')
                         {
                             // "\r" was all by itself, move just after it and try again
                             scan = endValue;
@@ -924,7 +952,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         }
 
                         var chThird = scan.Peek();
-                        if (chThird == ' ' || chThird == '\t')
+                        if (chThird == -1)
+                        {
+                            return false;
+                        }
+                        else if (chThird == ' ' || chThird == '\t')
                         {
                             // special case, "\r\n " or "\r\n\t".
                             // this is considered wrapping"linear whitespace" and is actually part of the header value
