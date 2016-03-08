@@ -8,15 +8,6 @@
     "whatwg-fetch/whatwg-fetch.d.ts": {
       "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
     },
-    "crossroads/crossroads.d.ts": {
-      "commit": "9f0f926a12026287b5a4a229e5672c01e7549313"
-    },
-    "js-signals/js-signals.d.ts": {
-      "commit": "9f0f926a12026287b5a4a229e5672c01e7549313"
-    },
-    "hasher/hasher.d.ts": {
-      "commit": "9f0f926a12026287b5a4a229e5672c01e7549313"
-    },
     "knockout/knockout.d.ts": {
       "commit": "9f0f926a12026287b5a4a229e5672c01e7549313"
     },
@@ -24,6 +15,18 @@
       "commit": "9f0f926a12026287b5a4a229e5672c01e7549313"
     },
     "es6-promise/es6-promise.d.ts": {
+      "commit": "9f0f926a12026287b5a4a229e5672c01e7549313"
+    },
+    "history/history.d.ts": {
+      "commit": "9f0f926a12026287b5a4a229e5672c01e7549313"
+    },
+    "react-router/history.d.ts": {
+      "commit": "9f0f926a12026287b5a4a229e5672c01e7549313"
+    },
+    "crossroads/crossroads.d.ts": {
+      "commit": "9f0f926a12026287b5a4a229e5672c01e7549313"
+    },
+    "js-signals/js-signals.d.ts": {
       "commit": "9f0f926a12026287b5a4a229e5672c01e7549313"
     }
   }
