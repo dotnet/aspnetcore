@@ -721,8 +721,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 var routeTemplate = action.AttributeRouteInfo?.Template ?? nullTemplate;
 
-                var verbs = action.ActionConstraints.OfType<HttpMethodActionConstraint>().FirstOrDefault()?.HttpMethods;
-                var formattedVerbs = string.Join(", ", verbs.OrderBy(v => v, StringComparer.Ordinal));
+                var verbs = action.ActionConstraints?.OfType<HttpMethodActionConstraint>()
+                    .FirstOrDefault()?.HttpMethods;
+
+                var formattedVerbs = string.Empty;
+                if (verbs != null)
+                {
+                    formattedVerbs = string.Join(", ", verbs.OrderBy(v => v, StringComparer.OrdinalIgnoreCase));
+                }
 
                 var description =
                     Resources.FormatAttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod_Item(

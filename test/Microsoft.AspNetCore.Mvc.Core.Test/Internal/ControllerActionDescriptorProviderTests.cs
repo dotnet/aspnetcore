@@ -12,8 +12,6 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing.Tree;
@@ -767,6 +765,49 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 "route, or set a route template in all attributes that constrain HTTP verbs.";
 
             var provider = GetProvider(controllerTypeInfo);
+
+            // Act
+            var exception = Assert.Throws<InvalidOperationException>(() => provider.GetDescriptors());
+
+            // Assert
+            VerifyMultiLineError(expectedMessage, exception.Message, unorderedStart: 1, unorderedLineCount: 2);
+        }
+
+        // Verify that the expected exception and error message is thrown even when the user builds the model 
+        // incorrectly.
+        [Fact]
+        public void AttributeRouting_ThrowsIfAttributeRoutedAndNonAttributedActions_OnTheSameMethod_UsingCustomConvention()
+        {
+            // Arrange
+            var controllerTypeInfo = typeof(UserController).GetTypeInfo();
+            var controllerTypeProvider = new StaticControllerTypeProvider(new[] { controllerTypeInfo });
+            var options = new TestOptionsManager<MvcOptions>();
+            options.Value.Conventions.Add(new TestRoutingConvention());
+            var modelProvider = new DefaultApplicationModelProvider(options);
+            var provider = new ControllerActionDescriptorProvider(
+                controllerTypeProvider,
+                new[] { modelProvider },
+                options);
+            var assemblyName = controllerTypeInfo.Assembly.GetName().Name;
+            var expectedMessage =
+                "The following errors occurred with attribute routing information:"
+                + Environment.NewLine
+                + Environment.NewLine
+                + "Error 1:"
+                + Environment.NewLine
+                + $"A method '{controllerTypeInfo.FullName}.GetUser ({assemblyName})'" +
+                " must not define attribute routed actions and non attribute routed actions at the same time:"
+                + Environment.NewLine +
+                $"Action: '{controllerTypeInfo.FullName}.GetUser ({assemblyName})' " +
+                "- Route Template: '(none)' - " +
+                "HTTP Verbs: ''"
+                + Environment.NewLine
+                + $"Action: '{controllerTypeInfo.FullName}.GetUser ({assemblyName})' " +
+                "- Route Template: 'Microsoft/AspNetCore/Mvc/Internal/User/GetUser/{id?}' - " +
+                "HTTP Verbs: ''" + Environment.NewLine +
+                Environment.NewLine +
+                "Use 'AcceptVerbsAttribute' to create a single route that allows multiple HTTP verbs and defines a " +
+                "route, or set a route template in all attributes that constrain HTTP verbs.";
 
             // Act
             var exception = Assert.Throws<InvalidOperationException>(() => provider.GetDescriptors());
@@ -2061,6 +2102,37 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             public void Apply(ApplicationModel application)
             {
                 application.ApiExplorer.IsVisible = _isVisible;
+            }
+        }
+
+        private class TestRoutingConvention : IApplicationModelConvention
+        {
+            public void Apply(ApplicationModel application)
+            {
+                foreach (var controller in application.Controllers)
+                {
+                    var hasAttributeRouteModels = controller.Selectors
+                        .Any(selector => selector.AttributeRouteModel != null);
+                    if (!hasAttributeRouteModels)
+                    {
+                        var template = controller.ControllerType.Namespace.Replace('.', '/')
+                            + "/[controller]/[action]/{id?}";
+                        var attributeRouteModel = new AttributeRouteModel()
+                        {
+                            Template = template
+                        };
+
+                        controller.Selectors.Add(new SelectorModel { AttributeRouteModel = attributeRouteModel });
+                    }
+                }
+            }
+        }
+
+        private class UserController : Controller
+        {
+            public string GetUser(int id)
+            {
+                return string.Format("User {0} retrieved successfully", id);
             }
         }
     }
