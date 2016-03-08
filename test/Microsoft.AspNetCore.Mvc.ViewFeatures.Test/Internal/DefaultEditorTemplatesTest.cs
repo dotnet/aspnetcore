@@ -606,10 +606,10 @@ Environment.NewLine;
 
         // DateTime-local is not special-cased unless using Html5DateRenderingMode.Rfc3339.
         [Theory]
-        [InlineData("date", "{0:d}", "02/01/2000")]
-        [InlineData("datetime", null, "02/01/2000 03:04:05 +00:00")]
-        [InlineData("datetime-local", null, "02/01/2000 03:04:05 +00:00")]
-        [InlineData("time", "{0:t}", "03:04")]
+        [InlineData("date", "{0:d}", "2000-01-02")]
+        [InlineData("datetime", null, "2000-01-02T03:04:05.006+00:00")]
+        [InlineData("datetime-local", null, "2000-01-02T03:04:05.006")]
+        [InlineData("time", "{0:t}", "03:04:05.006")]
         [ReplaceCulture]
         public void Editor_FindsCorrectDateOrTimeTemplate(string dataTypeName, string editFormatString, string expected)
         {
