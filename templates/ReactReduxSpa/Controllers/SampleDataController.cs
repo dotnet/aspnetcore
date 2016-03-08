@@ -14,7 +14,7 @@ namespace WebApplicationBasic.Controllers
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
-        [HttpGet, Route("[action]")]
+        [HttpGet("[action]")]
         public IEnumerable<WeatherForecast> WeatherForecasts(int startDateIndex)
         {
             var rng = new Random();
