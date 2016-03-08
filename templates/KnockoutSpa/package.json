@@ -1,0 +1,28 @@
+{
+  "name": "WebApplicationBasic",
+  "version": "0.0.0",
+  "devDependencies": {
+    "bootstrap": "^3.3.6",
+    "css-loader": "^0.23.1",
+    "express": "^4.13.4",
+    "extendify": "^1.0.0",
+    "extract-text-webpack-plugin": "^1.0.1",
+    "file-loader": "^0.8.5",
+    "jquery": "^2.2.1",
+    "raw-loader": "^0.5.1",
+    "style-loader": "^0.13.0",
+    "ts-loader": "^0.8.1",
+    "typescript": "^1.8.2",
+    "url-loader": "^0.5.7",
+    "webpack": "^1.12.14",
+    "webpack-dev-middleware": "^1.5.1",
+    "webpack-hot-middleware": "^2.7.1"
+  },
+  "dependencies": {
+    "crossroads": "^0.12.2",
+    "domain-task": "^1.0.0",
+    "es6-promise": "^3.1.2",
+    "hasher": "^1.2.0",
+    "knockout": "^3.4.0"
+  }
+}
