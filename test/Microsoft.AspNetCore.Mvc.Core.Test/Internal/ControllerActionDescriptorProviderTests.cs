@@ -38,6 +38,21 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public void GetDescriptors_DisplayNameIncludesAssemblyName()
+        {
+            // Arrange
+            var controllerTypeInfo = typeof(PersonController).GetTypeInfo();
+            var provider = GetProvider(controllerTypeInfo);
+
+            // Act
+            var descriptors = provider.GetDescriptors();
+            var descriptor = descriptors.Single(ad => ad.Name == nameof(PersonController.GetPerson));
+
+            // Assert
+            Assert.Equal($"{controllerTypeInfo.FullName}.{nameof(PersonController.GetPerson)} ({controllerTypeInfo.Assembly.GetName().Name})", descriptor.DisplayName);
+        }
+
+        [Fact]
         public void GetDescriptors_IncludesFilters()
         {
             // Arrange
@@ -455,26 +470,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Empty(showPeople.Selectors[0].ActionConstraints.OfType<HttpMethodActionConstraint>());
         }
 
-        [Fact]
-        public void GetDescriptor_SetsDisplayName()
-        {
-            // Arrange
-            var provider = GetProvider(typeof(PersonController).GetTypeInfo());
-
-            // Act
-            var descriptors = provider.GetDescriptors();
-            var displayNames = descriptors.Select(ad => ad.DisplayName);
-
-            // Assert
-            Assert.Equal(
-                new[]
-                {
-                    $"{typeof(PersonController).FullName}.GetPerson",
-                    $"{typeof(PersonController).FullName}.ListPeople",
-                },
-                displayNames);
-        }
-
         public void AttributeRouting_TokenReplacement_IsAfterReflectedModel()
         {
             // Arrange
@@ -512,18 +507,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void AttributeRouting_TokenReplacement_ThrowsWithMultipleMessages()
         {
             // Arrange
-            var provider = GetProvider(typeof(MultipleErrorsController).GetTypeInfo());
+            var controllerTypeInfo = typeof(MultipleErrorsController).GetTypeInfo();
+            var assemblyName = controllerTypeInfo.Assembly.GetName().Name;
+            var provider = GetProvider(controllerTypeInfo);
 
             var expectedMessage =
                 "The following errors occurred with attribute routing information:" + Environment.NewLine +
                 Environment.NewLine +
                 "Error 1:" + Environment.NewLine +
-                $"For action: '{typeof(MultipleErrorsController).FullName}.Unknown'" + Environment.NewLine +
+                $"For action: '{controllerTypeInfo.FullName}.Unknown ({assemblyName})'" + Environment.NewLine +
                 "Error: While processing template 'stub/[action]/[unknown]', a replacement value for the token 'unknown' " +
                 "could not be found. Available tokens: 'action, controller'." + Environment.NewLine +
                 Environment.NewLine +
                 "Error 2:" + Environment.NewLine +
-                $"For action: '{typeof(MultipleErrorsController).FullName}.Invalid'" + Environment.NewLine +
+                $"For action: '{controllerTypeInfo.FullName}.Invalid ({assemblyName})'" + Environment.NewLine +
                 "Error: The route template '[invalid/syntax' has invalid syntax. A replacement token is not closed.";
 
             // Act
@@ -750,23 +747,25 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void AttributeRouting_ThrowsIfAttributeRoutedAndNonAttributedActions_OnTheSameMethod()
         {
             // Arrange
+            var controllerTypeInfo = typeof(AttributeAndNonAttributeRoutedActionsOnSameMethodController).GetTypeInfo();
+            var assemblyName = controllerTypeInfo.Assembly.GetName().Name;
+
             var expectedMessage =
                 "The following errors occurred with attribute routing information:" + Environment.NewLine +
                 Environment.NewLine +
                 "Error 1:" + Environment.NewLine +
-                $"A method '{typeof(AttributeAndNonAttributeRoutedActionsOnSameMethodController).FullName}.Method'" +
+                $"A method '{controllerTypeInfo.FullName}.Method ({assemblyName})'" +
                 " must not define attribute routed actions and non attribute routed actions at the same time:" + Environment.NewLine +
-                $"Action: '{typeof(AttributeAndNonAttributeRoutedActionsOnSameMethodController).FullName}.Method' " +
+                $"Action: '{controllerTypeInfo.FullName}.Method ({assemblyName})' " +
                 "- Route Template: 'AttributeRouted' - " +
                 "HTTP Verbs: 'GET'" + Environment.NewLine +
-                $"Action: '{typeof(AttributeAndNonAttributeRoutedActionsOnSameMethodController).FullName}.Method' - " +
+                $"Action: '{controllerTypeInfo.FullName}.Method ({assemblyName})' - " +
                 "Route Template: '(none)' - HTTP Verbs: 'DELETE, PATCH, POST, PUT'" + Environment.NewLine +
                 Environment.NewLine +
                 "Use 'AcceptVerbsAttribute' to create a single route that allows multiple HTTP verbs and defines a " +
                 "route, or set a route template in all attributes that constrain HTTP verbs.";
 
-            var provider = GetProvider(
-                typeof(AttributeAndNonAttributeRoutedActionsOnSameMethodController).GetTypeInfo());
+            var provider = GetProvider(controllerTypeInfo);
 
             // Act
             var exception = Assert.Throws<InvalidOperationException>(() => provider.GetDescriptors());
@@ -800,36 +799,38 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void AttributeRouting_Name_ThrowsIfMultipleActions_WithDifferentTemplatesHaveTheSameName()
         {
             // Arrange
-            var provider = GetProvider(typeof(SameNameDifferentTemplatesController).GetTypeInfo());
+            var sameNameType = typeof(SameNameDifferentTemplatesController).GetTypeInfo();
+            var provider = GetProvider(sameNameType);
 
+            var assemblyName = sameNameType.Assembly.GetName().Name;
             var expectedMessage =
                 "The following errors occurred with attribute routing information:"
                 + Environment.NewLine + Environment.NewLine +
                 "Error 1:" + Environment.NewLine +
                 "Attribute routes with the same name 'Products' must have the same template:"
                 + Environment.NewLine +
-                $"Action: '{typeof(SameNameDifferentTemplatesController).FullName}.Get' - Template: 'Products'"
+                $"Action: '{sameNameType.FullName}.Get ({assemblyName})' - Template: 'Products'"
                 + Environment.NewLine +
-                $"Action: '{typeof(SameNameDifferentTemplatesController).FullName}.Get' - Template: 'Products/{{id}}'"
+                $"Action: '{sameNameType.FullName}.Get ({assemblyName})' - Template: 'Products/{{id}}'"
                 + Environment.NewLine +
-                $"Action: '{typeof(SameNameDifferentTemplatesController).FullName}.Put' - Template: 'Products/{{id}}'"
+                $"Action: '{sameNameType.FullName}.Put ({assemblyName})' - Template: 'Products/{{id}}'"
                 + Environment.NewLine +
-                $"Action: '{typeof(SameNameDifferentTemplatesController).FullName}.Post' - Template: 'Products'"
+                $"Action: '{sameNameType.FullName}.Post ({assemblyName})' - Template: 'Products'"
                 + Environment.NewLine +
-                $"Action: '{typeof(SameNameDifferentTemplatesController).FullName}.Delete' - Template: 'Products/{{id}}'"
+                $"Action: '{sameNameType.FullName}.Delete ({assemblyName})' - Template: 'Products/{{id}}'"
                 + Environment.NewLine + Environment.NewLine +
                 "Error 2:" + Environment.NewLine +
                 "Attribute routes with the same name 'Items' must have the same template:"
                 + Environment.NewLine +
-                $"Action: '{typeof(SameNameDifferentTemplatesController).FullName}.GetItems' - Template: 'Items/{{id}}'"
+                $"Action: '{sameNameType.FullName}.GetItems ({assemblyName})' - Template: 'Items/{{id}}'"
                 + Environment.NewLine +
-                $"Action: '{typeof(SameNameDifferentTemplatesController).FullName}.PostItems' - Template: 'Items'"
+                $"Action: '{sameNameType.FullName}.PostItems ({assemblyName})' - Template: 'Items'"
                 + Environment.NewLine +
-                $"Action: '{typeof(SameNameDifferentTemplatesController).FullName}.PutItems' - Template: 'Items/{{id}}'"
+                $"Action: '{sameNameType.FullName}.PutItems ({assemblyName})' - Template: 'Items/{{id}}'"
                 + Environment.NewLine +
-                $"Action: '{typeof(SameNameDifferentTemplatesController).FullName}.DeleteItems' - Template: 'Items/{{id}}'"
+                $"Action: '{sameNameType.FullName}.DeleteItems ({assemblyName})' - Template: 'Items/{{id}}'"
                 + Environment.NewLine +
-                $"Action: '{typeof(SameNameDifferentTemplatesController).FullName}.PatchItems' - Template: 'Items'";
+                $"Action: '{sameNameType.FullName}.PatchItems ({assemblyName})' - Template: 'Items'";
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() => { provider.GetDescriptors(); });
@@ -924,13 +925,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void AttributeRouting_RouteNameTokenReplace_InvalidToken()
         {
             // Arrange
-            var provider = GetProvider(typeof(RouteNameIncorrectTokenController).GetTypeInfo());
+            var controllerTypeInfo = typeof(RouteNameIncorrectTokenController).GetTypeInfo();
+            var assemblyName = controllerTypeInfo.Assembly.GetName().Name;
+
+            var provider = GetProvider(controllerTypeInfo);
 
             var expectedMessage =
                 "The following errors occurred with attribute routing information:" + Environment.NewLine +
                 Environment.NewLine +
                 "Error 1:" + Environment.NewLine +
-                $"For action: '{typeof(RouteNameIncorrectTokenController).FullName}.Get'" + Environment.NewLine +
+                $"For action: '{controllerTypeInfo.FullName}.Get ({assemblyName})'" + Environment.NewLine +
                 "Error: While processing template 'Products_[unknown]', a replacement value for the token 'unknown' " +
                 "could not be found. Available tokens: 'action, controller'.";
 
@@ -1206,12 +1210,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         [InlineData("A", typeof(ApiExplorerEnabledActionConventionalRoutedController))]
         public void ApiExplorer_ThrowsForContentionalRouting(string actionName, Type type)
         {
-            var expected = string.Format(
-                "The action '{0}.{1}' has ApiExplorer enabled, but is using conventional routing. " +
-                "Only actions which use attribute routing support ApiExplorer.",
-                type.FullName, actionName);
-
             // Arrange
+            var assemblyName = type.GetTypeInfo().Assembly.GetName().Name;
+            var expected = $"The action '{type.FullName}.{actionName} ({assemblyName})' has ApiExplorer enabled, but is using conventional routing. " +
+                "Only actions which use attribute routing support ApiExplorer.";
+
             var provider = GetProvider(type.GetTypeInfo());
 
             // Act & Assert

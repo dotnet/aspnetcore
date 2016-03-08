@@ -291,12 +291,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 AttributeRouteInfo = CreateAttributeRouteInfo(actionAttributeRoute, controllerAttributeRoute)
             };
 
-            actionDescriptor.DisplayName = string.Format(
-                CultureInfo.InvariantCulture,
-                "{0}.{1}",
-                action.ActionMethod.DeclaringType.FullName,
-                action.ActionMethod.Name);
-
             return actionDescriptor;
         }
 
@@ -739,12 +733,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 actionDescriptions.Add(description);
             }
 
-            var methodFullName = string.Format(
-                CultureInfo.InvariantCulture,
-                "{0}.{1}",
-                actionDescriptor.MethodInfo.DeclaringType.FullName,
-                actionDescriptor.MethodInfo.Name);
-
             // Sample error message:
             //
             // A method 'MyApplication.CustomerController.Index' must not define attributed actions and
@@ -756,7 +744,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // or set a route template in all attributes that constrain HTTP verbs.
             return
                 Resources.FormatAttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod(
-                    methodFullName,
+                    actionDescriptor.DisplayName,
                     Environment.NewLine,
                     string.Join(Environment.NewLine, actionDescriptions));
         }

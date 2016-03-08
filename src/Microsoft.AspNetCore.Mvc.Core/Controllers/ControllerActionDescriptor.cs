@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 
@@ -24,9 +25,11 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                 if (base.DisplayName == null && ControllerTypeInfo != null && MethodInfo != null)
                 {
                     base.DisplayName = string.Format(
-                        "{0}.{1}",
+                        CultureInfo.InvariantCulture,
+                        "{0}.{1} ({2})",
                         ControllerTypeInfo.FullName,
-                        MethodInfo.Name);
+                        MethodInfo.Name,
+                        ControllerTypeInfo.Assembly.GetName().Name);
                 }
 
                 return base.DisplayName;
