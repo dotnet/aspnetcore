@@ -24,7 +24,8 @@ namespace BasicWebSite
             services.AddSingleton<IActionDescriptorProvider, ActionDescriptorCreationCounter>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<RequestIdService>();
-            services.AddCaching();
+            services.AddMemoryCache();
+            services.AddDistributedMemoryCache();
             services.AddSession();
         }
 
