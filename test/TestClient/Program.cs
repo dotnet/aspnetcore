@@ -45,7 +45,7 @@ namespace TestClient
                 } while (!result.EndOfMessage);
                 Console.WriteLine(Encoding.UTF8.GetString(data, 0, result.Count));
             }
-            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
+            // await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
         }
     }
 }
