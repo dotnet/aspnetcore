@@ -15,7 +15,7 @@ module.exports = {
         ]
     },
     entry: {
-        vendor: ['bootstrap', 'bootstrap/dist/css/bootstrap.css', 'knockout', 'crossroads', 'hasher', 'style-loader', 'jquery'],
+        vendor: ['bootstrap', 'bootstrap/dist/css/bootstrap.css', 'knockout', 'crossroads', 'history', 'style-loader', 'jquery'],
     },
     output: {
         path: path.join(__dirname, 'wwwroot', 'dist'),
