@@ -1,5 +1,6 @@
 import * as ko from 'knockout';
 import { Route, Router } from '../../router';
+import navMenu from '../nav-menu/nav-menu';
 
 // Declare the client-side routing configuration
 const routes: Route[] = [
@@ -18,10 +19,13 @@ class AppRootViewModel {
         this.route = this._router.currentRoute;
         
         // Load and register all the KO components needed to handle the routes
-        ko.components.register('nav-menu', require('../nav-menu/nav-menu').default);
-        ko.components.register('home-page', require('../home-page/home-page').default);
-        ko.components.register('counter-example', require('../counter-example/counter-example').default);
-        ko.components.register('fetch-data', require('../fetch-data/fetch-data').default);
+        // The optional 'bundle?lazy!' prefix is a Webpack feature that causes the referenced modules
+        // to be split into separate files that are then loaded on demand.
+        // For docs, see https://github.com/webpack/bundle-loader
+        ko.components.register('nav-menu', navMenu);
+        ko.components.register('home-page', require('bundle?lazy!../home-page/home-page'));
+        ko.components.register('counter-example', require('bundle?lazy!../counter-example/counter-example'));
+        ko.components.register('fetch-data', require('bundle?lazy!../fetch-data/fetch-data'));
     }
     
     // To support hot module replacement, this method unregisters the router and KO components.

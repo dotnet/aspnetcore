@@ -19,6 +19,7 @@
     "webpack-hot-middleware": "^2.7.1"
   },
   "dependencies": {
+    "bundle-loader": "^0.5.4",
     "crossroads": "^0.12.2",
     "domain-task": "^1.0.0",
     "es6-promise": "^3.1.2",

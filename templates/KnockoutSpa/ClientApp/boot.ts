@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import './css/site.css';
 import * as ko from 'knockout';
 import { createHistory } from 'history';
+import './webpack-component-loader';
 
 // Load and register the <app-root> component
 ko.components.register('app-root', require('./components/app-root/app-root').default);
