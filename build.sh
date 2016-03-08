@@ -18,7 +18,18 @@ if test ! -d $buildFolder; then
     
     localZipFile="$tempFolder/korebuild.zip"
     
-    wget -O $localZipFile $koreBuildZip 2>/dev/null || curl -o $localZipFile --location $koreBuildZip /dev/null
+    retries=6
+    until (wget -O $localZipFile $koreBuildZip 2>/dev/null || curl -o $localZipFile --location $koreBuildZip 2>/dev/null)
+    do
+        echo "Failed to download '$koreBuildZip'"
+        if [ "$retries" -le 0 ]; then
+            exit 1
+        fi
+        retries=$((retries - 1))
+        echo "Waiting 10 seconds before retrying. Retries left: $retries"
+        sleep 10s
+    done
+    
     unzip -q -d $tempFolder $localZipFile
   
     mkdir $buildFolder
