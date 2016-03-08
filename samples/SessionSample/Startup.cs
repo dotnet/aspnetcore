@@ -33,7 +33,8 @@ namespace SessionSample
             //services.AddSingleton<IDistributedCache, RedisCache>();
 
             // Adds a default in-memory implementation of IDistributedCache
-            services.AddCaching();
+            services.AddMemoryCache();
+            services.AddDistributedMemoryCache();
 
             services.AddSession(o =>
             {

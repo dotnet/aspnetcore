@@ -40,7 +40,8 @@ namespace Microsoft.AspNetCore.Session
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddCaching();
+                    services.AddMemoryCache();
+                    services.AddDistributedMemoryCache();
                     services.AddSession();
                 });
 
@@ -71,7 +72,8 @@ namespace Microsoft.AspNetCore.Session
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddCaching();
+                    services.AddMemoryCache();
+                    services.AddDistributedMemoryCache();
                     services.AddSession();
                 });
 
@@ -109,7 +111,9 @@ namespace Microsoft.AspNetCore.Session
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddCaching();
+                    services.AddMemoryCache();
+                    services.AddDistributedMemoryCache();
+
                     services.AddSession();
                 });
 
@@ -162,7 +166,9 @@ namespace Microsoft.AspNetCore.Session
                 .ConfigureServices(
                 services =>
                 {
-                    services.AddCaching();
+                    services.AddMemoryCache();
+                    services.AddDistributedMemoryCache();
+
                     services.AddSession();
                 });
 
@@ -213,7 +219,9 @@ namespace Microsoft.AspNetCore.Session
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddCaching();
+                    services.AddMemoryCache();
+                    services.AddDistributedMemoryCache();
+
                     services.AddSession();
                 });
 
@@ -250,7 +258,10 @@ namespace Microsoft.AspNetCore.Session
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
-                    services.AddCaching();
+
+                    services.AddMemoryCache();
+                    services.AddDistributedMemoryCache();
+
                     services.AddSession();
                 });
 
@@ -299,7 +310,10 @@ namespace Microsoft.AspNetCore.Session
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
-                    services.AddCaching();
+
+                    services.AddMemoryCache();
+                    services.AddDistributedMemoryCache();
+
                     services.AddSession(o => o.IdleTimeout = TimeSpan.FromMilliseconds(30));
                 });
 
@@ -359,7 +373,10 @@ namespace Microsoft.AspNetCore.Session
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton(typeof(ILoggerFactory), new NullLoggerFactory());
-                    services.AddCaching();
+
+                    services.AddMemoryCache();
+                    services.AddDistributedMemoryCache();
+
                     services.AddSession(o => o.IdleTimeout = TimeSpan.FromMinutes(20));
                     services.Configure<MemoryCacheOptions>(o => o.Clock = clock);
                 });
@@ -409,7 +426,9 @@ namespace Microsoft.AspNetCore.Session
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddCaching();
+                    services.AddMemoryCache();
+                    services.AddDistributedMemoryCache();
+
                     services.AddSession();
                 });
 
@@ -452,7 +471,9 @@ namespace Microsoft.AspNetCore.Session
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddCaching();
+                    services.AddMemoryCache();
+                    services.AddDistributedMemoryCache();
+
                     services.AddSession();
                 });
 
@@ -481,7 +502,9 @@ namespace Microsoft.AspNetCore.Session
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddCaching();
+                    services.AddMemoryCache();
+                    services.AddDistributedMemoryCache();
+
                     services.AddSession();
                 });
 
