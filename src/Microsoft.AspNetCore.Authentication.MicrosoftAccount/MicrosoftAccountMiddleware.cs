@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
 {
     /// <summary>
-    /// An ASP.NET middleware for authenticating users using the Microsoft Account service.
+    /// An ASP.NET Core middleware for authenticating users using the Microsoft Account service.
     /// </summary>
     public class MicrosoftAccountMiddleware : OAuthMiddleware<MicrosoftAccountOptions>
     {

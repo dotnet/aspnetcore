@@ -14,7 +14,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Authentication.Google
 {
     /// <summary>
-    /// An ASP.NET middleware for authenticating users using Google OAuth 2.0.
+    /// An ASP.NET Core middleware for authenticating users using Google OAuth 2.0.
     /// </summary>
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Middleware are not disposable.")]
     public class GoogleMiddleware : OAuthMiddleware<GoogleOptions>

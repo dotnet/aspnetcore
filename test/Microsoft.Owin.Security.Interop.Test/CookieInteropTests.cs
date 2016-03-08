@@ -31,7 +31,7 @@ namespace Microsoft.Owin.Security.Interop
 
             var dataProtection = new DataProtectionProvider(new DirectoryInfo("..\\..\\artifacts"));
             var dataProtector = dataProtection.CreateProtector(
-                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET 5 type
+                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET Core type
                 CookieAuthenticationDefaults.AuthenticationType, "v2");
 
             var interopServer = TestServer.Create(app =>
@@ -87,7 +87,7 @@ namespace Microsoft.Owin.Security.Interop
 
             var dataProtection = new DataProtectionProvider(new DirectoryInfo("..\\..\\artifacts"));
             var dataProtector = dataProtection.CreateProtector(
-                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET 5 type
+                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET Core type
                 CookieAuthenticationDefaults.AuthenticationType, "v2");
 
             var builder = new WebHostBuilder()

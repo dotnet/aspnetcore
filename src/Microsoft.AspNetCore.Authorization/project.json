@@ -1,6 +1,10 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 authorization classes.",
+  "description": "ASP.NET 5 authorization classes.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.Authorization.AllowAnonymousAttribute\r\nMicrosoft.AspNetCore.Authorization.AuthorizeAttribute",
+  "tags": [
+    "aspnetcore",
+    "authorization"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/security"

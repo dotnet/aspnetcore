@@ -17,14 +17,14 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 {
     /// <summary>
-    /// ASP.NET middleware for obtaining identities using OpenIdConnect protocol.
+    /// ASP.NET Core middleware for obtaining identities using OpenIdConnect protocol.
     /// </summary>
     public class OpenIdConnectMiddleware : AuthenticationMiddleware<OpenIdConnectOptions>
     {
         /// <summary>
         /// Initializes a <see cref="OpenIdConnectMiddleware"/>
         /// </summary>
-        /// <param name="next">The next middleware in the ASP.NET pipeline to invoke.</param>
+        /// <param name="next">The next middleware in the middleware pipeline to invoke.</param>
         /// <param name="dataProtectionProvider"> provider for creating a data protector.</param>
         /// <param name="loggerFactory">factory for creating a <see cref="ILogger"/>.</param>
         /// <param name="encoder"></param>
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             }
 
             Backchannel = new HttpClient(Options.BackchannelHttpHandler ?? new HttpClientHandler());
-            Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET OpenIdConnect middleware");
+            Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET Core OpenIdConnect middleware");
             Backchannel.Timeout = Options.BackchannelTimeout;
             Backchannel.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
 

@@ -15,7 +15,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
     /// <summary>
-    /// An ASP.NET middleware for authenticating users using OAuth services.
+    /// An ASP.NET Core middleware for authenticating users using OAuth services.
     /// </summary>
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Middleware are not disposable.")]
     public class OAuthMiddleware<TOptions> : AuthenticationMiddleware<TOptions> where TOptions : OAuthOptions, new()
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             }
 
             Backchannel = new HttpClient(Options.BackchannelHttpHandler ?? new HttpClientHandler());
-            Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET OAuth middleware");
+            Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET Core OAuth middleware");
             Backchannel.Timeout = Options.BackchannelTimeout;
             Backchannel.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
 

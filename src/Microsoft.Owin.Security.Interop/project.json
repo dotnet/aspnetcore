@@ -1,17 +1,23 @@
 {
-    "version": "1.0.0-*",
+  "version": "1.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [ "CS1591" ],
     "xmlDoc": true
   },
-    "description": "A compatibility layer for sharing authentication tickets between Microsoft.Owin.Security and Microsoft.AspNetCore.Authentication.",
-    "dependencies": {
-        "Microsoft.AspNetCore.DataProtection.Extensions": "1.0.0-*",
-        "Microsoft.Owin.Security": "3.0.1"
-    },
-    "frameworks": {
-        "net451": { }
-    }
+  "description": "A compatibility layer for sharing authentication tickets between Microsoft.Owin.Security and Microsoft.AspNetCore.Authentication.",
+  "tags": [
+    "aspnetcore",
+    "katana",
+    "owin",
+    "security"
+  ],
+  "dependencies": {
+    "Microsoft.AspNetCore.DataProtection.Extensions": "1.0.0-*",
+    "Microsoft.Owin.Security": "3.0.1"
+  },
+  "frameworks": {
+    "net451": { }
+  }
 }

@@ -15,7 +15,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Authentication.Twitter
 {
     /// <summary>
-    /// ASP.NET middleware for authenticating users using Twitter
+    /// ASP.NET Core middleware for authenticating users using Twitter.
     /// </summary>
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Middleware are not disposable.")]
     public class TwitterMiddleware : AuthenticationMiddleware<TwitterOptions>
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             _httpClient.Timeout = Options.BackchannelTimeout;
             _httpClient.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
             _httpClient.DefaultRequestHeaders.Accept.ParseAdd("*/*");
-            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET Twitter middleware");
+            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET Core Twitter middleware");
             _httpClient.DefaultRequestHeaders.ExpectContinue = false;
         }
 

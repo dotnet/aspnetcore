@@ -14,7 +14,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Authentication.Facebook
 {
     /// <summary>
-    /// An ASP.NET middleware for authenticating users using Facebook.
+    /// An ASP.NET Core middleware for authenticating users using Facebook.
     /// </summary>
     public class FacebookMiddleware : OAuthMiddleware<FacebookOptions>
     {

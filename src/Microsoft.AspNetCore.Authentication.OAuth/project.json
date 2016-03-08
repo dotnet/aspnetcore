@@ -1,6 +1,11 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 middleware that enables an application to support any standard OAuth 2.0 authentication workflow.",
+  "description": "ASP.NET Core middleware that enables an application to support any standard OAuth 2.0 authentication workflow.",
+  "tags": [
+    "aspnetcore",
+    "authentication",
+    "security"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/security"

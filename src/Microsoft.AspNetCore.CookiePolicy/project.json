@@ -1,6 +1,9 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 cookie policy classes.",
+  "description": "ASP.NET Core cookie policy classes to control the behavior of cookies.",
+  "tags": [
+    "aspnetcore"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/security"
@@ -16,7 +19,7 @@
     "Microsoft.Extensions.Options": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "imports": [
         "dotnet5.4"

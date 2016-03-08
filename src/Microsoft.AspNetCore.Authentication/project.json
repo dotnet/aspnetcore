@@ -1,6 +1,11 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 common types used by the various authentication middleware.",
+  "description": "ASP.NET Core common types used by the various authentication middleware components.",
+  "tags": [
+    "aspnetcore",
+    "authentication",
+    "security"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/security"

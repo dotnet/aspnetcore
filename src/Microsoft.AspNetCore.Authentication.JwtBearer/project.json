@@ -1,6 +1,11 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 middleware that enables an application to receive an OpenID Connect bearer token.",
+  "description": "ASP.NET Core middleware that enables an application to receive an OpenID Connect bearer token.",
+  "tags": [
+    "aspnetcore",
+    "authentication",
+    "security"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/security"
@@ -16,7 +21,7 @@
     "Microsoft.IdentityModel.Protocols.OpenIdConnect": "2.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "imports": [
         "dotnet5.4",

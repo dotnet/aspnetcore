@@ -1,6 +1,11 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET middleware that enables an application to use cookie based authentication, similar to ASP.NET's forms authentication.",
+  "description": "ASP.NET Core middleware that enables an application to use cookie based authentication.",
+  "tags": [
+    "aspnetcore",
+    "authentication",
+    "security"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/security"
@@ -17,7 +22,7 @@
     "Microsoft.Extensions.WebEncoders": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "imports": [
         "dotnet5.4"
