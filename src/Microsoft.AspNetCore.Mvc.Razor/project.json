@@ -29,19 +29,11 @@
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "version": "1.0.0-*",
       "type": "build"
-    },
-    "System.Collections": "4.0.11-*",
-    "System.IO": "4.1.0-*",
-    "System.Reflection": "4.1.0-*",
-    "System.Threading": "4.0.11-*"
+    }
   },
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Collections": "",
-        "System.IO": "",
-        "System.Runtime": "",
-        "System.Text.Encoding": "",
         "System.Threading.Tasks": ""
       }
     },
@@ -52,8 +44,8 @@
       ],
       "dependencies": {
         "System.Text.Encoding": "4.0.11-*",
-        "System.Runtime.Loader": "4.0.0-*",
-        "System.Threading.Tasks.Parallel": "4.0.1-*"
+        "System.Threading.Tasks.Parallel": "4.0.1-*",
+        "System.Runtime.Loader": "4.0.0-*"
       }
     }
   },
