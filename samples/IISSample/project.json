@@ -1,7 +1,7 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*"

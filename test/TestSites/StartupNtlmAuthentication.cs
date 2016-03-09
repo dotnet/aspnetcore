@@ -37,7 +37,8 @@ namespace TestSites
                 }
             });
 
-            app.UseIISPlatformHandler();
+            app.UseIIS();
+
             app.Use((context, next) =>
             {
                 if (context.Request.Path.Equals("/Anonymous"))

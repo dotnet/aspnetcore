@@ -12,9 +12,18 @@ namespace TestSites
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole();
-            app.UseIISPlatformHandler();
+            app.UseIIS();
             app.Run(ctx =>
             {
+                if (ctx.Request.Path.Value.StartsWith("/Path"))
+                {
+                    return ctx.Response.WriteAsync(ctx.Request.Path.Value);
+                }
+                if (ctx.Request.Path.Value.StartsWith("/Query"))
+                {
+                    return ctx.Response.WriteAsync(ctx.Request.QueryString.Value);
+                }
+
                 return ctx.Response.WriteAsync("Hello World");
             });
         }

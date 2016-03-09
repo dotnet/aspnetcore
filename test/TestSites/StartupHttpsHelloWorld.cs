@@ -12,7 +12,7 @@ namespace TestSites
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole();
-            app.UseIISPlatformHandler();
+            app.UseIIS();
             app.Run(ctx =>
             {
                 if (ctx.Request.Path.Equals(new PathString("/checkclientcert")))

@@ -11,7 +11,7 @@ namespace TestSites
         {
             var host = new WebHostBuilder()
                 .UseDefaultConfiguration(args)
-                .UseIISPlatformHandlerUrl()
+                .UseIISUrl()
                 .UseStartup("TestSites")
                 .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .Build();

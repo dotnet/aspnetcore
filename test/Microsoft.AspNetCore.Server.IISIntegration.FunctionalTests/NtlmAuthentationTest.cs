@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.IISPlatformHandler.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     // Uses ports ranging 5050 - 5060.
     public class NtlmAuthenticationTests

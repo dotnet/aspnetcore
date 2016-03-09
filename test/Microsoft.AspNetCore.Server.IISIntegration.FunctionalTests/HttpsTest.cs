@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.IISPlatformHandler.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     // IisExpress preregisteres 44300-44399 ports.
     public class HttpsTest

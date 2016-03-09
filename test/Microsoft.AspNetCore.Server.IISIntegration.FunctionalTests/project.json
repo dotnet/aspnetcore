@@ -2,7 +2,7 @@
     "content": [
         "Http.config",
         "Https.config",
-        "NtlmAuthentation.config",
+        "NtlmAuthentation.config"
     ],
     "compilationOptions": {
         "warningsAsErrors": true

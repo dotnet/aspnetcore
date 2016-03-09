@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.IISPlatformHandler.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     // Uses ports ranging 5061 - 5069.
     public class HelloWorldTests
@@ -77,6 +77,14 @@ namespace Microsoft.AspNetCore.IISPlatformHandler.FunctionalTests
                     try
                     {
                         Assert.Equal("Hello World", responseText);
+
+                        response = await httpClient.GetAsync("/Path%3F%3F?query");
+                        responseText = await response.Content.ReadAsStringAsync();
+                        Assert.Equal("/Path??", responseText);
+
+                        response = await httpClient.GetAsync("/Query%3FPath?query?");
+                        responseText = await response.Content.ReadAsStringAsync();
+                        Assert.Equal("?query?", responseText);
                     }
                     catch (XunitException)
                     {
