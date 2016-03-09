@@ -57,7 +57,7 @@ namespace ServerComparison.TestSites
             }
             else
             {
-                app.UseIISPlatformHandler();
+                app.UseIIS();
             }
 
             app.Use((context, next) => 
