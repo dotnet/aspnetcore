@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Http.Features
             }
 
             var feature = cached;
-            if (feature == null)
+            if (feature == null || cleared)
             {
                 feature = Collection.Get<TFeature>();
                 if (feature == null)
@@ -45,10 +45,7 @@ namespace Microsoft.AspNetCore.Http.Features
                     feature = factory(state);
 
                     Collection.Set(feature);
-                    if (!cleared)
-                    {
-                        Cache = default(TCache);
-                    }
+
                     Revision = Collection.Revision;
                 }
                 cached = feature;
