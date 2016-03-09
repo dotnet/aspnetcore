@@ -28,6 +28,8 @@ namespace Microsoft.AspNetCore.Builder
             Scope.Add("email");
             Fields.Add("name");
             Fields.Add("email");
+            Fields.Add("first_name");
+            Fields.Add("last_name");
         }
 
         // Facebook uses a non-standard term for this field.
