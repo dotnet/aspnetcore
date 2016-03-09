@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Reflection;
+using System.Linq.Expressions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -17,6 +19,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     /// <inheritdoc />
     public class RazorPageActivator : IRazorPageActivator
     {
+        private delegate ViewDataDictionary CreateViewDataNested(ViewDataDictionary source);
+        private delegate ViewDataDictionary CreateViewDataRoot(
+            IModelMetadataProvider metadataProvider,
+            ModelStateDictionary modelState);
+
         // Name of the "public TModel Model" property on RazorPage<TModel>
         private const string ModelPropertyName = "Model";
         private readonly ConcurrentDictionary<Type, PageActivationInfo> _activationInfo;
@@ -63,17 +70,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             if (context.ViewData == null)
             {
                 // Create ViewDataDictionary<TModel>(IModelMetadataProvider, ModelStateDictionary).
-                return (ViewDataDictionary)Activator.CreateInstance(
-                    activationInfo.ViewDataDictionaryType,
+                return activationInfo.CreateViewDataRoot(
                     _metadataProvider,
                     context.ModelState);
             }
             else if (context.ViewData.GetType() != activationInfo.ViewDataDictionaryType)
             {
                 // Create ViewDataDictionary<TModel>(ViewDataDictionary).
-                return (ViewDataDictionary)Activator.CreateInstance(
-                    activationInfo.ViewDataDictionaryType,
-                    context.ViewData);
+                return activationInfo.CreateViewDataNested(context.ViewData);
             }
 
             return context.ViewData;
@@ -96,6 +100,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return new PageActivationInfo
             {
                 ViewDataDictionaryType = viewDataType,
+                CreateViewDataNested = GetCreateViewDataNested(viewDataType),
+                CreateViewDataRoot = GetCreateViewDataRoot(viewDataType),
                 PropertyActivators = PropertyActivator<ViewContext>.GetPropertiesToActivate(
                     type,
                     typeof(RazorInjectAttribute),
@@ -103,6 +109,41 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     includeNonPublic: true)
             };
         }
+
+        private CreateViewDataNested GetCreateViewDataNested(Type viewDataDictionaryType)
+        {
+            var parameterTypes = new Type[] { typeof(ViewDataDictionary) };
+            var matchingConstructor = viewDataDictionaryType.GetConstructor(parameterTypes);
+            Debug.Assert(matchingConstructor != null);
+
+            var parameters = new ParameterExpression[] { Expression.Parameter(parameterTypes[0]) };
+            var newExpression = Expression.New(matchingConstructor, parameters);
+            var castNewCall = Expression.Convert(
+                newExpression,
+                typeof(ViewDataDictionary));
+            var lambda = Expression.Lambda<CreateViewDataNested>(castNewCall, parameters);
+            return lambda.Compile();
+        }
+
+        private CreateViewDataRoot GetCreateViewDataRoot(Type viewDataDictionaryType)
+        {
+            var parameterTypes = new Type[] {
+                typeof(IModelMetadataProvider),
+                typeof(ModelStateDictionary) };
+            var matchingConstructor = viewDataDictionaryType.GetConstructor(parameterTypes);
+            Debug.Assert(matchingConstructor != null);
+
+            var parameters = new ParameterExpression[] {
+                Expression.Parameter(parameterTypes[0]),
+                Expression.Parameter(parameterTypes[1]) };
+            var newExpression = Expression.New(matchingConstructor, parameters);
+            var castNewCall = Expression.Convert(
+                newExpression,
+                typeof(ViewDataDictionary));
+            var lambda = Expression.Lambda<CreateViewDataRoot>(castNewCall, parameters);
+            return lambda.Compile();
+        }
+
 
         private PropertyActivator<ViewContext> CreateActivateInfo(PropertyInfo property)
         {
@@ -146,6 +187,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             public PropertyActivator<ViewContext>[] PropertyActivators { get; set; }
 
             public Type ViewDataDictionaryType { get; set; }
+
+            public CreateViewDataNested CreateViewDataNested { get; set; }
+
+            public CreateViewDataRoot CreateViewDataRoot { get; set; }
 
             public Action<object, object> ViewDataDictionarySetter { get; set; }
         }
