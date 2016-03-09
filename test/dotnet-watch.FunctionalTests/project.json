@@ -9,10 +9,7 @@
     "Microsoft.DotNet.Watcher.Core": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Newtonsoft.Json": "8.0.2",
-    "xunit": "2.1.0",
-    "System.Diagnostics.Process": "4.1.0-*",
-    "System.IO.FileSystem.Watcher": "4.0.0-*",
-    "System.Xml.XDocument": "4.0.10-*"
+    "xunit": "2.1.0"
   },
   "frameworks": {
     "dnxcore50": {
