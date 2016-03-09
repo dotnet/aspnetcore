@@ -31,18 +31,20 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
             Directory.Delete(folders.TestRoot, recursive: true);
         }
 
-        [Fact]
-        public void PublishIIS_reads_application_name_from_project_json_if_exists()
+        [Theory]
+        [InlineData("awesomeApp")]
+        [InlineData("awesome.App")]
+        public void PublishIIS_reads_application_name_from_project_json_if_exists(string projectName)
         {
             var webRoot = "wwwroot";
-            var folders = CreateTestDir(@"{ ""name"": ""awesomeApp""}", webRoot);
+            var folders = CreateTestDir($@"{{ ""name"": ""{projectName}"" }}", webRoot);
 
             new PublishIISCommand(folders.PublishOutput, folders.ProjectPath, null).Run();
 
             var processPath = (string)GetPublishedWebConfig(folders.PublishOutput, webRoot)
                 .Descendants("httpPlatform").Attributes("processPath").Single();
 
-            Assert.Equal($@"..\awesomeApp.exe", processPath);
+            Assert.Equal($@"..\{projectName}.exe", processPath);
 
             Directory.Delete(folders.TestRoot, recursive: true);
         }
@@ -59,7 +61,7 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
             var processPath = (string)GetPublishedWebConfig(folders.PublishOutput, webRoot)
                 .Descendants("httpPlatform").Attributes("processPath").Single();
 
-            Assert.Equal($@"..\projectDir.exe", processPath);
+            Assert.Equal(@"..\projectDir.exe", processPath);
 
             Directory.Delete(folders.TestRoot, recursive: true);
         }
@@ -76,23 +78,25 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
             var processPath = (string)GetPublishedWebConfig(folders.PublishOutput, webRoot)
                 .Descendants("httpPlatform").Attributes("processPath").Single();
 
-            Assert.Equal($@"..\projectDir.exe", processPath);
+            Assert.Equal(@"..\projectDir.exe", processPath);
 
             Directory.Delete(folders.TestRoot, recursive: true);
         }
 
-        [Fact]
-        public void PublishIIS_accepts_path_to_project_json_as_project_path()
+        [Theory]
+        [InlineData("projectDir")]
+        [InlineData("project.Dir")]
+        public void PublishIIS_accepts_path_to_project_json_as_project_path(string projectDir)
         {
             var webRoot = "wwwroot";
-            var folders = CreateTestDir("{}", webRoot);
+            var folders = CreateTestDir("{}", webRoot, projectDir);
 
             new PublishIISCommand(folders.PublishOutput, Path.Combine(folders.ProjectPath, "project.json"), null).Run();
 
             var processPath = (string)GetPublishedWebConfig(folders.PublishOutput, webRoot)
                 .Descendants("httpPlatform").Attributes("processPath").Single();
 
-            Assert.Equal($@"..\projectDir.exe", processPath);
+            Assert.Equal($@"..\{projectDir}.exe", processPath);
 
             Directory.Delete(folders.TestRoot, recursive: true);
         }
@@ -118,8 +122,8 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
             var httpPlatformElement = GetPublishedWebConfig(folders.PublishOutput, webRoot)
                 .Descendants("httpPlatform").Single();
 
-            Assert.Equal($@"..\projectDir.exe", (string)httpPlatformElement.Attribute("processPath"));
-            Assert.Equal($@"1234", (string)httpPlatformElement.Attribute("startupTimeLimit"));
+            Assert.Equal(@"..\projectDir.exe", (string)httpPlatformElement.Attribute("processPath"));
+            Assert.Equal(@"1234", (string)httpPlatformElement.Attribute("startupTimeLimit"));
 
             Directory.Delete(folders.TestRoot, recursive: true);
         }
@@ -129,12 +133,12 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
             return XDocument.Load(Path.Combine(publishOut, webRoot, "web.config"));
         }
 
-        private Folders CreateTestDir(string projectJson, string webRoot)
+        private Folders CreateTestDir(string projectJson, string webRoot, string projectDir = "projectDir")
         {
             var testRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(testRoot);
 
-            var projectPath = Path.Combine(testRoot, "projectDir");
+            var projectPath = Path.Combine(testRoot, projectDir);
             Directory.CreateDirectory(projectPath);
             Directory.CreateDirectory(Path.Combine(projectPath, webRoot));
             File.WriteAllText(Path.Combine(projectPath, "project.json"), projectJson);

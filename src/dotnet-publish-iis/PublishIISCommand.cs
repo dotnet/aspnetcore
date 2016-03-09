@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS
                 Reporter.Output.WriteLine($"No web.config found. Creating '{webConfigPath}'");
             }
 
-            var applicationName = Path.ChangeExtension(GetApplicationName(applicationBasePath), "exe");
+            var applicationName = GetApplicationName(applicationBasePath) + ".exe";
             var transformedConfig = WebConfigTransform.Transform(webConfigXml, applicationName, ConfigureForAzure());
 
             using (var f = new FileStream(webConfigPath, FileMode.Create))

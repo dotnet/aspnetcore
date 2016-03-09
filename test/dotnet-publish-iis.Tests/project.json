@@ -11,5 +11,6 @@
         "dotnet-test-xunit": "1.0.0-dev-*"
       }
     }
-  }
+  },
+  "testRunner": "xunit"
 }

@@ -19,5 +19,5 @@
       }
     }
   },
-    "testRunner": "xunit"
+  "testRunner": "xunit"
 }
