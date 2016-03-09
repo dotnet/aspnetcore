@@ -980,6 +980,16 @@ functions
             {
                 get
                 {
+                    if (string.Equals("PlatformAbstractions", Name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return 0;
+                    }
+
+                    if (string.Equals("Common", Name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return 1;
+                    }
+
                     if (string.Equals("Testing", Name, StringComparison.OrdinalIgnoreCase))
                     {
                         // Testing has a cyclic dependency with Common, PlatformAbstractions and Logging.
