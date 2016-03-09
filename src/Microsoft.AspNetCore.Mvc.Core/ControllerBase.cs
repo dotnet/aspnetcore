@@ -938,21 +938,12 @@ namespace Microsoft.AspNetCore.Mvc
             => new ChallengeResult();
 
         /// <summary>
-        /// Creates a <see cref="ChallengeResult"/> with the specified authentication scheme.
-        /// </summary>
-        /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
-        /// <returns>The created <see cref="ChallengeResult"/> for the response.</returns>
-        [NonAction]
-        public virtual ChallengeResult Challenge(string authenticationScheme)
-            => new ChallengeResult(authenticationScheme);
-
-        /// <summary>
         /// Creates a <see cref="ChallengeResult"/> with the specified authentication schemes.
         /// </summary>
         /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
         /// <returns>The created <see cref="ChallengeResult"/> for the response.</returns>
         [NonAction]
-        public virtual ChallengeResult Challenge(IList<string> authenticationSchemes)
+        public virtual ChallengeResult Challenge(params string[] authenticationSchemes)
             => new ChallengeResult(authenticationSchemes);
 
         /// <summary>
@@ -966,29 +957,17 @@ namespace Microsoft.AspNetCore.Mvc
             => new ChallengeResult(properties);
 
         /// <summary>
-        /// Creates a <see cref="ChallengeResult"/> with the specified specified authentication scheme and
-        /// <paramref name="properties" />.
-        /// </summary>
-        /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
-        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
-        /// challenge.</param>
-        /// <returns>The created <see cref="ChallengeResult"/> for the response.</returns>
-        [NonAction]
-        public virtual ChallengeResult Challenge(string authenticationScheme, AuthenticationProperties properties)
-            => new ChallengeResult(authenticationScheme, properties);
-
-        /// <summary>
         /// Creates a <see cref="ChallengeResult"/> with the specified specified authentication schemes and
         /// <paramref name="properties" />.
         /// </summary>
-        /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
+        /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
         /// <returns>The created <see cref="ChallengeResult"/> for the response.</returns>
         [NonAction]
         public virtual ChallengeResult Challenge(
-            IList<string> authenticationSchemes,
-            AuthenticationProperties properties)
+            AuthenticationProperties properties,
+            params string[] authenticationSchemes)
             => new ChallengeResult(authenticationSchemes, properties);
 
         /// <summary>
@@ -1000,21 +979,12 @@ namespace Microsoft.AspNetCore.Mvc
             => new ForbidResult();
 
         /// <summary>
-        /// Creates a <see cref="ForbidResult"/> with the specified authentication scheme.
-        /// </summary>
-        /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
-        /// <returns>The created <see cref="ForbidResult"/> for the response.</returns>
-        [NonAction]
-        public virtual ForbidResult Forbid(string authenticationScheme)
-            => new ForbidResult(authenticationScheme);
-
-        /// <summary>
         /// Creates a <see cref="ForbidResult"/> with the specified authentication schemes.
         /// </summary>
         /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
         /// <returns>The created <see cref="ForbidResult"/> for the response.</returns>
         [NonAction]
-        public virtual ForbidResult Forbid(IList<string> authenticationSchemes)
+        public virtual ForbidResult Forbid(params string[] authenticationSchemes)
             => new ForbidResult(authenticationSchemes);
 
         /// <summary>
@@ -1028,28 +998,61 @@ namespace Microsoft.AspNetCore.Mvc
             => new ForbidResult(properties);
 
         /// <summary>
-        /// Creates a <see cref="ForbidResult"/> with the specified specified authentication scheme and
-        /// <paramref name="properties" />.
-        /// </summary>
-        /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
-        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
-        /// challenge.</param>
-        /// <returns>The created <see cref="ForbidResult"/> for the response.</returns>
-        [NonAction]
-        public virtual ForbidResult Forbid(string authenticationScheme, AuthenticationProperties properties)
-            => new ForbidResult(authenticationScheme, properties);
-
-        /// <summary>
         /// Creates a <see cref="ForbidResult"/> with the specified specified authentication schemes and
         /// <paramref name="properties" />.
         /// </summary>
-        /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
+        /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
         /// <returns>The created <see cref="ForbidResult"/> for the response.</returns>
         [NonAction]
-        public virtual ForbidResult Forbid(IList<string> authenticationSchemes, AuthenticationProperties properties)
+        public virtual ForbidResult Forbid(AuthenticationProperties properties, params string[] authenticationSchemes)
             => new ForbidResult(authenticationSchemes, properties);
+
+        /// <summary>
+        /// Creates a <see cref="SignInResult"/> with the specified authentication scheme.
+        /// </summary>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> containing the user claims.</param>
+        /// <param name="authenticationScheme">The authentication scheme to use for the sign-in operation.</param>
+        /// <returns>The created <see cref="SignInResult"/> for the response.</returns>
+        [NonAction]
+        public virtual SignInResult SignIn(ClaimsPrincipal principal, string authenticationScheme)
+            => new SignInResult(authenticationScheme, principal);
+
+        /// <summary>
+        /// Creates a <see cref="SignInResult"/> with the specified specified authentication scheme and
+        /// <paramref name="properties" />.
+        /// </summary>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> containing the user claims.</param>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
+        /// <param name="authenticationScheme">The authentication scheme to use for the sign-in operation.</param>
+        /// <returns>The created <see cref="SignInResult"/> for the response.</returns>
+        [NonAction]
+        public virtual SignInResult SignIn(
+            ClaimsPrincipal principal,
+            AuthenticationProperties properties,
+            string authenticationScheme)
+            => new SignInResult(authenticationScheme, principal, properties);
+
+        /// <summary>
+        /// Creates a <see cref="SignOutResult"/> with the specified authentication schemes.
+        /// </summary>
+        /// <param name="authenticationSchemes">The authentication schemes to use for the sign-out operation.</param>
+        /// <returns>The created <see cref="SignOutResult"/> for the response.</returns>
+        [NonAction]
+        public virtual SignOutResult SignOut(params string[] authenticationSchemes)
+            => new SignOutResult(authenticationSchemes);
+
+        /// <summary>
+        /// Creates a <see cref="SignOutResult"/> with the specified specified authentication schemes and
+        /// <paramref name="properties" />.
+        /// </summary>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
+        /// <param name="authenticationSchemes">The authentication scheme to use for the sign-out operation.</param>
+        /// <returns>The created <see cref="SignOutResult"/> for the response.</returns>
+        [NonAction]
+        public virtual SignOutResult SignOut(AuthenticationProperties properties, params string[] authenticationSchemes)
+            => new SignOutResult(authenticationSchemes, properties);
 
         /// <summary>
         /// Updates the specified <paramref name="model"/> instance using values from the controller's current

@@ -340,4 +340,7 @@
   <data name="Formatter_NoMediaTypes" xml:space="preserve">
     <value>No media types found in '{0}.{1}'. Add at least one media type to the list of supported media types.</value>
   </data>
+  <data name="MustSpecifyAtLeastOneAuthenticationScheme" xml:space="preserve">
+    <value>At least one authentication scheme must be specified.</value>
+  </data>
 </root>

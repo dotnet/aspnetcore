@@ -101,8 +101,10 @@ namespace Microsoft.AspNetCore.Mvc
             var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<ChallengeResult>();
 
+            logger.ChallengeResultExecuting(AuthenticationSchemes);
+
             var authentication = context.HttpContext.Authentication;
-            if (AuthenticationSchemes.Count > 0)
+            if (AuthenticationSchemes != null && AuthenticationSchemes.Count > 0)
             {
                 foreach (var scheme in AuthenticationSchemes)
                 {
@@ -113,8 +115,6 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 await authentication.ChallengeAsync(Properties);
             }
-
-            logger.ChallengeResultExecuting(AuthenticationSchemes);
         }
     }
 }

@@ -101,6 +101,8 @@ namespace Microsoft.AspNetCore.Mvc
             var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<ForbidResult>();
 
+            logger.ForbidResultExecuting(AuthenticationSchemes);
+
             var authentication = context.HttpContext.Authentication;
 
             if (AuthenticationSchemes != null && AuthenticationSchemes.Count > 0)
@@ -114,8 +116,6 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 await authentication.ForbidAsync(Properties);
             }
-
-            logger.ForbidResultExecuting(AuthenticationSchemes);
         }
     }
 }

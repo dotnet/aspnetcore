@@ -1146,6 +1146,22 @@ namespace Microsoft.AspNetCore.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("Formatter_NoMediaTypes"), p0, p1);
         }
 
+        /// <summary>
+        /// At least one authentication scheme must be specified.
+        /// </summary>
+        internal static string MustSpecifyAtLeastOneAuthenticationScheme
+        {
+            get { return GetString("MustSpecifyAtLeastOneAuthenticationScheme"); }
+        }
+
+        /// <summary>
+        /// At least one authentication scheme must be specified.
+        /// </summary>
+        internal static string FormatMustSpecifyAtLeastOneAuthenticationScheme()
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MustSpecifyAtLeastOneAuthenticationScheme"));
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

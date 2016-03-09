@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -40,7 +41,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly Action<ILogger, object, Exception> _actionFilterShortCircuit;
         private static readonly Action<ILogger, object, Exception> _exceptionFilterShortCircuit;
 
-        private static readonly Action<ILogger, string[], Exception> _resultExecuting;
+        private static readonly Action<ILogger, string[], Exception> _forbidResultExecuting;
+        private static readonly Action<ILogger, string, ClaimsPrincipal, Exception> _signInResultExecuting;
+        private static readonly Action<ILogger, string[], Exception> _signOutResultExecuting;
 
         private static readonly Action<ILogger, int, Exception> _httpStatusCodeResultExecuting;
 
@@ -126,10 +129,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 4,
                 "Request was short circuited at exception filter '{ExceptionFilter}'.");
 
-            _resultExecuting = LoggerMessage.Define<string[]>(
+            _forbidResultExecuting = LoggerMessage.Define<string[]>(
                 LogLevel.Information,
                 eventId: 1,
                 formatString: $"Executing {nameof(ForbidResult)} with authentication schemes ({{Schemes}}).");
+
+            _signInResultExecuting = LoggerMessage.Define<string, ClaimsPrincipal>(
+                LogLevel.Information,
+                eventId: 1,
+                formatString: $"Executing {nameof(SignInResult)} with authentication scheme ({{Scheme}}) and the following principal: {{Principal}}.");
+
+            _signOutResultExecuting = LoggerMessage.Define<string[]>(
+                LogLevel.Information,
+                eventId: 1,
+                formatString: $"Executing {nameof(SignOutResult)} with authentication schemes ({{Schemes}}).");
 
             _httpStatusCodeResultExecuting = LoggerMessage.Define<int>(
                 LogLevel.Information,
@@ -305,7 +318,17 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void ForbidResultExecuting(this ILogger logger, IList<string> authenticationSchemes)
         {
-            _resultExecuting(logger, authenticationSchemes.ToArray(), null);
+            _forbidResultExecuting(logger, authenticationSchemes.ToArray(), null);
+        }
+
+        public static void SignInResultExecuting(this ILogger logger, string authenticationScheme, ClaimsPrincipal principal)
+        {
+            _signInResultExecuting(logger, authenticationScheme, principal, null);
+        }
+
+        public static void SignOutResultExecuting(this ILogger logger, IList<string> authenticationSchemes)
+        {
+            _signOutResultExecuting(logger, authenticationSchemes.ToArray(), null);
         }
 
         public static void HttpStatusCodeResultExecuting(this ILogger logger, int statusCode)

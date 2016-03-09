@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc
     public class ForbidResultTest
     {
         [Fact]
-        public async Task ExecuteResultAsync_InvokesForbiddenAsyncOnAuthenticationManager()
+        public async Task ExecuteResultAsync_InvokesForbidAsyncOnAuthenticationManager()
         {
             // Arrange
             var authenticationManager = new Mock<AuthenticationManager>();
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
-        public async Task ExecuteResultAsync_InvokesForbiddenAsyncOnAllConfiguredSchemes()
+        public async Task ExecuteResultAsync_InvokesForbidAsyncOnAllConfiguredSchemes()
         {
             // Arrange
             var authProperties = new AuthenticationProperties();
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc
             authenticationManager.Verify();
         }
 
-        public static TheoryData ExecuteResultAsync_InvokesForbiddenAsyncWithAuthPropertiesData =>
+        public static TheoryData ExecuteResultAsync_InvokesForbidAsyncWithAuthPropertiesData =>
             new TheoryData<AuthenticationProperties>
             {
                 null,
@@ -85,8 +85,8 @@ namespace Microsoft.AspNetCore.Mvc
             };
 
         [Theory]
-        [MemberData(nameof(ExecuteResultAsync_InvokesForbiddenAsyncWithAuthPropertiesData))]
-        public async Task ExecuteResultAsync_InvokesForbiddenAsyncWithAuthProperties(AuthenticationProperties expected)
+        [MemberData(nameof(ExecuteResultAsync_InvokesForbidAsyncWithAuthPropertiesData))]
+        public async Task ExecuteResultAsync_InvokesForbidAsyncWithAuthProperties(AuthenticationProperties expected)
         {
             // Arrange
             var authenticationManager = new Mock<AuthenticationManager>();
@@ -113,8 +113,8 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Theory]
-        [MemberData(nameof(ExecuteResultAsync_InvokesForbiddenAsyncWithAuthPropertiesData))]
-        public async Task ExecuteResultAsync_InvokesForbiddenAsyncWithAuthProperties_WhenAuthenticationSchemesIsEmpty(
+        [MemberData(nameof(ExecuteResultAsync_InvokesForbidAsyncWithAuthPropertiesData))]
+        public async Task ExecuteResultAsync_InvokesForbidAsyncWithAuthProperties_WhenAuthenticationSchemesIsEmpty(
             AuthenticationProperties expected)
         {
             // Arrange
