@@ -462,6 +462,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return string.Format(CultureInfo.CurrentCulture, GetString("LayoutHasCircularReference"), p0, p1);
         }
 
+        /// <summary>
+        /// The Razor page '{0}' failed to compile. Ensure that your application's {1} sets the '{2}' compilation property.
+        /// </summary>
+        internal static string Compilation_DependencyContextIsNotSpecified
+        {
+            get { return GetString("Compilation_DependencyContextIsNotSpecified"); }
+        }
+
+        /// <summary>
+        /// The Razor page '{0}' failed to compile. Ensure that your application's {1} sets the '{2}' compilation property.
+        /// </summary>
+        internal static string FormatCompilation_DependencyContextIsNotSpecified(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Compilation_DependencyContextIsNotSpecified"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

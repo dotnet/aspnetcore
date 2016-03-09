@@ -256,6 +256,7 @@ public class MyNonCustomDefinedClass {}
         [Fact]
         public void Compile_RunsCallback()
         {
+            // Arrange
             var content = "public class MyTestType  {}";
             RoslynCompilationContext usedCompilation = null;
 
@@ -274,6 +275,117 @@ public class MyNonCustomDefinedClass {}
 
             Assert.NotNull(usedCompilation);
             Assert.Single(usedCompilation.Compilation.SyntaxTrees);
+        }
+
+        [Fact]
+        public void Compile_ThrowsIfDependencyContextIsNullAndTheApplicationFailsToCompileWithNoReferences()
+        {
+            // Arrange
+            var content = "public class MyTestType  {}";
+            var compilationService = new DefaultRoslynCompilationService(
+                dependencyContext: null,
+                viewEngineOptions: GetOptions(),
+                fileProviderAccessor: GetFileProviderAccessor(),
+                loggerFactory: NullLoggerFactory.Instance);
+
+            var relativeFileInfo = new RelativeFileInfo(
+                new TestFileInfo { PhysicalPath = "SomePath" },
+                "some-relative-path.cshtml");
+
+            var expected = "The Razor page 'some-relative-path.cshtml' failed to compile. Ensure that your "
+                 + "application's project.json sets the 'preserveCompilationContext' compilation property.";
+
+            // Act and Assert
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+                compilationService.Compile(relativeFileInfo, content));
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public void Compile_ThrowsIfDependencyContextReturnsNoReferencesAndTheApplicationFailsToCompile()
+        {
+            // Arrange
+            var content = "public class MyTestType  {}";
+            var dependencyContext = new DependencyContext(
+                target: null,
+                runtime: null,
+                compilationOptions: Extensions.DependencyModel.CompilationOptions.Default,
+                compileLibraries: new CompilationLibrary[0],
+                runtimeLibraries: new RuntimeLibrary[0]);
+            var compilationService = new DefaultRoslynCompilationService(
+                dependencyContext: dependencyContext,
+                viewEngineOptions: GetOptions(),
+                fileProviderAccessor: GetFileProviderAccessor(),
+                loggerFactory: NullLoggerFactory.Instance);
+
+            var relativeFileInfo = new RelativeFileInfo(
+                new TestFileInfo { PhysicalPath = "SomePath" },
+                "some-relative-path.cshtml");
+
+            var expected = "The Razor page 'some-relative-path.cshtml' failed to compile. Ensure that your "
+                 + "application's project.json sets the 'preserveCompilationContext' compilation property.";
+
+            // Act and Assert
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+                compilationService.Compile(relativeFileInfo, content));
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public void Compile_DoesNotThrowIfReferencesWereClearedInCallback()
+        {
+            // Arrange
+            var options = GetOptions(context =>
+            {
+                context.Compilation = context.Compilation.RemoveAllReferences();
+            });
+            var content = "public class MyTestType  {}";
+            var compilationService = new DefaultRoslynCompilationService(
+                dependencyContext: GetDependencyContext(),
+                viewEngineOptions: options,
+                fileProviderAccessor: GetFileProviderAccessor(),
+                loggerFactory: NullLoggerFactory.Instance);
+
+            var relativeFileInfo = new RelativeFileInfo(
+                new TestFileInfo { PhysicalPath = "SomePath" },
+                "some-relative-path.cshtml");
+
+            // Act
+            var result = compilationService.Compile(relativeFileInfo, content);
+
+            // Assert
+            Assert.Single(result.CompilationFailures);
+        }
+
+        [Fact]
+        public void Compile_SucceedsIfReferencesAreAddedInCallback()
+        {
+            // Arrange
+            var options = GetOptions(context =>
+            {
+                var assemblyLocation = typeof(object).GetTypeInfo().Assembly.Location;
+
+                context.Compilation = context
+                    .Compilation
+                    .AddReferences(MetadataReference.CreateFromFile(assemblyLocation));
+            });
+            var content = "public class MyTestType  {}";
+            var compilationService = new DefaultRoslynCompilationService(
+                dependencyContext: null,
+                viewEngineOptions: options,
+                fileProviderAccessor: GetFileProviderAccessor(),
+                loggerFactory: NullLoggerFactory.Instance);
+
+            var relativeFileInfo = new RelativeFileInfo(
+                new TestFileInfo { PhysicalPath = "SomePath" },
+                "some-relative-path.cshtml");
+
+            // Act
+            var result = compilationService.Compile(relativeFileInfo, content);
+
+            // Assert
+            Assert.Null(result.CompilationFailures);
+            Assert.NotNull(result.CompiledType);
         }
 
         private static DiagnosticDescriptor GetDiagnosticDescriptor(string messageFormat)

@@ -203,4 +203,7 @@
   <data name="LayoutHasCircularReference" xml:space="preserve">
     <value>A circular layout reference was detected when rendering '{0}'. The layout page '{1}' has already been rendered.</value>
   </data>
+  <data name="Compilation_DependencyContextIsNotSpecified" xml:space="preserve">
+    <value>The Razor page '{0}' failed to compile. Ensure that your application's {1} sets the '{2}' compilation property.</value>
+  </data>
 </root>

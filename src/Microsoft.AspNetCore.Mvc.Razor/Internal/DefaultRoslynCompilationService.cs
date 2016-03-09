@@ -85,7 +85,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 #if NETSTANDARD1_5
             _razorLoadContext = new RazorLoadContext();
 #endif
-
         }
 
         /// <inheritdoc />
@@ -144,6 +143,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
                     if (!result.Success)
                     {
+                        if (!compilation.References.Any() && !_applicationReferences.Value.Any())
+                        {
+                            // DependencyModel had no references specified and the user did not use the
+                            // CompilationCallback to add extra references. It is likely that the user did not specify
+                            // preserveCompilationContext in the app's project.json.
+                            throw new InvalidOperationException(
+                                Resources.FormatCompilation_DependencyContextIsNotSpecified(
+                                    fileInfo.RelativePath,
+                                    "project.json",
+                                    "preserveCompilationContext"));
+                        }
+
                         return GetCompilationFailedResult(
                             fileInfo.RelativePath,
                             compilationContent,
