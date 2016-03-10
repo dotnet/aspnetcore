@@ -29,8 +29,7 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Configuration": "",
-        "System.Threading.Tasks": ""
+        "System.Configuration": ""
       }
     },
     "netstandard1.3": {
