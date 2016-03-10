@@ -51,12 +51,7 @@
     "System.Diagnostics.DiagnosticSource": "4.0.0-*"
   },
   "frameworks": {
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Reflection": "",
-        "System.Runtime": ""
-      }
-    },
+    "net451": { },
     "netstandard1.3": {
       "imports": [
         "dotnet5.4",

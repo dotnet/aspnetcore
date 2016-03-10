@@ -34,7 +34,7 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Threading.Tasks": ""
+        "System.Threading.Tasks": { "type": "build" }
       }
     },
     "netstandard1.5": {

@@ -28,6 +28,7 @@
     },
     "net451": {
       "frameworkAssemblies": {
+        "System.Reflection": "",
         "System.Threading.Tasks": ""
       },
       "dependencies": {
