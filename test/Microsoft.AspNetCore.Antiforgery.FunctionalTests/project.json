@@ -18,7 +18,7 @@
         "portable-net451+win8"
       ]
     },
-    "dnx451": {
+    "net451": {
       "dependencies": {
         "Moq": "4.2.1312.1622",
         "xunit.runner.console": "2.1.0"
