@@ -456,7 +456,7 @@ namespace Microsoft.AspNetCore.Identity
             return cast;
         }
             
-        private void ThrowIfDisposed()
+        protected void ThrowIfDisposed()
         {
             if (_disposed)
             {
