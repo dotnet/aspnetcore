@@ -1,5 +1,11 @@
 init:
   - git config --global core.autocrlf true
+branches:
+  only:
+    - master
+    - release
+    - dev
+    - /^(.*\\/)?ci-.*$/
 build_script:
   - build.cmd --quiet verify
 clone_depth: 1
