@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
                 () => new RangeRouteConstraint(3, 2),
                 "min",
                 expectedMessage,
-                3);
+                3L);
         }
     }
 }
