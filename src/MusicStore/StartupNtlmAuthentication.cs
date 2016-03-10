@@ -52,9 +52,7 @@ namespace MusicStore
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
             // Add EF services to the services container
-            services.AddEntityFramework()
-                    .AddSqlServer()
-                    .AddDbContext<MusicStoreContext>(options =>
+            services.AddDbContext<MusicStoreContext>(options =>
                             options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
 
             // Add Identity services to the services container
