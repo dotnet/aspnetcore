@@ -11,12 +11,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 {
     public class BloggingContextWithMigrations : BloggingContext
     {
-        protected BloggingContextWithMigrations(DbContextOptions options)
+        public BloggingContextWithMigrations(DbContextOptions options)
             : base(options)
-        { }
-
-        public BloggingContextWithMigrations(IServiceProvider provider, DbContextOptions options)
-            : base(provider, options)
         { }
 
         // Providing a factory method so that the ctor is hidden from DI

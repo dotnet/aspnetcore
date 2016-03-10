@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 {
     public class BloggingContextWithPendingModelChanges : BloggingContext
     {
-        public BloggingContextWithPendingModelChanges(IServiceProvider provider, DbContextOptions options)
-            : base(provider, options)
+        public BloggingContextWithPendingModelChanges(DbContextOptions options)
+            : base(options)
         { }
 
         [DbContext(typeof(BloggingContextWithPendingModelChanges))]

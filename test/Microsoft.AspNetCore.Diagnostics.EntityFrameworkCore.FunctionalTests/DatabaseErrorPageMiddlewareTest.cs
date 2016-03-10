@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     })
                     .ConfigureServices(services =>
                     {
-                        services.AddEntityFramework().AddSqlServer();
+                        services.AddAddEntityFrameworkSqlServer();
                         services.AddScoped<BloggingContextWithMigrations>();
 
                         var optionsBuilder = new DbContextOptionsBuilder();
@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             public virtual Task Invoke(HttpContext context)
             {
                 var options = context.RequestServices.GetService<DbContextOptions>();
-                var db = new BloggingContext(context.RequestServices, options);
+                var db = new BloggingContext(options);
                 db.Blogs.Add(new Blog());
                 db.SaveChanges();
                 throw new Exception("SaveChanges should have thrown");

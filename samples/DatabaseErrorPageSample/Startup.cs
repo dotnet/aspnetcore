@@ -11,9 +11,8 @@ namespace DatabaseErrorPageSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddEntityFramework()
-                .AddSqlServer()
-                .AddDbContext<MyContext>(options => options.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=DatabaseErrorPageSample;Trusted_Connection=True;"));
+            services.AddDbContext<MyContext>(
+                options => options.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=DatabaseErrorPageSample;Trusted_Connection=True;"));
         }
 
         public void Configure(IApplicationBuilder app)
@@ -42,6 +41,11 @@ namespace DatabaseErrorPageSample
 
     public class MyContext : DbContext
     {
+        public MyContext(DbContextOptions options)
+            : base(options)
+        {
+        }
+
         public DbSet<Blog> Blog { get; set; }
     }
 
