@@ -3,6 +3,8 @@
 
 using System;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -10,6 +12,27 @@ namespace Microsoft.AspNetCore.Routing
 {
     public class RouteBuilderTest
     {
+        [Fact]
+        public void Ctor_SetsPropertyValues()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton(typeof(RoutingMarkerService));
+            var applicationServices = services.BuildServiceProvider();
+            var applicationBuilderMock = new Mock<IApplicationBuilder>();
+            applicationBuilderMock.Setup(a => a.ApplicationServices).Returns(applicationServices);
+            var applicationBuilder = applicationBuilderMock.Object;
+            var defaultHandler = Mock.Of<IRouter>();
+
+            // Act
+            var builder = new RouteBuilder(applicationBuilder, defaultHandler);
+
+            // Assert
+            Assert.Same(applicationBuilder, builder.ApplicationBuilder);
+            Assert.Same(defaultHandler, builder.DefaultHandler);
+            Assert.Same(applicationServices, builder.ServiceProvider);
+        }
+
         [Fact]
         public void Ctor_ThrowsInvalidOperationException_IfRoutingMarkerServiceIsNotRegistered()
         {

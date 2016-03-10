@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             ApplicationBuilder = applicationBuilder;
+            DefaultHandler = defaultHandler;
             ServiceProvider = applicationBuilder.ApplicationServices;
 
             Routes = new List<IRouter>();
