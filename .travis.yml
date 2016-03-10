@@ -16,5 +16,11 @@ os:
   - linux
   - osx
 osx_image: xcode7.1
+branches:
+  only:
+    - master
+    - release
+    - dev
+    - /^(.*\\/)?ci-.*$/
 script:
   - ./build.sh --quiet verify
