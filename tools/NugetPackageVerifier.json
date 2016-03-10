@@ -11,50 +11,50 @@
             "dotnet-watch": {},
             "dnx-clr-win-x64": {
                 "SIGN_AUTHENTICODE": {
-                    "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
+                    "bin/lib/Microsoft.Dnx.DesignTimeHost/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
+                    "bin/lib/Microsoft.Dnx.Tooling/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "dnx-clr-win-x86": {
                 "SIGN_AUTHENTICODE": {
-                    "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
+                    "bin/lib/Microsoft.Dnx.DesignTimeHost/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
+                    "bin/lib/Microsoft.Dnx.Tooling/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "dnx-coreclr-darwin-x64": {
                 "SIGN_AUTHENTICODE": {
-                    "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
+                    "bin/lib/Microsoft.Dnx.DesignTimeHost/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
+                    "bin/lib/Microsoft.Dnx.Tooling/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "dnx-coreclr-linux-x64": {
                 "SIGN_AUTHENTICODE": {
-                    "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
+                    "bin/lib/Microsoft.Dnx.DesignTimeHost/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
+                    "bin/lib/Microsoft.Dnx.Tooling/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "dnx-coreclr-win-x64": {
                 "SIGN_AUTHENTICODE": {
-                    "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
+                    "bin/lib/Microsoft.Dnx.DesignTimeHost/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
+                    "bin/lib/Microsoft.Dnx.Tooling/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "dnx-coreclr-win-x86": {
                 "SIGN_AUTHENTICODE": {
-                    "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
+                    "bin/lib/Microsoft.Dnx.DesignTimeHost/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
+                    "bin/lib/Microsoft.Dnx.Tooling/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "dnx-mono": {
                 "SIGN_AUTHENTICODE": {
-                    "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
+                    "bin/lib/Microsoft.Dnx.DesignTimeHost/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
+                    "bin/lib/Microsoft.Dnx.Tooling/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "dnx-coreclr-win-arm": {
                 "SIGN_AUTHENTICODE": {
-                    "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
+                    "bin/lib/Microsoft.Dnx.DesignTimeHost/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
+                    "bin/lib/Microsoft.Dnx.Tooling/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "dotnet-sql-cache": {},
@@ -126,9 +126,9 @@
             "Microsoft.AspNetCore.Server.IISIntegration": {},
             "Microsoft.AspNetCore.Server.Kestrel": {
                 "SIGN_AUTHENTICODE": {
-                    "runtimes\\win7-arm\\native\\libuv.dll": "We don't sign 3rd party DLLs",
-                    "runtimes\\win7-x64\\native\\libuv.dll": "We don't sign 3rd party DLLs",
-                    "runtimes\\win7-x86\\native\\libuv.dll": "We don't sign 3rd party DLLs"
+                    "runtimes/win7-arm/native/libuv.dll": "We don't sign 3rd party DLLs",
+                    "runtimes/win7-x64/native/libuv.dll": "We don't sign 3rd party DLLs",
+                    "runtimes/win7-x86/native/libuv.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "Microsoft.AspNetCore.Server.Kestrel.Https": {},
@@ -149,11 +149,11 @@
             "Microsoft.AspNetCore.WebUtilities": {},
             "Microsoft.Data.Sqlite": {
                 "SIGN_AUTHENTICODE": {
-                    "build\\netcore50\\win10-arm\\native\\sqlite3.dll": "We don't sign 3rd party DLLs",
-                    "build\\netcore50\\win10-x64\\native\\sqlite3.dll": "We don't sign 3rd party DLLs",
-                    "build\\netcore50\\win10-x86\\native\\sqlite3.dll": "We don't sign 3rd party DLLs",
-                    "runtimes\\win7-x64\\native\\sqlite3.dll": "We don't sign 3rd party DLLs",
-                    "runtimes\\win7-x86\\native\\sqlite3.dll": "We don't sign 3rd party DLLs"
+                    "build/netcore50/win10-arm/native/sqlite3.dll": "We don't sign 3rd party DLLs",
+                    "build/netcore50/win10-x64/native/sqlite3.dll": "We don't sign 3rd party DLLs",
+                    "build/netcore50/win10-x86/native/sqlite3.dll": "We don't sign 3rd party DLLs",
+                    "runtimes/win7-x64/native/sqlite3.dll": "We don't sign 3rd party DLLs",
+                    "runtimes/win7-x86/native/sqlite3.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "Microsoft.Dnx.ApplicationHost": {},
@@ -281,7 +281,7 @@
         "packages": {
             "dotnet-test-xunit": {
                 "SIGN_STRONGNAME": {
-                    "lib\\dnxcore50\\dotnet-test-xunit.dll": "Need to follow up, not from ADX team"
+                    "lib/dnxcore50/dotnet-test-xunit.dll": "Need to follow up, not from ADX team"
                 }
             },
             "Microsoft.Cci": {},
@@ -306,31 +306,31 @@
             "Microsoft.CSharp": {},
             "Microsoft.DotNet.Cli.Utils": {
                 "SIGN_AUTHENTICODE": {
-                    "lib\\dnxcore50\\Microsoft.DotNet.Cli.Utils.dll": "Need to follow up, not from ADX team",
-                    "lib\\net451\\Microsoft.DotNet.Cli.Utils.dll": "Need to follow up, not from ADX team"
+                    "lib/dnxcore50/Microsoft.DotNet.Cli.Utils.dll": "Need to follow up, not from ADX team",
+                    "lib/net451/Microsoft.DotNet.Cli.Utils.dll": "Need to follow up, not from ADX team"
                 }
             },
             "Microsoft.DotNet.CoreHost": {},
             "Microsoft.DotNet.InternalAbstractions": {
                 "SIGN_AUTHENTICODE": {
-                    "lib\\dotnet5.4\\Microsoft.DotNet.InternalAbstractions.dll": "Need to follow up, not from ADX team",
-                    "lib\\net451\\Microsoft.DotNet.InternalAbstractions.dll": "Need to follow up, not from ADX team"
+                    "lib/dotnet5.4/Microsoft.DotNet.InternalAbstractions.dll": "Need to follow up, not from ADX team",
+                    "lib/net451/Microsoft.DotNet.InternalAbstractions.dll": "Need to follow up, not from ADX team"
                 }
             },
             "Microsoft.DotNet.ProjectModel": {
                 "SIGN_AUTHENTICODE": {
-                    "lib\\dnxcore50\\Microsoft.DotNet.ProjectModel.dll": "Need to follow up, not from ADX team",
-                    "lib\\net451\\Microsoft.DotNet.ProjectModel.dll": "Need to follow up, not from ADX team"
+                    "lib/dnxcore50/Microsoft.DotNet.ProjectModel.dll": "Need to follow up, not from ADX team",
+                    "lib/net451/Microsoft.DotNet.ProjectModel.dll": "Need to follow up, not from ADX team"
                 }
             },
             "Microsoft.DotNet.ProjectModel.Loader": {
                 "SIGN_AUTHENTICODE": {
-                    "lib\\dnxcore50\\Microsoft.DotNet.ProjectModel.Loader.dll": "Need to follow up, not from ADX team"
+                    "lib/dnxcore50/Microsoft.DotNet.ProjectModel.Loader.dll": "Need to follow up, not from ADX team"
                 }
             },
             "Microsoft.DotNet.Watcher.Core": {
                 "SIGN_AUTHENTICODE": {
-                    "lib\\dnxcore50\\Microsoft.DotNet.Watcher.Core.dll": "Need to follow up, not from ADX team"
+                    "lib/dnxcore50/Microsoft.DotNet.Watcher.Core.dll": "Need to follow up, not from ADX team"
                 }
             },
             "Microsoft.Experimental.IdentityModel.Clients.ActiveDirectory": {},
@@ -339,17 +339,17 @@
             "Microsoft.IdentityModel.Logging": {},
             "Microsoft.IdentityModel.Protocol.Extensions": {
                 "SIGN_STRONGNAME": {
-                    "lib\\dnx451\\Microsoft.IdentityModel.Protocol.Extensions.dll": "Need to follow up, not from ADX team",
-                    "lib\\dnxcore50\\Microsoft.IdentityModel.Protocol.Extensions.dll": "Need to follow up, not from ADX team"
+                    "lib/dnx451/Microsoft.IdentityModel.Protocol.Extensions.dll": "Need to follow up, not from ADX team",
+                    "lib/dnxcore50/Microsoft.IdentityModel.Protocol.Extensions.dll": "Need to follow up, not from ADX team"
                 }
             },
             "Microsoft.IdentityModel.Protocols": {},
             "Microsoft.IdentityModel.Protocols.OpenIdConnect": {},
             "Microsoft.IdentityModel.Protocols.WsFederation": {
                 "SIGN_STRONGNAME": {
-                    "lib\\dnx451\\Microsoft.IdentityModel.Protocols.WsFederation.dll": "Need to follow up, not from ADX team",
-                    "lib\\dnxcore50\\Microsoft.IdentityModel.Protocols.WsFederation.dll": "Need to follow up, not from ADX team",
-                    "lib\\net451\\Microsoft.IdentityModel.Protocols.WsFederation.dll": "Need to follow up, not from ADX team"
+                    "lib/dnx451/Microsoft.IdentityModel.Protocols.WsFederation.dll": "Need to follow up, not from ADX team",
+                    "lib/dnxcore50/Microsoft.IdentityModel.Protocols.WsFederation.dll": "Need to follow up, not from ADX team",
+                    "lib/net451/Microsoft.IdentityModel.Protocols.WsFederation.dll": "Need to follow up, not from ADX team"
                 }
             },
             "Microsoft.IdentityModel.Tokens": {},
@@ -371,10 +371,10 @@
             "Microsoft.Owin.Security.Interop": {},
             "Microsoft.TargetingPack.Private.CoreCLR": {
                 "SIGN_STRONGNAME": {
-                    "lib\\dotnet5.1\\mscorlib.dll": "Need to follow up, not from ADX team"
+                    "lib/dotnet5.1/mscorlib.dll": "Need to follow up, not from ADX team"
                 },
                 "SIGN_AUTHENTICODE": {
-                    "lib\\dotnet5.1\\mscorlib.dll": "Need to follow up, not from ADX team"
+                    "lib/dotnet5.1/mscorlib.dll": "Need to follow up, not from ADX team"
                 }
             },
             "Microsoft.TargetingPack.Private.NETNative": { },
@@ -459,10 +459,10 @@
             "runtime.centos.7.1-x64.Microsoft.NETCore.ConsoleHost": {},
             "runtime.centos.7.1-x64.Microsoft.NETCore.Runtime.CoreCLR": {
                 "SIGN_STRONGNAME": {
-                    "runtimes\\centos.7.1-x64\\lib\\dotnet\\mscorlib.dll": "Need to follow up, not from ADX team"
+                    "runtimes/centos.7.1-x64/lib/dotnet/mscorlib.dll": "Need to follow up, not from ADX team"
                 },
                 "SIGN_AUTHENTICODE": {
-                    "runtimes\\centos.7.1-x64\\lib\\dotnet\\mscorlib.dll": "Need to follow up, not from ADX team"
+                    "runtimes/centos.7.1-x64/lib/dotnet/mscorlib.dll": "Need to follow up, not from ADX team"
                 }
             },
             "runtime.centos.7.1-x64.Microsoft.NETCore.TestHost": {},
@@ -484,10 +484,10 @@
             "runtime.linux.System.Diagnostics.Process": {},
             "runtime.linux.System.IO.FileSystem": {
                 "SIGN_STRONGNAME": {
-                    "runtimes\\linux\\lib\\dotnet5.4\\System.IO.FileSystem.dll": "Need to follow up, not from ADX team"
+                    "runtimes/linux/lib/dotnet5.4/System.IO.FileSystem.dll": "Need to follow up, not from ADX team"
                 },
                 "SIGN_AUTHENTICODE": {
-                    "runtimes\\linux\\lib\\dotnet5.4\\System.IO.FileSystem.dll": "Need to follow up, not from ADX team"
+                    "runtimes/linux/lib/dotnet5.4/System.IO.FileSystem.dll": "Need to follow up, not from ADX team"
                 }
             },
             "runtime.linux.System.IO.FileSystem.DriveInfo": {},
@@ -498,27 +498,27 @@
             "runtime.linux.System.Net.NetworkInformation": {},
             "runtime.linux.System.Net.Sockets": {
                 "SIGN_STRONGNAME": {
-                    "runtimes\\linux\\lib\\dotnet5.5\\System.Net.Sockets.dll": "Need to follow up, not from ADX team"
+                    "runtimes/linux/lib/dotnet5.5/System.Net.Sockets.dll": "Need to follow up, not from ADX team"
                 },
                 "SIGN_AUTHENTICODE": {
-                    "runtimes\\linux\\lib\\dotnet5.5\\System.Net.Sockets.dll": "Need to follow up, not from ADX team"
+                    "runtimes/linux/lib/dotnet5.5/System.Net.Sockets.dll": "Need to follow up, not from ADX team"
                 }
             },
             "runtime.linux.System.Runtime.Extensions": {
                 "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Runtime.Extensions.dll": "Need to follow up, not from ADX team"
+                    "runtimes/unix/lib/dotnet5.4/System.Runtime.Extensions.dll": "Need to follow up, not from ADX team"
                 },
                 "SIGN_AUTHENTICODE": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Runtime.Extensions.dll": "Need to follow up, not from ADX team"
+                    "runtimes/unix/lib/dotnet5.4/System.Runtime.Extensions.dll": "Need to follow up, not from ADX team"
                 }
             },
             "runtime.linux.System.Runtime.InteropServices.RuntimeInformation": {},
             "runtime.linux.System.Security.Cryptography.Algorithms": {
                 "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team"
+                    "runtimes/unix/lib/dotnet5.4/System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team"
                 },
                 "SIGN_AUTHENTICODE": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team"
+                    "runtimes/unix/lib/dotnet5.4/System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team"
                 }
             },
             "runtime.native.System": {},
@@ -526,7 +526,9 @@
             "runtime.native.System.Net.Http": {},
             "runtime.native.System.Security.Cryptography": {},
             "runtime.osx.10.10-x64.Microsoft.DotNet.CoreHost": {},
+            "runtime.osx.10.10-x64.Microsoft.NETCore.ConsoleHost": {},
             "runtime.osx.10.10-x64.Microsoft.NETCore.Runtime.CoreCLR": {},
+            "runtime.osx.10.10-x64.Microsoft.NETCore.TestHost": {},
             "runtime.osx.10.10-x64.runtime.native.System": {},
             "runtime.osx.10.10-x64.runtime.native.System.IO.Compression": {},
             "runtime.osx.10.10-x64.runtime.native.System.Net.Http": {},
@@ -534,10 +536,10 @@
             "runtime.osx.10.10.System.Diagnostics.Process": {},
             "runtime.osx.10.10.System.IO.FileSystem": {
                 "SIGN_STRONGNAME": {
-                    "runtimes\\osx.10.10\\lib\\dotnet5.4\\System.IO.FileSystem.dll": "Need to follow up, not from ADX team"
+                    "runtimes/osx.10.10/lib/dotnet5.4/System.IO.FileSystem.dll": "Need to follow up, not from ADX team"
                 },
                 "SIGN_AUTHENTICODE": {
-                    "runtimes\\osx.10.10\\lib\\dotnet5.4\\System.IO.FileSystem.dll": "Need to follow up, not from ADX team"
+                    "runtimes/osx.10.10/lib/dotnet5.4/System.IO.FileSystem.dll": "Need to follow up, not from ADX team"
                 }
             },
             "runtime.osx.10.10.System.IO.FileSystem.DriveInfo": {},
@@ -548,40 +550,37 @@
             "runtime.osx.10.10.System.Net.NetworkInformation": {},
             "runtime.osx.10.10.System.Net.Primitives": {
                 "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dnxcore50\\System.Net.Primitives.dll": "Need to follow up, not from ADX team"
+                    "runtimes/unix/lib/dnxcore50/System.Net.Primitives.dll": "Need to follow up, not from ADX team"
                 },
                 "SIGN_AUTHENTICODE": {
-                    "runtimes\\unix\\lib\\dnxcore50\\System.Net.Primitives.dll": "Need to follow up, not from ADX team"
+                    "runtimes/unix/lib/dnxcore50/System.Net.Primitives.dll": "Need to follow up, not from ADX team"
                 }
             },
             "runtime.osx.10.10.System.Net.Sockets": {
                 "SIGN_STRONGNAME": {
-                    "runtimes\\osx.10.10\\lib\\dotnet5.5\\System.Net.Sockets.dll": "Need to follow up, not from ADX team"
+                    "runtimes/osx.10.10/lib/dotnet5.5/System.Net.Sockets.dll": "Need to follow up, not from ADX team"
                 },
                 "SIGN_AUTHENTICODE": {
-                    "runtimes\\osx.10.10\\lib\\dotnet5.5\\System.Net.Sockets.dll": "Need to follow up, not from ADX team"
+                    "runtimes/osx.10.10/lib/dotnet5.5/System.Net.Sockets.dll": "Need to follow up, not from ADX team"
                 }
             },
             "runtime.osx.10.10.System.Runtime.Extensions": {
                 "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Runtime.Extensions.dll": "Need to follow up, not from ADX team"
+                    "runtimes/unix/lib/dotnet5.4/System.Runtime.Extensions.dll": "Need to follow up, not from ADX team"
                 },
                 "SIGN_AUTHENTICODE": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Runtime.Extensions.dll": "Need to follow up, not from ADX team"
+                    "runtimes/unix/lib/dotnet5.4/System.Runtime.Extensions.dll": "Need to follow up, not from ADX team"
                 }
             },
             "runtime.osx.10.10.System.Runtime.InteropServices.RuntimeInformation": {},
             "runtime.osx.10.10.System.Security.Cryptography.Algorithms": {
                 "SIGN_STRONGNAME": {
-                    "runtimes\\osx.10.10\\lib\\dotnet5.4\\System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team"
+                    "runtimes/osx.10.10/lib/dotnet5.4/System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team"
                 },
                 "SIGN_AUTHENTICODE": {
-                    "runtimes\\osx.10.10\\lib\\dotnet5.4\\System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team"
+                    "runtimes/osx.10.10/lib/dotnet5.4/System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "runtime.OSX.10.10-x64.Microsoft.NETCore.ConsoleHost": {},
-            "runtime.OSX.10.10-x64.Microsoft.NETCore.Runtime.CoreCLR": {},
-            "runtime.OSX.10.10-x64.Microsoft.NETCore.TestHost": {},
             "runtime.rhel.7-x64.Microsoft.NETCore.ConsoleHost": {},
             "runtime.rhel.7-x64.Microsoft.NETCore.Runtime.CoreCLR": {},
             "runtime.rhel.7-x64.Microsoft.NETCore.TestHost": {},
@@ -590,9 +589,9 @@
             "runtime.rhel.7-x64.runtime.native.System.Net.Http": {},
             "runtime.rhel.7-x64.runtime.native.System.Security.Cryptography": {},
             "runtime.ubuntu.14.04-x64.Microsoft.DotNet.CoreHost": {},
-            "runtime.Ubuntu.14.04-x64.Microsoft.NETCore.ConsoleHost": {},
+            "runtime.ubuntu.14.04-x64.Microsoft.NETCore.ConsoleHost": {},
             "runtime.ubuntu.14.04-x64.Microsoft.NETCore.Runtime.CoreCLR": {},
-            "runtime.Ubuntu.14.04-x64.Microsoft.NETCore.TestHost": {},
+            "runtime.ubuntu.14.04-x64.Microsoft.NETCore.TestHost": {},
             "runtime.ubuntu.14.04-x64.runtime.native.System": {},
             "runtime.ubuntu.14.04-x64.runtime.native.System.IO.Compression": {},
             "runtime.ubuntu.14.04-x64.runtime.native.System.Net.Http": {},
@@ -615,10 +614,10 @@
             "runtime.unix.System.Net.Sockets": {},
             "runtime.unix.System.Net.Utilities": {
                 "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dnxcore50\\System.Net.Utilities.dll": "Need to follow up, not from ADX team"
+                    "runtimes/unix/lib/dnxcore50/System.Net.Utilities.dll": "Need to follow up, not from ADX team"
                 },
                 "SIGN_AUTHENTICODE": {
-                    "runtimes\\unix\\lib\\dnxcore50\\System.Net.Utilities.dll": "Need to follow up, not from ADX team"
+                    "runtimes/unix/lib/dnxcore50/System.Net.Utilities.dll": "Need to follow up, not from ADX team"
                 }
             },
             "runtime.unix.System.Net.WebSockets.Client": {},
@@ -638,8 +637,8 @@
             "runtime.win7-arm.System.IO.Compression.clrcompression": {},
             "runtime.win7-x64.Microsoft.DotNet.CoreHost": {
                 "SIGN_AUTHENTICODE": {
-                    "runtimes\\win7-x64\\native\\corehost.exe": "Need to follow up, not from ADX team",
-                    "runtimes\\win7-x64\\native\\hostpolicy.dll": "Need to follow up, not from ADX team"
+                    "runtimes/win7-x64/native/corehost.exe": "Need to follow up, not from ADX team",
+                    "runtimes/win7-x64/native/hostpolicy.dll": "Need to follow up, not from ADX team"
                 }
             },
             "runtime.win7-x64.runtime.native.System.IO.Compression": {},
@@ -725,9 +724,9 @@
             "System.IdentityModel.Tokens.Jwt": {},
             "System.IdentityModel.Tokens.Saml": {
                 "SIGN_STRONGNAME": {
-                    "lib\\dnx451\\System.IdentityModel.Tokens.Saml.dll": "Need to follow up, not from ADX team",
-                    "lib\\dnxcore50\\System.IdentityModel.Tokens.Saml.dll": "Need to follow up, not from ADX team",
-                    "lib\\net451\\System.IdentityModel.Tokens.Saml.dll": "Need to follow up, not from ADX team"
+                    "lib/dnx451/System.IdentityModel.Tokens.Saml.dll": "Need to follow up, not from ADX team",
+                    "lib/dnxcore50/System.IdentityModel.Tokens.Saml.dll": "Need to follow up, not from ADX team",
+                    "lib/net451/System.IdentityModel.Tokens.Saml.dll": "Need to follow up, not from ADX team"
                 }
             },
             "System.IO": {},
