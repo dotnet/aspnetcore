@@ -24,8 +24,7 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.IO": "",
-        "System.Runtime": ""
+        "System.Runtime": { "type": "build" }
       }
     },
     "netstandard1.3": {
