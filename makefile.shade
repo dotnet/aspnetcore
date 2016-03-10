@@ -87,49 +87,66 @@ var buildTarget = "compile"
             Log.Info(string.Format("{0} - {1}", repos.Key, string.Join(", ", repos)));
         }
 
-        foreach (var batch in batchedRepos)
+        // Hack: Delete cross-gen binaries to prevent csc.exe from AVE
+        var cliDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "dotnet", "cli", "bin");
+        foreach (var file in Directory.GetFiles(cliDirectory, "*.ni.dll").Where(f => !Path.GetFileName(f).StartsWith("mscorlib")))
         {
-            Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = 2 }, repo =>
+            File.Move(file, Path.ChangeExtension(file, ".bak"));
+        }
+
+        try
+        {
+            foreach (var batch in batchedRepos)
             {
-                var blockName = string.Format("Building {0}", repo);
-
-                if (blockLogger != null)
+                Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = 4 }, repo =>
                 {
-                    blockLogger.StartBlock(blockName);
-                }
+                    var blockName = string.Format("Building {0}", repo);
 
-                Log.Info(blockName);
-                Exec(CreateBuildWithFlowId(repo), buildTarget, repo);
-
-                var repoArtifacts = Path.Combine(repo, "artifacts", "build");
-                if (Directory.Exists(repoArtifacts))
-                {
-                    foreach (var source in Directory.EnumerateFiles(repoArtifacts, "*.nupkg"))
+                    if (blockLogger != null)
                     {
-                        File.Copy(source, Path.Combine(universeArtifacts, Path.GetFileName(source)), overwrite: true);
+                        blockLogger.StartBlock(blockName);
                     }
 
-                    if (!string.IsNullOrEmpty(ciVolatileShare))
+                    Log.Info(blockName);
+                    Exec(CreateBuildWithFlowId(repo), buildTarget, repo);
+
+                    var repoArtifacts = Path.Combine(repo, "artifacts", "build");
+                    if (Directory.Exists(repoArtifacts))
                     {
-                        Log.Info("Publishing packages to " + ciVolatileShare);
-                        if (string.IsNullOrEmpty(nugetExe))
+                        foreach (var source in Directory.EnumerateFiles(repoArtifacts, "*.nupkg"))
                         {
-                            Log.Warn("PUSH_NUGET_EXE not specified.");
+                            File.Copy(source, Path.Combine(universeArtifacts, Path.GetFileName(source)), overwrite: true);
                         }
-                        else
+
+                        if (!string.IsNullOrEmpty(ciVolatileShare))
                         {
-                            NuGetPackagesAdd(repoArtifacts, ciVolatileShare);
+                            Log.Info("Publishing packages to " + ciVolatileShare);
+                            if (string.IsNullOrEmpty(nugetExe))
+                            {
+                                Log.Warn("PUSH_NUGET_EXE not specified.");
+                            }
+                            else
+                            {
+                                NuGetPackagesAdd(repoArtifacts, ciVolatileShare);
+                            }
                         }
                     }
-                }
 
-                Log.Info(string.Format("Build {0} succeeded", repo));
+                    Log.Info(string.Format("Build {0} succeeded", repo));
 
-                if (blockLogger != null)
-                {
-                    blockLogger.EndBlock(blockName);
-                }
-            });
+                    if (blockLogger != null)
+                    {
+                        blockLogger.EndBlock(blockName);
+                    }
+                });
+            }
+        }
+        finally
+        {
+            foreach (var file in Directory.GetFiles(cliDirectory, "*.ni.bak"))
+            {
+                File.Move(file, Path.ChangeExtension(file, ".dll"));
+            }
         }
     }
 
