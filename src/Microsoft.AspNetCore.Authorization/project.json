@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 authorization classes.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.Authorization.AllowAnonymousAttribute\r\nMicrosoft.AspNetCore.Authorization.AuthorizeAttribute",
+  "description": "ASP.NET Core authorization classes.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.Authorization.AllowAnonymousAttribute\r\nMicrosoft.AspNetCore.Authorization.AuthorizeAttribute",
   "tags": [
     "aspnetcore",
     "authorization"
