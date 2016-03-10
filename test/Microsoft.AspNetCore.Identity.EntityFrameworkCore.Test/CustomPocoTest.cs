@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
@@ -27,6 +28,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
         public class CustomDbContext<TKey> : DbContext where TKey : IEquatable<TKey>
         {
+            public CustomDbContext(DbContextOptions options) : base(options)
+            { }
+
             public DbSet<User<TKey>> Users { get; set; }
 
         }

@@ -23,11 +23,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 services = new ServiceCollection();
             }
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddEntityFramework().AddSqlServer().AddDbContext<TContext>(options => options.UseSqlServer(connectionString));
+            services.AddDbContext<TContext>(options => options.UseSqlServer(connectionString));
             return services;
         }
 
-        public static TContext Create<TContext>(string connectionString) where TContext : DbContext, new()
+        public static TContext Create<TContext>(string connectionString) where TContext : DbContext
         {
             var serviceProvider = ConfigureDbServices<TContext>(connectionString).BuildServiceProvider();
             return serviceProvider.GetRequiredService<TContext>();

@@ -20,24 +20,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         { }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IdentityDbContext" /> class using an <see cref="IServiceProvider" />.
-        /// </summary>
-        /// <param name="serviceProvider"> The service provider to be used.</param>
-        public IdentityDbContext(IServiceProvider serviceProvider) : base(serviceProvider)
-        { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="IdentityDbContext" /> class using an <see cref="IServiceProvider" />.
-        /// </summary>
-        /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
-        /// <param name="serviceProvider"> The service provider to be used.</param>
-        public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options)
-        { }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="IdentityDbContext" /> class.
         /// </summary>
-        public IdentityDbContext()
+        protected IdentityDbContext()
         { }
     }
 
@@ -55,24 +40,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         { }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IdentityDbContext" /> class using an <see cref="IServiceProvider" />.
-        /// </summary>
-        /// <param name="serviceProvider"> The service provider to be used.</param>
-        public IdentityDbContext(IServiceProvider serviceProvider) : base(serviceProvider)
-        { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="IdentityDbContext" /> class using an <see cref="IServiceProvider" />.
-        /// </summary>
-        /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
-        /// <param name="serviceProvider"> The service provider to be used.</param>
-        public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options)
-        { }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="IdentityDbContext" /> class.
         /// </summary>
-        public IdentityDbContext()
+        protected IdentityDbContext()
         { }
     }
 
@@ -95,24 +65,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         { }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IdentityDbContext" /> class using an <see cref="IServiceProvider" />.
-        /// </summary>
-        /// <param name="serviceProvider"> The service provider to be used.</param>
-        public IdentityDbContext(IServiceProvider serviceProvider) : base(serviceProvider)
-        { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="IdentityDbContext" /> class using an <see cref="IServiceProvider" />.
-        /// </summary>
-        /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
-        /// <param name="serviceProvider"> The service provider to be used.</param>
-        public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options)
-        { }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="IdentityDbContext" /> class.
         /// </summary>
-        public IdentityDbContext()
+        protected IdentityDbContext()
         { }
 
         /// <summary>

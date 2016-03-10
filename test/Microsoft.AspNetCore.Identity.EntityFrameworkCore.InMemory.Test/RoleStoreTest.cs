@@ -4,6 +4,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.Test;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -23,7 +25,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         public async Task CanCreateRoleWithSingletonManager()
         {
             var services = TestIdentityFactory.CreateTestServices();
-            services.AddEntityFramework().AddInMemoryDatabase();
+            services.AddAddEntityFrameworkInMemoryDatabase();
             services.AddTransient<InMemoryContext>();
             services.AddTransient<IRoleStore<IdentityRole>, RoleStore<IdentityRole, InMemoryContext>>();
             services.AddSingleton<RoleManager<IdentityRole>>();
@@ -36,7 +38,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         [Fact]
         public async Task RoleStoreMethodsThrowWhenDisposedTest()
         {
-            var store = new RoleStore<IdentityRole>(new InMemoryContext());
+            var store = new RoleStore<IdentityRole>(new InMemoryContext(new DbContextOptionsBuilder().Options));
             store.Dispose();
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.FindByIdAsync(null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.FindByNameAsync(null));
@@ -52,7 +54,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         public async Task RoleStorePublicNullCheckTest()
         {
             Assert.Throws<ArgumentNullException>("context", () => new RoleStore<IdentityRole>(null));
-            var store = new RoleStore<IdentityRole>(new InMemoryContext());
+            var store = new RoleStore<IdentityRole>(new InMemoryContext(new DbContextOptionsBuilder().Options));
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await store.GetRoleIdAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await store.GetRoleNameAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await store.SetRoleNameAsync(null, null));

@@ -3,6 +3,8 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
@@ -12,10 +14,10 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         public static InMemoryContext CreateContext()
         {
             var services = new ServiceCollection();
-            services.AddEntityFramework().AddInMemoryDatabase();
+            services.AddAddEntityFrameworkInMemoryDatabase();
             var serviceProvider = services.BuildServiceProvider();
 
-            var db = new InMemoryContext();
+            var db = new InMemoryContext(new DbContextOptionsBuilder().Options);
             db.Database.EnsureCreated();
 
             return db;

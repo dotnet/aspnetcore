@@ -3,18 +3,23 @@
 
 using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 {
     public class InMemoryContext :
         InMemoryContext<IdentityUser, IdentityRole, string>
     {
+        public InMemoryContext(DbContextOptions options) : base(options)
+        { }
     }
 
     public class InMemoryContext<TUser> :
         InMemoryContext<TUser, IdentityRole, string>
         where TUser : IdentityUser
     {
+        public InMemoryContext(DbContextOptions options) : base(options)
+        { }
     }
 
     public class InMemoryContext<TUser, TRole, TKey> : IdentityDbContext<TUser,TRole,TKey>
@@ -22,7 +27,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
     {
-        public InMemoryContext() { }
+        public InMemoryContext(DbContextOptions options) : base(options)
+        { }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
