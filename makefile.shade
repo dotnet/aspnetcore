@@ -24,7 +24,7 @@ functions
 
         // Doesn't build on Mono since their contracts don't match
         string[] excludeReposOnMono = new[] { "Helios" };
-        IEnumerable<string> repositories = GetRepositoriesToBuild();
+        string[] repositories = GetRepositoriesToBuild().ToArray();
 
         static bool useHttps = UseHttps(BASE_DIR);
         static string gitHubUriPrefix = useHttps ? "https://github.com/aspnet/" : "git@github.com:aspnet/";
@@ -80,6 +80,18 @@ var buildTarget = "compile"
         buildTarget = Environment.GetEnvironmentVariable("KOREBUILD_BUILD_TARGETS") ?? "--quiet compile nuget-install";
         var blockLogger = Log as IBlockLogger;
 
+        Parallel.ForEach(repositories, repo =>
+        {
+            if (Directory.Exists(repo))
+            {
+                GitCommand("", string.Format("pull --ff-only --quiet --depth 1 git@github.com:aspnet/{1}.git {0}:{0}", BUILD_BRANCH, repo));
+            }
+            else
+            {
+                GitCommand("", string.Format("clone --quiet --depth 1 --branch {0} git@github.com:aspnet/{1}.git", BUILD_BRANCH, repo));
+            }
+        });
+
         var batchedRepos = GetBuildGraph();
         Log.Info("Building repositories in batches: ");
         foreach (var repos in batchedRepos)
@@ -89,7 +101,7 @@ var buildTarget = "compile"
 
         foreach (var batch in batchedRepos)
         {
-            Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = 4 }, repo =>
+            Parallel.ForEach(batch.ToArray(), new ParallelOptions { MaxDegreeOfParallelism = 4 }, repo =>
             {
                 var blockName = string.Format("Building {0}", repo);
 
@@ -98,7 +110,15 @@ var buildTarget = "compile"
                     blockLogger.StartBlock(blockName);
                 }
 
-                Log.Info(blockName);
+                if (IsLinux)
+                {
+                    Exec("cp", "-ar .build " + Path.Combine(repo, ".build"), "");
+                }
+                else
+                {
+                    Exec("cmd", "/C xcopy /S/Q/I/Y .build " + Path.Combine(repo, ".build"), "");
+                }
+
                 Exec(CreateBuildWithFlowId(repo), buildTarget, repo);
 
                 var repoArtifacts = Path.Combine(repo, "artifacts", "build");
