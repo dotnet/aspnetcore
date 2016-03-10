@@ -12,7 +12,7 @@
     "web": "DeveloperExceptionPageSample"
   },
   "frameworks": {
-    "dnx451": {},
+    "net451": {},
     "netstandardapp1.5": {
       "imports": [
         "dnxcore50"
