@@ -1,0 +1,1 @@
+export { addReactHotModuleReplacementBabelTransform } from './HotModuleReplacement';
