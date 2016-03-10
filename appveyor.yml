@@ -5,7 +5,7 @@ branches:
     - master
     - release
     - dev
-    - /^(.*\\/)?ci-.*$/
+    - /^(.*\/)?ci-.*$/
 build_script:
   - build.cmd --quiet verify
 clone_depth: 1
