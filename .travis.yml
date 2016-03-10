@@ -29,6 +29,6 @@ branches:
     - master
     - release
     - dev
-    - /^(.*\\/)?ci-.*$/
+    - /^(.*\/)?ci-.*$/
 script:
   - ./build.sh --quiet verify
