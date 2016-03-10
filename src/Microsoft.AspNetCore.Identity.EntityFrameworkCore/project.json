@@ -18,12 +18,7 @@
     "Microsoft.EntityFrameworkCore.Relational": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Runtime": "",
-        "System.Threading.Tasks": ""
-      }
-    },
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
         "System.ComponentModel.TypeConverter": "4.0.1-*"
