@@ -87,66 +87,49 @@ var buildTarget = "compile"
             Log.Info(string.Format("{0} - {1}", repos.Key, string.Join(", ", repos)));
         }
 
-        // Hack: Delete cross-gen binaries to prevent csc.exe from AVE
-        var cliDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "dotnet", "cli", "bin");
-        foreach (var file in Directory.GetFiles(cliDirectory, "*.ni.dll").Where(f => !Path.GetFileName(f).StartsWith("mscorlib")))
+        foreach (var batch in batchedRepos)
         {
-            File.Move(file, Path.ChangeExtension(file, ".bak"));
-        }
-
-        try
-        {
-            foreach (var batch in batchedRepos)
+            Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = 4 }, repo =>
             {
-                Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = 4 }, repo =>
+                var blockName = string.Format("Building {0}", repo);
+
+                if (blockLogger != null)
                 {
-                    var blockName = string.Format("Building {0}", repo);
+                    blockLogger.StartBlock(blockName);
+                }
 
-                    if (blockLogger != null)
+                Log.Info(blockName);
+                Exec(CreateBuildWithFlowId(repo), buildTarget, repo);
+
+                var repoArtifacts = Path.Combine(repo, "artifacts", "build");
+                if (Directory.Exists(repoArtifacts))
+                {
+                    foreach (var source in Directory.EnumerateFiles(repoArtifacts, "*.nupkg"))
                     {
-                        blockLogger.StartBlock(blockName);
+                        File.Copy(source, Path.Combine(universeArtifacts, Path.GetFileName(source)), overwrite: true);
                     }
 
-                    Log.Info(blockName);
-                    Exec(CreateBuildWithFlowId(repo), buildTarget, repo);
-
-                    var repoArtifacts = Path.Combine(repo, "artifacts", "build");
-                    if (Directory.Exists(repoArtifacts))
+                    if (!string.IsNullOrEmpty(ciVolatileShare))
                     {
-                        foreach (var source in Directory.EnumerateFiles(repoArtifacts, "*.nupkg"))
+                        Log.Info("Publishing packages to " + ciVolatileShare);
+                        if (string.IsNullOrEmpty(nugetExe))
                         {
-                            File.Copy(source, Path.Combine(universeArtifacts, Path.GetFileName(source)), overwrite: true);
+                            Log.Warn("PUSH_NUGET_EXE not specified.");
                         }
-
-                        if (!string.IsNullOrEmpty(ciVolatileShare))
+                        else
                         {
-                            Log.Info("Publishing packages to " + ciVolatileShare);
-                            if (string.IsNullOrEmpty(nugetExe))
-                            {
-                                Log.Warn("PUSH_NUGET_EXE not specified.");
-                            }
-                            else
-                            {
-                                NuGetPackagesAdd(repoArtifacts, ciVolatileShare);
-                            }
+                            NuGetPackagesAdd(repoArtifacts, ciVolatileShare);
                         }
                     }
+                }
 
-                    Log.Info(string.Format("Build {0} succeeded", repo));
+                Log.Info(string.Format("Build {0} succeeded", repo));
 
-                    if (blockLogger != null)
-                    {
-                        blockLogger.EndBlock(blockName);
-                    }
-                });
-            }
-        }
-        finally
-        {
-            foreach (var file in Directory.GetFiles(cliDirectory, "*.ni.bak"))
-            {
-                File.Move(file, Path.ChangeExtension(file, ".dll"));
-            }
+                if (blockLogger != null)
+                {
+                    blockLogger.EndBlock(blockName);
+                }
+            });
         }
     }
 
