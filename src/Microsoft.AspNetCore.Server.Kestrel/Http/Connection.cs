@@ -152,23 +152,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public virtual void Abort()
         {
-            lock (_stateLock)
+            // Frame.Abort calls user code while this method is always
+            // called from a libuv thread.
+            System.Threading.ThreadPool.QueueUserWorkItem(state =>
             {
-                if (_connectionState == ConnectionState.CreatingFrame)
+                var connection = (Connection)state;
+
+                lock (connection._stateLock)
                 {
-                    _connectionState = ConnectionState.ToDisconnect;
-                }
-                else
-                {
-                    // Frame.Abort calls user code while this method is always
-                    // called from a libuv thread.
-                    System.Threading.ThreadPool.QueueUserWorkItem(state =>
+                    if (connection._connectionState == ConnectionState.CreatingFrame)
                     {
-                        var connection = (Connection)state;
+                        connection._connectionState = ConnectionState.ToDisconnect;
+                    }
+                    else
+                    {
                         connection._frame.Abort();
-                    }, this);
+                    }
                 }
-            }
+            }, this);
         }
 
         // Called on Libuv thread
