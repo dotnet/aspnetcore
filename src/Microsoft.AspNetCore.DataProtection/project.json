@@ -19,6 +19,7 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
+        "System.Runtime": { "type": "build" },
         "System.Security": "",
         "System.Xml": "",
         "System.Xml.Linq": ""
