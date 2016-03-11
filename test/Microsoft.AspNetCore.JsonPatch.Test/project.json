@@ -22,11 +22,12 @@
     },
     "net451": {
       "frameworkAssemblies": {
-        "System.Runtime": "",
-        "System.Threading.Tasks": ""
+        "System.Linq.Expressions": {"type": "build"},
+        "System.Threading.Tasks": { "type": "build" }
       },
       "dependencies": {
         "Moq": "4.2.1312.1622",
+        "System.Runtime": "4.1.0-*",
         "xunit.runner.console": "2.1.0"
       }
     }

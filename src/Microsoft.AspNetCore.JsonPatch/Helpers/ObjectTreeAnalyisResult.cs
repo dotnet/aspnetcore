@@ -141,7 +141,6 @@ namespace Microsoft.AspNetCore.JsonPatch.Helpers
             }
             else if (targetObject is IList)
             {
-                System.Diagnostics.Debugger.Launch();
                 UseDynamicLogic = false;
 
                 int index;

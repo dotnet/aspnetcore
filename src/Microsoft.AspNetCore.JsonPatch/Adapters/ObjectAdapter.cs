@@ -1023,14 +1023,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         {
             if (IsGenericListType(type))
             {
-                return type.GetGenericArguments()[0];
+                return type.GetTypeInfo().GenericTypeArguments[0];
             }
 
             foreach (Type interfaceType in type.GetTypeInfo().ImplementedInterfaces)
             {
                 if (IsGenericListType(interfaceType))
                 {
-                    return interfaceType.GetGenericArguments()[0];
+                    return interfaceType.GetTypeInfo().GenericTypeArguments[0];
                 }
             }
 
