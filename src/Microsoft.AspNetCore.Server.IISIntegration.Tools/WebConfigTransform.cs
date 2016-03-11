@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
 
         private static void AddApplicationBase(XElement aspNetCoreElement)
         {
-            const string appBaseKeyName = "ASPNET_APPLICATIONBASE";
+            const string appBaseKeyName = "ASPNETCORE_APPLICATIONBASE";
 
             var envVariables = GetOrCreateChild(aspNetCoreElement, "environmentVariables");
             var appBaseElement = envVariables.Elements("environmentVariable").SingleOrDefault(e =>
