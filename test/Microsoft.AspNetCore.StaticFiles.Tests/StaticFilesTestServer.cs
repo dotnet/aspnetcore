@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.StaticFiles
     {
         public static TestServer Create(Action<IApplicationBuilder> configureApp, Action<IServiceCollection> configureServices = null)
         {
+            Action<IServiceCollection> defaultConfigureServices = services => { };
             var configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new []
                 {
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             var builder = new WebHostBuilder()
                 .UseConfiguration(configuration)
                 .Configure(configureApp)
-                .ConfigureServices(configureServices);
+                .ConfigureServices(configureServices ?? defaultConfigureServices);
             return new TestServer(builder);
         }
     }
