@@ -5,7 +5,6 @@ using System;
 using System.Threading;
 using Microsoft.AspNetCore.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -49,10 +48,9 @@ namespace Microsoft.AspNetCore.Hosting
 
                 var hostingEnvironment = host.Services.GetService<IHostingEnvironment>();
                 var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
-                var applicationEnvironment = host.Services.GetService<IApplicationEnvironment>();
 
                 Console.WriteLine($"Hosting environment: {hostingEnvironment.EnvironmentName}");
-                Console.WriteLine($"Application base path: {applicationEnvironment.ApplicationBasePath}");
+                Console.WriteLine($"Content root path: {hostingEnvironment.ContentRootPath}");
 
                 var serverAddresses = host.ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
                 if (serverAddresses != null)

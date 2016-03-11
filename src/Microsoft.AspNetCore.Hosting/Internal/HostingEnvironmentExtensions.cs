@@ -3,26 +3,40 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore.Hosting.Internal;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
 {
     public static class HostingEnvironmentExtensions
     {
-        public static void Initialize(this IHostingEnvironment hostingEnvironment, string applicationBasePath, WebHostOptions options, IConfiguration configuration)
+        public static void Initialize(this IHostingEnvironment hostingEnvironment, string applicationName, string contentRootPath, WebHostOptions options)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
+            if (string.IsNullOrEmpty(applicationName))
+            {
+                throw new ArgumentException("A valid non-empty application name must be provided.", nameof(applicationName));
+            }
+            if (string.IsNullOrEmpty(contentRootPath))
+            {
+                throw new ArgumentException("A valid non-empty content root must be provided.", nameof(contentRootPath));
+            }
+            if (!Directory.Exists(contentRootPath))
+            {
+                throw new ArgumentException("The provided content root does not exist.", nameof(contentRootPath));
+            }
+
+            hostingEnvironment.ApplicationName = applicationName;
+            hostingEnvironment.ContentRootPath = contentRootPath;
+            hostingEnvironment.ContentRootFileProvider = new PhysicalFileProvider(hostingEnvironment.ContentRootPath);
 
             var webRoot = options.WebRoot;
             if (webRoot == null)
             {
                 // Default to /wwwroot if it exists.
-                var wwwroot = Path.Combine(applicationBasePath, "wwwroot");
+                var wwwroot = Path.Combine(hostingEnvironment.ContentRootPath, "wwwroot");
                 if (Directory.Exists(wwwroot))
                 {
                     hostingEnvironment.WebRootPath = wwwroot;
@@ -30,8 +44,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
             else
             {
-                hostingEnvironment.WebRootPath = Path.Combine(applicationBasePath, webRoot);
+                hostingEnvironment.WebRootPath = Path.Combine(hostingEnvironment.ContentRootPath, webRoot);
             }
+
             if (!string.IsNullOrEmpty(hostingEnvironment.WebRootPath))
             {
                 hostingEnvironment.WebRootPath = Path.GetFullPath(hostingEnvironment.WebRootPath);
@@ -45,10 +60,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 hostingEnvironment.WebRootFileProvider = new NullFileProvider();
             }
+
             var environmentName = options.Environment;
             hostingEnvironment.EnvironmentName = environmentName ?? hostingEnvironment.EnvironmentName;
-
-            hostingEnvironment.Configuration = configuration;
         }
     }
 }

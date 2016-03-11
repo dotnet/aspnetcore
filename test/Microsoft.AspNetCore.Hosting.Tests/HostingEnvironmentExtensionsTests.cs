@@ -1,10 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using Microsoft.AspNetCore.Hosting.Internal;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 using Xunit;
 
@@ -17,9 +15,11 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var env = new HostingEnvironment();
 
-            env.Initialize(".", new WebHostOptions() {WebRoot = "testroot"}, null);
+            env.Initialize("DummyApplication", Path.GetFullPath("."), new WebHostOptions(){ WebRoot = "testroot" });
 
+            Assert.Equal(Path.GetFullPath("."), env.ContentRootPath);
             Assert.Equal(Path.GetFullPath("testroot"), env.WebRootPath);
+            Assert.IsAssignableFrom<PhysicalFileProvider>(env.ContentRootFileProvider);
             Assert.IsAssignableFrom<PhysicalFileProvider>(env.WebRootFileProvider);
         }
 
@@ -28,9 +28,11 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var env = new HostingEnvironment();
 
-            env.Initialize("testroot", new WebHostOptions(), null);
+            env.Initialize("DummyApplication", Path.GetFullPath("testroot"), new WebHostOptions());
 
-            Assert.Equal(Path.GetFullPath(Path.Combine("testroot","wwwroot")), env.WebRootPath);
+            Assert.Equal(Path.GetFullPath("testroot"), env.ContentRootPath);
+            Assert.Equal(Path.GetFullPath(Path.Combine("testroot", "wwwroot")), env.WebRootPath);
+            Assert.IsAssignableFrom<PhysicalFileProvider>(env.ContentRootFileProvider);
             Assert.IsAssignableFrom<PhysicalFileProvider>(env.WebRootFileProvider);
         }
 
@@ -39,21 +41,12 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var env = new HostingEnvironment();
 
-            env.Initialize(Path.Combine("testroot", "wwwroot"), new WebHostOptions(), null);
+            env.Initialize("DummyApplication", Path.GetFullPath(Path.Combine("testroot", "wwwroot")), new WebHostOptions());
 
+            Assert.Equal(Path.GetFullPath(Path.Combine("testroot", "wwwroot")), env.ContentRootPath);
             Assert.Null(env.WebRootPath);
+            Assert.IsAssignableFrom<PhysicalFileProvider>(env.ContentRootFileProvider);
             Assert.IsAssignableFrom<NullFileProvider>(env.WebRootFileProvider);
-        }
-
-        [Fact]
-        public void SetsConfiguration()
-        {
-            var config = new ConfigurationBuilder().Build();
-            var env = new HostingEnvironment();
-
-            env.Initialize(".", new WebHostOptions(), config);
-
-            Assert.Same(config, env.Configuration);
         }
 
         [Fact]
@@ -62,20 +55,9 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var env = new HostingEnvironment();
             env.EnvironmentName = "SomeName";
 
-            env.Initialize(".", new WebHostOptions() { Environment = "NewName" }, null);
+            env.Initialize("DummyApplication", Path.GetFullPath("."), new WebHostOptions(){ Environment = "NewName" });
 
             Assert.Equal("NewName", env.EnvironmentName);
         }
-
-        [Fact]
-        public void MapPathThrowsWithNoWwwroot()
-        {
-            var env = new HostingEnvironment();
-
-            env.Initialize(".", new WebHostOptions(), null);
-
-            Assert.Throws<InvalidOperationException>(() => env.MapPath("file.txt"));
-        }
-
     }
 }

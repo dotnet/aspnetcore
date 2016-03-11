@@ -322,27 +322,38 @@ namespace Microsoft.AspNetCore.Hosting
 
             var host = new WebHostBuilder()
                 .UseConfiguration(config)
-                .UseApplicationBasePath("/foo/bar")
+                .UseContentRoot("/")
                 .UseServer(new TestServer())
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build();
 
-            Assert.Equal("/foo/bar", host.Services.GetService<IApplicationEnvironment>().ApplicationBasePath);
+            Assert.Equal("/", host.Services.GetService<IHostingEnvironment>().ContentRootPath);
         }
 
         [Fact]
-        public void RelativeApplicationBaseAreResolved()
+        public void RelativeContentRootIsResolved()
         {
-            var builder = new ConfigurationBuilder();
             var host = new WebHostBuilder()
-                .UseApplicationBasePath("bar")
+                .UseContentRoot("testroot")
                 .UseServer(new TestServer())
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build();
 
-            var basePath = host.Services.GetRequiredService<IApplicationEnvironment>().ApplicationBasePath;
+            var basePath = host.Services.GetRequiredService<IHostingEnvironment>().ContentRootPath;
             Assert.True(Path.IsPathRooted(basePath));
-            Assert.EndsWith(Path.DirectorySeparatorChar + "bar", basePath);
+            Assert.EndsWith(Path.DirectorySeparatorChar + "testroot", basePath);
+        }
+
+        [Fact]
+        public void DefaultContentRootIsApplicationBasePath()
+        {
+            var host = new WebHostBuilder()
+                .UseServer(new TestServer())
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
+                .Build();
+
+            var appBase = PlatformServices.Default.Application.ApplicationBasePath;
+            Assert.Equal(appBase, host.Services.GetService<IHostingEnvironment>().ContentRootPath);
         }
 
         [Fact]
@@ -354,8 +365,11 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build();
 
+            var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
             var appEnv = host.Services.GetService<IApplicationEnvironment>();
-            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", appEnv.ApplicationName);
+            Assert.Equal(PlatformServices.Default.Application.ApplicationName, appEnv.ApplicationName);
+            Assert.Equal(PlatformServices.Default.Application.ApplicationBasePath, appEnv.ApplicationBasePath);
         }
 
         [Fact]
@@ -368,8 +382,11 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests.NonExistent")
                 .Build();
 
+            var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
             var appEnv = host.Services.GetService<IApplicationEnvironment>();
-            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", appEnv.ApplicationName);
+            Assert.Equal(PlatformServices.Default.Application.ApplicationName, appEnv.ApplicationName);
+            Assert.Equal(PlatformServices.Default.Application.ApplicationBasePath, appEnv.ApplicationBasePath);
         }
 
         [Fact]
@@ -382,8 +399,11 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests.NonExistent")
                 .Build();
 
+            var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
             var appEnv = host.Services.GetService<IApplicationEnvironment>();
-            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", appEnv.ApplicationName);
+            Assert.Equal(PlatformServices.Default.Application.ApplicationName, appEnv.ApplicationName);
+            Assert.Equal(PlatformServices.Default.Application.ApplicationBasePath, appEnv.ApplicationBasePath);
         }
 
         private IWebHostBuilder CreateWebHostBuilder()

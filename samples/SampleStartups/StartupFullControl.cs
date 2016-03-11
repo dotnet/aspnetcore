@@ -15,7 +15,7 @@ namespace SampleStartups
         {
             var host = new WebHostBuilder()
                 .UseServer("Microsoft.AspNetCore.Server.Kestrel") // Set the server manually
-                .UseApplicationBasePath(Directory.GetCurrentDirectory()) // Override the application base with the current directory
+                .UseContentRoot(Directory.GetCurrentDirectory()) // Override the content root with the current directory
                 .UseUrls("http://*:1000", "https://*:902")
                 .UseEnvironment("Development")
                 .UseWebRoot("public")

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             Environment = configuration[WebHostDefaults.EnvironmentKey];
             ServerFactoryLocation = configuration[WebHostDefaults.ServerKey];
             WebRoot = configuration[WebHostDefaults.WebRootKey];
-            ApplicationBasePath = configuration[WebHostDefaults.ApplicationBaseKey];
+            ContentRootPath = configuration[WebHostDefaults.ContentRootKey];
         }
 
         public string Application { get; set; }
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public string WebRoot { get; set; }
 
-        public string ApplicationBasePath { get; set; }
+        public string ContentRootPath { get; set; }
 
         private static bool ParseBool(IConfiguration configuration, string key)
         {

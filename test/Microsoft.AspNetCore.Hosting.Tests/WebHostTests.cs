@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Hosting.Startup;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Features;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -123,24 +122,6 @@ namespace Microsoft.AspNetCore.Hosting
             host.Start();
             Assert.NotNull(host.Services.GetService<IHostingEnvironment>());
             Assert.Equal("http://localhost:5000", host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.First());
-        }
-
-        [Fact]
-        public void FlowsConfig()
-        {
-            var vals = new Dictionary<string, string>
-            {
-                { "Server", "Microsoft.AspNetCore.Hosting.Tests" }
-            };
-
-            var builder = new ConfigurationBuilder()
-                .AddInMemoryCollection(vals);
-            var config = builder.Build();
-            var host = CreateBuilder(config).Build();
-            host.Start();
-            var hostingEnvironment = host.Services.GetService<IHostingEnvironment>();
-            Assert.NotNull(hostingEnvironment.Configuration);
-            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnvironment.Configuration["Server"]);
         }
 
         [Fact]
@@ -278,23 +259,6 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
-        public void EnvDefaultsToConfigValueIfSpecifiedWithOldKey()
-        {
-            var vals = new Dictionary<string, string>
-            {
-                { "environment", "Staging" }
-            };
-
-            var builder = new ConfigurationBuilder()
-                .AddInMemoryCollection(vals);
-            var config = builder.Build();
-
-            var host = CreateBuilder(config).UseServer((IServerFactory)this).Build();
-            var env = host.Services.GetService<IHostingEnvironment>();
-            Assert.Equal("Staging", env.EnvironmentName);
-        }
-
-        [Fact]
         public void EnvDefaultsToConfigValueIfSpecified()
         {
             var vals = new Dictionary<string, string>
@@ -340,27 +304,6 @@ namespace Microsoft.AspNetCore.Hosting
                 Assert.True(env.IsEnvironment(EnvironmentName.Production));
                 Assert.True(env.IsEnvironment("producTion"));
             }
-        }
-
-        [Theory]
-        [InlineData(null, "")]
-        [InlineData("", "")]
-        [InlineData("/", "/")]
-        [InlineData(@"\", @"\")]
-        [InlineData("sub", "sub")]
-        [InlineData("sub/sub2/sub3", @"sub/sub2/sub3")]
-        public void MapPath_Facts(string virtualPath, string expectedSuffix)
-        {
-            RunMapPath(virtualPath, expectedSuffix);
-        }
-
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(@"sub/sub2\sub3\", @"sub/sub2/sub3/")]
-        public void MapPath_Windows_Facts(string virtualPath, string expectedSuffix)
-        {
-            RunMapPath(virtualPath, expectedSuffix);
         }
 
         [Fact]
@@ -468,23 +411,6 @@ namespace Microsoft.AspNetCore.Hosting
                         appBuilder.Run(requestDelegate);
                     });
             return builder.Build();
-        }
-
-        private void RunMapPath(string virtualPath, string expectedSuffix)
-        {
-            var host = CreateBuilder().UseServer((IServerFactory)this).Build();
-
-            using (host)
-            {
-                host.Start();
-                var env = host.Services.GetRequiredService<IHostingEnvironment>();
-                // MapPath requires webroot to be set, we don't care
-                // about file provider so  just set it here
-                env.WebRootPath = ".";
-                var mappedPath = env.MapPath(virtualPath);
-                expectedSuffix = expectedSuffix.Replace('/', Path.DirectorySeparatorChar);
-                Assert.Equal(Path.Combine(env.WebRootPath, expectedSuffix), mappedPath);
-            }
         }
 
         private IWebHostBuilder CreateBuilder(IConfiguration config = null)

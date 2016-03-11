@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Hosting
         public static readonly string WebRootKey = "webroot";
         public static readonly string CaptureStartupErrorsKey = "captureStartupErrors";
         public static readonly string ServerUrlsKey = "server.urls";
-        public static readonly string ApplicationBaseKey = "applicationBase";
+        public static readonly string ContentRootKey = "contentRoot";
 
         public static readonly string HostingJsonFile = "hosting.json";
         public static readonly string EnvironmentVariablesPrefix = "ASPNETCORE_";

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Builder;
 using Microsoft.AspNetCore.Hosting.Internal;
@@ -152,14 +151,16 @@ namespace Microsoft.AspNetCore.Hosting
         public IWebHost Build()
         {
             var hostingServices = BuildHostingServices();
-
             var hostingContainer = hostingServices.BuildServiceProvider();
 
             var appEnvironment = hostingContainer.GetRequiredService<IApplicationEnvironment>();
             var startupLoader = hostingContainer.GetRequiredService<IStartupLoader>();
+            
+            var contentRootPath = ResolveContentRootPath(_options.ContentRootPath, appEnvironment.ApplicationBasePath);
+            var applicationName = ResolveApplicationName() ?? appEnvironment.ApplicationName;
 
             // Initialize the hosting environment
-            _hostingEnvironment.Initialize(appEnvironment.ApplicationBasePath, _options, _config);
+            _hostingEnvironment.Initialize(applicationName, contentRootPath, _options);
 
             var host = new WebHost(hostingServices, startupLoader, _options, _config);
 
@@ -201,23 +202,13 @@ namespace Microsoft.AspNetCore.Hosting
             services.AddTransient<IStartupFilter, AutoRequestServicesStartupFilter>();
 
             var defaultPlatformServices = PlatformServices.Default;
-
-            if (defaultPlatformServices != null)
+            if (defaultPlatformServices.Application != null)
             {
-                if (defaultPlatformServices.Application != null)
-                {
-                    var appEnv = defaultPlatformServices.Application;
-                    var applicationBasePath = ResolveApplicationBasePath(_options.ApplicationBasePath, appEnv.ApplicationBasePath);
-                    var startupAssemblyName = ResolveStartupAssemblyName() ?? appEnv.ApplicationName;
-                    appEnv = new WrappedApplicationEnvironment(applicationBasePath, startupAssemblyName, defaultPlatformServices.Application);
-
-                    services.TryAddSingleton(appEnv);
-                }
-
-                if (defaultPlatformServices.Runtime != null)
-                {
-                    services.TryAddSingleton(defaultPlatformServices.Runtime);
-                }
+                services.TryAddSingleton(defaultPlatformServices.Application);
+            }
+            if (defaultPlatformServices.Runtime != null)
+            {
+                services.TryAddSingleton(defaultPlatformServices.Runtime);
             }
 
             foreach (var configureServices in _configureServicesDelegates)
@@ -228,20 +219,20 @@ namespace Microsoft.AspNetCore.Hosting
             return services;
         }
 
-        private string ResolveApplicationBasePath(string applicationBasePath, string basePath)
+        private string ResolveContentRootPath(string contentRootPath, string basePath)
         {
-            if (string.IsNullOrEmpty(applicationBasePath))
+            if (string.IsNullOrEmpty(contentRootPath))
             {
                 return basePath;
             }
-            if (Path.IsPathRooted(applicationBasePath))
+            if (Path.IsPathRooted(contentRootPath))
             {
-                return applicationBasePath;
+                return contentRootPath;
             }
-            return Path.Combine(Path.GetFullPath(basePath), applicationBasePath);
+            return Path.Combine(Path.GetFullPath(basePath), contentRootPath);
         }
 
-        private string ResolveStartupAssemblyName()
+        private string ResolveApplicationName()
         {
             if (_startup != null)
             {
@@ -256,25 +247,6 @@ namespace Microsoft.AspNetCore.Hosting
                 return _options.Application;
             }
             return null;
-        }
-
-        private class WrappedApplicationEnvironment : IApplicationEnvironment
-        {
-            public WrappedApplicationEnvironment(string applicationBasePath, string applicationName, IApplicationEnvironment env)
-            {
-                ApplicationBasePath = applicationBasePath;
-                ApplicationName = applicationName;
-                ApplicationVersion = env.ApplicationVersion;
-                RuntimeFramework = env.RuntimeFramework;
-            }
-
-            public string ApplicationBasePath { get; }
-
-            public string ApplicationName { get; }
-
-            public string ApplicationVersion { get; }
-
-            public FrameworkName RuntimeFramework { get; }
         }
     }
 }

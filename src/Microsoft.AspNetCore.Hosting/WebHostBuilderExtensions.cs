@@ -62,14 +62,14 @@ namespace Microsoft.AspNetCore.Hosting
             return hostBuilder.UseServer(new ServerFactory(server));
         }
 
-        public static IWebHostBuilder UseApplicationBasePath(this IWebHostBuilder hostBuilder, string applicationBasePath)
+        public static IWebHostBuilder UseContentRoot(this IWebHostBuilder hostBuilder, string contentRootPath)
         {
-            if (applicationBasePath == null)
+            if (contentRootPath == null)
             {
-                throw new ArgumentNullException(nameof(applicationBasePath));
+                throw new ArgumentNullException(nameof(contentRootPath));
             }
 
-            return hostBuilder.UseSetting(WebHostDefaults.ApplicationBaseKey, applicationBasePath);
+            return hostBuilder.UseSetting(WebHostDefaults.ContentRootKey, contentRootPath);
         }
 
         public static IWebHostBuilder UseEnvironment(this IWebHostBuilder hostBuilder, string environment)
