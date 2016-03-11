@@ -6,7 +6,8 @@
         "packages": {
             "dotnet-publish-iis": { },
             "Microsoft.AspNetCore.IISPlatformHandler": { },
-            "Microsoft.AspNetCore.Server.IISIntegration": { }
+            "Microsoft.AspNetCore.Server.IISIntegration": { },
+            "Microsoft.AspNetCore.Server.IISIntegration.Tools": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.

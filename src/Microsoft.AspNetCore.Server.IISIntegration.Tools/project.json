@@ -1,0 +1,23 @@
+﻿{
+  "version": "1.0.0-*",
+  "compilationOptions": {
+    "emitEntryPoint": true,
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [ "CS1591" ],
+    "xmlDoc": true
+  },
+
+  "dependencies": {
+    "NETStandard.Library": "1.0.0-*",
+    "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
+    "Microsoft.DotNet.ProjectModel": "1.0.0-*",
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-*"
+  },
+
+  "frameworks": {
+    "dnxcore50": {
+    }
+  }
+}
