@@ -511,7 +511,7 @@ namespace Microsoft.Net.Http.Headers
             {
                 var encoding = Encoding.GetEncoding(parts[1]);
                 var bytes = Convert.FromBase64String(parts[3]);
-                output = encoding.GetString(bytes);
+                output = encoding.GetString(bytes, 0, bytes.Length);
                 return true;
             }
             catch (ArgumentException)

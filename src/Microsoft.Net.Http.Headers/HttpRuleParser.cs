@@ -41,7 +41,7 @@ namespace Microsoft.Net.Http.Headers
         internal const int MaxInt32Digits = 10;
 
         // iso-8859-1, Western European (ISO)
-        internal static readonly Encoding DefaultHttpEncoding = Encoding.GetEncoding(28591);
+        internal static readonly Encoding DefaultHttpEncoding = Encoding.GetEncoding("iso-8859-1");
 
         static HttpRuleParser()
         {

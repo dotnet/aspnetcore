@@ -15,19 +15,18 @@
   },
   "dependencies": {},
   "frameworks": {
-    "net451": {},
-    "netstandard1.3": {
+    "netstandard1.0": {
       "dependencies": {
         "System.Collections": "4.0.11-*",
         "System.Diagnostics.Contracts": "4.0.1-*",
         "System.Globalization": "4.0.11-*",
-        "System.Globalization.Extensions": "4.0.1-*",
         "System.Linq": "4.1.0-*",
+        "System.Resources.ResourceManager": "4.0.1-*",
+        "System.Runtime.Extensions": "4.1.0-*",
         "System.Text.Encoding": "4.0.11-*",
-        "System.Resources.ResourceManager": "4.0.1-*"
       },
       "imports": [
-        "dotnet5.4"
+        "dotnet5.1"
       ]
     }
   }
