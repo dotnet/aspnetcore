@@ -1,3 +1,3 @@
-declare module 'memory-fs' {
-    export default class MemoryFS {}
+export namespace memoryfs {
+    export class MemoryFS {}
 }

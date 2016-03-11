@@ -1,3 +1,3 @@
-declare module 'require-from-string' {
-    export default function requireFromString<T>(fileContent: string): T;
+export namespace requirefromstring {
+    export function requireFromString<T>(fileContent: string): T;
 }

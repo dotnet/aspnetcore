@@ -4,11 +4,16 @@
 // that your loader plugins (e.g., require('./mystyles.less')) work in exactly the same way on the server as
 // on the client.
 import 'es6-promise';
-import ExternalsPlugin from 'webpack-externals-plugin';
-import requireFromString from 'require-from-string';
-import MemoryFS from 'memory-fs';
 import * as webpack from 'webpack';
 import { requireNewCopy } from './RequireNewCopy';
+
+// Strange import syntax to work around https://github.com/Microsoft/TypeScript/issues/2719
+import { webpackexternals } from './typings/webpack-externals-plugin';
+import { requirefromstring } from './typings/require-from-string';
+import { memoryfs } from './typings/memory-fs';
+const ExternalsPlugin = require('webpack-externals-plugin') as typeof webpackexternals.ExternalsPlugin;
+const requireFromString = require('require-from-string') as typeof requirefromstring.requireFromString;
+const MemoryFS = require('memory-fs') as typeof memoryfs.MemoryFS;
 
 // Ensure we only go through the compile process once per [config, module] pair
 const loadViaWebpackPromisesCache: { [key: string]: any } = {};

@@ -1,6 +1,6 @@
 {
   "name": "aspnet-webpack",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Helpers for using Webpack in ASP.NET projects. Works in conjunction with the Microsoft.AspNet.SpaServices NuGet package.",
   "main": "index.js",
   "scripts": {

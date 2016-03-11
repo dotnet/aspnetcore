@@ -1,12 +1,12 @@
-declare module 'webpack-externals-plugin' {
-    import * as webpack from 'webpack';
-    
+import * as webpack from 'webpack';
+
+export namespace webpackexternals {
     export interface ExternalsPluginOptions {
         type: string;
         include: webpack.LoaderCondition;
     }
 
-    export default class ExternalsPlugin {
+    export class ExternalsPlugin {
         constructor(options: ExternalsPluginOptions);
     }
 }
