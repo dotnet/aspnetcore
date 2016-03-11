@@ -8,9 +8,9 @@ namespace Microsoft.EntityFrameworkCore.Tests
 {
     public static class TestHelperExtensions
     {
-        public static EntityFrameworkServicesBuilder AddProviderServices(this EntityFrameworkServicesBuilder entityServicesBuilder)
+        public static IServiceCollection AddProviderServices(this IServiceCollection serviceCollection)
         {
-            return entityServicesBuilder.AddInMemoryDatabase();
+            return serviceCollection.AddEntityFrameworkInMemoryDatabase();
         }
 
         public static DbContextOptions UseProviderOptions(this DbContextOptions options)
