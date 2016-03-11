@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -28,11 +29,10 @@ namespace Microsoft.AspNetCore.Hosting
     {
         private readonly IHostingEnvironment _hostingEnvironment;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly List<Action<IServiceCollection>> _configureServicesDelegates;
 
         private IConfiguration _config = new ConfigurationBuilder().AddInMemoryCollection().Build();
         private WebHostOptions _options;
-
-        private Action<IServiceCollection> _configureServices;
 
         // Only one of these should be set
         private StartupMethods _startup;
@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             _hostingEnvironment = new HostingEnvironment();
             _loggerFactory = new LoggerFactory();
+            _configureServicesDelegates = new List<Action<IServiceCollection>>();
         }
 
         /// <summary>
@@ -102,13 +103,19 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Specify the delegate that is used to configure the services of the web application.
+        /// Adds a delegate for configuring additional services for the host or web application. This may be called
+        /// multiple times.
         /// </summary>
-        /// <param name="configureServices">The delegate that configures the <see cref="IServiceCollection"/>.</param>
+        /// <param name="configureServices">A delegate for configuring the <see cref="IServiceCollection"/>.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public IWebHostBuilder ConfigureServices(Action<IServiceCollection> configureServices)
         {
-            _configureServices = configureServices;
+            if (configureServices == null)
+            {
+                throw new ArgumentNullException(nameof(configureServices));
+            }
+
+            _configureServicesDelegates.Add(configureServices);
             return this;
         }
 
@@ -213,9 +220,9 @@ namespace Microsoft.AspNetCore.Hosting
                 }
             }
 
-            if (_configureServices != null)
+            foreach (var configureServices in _configureServicesDelegates)
             {
-                _configureServices(services);
+                configureServices(services);
             }
 
             return services;

@@ -149,6 +149,31 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
+        public void ConfigureServices_CanBeCalledMultipleTimes()
+        {
+            var callCount = 0; // Verify ordering
+            var hostBuilder = new WebHostBuilder()
+                .UseServer(new TestServer())
+                .ConfigureServices(services =>
+                {
+                    Assert.Equal(0, callCount++);
+                    services.AddTransient<ServiceA>();
+                })
+                .ConfigureServices(services =>
+                {
+                    Assert.Equal(1, callCount++);
+                    services.AddTransient<ServiceB>();
+                })
+                .Configure(app => { });
+
+            var host = hostBuilder.Build();
+            Assert.Equal(2, callCount);
+
+            Assert.NotNull(host.Services.GetRequiredService<ServiceA>());
+            Assert.NotNull(host.Services.GetRequiredService<ServiceB>());
+        }
+
+        [Fact]
         public void CodeBasedSettingsCodeBasedOverride()
         {
             var hostBuilder = new WebHostBuilder()
@@ -417,6 +442,16 @@ namespace Microsoft.AspNetCore.Hosting
                     application.DisposeContext(httpContext, null);
                 };
             }
+        }
+
+        private class ServiceA
+        {
+
+        }
+
+        private class ServiceB
+        {
+
         }
     }
 }
