@@ -32,7 +32,7 @@ using Microsoft.AspNetCore.Diagnostics
     ;
     using System.Threading.Tasks;
 
-    public class CompilationErrorPage : Microsoft.AspNetCore.Diagnostics.Views.BaseView
+    public class CompilationErrorPage : Microsoft.AspNetCore.DiagnosticsViewPage.Views.BaseView
     {
 #line 7 "CompilationErrorPage.cshtml"
 

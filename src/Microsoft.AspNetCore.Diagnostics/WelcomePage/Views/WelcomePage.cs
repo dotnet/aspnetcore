@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Diagnostics
     ;
     using System.Threading.Tasks;
 
-    public class WelcomePage : Microsoft.AspNetCore.Diagnostics.Views.BaseView
+    public class WelcomePage : Microsoft.AspNetCore.DiagnosticsViewPage.Views.BaseView
     {
         #line hidden
         public WelcomePage()

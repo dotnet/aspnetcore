@@ -38,7 +38,7 @@ using Microsoft.AspNetCore.Diagnostics
     ;
     using System.Threading.Tasks;
 
-    public class ErrorPage : Microsoft.AspNetCore.Diagnostics.Views.BaseView
+    public class ErrorPage : Microsoft.AspNetCore.DiagnosticsViewPage.Views.BaseView
     {
 #line 8 "ErrorPage.cshtml"
 

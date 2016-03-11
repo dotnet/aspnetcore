@@ -25,13 +25,13 @@ using Microsoft.AspNetCore.Diagnostics.Elm
 #line hidden
     ;
 #line 5 "DetailsPage.cshtml"
-using Microsoft.AspNetCore.Diagnostics.Views
+using Microsoft.AspNetCore.Diagnostics.Elm.Views
 
 #line default
 #line hidden
     ;
 #line 6 "DetailsPage.cshtml"
-using Microsoft.AspNetCore.Diagnostics.Elm.Views
+using Microsoft.AspNetCore.DiagnosticsViewPage.Views
 
 #line default
 #line hidden
@@ -44,7 +44,7 @@ using Microsoft.Extensions.Logging
     ;
     using System.Threading.Tasks;
 
-    public class DetailsPage : Microsoft.AspNetCore.Diagnostics.Views.BaseView
+    public class DetailsPage : Microsoft.AspNetCore.DiagnosticsViewPage.Views.BaseView
     {
 #line 10 "DetailsPage.cshtml"
 
@@ -423,9 +423,9 @@ using Microsoft.Extensions.Logging
 #line hidden
 
             WriteLiteral("                    <option");
-            BeginWriteAttribute("value", " value=\"", 7715, "\"", 7735, 1);
+            BeginWriteAttribute("value", " value=\"", 7723, "\"", 7743, 1);
 #line 226 "DetailsPage.cshtml"
-WriteAttributeValue("", 7723, severityInt, 7723, 12, false);
+WriteAttributeValue("", 7731, severityInt, 7731, 12, false);
 
 #line default
 #line hidden
@@ -446,9 +446,9 @@ WriteAttributeValue("", 7723, severityInt, 7723, 12, false);
 #line hidden
 
             WriteLiteral("                    <option");
-            BeginWriteAttribute("value", " value=\"", 7864, "\"", 7884, 1);
+            BeginWriteAttribute("value", " value=\"", 7872, "\"", 7892, 1);
 #line 230 "DetailsPage.cshtml"
-WriteAttributeValue("", 7872, severityInt, 7872, 12, false);
+WriteAttributeValue("", 7880, severityInt, 7880, 12, false);
 
 #line default
 #line hidden
@@ -468,9 +468,9 @@ WriteAttributeValue("", 7872, severityInt, 7872, 12, false);
 #line hidden
 
             WriteLiteral("        </select>\r\n        <input type=\"text\" name=\"name\"");
-            BeginWriteAttribute("value", " value=\"", 7997, "\"", 8030, 1);
+            BeginWriteAttribute("value", " value=\"", 8005, "\"", 8038, 1);
 #line 234 "DetailsPage.cshtml"
-WriteAttributeValue("", 8005, Model.Options.NamePrefix, 8005, 25, false);
+WriteAttributeValue("", 8013, Model.Options.NamePrefix, 8013, 25, false);
 
 #line default
 #line hidden

@@ -61,7 +61,7 @@ namespace PageGenerator
             var fileNameNoExtension = Path.GetFileNameWithoutExtension(fileName);
             var codeLang = new CSharpRazorCodeLanguage();
             var host = new RazorEngineHost(codeLang);
-            host.DefaultBaseClass = "Microsoft.AspNetCore.Diagnostics.Views.BaseView";
+            host.DefaultBaseClass = "Microsoft.AspNetCore.DiagnosticsViewPage.Views.BaseView";
             host.GeneratedClassContext = new GeneratedClassContext(
                 executeMethodName: GeneratedClassContext.DefaultExecuteMethodName,
                 writeMethodName: GeneratedClassContext.DefaultWriteMethodName,

@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.AspNetCore.Diagnostics.Views
+namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views
 {
     /// <summary>
     /// Represents a deferred write operation in a <see cref="BaseView"/>.

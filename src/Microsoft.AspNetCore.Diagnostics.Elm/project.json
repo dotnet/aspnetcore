@@ -19,11 +19,20 @@
     "url": "git://github.com/aspnet/diagnostics"
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*"
+    "Microsoft.AspNetCore.DiagnosticsViewPage.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
+    },
+    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.Options": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {
+      "frameworkAssemblies": {
+        "System.IO": ""
+      }
+    },
     "netstandard1.3": {
       "dependencies": {
         "System.Threading": "4.0.11-*"

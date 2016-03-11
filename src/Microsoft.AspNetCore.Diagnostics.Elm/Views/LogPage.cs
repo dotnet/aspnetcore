@@ -25,19 +25,19 @@ using System.Linq
 #line hidden
     ;
 #line 5 "LogPage.cshtml"
-using Microsoft.AspNetCore.Diagnostics.Elm.Views
-
-#line default
-#line hidden
-    ;
-#line 6 "LogPage.cshtml"
 using Microsoft.AspNetCore.Diagnostics.Elm
 
 #line default
 #line hidden
     ;
+#line 6 "LogPage.cshtml"
+using Microsoft.AspNetCore.Diagnostics.Elm.Views
+
+#line default
+#line hidden
+    ;
 #line 7 "LogPage.cshtml"
-using Microsoft.AspNetCore.Diagnostics.Views
+using Microsoft.AspNetCore.DiagnosticsViewPage.Views
 
 #line default
 #line hidden
@@ -50,7 +50,7 @@ using Microsoft.Extensions.Logging
     ;
     using System.Threading.Tasks;
 
-    public class LogPage : Microsoft.AspNetCore.Diagnostics.Views.BaseView
+    public class LogPage : Microsoft.AspNetCore.DiagnosticsViewPage.Views.BaseView
     {
 #line 11 "LogPage.cshtml"
 
@@ -208,9 +208,9 @@ using Microsoft.Extensions.Logging
 #line hidden
 
             WriteLiteral("                    <option");
-            BeginWriteAttribute("value", " value=\"", 4926, "\"", 4946, 1);
+            BeginWriteAttribute("value", " value=\"", 4934, "\"", 4954, 1);
 #line 138 "LogPage.cshtml"
-WriteAttributeValue("", 4934, severityInt, 4934, 12, false);
+WriteAttributeValue("", 4942, severityInt, 4942, 12, false);
 
 #line default
 #line hidden
@@ -231,9 +231,9 @@ WriteAttributeValue("", 4934, severityInt, 4934, 12, false);
 #line hidden
 
             WriteLiteral("                    <option");
-            BeginWriteAttribute("value", " value=\"", 5075, "\"", 5095, 1);
+            BeginWriteAttribute("value", " value=\"", 5083, "\"", 5103, 1);
 #line 142 "LogPage.cshtml"
-WriteAttributeValue("", 5083, severityInt, 5083, 12, false);
+WriteAttributeValue("", 5091, severityInt, 5091, 12, false);
 
 #line default
 #line hidden
@@ -253,9 +253,9 @@ WriteAttributeValue("", 5083, severityInt, 5083, 12, false);
 #line hidden
 
             WriteLiteral("        </select>\r\n        <input type=\"text\" name=\"name\"");
-            BeginWriteAttribute("value", " value=\"", 5208, "\"", 5241, 1);
+            BeginWriteAttribute("value", " value=\"", 5216, "\"", 5249, 1);
 #line 146 "LogPage.cshtml"
-WriteAttributeValue("", 5216, Model.Options.NamePrefix, 5216, 25, false);
+WriteAttributeValue("", 5224, Model.Options.NamePrefix, 5224, 25, false);
 
 #line default
 #line hidden
@@ -315,16 +315,16 @@ WriteAttributeValue("", 5216, Model.Options.NamePrefix, 5216, 25, false);
 #line hidden
 
             WriteLiteral("                        \t<td><a");
-            BeginWriteAttribute("href", " href=\"", 6305, "\"", 6325, 1);
+            BeginWriteAttribute("href", " href=\"", 6313, "\"", 6333, 1);
 #line 178 "LogPage.cshtml"
-WriteAttributeValue("", 6312, activityPath, 6312, 13, false);
+WriteAttributeValue("", 6320, activityPath, 6320, 13, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("title", " title=\"", 6326, "\"", 6357, 1);
+            BeginWriteAttribute("title", " title=\"", 6334, "\"", 6365, 1);
 #line 178 "LogPage.cshtml"
-WriteAttributeValue("", 6334, activity.HttpInfo.Path, 6334, 23, false);
+WriteAttributeValue("", 6342, activity.HttpInfo.Path, 6342, 23, false);
 
 #line default
 #line hidden
@@ -363,16 +363,16 @@ WriteAttributeValue("", 6334, activity.HttpInfo.Path, 6334, 23, false);
 #line hidden
 
             WriteLiteral("                            <td colspan=\"4\"><a");
-            BeginWriteAttribute("href", " href=\"", 6747, "\"", 6767, 1);
+            BeginWriteAttribute("href", " href=\"", 6755, "\"", 6775, 1);
 #line 185 "LogPage.cshtml"
-WriteAttributeValue("", 6754, activityPath, 6754, 13, false);
+WriteAttributeValue("", 6762, activityPath, 6762, 13, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("title", " title=\"", 6768, "\"", 6796, 1);
+            BeginWriteAttribute("title", " title=\"", 6776, "\"", 6804, 1);
 #line 185 "LogPage.cshtml"
-WriteAttributeValue("", 6776, activity.Root.State, 6776, 20, false);
+WriteAttributeValue("", 6784, activity.Root.State, 6784, 20, false);
 
 #line default
 #line hidden
@@ -393,9 +393,9 @@ WriteAttributeValue("", 6776, activity.Root.State, 6776, 20, false);
 #line hidden
 
             WriteLiteral("                            <td colspan=\"4\"><a");
-            BeginWriteAttribute("href", " href=\"", 6959, "\"", 6979, 1);
+            BeginWriteAttribute("href", " href=\"", 6967, "\"", 6987, 1);
 #line 189 "LogPage.cshtml"
-WriteAttributeValue("", 6966, activityPath, 6966, 13, false);
+WriteAttributeValue("", 6974, activityPath, 6974, 13, false);
 
 #line default
 #line hidden

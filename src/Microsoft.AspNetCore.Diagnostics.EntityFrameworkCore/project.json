@@ -20,16 +20,18 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
+    "Microsoft.AspNetCore.DiagnosticsViewPage.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
+    },
+    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
     "Microsoft.EntityFrameworkCore.Relational": "1.0.0-*"
   },
-  "compile": [
-    "..\\Shared\\*.cs"
-  ],
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Configuration": ""
+        "System.Configuration": "",
+        "System.IO": ""
       }
     },
     "netstandard1.3": {

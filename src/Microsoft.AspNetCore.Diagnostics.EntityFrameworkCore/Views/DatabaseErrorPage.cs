@@ -26,7 +26,7 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
     ;
     using System.Threading.Tasks;
 
-    public class DatabaseErrorPage : Microsoft.AspNetCore.Diagnostics.Views.BaseView
+    public class DatabaseErrorPage : Microsoft.AspNetCore.DiagnosticsViewPage.Views.BaseView
     {
 #line 11 "DatabaseErrorPage.cshtml"
 

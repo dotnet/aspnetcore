@@ -37,7 +37,7 @@ using Microsoft.Extensions.PlatformAbstractions;
 #line hidden
     using System.Threading.Tasks;
 
-    public class RuntimeInfoPage : Microsoft.AspNetCore.Diagnostics.Views.BaseView
+    public class RuntimeInfoPage : Microsoft.AspNetCore.DiagnosticsViewPage.Views.BaseView
     {
 #line 9 "RuntimeInfoPage.cshtml"
 
