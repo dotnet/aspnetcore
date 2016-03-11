@@ -33,10 +33,19 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
+        "System.Runtime": { "type": "build" },
+        "System.IO": { "type": "build" },
         "System.Xml": "4.0.0.0",
         "System.Xml.Linq": "4.0.0.0"
-      },
-      "dependencies": {}
+      }
+    },
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Runtime": "",
+        "System.IO": "",
+        "System.Xml": "4.0.0.0",
+        "System.Xml.Linq": "4.0.0.0"
+      }
     },
     "netstandard1.3": {
       "dependencies": {
