@@ -5,7 +5,8 @@
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [ "CS1591" ],
-    "xmlDoc": true
+    "xmlDoc": true,
+    "outputName": "dotnet-publish-iis"
   },
 
   "dependencies": {

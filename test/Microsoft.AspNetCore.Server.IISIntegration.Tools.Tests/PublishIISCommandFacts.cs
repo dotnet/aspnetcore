@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
             new PublishIISCommand(folders.PublishOutput, folders.ProjectPath, null).Run();
 
             var processPath = (string)GetPublishedWebConfig(folders.PublishOutput, webRoot)
-                .Descendants("httpPlatform").Attributes("processPath").Single();
+                .Descendants("aspNetCore").Attributes("processPath").Single();
 
             Assert.Equal($@"..\projectDir.exe", processPath);
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
             new PublishIISCommand(folders.PublishOutput, folders.ProjectPath, null).Run();
 
             var processPath = (string)GetPublishedWebConfig(folders.PublishOutput, webRoot)
-                .Descendants("httpPlatform").Attributes("processPath").Single();
+                .Descendants("aspNetCore").Attributes("processPath").Single();
 
             Assert.Equal($@"..\{projectName}.exe", processPath);
 
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
             new PublishIISCommand(folders.PublishOutput, folders.ProjectPath, null).Run();
 
             var processPath = (string)GetPublishedWebConfig(folders.PublishOutput, webRoot)
-                .Descendants("httpPlatform").Attributes("processPath").Single();
+                .Descendants("aspNetCore").Attributes("processPath").Single();
 
             Assert.Equal(@"..\projectDir.exe", processPath);
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
             new PublishIISCommand(folders.PublishOutput, folders.ProjectPath, webRoot).Run();
 
             var processPath = (string)GetPublishedWebConfig(folders.PublishOutput, webRoot)
-                .Descendants("httpPlatform").Attributes("processPath").Single();
+                .Descendants("aspNetCore").Attributes("processPath").Single();
 
             Assert.Equal(@"..\projectDir.exe", processPath);
 
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
             new PublishIISCommand(folders.PublishOutput, Path.Combine(folders.ProjectPath, "project.json"), null).Run();
 
             var processPath = (string)GetPublishedWebConfig(folders.PublishOutput, webRoot)
-                .Descendants("httpPlatform").Attributes("processPath").Single();
+                .Descendants("aspNetCore").Attributes("processPath").Single();
 
             Assert.Equal($@"..\{projectDir}.exe", processPath);
 
@@ -111,19 +111,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
 @"<configuration>
   <system.webServer>
     <handlers>
-      <add name=""httpPlatformHandler"" path=""*"" verb=""*"" modules=""httpPlatformHandler"" resourceType=""Unspecified""/>
+      <add name=""aspNetCore"" path=""*"" verb=""*"" modules=""AspNetCoreModule"" resourceType=""Unspecified""/>
     </handlers>
-    <httpPlatform processPath=""%________%"" stdoutLogEnabled=""false"" startupTimeLimit=""1234""/>
+    <aspNetCore processPath=""%________%"" stdoutLogEnabled=""false"" startupTimeLimit=""1234""/>
   </system.webServer>
 </configuration>");
 
             new PublishIISCommand(folders.PublishOutput, Path.Combine(folders.ProjectPath, "project.json"), null).Run();
 
-            var httpPlatformElement = GetPublishedWebConfig(folders.PublishOutput, webRoot)
-                .Descendants("httpPlatform").Single();
+            var aspNetCoreElement = GetPublishedWebConfig(folders.PublishOutput, webRoot)
+                .Descendants("aspNetCore").Single();
 
-            Assert.Equal(@"..\projectDir.exe", (string)httpPlatformElement.Attribute("processPath"));
-            Assert.Equal(@"1234", (string)httpPlatformElement.Attribute("startupTimeLimit"));
+            Assert.Equal(@"..\projectDir.exe", (string)aspNetCoreElement.Attribute("processPath"));
+            Assert.Equal(@"1234", (string)aspNetCoreElement.Attribute("startupTimeLimit"));
 
             Directory.Delete(folders.TestRoot, recursive: true);
         }

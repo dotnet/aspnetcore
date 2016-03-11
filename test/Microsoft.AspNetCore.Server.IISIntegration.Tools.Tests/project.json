@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "xunit": "2.1.0",
-    "dotnet-publish-iis": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {

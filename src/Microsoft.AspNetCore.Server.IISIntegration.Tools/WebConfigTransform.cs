@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
         public static XDocument Transform(XDocument webConfig, string appName, bool configureForAzure)
         {
             const string HandlersElementName = "handlers";
-            const string httpPlatformElementName = "httpPlatform";
+            const string aspNetCoreElementName = "aspNetCore";
 
             webConfig = webConfig == null || webConfig.Root.Name.LocalName != "configuration"
                 ? XDocument.Parse("<configuration />")
@@ -22,15 +22,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
             var webServerSection = GetOrCreateChild(webConfig.Root, "system.webServer");
 
             TransformHandlers(GetOrCreateChild(webServerSection, HandlersElementName));
-            TransformHttpPlatform(GetOrCreateChild(webServerSection, httpPlatformElementName), appName, configureForAzure);
+            TransformAspNetCore(GetOrCreateChild(webServerSection, aspNetCoreElementName), appName, configureForAzure);
 
-            // make sure that the httpPlatform element is after handlers element
-            var httpPlatformElement = webServerSection.Element(HandlersElementName)
-                .ElementsBeforeSelf(httpPlatformElementName).SingleOrDefault();
-            if (httpPlatformElement != null)
+            // make sure that the aspNetCore element is after handlers element
+            var aspNetCoreElement = webServerSection.Element(HandlersElementName)
+                .ElementsBeforeSelf(aspNetCoreElementName).SingleOrDefault();
+            if (aspNetCoreElement != null)
             {
-                httpPlatformElement.Remove();
-                webServerSection.Element(HandlersElementName).AddAfterSelf(httpPlatformElement);
+                aspNetCoreElement.Remove();
+                webServerSection.Element(HandlersElementName).AddAfterSelf(aspNetCoreElement);
             }
 
             return webConfig;
@@ -38,41 +38,41 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
 
         private static void TransformHandlers(XElement handlersElement)
         {
-            var platformHandlerElement =
+            var aspNetCoreElement =
                 handlersElement.Elements("add")
-                    .FirstOrDefault(e => string.Equals((string)e.Attribute("name"), "httpplatformhandler", StringComparison.OrdinalIgnoreCase));
+                    .FirstOrDefault(e => string.Equals((string)e.Attribute("name"), "aspnetcore", StringComparison.OrdinalIgnoreCase));
 
-            if (platformHandlerElement == null)
+            if (aspNetCoreElement == null)
             {
-                platformHandlerElement = new XElement("add");
-                handlersElement.Add(platformHandlerElement);
+                aspNetCoreElement = new XElement("add");
+                handlersElement.Add(aspNetCoreElement);
             }
 
-            platformHandlerElement.SetAttributeValue("name", "httpPlatformHandler");
-            SetAttributeValueIfEmpty(platformHandlerElement, "path", "*");
-            SetAttributeValueIfEmpty(platformHandlerElement, "verb", "*");
-            SetAttributeValueIfEmpty(platformHandlerElement, "modules", "httpPlatformHandler");
-            SetAttributeValueIfEmpty(platformHandlerElement, "resourceType", "Unspecified");
+            aspNetCoreElement.SetAttributeValue("name", "aspNetCore");
+            SetAttributeValueIfEmpty(aspNetCoreElement, "path", "*");
+            SetAttributeValueIfEmpty(aspNetCoreElement, "verb", "*");
+            SetAttributeValueIfEmpty(aspNetCoreElement, "modules", "AspNetCoreModule");
+            SetAttributeValueIfEmpty(aspNetCoreElement, "resourceType", "Unspecified");
         }
 
-        private static void TransformHttpPlatform(XElement httpPlatformElement, string appName, bool configureForAzure)
+        private static void TransformAspNetCore(XElement aspNetCoreElement, string appName, bool configureForAzure)
         {
             var appPath = Path.Combine(configureForAzure ? @"%home%\site" : "..", appName);
             var logPath = Path.Combine(configureForAzure ? @"\\?\%home%\LogFiles" : @"..\logs", "stdout.log");
 
-            httpPlatformElement.SetAttributeValue("processPath", appPath);
-            SetAttributeValueIfEmpty(httpPlatformElement, "stdoutLogEnabled", "false");
-            SetAttributeValueIfEmpty(httpPlatformElement, "stdoutLogFile", logPath);
-            SetAttributeValueIfEmpty(httpPlatformElement, "startupTimeLimit", "3600");
+            aspNetCoreElement.SetAttributeValue("processPath", appPath);
+            SetAttributeValueIfEmpty(aspNetCoreElement, "stdoutLogEnabled", "false");
+            SetAttributeValueIfEmpty(aspNetCoreElement, "stdoutLogFile", logPath);
+            SetAttributeValueIfEmpty(aspNetCoreElement, "startupTimeLimit", "3600");
 
-            AddApplicationBase(httpPlatformElement);
+            AddApplicationBase(aspNetCoreElement);
         }
 
-        private static void AddApplicationBase(XElement httpPlatformElement)
+        private static void AddApplicationBase(XElement aspNetCoreElement)
         {
             const string appBaseKeyName = "ASPNET_APPLICATIONBASE";
 
-            var envVariables = GetOrCreateChild(httpPlatformElement, "environmentVariables");
+            var envVariables = GetOrCreateChild(aspNetCoreElement, "environmentVariables");
             var appBaseElement = envVariables.Elements("environmentVariable").SingleOrDefault(e =>
                 string.Equals((string)e.Attribute("name"), appBaseKeyName, StringComparison.CurrentCultureIgnoreCase));
 

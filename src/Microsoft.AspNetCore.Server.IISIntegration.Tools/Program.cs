@@ -5,9 +5,9 @@ using System;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace Microsoft.AspNetCore.Tools.PublishIIS
+namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
 {
-    public class Microsoft.AspNetCore.Server.IISIntegration.Tools
+    public class Program
     {
         public static int Main(string[] args)
         {
