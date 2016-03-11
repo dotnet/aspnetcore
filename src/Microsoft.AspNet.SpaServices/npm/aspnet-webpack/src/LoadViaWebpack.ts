@@ -8,7 +8,7 @@ import ExternalsPlugin from 'webpack-externals-plugin';
 import requireFromString from 'require-from-string';
 import MemoryFS from 'memory-fs';
 import * as webpack from 'webpack';
-import { deepClone } from './DeepClone';
+import { requireNewCopy } from './RequireNewCopy';
 
 // Ensure we only go through the compile process once per [config, module] pair
 const loadViaWebpackPromisesCache: { [key: string]: any } = {};
@@ -32,7 +32,7 @@ export function loadViaWebpack<T>(webpackConfigPath: string, modulePath: string,
 function loadViaWebpackNoCache<T>(webpackConfigPath: string, modulePath: string) {
     return new Promise<T>((resolve, reject) => {
         // Load the Webpack config and make alterations needed for loading the output into Node
-        const webpackConfig: webpack.Configuration = deepClone(require(webpackConfigPath));
+        const webpackConfig: webpack.Configuration = requireNewCopy(webpackConfigPath);
         webpackConfig.entry = modulePath;
         webpackConfig.target = 'node';
         webpackConfig.output = { path: '/', filename: 'webpack-output.js', libraryTarget: 'commonjs' };

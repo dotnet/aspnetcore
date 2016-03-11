@@ -1,6 +1,6 @@
 import * as express from 'express';
 import * as webpack from 'webpack';
-import { deepClone } from './DeepClone';
+import { requireNewCopy } from './RequireNewCopy';
 
 export interface CreateDevServerCallback {
     (error: any, result: { Port: number, PublicPath: string }): void;
@@ -20,7 +20,7 @@ interface DevServerOptions {
 
 export function createWebpackDevServer(callback: CreateDevServerCallback, optionsJson: string) {
     const options: CreateDevServerOptions = JSON.parse(optionsJson);
-    const webpackConfig: webpack.Configuration = deepClone(require(options.webpackConfigPath));
+    const webpackConfig: webpack.Configuration = requireNewCopy(options.webpackConfigPath);
     const publicPath = (webpackConfig.output.publicPath || '').trim();
     if (!publicPath) {
         callback('To use the Webpack dev server, you must specify a value for \'publicPath\' on the \'output\' section of your webpack.config.', null);
