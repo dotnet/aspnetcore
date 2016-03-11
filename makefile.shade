@@ -4,6 +4,7 @@ var VERSION='0.2.1'
 use-ci-loggers
 use namespace='System'
 use namespace='System.IO'
+use namespace='System.Collections.Concurrent'
 use namespace='System.Collections.Generic'
 use namespace='System.Net'
 use namespace='System.Linq'
@@ -23,7 +24,6 @@ functions
         static bool SKIP_NO_CREDENTIALS = Environment.GetEnvironmentVariable("UNIVERSE_SKIP_NO_CREDENTIALS") == "1";
 
         // Doesn't build on Mono since their contracts don't match
-        string[] excludeReposOnMono = new[] { "Helios" };
         string[] repositories = GetRepositoriesToBuild().ToArray();
 
         static bool useHttps = UseHttps(BASE_DIR);
@@ -68,15 +68,33 @@ var buildTarget = "compile"
             CloneOrUpdate(repo);
         });
     }
+    
+#sync-commits 
+   @{
+       var commitsToSync = GetCommitsToSync();
+   
+       Parallel.ForEach(repositories, repo =>
+       {
+            if (commitsToSync.ContainsKey(repo))
+            {
+                var syncHash = commitsToSync[repo];
+                Console.WriteLine(string.Format("Syncing {0} to {1}", repo, syncHash));
+                Git("reset --hard " + syncHash, repo);
+            }
+       });
+   }
 
 #verify-all .pull .change-default-build-target-to-verify .build-all
+
+#ci-test .pull .sync-commits .remove-src-folders .change-default-build-target-to-verify .build-all
 
 #ci-build
     @{
         var ciVolatileShare = Environment.GetEnvironmentVariable("CI_VOLATILE_SHARE");
         var nugetExe = Path.Combine(".build", "nuget.exe");
-        var universeArtifacts = Path.Combine("artifacts", "build");
-        Directory.CreateDirectory(universeArtifacts);
+        var universeArtifacts = "artifacts";
+        var universeBuild = Path.Combine(universeArtifacts, "build");
+        Directory.CreateDirectory(universeBuild);
         buildTarget = Environment.GetEnvironmentVariable("KOREBUILD_BUILD_TARGETS") ?? "--quiet compile nuget-install";
         var blockLogger = Log as IBlockLogger;
 
@@ -99,10 +117,13 @@ var buildTarget = "compile"
             Log.Info(string.Format("{0} - {1}", repos.Key, string.Join(", ", repos)));
         }
 
+        var commits = new ConcurrentDictionary<string, string>();
+
         foreach (var batch in batchedRepos)
         {
             Parallel.ForEach(batch.ToArray(), new ParallelOptions { MaxDegreeOfParallelism = 4 }, repo =>
             {
+                
                 var blockName = string.Format("Building {0}", repo);
 
                 if (blockLogger != null)
@@ -120,14 +141,22 @@ var buildTarget = "compile"
                 }
 
                 Exec(CreateBuildWithFlowId(repo), buildTarget, repo);
-
-                var repoArtifacts = Path.Combine(repo, "artifacts", "build");
-                if (Directory.Exists(repoArtifacts))
+                var repoArtifacts = Path.Combine(repo, "artifacts");
+                var repoBuild = Path.Combine(repoArtifacts, "build");
+                if (Directory.Exists(repoBuild))
                 {
-                    foreach (var source in Directory.EnumerateFiles(repoArtifacts, "*.nupkg"))
+                    foreach (var source in Directory.EnumerateFiles(repoBuild, "*.nupkg"))
                     {
-                        File.Copy(source, Path.Combine(universeArtifacts, Path.GetFileName(source)), overwrite: true);
+                        File.Copy(source, Path.Combine(universeBuild, Path.GetFileName(source)), overwrite: true);
                     }
+                    
+                    var commitFile = Path.Combine(repoArtifacts, "commit");
+                    if (!File.Exists(commitFile))
+                    {
+                        throw new FileNotFoundException("Couldn't find the commit file for " + repo + ": " + commitFile);
+                    }
+                    
+                    commits.TryAdd(repo, File.ReadAllLines(commitFile)[0]);
 
                     if (!string.IsNullOrEmpty(ciVolatileShare))
                     {
@@ -138,7 +167,7 @@ var buildTarget = "compile"
                         }
                         else
                         {
-                            NuGetPackagesAdd(repoArtifacts, ciVolatileShare);
+                            NuGetPackagesAdd(repoBuild, ciVolatileShare);
                         }
                     }
                 }
@@ -151,27 +180,21 @@ var buildTarget = "compile"
                 }
             });
         }
+        
+        var commitsAsString = string.Join("\n", commits.Select(c => c.Key + ":" + c.Value));
+        File.WriteAllText(Path.Combine(universeArtifacts, "commits"), commitsAsString);
     }
-
-#smoke-test-mono .pull .fix-project-json .change-default-build-target-to-verify .build-all
-
-#fix-project-json
+    
+#remove-src-folders
     @{
-        repositories = repositories.Except(excludeReposOnMono).ToArray();
+        foreach (var repo in GetRepositoriesToBuild())
+        {
+            RemoveSrcFolder(repo);
+        }
     }
-    -// Fix project.json to remove .Net portable references
-    for each='var repo in repositories'
-        for each='var file in Files.Include(repo + "/**"  +  "/project.json")'
-            update-file updateFile='${file}'
-              @{
-                  updateText = updateText.Replace(".NETPortable,Version=4.6,Profile=Profile151", "foo");
-                  updateText = updateText.Replace(".NETPortable,Version=v4.6,Profile=Profile151", "foo");
-              }
 
 #change-default-build-target-to-verify
-    @{
-        buildTarget = "verify";
-    }
+    - buildTarget = "verify";
 
 #change-default-build-target-for-coherence-build
     - buildTarget = Environment.GetEnvironmentVariable("KOREBUILD_BUILD_TARGETS") ?? "compile nuget-install";
@@ -554,6 +577,9 @@ var buildTarget = "compile"
 macro name='ExecClr' program='string' commandline='string'
     exec-clr
 
+macro name='Git' gitCommand='string' gitFolder='string'
+    git
+
 macro name='GitPull' gitUri='string' gitBranch='string' gitFolder='string'
     git-pull
 
@@ -580,6 +606,27 @@ macro name='NuGetPackagesAdd' sourcePackagesDir='string' targetPackagesDir='stri
 
 functions
     @{
+        static IDictionary<string, string> GetCommitsToSync()
+        {
+            var commits = new Dictionary<string, string>();
+        
+            var commitsFile = Environment.GetEnvironmentVariable("UNIVERSE_COMMITS_FILE");
+            if (string.IsNullOrEmpty(commitsFile))
+            {
+                return commits;
+            }
+            
+            Console.WriteLine("Using commits file: " + commitsFile);
+            var lines = File.ReadAllLines(commitsFile);
+            foreach(var line in lines)
+            {
+                var parts = line.Split(new string[] {":"}, StringSplitOptions.RemoveEmptyEntries);
+                commits.Add(parts[0], parts[1]);
+            }
+            
+            return commits;
+        }
+    
         static bool UseHttps(string directory)
         {
             var filename = Path.Combine(directory, ".git", "config");
@@ -680,11 +727,14 @@ functions
             return Enumerable.Concat(nonDefaultRepos, repositories);
         }
 
-        bool ShouldSkipCopyingNugetConfig(string repo)
+        void RemoveSrcFolder(string repo)
         {
-            var skipList = new string[]{"Coherence-Signed"};
-
-            return skipList.Any(r => r == repo);
+            var srcDir = Path.Combine(repo, "src");
+            if (Directory.Exists(srcDir)) 
+            {
+                Console.WriteLine("Deleting " + srcDir);
+                Directory.Delete(srcDir, recursive: true);
+            }
         }
 
         void CloneOrUpdate(string repo)
@@ -734,16 +784,6 @@ functions
                         .Replace("]", "|]");
         }
 
-        // Currently there are two packages that need to be special cased.
-        // TODO: Revisit as this is changed in the near future.
-        string ProcessExcludesForPackages(string jsonEntry, bool stable=false)
-        {
-            var newEntry = jsonEntry.Replace("Microsoft.Net.Http.Client\": \"1.0.0-*\"", "Microsoft.Net.Http.Client\": \"1.0.0-beta3\"");
-            newEntry = newEntry.Replace("Microsoft.AspNet.HttpFeature\": { \"version\": \"1.0.0-*\"", "Microsoft.AspNet.HttpFeature\": { \"version\": \"1.0.0-beta2\"");
-
-            return newEntry;
-        }
-
         // Create a search replace expression based on branch, prerelease tag and buildNumber
         string BuildVersionExpression(string branch, string preRelease = "", string buildNumber = "")
         {
@@ -772,25 +812,6 @@ functions
             return builder.ToString();
         }
 
-        // Verify if this is indeed the project.json or project.lock.json under project
-        bool ShouldIncludeProjectJson(string jsonPath)
-        {
-            // Should be under src, test or samples folders
-            if(!jsonPath.StartsWith("src") && !jsonPath.StartsWith("test") && !jsonPath.StartsWith("samples"))
-            {
-                return false;
-            }
-
-            // Within the specified folders, few projects generate under build folders. They can be excluded
-            if(jsonPath.Contains("bin") || jsonPath.Contains("Debug")
-             || jsonPath.Contains("artifacts") || jsonPath.Contains("node_modules") || !jsonPath.Contains(".json"))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         static IEnumerable<string> GetRepositoriesToBuild()
         {
             IEnumerable<string> reposToBuild = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
@@ -804,7 +825,7 @@ functions
                 "EventNotification",
                 "Options",
                 "Logging",
-                "dnx-watch",
+                "dotnet-watch",
                 "HtmlAbstractions",
                 "UserSecrets",
                 "DataProtection",
