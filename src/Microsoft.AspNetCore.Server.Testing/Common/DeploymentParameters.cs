@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Testing
             ApplicationPath = applicationPath;
             ServerType = serverType;
             RuntimeFlavor = runtimeFlavor;
-            EnvironmentVariables.Add(new KeyValuePair<string, string>("ASPNET_DETAILEDERRORS", "true"));
+            EnvironmentVariables.Add(new KeyValuePair<string, string>("ASPNETCORE_DETAILEDERRORS", "true"));
         }
 
         public ServerType ServerType { get; }

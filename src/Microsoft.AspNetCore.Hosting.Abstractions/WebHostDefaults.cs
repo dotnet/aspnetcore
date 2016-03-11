@@ -15,6 +15,6 @@ namespace Microsoft.AspNetCore.Hosting
         public static readonly string ApplicationBaseKey = "applicationBase";
 
         public static readonly string HostingJsonFile = "hosting.json";
-        public static readonly string EnvironmentVariablesPrefix = "ASPNET_";
+        public static readonly string EnvironmentVariablesPrefix = "ASPNETCORE_";
     }
 }

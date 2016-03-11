@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Server.Testing
                 startInfo.Environment;
 #endif
 
-            SetEnvironmentVariable(environment, "ASPNET_ENV", DeploymentParameters.EnvironmentName);
+            SetEnvironmentVariable(environment, "ASPNETCORE_ENVIRONMENT", DeploymentParameters.EnvironmentName);
 
             foreach (var environmentVariable in DeploymentParameters.EnvironmentVariables)
             {

@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void ReadsOldEnvKey()
         {
-            var parameters = new Dictionary<string, string>() { { "ENV", "Development" } };
+            var parameters = new Dictionary<string, string>() { { "ENVIRONMENT", "Development" } };
             var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
 
             Assert.Equal("Development", config.Environment);

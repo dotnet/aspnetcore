@@ -282,9 +282,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var vals = new Dictionary<string, string>
             {
-                // Old key is actualy ASPNET_ENV but WebHostConfiguration expects environment
-                // variable names stripped from ASPNET_ prefix so using just ENV here
-                { "ENV", "Staging" }
+                { "environment", "Staging" }
             };
 
             var builder = new ConfigurationBuilder()

@@ -8,8 +8,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 {
     public class WebHostOptions
     {
-        private const string OldEnvironmentKey = "ENV";
-
         public WebHostOptions()
         {
         }
@@ -24,7 +22,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             Application = configuration[WebHostDefaults.ApplicationKey];
             DetailedErrors = ParseBool(configuration, WebHostDefaults.DetailedErrorsKey);
             CaptureStartupErrors = ParseBool(configuration, WebHostDefaults.CaptureStartupErrorsKey);
-            Environment = configuration[WebHostDefaults.EnvironmentKey] ?? configuration[OldEnvironmentKey];
+            Environment = configuration[WebHostDefaults.EnvironmentKey];
             ServerFactoryLocation = configuration[WebHostDefaults.ServerKey];
             WebRoot = configuration[WebHostDefaults.WebRootKey];
             ApplicationBasePath = configuration[WebHostDefaults.ApplicationBaseKey];
