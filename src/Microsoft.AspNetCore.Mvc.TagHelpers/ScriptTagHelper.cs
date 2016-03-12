@@ -3,8 +3,11 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -39,6 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private const string AppendVersionAttributeName = "asp-append-version";
         private static readonly Func<Mode, Mode, int> Compare = (a, b) => a - b;
         private FileVersionProvider _fileVersionProvider;
+        private StringWriter _stringWriter;
 
         private static readonly ModeAttributes<Mode>[] ModeDetails = new[] {
             // Regular src with file version alone
@@ -174,6 +178,20 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         // Internal for ease of use when testing.
         protected internal GlobbingUrlBuilder GlobbingUrlBuilder { get; set; }
 
+        // Shared writer for determining the string content of a TagHelperAttribute's Value.
+        private StringWriter StringWriter
+        {
+            get
+            {
+                if (_stringWriter == null)
+                {
+                    _stringWriter = new StringWriter();
+                }
+
+                return _stringWriter;
+            }
+        }
+
         /// <inheritdoc />
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
@@ -300,7 +318,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         if (!attribute.Name.Equals(SrcAttributeName, StringComparison.OrdinalIgnoreCase))
                         {
                             var encodedKey = JavaScriptEncoder.Encode(attribute.Name);
-                            var attributeValue = attribute.Value.ToString();
+                            var attributeValue = GetAttributeValue(attribute.Value);
                             var encodedValue = JavaScriptEncoder.Encode(attributeValue);
 
                             AppendAttribute(builder, encodedKey, encodedValue, escapeQuotes: true);
@@ -324,6 +342,34 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
         }
 
+        private string GetAttributeValue(object value)
+        {
+            string stringValue;
+            var htmlEncodedString = value as HtmlEncodedString;
+            if (htmlEncodedString != null)
+            {
+                // Value likely came from an HTML context in the .cshtml file but may still contain double quotes
+                // since attribute could have been enclosed in single quotes.
+                stringValue = htmlEncodedString.Value;
+                stringValue = stringValue.Replace("\"", "&quot;");
+            }
+            else
+            {
+                var writer = StringWriter;
+                RazorPage.WriteTo(writer, HtmlEncoder, value);
+
+                // Value is now correctly HTML-encoded but may still contain double quotes since attribute could
+                // have been enclosed in single quotes and portions that were HtmlEncodedStrings are not re-encoded.
+                var builder = writer.GetStringBuilder();
+                builder.Replace("\"", "&quot;");
+
+                stringValue = builder.ToString();
+                builder.Clear();
+            }
+
+            return stringValue;
+        }
+
         private void AppendEncodedVersionedSrc(
             string srcName,
             string srcValue,
@@ -337,6 +383,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             if (generateForDocumentWrite)
             {
+                // srcValue comes from a C# context and globbing. Must HTML-encode it to ensure the
+                // written <script/> element is valid. Must also JavaScript-encode that value to ensure
+                // the document.write() statement is valid.
+                srcValue = HtmlEncoder.Encode(srcValue);
                 srcValue = JavaScriptEncoder.Encode(srcValue);
             }
 

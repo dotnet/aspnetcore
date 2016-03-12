@@ -4,14 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -362,15 +360,21 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     firstAdded = true;
                 }
 
-                // fallbackHrefs come from bound attributes and globbing. Must always be non-null.
+                // fallbackHrefs come from bound attributes (a C# context) and globbing. Must always be non-null.
                 Debug.Assert(fallbackHrefs[i] != null);
+
                 var valueToWrite = fallbackHrefs[i];
                 if (AppendVersion == true)
                 {
                     valueToWrite = _fileVersionProvider.AddFileVersionToPath(fallbackHrefs[i]);
                 }
 
-                builder.AppendHtml(JavaScriptEncoder.Encode(valueToWrite));
+                // Must HTML-encode the href attribute value to ensure the written <link/> element is valid. Must also
+                // JavaScript-encode that value to ensure the doc.write() statement is valid.
+                valueToWrite = HtmlEncoder.Encode(valueToWrite);
+                valueToWrite = JavaScriptEncoder.Encode(valueToWrite);
+
+                builder.AppendHtml(valueToWrite);
                 builder.AppendHtml("\"");
             }
             builder.AppendHtml("]);");

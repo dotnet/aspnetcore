@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
+using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -403,6 +404,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Assert
             Assert.Null(output.TagName);
             Assert.True(output.IsContentModified);
+            Assert.True(output.Content.IsEmpty);
             Assert.True(output.PostElement.IsModified);
         }
 
@@ -595,6 +597,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public void RendersLinkTagsForGlobbedHrefResults()
         {
             // Arrange
+            var expectedContent = "<link rel=\"stylesheet\" href=\"HtmlEncode[[/css/site.css]]\" />" +
+                "<link rel=\"stylesheet\" href=\"HtmlEncode[[/base.css]]\" />";
             var context = MakeTagHelperContext(
                 attributes: new TagHelperAttributeList
                 {
@@ -634,24 +638,41 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Assert
             Assert.Equal("link", output.TagName);
             Assert.Equal("/css/site.css", output.Attributes["href"].Value);
-            Assert.Equal("<link rel=\"stylesheet\" href=\"HtmlEncode[[/base.css]]\" />", output.PostElement.GetContent());
+            var content = HtmlContentUtilities.HtmlContentToString(output, new HtmlTestEncoder());
+            Assert.Equal(expectedContent, content);
         }
 
         [Fact]
-        public void RendersLinkTagsForGlobbedHrefResults_UsingProvidedEncoder()
+        public void RendersLinkTagsForGlobbedHrefResults_EncodesAsExpected()
         {
             // Arrange
+            var expectedContent =
+                "<link encoded=\"contains &quot;quotes&quot;\" href=\"HtmlEncode[[/css/site.css]]\" " +
+                "literal=\"HtmlEncode[[all HTML encoded]]\" " +
+                "mixed=\"HtmlEncode[[HTML encoded]] and contains &quot;quotes&quot;\" />" +
+                "<link encoded=\"contains &quot;quotes&quot;\" href=\"HtmlEncode[[/base.css]]\" " +
+                "literal=\"HtmlEncode[[all HTML encoded]]\" " +
+                "mixed=\"HtmlEncode[[HTML encoded]] and contains &quot;quotes&quot;\" />";
+            var mixed = new DefaultTagHelperContent();
+            mixed.Append("HTML encoded");
+            mixed.AppendHtml(" and contains \"quotes\"");
             var context = MakeTagHelperContext(
                 attributes: new TagHelperAttributeList
                 {
-                    new TagHelperAttribute("rel", "stylesheet"),
-                    new TagHelperAttribute("href", "/css/site.css"),
-                    new TagHelperAttribute("asp-href-include", "**/*.css")
+                    { "asp-href-include", "**/*.css" },
+                    { "encoded", new HtmlString("contains \"quotes\"") },
+                    { "href", "/css/site.css" },
+                    { "literal", "all HTML encoded" },
+                    { "mixed", mixed },
                 });
-            var output = MakeTagHelperOutput("link", attributes: new TagHelperAttributeList
-            {
-                new TagHelperAttribute("rel", "stylesheet"),
-            });
+            var output = MakeTagHelperOutput(
+                "link",
+                attributes: new TagHelperAttributeList
+                {
+                    { "encoded", new HtmlString("contains \"quotes\"") },
+                    { "literal", "all HTML encoded" },
+                    { "mixed", mixed },
+                });
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
@@ -669,9 +690,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 MakeUrlHelperFactory())
             {
                 GlobbingUrlBuilder = globbingUrlBuilder.Object,
-                ViewContext = viewContext,
                 Href = "/css/site.css",
                 HrefInclude = "**/*.css",
+                ViewContext = viewContext,
             };
 
             // Act
@@ -680,12 +701,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Assert
             Assert.Equal("link", output.TagName);
             Assert.Equal("/css/site.css", output.Attributes["href"].Value);
-            Assert.Equal("<link rel=\"HtmlEncode[[stylesheet]]\" href=\"HtmlEncode[[/base.css]]\" />",
-                output.PostElement.GetContent());
+            var content = HtmlContentUtilities.HtmlContentToString(output, new HtmlTestEncoder());
+            Assert.Equal(expectedContent, content);
         }
 
         [Fact]
-        public void RendersLinkTags_AddsFileVersion()
+        public void RendersLinkTags_WithFileVersion()
         {
             // Arrange
             var context = MakeTagHelperContext(
@@ -723,7 +744,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
-        public void RendersLinkTags_AddsFileVersion_WithRequestPathBase()
+        public void RendersLinkTags_WithFileVersion_AndRequestPathBase()
         {
             // Arrange
             var context = MakeTagHelperContext(
@@ -761,7 +782,143 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
-        public void RendersLinkTags_GlobbedHref_AddsFileVersion()
+        public void RenderLinkTags_FallbackHref_WithFileVersion()
+        {
+            // Arrange
+            var expectedPostElement = Environment.NewLine +
+                "<meta name=\"x-stylesheet-fallback-test\" content=\"\" class=\"hidden\" />" +
+                "<script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName(\"SCRIPT\")," +
+                "g=f[f.length-1].previousElementSibling," +
+                "h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;" +
+                "if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel=\"stylesheet\" href=\"'+c[d]+'\"/>')}(" +
+                "\"JavaScriptEncode[[visibility]]\",\"JavaScriptEncode[[hidden]]\"," +
+                "[\"JavaScriptEncode[[HtmlEncode[[/fallback.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]]]\"]);" +
+                "</script>";
+            var context = MakeTagHelperContext(
+                attributes: new TagHelperAttributeList
+                {
+                    { "asp-append-version", "true" },
+                    { "asp-fallback-href-include", "**/fallback.css" },
+                    { "asp-fallback-test-class", "hidden" },
+                    { "asp-fallback-test-property", "visibility" },
+                    { "asp-fallback-test-value", "hidden" },
+                    { "href", "/css/site.css" },
+                });
+            var output = MakeTagHelperOutput("link", attributes: new TagHelperAttributeList());
+            var hostingEnvironment = MakeHostingEnvironment();
+            var viewContext = MakeViewContext();
+            var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
+                new TestFileProvider(),
+                Mock.Of<IMemoryCache>(),
+                PathString.Empty);
+            globbingUrlBuilder.Setup(g => g.BuildUrlList(null, "**/fallback.css", null))
+                .Returns(new[] { "/fallback.css" });
+
+            var helper = new LinkTagHelper(
+                MakeHostingEnvironment(),
+                MakeCache(),
+                new HtmlTestEncoder(),
+                new JavaScriptTestEncoder(),
+                MakeUrlHelperFactory())
+            {
+                AppendVersion = true,
+                Href = "/css/site.css",
+                FallbackHrefInclude = "**/fallback.css",
+                FallbackTestClass = "hidden",
+                FallbackTestProperty = "visibility",
+                FallbackTestValue = "hidden",
+                GlobbingUrlBuilder = globbingUrlBuilder.Object,
+                ViewContext = viewContext,
+            };
+
+            // Act
+            helper.Process(context, output);
+
+            // Assert
+            Assert.Equal("link", output.TagName);
+            Assert.Equal("/css/site.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", output.Attributes["href"].Value);
+            Assert.Equal(expectedPostElement, output.PostElement.GetContent());
+        }
+
+        [Fact]
+        public void RenderLinkTags_FallbackHref_WithFileVersion_EncodesAsExpected()
+        {
+            // Arrange
+            var expectedContent = "<link encoded=\"contains &quot;quotes&quot;\" " +
+                "href=\"HtmlEncode[[/css/site.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\" " +
+                "literal=\"HtmlEncode[[all HTML encoded]]\" " +
+                "mixed=\"HtmlEncode[[HTML encoded]] and contains &quot;quotes&quot;\" />" +
+                Environment.NewLine +
+                "<meta name=\"x-stylesheet-fallback-test\" content=\"\" class=\"HtmlEncode[[hidden]]\" />" +
+                "<script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName(\"SCRIPT\")," +
+                "g=f[f.length-1].previousElementSibling," +
+                "h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;" +
+                "if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel=\"stylesheet\" href=\"'+c[d]+'\"/>')}(" +
+                "\"JavaScriptEncode[[visibility]]\",\"JavaScriptEncode[[hidden]]\"," +
+                "[\"JavaScriptEncode[[HtmlEncode[[/fallback.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]]]\"]);" +
+                "</script>";
+            var mixed = new DefaultTagHelperContent();
+            mixed.Append("HTML encoded");
+            mixed.AppendHtml(" and contains \"quotes\"");
+            var context = MakeTagHelperContext(
+                attributes: new TagHelperAttributeList
+                {
+                    { "asp-append-version", "true" },
+                    { "asp-fallback-href-include", "**/fallback.css" },
+                    { "asp-fallback-test-class", "hidden" },
+                    { "asp-fallback-test-property", "visibility" },
+                    { "asp-fallback-test-value", "hidden" },
+                    { "encoded", new HtmlString("contains \"quotes\"") },
+                    { "href", "/css/site.css" },
+                    { "literal", "all HTML encoded" },
+                    { "mixed", mixed },
+                });
+            var output = MakeTagHelperOutput(
+                "link",
+                attributes: new TagHelperAttributeList
+                {
+                    { "encoded", new HtmlString("contains \"quotes\"") },
+                    { "literal", "all HTML encoded" },
+                    { "mixed", mixed },
+                });
+            var hostingEnvironment = MakeHostingEnvironment();
+            var viewContext = MakeViewContext();
+            var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
+                new TestFileProvider(),
+                Mock.Of<IMemoryCache>(),
+                PathString.Empty);
+            globbingUrlBuilder.Setup(g => g.BuildUrlList(null, "**/fallback.css", null))
+                .Returns(new[] { "/fallback.css" });
+
+            var helper = new LinkTagHelper(
+                MakeHostingEnvironment(),
+                MakeCache(),
+                new HtmlTestEncoder(),
+                new JavaScriptTestEncoder(),
+                MakeUrlHelperFactory())
+            {
+                AppendVersion = true,
+                FallbackHrefInclude = "**/fallback.css",
+                FallbackTestClass = "hidden",
+                FallbackTestProperty = "visibility",
+                FallbackTestValue = "hidden",
+                GlobbingUrlBuilder = globbingUrlBuilder.Object,
+                Href = "/css/site.css",
+                ViewContext = viewContext,
+            };
+
+            // Act
+            helper.Process(context, output);
+
+            // Assert
+            Assert.Equal("link", output.TagName);
+            Assert.Equal("/css/site.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", output.Attributes["href"].Value);
+            var content = HtmlContentUtilities.HtmlContentToString(output, new HtmlTestEncoder());
+            Assert.Equal(expectedContent, content);
+        }
+
+        [Fact]
+        public void RendersLinkTags_GlobbedHref_WithFileVersion()
         {
             // Arrange
             var context = MakeTagHelperContext(
@@ -848,7 +1005,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 tagName,
                 attributes,
                 getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
-                    new DefaultTagHelperContent()));
+                    new DefaultTagHelperContent()))
+            {
+                TagMode = TagMode.SelfClosing,
+            };
         }
 
         private static IHostingEnvironment MakeHostingEnvironment()
