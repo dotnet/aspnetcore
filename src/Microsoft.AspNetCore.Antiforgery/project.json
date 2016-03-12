@@ -28,6 +28,10 @@
         "dotnet5.4"
       ]
     },
-    "net451": { }
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Runtime": { "type": "build"}
+      }
+    }
   }
 }
