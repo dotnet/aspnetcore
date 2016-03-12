@@ -22,12 +22,8 @@
     </Target>
 
     <Target Name="FindLatestDropShare">
-        <FindLatestDrop RootPath="$(RootDrop)" SubFolder="build">
+        <FindLatestDrop RootPath="$(RootDrop)" SubFolder="ship">
             <Output TaskParameter="LatestPath" PropertyName="DropSource"/>
-        </FindLatestDrop>
-
-        <FindLatestDrop RootPath="$(dnvmRootDrop)" SubFolder="">
-            <Output TaskParameter="LatestPath" PropertyName="dnvmDropSource"/>
         </FindLatestDrop>
 
         <PropertyGroup>
@@ -41,37 +37,9 @@
         <MakeDir Directories="$(OutputPath)" />
         <Copy SourceFiles="$(DropSource)..\commit" DestinationFolder="$(OutputPath)" />
 
-        <!-- dnvm doesn't have a package so copy all the scripts and then replace the dnvm.ps1 file with the signed copy. -->
         <ItemGroup>
-            <dnvmFiles Include="$(dnvmDropSource)\*.*" />
-        </ItemGroup>
-        <Copy SourceFiles="@(dnvmFiles)" DestinationFolder="$(OutputPath)dnvm" />
-
-        <ItemGroup>
-            <UnsignedPackages
-                Include="$(DropSource)**\dotnet-aspnet-codegenerator.*.nupkg;
-                         $(DropSource)**\dotnet-ef.*.nupkg;
-                         $(DropSource)**\dotnet-publish-iis.*.nupkg;
-                         $(DropSource)**\dotnet-razor-tooling.*.nupkg;
-                         $(DropSource)**\dotnet-sql-cache.*.nupkg;
-                         $(DropSource)**\dotnet-test-xunit.*.nupkg;
-                         $(DropSource)**\dotnet-user-secrets.*.nupkg;
-                         $(DropSource)**\dotnet-watch.*.nupkg;
-                         $(DropSource)**\dnx*.nupkg;
-                         $(DropSource)**\Microsoft.AspNetCore*.nupkg;
-                         $(DropSource)**\Microsoft.AspNet.SignalR.Client.Cpp.*.nupkg;
-                         $(DropSource)**\Microsoft.Data.Sqlite*.nupkg;
-                         $(DropSource)**\Microsoft.Dnx*.nupkg;
-                         $(DropSource)**\Microsoft.EntityFrameworkCore*.nupkg;
-                         $(DropSource)**\Microsoft.Extensions*.nupkg;
-                         $(DropSource)**\Microsoft.Net*.nupkg;
-                         $(DropSource)**\Microsoft.Owin.Security*.nupkg;
-                         $(DropSource)**\Microsoft.VisualStudio.Web.BrowserLink*.nupkg;
-                         $(DropSource)**\NuGet.*.nupkg;
-                         $(DropSource)**\StyleCop.KRules*.nupkg"
-            />
-
-            <UnsignedSymbolPackages Include="$(SymbolPackagePath)**\Microsoft.Data.Sqlite*.nupkg" />
+            <UnsignedPackages Include="$(DropSource)*.nupkg" />
+            <UnsignedSymbolPackages Include="$(SymbolPackagePath)Microsoft.Data.Sqlite*.nupkg" />
         </ItemGroup>
 
         <Message Text="%(UnsignedPackages.Identity)" Importance="high" />
@@ -82,41 +50,19 @@
         <RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
 
         <!-- Delete metadata -->
-        <RemoveDir Directories="@(UnsignedPackages->'%(UnsignedPackagesPath)%(Filename)\_rels')" />
-        <Delete Files="@(UnsignedPackages->'%(UnsignedPackagesPath)%(Filename)\[Content_Types].xml')" />
+        <RemoveDir Directories="@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)\_rels')" />
+        <Delete Files="@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)\[Content_Types].xml')" />
     </Target>
 
     <Target Name="PrepareFilesForSigning" DependsOnTargets="CopyAndExtractUnsignedPackages">
         <!-- Flatten the file names -->
         <ItemGroup>
             <_UnsignedBinaries
-                Include="$(UnsignedPackagesPath)**\AspNet.Loader*.dll;
-                         $(UnsignedPackagesPath)**\dnx*.dll;
-                         $(UnsignedPackagesPath)**\dnx*.exe;
-                         $(UnsignedPackagesPath)**\dotnet-aspnet-codegenerator.dll;
-                         $(UnsignedPackagesPath)**\dotnet-ef.dll;
-                         $(UnsignedPackagesPath)**\dotnet-publish-iis.dll;
-                         $(UnsignedPackagesPath)**\dotnet-razor-tooling.dll;
-                         $(UnsignedPackagesPath)**\dotnet-sql-cache.dll;
-                         $(UnsignedPackagesPath)**\dotnet-sql-cache.exe;
-                         $(UnsignedPackagesPath)**\dotnet-test-xunit.dll;
-                         $(UnsignedPackagesPath)**\dotnet-user-secrets.dll;
-                         $(UnsignedPackagesPath)**\dotnet-watch.dll;
-                         $(UnsignedPackagesPath)**\Microsoft.AspNetCore*.dll;
-                         $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.dll;
-                         $(UnsignedPackagesPath)**\Microsoft.Dnx*.dll;
-                         $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore*.dll;
-                         $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore.Commands*\**\EntityFramework.psd1;
-                         $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore.Commands*\**\EntityFramework.psm1;
-                         $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore.Commands*\**\init.ps1;
-                         $(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore.Commands*\**\install.ps1;
-                         $(UnsignedPackagesPath)**\Microsoft.Extensions*.dll;
-                         $(UnsignedPackagesPath)**\Microsoft.Net*.dll;
-                         $(UnsignedPackagesPath)**\Microsoft.Owin.Security*.dll;
-                         $(UnsignedPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.dll;
-                         $(UnsignedPackagesPath)**\NuGet.*.dll;
-                         $(UnsignedPackagesPath)**\signalrclient.dll;
-                         $(UnsignedPackagesPath)**\StyleCop.KRules*.dll"
+                Include="$(UnsignedPackagesPath)**\*.dll;
+                         $(UnsignedPackagesPath)**\*.exe;
+                         $(UnsignedPackagesPath)**\*.psd1;
+                         $(UnsignedPackagesPath)**\*.psm1;
+                         $(UnsignedPackagesPath)**\*.ps1;"
             />
 
             <UnsignedBinaries Include="@(_UnsignedBinaries)">
@@ -128,8 +74,6 @@
             </UnsignedBinaries>
 
             <PackageBinariesToSign Include="%(UnsignedBinaries.UnsignedFlatFileName)" />
-
-            <dnvmBinariesToSign Include="$(OutputPath)dnvm\dnvm.ps1" />
         </ItemGroup>
 
         <Copy SourceFiles="@(UnsignedBinaries)" DestinationFiles="@(UnsignedBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
@@ -143,13 +87,6 @@
             <BinariesToSign Include="@(PackageBinariesToSign)">
                 <CopyScript>ProjectKBinariesAuthentiCode400.bat</CopyScript>
                 <CopyScriptTargetPath>$(SignedOutputPath)</CopyScriptTargetPath>
-            </BinariesToSign>
-        </ItemGroup>
-
-        <ItemGroup>
-            <BinariesToSign Include="@(dnvmBinariesToSign)">
-                <CopyScript>dnvmAuthentiCode400.bat</CopyScript>
-                <CopyScriptTargetPath>$(SignedOutputPath)dnvm</CopyScriptTargetPath>
             </BinariesToSign>
         </ItemGroup>
 
@@ -187,47 +124,9 @@
 
     <Target Name="UpdateLicenseURLs" DependsOnTargets="SignFiles">
         <ItemGroup>
-            <NuSpecEULA Include="$(UnsignedPackagesPath)**\Microsoft.EntityFrameworkCore*.nuspec;
-                                 $(UnsignedPackagesPath)**\dotnet-aspnet-codegenerator*.nuspec;
-                                 $(UnsignedPackagesPath)**\dotnet-ef*.nuspec;
-                                 $(UnsignedPackagesPath)**\dotnet-publish-iis*.nuspec;
-                                 $(UnsignedPackagesPath)**\dotnet-razor-tooling*.nuspec;
-                                 $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.nuspec;
-                                 $(UnsignedPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.nuspec;
-                                 $(UnsignedPackagesPath)**\dnvm.*.nuspec;
-                                 $(UnsignedPackagesPath)**\dnx*.nuspec;
-                                 $(UnsignedPackagesPath)**\dotnet-sql-cache.nuspec;
-                                 $(UnsignedPackagesPath)**\dotnet-user-secrets.nuspec;
-                                 $(UnsignedPackagesPath)**\dotnet-watch.nuspec;
-                                 $(UnsignedPackagesPath)**\Microsoft.AspNet.SignalR.Client.Cpp*.nuspec;
-                                 $(UnsignedPackagesPath)**\Microsoft.AspNetCore*.nuspec;
-                                 $(UnsignedPackagesPath)**\Microsoft.Dnx.*.nuspec;
-                                 $(UnsignedPackagesPath)**\Microsoft.Extensions.*.nuspec;
-                                 $(UnsignedPackagesPath)**\Microsoft.Net.*.nuspec;
-                                 $(UnsignedPackagesPath)**\Microsoft.Owin.Security.*.nuspec;
-                                 $(UnsignedPackagesPath)**\NuGet.*.nuspec;
-                                 $(UnsignedPackagesPath)**\StyleCop.KRules*.nuspec"/>
-
-            <NuSpecEULA Include="$(UnsignedSymbolPackagesPath)**\Microsoft.EntityFrameworkCore*.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\dotnet-aspnet-codegenerator*.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\dotnet-ef*.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\dotnet-publish-iis*.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\dotnet-razor-tooling*.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\Microsoft.Data.Sqlite*.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\dnvm.*.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\dnx*.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\dotnet-sql-cache.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\dotnet-user-secrets.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\dotnet-watch.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\Microsoft.AspNet.SignalR.Client.Cpp*.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\Microsoft.AspNetCore*.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\Microsoft.Dnx.*.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\Microsoft.Extensions.*.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\Microsoft.Net.*.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\Microsoft.Owin.Security.*.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\NuGet.*.nuspec;
-                                 $(UnsignedSymbolPackagesPath)**\StyleCop.KRules*.nuspec"/>
+            <NuSpecEULA Include="$(UnsignedPackagesPath)**\*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\*.nuspec;"
+            />
         </ItemGroup>
 
         <MSBuild Projects="dnx.msbuild" Properties="NuSpecFileToUpdate=%(NuSpecEULA.Identity);Sign=$(Sign);TestCodeSign=$(TestCodeSign);Configuration=$(Configuration)"
@@ -329,20 +228,7 @@
 
     <Target Name="PoliCheck" DependsOnTargets="FindLatestDropShare">
         <ItemGroup>
-            <PoliCheckPackages Include="$(SymbolPackagePath)Microsoft.EntityFrameworkCore.*.symbols.nupkg;
-                                        $(SymbolPackagePath)Microsoft.Data.Sqlite.*.symbols.nupkg;
-                                        $(SymbolPackagePath)dnx*.symbols.nupkg;
-                                        $(SymbolPackagePath)dotnet-sql-cache.*.symbols.nupkg;
-                                        $(SymbolPackagePath)dotnet-user-secrets.*.symbols.nupkg;
-                                        $(SymbolPackagePath)Microsoft.AspNetCore*.symbols.nupkg;
-                                        $(SymbolPackagePath)Microsoft.Dnx*.symbols.nupkg;
-                                        $(SymbolPackagePath)Microsoft.Extensions*.symbols.nupkg;
-                                        $(SymbolPackagePath)Microsoft.Net*.symbols.nupkg;
-                                        $(SymbolPackagePath)Microsoft.Owin.Security*.symbols.nupkg;
-                                        $(SymbolPackagePath)Microsoft.VisualStudio*.symbols.nupkg;
-                                        $(SymbolPackagePath)NuGet.*.symbols.nupkg;
-                                        $(SymbolPackagePath)PageGenerator.*.symbols.nupkg;
-                                        $(SymbolPackagePath)StyleCop.KRules*.symbols.nupkg"/>
+            <PoliCheckPackages Include="$(SymbolPackagePath)*.nupkg;"/>
         </ItemGroup>
 
         <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)') %(PoliCheckPackages.Identity)" />

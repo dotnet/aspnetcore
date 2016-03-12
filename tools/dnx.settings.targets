@@ -28,8 +28,6 @@
         <CodeSignScriptsPath>$(SignedOutputPath)Scripts\</CodeSignScriptsPath>
         <CodeSignVerificationPath>$(SignedOutputPath)Verification\</CodeSignVerificationPath>
         <SignedBinariesPath>$(SignedOutputPath)</SignedBinariesPath>
-
-        <dnvmRootDrop Condition="'$(dnvmRootDrop)' == ''">\\projectk-tc\drops\dnvm\dev\</dnvmRootDrop>
     </PropertyGroup>
 
     <PropertyGroup>
