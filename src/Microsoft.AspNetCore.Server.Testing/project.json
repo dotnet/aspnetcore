@@ -25,7 +25,8 @@
         "Microsoft.Web.Administration": "7.0.0"
       },
       "frameworkAssemblies": {
-        "System.Net.Http": ""
+        "System.Net.Http": "",
+        "System.Runtime":  { "type": "build" }
       }
     },
     "netstandardapp1.5": {
