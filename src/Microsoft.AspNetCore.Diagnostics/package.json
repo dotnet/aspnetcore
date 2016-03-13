@@ -2,6 +2,7 @@
   "name": "DiagnosticsPages",
   "version": "0.0.0",
   "description": "",
+  "private": true,
   "devDependencies": {
     "grunt": "~0.4.4",
     "grunt-cli": "~0.1.13",

@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     })
                     .ConfigureServices(services =>
                     {
-                        services.AddAddEntityFrameworkSqlServer();
+                        services.AddEntityFrameworkSqlServer();
                         services.AddScoped<BloggingContextWithMigrations>();
 
                         var optionsBuilder = new DbContextOptionsBuilder();
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     .ConfigureServices(
                     services =>
                     {
-                        services.AddEntityFramework().AddSqlServer();
+                        services.AddEntityFramework().AddEntityFrameworkSqlServer();
                         var optionsBuilder = new DbContextOptionsBuilder();
                         if (!PlatformHelper.IsMono)
                         {
@@ -426,7 +426,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     .ConfigureServices(services =>
                     {
                         services.AddEntityFramework()
-                            .AddSqlServer();
+                            .AddEntityFrameworkSqlServer();
 
                         services.AddScoped<TContext>();
 

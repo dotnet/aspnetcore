@@ -19,13 +19,12 @@
     "xmlDoc": true
   },
   "frameworks": {
-    "net451": { },
-    "netstandard1.3": {
+    "netstandard1.0": {
       "dependencies": {
         "System.Resources.ResourceManager": "4.0.1-*"
       },
       "imports": [
-        "dotnet5.4"
+        "dotnet5.1"
       ]
     }
   }

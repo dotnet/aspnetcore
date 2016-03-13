@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     })
                     .ConfigureServices(services =>
                     {
-                        services.AddEntityFramework().AddSqlServer();
+                        services.AddEntityFramework().AddEntityFrameworkSqlServer();
                         services.AddScoped<BloggingContextWithMigrations>();
                         services.AddSingleton(optionsBuilder.Options);
                     });
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             var builder = new WebHostBuilder()
                 .Configure(app => app.UseMigrationsEndPoint())
-                .ConfigureServices(services => services.AddEntityFramework().AddSqlServer());
+                .ConfigureServices(services => services.AddEntityFramework().AddEntityFrameworkSqlServer());
             var server = new TestServer(builder);
 
             var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     .Configure(app => app.UseMigrationsEndPoint())
                     .ConfigureServices(services =>
                     {
-                        services.AddEntityFramework().AddSqlServer();
+                        services.AddEntityFramework().AddEntityFrameworkSqlServer();
                         services.AddScoped<BloggingContextWithSnapshotThatThrows>();
                         services.AddSingleton(optionsBuilder.Options);
                     });
