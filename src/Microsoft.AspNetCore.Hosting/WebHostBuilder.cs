@@ -230,23 +230,6 @@ namespace Microsoft.AspNetCore.Hosting
 
         private string ResolveApplicationBasePath(string applicationBasePath, string basePath)
         {
-            if (_startup != null)
-            {
-                var startupAssemblyLocation = _startup.ConfigureDelegate.Target.GetType().GetTypeInfo().Assembly.Location;
-                if (!string.IsNullOrEmpty(startupAssemblyLocation))
-                {
-                    return Path.GetDirectoryName(startupAssemblyLocation);
-                }
-            }
-            else if (_startupType != null)
-            {
-                var startupAssemblyLocation = _startupType.GetTypeInfo().Assembly.Location;
-                if (!string.IsNullOrEmpty(startupAssemblyLocation)) 
-                {
-                    return Path.GetDirectoryName(startupAssemblyLocation);
-                }
-            }
-
             if (string.IsNullOrEmpty(applicationBasePath))
             {
                 return basePath;

@@ -352,12 +352,10 @@ namespace Microsoft.AspNetCore.Hosting
             var host = new WebHostBuilder()
                 .UseServer(new TestServer())
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
-                .UseApplicationBasePath("/foo/bar")
                 .Build();
 
             var appEnv = host.Services.GetService<IApplicationEnvironment>();
             Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", appEnv.ApplicationName);
-            Assert.Equal("/foo/bar", appEnv.ApplicationBasePath);
         }
 
         [Fact]
@@ -368,12 +366,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>()
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests.NonExistent")
-                .UseApplicationBasePath("/foo/bar")
                 .Build();
 
             var appEnv = host.Services.GetService<IApplicationEnvironment>();
             Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", appEnv.ApplicationName);
-            Assert.Equal(Path.GetDirectoryName(typeof(WebHostBuilderTests).GetTypeInfo().Assembly.Location), appEnv.ApplicationBasePath);
         }
 
         [Fact]
@@ -384,12 +380,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseServer(new TestServer())
                 .Configure(app => { })
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests.NonExistent")
-                .UseApplicationBasePath("/foo/bar")
                 .Build();
 
             var appEnv = host.Services.GetService<IApplicationEnvironment>();
             Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", appEnv.ApplicationName);
-            Assert.Equal(Path.GetDirectoryName(typeof(WebHostBuilderTests).GetTypeInfo().Assembly.Location), appEnv.ApplicationBasePath);
         }
 
         private IWebHostBuilder CreateWebHostBuilder()
