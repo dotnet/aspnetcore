@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
             services
                 .AddDbContext<IdentityDbContext>(o => o.UseSqlServer(fixture.ConnectionString))
-                .ServiceCollection()
                 .AddIdentity<IdentityUser, IdentityRole>()
                 .AddEntityFrameworkStores<IdentityDbContext>();
 

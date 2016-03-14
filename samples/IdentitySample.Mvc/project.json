@@ -35,10 +35,7 @@
     "web": "IdentitySample.Mvc"
   },
   "frameworks": {
-    "dnx451": {
-      "frameworkAssemblies": {
-        "System.Reflection": ""
-      }
+    "net451": {
     },
     "netstandardapp1.5": {
       "imports": [

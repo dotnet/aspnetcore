@@ -25,8 +25,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         public async Task CanCreateRoleWithSingletonManager()
         {
             var services = TestIdentityFactory.CreateTestServices();
-            services.AddAddEntityFrameworkInMemoryDatabase();
-            services.AddTransient<InMemoryContext>();
+            services.AddEntityFrameworkInMemoryDatabase();
+            services.AddSingleton(new InMemoryContext(new DbContextOptionsBuilder().Options));
             services.AddTransient<IRoleStore<IdentityRole>, RoleStore<IdentityRole, InMemoryContext>>();
             services.AddSingleton<RoleManager<IdentityRole>>();
             var provider = services.BuildServiceProvider();
