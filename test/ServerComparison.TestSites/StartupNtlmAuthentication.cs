@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Server;
 
@@ -54,10 +53,6 @@ namespace ServerComparison.TestSites
             {
                 listener.AuthenticationManager.AuthenticationSchemes =
                     AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | AuthenticationSchemes.AllowAnonymous;
-            }
-            else
-            {
-                app.UseIIS();
             }
 
             app.Use((context, next) => 
