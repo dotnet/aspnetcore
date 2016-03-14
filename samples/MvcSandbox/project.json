@@ -23,7 +23,8 @@
   "frameworks": {
     "dnx451": {
       "dependencies": {
-        "Microsoft.AspNetCore.Mvc.Dnx": "1.0.0-*"
+        "Microsoft.AspNetCore.Mvc.Dnx": "1.0.0-*",
+        "System.Runtime": "4.1.0-*"
       }
     },
     "net451": { },

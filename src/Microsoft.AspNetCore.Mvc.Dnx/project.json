@@ -16,7 +16,10 @@
     "Microsoft.Dnx.Compilation.CSharp.Common": "1.0.0-*",
     "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
-    "Microsoft.Extensions.PlatformAbstractions.Dnx": "1.0.0-*"
+    "Microsoft.Extensions.PlatformAbstractions.Dnx": "1.0.0-*",
+    "System.IO": "4.1.0-*",
+    "System.Reflection": "4.1.0-*",
+    "System.Runtime": "4.1.0-*"
   },
   "frameworks": {
     "net451": {},
