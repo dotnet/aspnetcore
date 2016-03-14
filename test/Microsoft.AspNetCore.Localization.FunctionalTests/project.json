@@ -23,9 +23,6 @@
     "net451": {
       "frameworkAssemblies": {
         "System.Runtime": ""
-      },
-      "dependencies": {
-        "xunit.runner.console": "2.1.0"
       }
     }
   },

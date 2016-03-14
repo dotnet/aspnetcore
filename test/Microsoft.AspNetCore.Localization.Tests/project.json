@@ -23,9 +23,6 @@
       "frameworkAssemblies": {
         "System.Runtime": "",
         "System.Threading.Tasks": ""
-      },
-      "dependencies": {
-        "xunit.runner.console": "2.1.0"
       }
     }
   }

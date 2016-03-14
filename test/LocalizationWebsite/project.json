@@ -21,7 +21,7 @@
         "portable-net451+win8"
       ]
     },
-    "dnx451": {}
+    "net451": {}
   },
   "exclude": [
     "wwwroot",

@@ -27,8 +27,7 @@
         "System.Threading.Tasks": ""
       },
       "dependencies": {
-        "Moq": "4.2.1312.1622",
-        "xunit.runner.console": "2.1.0"
+        "Moq": "4.2.1312.1622"
       }
     }
   },
