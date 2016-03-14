@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
@@ -20,6 +21,37 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             var assertsExecuted = false;
 
             var builder = new WebHostBuilder()
+                .UseSetting("PORT", "12345")
+                .UseSetting("APPL_PATH", "/")
+                .UseIIS()
+                .Configure(app =>
+                {
+                    app.Run(context =>
+                    {
+                        var auth = context.Features.Get<IHttpAuthenticationFeature>();
+                        Assert.Null(auth);
+                        assertsExecuted = true;
+                        return Task.FromResult(0);
+                    });
+                });
+            var server = new TestServer(builder);
+
+            var req = new HttpRequestMessage(HttpMethod.Get, "");
+            req.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
+            await server.CreateClient().SendAsync(req);
+            Assert.True(assertsExecuted);
+        }
+
+        [Fact]
+        public async Task MiddlewareSkippedIfTokenHeaderIsMissing()
+        {
+            var assertsExecuted = false;
+
+            var builder = new WebHostBuilder()
+                .UseSetting("TOKEN", "TestToken")
+                .UseSetting("PORT", "12345")
+                .UseSetting("APPL_PATH", "/")
+                .UseIIS()
                 .Configure(app =>
                 {
                     app.Run(context =>
@@ -43,15 +75,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             var assertsExecuted = false;
 
             var builder = new WebHostBuilder()
+                .UseSetting("TOKEN", "TestToken")
+                .UseSetting("PORT", "12345")
+                .UseSetting("APPL_PATH", "/")
+                .UseIIS()
                 .Configure(app =>
                 {
-                    Environment.SetEnvironmentVariable("ASPNETCORE_TOKEN", "TestToken");
-                    app.Use((context, next) =>
-                    {
-                        context.Request.Headers["MS-ASPNETCORE-TOKEN"] = "TestToken";
-                        return next();
-                    });
-                    app.UseIIS();
                     app.Run(context =>
                     {
                         var auth = context.Features.Get<IHttpAuthenticationFeature>();
@@ -64,7 +93,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             var server = new TestServer(builder);
 
             var req = new HttpRequestMessage(HttpMethod.Get, "");
+            req.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
             await server.CreateClient().SendAsync(req);
+
             Assert.True(assertsExecuted);
         }
 
@@ -75,18 +106,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             var assertsExecuted = false;
 
             var builder = new WebHostBuilder()
+                .UseSetting("TOKEN", "TestToken")
+                .UseSetting("PORT", "12345")
+                .UseSetting("APPL_PATH", "/")
+                .UseIIS()
+                .ConfigureServices(services =>
+                {
+                    services.Configure<IISOptions>(options =>
+                    {
+                        options.ForwardWindowsAuthentication = false;
+                    });
+                })
                 .Configure(app =>
                 {
-                    Environment.SetEnvironmentVariable("ASPNETCORE_TOKEN", "TestToken");
-                    app.Use((context, next) =>
-                    {
-                        context.Request.Headers["MS-ASPNETCORE-TOKEN"] = "TestToken";
-                        return next();
-                    });
-                    app.UseIIS(new IISOptions
-                    {
-                        ForwardWindowsAuthentication = false
-                    });
                     app.Run(context =>
                     {
                         var auth = context.Features.Get<IHttpAuthenticationFeature>();
@@ -98,7 +130,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             var server = new TestServer(builder);
 
             var req = new HttpRequestMessage(HttpMethod.Get, "");
+            req.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
             await server.CreateClient().SendAsync(req);
+
             Assert.True(assertsExecuted);
         }
     }

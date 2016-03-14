@@ -21,15 +21,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
     {
         private const string MSAspNetCoreWinAuthToken = "MS-ASPNETCORE-WINAUTHTOKEN";
         private const string MSAspNetCoreClientCert = "MS-ASPNETCORE-CLIENTCERT";
-        private const string AspNetCoreToken = "ASPNETCORE_TOKEN";
         private const string MSAspNetCoreToken = "MS-ASPNETCORE-TOKEN";
 
         private readonly RequestDelegate _next;
         private readonly IISOptions _options;
         private readonly ILogger _logger;
-        private readonly string _platformToken;
+        private readonly string _pairingToken;
 
-        public IISMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<IISOptions> options)
+        public IISMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<IISOptions> options, string pairingToken)
         {
             if (next == null)
             {
@@ -43,24 +42,22 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 throw new ArgumentNullException(nameof(options));
             }
+            if (string.IsNullOrEmpty(pairingToken))
+            {
+                throw new ArgumentException("Missing or empty pairing token.");
+            }
 
             _next = next;
             _options = options.Value;
+            _pairingToken = pairingToken;
             _logger = loggerFactory.CreateLogger<IISMiddleware>();
-
-            _platformToken = Environment.GetEnvironmentVariable(AspNetCoreToken);
-            if (string.IsNullOrEmpty(_platformToken))
-            {
-                _logger.LogInformation($"{AspNetCoreToken} not detected, {nameof(IISMiddleware)} will be skipped.");
-            }
         }
 
         public async Task Invoke(HttpContext httpContext)
         {
-            if (string.IsNullOrEmpty(_platformToken)
-                || !string.Equals(_platformToken, httpContext.Request.Headers[MSAspNetCoreToken], StringComparison.Ordinal))
+            if (!string.Equals(_pairingToken, httpContext.Request.Headers[MSAspNetCoreToken], StringComparison.Ordinal))
             {
-                _logger.LogTrace($"{MSAspNetCoreToken} not detected, skipping {nameof(IISMiddleware)}.");
+                _logger.LogTrace($"'{MSAspNetCoreToken}' does not match the expected pairing token '{_pairingToken}', skipping {nameof(IISMiddleware)}.");
                 await _next(httpContext);
                 return;
             }            

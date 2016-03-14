@@ -14,8 +14,6 @@ namespace IISSample
             loggerfactory.AddConsole(LogLevel.Debug);
 
             var logger = loggerfactory.CreateLogger("Requests");
-
-            app.UseIIS();
             
             app.Run(async (context) =>
             {
@@ -49,7 +47,7 @@ namespace IISSample
             var host = new WebHostBuilder()
                 .UseDefaultConfiguration(args)
                 .UseServer("Microsoft.AspNetCore.Server.Kestrel")
-                .UseIISUrl()
+                .UseIIS()
                 .UseStartup<Startup>()
                 .Build();
 
