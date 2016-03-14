@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         /// By default, Kestrel will wait 5 seconds for any ongoing requests to complete before terminating
         /// the connection.
         /// A custom timeout can be configured using the "kestrel.shutdownTimeout" key in <seealso cref="Microsoft.Extensions.Configuration.IConfiguration"/>.
-        /// The value will be parsed as a float representing the timout in seconds.
+        /// The value will be parsed as a float representing the timeout in seconds.
         /// </summary>
         TimeSpan ShutdownTimeout { get; set; }
 

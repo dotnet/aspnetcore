@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         private TimeSpan GetShutdownTimeout(IConfiguration configuration)
         {
-            var shutdownTimeoutString = configuration["kestrel.shutdownTimout"];
+            var shutdownTimeoutString = configuration["kestrel.shutdownTimeout"];
 
             float shutdownTimeout;
             if (float.TryParse(shutdownTimeoutString, NumberStyles.Float, CultureInfo.InvariantCulture, out shutdownTimeout))
