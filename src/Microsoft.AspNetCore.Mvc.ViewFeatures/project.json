@@ -37,7 +37,7 @@
       "type": "build"
     },
     "Microsoft.Extensions.WebEncoders": "1.0.0-*",
-    "Newtonsoft.Json": "8.0.2",
+    "Newtonsoft.Json": "8.0.3",
     "System.Buffers": "4.0.0-*"
   },
   "frameworks": {
