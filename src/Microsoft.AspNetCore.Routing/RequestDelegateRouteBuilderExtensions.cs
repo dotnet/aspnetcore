@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Adds a route to the <see cref="IRouteBuilder"/> that only matches HTTP DELETE requests for the given
+        /// Adds a route to the <see cref="IRouteBuilder"/> that only matches HTTP GET requests for the given
         /// <paramref name="template"/>, and <paramref name="handler"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IRouteBuilder"/>.</param>
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Adds a route to the <see cref="IRouteBuilder"/> that only matches HTTP DELETE requests for the given
+        /// Adds a route to the <see cref="IRouteBuilder"/> that only matches HTTP GET requests for the given
         /// <paramref name="template"/>, and <paramref name="action"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IRouteBuilder"/>.</param>
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Adds a route to the <see cref="IRouteBuilder"/> that only matches HTTP DELETE requests for the given
+        /// Adds a route to the <see cref="IRouteBuilder"/> that only matches HTTP POST requests for the given
         /// <paramref name="template"/>, and <paramref name="handler"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IRouteBuilder"/>.</param>
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Adds a route to the <see cref="IRouteBuilder"/> that only matches HTTP DELETE requests for the given
+        /// Adds a route to the <see cref="IRouteBuilder"/> that only matches HTTP POST requests for the given
         /// <paramref name="template"/>, and <paramref name="action"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IRouteBuilder"/>.</param>
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Adds a route to the <see cref="IRouteBuilder"/> that only matches HTTP DELETE requests for the given
+        /// Adds a route to the <see cref="IRouteBuilder"/> that only matches HTTP PUT requests for the given
         /// <paramref name="template"/>, and <paramref name="handler"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IRouteBuilder"/>.</param>
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Adds a route to the <see cref="IRouteBuilder"/> that only matches HTTP DELETE requests for the given
+        /// Adds a route to the <see cref="IRouteBuilder"/> that only matches HTTP PUT requests for the given
         /// <paramref name="template"/>, and <paramref name="action"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IRouteBuilder"/>.</param>
