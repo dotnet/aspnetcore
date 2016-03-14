@@ -288,8 +288,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal(expectedException, ex.Message);
         }
 
+        // Async actions that declares a return type of Task and returns an instance of Task<Task> or Task<Task<T>>
+        // are not handled in any special way as they are not supported. They are considered as methods that return Task type.
         [Fact]
-        public async Task AsyncAction_ReturningUnwrappedTaskThrows()
+        public async Task AsyncAction_ReturningUnwrappedTask()
         {
             // Arrange
             var inputParam1 = 1;
@@ -298,24 +300,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var methodWithUnwrappedTask = new MethodWithTaskReturnType(_controller.UnwrappedTask);
 
-            var expectedException = string.Format(
-                CultureInfo.CurrentCulture,
-                "The method 'UnwrappedTask' on type '{0}' returned an instance of '{1}'. " +
-                "Make sure to call Unwrap on the returned value to avoid unobserved faulted Task.",
-                typeof(TestController),
-                typeof(Task<Task>).FullName);
+            // Act
+            var result = await ExecuteAction(
+                methodWithUnwrappedTask,
+                _controller,
+                actionParameters);
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => ExecuteAction(
-                    methodWithUnwrappedTask,
-                    _controller,
-                    actionParameters));
-            Assert.Equal(expectedException, ex.Message);
+            // Assert
+            Assert.Same(null, result);
         }
 
         [Fact]
-        public async Task AsyncAction_WithDynamicReturnTypeThrows()
+        // Async actions that has dynamic return type but return Task or Task<T> are not handled in any special way as,
+        // they are not supported. They are considered as regular methods that return object type.
+        public async Task AsyncAction_WithDynamicReturnType()
         {
             // Arrange
             var inputParam1 = 1;
@@ -323,18 +321,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionParameters = new Dictionary<string, object> { { "i", inputParam1 }, { "s", inputParam2 } };
 
             var dynamicTaskMethod = new ReturnTaskAsDynamicValue(_controller.ReturnTaskAsDynamicValue);
-            var expectedException = string.Format(
-                CultureInfo.CurrentCulture,
-                "The method 'ReturnTaskAsDynamicValue' on type '{0}' returned a Task instance even though it is not an asynchronous method.",
-                typeof(TestController));
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-               () => ExecuteAction(
-                   dynamicTaskMethod,
-                   _controller,
-                   actionParameters));
-            Assert.Equal(expectedException, ex.Message);
+            // Act
+            var result = await (Task<int>)(await ExecuteAction(
+                dynamicTaskMethod,
+                _controller,
+                actionParameters));
+
+            // Assert
+            Assert.Equal(inputParam1, result);
         }
 
         [Fact]
@@ -462,12 +457,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             /// <summary>
-            /// Returns a <see cref="Task{TResult}"/> instead of a <see cref="Task"/>. This should throw an
-            /// <see cref="InvalidOperationException"/>.
+            /// Returns a <see cref="Task{TResult}"/> instead of a <see cref="Task"/>.
             /// </summary>
             public Task UnwrappedTask(int i, string s)
             {
-                return Task.Factory.StartNew(async () => await Task.Delay(50));
+                return Task.Factory.StartNew(async () => await Task.Factory.StartNew(() => i));
             }
 
             public string Echo(string input)
