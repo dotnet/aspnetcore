@@ -1,16 +1,13 @@
 {
   "frameworks": {
-    "netstandardapp1.5": {
+    "netstandard1.1": {
       "dependencies": {
-        "dotnet-test-xunit": "1.0.0-dev-*",
-        "Microsoft.NETCore.Platforms": "1.0.1-*"
+        "System.Runtime": "4.1.0-*"
       },
       "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
+        "dotnet5.2"
       ]
-    },
-    "net451": {}
+    }
   },
   "shared": "**/*.cs"
 }
