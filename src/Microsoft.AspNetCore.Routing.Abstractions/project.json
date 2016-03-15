@@ -1,5 +1,9 @@
 {
-  "description": "ASP.NET 5 abstractions for routing requests to application logic and for generating links.",
+  "description": "ASP.NET Core abstractions for routing requests to application logic and for generating links.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.Routing.IRouteHandler\r\nMicrosoft.AspNetCore.Routing.RouteData.",
+  "tags": [
+    "aspnetcore",
+    "routing"
+  ],
   "version": "1.0.0-*",
   "repository": {
     "type": "git",
