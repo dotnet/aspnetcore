@@ -98,6 +98,11 @@ var buildTarget = "compile"
         buildTarget = Environment.GetEnvironmentVariable("KOREBUILD_BUILD_TARGETS") ?? "--quiet compile nuget-install";
         var blockLogger = Log as IBlockLogger;
 
+        if (blockLogger != null)
+        {
+            blockLogger.StartBlock("Cloning repos");
+        }
+
         Parallel.ForEach(repositories, repo =>
         {
             if (Directory.Exists(repo))
@@ -109,6 +114,11 @@ var buildTarget = "compile"
                 GitCommand("", string.Format("clone --quiet --depth 1 --branch {0} git@github.com:aspnet/{1}.git", BUILD_BRANCH, repo));
             }
         });
+
+        if (blockLogger != null)
+        {
+            blockLogger.EndBlock("Cloning repos");
+        }
 
         var batchedRepos = GetBuildGraph();
         Log.Info("Building repositories in batches: ");
@@ -931,21 +941,6 @@ functions
                     var dependency = repositoryLookup.Find(r => r.RepositoryNames.Contains(item));
                     if (dependency != null)
                     {
-                        // Testing has odd cyclic dependencies
-                        if (string.Equals(info.Name, "Testing", StringComparison.OrdinalIgnoreCase) &&
-                            string.Equals(dependency.Name, "aspnet.xunit", StringComparison.OrdinalIgnoreCase))
-                        {
-                            continue;
-                        }
-
-                        if (string.Equals(dependency.Name, "Testing", StringComparison.OrdinalIgnoreCase) &&
-                            (string.Equals(info.Name, "Common", StringComparison.OrdinalIgnoreCase) ||
-                            string.Equals(info.Name, "PlatformAbstractions", StringComparison.OrdinalIgnoreCase) ||
-                            string.Equals(info.Name, "Logging", StringComparison.OrdinalIgnoreCase)))
-                        {
-                            continue;
-                        }
-
                         info.Dependencies.Add(dependency);
                     }
                 }
@@ -1020,22 +1015,6 @@ functions
             {
                 get
                 {
-                    if (string.Equals("PlatformAbstractions", Name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return 0;
-                    }
-
-                    if (string.Equals("Common", Name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return 1;
-                    }
-
-                    if (string.Equals("Testing", Name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Testing has a cyclic dependency with Common, PlatformAbstractions and Logging.
-                        return 2;
-                    }
-
                     if (Dependencies.Count > 0)
                     {
                         return 1 + Dependencies.Max(d => d.Order);
