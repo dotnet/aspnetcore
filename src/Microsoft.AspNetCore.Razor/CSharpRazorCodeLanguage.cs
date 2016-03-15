@@ -4,9 +4,6 @@
 using Microsoft.AspNetCore.Razor.Chunks.Generators;
 using Microsoft.AspNetCore.Razor.CodeGenerators;
 using Microsoft.AspNetCore.Razor.Parser;
-#if NET451
-
-#endif
 
 namespace Microsoft.AspNetCore.Razor
 {

@@ -1,5 +1,10 @@
 {
   "description": "Razor is a markup syntax for adding server-side logic to web pages. This package contains the Razor parser and code generation infrastructure.",
+  "tags": [
+    "aspnetcore",
+    "cshtml",
+    "razor"
+  ],
   "version": "1.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": true,
