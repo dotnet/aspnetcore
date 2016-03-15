@@ -831,7 +831,6 @@ functions
                 "DataProtection",
                 "HttpAbstractions",
                 "Testing",
-                "aspnet.xunit",
                 "Microsoft.Data.Sqlite",
                 "Caching",
                 "Razor",
