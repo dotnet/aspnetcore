@@ -24,6 +24,7 @@ namespace MusicStore.Controllers
         public ManageControllerTest()
         {
             var services = new ServiceCollection();
+            services.AddOptions();
             services
                 .AddEntityFrameworkInMemoryDatabase()
                 .AddDbContext<MusicStoreContext>((p, b) => b.UseInMemoryDatabase().UseInternalServiceProvider(p));
@@ -32,6 +33,7 @@ namespace MusicStore.Controllers
                     .AddEntityFrameworkStores<MusicStoreContext>();
 
             services.AddLogging();
+            services.AddOptions();
 
             // IHttpContextAccessor is required for SignInManager, and UserManager
             var context = new DefaultHttpContext();

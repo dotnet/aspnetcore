@@ -46,6 +46,7 @@ namespace MusicStore.Test
         public ShoppingCartFixture()
         {
             var services = new ServiceCollection();
+            services.AddOptions();
             services
                 .AddEntityFrameworkInMemoryDatabase()
                 .AddDbContext<MusicStoreContext>((p, b) => b.UseInMemoryDatabase().UseInternalServiceProvider(p));
