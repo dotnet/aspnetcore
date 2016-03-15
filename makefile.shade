@@ -12,6 +12,7 @@ use namespace='System.Text'
 use namespace='System.Text.RegularExpressions'
 use namespace='System.Threading.Tasks'
 use import="BuildEnv"
+use import="Files"
 use import="Json"
 
 functions
@@ -86,7 +87,7 @@ var buildTarget = "compile"
 
 #verify-all .pull .change-default-build-target-to-verify .build-all
 
-#ci-test .pull .sync-commits .remove-src-folders .change-default-build-target-to-verify .build-all
+#ci-test .pull .sync-commits .remove-src-folders .cache-coherence .change-default-build-target-to-verify .build-all
 
 #ci-build
     @{
@@ -200,6 +201,40 @@ var buildTarget = "compile"
         foreach (var repo in GetRepositoriesToBuild())
         {
             RemoveSrcFolder(repo);
+        }
+    }
+
+#cache-coherence
+    @{
+        var coherenceCacheDir = Path.Combine(BASE_DIR, Environment.GetEnvironmentVariable("COHERENCE_CACHE_DIR") ?? ".coherence-cache");
+        var dropsShare = Environment.GetEnvironmentVariable("ASPNETCI_DROPS_SHARE");
+
+        if (!string.IsNullOrWhiteSpace(dropsShare))
+        {
+            var coherenceShare = Path.Combine(dropsShare, "Coherence", BUILD_BRANCH);
+            var latestBuild = Directory.EnumerateDirectories(coherenceShare)
+                .Select(d => Path.GetFileName(d))
+                .Where(d => { int _; return int.TryParse(d, out _); })
+                .OrderByDescending(d => d)
+                .First();
+            var targetDir = Path.Combine(coherenceCacheDir, latestBuild);
+            
+            Log.Info("Latest Coherence build is " + latestBuild     + ".");
+
+            if (!Directory.Exists(targetDir))
+            {
+                var latestBuildShare = Path.Combine(coherenceShare, latestBuild);
+
+                Log.Info("Caching Coherence build " + latestBuild + " at " + targetDir + ".");
+                CopyFolder(latestBuildShare, targetDir, overwrite: true);
+            }
+            else
+            {
+                Log.Info("Coherence build " + latestBuild + " already cached at " + targetDir + ".");
+            }
+            
+            Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ASPNETVNEXT", Path.Combine(targetDir, "build"));
+            Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_EXTERNAL", Path.Combine(dropsShare, "latest-packages", "external", BUILD_BRANCH));
         }
     }
 
@@ -613,6 +648,9 @@ macro name='Exec' program='string' commandline='string' workingdir='string'
 
 macro name='NuGetPackagesAdd' sourcePackagesDir='string' targetPackagesDir='string'
     nuget-packages-add
+
+macro name="CopyFolder" sourceDir='string' outputDir='string' overwrite='bool'
+    copy
 
 functions
     @{
