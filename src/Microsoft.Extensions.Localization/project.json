@@ -14,7 +14,7 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Localization.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Options": "1.0.0-*"

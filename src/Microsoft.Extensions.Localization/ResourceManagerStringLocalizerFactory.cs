@@ -6,8 +6,8 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Reflection;
 using System.Resources;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.Extensions.Localization
 {
@@ -19,21 +19,21 @@ namespace Microsoft.Extensions.Localization
         private readonly IResourceNamesCache _resourceNamesCache = new ResourceNamesCache();
         private readonly ConcurrentDictionary<string, ResourceManagerStringLocalizer> _localizerCache =
             new ConcurrentDictionary<string, ResourceManagerStringLocalizer>();
-        private readonly IApplicationEnvironment _applicationEnvironment;
+        private readonly IHostingEnvironment _hostingEnvironment;
         private readonly string _resourcesRelativePath;
 
         /// <summary>
         /// Creates a new <see cref="ResourceManagerStringLocalizer"/>.
         /// </summary>
-        /// <param name="applicationEnvironment">The <see cref="IApplicationEnvironment"/>.</param>
+        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
         /// <param name="localizationOptions">The <see cref="IOptions{LocalizationOptions}"/>.</param>
         public ResourceManagerStringLocalizerFactory(
-            IApplicationEnvironment applicationEnvironment,
+            IHostingEnvironment hostingEnvironment,
             IOptions<LocalizationOptions> localizationOptions)
         {
-            if (applicationEnvironment == null)
+            if (hostingEnvironment == null)
             {
-                throw new ArgumentNullException(nameof(applicationEnvironment));
+                throw new ArgumentNullException(nameof(hostingEnvironment));
             }
 
             if (localizationOptions == null)
@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(localizationOptions));
             }
 
-            _applicationEnvironment = applicationEnvironment;
+            _hostingEnvironment = hostingEnvironment;
             _resourcesRelativePath = localizationOptions.Value.ResourcesPath ?? string.Empty;
             if (!string.IsNullOrEmpty(_resourcesRelativePath))
             {
@@ -69,8 +69,8 @@ namespace Microsoft.Extensions.Localization
             // Re-root the base name if a resources path is set
             var baseName = string.IsNullOrEmpty(_resourcesRelativePath)
                 ? typeInfo.FullName
-                : _applicationEnvironment.ApplicationName + "." + _resourcesRelativePath
-                    + TrimPrefix(typeInfo.FullName, _applicationEnvironment.ApplicationName + ".");
+                : _hostingEnvironment.ApplicationName + "." + _resourcesRelativePath
+                    + TrimPrefix(typeInfo.FullName, _hostingEnvironment.ApplicationName + ".");
 
             return _localizerCache.GetOrAdd(baseName, _ =>
                 new ResourceManagerStringLocalizer(
@@ -94,7 +94,7 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(baseName));
             }
 
-            location = location ?? _applicationEnvironment.ApplicationName;
+            location = location ?? _hostingEnvironment.ApplicationName;
 
             baseName = location + "." + _resourcesRelativePath + TrimPrefix(baseName, location + ".");
 
