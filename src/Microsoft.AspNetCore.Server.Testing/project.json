@@ -35,6 +35,7 @@
         "System.IO.FileSystem": "4.0.1-*",
         "System.Net.Http": "4.0.1-*",
         "System.Net.Primitives": "4.0.11-*",
+        "System.Net.Sockets": "4.1.0-*",
         "System.Runtime.Extensions": "4.1.0-*",
         "System.Text.RegularExpressions": "4.0.12-*",
         "System.Threading": "4.0.11-*",
