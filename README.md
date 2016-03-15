@@ -1,7 +1,7 @@
 NodeServices
 ========
 
-This project is part of ASP.NET 5. You can find samples, documentation and getting started instructions for ASP.NET 5 at the [Home](https://github.com/aspnet/home) repo.
+This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
 
 ## What is this?
 
@@ -44,7 +44,7 @@ If you're a keen early-adopter type, you can infer usage from the samples. Let u
 
 To get started,
 
-1. Ensure you have [installed the latest stable version of ASP.NET 5](https://www.asp.net/vnext). Instructions are available for [Windows](http://docs.asp.net/en/latest/getting-started/installing-on-windows.html), [Mac](http://docs.asp.net/en/latest/getting-started/installing-on-mac.html), and [Linux](http://docs.asp.net/en/latest/getting-started/installing-on-linux.html).
+1. Ensure you have [installed the latest stable version of ASP.NET Core](https://www.asp.net/vnext). Instructions are available for [Windows](http://docs.asp.net/en/latest/getting-started/installing-on-windows.html), [Mac](http://docs.asp.net/en/latest/getting-started/installing-on-mac.html), and [Linux](http://docs.asp.net/en/latest/getting-started/installing-on-linux.html).
 2. Ensure you have [installed a recent version of Node.js](https://nodejs.org/en/). To check this works, open a console prompt, and type `node -v`. It should print a version number.
 3. Ensure you have installed `gulp` globally. You can check if it's there by running `gulp -v`. If you need to install it:
 
