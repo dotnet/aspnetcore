@@ -11,7 +11,7 @@ var Configuration_Local = '${E("Configuration")}'
 var ROOT_Local = '${Directory.GetCurrentDirectory()}'
 var BUILD_DIR_Local = '${Path.Combine(ROOT_Local, "build")}'
 
-#build-compile target='compile' if='IsLinux'
+#build-compile target='compile' if='IsLinux && Directory.Exists("src")'
   @{
     var projectFiles = Files.Include("src/**/project.json")
         .Exclude("src/Microsoft.AspNetCore.DataProtection.SystemWeb/project.json")
