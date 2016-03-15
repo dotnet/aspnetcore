@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -18,9 +17,9 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -247,17 +246,14 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AddViewEngineOptionsServices(IServiceCollection serviceCollection)
         {
-            serviceCollection.AddSingleton(Mock.Of<IHostingEnvironment>());
-            var applicationEnvironment = new Mock<IApplicationEnvironment>();
-            applicationEnvironment.SetupGet(e => e.ApplicationName)
+            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            hostingEnvironment.SetupGet(e => e.ApplicationName)
                 .Returns(typeof(MvcOptionsSetupTest).GetTypeInfo().Assembly.GetName().Name);
 
-            // ApplicationBasePath is used to set up a PhysicalFileProvider which requires
-            // a real directory.
-            applicationEnvironment.SetupGet(e => e.ApplicationBasePath)
-                .Returns(Directory.GetCurrentDirectory());
+            hostingEnvironment.SetupGet(e => e.ContentRootFileProvider)
+                .Returns(Mock.Of<IFileProvider>());
 
-            serviceCollection.AddSingleton(applicationEnvironment.Object);
+            serviceCollection.AddSingleton(hostingEnvironment.Object);
         }
     }
 }

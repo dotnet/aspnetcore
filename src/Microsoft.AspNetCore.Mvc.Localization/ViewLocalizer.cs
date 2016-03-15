@@ -7,10 +7,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Mvc.Localization
 {
@@ -28,20 +28,20 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         /// Creates a new <see cref="ViewLocalizer"/>.
         /// </summary>
         /// <param name="localizerFactory">The <see cref="IHtmlLocalizerFactory"/>.</param>
-        /// <param name="applicationEnvironment">The <see cref="IApplicationEnvironment"/>.</param>
-        public ViewLocalizer(IHtmlLocalizerFactory localizerFactory, IApplicationEnvironment applicationEnvironment)
+        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
+        public ViewLocalizer(IHtmlLocalizerFactory localizerFactory, IHostingEnvironment hostingEnvironment)
         {
             if (localizerFactory == null)
             {
                 throw new ArgumentNullException(nameof(localizerFactory));
             }
 
-            if (applicationEnvironment == null)
+            if (hostingEnvironment == null)
             {
-                throw new ArgumentNullException(nameof(applicationEnvironment));
+                throw new ArgumentNullException(nameof(hostingEnvironment));
             }
 
-            _applicationName = applicationEnvironment.ApplicationName;
+            _applicationName = hostingEnvironment.ApplicationName;
             _localizerFactory = localizerFactory;
         }
 

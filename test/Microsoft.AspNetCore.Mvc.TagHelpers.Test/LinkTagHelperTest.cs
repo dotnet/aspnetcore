@@ -23,7 +23,6 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
@@ -1032,13 +1031,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             hostingEnvironment.Setup(h => h.WebRootFileProvider).Returns(mockFileProvider.Object);
 
             return hostingEnvironment.Object;
-        }
-
-        private static IApplicationEnvironment MakeApplicationEnvironment(string applicationName = "testApplication")
-        {
-            var applicationEnvironment = new Mock<IApplicationEnvironment>();
-            applicationEnvironment.Setup(a => a.ApplicationName).Returns(applicationName);
-            return applicationEnvironment.Object;
         }
 
         private static IMemoryCache MakeCache() => new MemoryCache(new MemoryCacheOptions());

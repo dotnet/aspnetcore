@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.PlatformAbstractions;
@@ -39,9 +40,6 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
         public void HtmlLocalizerOfTTest_UseIndexerWithArguments_ReturnsLocalizedHtmlString()
         {
             // Arrange
-            var applicationEnvironment = new Mock<IApplicationEnvironment>();
-            applicationEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
-
             var localizedString = new LocalizedHtmlString("Hello", "Bonjour test");
 
             var htmlLocalizer = new Mock<IHtmlLocalizer>();

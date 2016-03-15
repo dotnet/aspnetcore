@@ -3,29 +3,29 @@
 
 using System.IO;
 using System.Text;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace FilesWebSite
 {
     public class DownloadFilesController : Controller
     {
-        private readonly IApplicationEnvironment _appEnvironment;
+        private readonly IHostingEnvironment _hostingEnvironment;
 
-        public DownloadFilesController(IApplicationEnvironment appEnvironment)
+        public DownloadFilesController(IHostingEnvironment hostingEnvironment)
         {
-            _appEnvironment = appEnvironment;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         public IActionResult DowloadFromDisk()
         {
-            var path = Path.Combine(_appEnvironment.ApplicationBasePath, "sample.txt");
+            var path = Path.Combine(_hostingEnvironment.ContentRootPath, "sample.txt");
             return PhysicalFile(path, "text/plain");
         }
 
         public IActionResult DowloadFromDiskWithFileName()
         {
-            var path = Path.Combine(_appEnvironment.ApplicationBasePath, "sample.txt");
+            var path = Path.Combine(_hostingEnvironment.ContentRootPath, "sample.txt");
             return PhysicalFile(path, "text/plain", "downloadName.txt");
         }
 

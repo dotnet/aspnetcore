@@ -36,7 +36,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             using (new CultureReplacer())
             {
                 var builder = new WebHostBuilder()
-                    .ConfigureServices(serviceCollection => InitializeServices(serviceCollection, relativePath))
+                    .UseContentRoot(GetApplicationPath(relativePath))
+                    .ConfigureServices(InitializeServices)
                     .UseStartup(typeof(TStartup));
 
                 _server = new TestServer(builder);
@@ -54,14 +55,22 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             _server.Dispose();
         }
 
-        protected virtual void InitializeServices(IServiceCollection services, string relativePath)
+        private static string GetApplicationPath(string relativePath)
         {
-            // When an application executes in a regular context, the application base path points to the root
-            // directory where the application is located, for example .../samples/MvcSample.Web. However, when
-            // executing an application as part of a test, the ApplicationBasePath of the IApplicationEnvironment
-            // points to the root folder of the test project.
-            // To compensate, we need to calculate the correct project path and override the application
-            // environment value so that components like the view engine work properly in the context of the test.
+            var startupAssembly = typeof(TStartup).GetTypeInfo().Assembly;
+            var applicationName = startupAssembly.GetName().Name;
+#if DNX451
+            var libraryManager = DnxPlatformServices.Default.LibraryManager;
+            var library = libraryManager.GetLibrary(applicationName);
+            return Path.GetDirectoryName(library.Path);
+#else
+            var applicationBasePath = PlatformServices.Default.Application.ApplicationBasePath;
+            return Path.GetFullPath(Path.Combine(applicationBasePath, relativePath, applicationName));
+#endif
+        }
+
+        protected virtual void InitializeServices(IServiceCollection services)
+        {
             var startupAssembly = typeof(TStartup).GetTypeInfo().Assembly;
             var applicationName = startupAssembly.GetName().Name;
 
@@ -69,20 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 #if DNX451
             services.AddSingleton(CompilationServices.Default.LibraryExporter);
             services.AddSingleton<ICompilationService, DnxRoslynCompilationService>();
-
-            var libraryManager = DnxPlatformServices.Default.LibraryManager;
-            var library = libraryManager.GetLibrary(applicationName);
-            var applicationRoot = Path.GetDirectoryName(library.Path);
-#else
-            var applicationRoot = Path.GetFullPath(Path.Combine(
-               applicationEnvironment.ApplicationBasePath,
-               relativePath,
-               applicationName
-            ));
 #endif
-
-            services.AddSingleton<IApplicationEnvironment>(
-                new TestApplicationEnvironment(applicationEnvironment, applicationName, applicationRoot));
 
             // Inject a custom assembly provider. Overrides AddMvc() because that uses TryAdd().
             var assemblyProvider = new StaticAssemblyProvider();

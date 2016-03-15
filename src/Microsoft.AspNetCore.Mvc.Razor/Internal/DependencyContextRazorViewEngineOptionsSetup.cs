@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
@@ -22,14 +22,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// <summary>
         /// Initializes a new instance of <see cref="DependencyContextRazorViewEngineOptionsSetup"/>.
         /// </summary>
-        public DependencyContextRazorViewEngineOptionsSetup(IApplicationEnvironment applicationEnvironment)
-            : base(options => ConfigureRazor(options, applicationEnvironment))
+        public DependencyContextRazorViewEngineOptionsSetup(IHostingEnvironment hostingEnvironment)
+            : base(options => ConfigureRazor(options, hostingEnvironment))
         {
         }
 
-        private static void ConfigureRazor(RazorViewEngineOptions options, IApplicationEnvironment applicationEnvironment)
+        private static void ConfigureRazor(RazorViewEngineOptions options, IHostingEnvironment hostingEnvironment)
         {
-            var applicationAssembly = Assembly.Load(new AssemblyName(applicationEnvironment.ApplicationName));
+            var applicationAssembly = Assembly.Load(new AssemblyName(hostingEnvironment.ApplicationName));
             var dependencyContext = DependencyContext.Load(applicationAssembly);
             var compilationOptions = dependencyContext?.CompilationOptions ?? Extensions.DependencyModel.CompilationOptions.Default;
 

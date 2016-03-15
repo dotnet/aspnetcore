@@ -13,6 +13,7 @@ using System.Reflection.PortableExecutable;
 using System.Runtime.Loader;
 #endif
 using System.Text;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -20,7 +21,6 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.Dnx.Compilation.CSharp;
 using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private readonly ConcurrentDictionary<string, AssemblyMetadata> _metadataFileCache =
             new ConcurrentDictionary<string, AssemblyMetadata>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly IApplicationEnvironment _environment;
+        private readonly IHostingEnvironment _environment;
         private readonly ILibraryExporter _libraryExporter;
         private readonly RazorViewEngineOptions _options;
         private readonly Lazy<List<MetadataReference>> _applicationReferences;
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// <param name="optionsAccessor">Accessor to <see cref="RazorViewEngineOptions"/>.</param>
         /// <param name="fileProviderAccessor">The <see cref="IRazorViewEngineFileProviderAccessor"/>.</param>
         public DnxRoslynCompilationService(
-            IApplicationEnvironment environment,
+            IHostingEnvironment environment,
             ILibraryExporter libraryExporter,
             IOptions<RazorViewEngineOptions> optionsAccessor,
             IRazorViewEngineFileProviderAccessor fileProviderAccessor)

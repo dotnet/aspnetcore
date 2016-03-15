@@ -24,7 +24,6 @@
       "version": "1.0.0-*"
     },
     "Microsoft.Extensions.FileProviders.Abstractions": "1.0.0-*",
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "Microsoft.Extensions.DependencyModel": "1.0.0-*",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "version": "1.0.0-*",

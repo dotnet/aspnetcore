@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.PlatformAbstractions;
 
@@ -23,8 +24,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <summary>
         /// Initializes a new instance of <see cref="DefaultAssemblyProvider"/>.
         /// </summary>
-        /// <param name="environment">The <see cref="IApplicationEnvironment"/>.</param>
-        public DefaultAssemblyProvider(IApplicationEnvironment environment)
+        /// <param name="environment">The <see cref="IHostingEnvironment"/>.</param>
+        public DefaultAssemblyProvider(IHostingEnvironment environment)
             : this(
                   Assembly.Load(new AssemblyName(environment.ApplicationName)),
                   DependencyContext.Load(Assembly.Load(new AssemblyName(environment.ApplicationName))))

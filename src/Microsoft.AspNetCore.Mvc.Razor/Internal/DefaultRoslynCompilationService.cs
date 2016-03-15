@@ -14,6 +14,7 @@ using System.Runtime.Loader;
 #endif
 using System.Text;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -23,7 +24,6 @@ using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
@@ -50,12 +50,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// <summary>
         /// Initalizes a new instance of the <see cref="DefaultRoslynCompilationService"/> class.
         /// </summary>
-        /// <param name="environment">The environment for the executing application.</param>
+        /// <param name="environment">The <see cref="IHostingEnvironment"/>.</param>
         /// <param name="optionsAccessor">Accessor to <see cref="RazorViewEngineOptions"/>.</param>
         /// <param name="fileProviderAccessor">The <see cref="IRazorViewEngineFileProviderAccessor"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public DefaultRoslynCompilationService(
-            IApplicationEnvironment environment,
+            IHostingEnvironment environment,
             IOptions<RazorViewEngineOptions> optionsAccessor,
             IRazorViewEngineFileProviderAccessor fileProviderAccessor,
             ILoggerFactory loggerFactory)
@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 mappedLineSpan.EndLinePosition.Character + 1);
         }
 
-        private static DependencyContext GetDependencyContext(IApplicationEnvironment environment)
+        private static DependencyContext GetDependencyContext(IHostingEnvironment environment)
         {
             if (environment.ApplicationName != null)
             {

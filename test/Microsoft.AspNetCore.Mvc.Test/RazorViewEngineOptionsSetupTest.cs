@@ -19,20 +19,20 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var options = new RazorViewEngineOptions();
-            var appEnv = new Mock<IApplicationEnvironment>();
-            appEnv.SetupGet(e => e.ApplicationBasePath)
-                .Returns(Directory.GetCurrentDirectory());
+            var expected = Mock.Of<IFileProvider>();
             var hostingEnv = new Mock<IHostingEnvironment>();
+            hostingEnv.SetupGet(e => e.ContentRootFileProvider)
+                .Returns(expected);
             hostingEnv.SetupGet(e => e.EnvironmentName)
                 .Returns("Development");
-            var optionsSetup = new RazorViewEngineOptionsSetup(appEnv.Object, hostingEnv.Object);
+            var optionsSetup = new RazorViewEngineOptionsSetup(hostingEnv.Object);
 
             // Act
             optionsSetup.Configure(options);
 
             // Assert
             var fileProvider = Assert.Single(options.FileProviders);
-            Assert.IsType<PhysicalFileProvider>(fileProvider);
+            Assert.Same(expected, fileProvider);
         }
 
         [Theory]
@@ -43,13 +43,10 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var options = new RazorViewEngineOptions();
-            var appEnv = new Mock<IApplicationEnvironment>();
-            appEnv.SetupGet(e => e.ApplicationBasePath)
-                  .Returns(Directory.GetCurrentDirectory());
             var hostingEnv = new Mock<IHostingEnvironment>();
             hostingEnv.SetupGet(e => e.EnvironmentName)
                   .Returns(environment);
-            var optionsSetup = new RazorViewEngineOptionsSetup(appEnv.Object, hostingEnv.Object);
+            var optionsSetup = new RazorViewEngineOptionsSetup(hostingEnv.Object);
 
             // Act
             optionsSetup.Configure(options);
@@ -68,13 +65,10 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var options = new RazorViewEngineOptions();
-            var appEnv = new Mock<IApplicationEnvironment>();
-            appEnv.SetupGet(e => e.ApplicationBasePath)
-                  .Returns(Directory.GetCurrentDirectory());
             var hostingEnv = new Mock<IHostingEnvironment>();
             hostingEnv.SetupGet(e => e.EnvironmentName)
                   .Returns(environment);
-            var optionsSetup = new RazorViewEngineOptionsSetup(appEnv.Object, hostingEnv.Object);
+            var optionsSetup = new RazorViewEngineOptionsSetup(hostingEnv.Object);
 
             // Act
             optionsSetup.Configure(options);

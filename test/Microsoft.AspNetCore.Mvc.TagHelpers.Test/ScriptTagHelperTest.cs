@@ -971,13 +971,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             return hostingEnvironment.Object;
         }
 
-        private static IApplicationEnvironment MakeApplicationEnvironment(string applicationName = "testApplication")
-        {
-            var applicationEnvironment = new Mock<IApplicationEnvironment>();
-            applicationEnvironment.Setup(a => a.ApplicationName).Returns(applicationName);
-            return applicationEnvironment.Object;
-        }
-
         private static IMemoryCache MakeCache() => new MemoryCache(new MemoryCacheOptions());
 
         private static IUrlHelperFactory MakeUrlHelperFactory()

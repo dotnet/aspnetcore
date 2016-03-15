@@ -23,14 +23,9 @@
     }
   },
   "frameworks": {
-    "net451": {
-      "dependencies": {
-        "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
-      }
-    },
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
-        "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
         "System.Collections.Concurrent": "4.0.12-*",
         "System.ComponentModel.TypeConverter": "4.0.1-*",
         "System.Reflection.Extensions": "4.0.1-*",
