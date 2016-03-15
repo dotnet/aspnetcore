@@ -127,9 +127,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         public virtual DateTimeOffset? LockoutEnd { get; set; }
 
         /// <summary>
-        /// Gets or sets a flag indicating if this user is locked out.
+        /// Gets or sets a flag indicating if the user could be locked out.
         /// </summary>
-        /// <value>True if the user is locked out, otherwise false.</value>
+        /// <value>True if the user could be locked out, otherwise false.</value>
         public virtual bool LockoutEnabled { get; set; }
 
         /// <summary>
