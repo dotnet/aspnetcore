@@ -10,6 +10,6 @@ Travis:   [![Travis](https://travis-ci.org/aspnet/Localization.svg?branch=dev)](
 | Microsoft.AspNetCore.Localization | [![MyGet](https://img.shields.io/myget/aspnetvolatiledev/vpre/Microsoft.AspNetCore.Localization.svg)](https://www.myget.org/feed/aspnetvolatiledev/package/nuget/Microsoft.AspNetCore.Localization) | [![MyGet](https://img.shields.io/myget/aspnetcidev/vpre/Microsoft.AspNetCore.Localization.svg)](https://www.myget.org/feed/aspnetcidev/package/nuget/Microsoft.AspNetCore.Localization) | [![MyGet](https://img.shields.io/myget/aspnetvnext/vpre/Microsoft.AspNetCore.Localization.svg)](https://www.myget.org/feed/aspnetvnext/package/nuget/Microsoft.AspNetCore.Localization)  | [![NuGet](https://img.shields.io/nuget/v/Microsoft.AspNetCore.Localization.svg)](https://nuget.org/packages/Microsoft.AspNetCore.Localization) |
 
 
-Localization abstractions and implementations for ASP.NET 5 applications.
+Localization abstractions and implementations for ASP.NET Core applications.
 
-This project is part of ASP.NET 5. You can find samples, documentation and getting started instructions for ASP.NET 5 at the [Home](https://github.com/aspnet/home) repo.
+This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
