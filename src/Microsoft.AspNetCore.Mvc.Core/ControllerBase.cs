@@ -31,17 +31,6 @@ namespace Microsoft.AspNetCore.Mvc
         private IUrlHelper _url;
 
         /// <summary>
-        /// Gets the request-specific <see cref="IServiceProvider"/>.
-        /// </summary>
-        public IServiceProvider Resolver
-        {
-            get
-            {
-                return HttpContext?.RequestServices;
-            }
-        }
-
-        /// <summary>
         /// Gets the <see cref="Http.HttpContext"/> for the executing action.
         /// </summary>
         public HttpContext HttpContext
@@ -136,7 +125,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 if (_metadataProvider == null)
                 {
-                    _metadataProvider = Resolver?.GetRequiredService<IModelMetadataProvider>();
+                    _metadataProvider = HttpContext?.RequestServices?.GetRequiredService<IModelMetadataProvider>();
                 }
 
                 return _metadataProvider;
@@ -161,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 if (_url == null)
                 {
-                    var factory = Resolver?.GetRequiredService<IUrlHelperFactory>();
+                    var factory = HttpContext?.RequestServices?.GetRequiredService<IUrlHelperFactory>();
                     _url = factory?.GetUrlHelper(ControllerContext);
                 }
 
@@ -187,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 if (_objectValidator == null)
                 {
-                    _objectValidator = Resolver?.GetRequiredService<IObjectModelValidator>();
+                    _objectValidator = HttpContext?.RequestServices?.GetRequiredService<IObjectModelValidator>();
                 }
 
                 return _objectValidator;
@@ -1429,7 +1418,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 throw new ArgumentNullException(nameof(model));
             }
-            
+
             ObjectValidator.Validate(
                 ControllerContext,
                 new CompositeModelValidatorProvider(ControllerContext.ValidatorProviders),

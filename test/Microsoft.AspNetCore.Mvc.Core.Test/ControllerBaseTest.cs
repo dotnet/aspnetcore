@@ -1409,7 +1409,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             controller.ControllerContext.HttpContext = httpContext.Object;
 
             // Act
-            var innerServiceProvider = controller.Resolver;
+            var innerServiceProvider = controller.HttpContext?.RequestServices;
 
             // Assert
             Assert.Same(serviceProvider, innerServiceProvider);

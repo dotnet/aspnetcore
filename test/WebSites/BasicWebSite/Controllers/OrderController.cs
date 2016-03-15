@@ -16,7 +16,7 @@ namespace BasicWebSite
 
             var queryType = typeof(IEnumerable<>).MakeGenericType(elementType);
 
-            var services = (IEnumerable<object>)Resolver.GetService(queryType);
+            var services = (IEnumerable<object>)HttpContext?.RequestServices.GetService(queryType);
             foreach (var service in services)
             {
                 if (actualType != null && service.GetType().AssemblyQualifiedName == actualType)

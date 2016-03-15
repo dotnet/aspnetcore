@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 if (_tempData == null)
                 {
-                    var factory = Resolver?.GetRequiredService<ITempDataDictionaryFactory>();
+                    var factory = HttpContext?.RequestServices?.GetRequiredService<ITempDataDictionaryFactory>();
                     _tempData = factory?.GetTempData(HttpContext);
                 }
 
