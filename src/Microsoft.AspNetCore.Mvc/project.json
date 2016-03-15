@@ -20,6 +20,7 @@
     "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.Localization": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.Razor": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.0-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",

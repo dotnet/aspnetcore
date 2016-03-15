@@ -4,44 +4,46 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers
 {
-    public class CacheTagHelperTest
+    public class DistributedCacheTagHelperTest
     {
         [Fact]
-        public void GenerateKey_ReturnsKeyBasedOnTagHelperUniqueId()
+        public void GenerateKey_ReturnsKeyBasedOnTagHelperName()
         {
             // Arrange
-            var id = Guid.NewGuid().ToString();
-            var tagHelperContext = GetTagHelperContext(id);
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var name = "some-name";
+            var tagHelperContext = GetTagHelperContext();
+            var cacheTagHelper = new DistributedCacheTagHelper(
+                Mock.Of<IDistributedCacheTagHelperService>(), 
+                new HtmlTestEncoder())
             {
-                ViewContext = GetViewContext()
+                ViewContext = GetViewContext(),
+                Name = name
             };
-            var expected = GetHashedBytes("CacheTagHelper||" + id);
+            var expected = GetHashedBytes("DistributedCacheTagHelper||" + name);
 
             // Act
             var key = cacheTagHelper.GenerateKey(tagHelperContext);
@@ -57,13 +59,17 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public void GenerateKey_UsesVaryByPropertyToGenerateKey(string varyBy)
         {
             // Arrange
+            var name = "some-name";
             var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper = new DistributedCacheTagHelper(
+                Mock.Of<IDistributedCacheTagHelperService>(), 
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
-                VaryBy = varyBy
+                VaryBy = varyBy,
+                Name = name
             };
-            var expected = GetHashedBytes("CacheTagHelper||testid||VaryBy||" + varyBy);
+            var expected = GetHashedBytes("DistributedCacheTagHelper||some-name||VaryBy||" + varyBy);
 
             // Act
             var key = cacheTagHelper.GenerateKey(tagHelperContext);
@@ -73,23 +79,27 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Theory]
-        [InlineData("Cookie0", "CacheTagHelper||testid||VaryByCookie(Cookie0||Cookie0Value)")]
+        [InlineData("Cookie0", "DistributedCacheTagHelper||some-name||VaryByCookie(Cookie0||Cookie0Value)")]
         [InlineData("Cookie0,Cookie1",
-            "CacheTagHelper||testid||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
+            "DistributedCacheTagHelper||some-name||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
         [InlineData("Cookie0, Cookie1",
-            "CacheTagHelper||testid||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
+            "DistributedCacheTagHelper||some-name||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
         [InlineData("   Cookie0,   ,   Cookie1   ",
-            "CacheTagHelper||testid||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
+            "DistributedCacheTagHelper||some-name||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
         [InlineData(",Cookie0,,Cookie1,",
-            "CacheTagHelper||testid||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
+            "DistributedCacheTagHelper||some-name||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
         public void GenerateKey_UsesVaryByCookieName(string varyByCookie, string expected)
         {
             // Arrange
+            var name = "some-name";
             var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper = new DistributedCacheTagHelper(
+                Mock.Of<IDistributedCacheTagHelperService>(), 
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
-                VaryByCookie = varyByCookie
+                VaryByCookie = varyByCookie,
+                Name = name
             };
             cacheTagHelper.ViewContext.HttpContext.Request.Headers["Cookie"] =
                 "Cookie0=Cookie0Value;Cookie1=Cookie1Value";
@@ -102,19 +112,23 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Theory]
-        [InlineData("Accept-Language", "CacheTagHelper||testid||VaryByHeader(Accept-Language||en-us;charset=utf8)")]
+        [InlineData("Accept-Language", "DistributedCacheTagHelper||some-name||VaryByHeader(Accept-Language||en-us;charset=utf8)")]
         [InlineData("X-CustomHeader,Accept-Encoding, NotAvailable",
-            "CacheTagHelper||testid||VaryByHeader(X-CustomHeader||Header-Value||Accept-Encoding||utf8||NotAvailable||)")]
+            "DistributedCacheTagHelper||some-name||VaryByHeader(X-CustomHeader||Header-Value||Accept-Encoding||utf8||NotAvailable||)")]
         [InlineData("X-CustomHeader,  , Accept-Encoding, NotAvailable",
-            "CacheTagHelper||testid||VaryByHeader(X-CustomHeader||Header-Value||Accept-Encoding||utf8||NotAvailable||)")]
+            "DistributedCacheTagHelper||some-name||VaryByHeader(X-CustomHeader||Header-Value||Accept-Encoding||utf8||NotAvailable||)")]
         public void GenerateKey_UsesVaryByHeader(string varyByHeader, string expected)
         {
             // Arrange
+            var name = "some-name";
             var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper = new DistributedCacheTagHelper(
+                Mock.Of<IDistributedCacheTagHelperService>(), 
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
-                VaryByHeader = varyByHeader
+                VaryByHeader = varyByHeader,
+                Name = name
             };
             var headers = cacheTagHelper.ViewContext.HttpContext.Request.Headers;
             headers["Accept-Language"] = "en-us;charset=utf8";
@@ -129,19 +143,23 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Theory]
-        [InlineData("category", "CacheTagHelper||testid||VaryByQuery(category||cats)")]
+        [InlineData("category", "DistributedCacheTagHelper||some-name||VaryByQuery(category||cats)")]
         [InlineData("Category,SortOrder,SortOption",
-            "CacheTagHelper||testid||VaryByQuery(Category||cats||SortOrder||||SortOption||Adorability)")]
+            "DistributedCacheTagHelper||some-name||VaryByQuery(Category||cats||SortOrder||||SortOption||Adorability)")]
         [InlineData("Category,  SortOrder, SortOption,  ",
-            "CacheTagHelper||testid||VaryByQuery(Category||cats||SortOrder||||SortOption||Adorability)")]
+            "DistributedCacheTagHelper||some-name||VaryByQuery(Category||cats||SortOrder||||SortOption||Adorability)")]
         public void GenerateKey_UsesVaryByQuery(string varyByQuery, string expected)
         {
             // Arrange
+            var name = "some-name";
             var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper = new DistributedCacheTagHelper(
+                Mock.Of<IDistributedCacheTagHelperService>(), 
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
-                VaryByQuery = varyByQuery
+                VaryByQuery = varyByQuery,
+                Name = name
             };
             cacheTagHelper.ViewContext.HttpContext.Request.QueryString =
                 new QueryString("?sortoption=Adorability&Category=cats&sortOrder=");
@@ -154,19 +172,23 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Theory]
-        [InlineData("id", "CacheTagHelper||testid||VaryByRoute(id||4)")]
+        [InlineData("id", "DistributedCacheTagHelper||some-name||VaryByRoute(id||4)")]
         [InlineData("Category,,Id,OptionRouteValue",
-            "CacheTagHelper||testid||VaryByRoute(Category||MyCategory||Id||4||OptionRouteValue||)")]
+            "DistributedCacheTagHelper||some-name||VaryByRoute(Category||MyCategory||Id||4||OptionRouteValue||)")]
         [InlineData(" Category,  , Id,   OptionRouteValue,   ",
-            "CacheTagHelper||testid||VaryByRoute(Category||MyCategory||Id||4||OptionRouteValue||)")]
+            "DistributedCacheTagHelper||some-name||VaryByRoute(Category||MyCategory||Id||4||OptionRouteValue||)")]
         public void GenerateKey_UsesVaryByRoute(string varyByRoute, string expected)
         {
             // Arrange
+            var name = "some-name";
             var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper = new DistributedCacheTagHelper(
+                Mock.Of<IDistributedCacheTagHelperService>(), 
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
-                VaryByRoute = varyByRoute
+                VaryByRoute = varyByRoute,
+                Name = name
             };
             cacheTagHelper.ViewContext.RouteData.Values["id"] = 4;
             cacheTagHelper.ViewContext.RouteData.Values["category"] = "MyCategory";
@@ -182,12 +204,16 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public void GenerateKey_UsesVaryByUser_WhenUserIsNotAuthenticated()
         {
             // Arrange
-            var expected = "CacheTagHelper||testid||VaryByUser||";
+            var name = "some-name";
+            var expected = "DistributedCacheTagHelper||some-name||VaryByUser||";
             var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper = new DistributedCacheTagHelper(
+                Mock.Of<IDistributedCacheTagHelperService>(),
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
-                VaryByUser = true
+                VaryByUser = true,
+                Name = name
             };
 
             // Act
@@ -201,12 +227,16 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public void GenerateKey_UsesVaryByUserAndAuthenticatedUserName()
         {
             // Arrange
-            var expected = "CacheTagHelper||testid||VaryByUser||test_name";
+            var name = "some-name";
+            var expected = "DistributedCacheTagHelper||some-name||VaryByUser||test_name";
             var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper = new DistributedCacheTagHelper(
+                Mock.Of<IDistributedCacheTagHelperService>(),
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
-                VaryByUser = true
+                VaryByUser = true,
+                Name = name
             };
             var identity = new ClaimsIdentity(new[] { new Claim(ClaimsIdentity.DefaultNameClaimType, "test_name") });
             cacheTagHelper.ViewContext.HttpContext.User = new ClaimsPrincipal(identity);
@@ -222,15 +252,19 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public void GenerateKey_WithMultipleVaryByOptions_CreatesCombinedKey()
         {
             // Arrange
-            var expected = GetHashedBytes("CacheTagHelper||testid||VaryBy||custom-value||" +
+            var name = "some-name";
+            var expected = GetHashedBytes("DistributedCacheTagHelper||some-name||VaryBy||custom-value||" +
                 "VaryByHeader(content-type||text/html)||VaryByUser||someuser");
             var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper = new DistributedCacheTagHelper(
+                Mock.Of<IDistributedCacheTagHelperService>(),
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 VaryByUser = true,
                 VaryByHeader = "content-type",
-                VaryBy = "custom-value"
+                VaryBy = "custom-value",
+                Name = name
             };
             cacheTagHelper.ViewContext.HttpContext.Request.Headers["Content-Type"] = "text/html";
             var identity = new ClaimsIdentity(new[] { new Claim(ClaimsIdentity.DefaultNameClaimType, "someuser") });
@@ -247,23 +281,26 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public async Task ProcessAsync_DoesNotCache_IfDisabled()
         {
             // Arrange
-            var id = "unique-id";
             var childContent = "original-child-content";
-            var cache = new Mock<IMemoryCache>();
-            var value = new DefaultTagHelperContent().SetContent("ok");
-            cache.Setup(c => c.Set(
+            var storage = new Mock<IDistributedCacheTagHelperStorage>();
+            var value = Encoding.UTF8.GetBytes("ok");
+            storage.Setup(c => c.SetAsync(
                 /*key*/ It.IsAny<string>(),
                 /*value*/ value,
-                /*optons*/ It.IsAny<MemoryCacheEntryOptions>()))
-                .Returns(value);
-            object cacheResult;
-            cache.Setup(c => c.TryGetValue(It.IsAny<string>(), out cacheResult))
-                .Returns(false);
-            var tagHelperContext = GetTagHelperContext(id);
+                /*options*/ It.IsAny<DistributedCacheEntryOptions>()));
+            storage.Setup(c => c.GetAsync(It.IsAny<string>()))
+                .Returns(Task.FromResult(value));
+            var tagHelperContext = GetTagHelperContext();
+            var service = new DistributedCacheTagHelperService(
+                storage.Object,
+                Mock.Of<IDistributedCacheTagHelperFormatter>(),
+                new HtmlTestEncoder());
             var tagHelperOutput = GetTagHelperOutput(
                 attributes: new TagHelperAttributeList(),
                 childContent: childContent);
-            var cacheTagHelper = new CacheTagHelper(cache.Object, new HtmlTestEncoder())
+            var cacheTagHelper = new DistributedCacheTagHelper(
+                service,
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 Enabled = false
@@ -274,10 +311,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             // Assert
             Assert.Equal(childContent, tagHelperOutput.Content.GetContent());
-            cache.Verify(c => c.Set(
+            storage.Verify(c => c.SetAsync(
                 /*key*/ It.IsAny<string>(),
-                /*value*/ It.IsAny<object>(),
-                /*options*/ It.IsAny<MemoryCacheEntryOptions>()),
+                /*content*/ value,
+                /*options*/ It.IsAny<DistributedCacheEntryOptions>()),
                 Times.Never);
         }
 
@@ -285,27 +322,30 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public async Task ProcessAsync_ReturnsCachedValue_IfEnabled()
         {
             // Arrange
-            var id = "unique-id";
             var childContent = "original-child-content";
-            var cache = new Mock<IMemoryCache>();
-            var value = new DefaultTagHelperContent().SetContent("ok");
-            cache.Setup(c => c.CreateLinkingScope()).Returns(new Mock<IEntryLink>().Object);
-            cache.Setup(c => c.Set(
+            var storage = new Mock<IDistributedCacheTagHelperStorage>();
+            var value = Encoding.UTF8.GetBytes(childContent);
+            storage.Setup(c => c.SetAsync(
                 /*key*/ It.IsAny<string>(),
-                /*value*/ It.IsAny<object>(),
-                /*options*/ It.IsAny<MemoryCacheEntryOptions>()))
-                .Returns(value);
-            object cacheResult;
-            cache.Setup(c => c.TryGetValue(It.IsAny<string>(), out cacheResult))
-                .Returns(false);
-            var tagHelperContext = GetTagHelperContext(id);
+                /*value*/ value,
+                /*options*/ It.IsAny<DistributedCacheEntryOptions>()));
+            storage.Setup(c => c.GetAsync(It.IsAny<string>()))
+                .Returns(Task.FromResult<byte[]>(null));
+            var service = new DistributedCacheTagHelperService(
+                storage.Object,
+                Mock.Of<IDistributedCacheTagHelperFormatter>(),
+                new HtmlTestEncoder());
+            var tagHelperContext = GetTagHelperContext();
             var tagHelperOutput = GetTagHelperOutput(
                 attributes: new TagHelperAttributeList(),
                 childContent: childContent);
-            var cacheTagHelper = new CacheTagHelper(cache.Object, new HtmlTestEncoder())
+            var cacheTagHelper = new DistributedCacheTagHelper(
+                service, 
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
-                Enabled = true
+                Enabled = true,
+                Name = "some-name"
             };
 
             // Act
@@ -316,28 +356,40 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Empty(tagHelperOutput.PostContent.GetContent());
             Assert.True(tagHelperOutput.IsContentModified);
             Assert.Equal(childContent, tagHelperOutput.Content.GetContent());
-            
-            // There are two calls to set (for the TCS and the processed value)
-            cache.Verify(c => c.Set(
+
+            storage.Verify(c => c.GetAsync(
+                /*key*/ It.IsAny<string>()
+                ),
+                Times.Once);
+                
+            storage.Verify(c => c.SetAsync(
                 /*key*/ It.IsAny<string>(),
-                /*value*/ It.IsAny<object>(),
-                /*options*/ It.IsAny<MemoryCacheEntryOptions>()),
-                Times.Exactly(2));
+                /*value*/ It.IsAny<byte[]>(),
+                /*options*/ It.IsAny<DistributedCacheEntryOptions>()),
+                Times.Once);
+
         }
 
         [Fact]
         public async Task ProcessAsync_ReturnsCachedValue_IfVaryByParamIsUnchanged()
         {
             // Arrange - 1
-            var id = "unique-id";
             var childContent = "original-child-content";
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var tagHelperContext1 = GetTagHelperContext(id);
+            var storage = GetStorage();
+            var formatter = GetFormatter();
+            var tagHelperContext1 = GetTagHelperContext();
             var tagHelperOutput1 = GetTagHelperOutput(
                 attributes: new TagHelperAttributeList(),
                 childContent: childContent);
-            var cacheTagHelper1 = new CacheTagHelper(cache, new HtmlTestEncoder())
+            var service = new DistributedCacheTagHelperService(
+                storage,
+                formatter,
+                new HtmlTestEncoder());
+            var cacheTagHelper1 = new DistributedCacheTagHelper(
+                service,
+                new HtmlTestEncoder())
             {
+                Enabled = true,
                 VaryByQuery = "key1,key2",
                 ViewContext = GetViewContext(),
             };
@@ -354,12 +406,15 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Equal(childContent, tagHelperOutput1.Content.GetContent());
 
             // Arrange - 2
-            var tagHelperContext2 = GetTagHelperContext(id);
+            var tagHelperContext2 = GetTagHelperContext();
             var tagHelperOutput2 = GetTagHelperOutput(
                 attributes: new TagHelperAttributeList(),
                 childContent: "different-content");
-            var cacheTagHelper2 = new CacheTagHelper(cache, new HtmlTestEncoder())
+            var cacheTagHelper2 = new DistributedCacheTagHelper(
+                service, 
+                new HtmlTestEncoder())
             {
+                Enabled = true,
                 VaryByQuery = "key1,key2",
                 ViewContext = GetViewContext(),
             };
@@ -380,14 +435,19 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public async Task ProcessAsync_RecalculatesValueIfCacheKeyChanges()
         {
             // Arrange - 1
-            var id = "unique-id";
             var childContent1 = "original-child-content";
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var tagHelperContext1 = GetTagHelperContext(id);
+            var storage = GetStorage();
+            var service = new DistributedCacheTagHelperService(
+                storage,
+                Mock.Of<IDistributedCacheTagHelperFormatter>(),
+                new HtmlTestEncoder());
+            var tagHelperContext1 = GetTagHelperContext();
             var tagHelperOutput1 = GetTagHelperOutput(childContent: childContent1);
             tagHelperOutput1.PreContent.Append("<cache>");
             tagHelperOutput1.PostContent.SetContent("</cache>");
-            var cacheTagHelper1 = new CacheTagHelper(cache, new HtmlTestEncoder())
+            var cacheTagHelper1 = new DistributedCacheTagHelper(
+                service,
+                new HtmlTestEncoder())
             {
                 VaryByCookie = "cookie1,cookie2",
                 ViewContext = GetViewContext(),
@@ -405,11 +465,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             // Arrange - 2
             var childContent2 = "different-content";
-            var tagHelperContext2 = GetTagHelperContext(id);
+            var tagHelperContext2 = GetTagHelperContext();
             var tagHelperOutput2 = GetTagHelperOutput(childContent: childContent2);
             tagHelperOutput2.PreContent.SetContent("<cache>");
             tagHelperOutput2.PostContent.SetContent("</cache>");
-            var cacheTagHelper2 = new CacheTagHelper(cache, new HtmlTestEncoder())
+            var cacheTagHelper2 = new DistributedCacheTagHelper(
+                service, 
+                new HtmlTestEncoder())
             {
                 VaryByCookie = "cookie1,cookie2",
                 ViewContext = GetViewContext(),
@@ -431,61 +493,24 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var expiresOn = DateTimeOffset.UtcNow.AddMinutes(4);
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var cacheTagHelper = new CacheTagHelper(cache, new HtmlTestEncoder())
+            var storage = GetStorage();
+            var service = new DistributedCacheTagHelperService(
+                storage,
+                Mock.Of<IDistributedCacheTagHelperFormatter>(),
+                new HtmlTestEncoder()
+                );
+            var cacheTagHelper = new DistributedCacheTagHelper(
+                service, 
+                new HtmlTestEncoder())
             {
                 ExpiresOn = expiresOn
             };
 
             // Act
-            var cacheEntryOptions = cacheTagHelper.GetMemoryCacheEntryOptions();
+            var cacheEntryOptions = cacheTagHelper.GetDistributedCacheEntryOptions();
 
             // Assert
             Assert.Equal(expiresOn, cacheEntryOptions.AbsoluteExpiration);
-        }
-
-        [Fact]
-        public void UpdateCacheEntryOptions_UsesAbsoluteExpirationSpecifiedOnEntryLink()
-        {
-            // Arrange
-            var expiresOn = DateTimeOffset.UtcNow.AddMinutes(7);
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var cacheTagHelper = new CacheTagHelper(cache, new HtmlTestEncoder())
-            {
-            };
-
-            var entryLink = new EntryLink();
-            entryLink.SetAbsoluteExpiration(expiresOn);
-
-            // Act
-            var cacheEntryOptions = cacheTagHelper.GetMemoryCacheEntryOptions();
-            cacheEntryOptions.AddEntryLink(entryLink);
-
-            // Assert
-            Assert.Equal(expiresOn, cacheEntryOptions.AbsoluteExpiration);
-        }
-
-        [Fact]
-        public void UpdateCacheEntryOptions_PrefersAbsoluteExpirationSpecifiedOnEntryLinkOverExpiresOn()
-        {
-            // Arrange
-            var expiresOn1 = DateTimeOffset.UtcNow.AddDays(12);
-            var expiresOn2 = DateTimeOffset.UtcNow.AddMinutes(4);
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var cacheTagHelper = new CacheTagHelper(cache, new HtmlTestEncoder())
-            {
-                ExpiresOn = expiresOn1
-            };
-
-            var entryLink = new EntryLink();
-            entryLink.SetAbsoluteExpiration(expiresOn2);
-
-            // Act
-            var cacheEntryOptions = cacheTagHelper.GetMemoryCacheEntryOptions();
-            cacheEntryOptions.AddEntryLink(entryLink);
-
-            // Assert
-            Assert.Equal(expiresOn2, cacheEntryOptions.AbsoluteExpiration);
         }
 
         [Fact]
@@ -493,14 +518,21 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var expiresAfter = TimeSpan.FromSeconds(42);
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var cacheTagHelper = new CacheTagHelper(cache, new HtmlTestEncoder())
+            var storage = GetStorage();
+            var service = new DistributedCacheTagHelperService(
+                storage,
+                Mock.Of<IDistributedCacheTagHelperFormatter>(),
+                new HtmlTestEncoder()
+                );
+            var cacheTagHelper = new DistributedCacheTagHelper(
+                service, 
+                new HtmlTestEncoder())
             {
                 ExpiresAfter = expiresAfter
             };
 
             // Act
-            var cacheEntryOptions = cacheTagHelper.GetMemoryCacheEntryOptions();
+            var cacheEntryOptions = cacheTagHelper.GetDistributedCacheEntryOptions();
 
             // Assert
             Assert.Equal(expiresAfter, cacheEntryOptions.AbsoluteExpirationRelativeToNow);
@@ -511,76 +543,48 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var expiresSliding = TimeSpan.FromSeconds(37);
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var cacheTagHelper = new CacheTagHelper(cache, new HtmlTestEncoder())
+            var storage = GetStorage();
+            var service = new DistributedCacheTagHelperService(
+                storage,
+                Mock.Of<IDistributedCacheTagHelperFormatter>(),
+                new HtmlTestEncoder()
+                );
+            var cacheTagHelper = new DistributedCacheTagHelper(
+                service, 
+                new HtmlTestEncoder())
             {
                 ExpiresSliding = expiresSliding
             };
 
             // Act
-            var cacheEntryOptions = cacheTagHelper.GetMemoryCacheEntryOptions();
+            var cacheEntryOptions = cacheTagHelper.GetDistributedCacheEntryOptions();
 
             // Assert
             Assert.Equal(expiresSliding, cacheEntryOptions.SlidingExpiration);
         }
-
-        [Fact]
-        public void UpdateCacheEntryOptions_SetsCachePreservationPriority()
-        {
-            // Arrange
-            var priority = CacheItemPriority.High;
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var cacheTagHelper = new CacheTagHelper(cache, new HtmlTestEncoder())
-            {
-                Priority = priority
-            };
-
-            // Act
-            var cacheEntryOptions = cacheTagHelper.GetMemoryCacheEntryOptions();
-
-            // Assert
-            Assert.Equal(priority, cacheEntryOptions.Priority);
-        }
-
-        [Fact]
-        public void UpdateCacheEntryOptions_CopiesTriggersFromEntryLink()
-        {
-            // Arrange
-            var expiresSliding = TimeSpan.FromSeconds(30);
-            var expected = new[] { Mock.Of<IChangeToken>(), Mock.Of<IChangeToken>() };
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var cacheTagHelper = new CacheTagHelper(cache, new HtmlTestEncoder())
-            {
-                ExpiresSliding = expiresSliding
-            };
-
-            var entryLink = new EntryLink();
-            entryLink.AddExpirationTokens(expected);
-
-            // Act
-            var cacheEntryOptions = cacheTagHelper.GetMemoryCacheEntryOptions();
-            cacheEntryOptions.AddEntryLink(entryLink);
-
-            // Assert
-            Assert.Equal(expected, cacheEntryOptions.ExpirationTokens.ToArray());
-        }
-
+        
         [Fact]
         public async Task ProcessAsync_UsesExpiresAfter_ToExpireCacheEntry()
         {
             // Arrange - 1
             var currentTime = new DateTimeOffset(2010, 1, 1, 0, 0, 0, TimeSpan.Zero);
-            var id = "unique-id";
             var childContent1 = "original-child-content";
             var clock = new Mock<ISystemClock>();
             clock.SetupGet(p => p.UtcNow)
                 .Returns(() => currentTime);
-            var cache = new MemoryCache(new MemoryCacheOptions { Clock = clock.Object });
-            var tagHelperContext1 = GetTagHelperContext(id);
+            var storage = GetStorage(new MemoryCacheOptions { Clock = clock.Object });
+            var service = new DistributedCacheTagHelperService(
+                storage,
+                Mock.Of<IDistributedCacheTagHelperFormatter>(),
+                new HtmlTestEncoder()
+                );
+            var tagHelperContext1 = GetTagHelperContext();
             var tagHelperOutput1 = GetTagHelperOutput(childContent: childContent1);
             tagHelperOutput1.PreContent.SetContent("<cache>");
             tagHelperOutput1.PostContent.SetContent("</cache>");
-            var cacheTagHelper1 = new CacheTagHelper(cache, new HtmlTestEncoder())
+            var cacheTagHelper1 = new DistributedCacheTagHelper(
+                service, 
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 ExpiresAfter = TimeSpan.FromMinutes(10)
@@ -597,11 +601,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             // Arrange - 2
             var childContent2 = "different-content";
-            var tagHelperContext2 = GetTagHelperContext(id);
+            var tagHelperContext2 = GetTagHelperContext();
             var tagHelperOutput2 = GetTagHelperOutput(childContent: childContent2);
             tagHelperOutput2.PreContent.SetContent("<cache>");
             tagHelperOutput2.PostContent.SetContent("</cache>");
-            var cacheTagHelper2 = new CacheTagHelper(cache, new HtmlTestEncoder())
+            var cacheTagHelper2 = new DistributedCacheTagHelper(
+                service,
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 ExpiresAfter = TimeSpan.FromMinutes(10)
@@ -623,17 +629,23 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange - 1
             var currentTime = new DateTimeOffset(2010, 1, 1, 0, 0, 0, TimeSpan.Zero);
-            var id = "unique-id";
             var childContent1 = "original-child-content";
             var clock = new Mock<ISystemClock>();
             clock.SetupGet(p => p.UtcNow)
                 .Returns(() => currentTime);
-            var cache = new MemoryCache(new MemoryCacheOptions { Clock = clock.Object });
-            var tagHelperContext1 = GetTagHelperContext(id);
+            var storage = GetStorage(new MemoryCacheOptions { Clock = clock.Object });
+            var service = new DistributedCacheTagHelperService(
+                storage,
+                Mock.Of<IDistributedCacheTagHelperFormatter>(),
+                new HtmlTestEncoder()
+                );
+            var tagHelperContext1 = GetTagHelperContext();
             var tagHelperOutput1 = GetTagHelperOutput(childContent: childContent1);
-            tagHelperOutput1.PreContent.SetContent("<cache>");
-            tagHelperOutput1.PostContent.SetContent("</cache>");
-            var cacheTagHelper1 = new CacheTagHelper(cache, new HtmlTestEncoder())
+            tagHelperOutput1.PreContent.SetContent("<distributed-cache>");
+            tagHelperOutput1.PostContent.SetContent("</distributed-cache>");
+            var cacheTagHelper1 = new DistributedCacheTagHelper(
+                service, 
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 ExpiresOn = currentTime.AddMinutes(5)
@@ -651,11 +663,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange - 2
             currentTime = currentTime.AddMinutes(5).AddSeconds(2);
             var childContent2 = "different-content";
-            var tagHelperContext2 = GetTagHelperContext(id);
+            var tagHelperContext2 = GetTagHelperContext();
             var tagHelperOutput2 = GetTagHelperOutput(childContent: childContent2);
-            tagHelperOutput2.PreContent.SetContent("<cache>");
-            tagHelperOutput2.PostContent.SetContent("</cache>");
-            var cacheTagHelper2 = new CacheTagHelper(cache, new HtmlTestEncoder())
+            tagHelperOutput2.PreContent.SetContent("<distributed-cache>");
+            tagHelperOutput2.PostContent.SetContent("</distributed-cache>");
+            var cacheTagHelper2 = new DistributedCacheTagHelper(
+                service, 
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 ExpiresOn = currentTime.AddMinutes(5)
@@ -676,17 +690,23 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange - 1
             var currentTime = new DateTimeOffset(2010, 1, 1, 0, 0, 0, TimeSpan.Zero);
-            var id = "unique-id";
             var childContent1 = "original-child-content";
             var clock = new Mock<ISystemClock>();
             clock.SetupGet(p => p.UtcNow)
                 .Returns(() => currentTime);
-            var cache = new MemoryCache(new MemoryCacheOptions { Clock = clock.Object });
-            var tagHelperContext1 = GetTagHelperContext(id);
+            var storage = GetStorage(new MemoryCacheOptions { Clock = clock.Object });
+            var service = new DistributedCacheTagHelperService(
+                storage,
+                Mock.Of<IDistributedCacheTagHelperFormatter>(),
+                new HtmlTestEncoder()
+                );
+            var tagHelperContext1 = GetTagHelperContext();
             var tagHelperOutput1 = GetTagHelperOutput(childContent: childContent1);
-            tagHelperOutput1.PreContent.SetContent("<cache>");
-            tagHelperOutput1.PostContent.SetContent("</cache>");
-            var cacheTagHelper1 = new CacheTagHelper(cache, new HtmlTestEncoder())
+            tagHelperOutput1.PreContent.SetContent("<distributed-cache>");
+            tagHelperOutput1.PostContent.SetContent("</distributed-cache>");
+            var cacheTagHelper1 = new DistributedCacheTagHelper(
+                service, 
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 ExpiresSliding = TimeSpan.FromSeconds(30)
@@ -704,11 +724,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange - 2
             currentTime = currentTime.AddSeconds(35);
             var childContent2 = "different-content";
-            var tagHelperContext2 = GetTagHelperContext(id);
+            var tagHelperContext2 = GetTagHelperContext();
             var tagHelperOutput2 = GetTagHelperOutput(childContent: childContent2);
-            tagHelperOutput2.PreContent.SetContent("<cache>");
-            tagHelperOutput2.PostContent.SetContent("</cache>");
-            var cacheTagHelper2 = new CacheTagHelper(cache, new HtmlTestEncoder())
+            tagHelperOutput2.PreContent.SetContent("<distributed-cache>");
+            tagHelperOutput2.PostContent.SetContent("</distributed-cache>");
+            var cacheTagHelper2 = new DistributedCacheTagHelper(
+                service, 
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 ExpiresSliding = TimeSpan.FromSeconds(30)
@@ -725,76 +747,25 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
-        public async Task ProcessAsync_FlowsEntryLinkThatAllowsAddingTriggersToAddedEntry()
-        {
-            // Arrange
-            var id = "some-id";
-            var expectedContent = new DefaultTagHelperContent();
-            expectedContent.SetContent("some-content");
-            var tokenSource = new CancellationTokenSource();
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var cacheEntryOptions = new MemoryCacheEntryOptions()
-                .AddExpirationToken(new CancellationChangeToken(tokenSource.Token));
-            var tagHelperContext = new TagHelperContext(
-                allAttributes: new TagHelperAttributeList(),
-                items: new Dictionary<object, object>(),
-                uniqueId: id);
-            var tagHelperOutput = new TagHelperOutput(
-                "cache",
-                new TagHelperAttributeList { { "attr", "value" } },
-                getChildContentAsync: (useCachedResult, encoder) =>
-                {
-                    TagHelperContent tagHelperContent;
-                    if (!cache.TryGetValue("key1", out tagHelperContent))
-                    {
-                        tagHelperContent = expectedContent;
-                        cache.Set("key1", tagHelperContent, cacheEntryOptions);
-                    }
-
-                    return Task.FromResult(tagHelperContent);
-                });
-            tagHelperOutput.PreContent.SetContent("<cache>");
-            tagHelperOutput.PostContent.SetContent("</cache>");
-            var cacheTagHelper = new CacheTagHelper(cache, new HtmlTestEncoder())
-            {
-                ViewContext = GetViewContext(),
-            };
-            var key = cacheTagHelper.GenerateKey(tagHelperContext);
-
-            // Act - 1
-            await cacheTagHelper.ProcessAsync(tagHelperContext, tagHelperOutput);
-            Task<IHtmlContent> cachedValue;
-            var result = cache.TryGetValue(key, out cachedValue);
-
-            // Assert - 1
-            Assert.Equal("HtmlEncode[[some-content]]", tagHelperOutput.Content.GetContent());
-            Assert.True(result);
-
-            // Act - 2
-            tokenSource.Cancel();
-            result = cache.TryGetValue(key, out cachedValue);
-
-            // Assert - 2
-            Assert.False(result);
-            Assert.Null(cachedValue);
-        }
-
-        [Fact]
         public async Task ProcessAsync_ComputesValueOnce_WithConcurrentRequests()
         {
             // Arrange
-            var id = "unique-id";
             var childContent = "some-content";
             var resetEvent1 = new ManualResetEvent(false);
             var resetEvent2 = new ManualResetEvent(false);
             var calls = 0;
-            var cache = new MemoryCache(new MemoryCacheOptions());
-
-            var tagHelperContext1 = GetTagHelperContext(id + 1);
-            var tagHelperContext2 = GetTagHelperContext(id + 2);
+            var formatter = GetFormatter();
+            var storage = GetStorage();
+            var service = new DistributedCacheTagHelperService(
+                storage,
+                formatter,
+                new HtmlTestEncoder()
+                );
+            var tagHelperContext1 = GetTagHelperContext();
+            var tagHelperContext2 = GetTagHelperContext();
 
             TagHelperOutput tagHelperOutput = new TagHelperOutput(
-                "cache",
+                "distributed-cache",
                 new TagHelperAttributeList(),
                 getChildContentAsync: (useCachedResult, encoder) =>
                 {
@@ -806,13 +777,17 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
 
-            var cacheTagHelper1 = new CacheTagHelper(cache, new HtmlTestEncoder())
+            var cacheTagHelper1 = new DistributedCacheTagHelper(
+                service, 
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 Enabled = true
             };
 
-            var cacheTagHelper2 = new CacheTagHelper(cache, new HtmlTestEncoder())
+            var cacheTagHelper2 = new DistributedCacheTagHelper(
+                service, 
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 Enabled = true
@@ -826,7 +801,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 await cacheTagHelper1.ProcessAsync(tagHelperContext1, tagHelperOutput);
             });
 
-            var task2 = Task.Run(async () => 
+            var task2 = Task.Run(async () =>
             {
                 resetEvent2.WaitOne(5000);
                 await cacheTagHelper2.ProcessAsync(tagHelperContext1, tagHelperOutput);
@@ -848,18 +823,22 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public async Task ProcessAsync_ExceptionInProcessing_DoesntBlockConcurrentRequests()
         {
             // Arrange
-            var id = "unique-id";
             var childContent = "some-content";
             var resetEvent1 = new ManualResetEvent(false);
             var resetEvent2 = new ManualResetEvent(false);
             var calls = 0;
-            var cache = new MemoryCache(new MemoryCacheOptions());
-
-            var tagHelperContext1 = GetTagHelperContext(id + 1);
-            var tagHelperContext2 = GetTagHelperContext(id + 2);
+            var formatter = GetFormatter();
+            var storage = GetStorage();
+            var service = new DistributedCacheTagHelperService(
+                storage,
+                formatter,
+                new HtmlTestEncoder()
+                );
+            var tagHelperContext1 = GetTagHelperContext();
+            var tagHelperContext2 = GetTagHelperContext();
 
             var tagHelperOutput1 = new TagHelperOutput(
-                "cache",
+                "distributed-cache",
                 new TagHelperAttributeList(),
                 getChildContentAsync: (useCachedResult, encoder) =>
                 {
@@ -870,7 +849,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 });
 
             var tagHelperOutput2 = new TagHelperOutput(
-                "cache",
+                "distributed-cache",
                 new TagHelperAttributeList(),
                 getChildContentAsync: (useCachedResult, encoder) =>
                 {
@@ -881,13 +860,17 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
 
-            var cacheTagHelper1 = new CacheTagHelper(cache, new HtmlTestEncoder())
+            var cacheTagHelper1 = new DistributedCacheTagHelper(
+                service,
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 Enabled = true
             };
 
-            var cacheTagHelper2 = new CacheTagHelper(cache, new HtmlTestEncoder())
+            var cacheTagHelper2 = new DistributedCacheTagHelper(
+                service,
+                new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 Enabled = true
@@ -924,27 +907,46 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Equal(2, calls);
         }
 
+        [Fact]
+        public async Task Deserialize_DoesntAlterValue_WhenSerialized()
+        {
+            // Arrange
+            var content = "<b>some content</b>";
+            var formatter = GetFormatter();
+            var context = new DistributedCacheTagHelperFormattingContext
+            {
+                Html = new HtmlString(content)
+            };
+            var serialized = await formatter.SerializeAsync(context);
+
+            // Act
+            var deserialized = await formatter.DeserializeAsync(serialized);
+            
+            // Assert
+            Assert.Equal(deserialized.ToString(), content);
+        }
+
         private static ViewContext GetViewContext()
         {
             var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
             return new ViewContext(actionContext,
-                                   Mock.Of<IView>(),
-                                   new ViewDataDictionary(new EmptyModelMetadataProvider()),
-                                   Mock.Of<ITempDataDictionary>(),
-                                   TextWriter.Null,
-                                   new HtmlHelperOptions());
+                Mock.Of<IView>(),
+                new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                Mock.Of<ITempDataDictionary>(),
+                TextWriter.Null,
+                new HtmlHelperOptions());
         }
 
-        private static TagHelperContext GetTagHelperContext(string id = "testid")
+        private static TagHelperContext GetTagHelperContext()
         {
             return new TagHelperContext(
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
-                uniqueId: id);
+                uniqueId: "testid");
         }
 
         private static TagHelperOutput GetTagHelperOutput(
-            string tagName = "cache",
+            string tagName = "distributed-cache",
             TagHelperAttributeList attributes = null,
             string childContent = "some child content")
         {
@@ -969,6 +971,16 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 var hashedBytes = sha.ComputeHash(contentBytes);
                 return Convert.ToBase64String(hashedBytes);
             }
+        }
+
+        private static IDistributedCacheTagHelperStorage GetStorage(MemoryCacheOptions options = null)
+        {
+            return new DistributedCacheTagHelperStorage(new MemoryDistributedCache(new MemoryCache(options ?? new MemoryCacheOptions())));
+        }
+        
+        private static IDistributedCacheTagHelperFormatter GetFormatter()
+        {
+            return new DistributedCacheTagHelperFormatter();
         }
     }
 }
