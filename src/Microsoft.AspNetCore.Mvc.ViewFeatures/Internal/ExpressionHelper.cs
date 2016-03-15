@@ -7,9 +7,8 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     public static class ExpressionHelper
     {
@@ -21,11 +20,24 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         public static string GetExpressionText(LambdaExpression expression)
         {
+            return GetExpressionText(expression, expressionTextCache: null);
+        }
+
+        public static string GetExpressionText(LambdaExpression expression, ExpressionTextCache expressionTextCache)
+        {
             if (expression == null)
             {
                 throw new ArgumentNullException(nameof(expression));
             }
 
+            string expressionText;
+            if (expressionTextCache != null &&
+                expressionTextCache.Entries.TryGetValue(expression, out expressionText))
+            {
+                return expressionText;
+            }
+
+            var containsIndexers = false;
             // Split apart the expression string for property/field accessors to create its name
             var nameParts = new Stack<string>();
             var part = expression.Body;
@@ -34,6 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             {
                 if (part.NodeType == ExpressionType.Call)
                 {
+                    containsIndexers = true;
                     var methodExpression = (MethodCallExpression)part;
                     if (!IsSingleArgumentIndexer(methodExpression))
                     {
@@ -50,6 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 }
                 else if (part.NodeType == ExpressionType.ArrayIndex)
                 {
+                    containsIndexers = true;
                     var binaryExpression = (BinaryExpression)part;
 
                     nameParts.Push(
@@ -89,7 +103,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 }
                 else
                 {
-                    // Unsupported.
                     break;
                 }
             }
@@ -100,12 +113,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 nameParts.Pop();
             }
 
+            expressionText = string.Empty;
             if (nameParts.Count > 0)
             {
-                return nameParts.Aggregate((left, right) => left + right).TrimStart('.');
+                expressionText = nameParts.Aggregate((left, right) => left + right).TrimStart('.');
             }
 
-            return string.Empty;
+            if (expressionTextCache != null && !containsIndexers)
+            {
+                expressionTextCache.Entries.TryAdd(expression, expressionText);
+            }
+
+            return expressionText;
         }
 
         private static string GetIndexerInvocation(

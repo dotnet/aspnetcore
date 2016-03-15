@@ -243,6 +243,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
                 .Returns(urlHelper);
 
+            var expressionTextCache = new ExpressionTextCache();
+
             if (htmlGenerator == null)
             {
                 htmlGenerator = new DefaultHtmlGenerator(
@@ -284,7 +286,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 provider,
                 new TestViewBufferScope(),
                 new HtmlTestEncoder(),
-                UrlEncoder.Default);
+                UrlEncoder.Default,
+                expressionTextCache);
 
             var viewContext = new ViewContext(
                 actionContext,

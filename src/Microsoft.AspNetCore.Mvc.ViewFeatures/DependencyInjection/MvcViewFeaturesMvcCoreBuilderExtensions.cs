@@ -103,6 +103,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddTransient<IHtmlHelper, HtmlHelper>();
             services.TryAddTransient(typeof(IHtmlHelper<>), typeof(HtmlHelper<>));
             services.TryAddSingleton<IHtmlGenerator, DefaultHtmlGenerator>();
+            services.TryAddSingleton<ExpressionTextCache>();
 
             //
             // JSON Helper

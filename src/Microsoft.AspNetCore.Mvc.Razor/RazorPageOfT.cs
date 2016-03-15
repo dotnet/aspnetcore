@@ -38,6 +38,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public ViewDataDictionary<TModel> ViewData { get; set; }
 
         /// <summary>
+        /// Gets or sets the expression text cache for model expressions.
+        /// </summary>
+        [RazorInject]
+        private ExpressionTextCache ExpressionTextCache { get; set; }
+
+        /// <summary>
         /// Returns a <see cref="ModelExpression"/> instance describing the given <paramref name="expression"/>.
         /// </summary>
         /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
@@ -59,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 _provider = Context.RequestServices.GetRequiredService<IModelMetadataProvider>();
             }
 
-            var name = ExpressionHelper.GetExpressionText(expression);
+            var name = ExpressionHelper.GetExpressionText(expression, ExpressionTextCache);
             var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, _provider);
             if (modelExplorer == null)
             {

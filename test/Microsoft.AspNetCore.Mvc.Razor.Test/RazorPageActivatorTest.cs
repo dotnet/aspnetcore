@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders.Testing;
@@ -39,6 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 .AddSingleton(myService)
                 .AddSingleton(helper)
                 .AddSingleton<HtmlEncoder>(htmlEncoder)
+                .AddSingleton(new ExpressionTextCache())
                 .AddSingleton<DiagnosticSource>(diagnosticSource)
                 .BuildServiceProvider();
             var httpContext = new DefaultHttpContext
@@ -110,6 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 .AddSingleton(myService)
                 .AddSingleton(helper)
                 .AddSingleton<HtmlEncoder>(htmlEncoder)
+                .AddSingleton(new ExpressionTextCache())
                 .AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore.Mvc"))
                 .BuildServiceProvider();
             var httpContext = new DefaultHttpContext
@@ -150,6 +153,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 .AddSingleton(myService)
                 .AddSingleton(helper)
                 .AddSingleton<HtmlEncoder>(htmlEncoder)
+                .AddSingleton(new ExpressionTextCache())
                 .AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore.Mvc"))
                 .BuildServiceProvider();
             var httpContext = new DefaultHttpContext
@@ -190,6 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 .AddSingleton(myService)
                 .AddSingleton(helper)
                 .AddSingleton<HtmlEncoder>(htmlEncoder)
+                .AddSingleton(new ExpressionTextCache())
                 .AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore.Mvc"))
                 .BuildServiceProvider();
             var httpContext = new DefaultHttpContext
@@ -224,6 +229,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var collection = new ServiceCollection();
             collection
                 .AddSingleton<HtmlEncoder>(new HtmlTestEncoder())
+                .AddSingleton(new ExpressionTextCache())
                 .AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore.Mvc"));
             var httpContext = new DefaultHttpContext
             {
@@ -256,6 +262,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 .AddSingleton<IUrlHelperFactory, UrlHelperFactory>()
                 .AddSingleton<HtmlEncoder>(new HtmlTestEncoder())
                 .AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore.Mvc"))
+                .AddSingleton(new ExpressionTextCache())
                 .AddSingleton<IUrlHelperWrapper, UrlHelperWrapper>();
             var httpContext = new DefaultHttpContext
             {

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Moq;
 using Xunit;
@@ -116,6 +117,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             serviceProvider
                 .Setup(real => real.GetService(typeof(IModelMetadataProvider)))
                 .Returns(provider);
+            serviceProvider
+                .Setup(real => real.GetService(typeof(ExpressionTextCache)))
+                .Returns(new ExpressionTextCache());
 
             var httpContext = new Mock<HttpContext>();
             httpContext

@@ -36,6 +36,10 @@
       "version": "1.0.0-*",
       "type": "build"
     },
+    "Microsoft.Extensions.HashCodeCombiner.Sources": {
+      "version": "1.0.0-*",
+      "type": "build"
+    },
     "Microsoft.Extensions.WebEncoders": "1.0.0-*",
     "Newtonsoft.Json": "8.0.3",
     "System.Buffers": "4.0.0-*"

@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
     {
+        private readonly ExpressionTextCache _expressionTextCache;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="HtmlHelper{TModel}"/> class.
         /// </summary>
@@ -24,7 +26,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             IModelMetadataProvider metadataProvider,
             IViewBufferScope bufferScope,
             HtmlEncoder htmlEncoder,
-            UrlEncoder urlEncoder)
+            UrlEncoder urlEncoder,
+            ExpressionTextCache expressionTextCache)
             : base(
                 htmlGenerator,
                 viewEngine,
@@ -33,6 +36,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 htmlEncoder,
                 urlEncoder)
         {
+            if (expressionTextCache == null)
+            {
+                throw new ArgumentNullException(nameof(expressionTextCache));
+            }
+
+            _expressionTextCache = expressionTextCache;
         }
 
         /// <inheritdoc />
@@ -152,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 new ViewDataDictionary<TModelItem>(ViewData, model: null),
                 MetadataProvider);
 
-            var expressionText = ExpressionHelper.GetExpressionText(expression);
+            var expressionText = ExpressionHelper.GetExpressionText(expression, _expressionTextCache);
             if (modelExplorer == null)
             {
                 throw new InvalidOperationException(Resources.FormatHtmlHelper_NullModelMetadata(expressionText));
@@ -352,7 +361,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            return ExpressionHelper.GetExpressionText(expression);
+            return ExpressionHelper.GetExpressionText(expression, _expressionTextCache);
         }
 
         protected ModelExplorer GetModelExplorer<TResult>(Expression<Func<TModel, TResult>> expression)
