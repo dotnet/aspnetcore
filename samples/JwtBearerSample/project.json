@@ -15,7 +15,7 @@
     "web": "JwtBearerSample"
   },
   "frameworks": {
-    "dnx451": {},
+    "dnx451": { },
     "netstandardapp1.5": {
       "imports": [
         "dnxcore50"
@@ -29,6 +29,10 @@
   "publishExclude": [
     "**.user",
     "**.vspscc"
+  ],
+  "content": [
+    "project.json",
+    "wwwroot"
   ],
   "userSecretsId": "aspnet5-JwtBearerSample-20151210102827"
 }

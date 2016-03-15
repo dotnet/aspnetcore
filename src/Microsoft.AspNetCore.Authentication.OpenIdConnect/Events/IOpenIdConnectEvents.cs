@@ -16,19 +16,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         Task AuthenticationFailed(AuthenticationFailedContext context);
 
         /// <summary>
-        /// Invoked after the id token has passed validation and a ClaimsIdentity has been generated.
-        /// </summary>
-        Task AuthenticationValidated(AuthenticationValidatedContext context);
-
-        /// <summary>
         /// Invoked after security token validation if an authorization code is present in the protocol message.
         /// </summary>
         Task AuthorizationCodeReceived(AuthorizationCodeReceivedContext context);
-
-        /// <summary>
-        /// Invoked when an authorization response is received.
-        /// </summary>
-        Task AuthorizationResponseReceived(AuthorizationResponseReceivedContext context);
 
         /// <summary>
         /// Invoked when a protocol message is first received.
@@ -38,17 +28,22 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <summary>
         /// Invoked before redirecting to the identity provider to authenticate.
         /// </summary>
-        Task RedirectToAuthenticationEndpoint(RedirectContext context);
+        Task RedirectToIdentityProvider(RedirectContext context);
 
         /// <summary>
         /// Invoked before redirecting to the identity provider to sign out.
         /// </summary>
-        Task RedirectToEndSessionEndpoint(RedirectContext context);
+        Task RedirectToIdentityProviderForSignOut(RedirectContext context);
 
         /// <summary>
         /// Invoked after "authorization code" is redeemed for tokens at the token endpoint.
         /// </summary>
         Task TokenResponseReceived(TokenResponseReceivedContext context);
+
+        /// <summary>
+        /// Invoked when an IdToken has been validated and produced an AuthenticationTicket.
+        /// </summary>
+        Task TokenValidated(TokenValidatedContext context);
 
         /// <summary>
         /// Invoked when user information is retrieved from the UserInfoEndpoint.

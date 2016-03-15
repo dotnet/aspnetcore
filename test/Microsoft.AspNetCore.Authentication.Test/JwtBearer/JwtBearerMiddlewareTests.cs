@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 AutomaticAuthenticate = true,
                 Events = new JwtBearerEvents()
                 {
-                    OnReceivingToken = context =>
+                    OnMessageReceived = context =>
                     {
                         var claims = new[]
                         {
@@ -144,39 +144,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         }
 
         [Fact]
-        public async Task CustomTokenReceived()
-        {
-            var server = CreateServer(new JwtBearerOptions
-            {
-                AutomaticAuthenticate = true,
-                Events = new JwtBearerEvents()
-                {
-                    OnReceivedToken = context =>
-                    {
-                        var claims = new[]
-                        {
-                            new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"),
-                            new Claim(ClaimTypes.Email, "bob@contoso.com"),
-                            new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
-                        };
-
-                        context.Ticket = new AuthenticationTicket(
-                            new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
-                            new AuthenticationProperties(), context.Options.AuthenticationScheme);
-
-                        context.HandleResponse();
-
-                        return Task.FromResult<object>(null);
-                    }
-                }
-            });
-
-            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
-            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
-            Assert.Equal("Bob le Magnifique", response.ResponseText);
-        }
-
-        [Fact]
         public async Task CustomTokenValidated()
         {
             var options = new JwtBearerOptions
@@ -184,7 +151,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 AutomaticAuthenticate = true,
                 Events = new JwtBearerEvents()
                 {
-                    OnValidatedToken = context =>
+                    OnTokenValidated = context =>
                     {
                         // Retrieve the NameIdentifier claim from the identity
                         // returned by the custom security token validator.
@@ -204,6 +171,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                     }
                 }
             };
+            options.SecurityTokenValidators.Clear();
             options.SecurityTokenValidators.Add(new BlobTokenValidator(options.AuthenticationScheme));
             var server = CreateServer(options);
 
@@ -215,67 +183,37 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         [Fact]
         public async Task RetrievingTokenFromAlternateLocation()
         {
-            var server = CreateServer(new JwtBearerOptions
+            var options = new JwtBearerOptions()
             {
                 AutomaticAuthenticate = true,
                 Events = new JwtBearerEvents()
                 {
-                    OnReceivingToken = context =>
+                    OnMessageReceived = context =>
                     {
                         context.Token = "CustomToken";
                         return Task.FromResult<object>(null);
-                    },
-                    OnReceivedToken = context =>
-                    {
-                        var claims = new[]
-                        {
-                            new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"),
-                            new Claim(ClaimTypes.Email, "bob@contoso.com"),
-                            new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
-                        };
-
-                        context.Ticket = new AuthenticationTicket(
-                            new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
-                            new AuthenticationProperties(), context.Options.AuthenticationScheme);
-
-                        context.HandleResponse();
-
-                        return Task.FromResult<object>(null);
                     }
                 }
-            });
+            };
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT", token =>
+            {
+                Assert.Equal("CustomToken", token);
+            }));
+            var server = CreateServer(options);
 
             var response = await SendAsync(server, "http://example.com/oauth", "Bearer Token");
             Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
-            Assert.Equal("Bob le Magnifique", response.ResponseText);
+            Assert.Equal("Bob le Tout Puissant", response.ResponseText);
         }
 
         [Fact]
         public async Task BearerTurns401To403IfAuthenticated()
         {
-            var server = CreateServer(new JwtBearerOptions
-            {
-                Events = new JwtBearerEvents()
-                {
-                    OnReceivedToken = context =>
-                    {
-                        var claims = new[]
-                        {
-                            new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"),
-                            new Claim(ClaimTypes.Email, "bob@contoso.com"),
-                            new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
-                        };
-
-                        context.Ticket = new AuthenticationTicket(
-                            new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
-                            new AuthenticationProperties(), context.Options.AuthenticationScheme);
-
-                        context.HandleResponse();
-
-                        return Task.FromResult<object>(null);
-                    }
-                }
-            });
+            var options = new JwtBearerOptions();
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
+            var server = CreateServer(options);
 
             var response = await SendAsync(server, "http://example.com/unauthorized", "Bearer Token");
             Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
@@ -284,52 +222,26 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         [Fact]
         public async Task BearerDoesNothingTo401IfNotAuthenticated()
         {
-            var server = CreateServer(new JwtBearerOptions
-            {
-                Events = new JwtBearerEvents()
-                {
-                    OnReceivedToken = context =>
-                    {
-                        var claims = new[]
-                        {
-                            new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"),
-                            new Claim(ClaimTypes.Email, "bob@contoso.com"),
-                            new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
-                        };
-
-                        context.Ticket = new AuthenticationTicket(
-                            new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
-                            new AuthenticationProperties(), context.Options.AuthenticationScheme);
-
-                        context.HandleResponse();
-
-                        return Task.FromResult<object>(null);
-                    }
-                }
-            });
+            var server = CreateServer(new JwtBearerOptions());
 
             var response = await SendAsync(server, "http://example.com/unauthorized");
             Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
         }
 
         [Fact]
-        public async Task EventOnReceivingTokenSkipped_NoMoreEventsExecuted()
+        public async Task EventOnMessageReceivedSkipped_NoMoreEventsExecuted()
         {
             var server = CreateServer(new JwtBearerOptions
             {
                 AutomaticAuthenticate = true,
                 Events = new JwtBearerEvents()
                 {
-                    OnReceivingToken = context =>
+                    OnMessageReceived = context =>
                     {
                         context.SkipToNextMiddleware();
                         return Task.FromResult(0);
                     },
-                    OnReceivedToken = context =>
-                    {
-                        throw new NotImplementedException();
-                    },
-                    OnValidatedToken = context =>
+                    OnTokenValidated = context =>
                     {
                         throw new NotImplementedException();
                     },
@@ -350,47 +262,14 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         }
 
         [Fact]
-        public async Task EventOnReceivedTokenSkipped_NoMoreEventsExecuted()
-        {
-            var server = CreateServer(new JwtBearerOptions
-            {
-                AutomaticAuthenticate = true,
-                Events = new JwtBearerEvents()
-                {
-                    OnReceivedToken = context =>
-                    {
-                        context.SkipToNextMiddleware();
-                        return Task.FromResult(0);
-                    },
-                    OnValidatedToken = context =>
-                    {
-                        throw new NotImplementedException();
-                    },
-                    OnAuthenticationFailed = context =>
-                    {
-                        throw new NotImplementedException(context.Exception.ToString());
-                    },
-                    OnChallenge = context =>
-                    {
-                        throw new NotImplementedException();
-                    },
-                }
-            });
-
-            var response = await SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
-            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
-            Assert.Equal(string.Empty, response.ResponseText);
-        }
-
-        [Fact]
-        public async Task EventOnValidatedTokenSkipped_NoMoreEventsExecuted()
+        public async Task EventOnTokenValidatedSkipped_NoMoreEventsExecuted()
         {
             var options = new JwtBearerOptions
             {
                 AutomaticAuthenticate = true,
                 Events = new JwtBearerEvents()
                 {
-                    OnValidatedToken = context =>
+                    OnTokenValidated = context =>
                     {
                         context.SkipToNextMiddleware();
                         return Task.FromResult(0);
@@ -422,7 +301,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 AutomaticAuthenticate = true,
                 Events = new JwtBearerEvents()
                 {
-                    OnValidatedToken = context =>
+                    OnTokenValidated = context =>
                     {
                         throw new Exception("Test Exception");
                     },
@@ -493,9 +372,17 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
         class BlobTokenValidator : ISecurityTokenValidator
         {
+            private Action<string> _tokenValidator;
+
             public BlobTokenValidator(string authenticationScheme)
             {
                 AuthenticationScheme = authenticationScheme;
+
+            }
+            public BlobTokenValidator(string authenticationScheme, Action<string> tokenValidator)
+            {
+                AuthenticationScheme = authenticationScheme;
+                _tokenValidator = tokenValidator;
             }
 
             public string AuthenticationScheme { get; }
@@ -519,6 +406,10 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             public ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
             {
                 validatedToken = null;
+                if (_tokenValidator != null)
+                {
+                    _tokenValidator(securityToken);
+                }
 
                 var claims = new[]
                 {

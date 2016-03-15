@@ -19,17 +19,12 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// <summary>
         /// Invoked when a protocol message is first received.
         /// </summary>
-        public Func<ReceivingTokenContext, Task> OnReceivingToken { get; set; } = context => Task.FromResult(0);
-
-        /// <summary>
-        /// Invoked with the security token that has been extracted from the protocol message.
-        /// </summary>
-        public Func<ReceivedTokenContext, Task> OnReceivedToken { get; set; } = context => Task.FromResult(0);
+        public Func<MessageReceivedContext, Task> OnMessageReceived { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
         /// Invoked after the security token has passed validation and a ClaimsIdentity has been generated.
         /// </summary>
-        public Func<ValidatedTokenContext, Task> OnValidatedToken { get; set; } = context => Task.FromResult(0);
+        public Func<TokenValidatedContext, Task> OnTokenValidated { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
         /// Invoked before a challenge is sent back to the caller.
@@ -38,11 +33,9 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
         public virtual Task AuthenticationFailed(AuthenticationFailedContext context) => OnAuthenticationFailed(context);
 
-        public virtual Task ReceivingToken(ReceivingTokenContext context) => OnReceivingToken(context);
+        public virtual Task MessageReceived(MessageReceivedContext context) => OnMessageReceived(context);
 
-        public virtual Task ReceivedToken(ReceivedTokenContext context) => OnReceivedToken(context);
-
-        public virtual Task ValidatedToken(ValidatedTokenContext context) => OnValidatedToken(context);
+        public virtual Task TokenValidated(TokenValidatedContext context) => OnTokenValidated(context);
 
         public virtual Task Challenge(JwtBearerChallengeContext context) => OnChallenge(context);
     }

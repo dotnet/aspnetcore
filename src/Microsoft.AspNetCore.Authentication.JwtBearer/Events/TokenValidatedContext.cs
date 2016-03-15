@@ -3,14 +3,17 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer
 {
-    public class ValidatedTokenContext : BaseJwtBearerContext
+    public class TokenValidatedContext : BaseJwtBearerContext
     {
-        public ValidatedTokenContext(HttpContext context, JwtBearerOptions options)
+        public TokenValidatedContext(HttpContext context, JwtBearerOptions options)
             : base(context, options)
         {
         }
+
+        public SecurityToken SecurityToken { get; set; }
     }
 }

@@ -64,10 +64,7 @@ namespace OpenIdConnect.AzureAdSample
 
             app.UseIISPlatformHandler();
 
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                AutomaticAuthenticate = true
-            });
+            app.UseCookieAuthentication(new CookieAuthenticationOptions());
 
             var clientId = Configuration["oidc:clientid"];
             var clientSecret = Configuration["oidc:clientsecret"];

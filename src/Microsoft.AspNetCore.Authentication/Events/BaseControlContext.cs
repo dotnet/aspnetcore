@@ -46,5 +46,21 @@ namespace Microsoft.AspNetCore.Authentication
         /// Gets or set the <see cref="Ticket"/> to return if this event signals it handled the event.
         /// </summary>
         public AuthenticationTicket Ticket { get; set; }
+
+        public bool CheckEventResult(out AuthenticateResult result)
+        {
+            if (HandledResponse)
+            {
+                result = AuthenticateResult.Success(Ticket);
+                return true;
+            }
+            else if (Skipped)
+            {
+                result = AuthenticateResult.Skip();
+                return true;
+            }
+            result = null;
+            return false;
+        }
     }
 }

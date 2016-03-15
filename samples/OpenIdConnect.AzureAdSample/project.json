@@ -18,5 +18,8 @@
   "commands": {
     "web": "OpenIdConnect.AzureAdSample"
   },
+  "content": [
+    "project.json"
+  ],
   "userSecretsId": "aspnet5-OpenIdConnectSample-20151210110318"
 }

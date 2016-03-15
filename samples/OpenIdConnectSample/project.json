@@ -9,7 +9,7 @@
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
-    "dnx451": {},
+    "dnx451": { },
     "netstandardapp1.5": {
       "imports": [
         "dnxcore50"
@@ -22,5 +22,8 @@
   "commands": {
     "web": "OpenIdConnectSample"
   },
+  "content": [
+    "project.json"
+  ],
   "userSecretsId": "aspnet5-OpenIdConnectSample-20151210110318"
 }

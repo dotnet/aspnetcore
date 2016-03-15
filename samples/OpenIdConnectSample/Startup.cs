@@ -59,10 +59,7 @@ namespace OpenIdConnectSample
 
             app.UseIISPlatformHandler();
 
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                AutomaticAuthenticate = true
-            });
+            app.UseCookieAuthentication(new CookieAuthenticationOptions());
 
             app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions
             {

@@ -7,10 +7,10 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, Exception> _redirectToEndSessionEndpointHandledResponse;
-        private static Action<ILogger, Exception> _redirectToEndSessionEndpointSkipped;
-        private static Action<ILogger, Exception> _redirectToAuthenticationEndpointHandledResponse;
-        private static Action<ILogger, Exception> _redirectToAuthenticationEndpointSkipped;
+        private static Action<ILogger, Exception> _redirectToIdentityProviderForSignOutHandledResponse;
+        private static Action<ILogger, Exception> _redirectToIdentityProviderForSignOutSkipped;
+        private static Action<ILogger, Exception> _redirectToIdentityProviderHandledResponse;
+        private static Action<ILogger, Exception> _redirectToIdentityProviderSkipped;
         private static Action<ILogger, Exception> _updatingConfiguration;
         private static Action<ILogger, Exception> _receivedIdToken;
         private static Action<ILogger, Exception> _redeemingCodeForTokens;
@@ -19,20 +19,17 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, string, Exception> _messageReceived;
         private static Action<ILogger, Exception> _messageReceivedContextHandledResponse;
         private static Action<ILogger, Exception> _messageReceivedContextSkipped;
-        private static Action<ILogger, Exception> _authorizationResponseReceived;
         private static Action<ILogger, Exception> _authorizationCodeReceived;
         private static Action<ILogger, Exception> _configurationManagerRequestRefreshCalled;
         private static Action<ILogger, Exception> _tokenResponseReceived;
-        private static Action<ILogger, Exception> _authorizationResponseReceivedHandledResponse;
-        private static Action<ILogger, Exception> _authorizationResponseReceivedSkipped;
+        private static Action<ILogger, Exception> _tokenValidatedHandledResponse;
+        private static Action<ILogger, Exception> _tokenValidatedSkipped;
         private static Action<ILogger, Exception> _authenticationFailedContextHandledResponse;
         private static Action<ILogger, Exception> _authenticationFailedContextSkipped;
         private static Action<ILogger, Exception> _authorizationCodeReceivedContextHandledResponse;
         private static Action<ILogger, Exception> _authorizationCodeReceivedContextSkipped;
-        private static Action<ILogger, Exception> _authorizationCodeRedeemedContextHandledResponse;
-        private static Action<ILogger, Exception> _authorizationCodeRedeemedContextSkipped;
-        private static Action<ILogger, Exception> _authenticationValidatedHandledResponse;
-        private static Action<ILogger, Exception> _authenticationValidatedtSkipped;
+        private static Action<ILogger, Exception> _tokenResponseReceivedHandledResponse;
+        private static Action<ILogger, Exception> _tokenResponseReceivedSkipped;
         private static Action<ILogger, string, Exception> _userInformationReceived;
         private static Action<ILogger, Exception> _userInformationReceivedHandledResponse;
         private static Action<ILogger, Exception> _userInformationReceivedSkipped;
@@ -54,14 +51,14 @@ namespace Microsoft.Extensions.Logging
         static LoggingExtensions()
         {
             // Final
-            _redirectToEndSessionEndpointHandledResponse = LoggerMessage.Define(
+            _redirectToIdentityProviderForSignOutHandledResponse = LoggerMessage.Define(
                 eventId: 1,
                 logLevel: LogLevel.Debug,
-                formatString: "RedirectToEndSessionEndpoint.HandledResponse");
-            _redirectToEndSessionEndpointSkipped = LoggerMessage.Define(
+                formatString: "RedirectToIdentityProviderForSignOut.HandledResponse");
+            _redirectToIdentityProviderForSignOutSkipped = LoggerMessage.Define(
                 eventId: 2,
                 logLevel: LogLevel.Debug,
-                formatString: "RedirectToEndSessionEndpoint.Skipped");
+                formatString: "RedirectToIdentityProviderForSignOut.Skipped");
             _invalidLogoutQueryStringRedirectUrl = LoggerMessage.Define<string>(
                 eventId: 3,
                 logLevel: LogLevel.Warning,
@@ -74,14 +71,14 @@ namespace Microsoft.Extensions.Logging
                 eventId: 5,
                 logLevel: LogLevel.Trace,
                 formatString: "Using properties.RedirectUri for 'local redirect' post authentication: '{RedirectUri}'.");
-            _redirectToAuthenticationEndpointHandledResponse = LoggerMessage.Define(
+            _redirectToIdentityProviderHandledResponse = LoggerMessage.Define(
                 eventId: 6,
                 logLevel: LogLevel.Debug,
-                formatString: "RedirectToAuthenticationEndpoint.HandledResponse");
-            _redirectToAuthenticationEndpointSkipped = LoggerMessage.Define(
+                formatString: "RedirectToIdentityProvider.HandledResponse");
+            _redirectToIdentityProviderSkipped = LoggerMessage.Define(
                 eventId: 7,
                 logLevel: LogLevel.Debug,
-                formatString: "RedirectToAuthenticationEndpoint.Skipped");
+                formatString: "RedirectToIdentityProvider.Skipped");
             _invalidAuthenticationRequestUrl = LoggerMessage.Define<string>(
                 eventId: 8,
                 logLevel: LogLevel.Warning,
@@ -106,18 +103,14 @@ namespace Microsoft.Extensions.Logging
                 eventId: 13,
                 logLevel: LogLevel.Debug,
                 formatString: "Updating configuration");
-            _authorizationResponseReceived = LoggerMessage.Define(
-                eventId: 14,
-                logLevel: LogLevel.Trace,
-                formatString: "Authorization response received.");
-            _authorizationResponseReceivedHandledResponse = LoggerMessage.Define(
+            _tokenValidatedHandledResponse = LoggerMessage.Define(
                 eventId: 15,
                 logLevel: LogLevel.Debug,
-                formatString: "AuthorizationResponseReceived.HandledResponse");
-            _authorizationResponseReceivedSkipped = LoggerMessage.Define(
+                formatString: "TokenValidated.HandledResponse");
+            _tokenValidatedSkipped = LoggerMessage.Define(
                 eventId: 16,
                 logLevel: LogLevel.Debug,
-                formatString: "AuthorizationResponseReceived.Skipped");
+                formatString: "TokenValidated.Skipped");
             _exceptionProcessingMessage = LoggerMessage.Define(
                 eventId: 17,
                 logLevel: LogLevel.Error,
@@ -174,22 +167,14 @@ namespace Microsoft.Extensions.Logging
                 eventId: 30,
                 logLevel: LogLevel.Trace,
                 formatString: "Token response received.");
-            _authorizationCodeRedeemedContextHandledResponse = LoggerMessage.Define(
+            _tokenResponseReceivedHandledResponse = LoggerMessage.Define(
                 eventId: 31,
                 logLevel: LogLevel.Debug,
-                formatString: "AuthorizationCodeRedeemedContext.HandledResponse");
-            _authorizationCodeRedeemedContextSkipped = LoggerMessage.Define(
+                formatString: "TokenResponseReceived.HandledResponse");
+            _tokenResponseReceivedSkipped = LoggerMessage.Define(
                 eventId: 32,
                 logLevel: LogLevel.Debug,
-                formatString: "AuthorizationCodeRedeemedContext.Skipped");
-            _authenticationValidatedHandledResponse = LoggerMessage.Define(
-                eventId: 33,
-                logLevel: LogLevel.Debug,
-                formatString: "AuthenticationFailedContext.HandledResponse");
-            _authenticationValidatedtSkipped = LoggerMessage.Define(
-                eventId: 34,
-                logLevel: LogLevel.Debug,
-                formatString: "AuthenticationFailedContext.Skipped");
+                formatString: "TokenResponseReceived.Skipped");
             _userInformationReceived = LoggerMessage.Define<string>(
                eventId: 35,
                logLevel: LogLevel.Trace,
@@ -258,19 +243,14 @@ namespace Microsoft.Extensions.Logging
             _redeemingCodeForTokens(logger, null);
         }
 
-        public static void AuthorizationResponseReceived(this ILogger logger)
+        public static void TokenValidatedHandledResponse(this ILogger logger)
         {
-            _authorizationResponseReceived(logger, null);
+            _tokenValidatedHandledResponse(logger, null);
         }
 
-        public static void AuthorizationResponseReceivedHandledResponse(this ILogger logger)
+        public static void TokenValidatedSkipped(this ILogger logger)
         {
-            _authorizationResponseReceivedHandledResponse(logger, null);
-        }
-
-        public static void AuthorizationResponseReceivedSkipped(this ILogger logger)
-        {
-            _authorizationResponseReceivedSkipped(logger, null);
+            _tokenValidatedSkipped(logger, null);
         }
 
         public static void AuthorizationCodeReceivedContextHandledResponse(this ILogger logger)
@@ -283,24 +263,14 @@ namespace Microsoft.Extensions.Logging
             _authorizationCodeReceivedContextSkipped(logger, null);
         }
 
-        public static void AuthorizationCodeRedeemedContextHandledResponse(this ILogger logger)
+        public static void TokenResponseReceivedHandledResponse(this ILogger logger)
         {
-            _authorizationCodeRedeemedContextHandledResponse(logger, null);
+            _tokenResponseReceivedHandledResponse(logger, null);
         }
 
-        public static void AuthorizationCodeRedeemedContextSkipped(this ILogger logger)
+        public static void TokenResponseReceivedSkipped(this ILogger logger)
         {
-            _authorizationCodeRedeemedContextSkipped(logger, null);
-        }
-
-        public static void AuthenticationValidatedHandledResponse(this ILogger logger)
-        {
-            _authenticationValidatedHandledResponse(logger, null);
-        }
-
-        public static void AuthenticationValidatedSkipped(this ILogger logger)
-        {
-            _authenticationValidatedtSkipped(logger, null);
+            _tokenResponseReceivedSkipped(logger, null);
         }
 
         public static void AuthenticationFailedContextHandledResponse(this ILogger logger)
@@ -328,24 +298,24 @@ namespace Microsoft.Extensions.Logging
             _messageReceivedContextSkipped(logger, null);
         }
 
-        public static void RedirectToEndSessionEndpointHandledResponse(this ILogger logger)
+        public static void RedirectToIdentityProviderForSignOutHandledResponse(this ILogger logger)
         {
-            _redirectToEndSessionEndpointHandledResponse(logger, null);
+            _redirectToIdentityProviderForSignOutHandledResponse(logger, null);
         }
 
-        public static void RedirectToEndSessionEndpointSkipped(this ILogger logger)
+        public static void RedirectToIdentityProviderForSignOutSkipped(this ILogger logger)
         {
-            _redirectToEndSessionEndpointSkipped(logger, null);
+            _redirectToIdentityProviderForSignOutSkipped(logger, null);
         }
 
-        public static void RedirectToAuthenticationEndpointHandledResponse(this ILogger logger)
+        public static void RedirectToIdentityProviderHandledResponse(this ILogger logger)
         {
-            _redirectToAuthenticationEndpointHandledResponse(logger, null);
+            _redirectToIdentityProviderHandledResponse(logger, null);
         }
 
-        public static void RedirectToAuthenticationEndpointSkipped(this ILogger logger)
+        public static void RedirectToIdentityProviderSkipped(this ILogger logger)
         {
-            _redirectToAuthenticationEndpointSkipped(logger, null);
+            _redirectToIdentityProviderSkipped(logger, null);
         }
 
         public static void UserInformationReceivedHandledResponse(this ILogger logger)

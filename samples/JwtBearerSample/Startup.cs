@@ -61,8 +61,6 @@ namespace JwtBearerSample
 
             app.UseJwtBearerAuthentication(new JwtBearerOptions
             {
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true,
                 // You also need to update /wwwroot/app/scripts/app.js
                 Authority = Configuration["jwt:authority"],
                 Audience = Configuration["jwt:audience"]
@@ -74,14 +72,14 @@ namespace JwtBearerSample
                 // Use this if options.AutomaticAuthenticate = false
                 // var user = await context.Authentication.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
 
-                var user = context.User; // We can do this because of  options.AutomaticAuthenticate = true; above.
+                var user = context.User; // We can do this because of  options.AutomaticAuthenticate = true;
                 if (user?.Identity?.IsAuthenticated ?? false)
                 {
                     await next();
                 }
                 else
                 {
-                    // We can do this because of options.AutomaticChallenge = true; above
+                    // We can do this because of options.AutomaticChallenge = true;
                     await context.Authentication.ChallengeAsync();
                 }
             });

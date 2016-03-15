@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Authentication;
 
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 {
@@ -17,5 +18,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// Bearer Token. This will give application an opportunity to retrieve token from an alternation location.
         /// </summary>
         public string Token { get; set; }
+
+        public AuthenticationProperties Properties { get; set; }
     }
 }

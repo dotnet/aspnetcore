@@ -18,17 +18,12 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// <summary>
         /// Invoked when a protocol message is first received.
         /// </summary>
-        Task ReceivingToken(ReceivingTokenContext context);
-
-        /// <summary>
-        /// Invoked with the security token that has been extracted from the protocol message.
-        /// </summary>
-        Task ReceivedToken(ReceivedTokenContext context);
+        Task MessageReceived(MessageReceivedContext context);
 
         /// <summary>
         /// Invoked after the security token has passed validation and a ClaimsIdentity has been generated.
         /// </summary>
-        Task ValidatedToken(ValidatedTokenContext context);
+        Task TokenValidated(TokenValidatedContext context);
 
         /// <summary>
         /// Invoked to apply a challenge sent back to the caller.

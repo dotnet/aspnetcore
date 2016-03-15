@@ -150,12 +150,12 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             options.AutomaticChallenge = true;
             options.Events = new OpenIdConnectEvents()
             {
-                OnRedirectToAuthenticationEndpoint = (context) =>
+                OnRedirectToIdentityProvider = (context) =>
                 {
                     context.ProtocolMessage = fakeOpenIdRequestMessage;
                     return Task.FromResult(0);
                 },
-                OnRedirectToEndSessionEndpoint = (context) =>
+                OnRedirectToIdentityProviderForSignOut = (context) =>
                 {
                     context.ProtocolMessage = fakeOpenIdRequestMessage;
                     return Task.FromResult(0);
@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             options.AutomaticChallenge = challenge.Equals(ChallengeWithOutContext);
             options.Events = new OpenIdConnectEvents()
             {
-                OnRedirectToAuthenticationEndpoint = context =>
+                OnRedirectToIdentityProvider = context =>
                 {
                     context.ProtocolMessage.State = userState;
                     context.ProtocolMessage.RedirectUri = queryValues.RedirectUri;
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             var options = GetOptions(DefaultParameters(), queryValues);
             options.Events = new OpenIdConnectEvents()
             {
-                OnRedirectToAuthenticationEndpoint = context =>
+                OnRedirectToIdentityProvider = context =>
                 {
                     context.ProtocolMessage.ClientId = queryValuesSetInEvent.ClientId;
                     context.ProtocolMessage.RedirectUri = queryValuesSetInEvent.RedirectUri;

@@ -25,6 +25,8 @@ namespace Microsoft.AspNetCore.Builder
         public JwtBearerOptions() : base()
         {
             AuthenticationScheme = JwtBearerDefaults.AuthenticationScheme;
+            AutomaticAuthenticate = true;
+            AutomaticChallenge = true;
         }
 
         /// <summary>
