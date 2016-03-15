@@ -1,6 +1,11 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 session state middleware.",
+  "description": "ASP.NET Core session state middleware.",
+  "tags": [
+    "aspnetcore",
+    "session",
+    "sessionstate"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/session"
@@ -21,7 +26,7 @@
     "xmlDoc": true
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
         "System.Security.Cryptography.Algorithms": "4.0.0-*"

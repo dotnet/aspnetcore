@@ -1,1 +1,1 @@
-﻿Sample demonstrating ASP.NET 5 Session middleware.
+﻿Sample demonstrating ASP.NET Core Session middleware.
