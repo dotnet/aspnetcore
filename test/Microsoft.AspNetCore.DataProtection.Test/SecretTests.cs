@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.DataProtection
         public void Ctor_Pointer_WithNullPointer_ThrowsArgumentNull()
         {
             // Act & assert
-            ExceptionAssert2.ThrowsArgumentNull(
+            ExceptionAssert.ThrowsArgumentNull(
                 testCode: () => new Secret(null, 0),
                 paramName: "secret");
         }
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.DataProtection
             var secret = Secret.Random(16);
 
             // Act & assert
-            ExceptionAssert2.ThrowsArgumentNull(
+            ExceptionAssert.ThrowsArgumentNull(
                 testCode: () => secret.WriteSecretIntoBuffer(null, 100),
                 paramName: "buffer");
         }

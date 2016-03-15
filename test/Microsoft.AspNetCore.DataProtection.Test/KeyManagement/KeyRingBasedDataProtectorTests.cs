@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 newPurpose: "purpose");
 
             // Act & assert
-            ExceptionAssert2.ThrowsArgumentNull(() => protector.Protect(plaintext: null), "plaintext");
+            ExceptionAssert.ThrowsArgumentNull(() => protector.Protect(plaintext: null), "plaintext");
         }
 
         [Fact]
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 newPurpose: "purpose");
 
             // Act & assert
-            ExceptionAssert2.ThrowsArgumentNull(() => protector.Unprotect(protectedData: null), "protectedData");
+            ExceptionAssert.ThrowsArgumentNull(() => protector.Unprotect(protectedData: null), "protectedData");
         }
 
         [Fact]
