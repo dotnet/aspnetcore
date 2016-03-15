@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -19,7 +20,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             // Arrange
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddAntiforgery();
-            serviceCollection.AddDataProtection(o => o.SetApplicationName(applicationId));
+            serviceCollection
+                .AddDataProtection()
+                .SetApplicationName(applicationId);
 
             var services = serviceCollection.BuildServiceProvider();
             var options = services.GetRequiredService<IOptions<AntiforgeryOptions>>();
@@ -42,7 +45,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 o.CookieName = "antiforgery";
             });
             serviceCollection.AddAntiforgery();
-            serviceCollection.AddDataProtection(o => o.SetApplicationName("HelloWorldApp"));
+            serviceCollection
+                .AddDataProtection()
+                .SetApplicationName("HelloWorldApp");
 
             var services = serviceCollection.BuildServiceProvider();
             var options = services.GetRequiredService<IOptions<AntiforgeryOptions>>();
