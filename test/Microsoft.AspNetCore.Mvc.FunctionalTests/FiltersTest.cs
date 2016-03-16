@@ -509,58 +509,5 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
             Assert.Equal("\"someValue\"", await response.Content.ReadAsStringAsync());
         }
-
-        [Fact]
-        public async Task ResourceFilter_ChangesOutputFormatters_JsonReturned()
-        {
-            // Arrange
-            var input = "{ sampleInt: 10 }";
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Json");
-            request.Content = new StringContent(input, Encoding.UTF8, "application/json");
-
-            // Act
-            var response = await Client.SendAsync(request);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
-            Assert.Equal("\"10\"", await response.Content.ReadAsStringAsync());
-        }
-
-        [Fact]
-        public async Task ResourceFilter_ChangesInputFormatters_JsonAccepted()
-        {
-            // Arrange
-            var input = "{ sampleInt: 10 }";
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Json");
-            request.Content = new StringContent(input, Encoding.UTF8, "application/json");
-
-            // Act
-            var response = await Client.SendAsync(request);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("\"10\"", await response.Content.ReadAsStringAsync());
-        }
-
-        [Fact]
-        public async Task ResourceFilter_ChangesInputFormatters_XmlDenied()
-        {
-            // Arrange
-            var input =
-                "<DummyClass xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite\">" +
-                "<SampleInt>10</SampleInt>" +
-                "</DummyClass>";
-
-            // There's nothing that can deserialize the body, so the result is UnsupportedMediaType.
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Json");
-            request.Content = new StringContent(input, Encoding.UTF8, "application/xml");
-
-            // Act
-            var response = await Client.SendAsync(request);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
-        }
     }
 }

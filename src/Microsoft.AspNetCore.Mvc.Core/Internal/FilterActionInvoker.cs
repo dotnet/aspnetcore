@@ -255,15 +255,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             _cursor.Reset();
 
-            var context = new ResourceExecutingContext(Context, _filters);
-
-            context.InputFormatters = new FormatterCollection<IInputFormatter>(
-                new CopyOnWriteList<IInputFormatter>(_inputFormatters));
-            context.ModelBinders = new CopyOnWriteList<IModelBinder>(_modelBinders);
-            context.ValidatorProviders = new CopyOnWriteList<IModelValidatorProvider>(_modelValidatorProviders);
-            context.ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories);
-
-            _resourceExecutingContext = context;
+            _resourceExecutingContext = new ResourceExecutingContext(Context, _filters);
             return InvokeResourceFilterAsync();
         }
 
@@ -362,16 +354,17 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 {
                     // We've reached the end of resource filters, so move to setting up state to invoke model
                     // binding.
-                    Context.InputFormatters = _resourceExecutingContext.InputFormatters;
-                    Context.ModelBinders = _resourceExecutingContext.ModelBinders;
-                    Context.ValidatorProviders = _resourceExecutingContext.ValidatorProviders;
+                    Context.InputFormatters = new FormatterCollection<IInputFormatter>(
+                        new CopyOnWriteList<IInputFormatter>(_inputFormatters));
+                    Context.ModelBinders = new CopyOnWriteList<IModelBinder>(_modelBinders);
+                    Context.ValidatorProviders = new CopyOnWriteList<IModelValidatorProvider>(_modelValidatorProviders);
 
                     var valueProviders = new List<IValueProvider>();
                     var factoryContext = new ValueProviderFactoryContext(Context);
 
-                    for (var i = 0; i < _resourceExecutingContext.ValueProviderFactories.Count; i++)
+                    for (var i = 0; i < _valueProviderFactories.Count; i++)
                     {
-                        var factory = _resourceExecutingContext.ValueProviderFactories[i];
+                        var factory = _valueProviderFactories[i];
                         await factory.CreateValueProviderAsync(factoryContext);
                     }
                     Context.ValueProviders = factoryContext.ValueProviders;
