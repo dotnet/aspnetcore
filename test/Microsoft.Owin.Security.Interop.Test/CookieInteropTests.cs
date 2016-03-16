@@ -29,7 +29,7 @@ namespace Microsoft.Owin.Security.Interop
             var identity = new ClaimsIdentity("Cookies");
             identity.AddClaim(new Claim(ClaimTypes.Name, "Alice"));
 
-            var dataProtection = new DataProtectionProvider(new DirectoryInfo("..\\..\\artifacts"));
+            var dataProtection = DataProtectionProvider.Create(new DirectoryInfo("..\\..\\artifacts"));
             var dataProtector = dataProtection.CreateProtector(
                 "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET Core type
                 CookieAuthenticationDefaults.AuthenticationType, "v2");
@@ -85,7 +85,7 @@ namespace Microsoft.Owin.Security.Interop
             identity.AddClaim(new Claim(ClaimTypes.Name, "Alice"));
             user.AddIdentity(identity);
 
-            var dataProtection = new DataProtectionProvider(new DirectoryInfo("..\\..\\artifacts"));
+            var dataProtection = DataProtectionProvider.Create(new DirectoryInfo("..\\..\\artifacts"));
             var dataProtector = dataProtection.CreateProtector(
                 "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET Core type
                 CookieAuthenticationDefaults.AuthenticationType, "v2");
