@@ -293,11 +293,10 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ??
-                default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
-            Assert.Equal(default(ModelBindingResult), modelBindingResult);
+            Assert.False(modelBindingResult.Value.IsModelSet);
 
             // ModelState
             Assert.True(modelState.IsValid);

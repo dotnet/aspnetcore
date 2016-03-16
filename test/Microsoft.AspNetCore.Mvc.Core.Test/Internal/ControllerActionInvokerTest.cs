@@ -2057,7 +2057,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 actionDescriptor,
                 new IInputFormatter[0],
                 actionArgumentsBinder.Object,
-                new IModelBinder[0],
                 new IModelValidatorProvider[0],
                 new IValueProviderFactory[0],
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
@@ -2090,9 +2089,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 FilterDescriptors = new List<FilterDescriptor>()
             };
 
-            var binder = new Mock<IModelBinder>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<DefaultModelBindingContext>()))
-                  .Returns(TaskCache.CompletedTask);
             var context = new Mock<HttpContext>();
             context.SetupGet(c => c.Items)
                    .Returns(new Dictionary<object, object>());
@@ -2115,8 +2111,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new IInputFormatter[0],
                 new ControllerArgumentBinder(
                     metadataProvider,
+                    TestModelBinderFactory.CreateDefault(metadataProvider),
                     new DefaultObjectValidator(metadataProvider, new ValidatorCache())),
-                new IModelBinder[] { binder.Object },
                 new IModelValidatorProvider[0],
                 new IValueProviderFactory[0],
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
@@ -2241,7 +2237,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 ControllerActionDescriptor descriptor,
                 IReadOnlyList<IInputFormatter> inputFormatters,
                 IControllerActionArgumentBinder controllerActionArgumentBinder,
-                IReadOnlyList<IModelBinder> modelBinders,
                 IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
                 IReadOnlyList<IValueProviderFactory> valueProviderFactories,
                 ILogger logger,
@@ -2254,7 +2249,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                       descriptor,
                       inputFormatters,
                       controllerActionArgumentBinder,
-                      modelBinders,
                       modelValidatorProviders,
                       valueProviderFactories,
                       logger,

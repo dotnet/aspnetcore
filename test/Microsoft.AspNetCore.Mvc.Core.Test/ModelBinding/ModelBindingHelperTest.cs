@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Test;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Moq;
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 string.Empty,
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
                 metadataProvider,
-                GetCompositeBinder(binder),
+                GetModelBinderFactory(binder),
                 Mock.Of<IValueProvider>(),
                 new List<IInputFormatter>(),
                 new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
@@ -66,10 +67,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
             // Mono issue - https://github.com/aspnet/External/issues/19
             var expectedMessage = PlatformNormalizer.NormalizeContent("The MyProperty field is required.");
-            var binders = new IModelBinder[]
+            var binderProviders = new IModelBinderProvider[]
             {
-                new SimpleTypeModelBinder(),
-                new MutableObjectModelBinder()
+                new SimpleTypeModelBinderProvider(),
+                new ComplexTypeModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -94,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 "",
                 actionContext,
                 modelMetadataProvider,
-                GetCompositeBinder(binders),
+                GetModelBinderFactory(binderProviders),
                 valueProvider,
                 new List<IInputFormatter>(),
                 new DefaultObjectValidator(modelMetadataProvider, new ValidatorCache()),
@@ -110,10 +111,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public async Task TryUpdateModel_ReturnsTrue_IfModelBindsAndValidatesSuccessfully()
         {
             // Arrange
-            var binders = new IModelBinder[]
+            var binderProviders = new IModelBinderProvider[]
             {
-                new SimpleTypeModelBinder(),
-                new MutableObjectModelBinder()
+                new SimpleTypeModelBinderProvider(),
+                new ComplexTypeModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -136,7 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 "",
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
                 metadataProvider,
-                GetCompositeBinder(binders),
+                GetModelBinderFactory(binderProviders),
                 valueProvider,
                 new List<IInputFormatter>(),
                 new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
@@ -164,7 +165,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 string.Empty,
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
                 metadataProvider,
-                GetCompositeBinder(binder),
+                GetModelBinderFactory(binder),
                 Mock.Of<IValueProvider>(),
                 new List<IInputFormatter>(),
                 new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
@@ -182,10 +183,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public async Task TryUpdateModel_UsingIncludePredicateOverload_ReturnsTrue_ModelBindsAndValidatesSuccessfully()
         {
             // Arrange
-            var binders = new IModelBinder[]
+            var binderProviders = new IModelBinderProvider[]
             {
-                new SimpleTypeModelBinder(),
-                new MutableObjectModelBinder()
+                new SimpleTypeModelBinderProvider(),
+                new ComplexTypeModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -220,7 +221,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 "",
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
                 metadataProvider,
-                GetCompositeBinder(binders),
+                GetModelBinderFactory(binderProviders),
                 valueProvider,
                 new List<IInputFormatter>(),
                 new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
@@ -250,7 +251,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 string.Empty,
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
                 metadataProvider,
-                GetCompositeBinder(binder),
+                GetModelBinderFactory(binder),
                 Mock.Of<IValueProvider>(),
                 new List<IInputFormatter>(),
                 new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
@@ -268,10 +269,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public async Task TryUpdateModel_UsingIncludeExpressionOverload_ReturnsTrue_ModelBindsAndValidatesSuccessfully()
         {
             // Arrange
-            var binders = new IModelBinder[]
+            var binderProviders = new IModelBinderProvider[]
             {
-                new SimpleTypeModelBinder(),
-                new MutableObjectModelBinder()
+                new SimpleTypeModelBinderProvider(),
+                new ComplexTypeModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -302,7 +303,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 "",
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
                 TestModelMetadataProvider.CreateDefaultProvider(),
-                GetCompositeBinder(binders),
+                GetModelBinderFactory(binderProviders),
                 valueProvider,
                 new List<IInputFormatter>(),
                 new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
@@ -321,10 +322,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public async Task TryUpdateModel_UsingDefaultIncludeOverload_IncludesAllProperties()
         {
             // Arrange
-            var binders = new IModelBinder[]
+            var binderProviders = new IModelBinderProvider[]
             {
-                new SimpleTypeModelBinder(),
-                new MutableObjectModelBinder()
+                new SimpleTypeModelBinderProvider(),
+                new ComplexTypeModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -355,7 +356,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 "",
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
                 metadataProvider,
-                GetCompositeBinder(binders),
+                GetModelBinderFactory(binderProviders),
                 valueProvider,
                 new List<IInputFormatter>(),
                 new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
@@ -506,7 +507,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 prefix: "",
                 actionContext: new ActionContext() { HttpContext = new DefaultHttpContext() },
                 metadataProvider: metadataProvider,
-                modelBinder: GetCompositeBinder(binder),
+                modelBinderFactory: GetModelBinderFactory(binder),
                 valueProvider: Mock.Of<IValueProvider>(),
                 inputFormatters: new List<IInputFormatter>(),
                 objectModelValidator: new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
@@ -524,10 +525,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public async Task TryUpdateModelNonGeneric_PredicateOverload_ReturnsTrue_ModelBindsAndValidatesSuccessfully()
         {
             // Arrange
-            var binders = new IModelBinder[]
+            var binderProviders = new IModelBinderProvider[]
             {
-                new SimpleTypeModelBinder(),
-                new MutableObjectModelBinder()
+                new SimpleTypeModelBinderProvider(),
+                new ComplexTypeModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -563,7 +564,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 "",
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
                 metadataProvider,
-                GetCompositeBinder(binders),
+                GetModelBinderFactory(binderProviders),
                 valueProvider,
                 new List<IInputFormatter>(),
                 new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
@@ -595,7 +596,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 prefix: "",
                 actionContext: new ActionContext() { HttpContext = new DefaultHttpContext() },
                 metadataProvider: metadataProvider,
-                modelBinder: GetCompositeBinder(binder.Object),
+                modelBinderFactory: GetModelBinderFactory(binder.Object),
                 valueProvider: Mock.Of<IValueProvider>(),
                 inputFormatters: new List<IInputFormatter>(),
                 objectModelValidator: new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
@@ -610,10 +611,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public async Task TryUpdateModelNonGeneric_ModelTypeOverload_ReturnsTrue_IfModelBindsAndValidatesSuccessfully()
         {
             // Arrange
-            var binders = new IModelBinder[]
+            var binderProviders = new IModelBinderProvider[]
             {
-                new SimpleTypeModelBinder(),
-                new MutableObjectModelBinder()
+                new SimpleTypeModelBinderProvider(),
+                new ComplexTypeModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -637,7 +638,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 "",
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
                 TestModelMetadataProvider.CreateDefaultProvider(),
-                GetCompositeBinder(binders),
+                GetModelBinderFactory(binderProviders),
                 valueProvider,
                 new List<IInputFormatter>(),
                 new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
@@ -666,7 +667,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     "",
                     new ActionContext() { HttpContext = new DefaultHttpContext() },
                     metadataProvider,
-                    GetCompositeBinder(binder.Object),
+                    GetModelBinderFactory(binder.Object),
                     Mock.Of<IValueProvider>(),
                     new List<IInputFormatter>(),
                     new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
@@ -816,9 +817,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
-        private static IModelBinder GetCompositeBinder(params IModelBinder[] binders)
+        public static ModelBinderFactory GetModelBinderFactory(IModelBinder binder)
         {
-            return new CompositeModelBinder(binders);
+            var binderProvider = new Mock<IModelBinderProvider>();
+            binderProvider
+                .Setup(p => p.GetBinder(It.IsAny<ModelBinderProviderContext>()))
+                .Returns(binder);
+
+            return TestModelBinderFactory.Create(binderProvider.Object);
+        }
+
+        private static ModelBinderFactory GetModelBinderFactory(params IModelBinderProvider[] providers)
+        {
+            return TestModelBinderFactory.CreateDefault(providers);
         }
 
         public class User

@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Assert
 
             // ModelBindingResult
-            Assert.Equal(default(ModelBindingResult), modelBindingResult);
+            Assert.False(modelBindingResult.IsModelSet);
 
             // ModelState
             Assert.True(modelState.IsValid);

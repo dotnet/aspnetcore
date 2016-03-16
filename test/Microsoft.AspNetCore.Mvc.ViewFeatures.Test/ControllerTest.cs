@@ -287,7 +287,6 @@ namespace Microsoft.AspNetCore.Mvc.Test
             var controllerContext = new ControllerContext()
             {
                 HttpContext = httpContext,
-                ModelBinders = new[] { binder, },
                 ValueProviders = new[] { valueProvider, },
                 ValidatorProviders = new[]
                 {

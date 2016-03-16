@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Mvc
     public class ControllerContext : ActionContext
     {
         private FormatterCollection<IInputFormatter> _inputFormatters;
-        private IList<IModelBinder> _modelBinders;
         private IList<IModelValidatorProvider> _validatorProviders;
         private IList<IValueProvider> _valueProviders;
 
@@ -78,31 +77,6 @@ namespace Microsoft.AspNetCore.Mvc
                 }
 
                 _inputFormatters = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the list of <see cref="IModelBinder"/> instances for the current request.
-        /// </summary>
-        public virtual IList<IModelBinder> ModelBinders
-        {
-            get
-            {
-                if (_modelBinders == null)
-                {
-                    _modelBinders = new List<IModelBinder>();
-                }
-
-                return _modelBinders;
-            }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _modelBinders = value;
             }
         }
 

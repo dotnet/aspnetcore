@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -41,24 +42,28 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
-        public void Setup_SetsUpModelBinders()
+        public void Setup_SetsUpModelBinderProviders()
         {
             // Arrange & Act
             var options = GetOptions<MvcOptions>();
 
             // Assert
-            Assert.Collection(options.ModelBinders,
-                binder => Assert.IsType<BinderTypeBasedModelBinder>(binder),
-                binder => Assert.IsType<ServicesModelBinder>(binder),
-                binder => Assert.IsType<BodyModelBinder>(binder),
-                binder => Assert.IsType<HeaderModelBinder>(binder),
-                binder => Assert.IsType<SimpleTypeModelBinder>(binder),
-                binder => Assert.IsType<CancellationTokenModelBinder>(binder),
-                binder => Assert.IsType<ByteArrayModelBinder>(binder),
-                binder => Assert.IsType<FormFileModelBinder>(binder),
-                binder => Assert.IsType<FormCollectionModelBinder>(binder),
-                binder => Assert.IsType<GenericModelBinder>(binder),
-                binder => Assert.IsType<MutableObjectModelBinder>(binder));
+            Assert.Collection(
+                options.ModelBinderProviders,
+                binder => Assert.IsType<BinderTypeModelBinderProvider>(binder),
+                binder => Assert.IsType<ServicesModelBinderProvider>(binder),
+                binder => Assert.IsType<BodyModelBinderProvider>(binder),
+                binder => Assert.IsType<HeaderModelBinderProvider>(binder),
+                binder => Assert.IsType<SimpleTypeModelBinderProvider>(binder),
+                binder => Assert.IsType<CancellationTokenModelBinderProvider>(binder),
+                binder => Assert.IsType<ByteArrayModelBinderProvider>(binder),
+                binder => Assert.IsType<FormFileModelBinderProvider>(binder),
+                binder => Assert.IsType<FormCollectionModelBinderProvider>(binder),
+                binder => Assert.IsType<KeyValuePairModelBinderProvider>(binder),
+                binder => Assert.IsType<DictionaryModelBinderProvider>(binder),
+                binder => Assert.IsType<ArrayModelBinderProvider>(binder),
+                binder => Assert.IsType<CollectionModelBinderProvider>(binder),
+                binder => Assert.IsType<ComplexTypeModelBinderProvider>(binder));
         }
 
         [Fact]

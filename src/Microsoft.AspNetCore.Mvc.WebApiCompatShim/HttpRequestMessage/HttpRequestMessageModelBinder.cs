@@ -17,12 +17,9 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
         /// <inheritdoc />
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            if (bindingContext.ModelType == typeof(HttpRequestMessage))
-            {
-                var model = bindingContext.OperationBindingContext.HttpContext.GetHttpRequestMessage();
-                bindingContext.ValidationState.Add(model, new ValidationStateEntry() { SuppressValidation = true });
-                bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
-            }
+            var model = bindingContext.OperationBindingContext.HttpContext.GetHttpRequestMessage();
+            bindingContext.ValidationState.Add(model, new ValidationStateEntry() { SuppressValidation = true });
+            bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
 
             return TaskCache.CompletedTask;
         }

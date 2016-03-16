@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Mvc
     {
         private ControllerContext _controllerContext;
         private IModelMetadataProvider _metadataProvider;
+        private IModelBinderFactory _modelBinderFactory;
         private IObjectModelValidator _objectValidator;
         private IUrlHelper _url;
 
@@ -138,6 +139,31 @@ namespace Microsoft.AspNetCore.Mvc
                 }
 
                 _metadataProvider = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="IModelBinderFactory"/>.
+        /// </summary>
+        public IModelBinderFactory ModelBinderFactory
+        {
+            get
+            {
+                if (_modelBinderFactory == null)
+                {
+                    _modelBinderFactory = HttpContext?.RequestServices?.GetRequiredService<IModelBinderFactory>();
+                }
+
+                return _modelBinderFactory;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _modelBinderFactory = value;
             }
         }
 
@@ -1139,7 +1165,7 @@ namespace Microsoft.AspNetCore.Mvc
                 prefix,
                 ControllerContext,
                 MetadataProvider,
-                new CompositeModelBinder(ControllerContext.ModelBinders),
+                ModelBinderFactory,
                 valueProvider,
                 ControllerContext.InputFormatters,
                 ObjectValidator,
@@ -1179,7 +1205,7 @@ namespace Microsoft.AspNetCore.Mvc
                 prefix,
                 ControllerContext,
                 MetadataProvider,
-                new CompositeModelBinder(ControllerContext.ModelBinders),
+                ModelBinderFactory,
                 new CompositeValueProvider(ControllerContext.ValueProviders),
                 ControllerContext.InputFormatters,
                 ObjectValidator,
@@ -1219,7 +1245,7 @@ namespace Microsoft.AspNetCore.Mvc
                 prefix,
                 ControllerContext,
                 MetadataProvider,
-                new CompositeModelBinder(ControllerContext.ModelBinders),
+                ModelBinderFactory,
                 new CompositeValueProvider(ControllerContext.ValueProviders),
                 ControllerContext.InputFormatters,
                 ObjectValidator,
@@ -1267,7 +1293,7 @@ namespace Microsoft.AspNetCore.Mvc
                 prefix,
                 ControllerContext,
                 MetadataProvider,
-                new CompositeModelBinder(ControllerContext.ModelBinders),
+                ModelBinderFactory,
                 valueProvider,
                 ControllerContext.InputFormatters,
                 ObjectValidator,
@@ -1314,7 +1340,7 @@ namespace Microsoft.AspNetCore.Mvc
                 prefix,
                 ControllerContext,
                 MetadataProvider,
-                new CompositeModelBinder(ControllerContext.ModelBinders),
+                ModelBinderFactory,
                 valueProvider,
                 ControllerContext.InputFormatters,
                 ObjectValidator,
@@ -1353,7 +1379,7 @@ namespace Microsoft.AspNetCore.Mvc
                 prefix,
                 ControllerContext,
                 MetadataProvider,
-                new CompositeModelBinder(ControllerContext.ModelBinders),
+                ModelBinderFactory,
                 new CompositeValueProvider(ControllerContext.ValueProviders),
                 ControllerContext.InputFormatters,
                 ObjectValidator,
@@ -1405,7 +1431,7 @@ namespace Microsoft.AspNetCore.Mvc
                 prefix,
                 ControllerContext,
                 MetadataProvider,
-                new CompositeModelBinder(ControllerContext.ModelBinders),
+                ModelBinderFactory,
                 valueProvider,
                 ControllerContext.InputFormatters,
                 ObjectValidator,

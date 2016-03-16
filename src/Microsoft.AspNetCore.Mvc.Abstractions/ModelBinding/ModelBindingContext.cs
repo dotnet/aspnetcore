@@ -17,26 +17,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract string BinderModelName { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="Type"/> of an <see cref="IModelBinder"/> associated with the
-        /// <see cref="Model"/>.
-        /// </summary>
-        public abstract Type BinderType { get; set; }
-
-        /// <summary>
         /// Gets or sets a value which represents the <see cref="ModelBinding.BindingSource"/> associated with the
         /// <see cref="Model"/>.
         /// </summary>
         public abstract BindingSource BindingSource { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value that indicates whether the binder should use an empty prefix to look up
-        /// values in <see cref="IValueProvider"/> when no values are found using the <see cref="ModelName"/> prefix.
-        /// </summary>
-        /// <remarks>
-        /// Passed into the model binding system. Should not be <c>true</c> when <see cref="IsTopLevelObject"/> is
-        /// <c>false</c>.
-        /// </remarks>
-        public abstract bool FallbackToEmptyPrefix { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the current field being bound.

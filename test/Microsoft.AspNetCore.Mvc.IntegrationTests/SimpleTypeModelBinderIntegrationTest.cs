@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task BindParameter_NoData_DoesNotGetBound()
+        public async Task BindParameter_NoData_Fails()
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
@@ -463,7 +463,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Assert
 
             // ModelBindingResult
-            Assert.Equal(default(ModelBindingResult), modelBindingResult);
+            Assert.Equal(ModelBindingResult.Failed(string.Empty), modelBindingResult);
 
             // ModelState
             Assert.True(modelState.IsValid);

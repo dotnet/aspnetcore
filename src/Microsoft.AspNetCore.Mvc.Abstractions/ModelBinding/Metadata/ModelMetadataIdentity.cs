@@ -3,13 +3,14 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 {
     /// <summary>
     /// A key type which identifies a <see cref="ModelMetadata"/>.
     /// </summary>
-    public struct ModelMetadataIdentity
+    public struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
     {
         /// <summary>
         /// Creates a <see cref="ModelMetadataIdentity"/> for the provided model <see cref="Type"/>.
@@ -98,5 +99,31 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// the current instance represents a type.
         /// </summary>
         public string Name { get; private set; }
+
+        /// <inheritdoc />
+        public bool Equals(ModelMetadataIdentity other)
+        {
+            return
+                ContainerType == other.ContainerType &&
+                ModelType == other.ModelType &&
+                Name == other.Name;
+        }
+
+        /// <inheritdoc />
+        public override bool Equals(object obj)
+        {
+            var other = obj as ModelMetadataIdentity?;
+            return other.HasValue && Equals(other.Value);
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            var hash = new HashCodeCombiner();
+            hash.Add(ContainerType);
+            hash.Add(ModelType);
+            hash.Add(Name, StringComparer.Ordinal);
+            return hash;
+        }
     }
 }

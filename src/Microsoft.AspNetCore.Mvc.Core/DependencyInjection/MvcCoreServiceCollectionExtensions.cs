@@ -143,6 +143,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Value;
                 return new DefaultCompositeMetadataDetailsProvider(options.ModelMetadataDetailsProviders);
             }));
+            services.TryAddSingleton<IModelBinderFactory, ModelBinderFactory>();
             services.TryAddSingleton<IObjectModelValidator, DefaultObjectValidator>();
             services.TryAddSingleton<ValidatorCache>();
             services.TryAddSingleton<ClientValidatorCache>();

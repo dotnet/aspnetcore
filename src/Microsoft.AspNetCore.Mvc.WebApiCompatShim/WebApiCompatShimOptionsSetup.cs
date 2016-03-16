@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
             options.Filters.Add(new HttpResponseExceptionActionFilter());
 
             // Add a model binder to be able to bind HttpRequestMessage
-            options.ModelBinders.Insert(0, new HttpRequestMessageModelBinder());
+            options.ModelBinderProviders.Insert(0, new HttpRequestMessageModelBinderProvider());
 
             // Add a formatter to write out an HttpResponseMessage to the response
             options.OutputFormatters.Insert(0, new HttpResponseMessageOutputFormatter());

@@ -6,9 +6,8 @@ using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Options;
 
@@ -37,17 +36,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             messageProvider.ValueMustBeANumberAccessor = Resources.FormatHtmlGeneration_ValueMustBeNumber;
 
             // Set up ModelBinding
-            options.ModelBinders.Add(new BinderTypeBasedModelBinder());
-            options.ModelBinders.Add(new ServicesModelBinder());
-            options.ModelBinders.Add(new BodyModelBinder(readerFactory));
-            options.ModelBinders.Add(new HeaderModelBinder());
-            options.ModelBinders.Add(new SimpleTypeModelBinder());
-            options.ModelBinders.Add(new CancellationTokenModelBinder());
-            options.ModelBinders.Add(new ByteArrayModelBinder());
-            options.ModelBinders.Add(new FormFileModelBinder());
-            options.ModelBinders.Add(new FormCollectionModelBinder());
-            options.ModelBinders.Add(new GenericModelBinder());
-            options.ModelBinders.Add(new MutableObjectModelBinder());
+            options.ModelBinderProviders.Add(new BinderTypeModelBinderProvider());
+            options.ModelBinderProviders.Add(new ServicesModelBinderProvider());
+            options.ModelBinderProviders.Add(new BodyModelBinderProvider(readerFactory));
+            options.ModelBinderProviders.Add(new HeaderModelBinderProvider());
+            options.ModelBinderProviders.Add(new SimpleTypeModelBinderProvider());
+            options.ModelBinderProviders.Add(new CancellationTokenModelBinderProvider());
+            options.ModelBinderProviders.Add(new ByteArrayModelBinderProvider());
+            options.ModelBinderProviders.Add(new FormFileModelBinderProvider());
+            options.ModelBinderProviders.Add(new FormCollectionModelBinderProvider());
+            options.ModelBinderProviders.Add(new KeyValuePairModelBinderProvider());
+            options.ModelBinderProviders.Add(new DictionaryModelBinderProvider());
+            options.ModelBinderProviders.Add(new ArrayModelBinderProvider());
+            options.ModelBinderProviders.Add(new CollectionModelBinderProvider());
+            options.ModelBinderProviders.Add(new ComplexTypeModelBinderProvider());
 
             // Set up filters
             options.Filters.Add(new UnsupportedContentTypeFilter());

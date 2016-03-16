@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// A metadata representation of a model type, property or parameter.
     /// </summary>
     [DebuggerDisplay("{DebuggerToString(),nq}")]
-    public abstract class ModelMetadata
+    public abstract class ModelMetadata : IEquatable<ModelMetadata>
     {
         /// <summary>
         /// The default value of <see cref="ModelMetadata.Order"/>.
@@ -376,6 +376,36 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public string GetDisplayName()
         {
             return DisplayName ?? PropertyName ?? ModelType.Name;
+        }
+
+        /// <inheritdoc />
+        public bool Equals(ModelMetadata other)
+        {
+            if (object.ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (other == null)
+            {
+                return false;
+            }
+            else
+            {
+                return Identity.Equals(other.Identity);
+            }
+        }
+
+        /// <inheritdoc />
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj as ModelMetadata);
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            return Identity.GetHashCode();
         }
 
         private void InitializeTypeInformation()

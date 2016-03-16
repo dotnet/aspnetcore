@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Internal;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class StubModelBinder : IModelBinder
     {

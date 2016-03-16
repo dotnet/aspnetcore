@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
-            Assert.Equal(null, modelBindingResult);
+            Assert.False(modelBindingResult.Value.IsModelSet);
 
             // ModelState (not set unless inner binder sets it)
             Assert.True(modelState.IsValid);
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Assert
 
             // ModelBindingResult
-            Assert.Equal(null, modelBindingResult);
+            Assert.False(modelBindingResult.Value.IsModelSet);
 
             // ModelState
             Assert.True(modelState.IsValid);
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Assert
 
             // ModelBindingResult
-            Assert.Equal(null, modelBindingResult);
+            Assert.False(modelBindingResult.Value.IsModelSet);
 
             // ModelState
             Assert.True(modelState.IsValid);

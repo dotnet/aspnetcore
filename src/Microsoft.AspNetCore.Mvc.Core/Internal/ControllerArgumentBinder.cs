@@ -24,14 +24,17 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             typeof(ControllerArgumentBinder).GetTypeInfo().GetDeclaredMethod(
                 nameof(CallPropertyAddRange));
 
+        private readonly IModelBinderFactory _modelBinderFactory;
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly IObjectModelValidator _validator;
 
         public ControllerArgumentBinder(
             IModelMetadataProvider modelMetadataProvider,
+            IModelBinderFactory modelBinderFactory,
             IObjectModelValidator validator)
         {
             _modelMetadataProvider = modelMetadataProvider;
+            _modelBinderFactory = modelBinderFactory;
             _validator = validator;
         }
 
@@ -118,7 +121,31 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameter.BindingInfo,
                 parameter.Name);
 
-            await operationContext.ModelBinder.BindModelAsync(modelBindingContext);
+            if (parameter.BindingInfo?.BinderModelName != null)
+            {
+                // The name was set explicitly, always use that as the prefix.
+                modelBindingContext.ModelName = parameter.BindingInfo.BinderModelName;
+            }
+            else if (modelBindingContext.ValueProvider.ContainsPrefix(parameter.Name))
+            {
+                // We have a match for the parameter name, use that as that prefix.
+                modelBindingContext.ModelName = parameter.Name;
+            }
+            else
+            {
+                // No match, fallback to empty string as the prefix.
+                modelBindingContext.ModelName = string.Empty;
+            }
+
+            var binder = _modelBinderFactory.CreateBinder(new ModelBinderFactoryContext()
+            {
+                BindingInfo = parameter.BindingInfo,
+                Metadata = metadata,
+                CacheToken = parameter,
+            });
+
+            await binder.BindModelAsync(modelBindingContext);
+
             var modelBindingResult = modelBindingContext.Result;
             if (modelBindingResult != null && modelBindingResult.Value.IsModelSet)
             {
@@ -241,7 +268,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 ActionContext = context,
                 InputFormatters = context.InputFormatters,
-                ModelBinder = new CompositeModelBinder(context.ModelBinders),
                 ValidatorProvider = new CompositeModelValidatorProvider(context.ValidatorProviders),
                 MetadataProvider = _modelMetadataProvider,
                 ValueProvider = new CompositeValueProvider(context.ValueProviders),

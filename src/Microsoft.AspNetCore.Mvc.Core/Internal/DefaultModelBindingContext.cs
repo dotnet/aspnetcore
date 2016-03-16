@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// </summary>
     public class DefaultModelBindingContext : ModelBindingContext
     {
+        private OperationBindingContext _operationBindingContext;
+
         private State _state;
         private readonly Stack<State> _stack = new Stack<State>();
 
@@ -57,16 +59,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var propertyPredicateProvider =
                 bindingInfo?.PropertyBindingPredicateProvider ?? metadata.PropertyBindingPredicateProvider;
 
+            var valueProvider = operationBindingContext.ValueProvider;
+            var bindingSource = bindingInfo?.BindingSource ?? metadata.BindingSource;
+            if (bindingSource != null && !bindingSource.IsGreedy)
+            {
+                valueProvider = FilterValueProvider(operationBindingContext.ValueProvider, bindingSource);
+            }
+
             return new DefaultModelBindingContext()
             {
                 BinderModelName = binderModelName,
-                BindingSource = bindingInfo?.BindingSource ?? metadata.BindingSource,
-                BinderType = bindingInfo?.BinderType ?? metadata.BinderType,
+                BindingSource = bindingSource,
                 PropertyFilter = propertyPredicateProvider?.PropertyFilter,
-
-                // We only support fallback to empty prefix in cases where the model name is inferred from
-                // the parameter or property being bound.
-                FallbackToEmptyPrefix = binderModelName == null,
 
                 // Because this is the top-level context, FieldName and ModelName should be the same.
                 FieldName = binderModelName ?? modelName,
@@ -76,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 ModelMetadata = metadata,
                 ModelState = operationBindingContext.ActionContext.ModelState,
                 OperationBindingContext = operationBindingContext,
-                ValueProvider = operationBindingContext.ValueProvider,
+                ValueProvider = valueProvider,
 
                 ValidationState = new ValidationStateDictionary(),
             };
@@ -106,16 +110,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             var scope = EnterNestedScope();
 
+            // Only filter if the new BindingSource affects the value providers. Otherwise we want
+            // to preserve the currrent state.
+            if (modelMetadata.BindingSource != null && !modelMetadata.BindingSource.IsGreedy)
+            {
+                ValueProvider = FilterValueProvider(_operationBindingContext.ValueProvider, modelMetadata.BindingSource);
+            }
+
             Model = model;
             ModelMetadata = modelMetadata;
             ModelName = modelName;
             FieldName = fieldName;
             BinderModelName = modelMetadata.BinderModelName;
-            BinderType = modelMetadata.BinderType;
             BindingSource = modelMetadata.BindingSource;
             PropertyFilter = modelMetadata.PropertyBindingPredicateProvider?.PropertyFilter;
 
-            FallbackToEmptyPrefix = false;
             IsTopLevelObject = false;
 
             return scope;
@@ -140,14 +149,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public override OperationBindingContext OperationBindingContext
         {
-            get { return _state.OperationBindingContext; }
+            get { return _operationBindingContext; }
             set
             {
                 if (value == null)
                 {
                     throw new ArgumentNullException(nameof(value));
                 }
-                _state.OperationBindingContext = value;
+                _operationBindingContext = value;
             }
         }
 
@@ -232,20 +241,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public override Type BinderType
-        {
-            get { return _state.BinderType; }
-            set { _state.BinderType = value; }
-        }
-
-        /// <inheritdoc />
-        public override bool FallbackToEmptyPrefix
-        {
-            get { return _state.FallbackToEmptyPrefix; }
-            set { _state.FallbackToEmptyPrefix = value; }
-        }
-
-        /// <inheritdoc />
         public override bool IsTopLevelObject
         {
             get { return _state.IsTopLevelObject; }
@@ -298,9 +293,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
+        private static IValueProvider FilterValueProvider(IValueProvider valueProvider, BindingSource bindingSource)
+        {
+            if (bindingSource == null || bindingSource.IsGreedy)
+            {
+                return valueProvider;
+            }
+
+            var bindingSourceValueProvider = valueProvider as IBindingSourceValueProvider;
+            if (bindingSourceValueProvider == null)
+            {
+                return valueProvider;
+            }
+
+            return bindingSourceValueProvider.Filter(bindingSource) ?? new CompositeValueProvider();
+        }
+
         private struct State
         {
-            public OperationBindingContext OperationBindingContext;
             public string FieldName;
             public object Model;
             public ModelMetadata ModelMetadata;
@@ -313,8 +323,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             public string BinderModelName;
             public BindingSource BindingSource;
-            public Type BinderType;
-            public bool FallbackToEmptyPrefix;
             public bool IsTopLevelObject;
 
             public ModelBindingResult? Result;

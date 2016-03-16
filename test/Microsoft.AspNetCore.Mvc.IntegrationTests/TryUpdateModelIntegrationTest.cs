@@ -1091,17 +1091,17 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             string prefix,
             OperationBindingContext operationContext)
         {
-           return ModelBindingHelper.TryUpdateModelAsync(
-               model,
-               model.GetType(),
-               prefix,
-               operationContext.ActionContext,
-               operationContext.MetadataProvider,
-               operationContext.ModelBinder,
-               operationContext.ValueProvider,
-               operationContext.InputFormatters,
-               ModelBindingTestHelper.GetObjectValidator(operationContext.MetadataProvider),
-               operationContext.ValidatorProvider);
+            return ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                model.GetType(),
+                prefix,
+                operationContext.ActionContext,
+                operationContext.MetadataProvider,
+                TestModelBinderFactory.CreateDefault(),
+                operationContext.ValueProvider,
+                operationContext.InputFormatters,
+                ModelBindingTestHelper.GetObjectValidator(operationContext.MetadataProvider),
+                operationContext.ValidatorProvider);
         }
     }
 }

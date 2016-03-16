@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     {
         private readonly ControllerActionInvokerCache _controllerActionInvokerCache;
         private readonly IReadOnlyList<IInputFormatter> _inputFormatters;
-        private readonly IReadOnlyList<IModelBinder> _modelBinders;
         private readonly IReadOnlyList<IModelValidatorProvider> _modelValidatorProviders;
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
         private readonly DiagnosticSource _diagnosticSource;
@@ -47,7 +46,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ActionContext actionContext,
             ControllerActionInvokerCache controllerActionInvokerCache,
             IReadOnlyList<IInputFormatter> inputFormatters,
-            IReadOnlyList<IModelBinder> modelBinders,
             IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
             IReadOnlyList<IValueProviderFactory> valueProviderFactories,
             ILogger logger,
@@ -67,11 +65,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (inputFormatters == null)
             {
                 throw new ArgumentNullException(nameof(inputFormatters));
-            }
-
-            if (modelBinders == null)
-            {
-                throw new ArgumentNullException(nameof(modelBinders));
             }
 
             if (modelValidatorProviders == null)
@@ -98,7 +91,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             _controllerActionInvokerCache = controllerActionInvokerCache;
             _inputFormatters = inputFormatters;
-            _modelBinders = modelBinders;
             _modelValidatorProviders = modelValidatorProviders;
             _valueProviderFactories = valueProviderFactories;
             Logger = logger;
@@ -356,7 +348,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     // binding.
                     Context.InputFormatters = new FormatterCollection<IInputFormatter>(
                         new CopyOnWriteList<IInputFormatter>(_inputFormatters));
-                    Context.ModelBinders = new CopyOnWriteList<IModelBinder>(_modelBinders);
                     Context.ValidatorProviders = new CopyOnWriteList<IModelValidatorProvider>(_modelValidatorProviders);
 
                     var valueProviders = new List<IValueProvider>();

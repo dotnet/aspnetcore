@@ -40,28 +40,40 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                 ValidatorProvider = new CompositeModelValidatorProvider(controllerContext.ValidatorProviders),
                 ValueProvider = new CompositeValueProvider(controllerContext.ValueProviders),
-                ModelBinder = new CompositeModelBinder(controllerContext.ModelBinders),
             };
         }
 
-        public static ControllerArgumentBinder GetArgumentBinder(MvcOptions options = null)
+        public static ControllerArgumentBinder GetArgumentBinder(
+            MvcOptions options = null,
+            IModelBinderProvider binderProvider = null)
         {
             if (options == null)
             {
                 var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-                return GetArgumentBinder(metadataProvider);
+                return GetArgumentBinder(metadataProvider, binderProvider);
             }
             else
             {
                 var metadataProvider = TestModelMetadataProvider.CreateProvider(options.ModelMetadataDetailsProviders);
-                return GetArgumentBinder(metadataProvider);
+                return GetArgumentBinder(metadataProvider, binderProvider);
             }
         }
 
-        public static ControllerArgumentBinder GetArgumentBinder(IModelMetadataProvider metadataProvider)
+        public static ControllerArgumentBinder GetArgumentBinder(
+            IModelMetadataProvider metadataProvider, 
+            IModelBinderProvider binderProvider = null)
         {
+            var services = GetServices();
+            var options = services.GetRequiredService<IOptions<MvcOptions>>();
+
+            if (binderProvider != null)
+            {
+                options.Value.ModelBinderProviders.Insert(0, binderProvider);
+            }
+
             return new ControllerArgumentBinder(
                 metadataProvider,
+                new ModelBinderFactory(metadataProvider, options),
                 GetObjectValidator(metadataProvider));
         }
 
@@ -81,6 +93,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 updateRequest(httpContext.Request);
             }
 
+            httpContext.RequestServices = GetServices(updateOptions);
+            return httpContext;
+        }
+
+        private static IServiceProvider GetServices(Action<MvcOptions> updateOptions = null)
+        {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddMvc();
             serviceCollection
@@ -92,8 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 serviceCollection.Configure(updateOptions);
             }
 
-            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
-            return httpContext;
+            return serviceCollection.BuildServiceProvider();
         }
 
         private static ControllerContext GetControllerContext(MvcOptions options, ActionContext context)
@@ -108,7 +125,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             {
                 InputFormatters = options.InputFormatters,
                 ValidatorProviders = options.ModelValidatorProviders,
-                ModelBinders = options.ModelBinders,
                 ValueProviders = valueProviderFactoryContext.ValueProviders
             };
         }

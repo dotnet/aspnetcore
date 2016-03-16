@@ -150,6 +150,22 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             }
         }
 
+        private class AddressBinderProvider : IModelBinderProvider
+        {
+            public IModelBinder GetBinder(ModelBinderProviderContext context)
+            {
+                var allowedBindingSource = context.BindingInfo?.BindingSource;
+                if (allowedBindingSource?.CanAcceptDataFrom(BindAddressAttribute.Source) == true)
+                {
+                    // Binding Sources are opt-in. This model either didn't specify one or specified something
+                    // incompatible so let other binders run.
+                    return new AddressBinder();
+                }
+
+                return null;
+            }
+        }
+
         private class AddressBinder : IModelBinder
         {
             public Task BindModelAsync(ModelBindingContext bindingContext)
@@ -158,6 +174,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 {
                     throw new ArgumentNullException(nameof(bindingContext));
                 }
+
                 Debug.Assert(bindingContext.Result == null);
 
                 var allowedBindingSource = bindingContext.BindingSource;
@@ -180,7 +197,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task GenericModelBinder_BindsCollection_ElementTypeUsesGreedyModelBinder_WithPrefix_Success()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(binderProvider: new AddressBinderProvider());
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -189,8 +206,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // Need to have a key here so that the GenericModelBinder will recurse to bind elements.
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
-                request => request.QueryString = new QueryString("?parameter.index=0"),
-                options => options.ModelBinders.Add(new AddressBinder()));
+                request => request.QueryString = new QueryString("?parameter.index=0"));
 
             var modelState = operationContext.ActionContext.ModelState;
 

@@ -36,11 +36,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public IValueProvider ValueProvider { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="IModelBinder"/> associated with this context.
-        /// </summary>
-        public IModelBinder ModelBinder { get; set; }
-
-        /// <summary>
         /// Gets or sets the <see cref="IModelMetadataProvider"/> associated with this context.
         /// </summary>
         public IModelMetadataProvider MetadataProvider { get; set; }

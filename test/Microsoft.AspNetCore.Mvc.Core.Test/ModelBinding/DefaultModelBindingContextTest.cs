@@ -2,9 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Test;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -37,7 +41,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Act
             var originalBinderModelName = bindingContext.BinderModelName;
-            var originalBinderType = bindingContext.BinderType;
             var originalBindingSource = bindingContext.BindingSource;
             var originalModelState = bindingContext.ModelState;
             var originalOperationBindingContext = bindingContext.OperationBindingContext;
@@ -51,9 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.Same(newModelMetadata.BinderModelName, bindingContext.BinderModelName);
-            Assert.Same(newModelMetadata.BinderType, bindingContext.BinderType);
             Assert.Same(newModelMetadata.BindingSource, bindingContext.BindingSource);
-            Assert.False(bindingContext.FallbackToEmptyPrefix);
             Assert.Equal("fieldName", bindingContext.FieldName);
             Assert.False(bindingContext.IsTopLevelObject);
             Assert.Null(bindingContext.Model);
@@ -67,6 +68,98 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
+        public void CreateBindingContext_FiltersValueProviders_ForValueProviderSource()
+        {
+            // Arrange
+            var metadataProvider = new TestModelMetadataProvider();
+
+            var original = CreateDefaultValueProvider();
+            var operationBindingContext = new OperationBindingContext()
+            {
+                ActionContext = new ActionContext(),
+                ValueProvider = original,
+            };
+
+            // Act
+            var context = DefaultModelBindingContext.CreateBindingContext(
+                operationBindingContext,
+                metadataProvider.GetMetadataForType(typeof(object)),
+                new BindingInfo() { BindingSource = BindingSource.Query },
+                "model");
+
+            // Assert
+            Assert.Collection(
+                Assert.IsType<CompositeValueProvider>(context.ValueProvider),
+                vp => Assert.Same(original[1], vp));
+        }
+
+        [Fact]
+        public void EnterNestedScope_FiltersValueProviders_ForValueProviderSource()
+        {
+            // Arrange
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForProperty(typeof(string), nameof(string.Length))
+                .BindingDetails(b => b.BindingSource = BindingSource.Query);
+
+            var original = CreateDefaultValueProvider();
+            var operationBindingContext = new OperationBindingContext()
+            {
+                ActionContext = new ActionContext(),
+                ValueProvider = original,
+            };
+
+            var context = DefaultModelBindingContext.CreateBindingContext(
+                operationBindingContext,
+                metadataProvider.GetMetadataForType(typeof(string)),
+                new BindingInfo(),
+                "model");
+
+            var propertyMetadata = metadataProvider.GetMetadataForProperty(typeof(string), nameof(string.Length));
+
+            // Act
+            context.EnterNestedScope(propertyMetadata, "Length", "Length", model: null);
+
+            // Assert
+            Assert.Collection(
+                Assert.IsType<CompositeValueProvider>(context.ValueProvider),
+                vp => Assert.Same(original[1], vp));
+        }
+
+        [Fact]
+        public void EnterNestedScope_FiltersValueProviders_BasedOnTopLevelValueProviders()
+        {
+            // Arrange
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForProperty(typeof(string), nameof(string.Length))
+                .BindingDetails(b => b.BindingSource = BindingSource.Form);
+
+            var original = CreateDefaultValueProvider();
+            var operationBindingContext = new OperationBindingContext()
+            {
+                ActionContext = new ActionContext(),
+                ValueProvider = original,
+            };
+
+            var context = DefaultModelBindingContext.CreateBindingContext(
+                operationBindingContext,
+                metadataProvider.GetMetadataForType(typeof(string)),
+                new BindingInfo() { BindingSource = BindingSource.Query },
+                "model");
+
+            var propertyMetadata = metadataProvider.GetMetadataForProperty(typeof(string), nameof(string.Length));
+
+            // Act
+            context.EnterNestedScope(propertyMetadata, "Length", "Length", model: null);
+
+            // Assert
+            Assert.Collection(
+                Assert.IsType<CompositeValueProvider>(context.ValueProvider),
+                vp => Assert.Same(original[2], vp));
+        }
+
+        [Fact]
         public void ModelTypeAreFedFromModelMetadata()
         {
             // Act
@@ -77,6 +170,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(typeof(int), bindingContext.ModelType);
+        }
+
+        private static CompositeValueProvider CreateDefaultValueProvider()
+        {
+            var result = new CompositeValueProvider();
+            result.Add(new RouteValueProvider(BindingSource.Path, new RouteValueDictionary()));
+            result.Add(new QueryStringValueProvider(
+                BindingSource.Query,
+                new QueryCollection(),
+                CultureInfo.InvariantCulture));
+            result.Add(new FormValueProvider(
+                BindingSource.Form,
+                new FormCollection(new Dictionary<string, StringValues>()),
+                CultureInfo.CurrentCulture));
+            return result;
         }
 
         private class TestModelBinder : IModelBinder

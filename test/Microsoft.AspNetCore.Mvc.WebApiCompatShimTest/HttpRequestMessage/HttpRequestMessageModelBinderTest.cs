@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
     public class HttpRequestMessageModelBinderTest
     {
         [Fact]
-        public async Task BindModelAsync_ReturnsNonEmptyResult_ForHttpRequestMessageType()
+        public async Task BindModelAsync_BindsHttpRequestMessage()
         {
             // Arrange
             var binder = new HttpRequestMessageModelBinder();
@@ -35,23 +35,6 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
             Assert.True(entry.SuppressValidation);
             Assert.Null(entry.Key);
             Assert.Null(entry.Metadata);
-        }
-
-        [Theory]
-        [InlineData(typeof(int))]
-        [InlineData(typeof(object))]
-        [InlineData(typeof(HttpRequestMessageModelBinderTest))]
-        public async Task BindModelAsync_ReturnsNull_ForNonHttpRequestMessageType(Type type)
-        {
-            // Arrange
-            var binder = new HttpRequestMessageModelBinder();
-            var bindingContext = GetBindingContext(type);
-
-            // Act
-            await binder.BindModelAsync(bindingContext);
-
-            // Assert
-            Assert.False(bindingContext.Result.HasValue);
         }
 
         private static DefaultModelBindingContext GetBindingContext(Type modelType)
