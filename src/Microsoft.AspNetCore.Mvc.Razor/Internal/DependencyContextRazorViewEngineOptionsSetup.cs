@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             var parseOptions = options.ParseOptions;
             parseOptions = parseOptions.WithPreprocessorSymbols(
-                parseOptions.PreprocessorSymbolNames.Concat(compilationOptions.Defines));
+                parseOptions.PreprocessorSymbolNames.Concat(compilationOptions.Defines ?? Enumerable.Empty<string>()));
 
             LanguageVersion languageVersion;
             if (!string.IsNullOrEmpty(compilationOptions.LanguageVersion) &&

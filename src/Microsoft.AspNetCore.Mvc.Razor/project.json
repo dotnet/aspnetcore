@@ -13,6 +13,7 @@
     ],
     "xmlDoc": true
   },
+  "compile": "../Microsoft.AspNetCore.Mvc.Core/DependencyContext/**/*.cs",
   "dependencies": {
     "Microsoft.AspNetCore.Mvc.Razor.Host": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.0-*",
@@ -44,7 +45,7 @@
     "netstandard1.5": {
       "imports": [
         "dotnet5.6",
-        "portable-net45+win8"
+        "portable-net451+win8"
       ],
       "dependencies": {
         "System.Text.Encoding": "4.0.11-*",

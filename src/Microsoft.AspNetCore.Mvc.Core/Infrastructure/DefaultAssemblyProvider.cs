@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// </summary>
         /// <returns>A set of <see cref="Library"/>.</returns>
         // Internal for unit testing
-        protected internal virtual IEnumerable<RuntimeLibrary> GetCandidateLibraries()
+        internal virtual IEnumerable<RuntimeLibrary> GetCandidateLibraries()
         {
             if (ReferenceAssemblies == null)
             {
