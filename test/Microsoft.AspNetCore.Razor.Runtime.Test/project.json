@@ -23,7 +23,8 @@
         "portable-net451+win8"
       ],
       "dependencies": {
-        "dotnet-test-xunit": "1.0.0-dev-*"
+        "dotnet-test-xunit": "1.0.0-dev-*",
+        "moq.netcore": "4.4.0-beta8"
       }
     },
     "net451": {

@@ -56,9 +56,12 @@
     },
     "netstandard1.3": {
       "dependencies": {
+        "System.Collections.Concurrent": "4.0.12-*",
+        "System.Reflection": "4.1.0-*",
         "System.Reflection.Extensions": "4.0.1-*",
         "System.Reflection.TypeExtensions": "4.1.0-*",
-        "System.Text.RegularExpressions": "4.0.12-*"
+        "System.Text.RegularExpressions": "4.0.12-*",
+        "System.Xml.XDocument": "4.0.11-*"
       },
       "imports": [
         "dotnet5.4"

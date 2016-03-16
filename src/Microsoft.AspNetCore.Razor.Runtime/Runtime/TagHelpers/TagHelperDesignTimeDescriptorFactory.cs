@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if !NETSTANDARD1_3 // Cannot accurately resolve the location of the documentation XML file in coreclr.
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -40,10 +39,10 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             }
 
             var id = XmlDocumentationProvider.GetId(type);
-            var documentationDescriptor = CreateDocumentationDescriptor(type.Assembly, id);
+            var documentationDescriptor = CreateDocumentationDescriptor(type.GetTypeInfo().Assembly, id);
 
-            // Purposefully not using the TypeInfo.GetCustomAttributes method here to make it easier to mock the Type.
             var outputElementHintAttribute = type
+                .GetTypeInfo()
                 .GetCustomAttributes(inherit: false)
                 ?.OfType<OutputElementHintAttribute>()
                 .FirstOrDefault();
@@ -79,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             }
 
             var id = XmlDocumentationProvider.GetId(propertyInfo);
-            var declaringAssembly = propertyInfo.DeclaringType.Assembly;
+            var declaringAssembly = propertyInfo.DeclaringType.GetTypeInfo().Assembly;
             var documentationDescriptor = CreateDocumentationDescriptor(declaringAssembly, id);
             if (documentationDescriptor != null)
             {
@@ -93,6 +92,18 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             return null;
         }
 
+        /// <summary>
+        /// Retrieves <paramref name="assembly"/>'s location on disk.
+        /// </summary>
+        /// <param name="assembly">The assembly.</param>
+        /// <returns>The path to the given <paramref name="assembly"/>.</returns>
+        public virtual string GetAssemblyLocation(Assembly assembly)
+        {
+            var assemblyLocation = assembly.Location;
+
+            return assemblyLocation;
+        }
+
         private XmlDocumentationProvider GetXmlDocumentationProvider(Assembly assembly)
         {
             var hashCodeCombiner = HashCodeCombiner.Start();
@@ -102,15 +113,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 
             var documentationProvider = _documentationProviderCache.GetOrAdd(cacheKey, valueFactory: _ =>
             {
-                var assemblyLocation = assembly.Location;
-
-                if (string.IsNullOrEmpty(assemblyLocation) && !string.IsNullOrEmpty(assembly.CodeBase))
-                {
-                    var uri = new UriBuilder(assembly.CodeBase);
-
-                    // Normalize the path to UNC path. This will remove things like file:// from start of uri.Path.
-                    assemblyLocation = Uri.UnescapeDataString(uri.Path);
-                }
+                var assemblyLocation = GetAssemblyLocation(assembly);
 
                 // Couldn't resolve a valid assemblyLocation.
                 if (string.IsNullOrEmpty(assemblyLocation))
@@ -235,4 +238,3 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         }
     }
 }
-#endif
