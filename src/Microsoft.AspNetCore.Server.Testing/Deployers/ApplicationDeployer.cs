@@ -48,8 +48,8 @@ namespace Microsoft.AspNetCore.Server.Testing
 
             DeploymentParameters.PublishedApplicationRootPath = publishRoot ?? Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            var parameters = $"publish {DeploymentParameters.ApplicationPath}"
-                + $" -o {DeploymentParameters.PublishedApplicationRootPath}"
+            var parameters = $"publish \"{DeploymentParameters.ApplicationPath}\""
+                + $" -o \"{DeploymentParameters.PublishedApplicationRootPath}\""
                 + $" --framework {DeploymentParameters.PublishTargetFramework}";
 
             Logger.LogInformation($"Executing command {DotnetCommandName} {parameters}");
