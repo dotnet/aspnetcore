@@ -218,27 +218,27 @@ var buildTarget = "compile"
                 .Where(d => { int _; return int.TryParse(d, out _); })
                 .OrderByDescending(d => d)
                 .First();
-            var targetDir = Path.Combine(COHERENCE_CACHE_DIR, latestBuild);
+            var targetCacheDir = Path.Combine(COHERENCE_CACHE_DIR, latestBuild); 
+            var targetCacheBuildDir = Path.Combine(targetCacheDir, "build");
             
-            Log.Info("Latest Coherence build is " + latestBuild + ".");
+            Log.Info("Latest Coherence build is " + latestBuild);
 
-            if (!Directory.Exists(targetDir))
+            if (!Directory.Exists(targetCacheDir))
             {
                 var latestBuildShare = Path.Combine(coherenceShare, latestBuild, "build");
 
-                Log.Info("Caching Coherence build " + latestBuild + " at " + targetDir + ".");
-                CopyFolder(latestBuildShare, targetDir, overwrite: true);
-                File.Copy(Path.Combine(coherenceShare, latestBuild, UniverseCommitsFileName), Path.Combine(targetDir, UniverseCommitsFileName));
+                Log.Info("Caching Coherence build " + latestBuild + " at " + targetCacheDir);
+                CopyFolder(latestBuildShare, targetCacheBuildDir, overwrite: true);
+                File.Copy(Path.Combine(coherenceShare, latestBuild, UniverseCommitsFileName), Path.Combine(targetCacheDir, UniverseCommitsFileName));
             }
             else
             {
-                Log.Info("Coherence build " + latestBuild + " already cached at " + targetDir + ".");
+                Log.Info("Coherence build " + latestBuild + " already cached at " + targetCacheDir);
             }
             
-            Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ASPNETVNEXT", Path.Combine(targetDir, "build"));
+            Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ASPNETVNEXT", targetCacheBuildDir);
             Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_EXTERNAL", Path.Combine(DROPS_SHARE, "latest-packages", "external", BUILD_BRANCH));
-            Environment.SetEnvironmentVariable("UNIVERSE_COMMITS_FILE", Path.Combine(targetDir, "commits-universe"));
-            Log.Info(Environment.GetEnvironmentVariable("UNIVERSE_COMMITS_FILE"));
+            Environment.SetEnvironmentVariable("UNIVERSE_COMMITS_FILE", Path.Combine(targetCacheDir, "commits-universe"));
         }
     }
 
