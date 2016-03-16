@@ -33,7 +33,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             return TestPlatformHelper.IsMono || !TestPlatformHelper.IsWindows;
         }
 
-        public class TestDbContext : IdentityDbContext<TUser, TRole, TKey> { }
+        public class TestDbContext : IdentityDbContext<TUser, TRole, TKey> {
+            public TestDbContext(DbContextOptions options) : base(options) { }
+        }
 
         protected override TUser CreateTestUser(string namePrefix = "", string email = "", string phoneNumber = "",
             bool lockoutEnabled = false, DateTimeOffset? lockoutEnd = default(DateTimeOffset?), bool useNamePrefixAsUserName = false)
