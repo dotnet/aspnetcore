@@ -17,11 +17,15 @@ use import="Json"
 
 functions
     @{
+        const string UniverseCommitsFileName = "commits-universe";
+
         private static bool Quiet { get; set; }
 
         static string BUILD_BRANCH = Environment.GetEnvironmentVariable("BUILD_BRANCH") ?? "dev";
         static string BASE_DIR = Directory.GetCurrentDirectory();
         static string TARGET_DIR = Path.Combine(BASE_DIR, "artifacts", "build");
+        static string COHERENCE_CACHE_DIR = Environment.GetEnvironmentVariable("COHERENCE_CACHE_DIR") ?? Path.Combine(BASE_DIR, ".coherence-cache");
+        static string DROPS_SHARE = Environment.GetEnvironmentVariable("ASPNETCI_DROPS_SHARE") ?? @"\\aspnetci\drops";
         static bool SKIP_NO_CREDENTIALS = Environment.GetEnvironmentVariable("UNIVERSE_SKIP_NO_CREDENTIALS") == "1";
 
         // Doesn't build on Mono since their contracts don't match
@@ -87,7 +91,7 @@ var buildTarget = "compile"
 
 #verify-all .pull .change-default-build-target-to-verify .build-all
 
-#ci-test .pull .sync-commits .remove-src-folders .cache-coherence .change-default-build-target-to-verify .build-all
+#ci-test .cache-coherence .pull .sync-commits .remove-src-folders .change-default-build-target-to-verify .build-all
 
 #ci-build
     @{
@@ -206,27 +210,25 @@ var buildTarget = "compile"
 
 #cache-coherence
     @{
-        var coherenceCacheDir = Path.Combine(BASE_DIR, Environment.GetEnvironmentVariable("COHERENCE_CACHE_DIR") ?? ".coherence-cache");
-        var dropsShare = Environment.GetEnvironmentVariable("ASPNETCI_DROPS_SHARE");
-
-        if (!string.IsNullOrWhiteSpace(dropsShare))
+        if (!string.IsNullOrWhiteSpace(DROPS_SHARE))
         {
-            var coherenceShare = Path.Combine(dropsShare, "Coherence", BUILD_BRANCH);
+            var coherenceShare = Path.Combine(DROPS_SHARE, "Coherence", BUILD_BRANCH);
             var latestBuild = Directory.EnumerateDirectories(coherenceShare)
                 .Select(d => Path.GetFileName(d))
                 .Where(d => { int _; return int.TryParse(d, out _); })
                 .OrderByDescending(d => d)
                 .First();
-            var targetDir = Path.Combine(coherenceCacheDir, latestBuild);
+            var targetDir = Path.Combine(COHERENCE_CACHE_DIR, latestBuild);
             
-            Log.Info("Latest Coherence build is " + latestBuild     + ".");
+            Log.Info("Latest Coherence build is " + latestBuild + ".");
 
             if (!Directory.Exists(targetDir))
             {
-                var latestBuildShare = Path.Combine(coherenceShare, latestBuild);
+                var latestBuildShare = Path.Combine(coherenceShare, latestBuild, "build");
 
                 Log.Info("Caching Coherence build " + latestBuild + " at " + targetDir + ".");
                 CopyFolder(latestBuildShare, targetDir, overwrite: true);
+                File.Copy(Path.Combine(coherenceShare, latestBuild, UniverseCommitsFileName), Path.Combine(targetDir, UniverseCommitsFileName));
             }
             else
             {
@@ -234,7 +236,9 @@ var buildTarget = "compile"
             }
             
             Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ASPNETVNEXT", Path.Combine(targetDir, "build"));
-            Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_EXTERNAL", Path.Combine(dropsShare, "latest-packages", "external", BUILD_BRANCH));
+            Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_EXTERNAL", Path.Combine(DROPS_SHARE, "latest-packages", "external", BUILD_BRANCH));
+            Environment.SetEnvironmentVariable("UNIVERSE_COMMITS_FILE", Path.Combine(targetDir, "commits-universe"));
+            Log.Info(Environment.GetEnvironmentVariable("UNIVERSE_COMMITS_FILE"));
         }
     }
 
