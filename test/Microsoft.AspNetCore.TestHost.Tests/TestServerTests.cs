@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 app.Run(context =>
                 {
-                    Assert.NotNull(context.RequestServices);
+                    Assert.Null(context.RequestServices);
                     return context.Response.WriteAsync("Success");
                 });
             })

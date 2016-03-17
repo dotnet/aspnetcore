@@ -251,6 +251,53 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
+        public void ConfiguresStartupFiltersInCorrectOrder()
+        {
+            // Verify ordering
+            var configureOrder = 0;
+            var host = CreateBuilder()
+                .UseServer((IServerFactory)this)
+                .ConfigureServices(services =>
+                {
+                    services.AddTransient<IStartupFilter>(serviceProvider => new TestFilter(
+                        () => Assert.Equal(1, configureOrder++),
+                        () => Assert.Equal(2, configureOrder++),
+                        () => Assert.Equal(5, configureOrder++)));
+                    services.AddTransient<IStartupFilter>(serviceProvider => new TestFilter(
+                        () => Assert.Equal(0, configureOrder++),
+                        () => Assert.Equal(3, configureOrder++),
+                        () => Assert.Equal(4, configureOrder++)));
+                })
+                .Build();
+            Assert.Equal(6, configureOrder);
+        }
+
+        private class TestFilter : IStartupFilter
+        {
+            private readonly Action _verifyConfigureOrder;
+            private readonly Action _verifyBuildBeforeOrder;
+            private readonly Action _verifyBuildAfterOrder;
+
+            public TestFilter(Action verifyConfigureOrder, Action verifyBuildBeforeOrder, Action verifyBuildAfterOrder)
+            {
+                _verifyConfigureOrder = verifyConfigureOrder;
+                _verifyBuildBeforeOrder = verifyBuildBeforeOrder;
+                _verifyBuildAfterOrder = verifyBuildAfterOrder;
+            }
+
+            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+            {
+                _verifyConfigureOrder();
+                return builder =>
+                {
+                    _verifyBuildBeforeOrder();
+                    next(builder);
+                    _verifyBuildAfterOrder();
+                };
+            }
+        }
+
+        [Fact]
         public void EnvDefaultsToProductionIfNoConfig()
         {
             var host = CreateBuilder().UseServer((IServerFactory)this).Build();

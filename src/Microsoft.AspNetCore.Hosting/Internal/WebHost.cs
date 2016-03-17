@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
                 var startupFilters = _applicationServices.GetService<IEnumerable<IStartupFilter>>();
                 var configure = Startup.ConfigureDelegate;
-                foreach (var filter in startupFilters)
+                foreach (var filter in startupFilters.Reverse())
                 {
                     configure = filter.Configure(configure);
                 }
