@@ -17,6 +17,10 @@
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
+    "Microsoft.Extensions.ProcessHelper.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
+    },
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {

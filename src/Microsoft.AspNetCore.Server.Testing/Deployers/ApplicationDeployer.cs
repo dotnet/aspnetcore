@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
 
@@ -104,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.Testing
             if (hostProcess != null && !hostProcess.HasExited)
             {
                 // Shutdown the host process.
-                KillProcess(hostProcess.Id);
+                hostProcess.KillTree();
                 if (!hostProcess.HasExited)
                 {
                     Logger.LogWarning("Unable to terminate the host process with process Id '{processId}", hostProcess.Id);
@@ -117,38 +116,6 @@ namespace Microsoft.AspNetCore.Server.Testing
             else
             {
                 Logger.LogWarning("Host process already exited or never started successfully.");
-            }
-        }
-
-        private void KillProcess(int processId)
-        {
-            if (IsWindows)
-            {
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = "taskkill",
-                    Arguments = $"/T /F /PID {processId}",
-                };
-                var killProcess = Process.Start(startInfo);
-                killProcess.WaitForExit();
-            }
-            else
-            {
-                var killSubProcessStartInfo = new ProcessStartInfo
-                {
-                    FileName = "pkill",
-                    Arguments = $"-TERM -P {processId}",
-                };
-                var killSubProcess = Process.Start(killSubProcessStartInfo);
-                killSubProcess.WaitForExit();
-                
-                var killProcessStartInfo = new ProcessStartInfo
-                {
-                    FileName = "kill",
-                    Arguments = $"-TERM {processId}",
-                };
-                var killProcess = Process.Start(killProcessStartInfo);
-                killProcess.WaitForExit();
             }
         }
 
