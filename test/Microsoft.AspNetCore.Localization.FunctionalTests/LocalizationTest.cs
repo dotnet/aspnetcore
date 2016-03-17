@@ -5,18 +5,15 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Localization.FunctionalTests
 {
     public class LocalizationTest
     {
-        private static readonly string _applicationPath =
-#if NET451
-            Path.GetFullPath(Path.Combine("..", "..", "..", "..", "..", "LocalizationWebsite"));
-#else
-            Path.GetFullPath(Path.Combine("..", "LocalizationWebsite"));
-#endif
+        private static readonly string _applicationPath = Path.GetFullPath(
+            Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "..", "..", "..", "..", "..", "LocalizationWebsite"));
         
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]

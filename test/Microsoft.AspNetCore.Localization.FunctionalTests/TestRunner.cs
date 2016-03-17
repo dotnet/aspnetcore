@@ -14,11 +14,12 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
     public class TestRunner
     {
         private string _applicationPath;
-        
-        public TestRunner(string applicationPath){
+
+        public TestRunner(string applicationPath)
+        {
             _applicationPath = applicationPath;
         }
-        
+
         private async Task<string> RunTestAndGetResponse(
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture runtimeArchitecture,
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 }
             }
         }
-        
+
         public async Task RunTestAndVerifyResponse(
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture runtimeArchitecture,
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             Console.WriteLine("Response Text " + responseText);
             Assert.Equal(expectedText, responseText);
         }
-        
+
         public async Task RunTestAndVerifyResponseHeading(
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture runtimeArchitecture,
