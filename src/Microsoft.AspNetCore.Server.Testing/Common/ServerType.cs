@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Server.Testing
         IISExpress,
         IIS,
         WebListener,
-        Kestrel
+        Kestrel,
+        Nginx
     }
 }

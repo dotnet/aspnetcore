@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Testing
             };
         }
 
-        private CancellationToken StartSelfHost(Uri uri)
+        protected CancellationToken StartSelfHost(Uri uri)
         {
             string executableName;
             string executableArgs = string.Empty;

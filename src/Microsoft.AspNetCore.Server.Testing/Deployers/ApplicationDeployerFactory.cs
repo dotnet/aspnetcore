@@ -40,6 +40,8 @@ namespace Microsoft.AspNetCore.Server.Testing
                 case ServerType.WebListener:
                 case ServerType.Kestrel:
                     return new SelfHostDeployer(deploymentParameters, logger);
+                case ServerType.Nginx:
+                    return new NginxDeployer(deploymentParameters, logger);
                 default:
                     throw new NotSupportedException(
                         string.Format("Found no deployers suitable for server type '{0}' with the current runtime.", 

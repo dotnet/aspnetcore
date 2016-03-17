@@ -61,9 +61,9 @@ namespace Microsoft.AspNetCore.Server.Testing
 
         public string EnvironmentName { get; set; }
 
-        public string ApplicationHostConfigTemplateContent { get; set; }
+        public string ServerConfigTemplateContent { get; set; }
 
-        public string ApplicationHostConfigLocation { get; set; }
+        public string ServerConfigLocation { get; set; }
 
         public string SiteName { get; set; }
 

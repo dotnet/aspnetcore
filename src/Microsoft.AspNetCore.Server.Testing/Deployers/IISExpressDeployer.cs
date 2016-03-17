@@ -50,19 +50,19 @@ namespace Microsoft.AspNetCore.Server.Testing
 
         private CancellationToken StartIISExpress(Uri uri)
         {
-            if (!string.IsNullOrWhiteSpace(DeploymentParameters.ApplicationHostConfigTemplateContent))
+            if (!string.IsNullOrWhiteSpace(DeploymentParameters.ServerConfigTemplateContent))
             {
                 // Pass on the applicationhost.config to iis express. With this don't need to pass in the /path /port switches as they are in the applicationHost.config
                 // We take a copy of the original specified applicationHost.Config to prevent modifying the one in the repo.
 
-                DeploymentParameters.ApplicationHostConfigTemplateContent =
-                    DeploymentParameters.ApplicationHostConfigTemplateContent
+                DeploymentParameters.ServerConfigTemplateContent =
+                    DeploymentParameters.ServerConfigTemplateContent
                         .Replace("[ApplicationPhysicalPath]", DeploymentParameters.ApplicationPath)
                         .Replace("[PORT]", uri.Port.ToString());
 
-                DeploymentParameters.ApplicationHostConfigLocation = Path.GetTempFileName();
+                DeploymentParameters.ServerConfigLocation = Path.GetTempFileName();
 
-                File.WriteAllText(DeploymentParameters.ApplicationHostConfigLocation, DeploymentParameters.ApplicationHostConfigTemplateContent);
+                File.WriteAllText(DeploymentParameters.ServerConfigLocation, DeploymentParameters.ServerConfigTemplateContent);
             }
 
             var webroot = DeploymentParameters.ApplicationPath;
@@ -71,9 +71,9 @@ namespace Microsoft.AspNetCore.Server.Testing
                 webroot = Path.Combine(webroot, "wwwroot");
             }
 
-            var parameters = string.IsNullOrWhiteSpace(DeploymentParameters.ApplicationHostConfigLocation) ?
+            var parameters = string.IsNullOrWhiteSpace(DeploymentParameters.ServerConfigLocation) ?
                             string.Format("/port:{0} /path:\"{1}\" /trace:error", uri.Port, webroot) :
-                            string.Format("/site:{0} /config:{1} /trace:error", DeploymentParameters.SiteName, DeploymentParameters.ApplicationHostConfigLocation);
+                            string.Format("/site:{0} /config:{1} /trace:error", DeploymentParameters.SiteName, DeploymentParameters.ServerConfigLocation);
 
             var iisExpressPath = GetIISExpressPath();
 
@@ -140,18 +140,18 @@ namespace Microsoft.AspNetCore.Server.Testing
         {
             ShutDownIfAnyHostProcess(_hostProcess);
 
-            if (!string.IsNullOrWhiteSpace(DeploymentParameters.ApplicationHostConfigLocation)
-                && File.Exists(DeploymentParameters.ApplicationHostConfigLocation))
+            if (!string.IsNullOrWhiteSpace(DeploymentParameters.ServerConfigLocation)
+                && File.Exists(DeploymentParameters.ServerConfigLocation))
             {
                 // Delete the temp applicationHostConfig that we created.
                 try
                 {
-                    File.Delete(DeploymentParameters.ApplicationHostConfigLocation);
+                    File.Delete(DeploymentParameters.ServerConfigLocation);
                 }
                 catch (Exception exception)
                 {
                     // Ignore delete failures - just write a log.
-                    Logger.LogWarning("Failed to delete '{config}'. Exception : {exception}", DeploymentParameters.ApplicationHostConfigLocation, exception.Message);
+                    Logger.LogWarning("Failed to delete '{config}'. Exception : {exception}", DeploymentParameters.ServerConfigLocation, exception.Message);
                 }
             }
 
