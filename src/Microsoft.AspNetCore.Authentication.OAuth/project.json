@@ -21,15 +21,8 @@
     "Newtonsoft.Json": "8.0.3"
   },
   "frameworks": {
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Net.Http": ""
-      }
-    },
+    "net451": { },
     "netstandard1.3": {
-      "dependencies": {
-        "System.Net.Http": "4.0.1-*"
-      },
       "imports": [
         "dotnet5.4",
         "portable-net451+win8"

@@ -20,15 +20,8 @@
     "Microsoft.AspNetCore.Authentication": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Net.Http": ""
-      }
-    },
+    "net451": { },
     "netstandard1.3": {
-      "dependencies": {
-        "System.Net.Http": "4.0.1-*"
-      },
       "imports": [
         "dotnet5.4"
       ]
