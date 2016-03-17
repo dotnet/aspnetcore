@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
     </handlers>
     <aspNetCore processPath=""..\test.exe"" stdoutLogEnabled=""false"" stdoutLogFile=""..\logs\stdout.log"" startupTimeLimit=""3600"">
       <environmentVariables>
-        <environmentVariable name=""ASPNETCORE_APPLICATIONBASE"" value=""."" />
+        <environmentVariable name=""ASPNETCORE_CONTENTROOT"" value=""."" />
       </environmentVariables>
     </aspNetCore>
   </system.webServer>

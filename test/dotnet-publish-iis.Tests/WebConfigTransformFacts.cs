@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
     </handlers>
     <httpPlatform processPath=""..\test.exe"" stdoutLogEnabled=""false"" stdoutLogFile=""..\logs\stdout.log"" startupTimeLimit=""3600"">
       <environmentVariables>
-        <environmentVariable name=""ASPNETCORE_APPLICATIONBASE"" value=""."" />
+        <environmentVariable name=""ASPNETCORE_CONTENTROOT"" value=""."" />
       </environmentVariables>
     </httpPlatform>
   </system.webServer>

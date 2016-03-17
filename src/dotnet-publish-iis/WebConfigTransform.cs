@@ -70,15 +70,15 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS
 
         private static void AddApplicationBase(XElement httpPlatformElement)
         {
-            const string appBaseKeyName = "ASPNETCORE_APPLICATIONBASE";
+            const string contentRootKeyName = "ASPNETCORE_CONTENTROOT";
 
             var envVariables = GetOrCreateChild(httpPlatformElement, "environmentVariables");
             var appBaseElement = envVariables.Elements("environmentVariable").SingleOrDefault(e =>
-                string.Equals((string)e.Attribute("name"), appBaseKeyName, StringComparison.CurrentCultureIgnoreCase));
+                string.Equals((string)e.Attribute("name"), contentRootKeyName, StringComparison.CurrentCultureIgnoreCase));
 
             if (appBaseElement == null)
             {
-                appBaseElement = new XElement("environmentVariable", new XAttribute("name", appBaseKeyName));
+                appBaseElement = new XElement("environmentVariable", new XAttribute("name", contentRootKeyName));
                 envVariables.AddFirst(appBaseElement);
             }
 
