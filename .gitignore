@@ -28,4 +28,5 @@ project.lock.json
 .testPublish/
 .build/
 /.vs/
+testWorkDir/
 

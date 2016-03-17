@@ -5,14 +5,12 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.PlatformAbstractions;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.DotNet.Watcher.Core.Internal
 {
     public class ProcessWatcher : IProcessWatcher
     {
-        private static readonly TimeSpan _processKillTimeout = TimeSpan.FromSeconds(30);
-
         private Process _runningProcess;
 
         public int Start(string executable, string arguments, string workingDir)
@@ -43,7 +41,7 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
             {
                 if (_runningProcess != null)
                 {
-                    _runningProcess.KillTree(_processKillTimeout);
+                    _runningProcess.KillTree();
                 }
             });
 

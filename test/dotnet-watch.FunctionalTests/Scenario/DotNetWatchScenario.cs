@@ -4,14 +4,12 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using Microsoft.DotNet.Watcher.Core.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.DotNet.Watcher.FunctionalTests
 {
     public class DotNetWatchScenario : IDisposable
     {
-        private static readonly TimeSpan _processKillTimeout = TimeSpan.FromSeconds(30);
-
         protected const string DotnetWatch = "dotnet-watch";
 
         protected static readonly string _repositoryRoot = FindRepoRoot();
@@ -38,7 +36,7 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
             {
                 if (!WatcherProcess.HasExited)
                 {
-                    WatcherProcess.KillTree(_processKillTimeout);
+                    WatcherProcess.KillTree();
                 }
                 WatcherProcess.Dispose();
             }

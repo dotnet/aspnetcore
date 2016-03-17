@@ -19,7 +19,10 @@
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.FileSystemGlobbing": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
-    "System.Diagnostics.Process": "4.1.0-*"
+    "Microsoft.Extensions.ProcessHelper.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
+    }
   },
   "frameworks": {
     "dnxcore50": {

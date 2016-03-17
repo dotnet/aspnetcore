@@ -6,6 +6,10 @@
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-dev-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
+    "Microsoft.Extensions.ProcessHelper.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
+    },
     "Microsoft.DotNet.Watcher.Core": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Newtonsoft.Json": "8.0.2",
