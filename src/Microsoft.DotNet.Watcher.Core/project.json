@@ -19,7 +19,7 @@
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.FileSystemGlobbing": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
-    "Microsoft.Extensions.ProcessHelper.Sources": {
+    "Microsoft.Extensions.Process.Sources": {
       "type": "build",
       "version": "1.0.0-*"
     }
