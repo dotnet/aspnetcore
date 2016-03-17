@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Http.Internal
                 if (_tempDirectory == null)
                 {
                     // Look for folders in the following order.
-                    var temp = Environment.GetEnvironmentVariable("ASPNET_TEMP") ??     // ASPNET_TEMP - User set temporary location.
+                    var temp = Environment.GetEnvironmentVariable("ASPNETCORE_TEMP") ??     // ASPNETCORE_TEMP - User set temporary location.
                                Path.GetTempPath();                                      // Fall back.
 
                     if (!Directory.Exists(temp))
@@ -53,6 +53,27 @@ namespace Microsoft.AspNetCore.Http.Internal
                 request.HttpContext.Response.RegisterForDispose(fileStream);
             }
             return request;
+        }
+
+        public static MultipartSection EnableRewind(this MultipartSection section, Action<IDisposable> registerForDispose, int bufferThreshold = DefaultBufferThreshold)
+        {
+            if (section == null)
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+            if (registerForDispose == null)
+            {
+                throw new ArgumentNullException(nameof(registerForDispose));
+            }
+
+            var body = section.Body;
+            if (!body.CanSeek)
+            {
+                var fileStream = new FileBufferingReadStream(body, bufferThreshold, _getTempDirectory);
+                section.Body = fileStream;
+                registerForDispose(fileStream);
+            }
+            return section;
         }
     }
 }

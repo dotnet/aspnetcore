@@ -13,68 +13,94 @@ namespace Microsoft.AspNetCore.Http.Features.Internal
 {
     public class FormFeatureTests
     {
-        [Fact]
-        public async Task ReadFormAsync_SimpleData_ReturnsParsedFormCollection()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadFormAsync_SimpleData_ReturnsParsedFormCollection(bool bufferRequest)
         {
-            // Arrange
             var formContent = Encoding.UTF8.GetBytes("foo=bar&baz=2");
             var context = new DefaultHttpContext();
+            var responseFeature = new FakeResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = "application/x-www-form-urlencoded; charset=utf-8";
-            context.Request.Body = new MemoryStream(formContent);
+            context.Request.Body = new NonSeekableReadStream(formContent);
+
+            if (bufferRequest)
+            {
+                context.Request.EnableRewind();
+            }
 
             // Not cached yet
             var formFeature = context.Features.Get<IFormFeature>();
             Assert.Null(formFeature);
 
-            // Act
             var formCollection = await context.Request.ReadFormAsync();
 
-            // Assert
             Assert.Equal("bar", formCollection["foo"]);
             Assert.Equal("2", formCollection["baz"]);
-            Assert.Equal(0, context.Request.Body.Position);
-            Assert.True(context.Request.Body.CanSeek);
+            Assert.Equal(bufferRequest, context.Request.Body.CanSeek);
+            if (bufferRequest)
+            {
+                Assert.Equal(0, context.Request.Body.Position);
+            }
 
             // Cached
             formFeature = context.Features.Get<IFormFeature>();
             Assert.NotNull(formFeature);
             Assert.NotNull(formFeature.Form);
             Assert.Same(formFeature.Form, formCollection);
+
+            // Cleanup
+            await responseFeature.CompleteAsync();
         }
 
-        [Fact]
-        public async Task ReadFormAsync_EmptyKeyAtEndAllowed()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadFormAsync_EmptyKeyAtEndAllowed(bool bufferRequest)
         {
-            // Arrange
             var formContent = Encoding.UTF8.GetBytes("=bar");
-            var body = new MemoryStream(formContent);
+            Stream body = new MemoryStream(formContent);
+            if (!bufferRequest)
+            {
+                body = new NonSeekableReadStream(body);
+            }
 
             var formCollection = await FormReader.ReadFormAsync(body);
 
-            // Assert
             Assert.Equal("bar", formCollection[""].FirstOrDefault());
         }
 
-        [Fact]
-        public async Task ReadFormAsync_EmptyKeyWithAdditionalEntryAllowed()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadFormAsync_EmptyKeyWithAdditionalEntryAllowed(bool bufferRequest)
         {
-            // Arrange
             var formContent = Encoding.UTF8.GetBytes("=bar&baz=2");
-            var body = new MemoryStream(formContent);
+            Stream body = new MemoryStream(formContent);
+            if (!bufferRequest)
+            {
+                body = new NonSeekableReadStream(body);
+            }
 
             var formCollection = await FormReader.ReadFormAsync(body);
 
-            // Assert
             Assert.Equal("bar", formCollection[""].FirstOrDefault());
             Assert.Equal("2", formCollection["baz"].FirstOrDefault());
         }
 
-        [Fact]
-        public async Task ReadFormAsync_EmptyValuedAtEndAllowed()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadFormAsync_EmptyValuedAtEndAllowed(bool bufferRequest)
         {
             // Arrange
             var formContent = Encoding.UTF8.GetBytes("foo=");
-            var body = new MemoryStream(formContent);
+            Stream body = new MemoryStream(formContent);
+            if (!bufferRequest)
+            {
+                body = new NonSeekableReadStream(body);
+            }
 
             var formCollection = await FormReader.ReadFormAsync(body);
 
@@ -82,12 +108,18 @@ namespace Microsoft.AspNetCore.Http.Features.Internal
             Assert.Equal("", formCollection["foo"].FirstOrDefault());
         }
 
-        [Fact]
-        public async Task ReadFormAsync_EmptyValuedWithAdditionalEntryAllowed()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadFormAsync_EmptyValuedWithAdditionalEntryAllowed(bool bufferRequest)
         {
             // Arrange
             var formContent = Encoding.UTF8.GetBytes("foo=&baz=2");
-            var body = new MemoryStream(formContent);
+            Stream body = new MemoryStream(formContent);
+            if (!bufferRequest)
+            {
+                body = new NonSeekableReadStream(body);
+            }
 
             var formCollection = await FormReader.ReadFormAsync(body);
 
@@ -125,13 +157,22 @@ namespace Microsoft.AspNetCore.Http.Features.Internal
 "<html><body>Hello World</body></html>\r\n" +
 "--WebKitFormBoundary5pDRpGheQXaM8k3T--";
 
-        [Fact]
-        public async Task ReadForm_EmptyMultipart_ReturnsParsedFormCollection()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadForm_EmptyMultipart_ReturnsParsedFormCollection(bool bufferRequest)
         {
             var formContent = Encoding.UTF8.GetBytes(EmptyMultipartForm);
             var context = new DefaultHttpContext();
+            var responseFeature = new FakeResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = MultipartContentType;
-            context.Request.Body = new MemoryStream(formContent);
+            context.Request.Body = new NonSeekableReadStream(formContent);
+
+            if (bufferRequest)
+            {
+                context.Request.EnableRewind();
+            }
 
             // Not cached yet
             var formFeature = context.Features.Get<IFormFeature>();
@@ -152,15 +193,27 @@ namespace Microsoft.AspNetCore.Http.Features.Internal
             Assert.Equal(0, formCollection.Count);
             Assert.NotNull(formCollection.Files);
             Assert.Equal(0, formCollection.Files.Count);
+
+            // Cleanup
+            await responseFeature.CompleteAsync();
         }
 
-        [Fact]
-        public async Task ReadForm_MultipartWithField_ReturnsParsedFormCollection()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadForm_MultipartWithField_ReturnsParsedFormCollection(bool bufferRequest)
         {
             var formContent = Encoding.UTF8.GetBytes(MultipartFormWithField);
             var context = new DefaultHttpContext();
+            var responseFeature = new FakeResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = MultipartContentType;
-            context.Request.Body = new MemoryStream(formContent);
+            context.Request.Body = new NonSeekableReadStream(formContent);
+
+            if (bufferRequest)
+            {
+                context.Request.EnableRewind();
+            }
 
             // Not cached yet
             var formFeature = context.Features.Get<IFormFeature>();
@@ -183,15 +236,27 @@ namespace Microsoft.AspNetCore.Http.Features.Internal
 
             Assert.NotNull(formCollection.Files);
             Assert.Equal(0, formCollection.Files.Count);
+
+            // Cleanup
+            await responseFeature.CompleteAsync();
         }
 
-        [Fact]
-        public async Task ReadFormAsync_MultipartWithFile_ReturnsParsedFormCollection()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadFormAsync_MultipartWithFile_ReturnsParsedFormCollection(bool bufferRequest)
         {
             var formContent = Encoding.UTF8.GetBytes(MultipartFormWithFile);
             var context = new DefaultHttpContext();
+            var responseFeature = new FakeResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = MultipartContentType;
-            context.Request.Body = new MemoryStream(formContent);
+            context.Request.Body = new NonSeekableReadStream(formContent);
+
+            if (bufferRequest)
+            {
+                context.Request.EnableRewind();
+            }
 
             // Not cached yet
             var formFeature = context.Features.Get<IFormFeature>();
@@ -222,18 +287,30 @@ namespace Microsoft.AspNetCore.Http.Features.Internal
             var body = file.OpenReadStream();
             using (var reader = new StreamReader(body))
             {
+                Assert.True(body.CanSeek);
                 var content = reader.ReadToEnd();
                 Assert.Equal(content, "<html><body>Hello World</body></html>");
             }
+
+            await responseFeature.CompleteAsync();
         }
 
-        [Fact]
-        public async Task ReadFormAsync_MultipartWithFieldAndFile_ReturnsParsedFormCollection()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadFormAsync_MultipartWithFieldAndFile_ReturnsParsedFormCollection(bool bufferRequest)
         {
             var formContent = Encoding.UTF8.GetBytes(MultipartFormWithFieldAndFile);
             var context = new DefaultHttpContext();
+            var responseFeature = new FakeResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = MultipartContentType;
-            context.Request.Body = new MemoryStream(formContent);
+            context.Request.Body = new NonSeekableReadStream(formContent);
+
+            if (bufferRequest)
+            {
+                context.Request.EnableRewind();
+            }
 
             // Not cached yet
             var formFeature = context.Features.Get<IFormFeature>();
@@ -263,9 +340,12 @@ namespace Microsoft.AspNetCore.Http.Features.Internal
             var body = file.OpenReadStream();
             using (var reader = new StreamReader(body))
             {
+                Assert.True(body.CanSeek);
                 var content = reader.ReadToEnd();
                 Assert.Equal(content, "<html><body>Hello World</body></html>");
             }
+
+            await responseFeature.CompleteAsync();
         }
     }
 }

@@ -118,8 +118,6 @@ namespace Microsoft.AspNetCore.Http.Features.Internal
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            _request.EnableRewind();
-
             FormCollection formFields = null;
             FormFileCollection files = null;
 
@@ -146,16 +144,27 @@ namespace Microsoft.AspNetCore.Http.Features.Internal
                         ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out contentDisposition);
                         if (HasFileContentDisposition(contentDisposition))
                         {
+                            // Enable buffering for the file if not already done for the full body
+                            section.EnableRewind(_request.HttpContext.Response.RegisterForDispose);
                             // Find the end
                             await section.Body.DrainAsync(cancellationToken);
 
                             var name = HeaderUtilities.RemoveQuotes(contentDisposition.Name) ?? string.Empty;
                             var fileName = HeaderUtilities.RemoveQuotes(contentDisposition.FileName) ?? string.Empty;
 
-                            var file = new FormFile(_request.Body, section.BaseStreamOffset.Value, section.Body.Length, name, fileName)
+                            FormFile file;
+                            if (section.BaseStreamOffset.HasValue)
                             {
-                                Headers = new HeaderDictionary(section.Headers),
-                            };
+                                // Relative reference to buffered request body
+                                file = new FormFile(_request.Body, section.BaseStreamOffset.Value, section.Body.Length, name, fileName);
+                            }
+                            else
+                            {
+                                // Individually buffered file body
+                                file = new FormFile(section.Body, 0, section.Body.Length, name, fileName);
+                            }
+                            file.Headers = new HeaderDictionary(section.Headers);
+
                             if (files == null)
                             {
                                 files = new FormFileCollection();
@@ -194,7 +203,10 @@ namespace Microsoft.AspNetCore.Http.Features.Internal
             }
 
             // Rewind so later readers don't have to.
-            _request.Body.Seek(0, SeekOrigin.Begin);
+            if (_request.Body.CanSeek)
+            {
+                _request.Body.Seek(0, SeekOrigin.Begin);
+            }
 
             if (formFields != null)
             {

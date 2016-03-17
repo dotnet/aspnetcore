@@ -25,17 +25,17 @@ namespace Microsoft.AspNetCore.Http.Features.Internal
 
         public Stream Body { get; set; }
 
-        public bool HasStarted
+        public virtual bool HasStarted
         {
             get { return false; }
         }
 
-        public void OnStarting(Func<object, Task> callback, object state)
+        public virtual void OnStarting(Func<object, Task> callback, object state)
         {
             throw new NotImplementedException();
         }
 
-        public void OnCompleted(Func<object, Task> callback, object state)
+        public virtual void OnCompleted(Func<object, Task> callback, object state)
         {
             throw new NotImplementedException();
         }
