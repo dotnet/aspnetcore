@@ -30,6 +30,7 @@ functions
 
         // Doesn't build on Mono since their contracts don't match
         string[] repositories = GetRepositoriesToBuild().ToArray();
+        string[] noSrcRepositoryExclude = GetNoSrcDeleteRepositories().ToArray();
 
         static bool useHttps = UseHttps(BASE_DIR);
         static string gitHubUriPrefix = useHttps ? "https://github.com/aspnet/" : "git@github.com:aspnet/";
@@ -204,7 +205,14 @@ var buildTarget = "compile"
     @{
         foreach (var repo in GetRepositoriesToBuild())
         {
-            RemoveSrcFolder(repo);
+            if (!noSrcRepositoryExclude.Contains(repo))
+            {
+                RemoveSrcFolder(repo);
+            }
+            else 
+            {
+                Console.WriteLine("Keeping the sources for " + repo + " because it's explicitly excluded");
+            }
         }
     }
 
@@ -932,6 +940,17 @@ functions
             }
 
             return reposToBuild.ToList();
+        }
+        
+        static IEnumerable<string> GetNoSrcDeleteRepositories()
+        {
+            var repositoryExclude = Environment.GetEnvironmentVariable("KOREBUILD_NOSRC_EXCLUDE");
+            if (string.IsNullOrEmpty(repositoryExclude))
+            {
+                return new string[0];
+            }
+            
+            return repositoryExclude.Split(new string[] {","}, StringSplitOptions.RemoveEmptyEntries); 
         }
 
         static IList<IGrouping<int, string>> GetBuildGraph()
