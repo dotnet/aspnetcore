@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Reflection;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace FiltersWebSite
@@ -16,7 +18,9 @@ namespace FiltersWebSite
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            if (context.ActionDescriptor.DisplayName == "FiltersWebSite.ActionFilterController.GetHelloWorld")
+            var controllerActionDescriptor = (ControllerActionDescriptor)context.ActionDescriptor;
+            if (controllerActionDescriptor.MethodInfo ==
+                typeof(ActionFilterController).GetMethod(nameof(ActionFilterController.GetHelloWorld)))
             {
                 (context.ActionArguments["fromGlobalActionFilter"] as List<ContentResult>).
                     Add(Helpers.GetContentResult(context.Result, "Action Filter - OnActionExecuting"));

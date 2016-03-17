@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(
-                "Hello, Anonymous User from WebApiCompatShimWebSite.BasicApiController.WriteToHttpContext",
+                "Hello, Anonymous User from WebApiCompatShimWebSite.BasicApiController.WriteToHttpContext (WebApiCompatShimWebSite)",
                 content);
         }
 

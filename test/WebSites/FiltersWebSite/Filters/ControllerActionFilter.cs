@@ -1,9 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Reflection;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace FiltersWebSite
@@ -12,7 +14,9 @@ namespace FiltersWebSite
     {
         public override void OnActionExecuted(ActionExecutedContext context)
         {
-            if (context.ActionDescriptor.DisplayName == "FiltersWebSite.ProductsController.GetPrice")
+            var controllerActionDescriptor = (ControllerActionDescriptor)context.ActionDescriptor;
+            if (controllerActionDescriptor.MethodInfo ==
+                typeof(ProductsController).GetMethod(nameof(ProductsController.GetPrice)))
             {
                 context.HttpContext.Response.Headers.Append("filters",
                     "On Controller Action Filter - OnActionExecuted");
@@ -25,13 +29,16 @@ namespace FiltersWebSite
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            if (context.ActionDescriptor.DisplayName == "FiltersWebSite.ProductsController.GetPrice")
+            var controllerActionDescriptor = (ControllerActionDescriptor)context.ActionDescriptor;
+            if (controllerActionDescriptor.MethodInfo ==
+                typeof(ProductsController).GetMethod(nameof(ProductsController.GetPrice)))
             {
                 context.HttpContext.Response.Headers.Append("filters",
                     "On Controller Action Filter - OnActionExecuting");
             }
 
-            if (context.ActionDescriptor.DisplayName == "FiltersWebSite.ActionFilterController.GetHelloWorld")
+            if (controllerActionDescriptor.MethodInfo ==
+                typeof(ActionFilterController).GetMethod(nameof(ActionFilterController.GetHelloWorld)))
             {
                 (context.ActionArguments["fromGlobalActionFilter"] as List<ContentResult>)
                     .Add(Helpers.GetContentResult(context.Result, "Controller Action filter - OnActionExecuting"));
