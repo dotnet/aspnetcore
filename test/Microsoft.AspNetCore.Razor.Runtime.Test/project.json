@@ -28,8 +28,11 @@
     },
     "net451": {
       "frameworkAssemblies": {
-        "System.Runtime": "",
-        "System.Threading.Tasks": ""
+        "System.Runtime": { "type": "build" },
+        "System.IO": { "type": "build" },
+        "System.Threading.Tasks": "",
+        "System.Xml": "4.0.0.0",
+        "System.Xml.Linq": "4.0.0.0"
       },
       "dependencies": {
         "Moq": "4.2.1312.1622",
