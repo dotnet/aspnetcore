@@ -204,6 +204,32 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
+        /// Creates a <see cref="StatusCodeResult"/> object by specifying a <paramref name="statusCode"/>.
+        /// </summary>
+        /// <param name="statusCode">The status code to set on the response.</param>
+        /// <returns>The created <see cref="StatusCodeResult"/> object for the response.</returns>
+        [NonAction]
+        public virtual StatusCodeResult StatusCode(int statusCode)
+        {
+            return new StatusCodeResult(statusCode);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ObjectResult"/> object by specifying a <paramref name="statusCode"/> and <paramref name="value"/>
+        /// </summary>
+        /// <param name="statusCode">The status code to set on the response.</param>
+        /// <param name="value">The value to set on the <see cref="ObjectResult"/>.</param>
+        /// <returns>The created <see cref="ObjectResult"/> object for the response.</returns>
+        [NonAction]
+        public virtual ObjectResult StatusCode(int statusCode, object value)
+        {
+            var result = new ObjectResult(value);
+            result.StatusCode = statusCode;
+
+            return result;
+        }
+
+        /// <summary>
         /// Creates a <see cref="ContentResult"/> object by specifying a <paramref name="content"/> string.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>
@@ -265,7 +291,6 @@ namespace Microsoft.AspNetCore.Mvc
 
             return result;
         }
-
 
         /// <summary>
         /// Creates a <see cref="NoContentResult"/> object that produces an empty No Content (204) response.

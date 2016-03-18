@@ -1061,6 +1061,54 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Equal(contentType, contentResult.ContentType);
         }
 
+        [Fact]
+        public void Controller_StatusCode_SetObject()
+        {
+            // Arrange
+            var statusCode = 204;
+            var value = new { Value = 42 };
+
+            var statusCodeController = new StatusCodeController();
+
+            // Act
+            var result = (ObjectResult)statusCodeController.StatusCode_Object(statusCode, value);
+
+            // Assert
+            Assert.Equal(statusCode, result.StatusCode);
+            Assert.Equal(value, result.Value);
+        }
+
+        [Fact]
+        public void Controller_StatusCode_SetObjectNull()
+        {
+            // Arrange
+            var statusCode = 204;
+            object value = null;
+
+            var statusCodeController = new StatusCodeController();
+
+            // Act
+            var result = statusCodeController.StatusCode_Object(statusCode, value);
+
+            // Assert
+            Assert.Equal(statusCode, result.StatusCode);
+            Assert.Equal(value, result.Value);
+        }
+
+        [Fact]
+        public void Controller_StatusCode_SetsStatusCode()
+        {
+            // Arrange
+            var statusCode = 205;
+            var statusCodeController = new StatusCodeController();
+
+            // Act
+            var result = statusCodeController.StatusCode_Int(statusCode);
+
+            // Assert
+            Assert.Equal(statusCode, result.StatusCode);
+        }
+
         public static IEnumerable<object[]> RedirectTestData
         {
             get
@@ -1637,6 +1685,19 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             public void Dispose()
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        private class StatusCodeController : ControllerBase
+        {
+            public StatusCodeResult StatusCode_Int(int statusCode)
+            {
+                return StatusCode(statusCode);
+            }
+
+            public ObjectResult StatusCode_Object(int statusCode, object value)
+            {
+                return StatusCode(statusCode, value);
             }
         }
 
