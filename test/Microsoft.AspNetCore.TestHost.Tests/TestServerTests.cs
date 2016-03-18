@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.TestHost
         public void CaptureStartupErrorsSettingPreserved()
         {
             var builder = new WebHostBuilder()
-                .UseCaptureStartupErrors(true)
+                .CaptureStartupErrors(true)
                 .Configure(app =>
                 {
                     throw new InvalidOperationException();

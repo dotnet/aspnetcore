@@ -125,22 +125,22 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
-        public void DefaultConfigurationCapturesStartupErrors()
+        public void DefaultHostingConfigurationDoesNotCaptureStartupErrors()
         {
             var hostBuilder = new WebHostBuilder()
-                .UseDefaultConfiguration()
+                .UseDefaultHostingConfiguration()
                 .UseServer(new TestServer())
                 .UseStartup<StartupBoom>();
 
-            // This should not throw
-            hostBuilder.Build();
+            var exception = Assert.Throws<InvalidOperationException>(() => hostBuilder.Build());
+            Assert.Equal("A public method named 'ConfigureProduction' or 'Configure' could not be found in the 'Microsoft.AspNetCore.Hosting.Fakes.StartupBoom' type.", exception.Message);
         }
 
         [Fact]
-        public void UseCaptureStartupErrorsHonored()
+        public void CaptureStartupErrorsHonored()
         {
             var hostBuilder = new WebHostBuilder()
-                .UseCaptureStartupErrors(false)
+                .CaptureStartupErrors(false)
                 .UseServer(new TestServer())
                 .UseStartup<StartupBoom>();
 

@@ -15,15 +15,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public static IConfiguration GetDefault(string[] args)
         {
-            var defaultSettings = new Dictionary<string, string>
-            {
-                { WebHostDefaults.CaptureStartupErrorsKey, "true" }
-            };
-
             // Setup the default locations for finding hosting configuration options
             // hosting.json, ASPNETCORE_ prefixed env variables and command line arguments
             var configBuilder = new ConfigurationBuilder()
-                .AddInMemoryCollection(defaultSettings)
                 .AddJsonFile(WebHostDefaults.HostingJsonFile, optional: true)
                 .AddEnvironmentVariables(prefix: WebHostDefaults.EnvironmentVariablesPrefix);
 

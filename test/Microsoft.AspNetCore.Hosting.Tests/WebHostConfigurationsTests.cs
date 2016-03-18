@@ -11,11 +11,11 @@ namespace Microsoft.AspNetCore.Hosting.Tests
     public class WebHostConfigurationTests
     {
         [Fact]
-        public void DefaultCapturesStartupErrors()
+        public void DefaultDoesNotCaptureStartupErrors()
         {
             var config = new WebHostOptions(WebHostConfiguration.GetDefault());
 
-            Assert.True(config.CaptureStartupErrors);
+            Assert.False(config.CaptureStartupErrors);
         }
 
         [Fact]

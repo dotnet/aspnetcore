@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <summary>
         /// Runs a web application and block the calling thread until host shutdown.
         /// </summary>
-        /// <param name="host"></param>
+        /// <param name="host">The <see cref="IWebHost"/> to run.</param>
         public static void Run(this IWebHost host)
         {
             using (var cts = new CancellationTokenSource())
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <summary>
         /// Runs a web application and block the calling thread until token is triggered or shutdown is triggered.
         /// </summary>
-        /// <param name="host"></param>
+        /// <param name="host">The <see cref="IWebHost"/> to run.</param>
         /// <param name="token">The token to trigger shutdown.</param>
         public static void Run(this IWebHost host, CancellationToken token)
         {

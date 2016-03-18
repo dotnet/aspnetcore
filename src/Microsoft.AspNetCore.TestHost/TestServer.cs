@@ -22,11 +22,6 @@ namespace Microsoft.AspNetCore.TestHost
 
         public TestServer(IWebHostBuilder builder)
         {
-            if (string.IsNullOrEmpty(builder.GetSetting(WebHostDefaults.CaptureStartupErrorsKey)))
-            {
-                builder.UseCaptureStartupErrors(false);
-            }
-
             var host = builder.UseServer(this).Build();
             host.Start();
             _hostInstance = host;
