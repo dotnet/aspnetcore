@@ -35,7 +35,7 @@ namespace HttpOverridesSample
             var host = new WebHostBuilder()
                 .UseDefaultConfiguration(args)
                 .UseServer("Microsoft.AspNetCore.Server.Kestrel")
-                .UseIISPlatformHandlerUrl()
+                // .UseIIS() // This repo can no longer reference IIS because IISIntegration depends on it.
                 .UseStartup<Startup>()
                 .Build();
 
