@@ -17,10 +17,10 @@ namespace TestSites
             {
                 if (ctx.Request.Path.Equals(new PathString("/checkclientcert")))
                 {
-                    return ctx.Response.WriteAsync("Scheme:" + ctx.Request.Scheme + "; Forwarded:" + ctx.Request.Headers["x-forwarded-proto"]
+                    return ctx.Response.WriteAsync("Scheme:" + ctx.Request.Scheme + "; Original:" + ctx.Request.Headers["x-original-proto"]
                         + "; has cert? " + (ctx.Connection.ClientCertificate != null));
                 }
-                return ctx.Response.WriteAsync("Scheme:" + ctx.Request.Scheme + "; Forwarded:" + ctx.Request.Headers["x-forwarded-proto"]);
+                return ctx.Response.WriteAsync("Scheme:" + ctx.Request.Scheme + "; Original:" + ctx.Request.Headers["x-original-proto"]);
             });
         }
     }

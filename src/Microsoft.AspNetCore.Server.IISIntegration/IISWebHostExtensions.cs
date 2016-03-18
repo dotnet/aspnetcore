@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -38,6 +40,10 @@ namespace Microsoft.AspNetCore.Hosting
                 app.ConfigureServices(services =>
                 {
                     services.AddSingleton<IStartupFilter>(new IISSetupFilter(pairingToken));
+                    services.Configure<ForwardedHeadersOptions>(options =>
+                    {
+                        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                    });
                 });
             }
 

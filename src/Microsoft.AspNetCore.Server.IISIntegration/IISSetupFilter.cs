@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             return app =>
             {
+                app.UseForwardedHeaders();
                 app.UseMiddleware<IISMiddleware>(_pairingToken);
                 next(app);
             };
