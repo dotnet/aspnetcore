@@ -38,15 +38,15 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
             
             await server.CreateClient().GetAsync(string.Empty);
 
-            // "Microsoft.AspnNet.Hosting.RequestServicesContainerMiddleware","Microsoft.AspnNet.Diagnostics.DeveloperExceptionPageMiddleware",
+            // "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware",
             // "Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareAnalysisTests.+<>c"
-            Assert.Equal(3, listener.MiddlewareStarting.Count);
-            Assert.Equal("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareAnalysisTests+<>c", listener.MiddlewareStarting[2]);
+            Assert.Equal(2, listener.MiddlewareStarting.Count);
+            Assert.Equal("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareAnalysisTests+<>c", listener.MiddlewareStarting[1]);
             // reversed "RunInlineMiddleware"
             Assert.Equal(1, listener.MiddlewareException.Count);
             Assert.Equal("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareAnalysisTests+<>c", listener.MiddlewareException[0]);
-            // reversed "Microsoft.AspnNet.Diagnostics.DeveloperExceptionPageMiddleware","Microsoft.AspnNet.Hosting.RequestServicesContainerMiddleware"
-            Assert.Equal(2, listener.MiddlewareFinished.Count);
+            // reversed "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware"
+            Assert.Equal(1, listener.MiddlewareFinished.Count);
             Assert.Equal("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", listener.MiddlewareFinished[0]);
         }
     }
