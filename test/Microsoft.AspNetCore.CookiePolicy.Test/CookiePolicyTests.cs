@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Features.Internal;
 using Microsoft.AspNetCore.TestHost;
 using Xunit;
 
@@ -277,7 +276,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
         }
 
         private async Task RunTest(
-            string path, 
+            string path,
             CookiePolicyOptions cookiePolicy,
             RequestDelegate configureSetup,
             params RequestTest[] tests)
