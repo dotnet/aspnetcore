@@ -149,7 +149,7 @@ var buildTarget = "compile"
 
                 if (IsLinux)
                 {
-                    Exec("cp", "-ar .build " + Path.Combine(repo, ".build"), "");
+                    Exec("cp", " -R -l .build " + Path.Combine(repo, ".build"), "");
                 }
                 else
                 {
