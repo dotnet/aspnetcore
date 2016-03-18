@@ -173,14 +173,7 @@ var buildTarget = "compile"
                     if (!string.IsNullOrEmpty(ciVolatileShare))
                     {
                         Log.Info("Publishing packages to " + ciVolatileShare);
-                        if (string.IsNullOrEmpty(nugetExe))
-                        {
-                            Log.Warn("PUSH_NUGET_EXE not specified.");
-                        }
-                        else
-                        {
-                            NuGetPackagesAdd(repoBuild, ciVolatileShare);
-                        }
+                        NuGetPackagesAdd(repoBuild, ciVolatileShare);
                     }
                 }
 
@@ -1041,11 +1034,7 @@ functions
             string output;
             if (IsLinux)
             {
-                output = Path.Combine(repo, "build-with-flow-id.sh");
-                File.WriteAllText(
-                    output,
-                    string.Format("export KOREBUILD_FLOWID=KOREBUILD_{0}\nbuild.sh \"$@\"", repo));
-                Exec("chmod", string.Format("--reference={0} {1}", Path.Combine(repo, "build.sh"), output), "");
+                output = Path.Combine(repo, "build.sh");
             }
             else
             {
