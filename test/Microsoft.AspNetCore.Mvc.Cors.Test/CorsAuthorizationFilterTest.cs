@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Cors.Internal
+namespace Microsoft.AspNetCore.Mvc.Cors
 {
     public class CorsAuthorizationFilterTest
     {

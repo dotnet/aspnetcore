@@ -3,12 +3,9 @@
 
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Authorization
 {
-    /// <summary>
-    /// An implementation of <see cref="IAllowAnonymousFilter"/>
-    /// </summary>
-    public class AllowAnonymousFilter : IAllowAnonymousFilter
+    public interface IAllowAnonymousFilter : IFilterMetadata
     {
     }
 }
