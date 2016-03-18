@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
 {
     public class AnalysisMiddleware
     {
+        private readonly Guid _instanceId = Guid.NewGuid();
         private readonly RequestDelegate _next;
         private readonly DiagnosticSource _diagnostics;
         private readonly string _middlewareName;
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
         {
             if (_diagnostics.IsEnabled("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareStarting"))
             {
-                _diagnostics.Write("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareStarting", new { name = _middlewareName, httpContext = httpContext });
+                _diagnostics.Write("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareStarting", new { name = _middlewareName, httpContext = httpContext, instanceId = _instanceId });
             }
 
             try
@@ -38,14 +39,14 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
 
                 if (_diagnostics.IsEnabled("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareFinished"))
                 {
-                    _diagnostics.Write("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareFinished", new { name = _middlewareName, httpContext = httpContext });
+                    _diagnostics.Write("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareFinished", new { name = _middlewareName, httpContext = httpContext, instanceId = _instanceId });
                 }
             }
             catch (Exception ex)
             {
                 if (_diagnostics.IsEnabled("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareException"))
                 {
-                    _diagnostics.Write("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareException", new { name = _middlewareName, httpContext = httpContext, exception = ex });
+                    _diagnostics.Write("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareException", new { name = _middlewareName, httpContext = httpContext, instanceId = _instanceId, exception = ex });
                 }
                 throw;
             }
