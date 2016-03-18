@@ -147,11 +147,7 @@ var buildTarget = "compile"
                     blockLogger.StartBlock(blockName);
                 }
 
-                if (IsLinux)
-                {
-                    Exec("cp", " -R -l .build " + Path.Combine(repo, ".build"), "");
-                }
-                else
+                if (!IsLinux)
                 {
                     Exec("cmd", "/C xcopy /S/Q/I/Y .build " + Path.Combine(repo, ".build"), "");
                 }
