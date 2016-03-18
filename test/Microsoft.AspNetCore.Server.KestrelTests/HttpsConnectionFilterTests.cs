@@ -53,8 +53,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         // https://github.com/aspnet/KestrelHttpServer/issues/240
         // This test currently fails on mono because of an issue with SslStream.
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "WinHttpHandler not available on non-Windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "WinHttpHandler not available on non-Windows.")]
         public async Task CanReadAndWriteWithHttpsConnectionFilter()
         {
             RemoteCertificateValidationCallback validationCallback =
@@ -96,11 +96,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        // https://github.com/aspnet/KestrelHttpServer/issues/240
-        // This test currently fails on mono because of an issue with SslStream.
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "WinHttpHandler not available on non-Windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "WinHttpHandler not available on non-Windows.")]
         public async Task RequireCertificateFailsWhenNoCertificate()
         {
             RemoteCertificateValidationCallback validationCallback =
@@ -143,11 +141,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        // https://github.com/aspnet/KestrelHttpServer/issues/240
-        // This test currently fails on mono because of an issue with SslStream.
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "WinHttpHandler not available on non-Windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "WinHttpHandler not available on non-Windows.")]
         public async Task AllowCertificateContinuesWhenNoCertificate()
         {
             RemoteCertificateValidationCallback validationCallback =
@@ -197,11 +193,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        // https://github.com/aspnet/KestrelHttpServer/issues/240
-        // This test currently fails on mono because of an issue with SslStream.
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "This test currently fails on Mono because of an issue with SslStream (https://github.com/aspnet/KestrelHttpServer/issues/240).")]
         public async Task CertificatePassedToHttpContext()
         {
             RemoteCertificateValidationCallback validationCallback =
@@ -263,11 +256,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        // https://github.com/aspnet/KestrelHttpServer/issues/240
-        // This test currently fails on mono because of an issue with SslStream.
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "WinHttpHandler not available on non-Windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "WinHttpHandler not available on non-Windows.")]
         public async Task HttpsSchemePassedToRequestFeature()
         {
             RemoteCertificateValidationCallback validationCallback =
