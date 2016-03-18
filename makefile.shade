@@ -161,14 +161,17 @@ var buildTarget = "compile"
                     {
                         File.Copy(source, Path.Combine(universeBuild, Path.GetFileName(source)), overwrite: true);
                     }
-                    
-                    var commitFile = Path.Combine(repoArtifacts, "commit");
-                    if (!File.Exists(commitFile))
+
+                    if (Environment.GetEnvironmentVariable("KOREBUILD_ADD_ASSEMBLY_INFO") == "1")
                     {
-                        throw new FileNotFoundException("Couldn't find the commit file for " + repo + ": " + commitFile);
+                        var commitFile = Path.Combine(repoArtifacts, "commit");
+                        if (!File.Exists(commitFile))
+                        {
+                            throw new FileNotFoundException("Couldn't find the commit file for " + repo + ": " + commitFile);
+                        }
+
+                        commits.TryAdd(repo, File.ReadAllLines(commitFile)[0]);
                     }
-                    
-                    commits.TryAdd(repo, File.ReadAllLines(commitFile)[0]);
 
                     if (!string.IsNullOrEmpty(ciVolatileShare))
                     {
