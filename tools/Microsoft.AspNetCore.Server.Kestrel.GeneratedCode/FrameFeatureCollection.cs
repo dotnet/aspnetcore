@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Features.Internal;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
@@ -67,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Http 
+namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {{
     public partial class Frame
     {{{Each(allFeatures, feature => $@"

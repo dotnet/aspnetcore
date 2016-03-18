@@ -2,22 +2,22 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Http 
+namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
     public partial class Frame
     {
         private static readonly Type IHttpRequestFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestFeature);
         private static readonly Type IHttpResponseFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResponseFeature);
         private static readonly Type IHttpRequestIdentifierFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestIdentifierFeature);
-        private static readonly Type IServiceProvidersFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.Internal.IServiceProvidersFeature);
+        private static readonly Type IServiceProvidersFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IServiceProvidersFeature);
         private static readonly Type IHttpRequestLifetimeFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestLifetimeFeature);
         private static readonly Type IHttpConnectionFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature);
         private static readonly Type IHttpAuthenticationFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.Authentication.IHttpAuthenticationFeature);
-        private static readonly Type IQueryFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.Internal.IQueryFeature);
-        private static readonly Type IFormFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.Internal.IFormFeature);
+        private static readonly Type IQueryFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IQueryFeature);
+        private static readonly Type IFormFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IFormFeature);
         private static readonly Type IHttpUpgradeFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature);
-        private static readonly Type IResponseCookiesFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.Internal.IResponseCookiesFeature);
-        private static readonly Type IItemsFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.Internal.IItemsFeature);
+        private static readonly Type IResponseCookiesFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IResponseCookiesFeature);
+        private static readonly Type IItemsFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IItemsFeature);
         private static readonly Type ITlsConnectionFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature);
         private static readonly Type IHttpWebSocketFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpWebSocketFeature);
         private static readonly Type ISessionFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.ISessionFeature);
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 return _currentIHttpRequestIdentifierFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.Internal.IServiceProvidersFeature))
+            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IServiceProvidersFeature))
             {
                 return _currentIServiceProvidersFeature;
             }
@@ -91,11 +91,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 return _currentIHttpAuthenticationFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.Internal.IQueryFeature))
+            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IQueryFeature))
             {
                 return _currentIQueryFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.Internal.IFormFeature))
+            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IFormFeature))
             {
                 return _currentIFormFeature;
             }
@@ -103,11 +103,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 return _currentIHttpUpgradeFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.Internal.IResponseCookiesFeature))
+            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IResponseCookiesFeature))
             {
                 return _currentIResponseCookiesFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.Internal.IItemsFeature))
+            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IItemsFeature))
             {
                 return _currentIItemsFeature;
             }
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 _currentIHttpRequestIdentifierFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.Internal.IServiceProvidersFeature))
+            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IServiceProvidersFeature))
             {
                 _currentIServiceProvidersFeature = feature;
                 return;
@@ -169,12 +169,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 _currentIHttpAuthenticationFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.Internal.IQueryFeature))
+            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IQueryFeature))
             {
                 _currentIQueryFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.Internal.IFormFeature))
+            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IFormFeature))
             {
                 _currentIFormFeature = feature;
                 return;
@@ -184,12 +184,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 _currentIHttpUpgradeFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.Internal.IResponseCookiesFeature))
+            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IResponseCookiesFeature))
             {
                 _currentIResponseCookiesFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.Internal.IItemsFeature))
+            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IItemsFeature))
             {
                 _currentIItemsFeature = feature;
                 return;
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
             if (_currentIServiceProvidersFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IServiceProvidersFeatureType, _currentIServiceProvidersFeature as global::Microsoft.AspNetCore.Http.Features.Internal.IServiceProvidersFeature);
+                yield return new KeyValuePair<Type, object>(IServiceProvidersFeatureType, _currentIServiceProvidersFeature as global::Microsoft.AspNetCore.Http.Features.IServiceProvidersFeature);
             }
             if (_currentIHttpRequestLifetimeFeature != null)
             {
@@ -249,11 +249,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
             if (_currentIQueryFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IQueryFeatureType, _currentIQueryFeature as global::Microsoft.AspNetCore.Http.Features.Internal.IQueryFeature);
+                yield return new KeyValuePair<Type, object>(IQueryFeatureType, _currentIQueryFeature as global::Microsoft.AspNetCore.Http.Features.IQueryFeature);
             }
             if (_currentIFormFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IFormFeatureType, _currentIFormFeature as global::Microsoft.AspNetCore.Http.Features.Internal.IFormFeature);
+                yield return new KeyValuePair<Type, object>(IFormFeatureType, _currentIFormFeature as global::Microsoft.AspNetCore.Http.Features.IFormFeature);
             }
             if (_currentIHttpUpgradeFeature != null)
             {
@@ -261,11 +261,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
             if (_currentIResponseCookiesFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IResponseCookiesFeatureType, _currentIResponseCookiesFeature as global::Microsoft.AspNetCore.Http.Features.Internal.IResponseCookiesFeature);
+                yield return new KeyValuePair<Type, object>(IResponseCookiesFeatureType, _currentIResponseCookiesFeature as global::Microsoft.AspNetCore.Http.Features.IResponseCookiesFeature);
             }
             if (_currentIItemsFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IItemsFeatureType, _currentIItemsFeature as global::Microsoft.AspNetCore.Http.Features.Internal.IItemsFeature);
+                yield return new KeyValuePair<Type, object>(IItemsFeatureType, _currentIItemsFeature as global::Microsoft.AspNetCore.Http.Features.IItemsFeature);
             }
             if (_currentITlsConnectionFeature != null)
             {
