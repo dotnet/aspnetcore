@@ -37,8 +37,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     {
                         if (SocketInput.RemoteIntakeFin)
                         {
+                            if (TakeStartLine(SocketInput))
+                            {
+                                break;
+                            }
+
                             return;
                         }
+
                         await SocketInput;
                     }
 
@@ -48,8 +54,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     {
                         if (SocketInput.RemoteIntakeFin)
                         {
+                            if (TakeMessageHeaders(SocketInput, FrameRequestHeaders))
+                            {
+                                break;
+                            }
+
                             return;
                         }
+
                         await SocketInput;
                     }
 
