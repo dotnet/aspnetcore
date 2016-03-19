@@ -27,7 +27,6 @@
         "Moq": "4.2.1312.1622"
       },
       "frameworkAssemblies": {
-        "System.Runtime": "",
         "System.Threading.Tasks": ""
       }
     }
