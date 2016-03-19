@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingContext = CreateContext(GetMetadataForType(typeof(Person)), new Person());
             var originalModel = bindingContext.Model;
 
-            var binder = new Mock<TestableComplexTypeModelBinder>(){ CallBase = true };
+            var binder = new Mock<TestableComplexTypeModelBinder>() { CallBase = true };
             binder
                 .Setup(b => b.CreateModelPublic(It.IsAny<ModelBindingContext>()))
                 .Verifiable();
@@ -1067,7 +1067,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private static TestableComplexTypeModelBinder CreateBinder(ModelMetadata metadata)
         {
             var options = new TestOptionsManager<MvcOptions>();
-            MvcCoreMvcOptionsSetup.ConfigureMvc(options.Value, new TestHttpRequestStreamReaderFactory());
+            var setup = new MvcCoreMvcOptionsSetup(new TestHttpRequestStreamReaderFactory());
+            setup.Configure(options.Value);
 
             var lastIndex = options.Value.ModelBinderProviders.Count - 1;
             Assert.IsType<ComplexTypeModelBinderProvider>(options.Value.ModelBinderProviders[lastIndex]);

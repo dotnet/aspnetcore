@@ -2,10 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
@@ -68,6 +71,17 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var assemblyProvider = new StaticAssemblyProvider();
             assemblyProvider.CandidateAssemblies.Add(startupAssembly);
             services.AddSingleton<IAssemblyProvider>(assemblyProvider);
+
+            var manager = new ApplicationPartManager();
+            manager.ApplicationParts.Add(new AssemblyPart(startupAssembly));
+            services.AddSingleton(manager);
+        }
+
+        private class StaticAssemblyProvider : IAssemblyProvider
+        {
+            public IList<Assembly> CandidateAssemblies { get; } = new List<Assembly>();
+
+            IEnumerable<Assembly> IAssemblyProvider.CandidateAssemblies => CandidateAssemblies;
         }
     }
 }

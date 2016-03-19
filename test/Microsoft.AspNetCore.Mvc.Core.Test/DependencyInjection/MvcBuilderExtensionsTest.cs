@@ -3,7 +3,9 @@
 
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.MvcServiceCollectionExtensionsTestControllers;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -13,6 +15,46 @@ namespace Microsoft.AspNetCore.Mvc
 {
     public class MvcBuilderExtensionsTest
     {
+        [Fact]
+        public void AddApplicationPart_AddsAnApplicationPart_ToTheListOfPartsOnTheBuilder()
+        {
+            // Arrange
+            var manager = new ApplicationPartManager();
+            var builder = new MvcBuilder(Mock.Of<IServiceCollection>(), manager);
+
+            var assembly = typeof(MvcBuilder).GetTypeInfo().Assembly;
+
+            // Act
+            var result = builder.AddApplicationPart(assembly);
+
+            // Assert
+            Assert.Same(result, builder);
+            var part = Assert.Single(builder.PartManager.ApplicationParts);
+            var assemblyPart = Assert.IsType<AssemblyPart>(part);
+            Assert.Equal(assembly, assemblyPart.Assembly);
+        }
+
+        [Fact]
+        public void ConfigureApplicationParts_InvokesSetupAction()
+        {
+            // Arrange
+            var builder = new MvcBuilder(
+                Mock.Of<IServiceCollection>(),
+                new ApplicationPartManager());
+
+            var part = new TestPart();
+
+            // Act
+            var result = builder.ConfigureApplicationPartManager(manager =>
+            {
+                manager.ApplicationParts.Add(part);
+            });
+
+            // Assert
+            Assert.Same(result, builder);
+            Assert.Equal(new ApplicationPart[] { part }, builder.PartManager.ApplicationParts.ToArray());
+        }
+
         [Fact]
         public void WithControllersAsServices_AddsTypesToControllerTypeProviderAndServiceCollection()
         {
@@ -49,6 +91,11 @@ namespace Microsoft.AspNetCore.Mvc
             var typeProvider = Assert.IsType<StaticControllerTypeProvider>(services[3].ImplementationInstance);
             Assert.Equal(controllerTypes, typeProvider.ControllerTypes.OrderBy(c => c.Name).Select(t => t.AsType()));
             Assert.Equal(ServiceLifetime.Singleton, services[3].Lifetime);
+        }
+
+        private class TestPart : ApplicationPart
+        {
+            public override string Name => "Test";
         }
     }
 }

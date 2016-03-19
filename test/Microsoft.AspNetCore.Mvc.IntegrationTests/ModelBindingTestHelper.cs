@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -99,6 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         private static IServiceProvider GetServices(Action<MvcOptions> updateOptions = null)
         {
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(new ApplicationPartManager());
             serviceCollection.AddMvc();
             serviceCollection
                 .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()

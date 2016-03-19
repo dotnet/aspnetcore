@@ -16,14 +16,21 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     /// <summary>
     /// Sets up default options for <see cref="MvcOptions"/>.
     /// </summary>
-    public class MvcCoreMvcOptionsSetup : ConfigureOptions<MvcOptions>
+    public class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>
     {
+        private readonly IHttpRequestStreamReaderFactory _readerFactory;
+
         public MvcCoreMvcOptionsSetup(IHttpRequestStreamReaderFactory readerFactory)
-            : base((options) => ConfigureMvc(options, readerFactory))
         {
+            if (readerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(readerFactory));
+            }
+
+            _readerFactory = readerFactory;
         }
 
-        public static void ConfigureMvc(MvcOptions options, IHttpRequestStreamReaderFactory readerFactory)
+        public void Configure(MvcOptions options)
         {
             // Set up default error messages
             var messageProvider = options.ModelBindingMessageProvider;
@@ -38,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Set up ModelBinding
             options.ModelBinderProviders.Add(new BinderTypeModelBinderProvider());
             options.ModelBinderProviders.Add(new ServicesModelBinderProvider());
-            options.ModelBinderProviders.Add(new BodyModelBinderProvider(readerFactory));
+            options.ModelBinderProviders.Add(new BodyModelBinderProvider(_readerFactory));
             options.ModelBinderProviders.Add(new HeaderModelBinderProvider());
             options.ModelBinderProviders.Add(new SimpleTypeModelBinderProvider());
             options.ModelBinderProviders.Add(new CancellationTokenModelBinderProvider());

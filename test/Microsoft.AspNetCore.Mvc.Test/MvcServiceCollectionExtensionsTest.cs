@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -41,6 +42,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
+            services.AddSingleton<IHostingEnvironment>(GetHostingEnvironment());
 
             // Register a mock implementation of each service, AddMvcServices should add another implemenetation.
             foreach (var serviceType in MutliRegistrationServiceTypes)
@@ -69,6 +71,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
+            services.AddSingleton<IHostingEnvironment>(GetHostingEnvironment());
 
             // Register a mock implementation of each service, AddMvcServices should not replace it.
             foreach (var serviceType in SingleRegistrationServiceTypes)
@@ -92,6 +95,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
+            services.AddSingleton<IHostingEnvironment>(GetHostingEnvironment());
 
             // Act
             services.AddMvc();
@@ -123,6 +127,7 @@ namespace Microsoft.AspNetCore.Mvc
             get
             {
                 var services = new ServiceCollection();
+                services.AddSingleton<IHostingEnvironment>(GetHostingEnvironment());
                 services.AddMvc();
 
                 var multiRegistrationServiceTypes = MutliRegistrationServiceTypes;
@@ -265,6 +270,16 @@ namespace Microsoft.AspNetCore.Mvc
                     false,
                     $"Found multiple instances of {implementationType} registered as {serviceType}");
             }
+        }
+
+        private IHostingEnvironment GetHostingEnvironment()
+        {
+            var environment = new Mock<IHostingEnvironment>();
+            environment
+                .Setup(e => e.ApplicationName)
+                .Returns(typeof(MvcServiceCollectionExtensionsTest).GetTypeInfo().Assembly.GetName().Name);
+
+            return environment.Object;
         }
     }
 }
