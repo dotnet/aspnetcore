@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -17,6 +18,13 @@ namespace Microsoft.AspNetCore.Hosting
         /// Builds an <see cref="IWebHost"/> which hosts a web application.
         /// </summary>
         IWebHost Build();
+
+        /// <summary>
+        /// Specify the <see cref="ILoggerFactory"/> to be used by the web host.
+        /// </summary>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to be used.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        IWebHostBuilder UseLoggerFactory(ILoggerFactory loggerFactory);
 
         /// <summary>
         /// Specify the <see cref="IServerFactory"/> to be used by the web host.
@@ -45,6 +53,13 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="configureApplication">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         IWebHostBuilder Configure(Action<IApplicationBuilder> configureApplication);
+
+        /// <summary>
+        /// Adds a delegate for configuring the provided <see cref="ILoggerFactory"/>. This may be called multiple times.
+        /// </summary>
+        /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        IWebHostBuilder ConfigureLogging(Action<ILoggerFactory> configureLogging);
 
         /// <summary>
         /// Add or replace a setting in the configuration.

@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
@@ -139,6 +140,33 @@ namespace Microsoft.AspNetCore.Hosting
                 host.Start();
                 await AssertResponseContains(server.RequestDelegate, "Exception from Configure");
             }
+        }
+
+        [Fact]
+        public void DefaultCreatesLoggerFactory()
+        {
+            var hostBuilder = new WebHostBuilder()
+                .UseServer(new TestServer())
+                .UseStartup<StartupNoServices>();
+
+            var host = (WebHost)hostBuilder.Build();
+
+            Assert.NotNull(host.Services.GetService<ILoggerFactory>());
+        }
+
+        [Fact]
+        public void UseLoggerFactoryHonored()
+        {
+            var loggerFactory = new LoggerFactory();
+
+            var hostBuilder = new WebHostBuilder()
+                .UseLoggerFactory(loggerFactory)
+                .UseServer(new TestServer())
+                .UseStartup<StartupNoServices>();
+
+            var host = (WebHost)hostBuilder.Build();
+
+            Assert.Same(loggerFactory, host.Services.GetService<ILoggerFactory>());
         }
 
         [Fact]
