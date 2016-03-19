@@ -90,42 +90,54 @@ namespace Microsoft.Net.Http.Headers
         public override string ToString()
         {
             StringBuilder header = new StringBuilder();
+            AppendToStringBuilder(header);
 
-            header.Append(_name);
-            header.Append("=");
-            header.Append(_value);
+            return header.ToString();
+        }
+
+        /// <summary>
+        /// Append string representation of this <see cref="SetCookieHeaderValue"/> to given
+        /// <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">
+        /// The <see cref="StringBuilder"/> to receive the string representation of this
+        /// <see cref="SetCookieHeaderValue"/>.
+        /// </param>
+        public void AppendToStringBuilder(StringBuilder builder)
+        {
+            builder.Append(_name);
+            builder.Append("=");
+            builder.Append(_value);
 
             if (Expires.HasValue)
             {
-                AppendSegment(header, ExpiresToken, HeaderUtilities.FormatDate(Expires.Value));
+                AppendSegment(builder, ExpiresToken, HeaderUtilities.FormatDate(Expires.Value));
             }
 
             if (MaxAge.HasValue)
             {
-                AppendSegment(header, MaxAgeToken, HeaderUtilities.FormatInt64((long)MaxAge.Value.TotalSeconds));
+                AppendSegment(builder, MaxAgeToken, HeaderUtilities.FormatInt64((long)MaxAge.Value.TotalSeconds));
             }
 
             if (Domain != null)
             {
-                AppendSegment(header, DomainToken, Domain);
+                AppendSegment(builder, DomainToken, Domain);
             }
 
             if (Path != null)
             {
-                AppendSegment(header, PathToken, Path);
+                AppendSegment(builder, PathToken, Path);
             }
 
             if (Secure)
             {
-                AppendSegment(header, SecureToken, null);
+                AppendSegment(builder, SecureToken, null);
             }
 
             if (HttpOnly)
             {
-                AppendSegment(header, HttpOnlyToken, null);
+                AppendSegment(builder, HttpOnlyToken, null);
             }
-
-            return header.ToString();
         }
 
         private static void AppendSegment(StringBuilder builder, string name, string value)

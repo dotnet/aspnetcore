@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Xunit;
 
 namespace Microsoft.Net.Http.Headers
@@ -262,6 +263,17 @@ namespace Microsoft.Net.Http.Headers
         public void SetCookieHeaderValue_ToString(SetCookieHeaderValue input, string expectedValue)
         {
             Assert.Equal(expectedValue, input.ToString());
+        }
+
+        [Theory]
+        [MemberData(nameof(SetCookieHeaderDataSet))]
+        public void SetCookieHeaderValue_AppendToStringBuilder(SetCookieHeaderValue input, string expectedValue)
+        {
+            var builder = new StringBuilder();
+
+            input.AppendToStringBuilder(builder);
+
+            Assert.Equal(expectedValue, builder.ToString());
         }
 
         [Theory]

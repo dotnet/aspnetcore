@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.ObjectPool;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Internal
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         {
             // Arrange
             var accessor = new HttpContextAccessor();
-            var contextFactory = new HttpContextFactory(accessor);
+            var contextFactory = new HttpContextFactory(new DefaultObjectPoolProvider(), accessor);
 
             // Act
             var context = contextFactory.Create(new FeatureCollection());
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         public void AllowsCreatingContextWithoutSettingAccessor()
         {
             // Arrange
-            var contextFactory = new HttpContextFactory();
+            var contextFactory = new HttpContextFactory(new DefaultObjectPoolProvider());
 
             // Act & Assert
             var context = contextFactory.Create(new FeatureCollection());

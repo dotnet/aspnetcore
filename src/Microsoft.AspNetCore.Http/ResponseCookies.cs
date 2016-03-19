@@ -2,23 +2,27 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text.Encodings.Web;
 using System.Collections.Generic;
+using System.Text;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Internal
 {
     /// <summary>
-    /// A wrapper for the response Set-Cookie header
+    /// A wrapper for the response Set-Cookie header.
     /// </summary>
     public class ResponseCookies : IResponseCookies
     {
+        private readonly ObjectPool<StringBuilder> _builderPool;
+
         /// <summary>
-        /// Create a new wrapper
+        /// Create a new wrapper.
         /// </summary>
-        /// <param name="headers"></param>
-        public ResponseCookies(IHeaderDictionary headers)
+        /// <param name="headers">The <see cref="IHeaderDictionary"/> for the response.</param>
+        /// <param name="builderPool">The <see cref="ObjectPool{T}"/>, if available.</param>
+        public ResponseCookies(IHeaderDictionary headers, ObjectPool<StringBuilder> builderPool)
         {
             if (headers == null)
             {
@@ -26,33 +30,44 @@ namespace Microsoft.AspNetCore.Http.Internal
             }
 
             Headers = headers;
+            _builderPool = builderPool;
         }
 
         private IHeaderDictionary Headers { get; set; }
 
-        /// <summary>
-        /// Add a new cookie and value
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
+        /// <inheritdoc />
         public void Append(string key, string value)
         {
             var setCookieHeaderValue = new SetCookieHeaderValue(
-                    Uri.EscapeDataString(key),
-                    Uri.EscapeDataString(value))
+                Uri.EscapeDataString(key),
+                Uri.EscapeDataString(value))
             {
                 Path = "/"
             };
 
-            Headers[HeaderNames.SetCookie] = StringValues.Concat(Headers[HeaderNames.SetCookie], setCookieHeaderValue.ToString());
+            string cookieValue;
+            if (_builderPool == null)
+            {
+                cookieValue = setCookieHeaderValue.ToString();
+            }
+            else
+            {
+                var stringBuilder = _builderPool.Get();
+                try
+                {
+                    setCookieHeaderValue.AppendToStringBuilder(stringBuilder);
+                    cookieValue = stringBuilder.ToString();
+                }
+                finally
+                {
+                    _builderPool.Return(stringBuilder);
+                }
+            }
+
+            Headers[HeaderNames.SetCookie] = StringValues.Concat(Headers[HeaderNames.SetCookie], cookieValue);
         }
 
-        /// <summary>
-        /// Add a new cookie
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        /// <param name="options"></param>
+        /// <inheritdoc />
         public void Append(string key, string value, CookieOptions options)
         {
             if (options == null)
@@ -61,8 +76,8 @@ namespace Microsoft.AspNetCore.Http.Internal
             }
 
             var setCookieHeaderValue = new SetCookieHeaderValue(
-                    Uri.EscapeDataString(key),
-                    Uri.EscapeDataString(value))
+                Uri.EscapeDataString(key),
+                Uri.EscapeDataString(value))
             {
                 Domain = options.Domain,
                 Path = options.Path,
@@ -71,30 +86,42 @@ namespace Microsoft.AspNetCore.Http.Internal
                 HttpOnly = options.HttpOnly,
             };
 
-            Headers[HeaderNames.SetCookie] = StringValues.Concat(Headers[HeaderNames.SetCookie], setCookieHeaderValue.ToString());
+            string cookieValue;
+            if (_builderPool == null)
+            {
+                cookieValue = setCookieHeaderValue.ToString();
+            }
+            else
+            {
+                var stringBuilder = _builderPool.Get();
+                try
+                {
+                    setCookieHeaderValue.AppendToStringBuilder(stringBuilder);
+                    cookieValue = stringBuilder.ToString();
+                }
+                finally
+                {
+                    _builderPool.Return(stringBuilder);
+                }
+            }
+
+            Headers[HeaderNames.SetCookie] = StringValues.Concat(Headers[HeaderNames.SetCookie], cookieValue);
         }
 
-        /// <summary>
-        /// Sets an expired cookie
-        /// </summary>
-        /// <param name="key"></param>
+        /// <inheritdoc />
         public void Delete(string key)
         {
             Delete(key, new CookieOptions() { Path = "/" });
         }
 
-        /// <summary>
-        /// Sets an expired cookie
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="options"></param>
+        /// <inheritdoc />
         public void Delete(string key, CookieOptions options)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
-            
+
             var encodedKeyPlusEquals = Uri.EscapeDataString(key) + "=";
             bool domainHasValue = !string.IsNullOrEmpty(options.Domain);
             bool pathHasValue = !string.IsNullOrEmpty(options.Path);
@@ -130,7 +157,7 @@ namespace Microsoft.AspNetCore.Http.Internal
                         newValues.Add(values[i]);
                     }
                 }
-                
+
                 Headers[HeaderNames.SetCookie] = new StringValues(newValues.ToArray());
             }
 
