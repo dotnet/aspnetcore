@@ -16,8 +16,11 @@
     "xunit": "2.1.0"
   },
   "frameworks": {
-    "dnxcore50": {
-      "imports": "portable-net451+win8"
+    "netstandardapp1.5": {
+      "imports": [
+        "portable-net451+win8",
+        "dnxcore50"
+      ]
     }
   },
   "testRunner": "xunit"
