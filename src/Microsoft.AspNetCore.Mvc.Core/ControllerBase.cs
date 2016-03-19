@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// A base class for an MVC controller without view support.
     /// </summary>
+    [Controller]
     public abstract class ControllerBase
     {
         private ControllerContext _controllerContext;

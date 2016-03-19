@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task TypesDerivingFromControllerPrefixedTypesAreRegistered()
+        public async Task TypesDerivingFromTypesWithControllerAttributeAreRegistered()
         {
             // Arrange
             var expected = "4";

@@ -21,6 +21,7 @@ namespace System.Web.Http
     [UseWebApiActionConventions]
     [UseWebApiParameterConventions]
     [UseWebApiOverloading]
+    [Controller]
     public abstract class ApiController : IDisposable
     {
         private ControllerContext _controllerContext;

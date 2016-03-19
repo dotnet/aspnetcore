@@ -332,16 +332,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task TypesWithoutControllerSuffix_DerivingFromTypesWithControllerSuffix_CanBeAccessed()
-        {
-            // Act
-            var response = await Client.GetStringAsync("appointments");
-
-            // Assert
-            Assert.Equal("2 appointments available.", response);
-        }
-
-        [Fact]
         public async Task TypesMarkedAsNonAction_AreInaccessible()
         {
             // Act
