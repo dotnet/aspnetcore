@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         /// Triggered when the application host is performing a graceful shutdown.
         /// Request may still be in flight. Shutdown will block until this event completes.
         /// </summary>
-        /// <returns></returns>
         public CancellationToken ApplicationStopping => _stoppingSource.Token;
 
         /// <summary>
@@ -33,7 +32,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         /// All requests should be complete at this point. Shutdown will block
         /// until this event completes.
         /// </summary>
-        /// <returns></returns>
         public CancellationToken ApplicationStopped => _stoppedSource.Token;
 
         /// <summary>

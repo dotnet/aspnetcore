@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http.Features;
 namespace Microsoft.AspNetCore.Hosting
 {
     /// <summary>
-    /// Represents a configured web host
+    /// Represents a configured web host.
     /// </summary>
     public interface IWebHost : IDisposable
     {
@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Hosting
         /// <summary>
         /// Starts listening on the configured addresses.
         /// </summary>
-        /// <returns></returns>
         void Start();
     }
 }

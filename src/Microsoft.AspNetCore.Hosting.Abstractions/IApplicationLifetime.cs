@@ -18,9 +18,8 @@ namespace Microsoft.AspNetCore.Hosting
 
         /// <summary>
         /// Triggered when the application host is performing a graceful shutdown.
-        /// Request may still be in flight. Shutdown will block until this event completes.
+        /// Requests may still be in flight. Shutdown will block until this event completes.
         /// </summary>
-        /// <returns></returns>
         CancellationToken ApplicationStopping { get; }
 
         /// <summary>
@@ -28,7 +27,6 @@ namespace Microsoft.AspNetCore.Hosting
         /// All requests should be complete at this point. Shutdown will block
         /// until this event completes.
         /// </summary>
-        /// <returns></returns>
         CancellationToken ApplicationStopped { get; }
 
         /// <summary>
