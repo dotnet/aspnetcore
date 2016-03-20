@@ -87,10 +87,10 @@ namespace Microsoft.AspNetCore.Server.Testing
 
         private void SetAspEnvironmentWithJson()
         {
-            ////S Drop a hosting.json with Hosting:Environment information.
-            // Logger.LogInformation("Creating hosting.json file with Hosting:Environment.");
+            ////S Drop a hosting.json with environment information.
+            // Logger.LogInformation("Creating hosting.json file with environment information.");
             // var jsonFile = Path.Combine(DeploymentParameters.ApplicationPath, "hosting.json");
-            // File.WriteAllText(jsonFile, string.Format("{ \"Hosting:Environment\":\"{0}\" }", DeploymentParameters.EnvironmentName));
+            // File.WriteAllText(jsonFile, string.Format("{ \"environment\":\"{0}\" }", DeploymentParameters.EnvironmentName));
         }
 
         private class IISApplication
