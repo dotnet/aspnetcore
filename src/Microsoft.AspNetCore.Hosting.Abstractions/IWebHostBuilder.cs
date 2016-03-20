@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Hosting
 {
     /// <summary>
-    /// A builder for <see cref="IWebHost"/>
+    /// A builder for <see cref="IWebHost"/>.
     /// </summary>
     public interface IWebHostBuilder
     {
