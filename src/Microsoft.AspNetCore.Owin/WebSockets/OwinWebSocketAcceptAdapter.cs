@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Owin
 {

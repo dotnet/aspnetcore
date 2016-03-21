@@ -29,10 +29,8 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "System.ComponentModel": "4.0.1-*",
         "System.Globalization.Extensions": "4.0.1-*",
         "System.Linq.Expressions": "4.0.11-*",
-        "System.Net.WebSockets": "4.0.0-*",
         "System.Reflection.TypeExtensions": "4.1.0-*",
         "System.Runtime.InteropServices": "4.1.0-*"
       },

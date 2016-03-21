@@ -8,7 +8,6 @@ using System.Net.WebSockets;
 using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Authentication.Internal;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Internal;
 using Xunit;
@@ -204,7 +203,7 @@ namespace Microsoft.AspNetCore.Http.Internal
 
             var field = type
                 .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
-                .Single(f => 
+                .Single(f =>
                     f.FieldType.GetTypeInfo().IsGenericType &&
                     f.FieldType.GetGenericTypeDefinition() == typeof(FeatureReferences<>));
 

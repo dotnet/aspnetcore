@@ -7,37 +7,37 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    ///     Represents the HttpRequest query string collection
+    /// Represents the parsed form values sent with the HttpRequest.
     /// </summary>
-    public interface IQueryCollection : IEnumerable<KeyValuePair<string, StringValues>>
+    public interface IFormCollection : IEnumerable<KeyValuePair<string, StringValues>>
     {
         /// <summary>
-        ///     Gets the number of elements contained in the <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" />.
+        ///     Gets the number of elements contained in the <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" />.
         /// </summary>
         /// <returns>
-        ///     The number of elements contained in the <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" />.
+        ///     The number of elements contained in the <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" />.
         /// </returns>
         int Count { get; }
 
         /// <summary>
-        ///     Gets an <see cref="T:System.Collections.Generic.ICollection`1" /> containing the keys of the 
-        ///     <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" />.
+        ///     Gets an <see cref="T:System.Collections.Generic.ICollection`1" /> containing the keys of the
+        ///     <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" />.
         /// </summary>
         /// <returns>
         ///     An <see cref="T:System.Collections.Generic.ICollection`1" /> containing the keys of the object
-        ///     that implements <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" />.
+        ///     that implements <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" />.
         /// </returns>
         ICollection<string> Keys { get; }
 
         /// <summary>
-        ///     Determines whether the <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" /> contains an element
+        ///     Determines whether the <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" /> contains an element
         ///     with the specified key.
         /// </summary>
         /// <param name="key">
-        /// The key to locate in the <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" />.
+        /// The key to locate in the <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" />.
         /// </param>
         /// <returns>
-        ///     true if the <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" /> contains an element with
+        ///     true if the <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" /> contains an element with
         ///     the key; otherwise, false.
         /// </returns>
         /// <exception cref="T:System.ArgumentNullException">
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Http
         ///     This parameter is passed uninitialized.
         /// </param>
         /// <returns>
-        ///    true if the object that implements <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" /> contains
+        ///    true if the object that implements <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" /> contains
         ///     an element with the specified key; otherwise, false.
         /// </returns>
         /// <exception cref="T:System.ArgumentNullException">
@@ -79,10 +79,16 @@ namespace Microsoft.AspNetCore.Http
         ///     key is null.
         /// </exception>
         /// <remarks>
-        ///     <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" /> has a different indexer contract than 
+        ///     <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" /> has a different indexer contract than
         ///     <see cref="T:System.Collections.Generic.IDictionary`2" />, as it will return StringValues.Empty for missing entries
         ///     rather than throwing an Exception.
         /// </remarks>
         StringValues this[string key] { get; }
+
+        /// <summary>
+        /// The file collection sent with the request.
+        /// </summary>
+        /// <returns>The files included with the request.</returns>
+        IFormFileCollection Files { get; }
     }
 }

@@ -17,9 +17,9 @@ namespace Microsoft.AspNetCore.Http
         ///     The number of elements contained in the <see cref="T:Microsoft.AspNetCore.Http.IRequestCookieCollection" />.
         /// </returns>
         int Count { get; }
-        
+
         /// <summary>
-        ///     Gets an <see cref="T:System.Collections.Generic.ICollection`1" /> containing the keys of the 
+        ///     Gets an <see cref="T:System.Collections.Generic.ICollection`1" /> containing the keys of the
         ///     <see cref="T:Microsoft.AspNetCore.Http.IRequestCookieCollection" />.
         /// </summary>
         /// <returns>
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Http
         ///     that implements <see cref="T:Microsoft.AspNetCore.Http.IRequestCookieCollection" />.
         /// </returns>
         ICollection<string> Keys { get; }
-        
+
         /// <summary>
         ///     Determines whether the <see cref="T:Microsoft.AspNetCore.Http.IRequestCookieCollection" /> contains an element
         ///     with the specified key.
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Http
         ///     key is null.
         /// </exception>
         /// <remarks>
-        ///     <see cref="T:Microsoft.AspNetCore.Http.IRequestCookieCollection" /> has a different indexer contract than 
+        ///     <see cref="T:Microsoft.AspNetCore.Http.IRequestCookieCollection" /> has a different indexer contract than
         ///     <see cref="T:System.Collections.Generic.IDictionary`2" />, as it will return String.Empty for missing entries
         ///     rather than throwing an Exception.
         /// </remarks>
