@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Attempt to bind dictionary from a set of prefix[key]=value entries. Get the short and long keys first.
             var keys = enumerableValueProvider.GetKeysFromPrefix(bindingContext.ModelName);
-            if (!keys.Any())
+            if (keys.Count == 0)
             {
                 // No entries with the expected keys.
                 return;

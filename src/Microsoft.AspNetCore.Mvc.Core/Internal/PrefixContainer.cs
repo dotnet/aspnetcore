@@ -48,14 +48,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(prefix));
             }
 
-            if (prefix.Length == 0)
-            {
-                return _sortedValues.Length > 0; // only match empty string when we have some value
-            }
-
             if (_sortedValues.Length == 0)
             {
                 return false;
+            }
+
+            if (prefix.Length == 0)
+            {
+                return true; // Empty prefix matches all elements.
             }
 
             return BinarySearch(prefix) > -1;
