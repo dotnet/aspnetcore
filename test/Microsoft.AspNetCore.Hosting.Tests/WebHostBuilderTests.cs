@@ -333,8 +333,15 @@ namespace Microsoft.AspNetCore.Hosting
         [Fact]
         public void RelativeContentRootIsResolved()
         {
+            var contentRootNet451 = PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Windows ? 
+                "testroot" : "../../../../test/Microsoft.AspNetCore.Hosting.Tests/testroot";
+
             var host = new WebHostBuilder()
+#if NET451
+                .UseContentRoot(contentRootNet451)
+#else
                 .UseContentRoot("testroot")
+#endif
                 .UseServer(new TestServer())
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build();
