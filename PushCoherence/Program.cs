@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -13,18 +11,11 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace PushCoherence
 {
     class Program
     {
-        static IEnumerable<string> excludedExternalDependencies = new string[] { 
-            "Microsoft.IdentityModel",
-            "System.IdentityModel"
-        };
-
         public static void Main(string[] args)
         {
             var nugetFeed = Environment.GetEnvironmentVariable("NUGET_FEED");
@@ -52,51 +43,40 @@ namespace PushCoherence
                 throw new Exception("PUSH_NUGET_EXE not specified");
             }
 
-            var lastUploadedFile = Path.Combine(dropRoot, "uploaded-files");
-            var packagesDir = Path.Combine(Directory.GetCurrentDirectory(), "bin", "Signed", "Packages");
-            var nonTimeStampedDir = Path.Combine(Directory.GetCurrentDirectory(), "bin", "Signed", "Packages-NoTimeStamp");
-            Directory.CreateDirectory(nonTimeStampedDir);
+            var artifactsDir = Path.Combine(Directory.GetCurrentDirectory(), "artifacts");
+            var packagesDir = Path.Combine(artifactsDir, "Signed", "Packages");
 
-            var packages = Directory.EnumerateFiles(packagesDir, "*.nupkg");
+            var packagesToPush = new[]
+            {
+                packagesDir,
+                Path.Combine(artifactsDir, "coherence", "noship"),
+                Path.Combine(artifactsDir, "coherence", "ext"),
+            }.SelectMany(d => Directory.EnumerateFiles(d, "*.nupkg"));
             Console.WriteLine("Pushing packages from {0} to feed {1}", packagesDir, nugetFeed);
 
-            using (var fileList = new UploadedFileList(lastUploadedFile))
+            Parallel.ForEach(packagesToPush, new ParallelOptions { MaxDegreeOfParallelism = 5 }, package =>
             {
-                while (!fileList.TryRead())
-                {
-                    Thread.Sleep(TimeSpan.FromSeconds(3));
-                }
+                Retry(() => PushPackage(nugetFeed, apiKey, nugetExe, package));
+            });
 
-                Parallel.ForEach(packages, new ParallelOptions { MaxDegreeOfParallelism = 5 }, package =>
-                {
-                    var packageInfo = PackageInfo.FromPath(package);
-                    CreateTimeStampFreePackage(nonTimeStampedDir, packageInfo);
-
-                    PackageInfo existing;
-                    if (fileList.Infos.TryGetValue(packageInfo.Id, out existing) &&
-                        existing.Equals(packageInfo))
-                    {
-                        return;
-                    }
-
-                    fileList.Infos[packageInfo.Id] = packageInfo;
-                    Retry(() => PushPackage(nugetFeed, apiKey, nugetExe, packageInfo));
-                    Console.WriteLine("Pushed package {0}", Path.GetFileNameWithoutExtension(packageInfo.Path));
-                });
+            var nonTimeStampedDir = Path.Combine(artifactsDir, "Signed", "Packages-NoTimeStamp");
+            Directory.CreateDirectory(nonTimeStampedDir);
+            foreach (var file in Directory.EnumerateFiles(packagesDir))
+            {
+                CreateTimeStampFreePackage(nonTimeStampedDir, file);
             }
         }
 
-        private static void CreateTimeStampFreePackage(string outDir, PackageInfo packageInfo)
+        private static void CreateTimeStampFreePackage(string outDir, string packagePath)
         {
+            var packageInfo = PackageInfo.FromPath(packagePath);
             var targetPath = Path.Combine(outDir, packageInfo.Id + '.' + StripBuildVersion(packageInfo.Version) + ".nupkg");
             Console.WriteLine("Creating timestamp free version at {0}", targetPath);
-            File.Copy(packageInfo.Path, targetPath);
+            File.Copy(packagePath, targetPath);
 
             using (var package = Package.Open(targetPath))
             {
                 var relationshipType = package.GetRelationshipsByType("http://schemas.microsoft.com/packaging/2010/07/manifest");
-
-
                 var manifest = package.GetPart(relationshipType.SingleOrDefault().TargetUri);
 
                 using (var stream = manifest.GetStream(FileMode.Open, FileAccess.ReadWrite))
@@ -107,9 +87,7 @@ namespace PushCoherence
                     var version = xdoc.Descendants(XName.Get("version", ns)).First();
                     version.Value = StripBuildVersion(version.Value);
 
-                    var dependencies = xdoc.Descendants(XName.Get("dependency", ns)).Where(
-                        dep => excludedExternalDependencies.All(
-                            excl => !dep.Attribute("id").Value.StartsWith(excl)));
+                    var dependencies = xdoc.Descendants(XName.Get("dependency", ns));
                     foreach (var dependency in dependencies)
                     {
                         var attr = dependency.Attribute("version");
@@ -120,8 +98,6 @@ namespace PushCoherence
                     stream.SetLength(0);
                     xdoc.Save(stream);
                 }
-
-                ReplaceDependencyVersionInAppProjectJson(package);
             }
         }
 
@@ -182,159 +158,40 @@ namespace PushCoherence
             }
         }
 
-        private static void PushPackage(string nugetFeed, string apiKey, string nugetExe, PackageInfo packageInfo)
+        private static void PushPackage(string nugetFeed, string apiKey, string nugetExe, string packagePath)
         {
-            var nugetExeArgs = string.Format(CultureInfo.InvariantCulture, "push -Source {0} -ApiKey {1} {2}",
-                                     nugetFeed,
-                                     apiKey,
-                                     packageInfo.Path);
-            Console.WriteLine("Pushing package {0} {1}", packageInfo.Id, packageInfo.Version);
+            var nugetExeArgs = string.Format(
+                CultureInfo.InvariantCulture, "push -Source {0} -ApiKey {1} {2}",
+                nugetFeed,
+                apiKey,
+                packagePath);
+            var packageName = Path.GetFileNameWithoutExtension(packagePath);
+            Console.WriteLine("Pushing package {0}", packageName);
             var psi = new ProcessStartInfo(nugetExe, nugetExeArgs)
             {
                 CreateNoWindow = true,
                 UseShellExecute = false
             };
+
             using (var p = Process.Start(psi))
             {
                 p.WaitForExit();
                 if (p.ExitCode != 0)
                 {
-                    string message = string.Format("Pushing package {0} failed. Exit code from nuget.exe: {1}",
-                                                   Path.GetFileNameWithoutExtension(packageInfo.Path),
-                                                   p.ExitCode);
+                    var message = string.Format("Pushing package {0} failed. Exit code from nuget.exe: {1}", packageName, p.ExitCode);
                     throw new Exception(message);
                 }
             }
+            Console.WriteLine("Pushed package {0}", packageName);
         }
 
-        /// <summary>
-        ///     Remove build number in the app/project.json file dependencies.
-        /// </summary>
-        private static void ReplaceDependencyVersionInAppProjectJson(Package package)
-        {
-            // Project.json in the 'app' folder
-            var appProjectJsonPart = package.GetParts().FirstOrDefault(p => p.Uri.ToString().Contains("app/project.json"));
-
-            if (appProjectJsonPart != null)
-            {
-                using (var stream = appProjectJsonPart.GetStream(FileMode.Open, FileAccess.ReadWrite))
-                {
-                    var reader = new StreamReader(stream);
-                    var modifiedJsonObject = JObject.Parse(reader.ReadToEnd());
-
-                    // First 'dependencies' tag in project.json
-                    var dependencies = modifiedJsonObject["dependencies"] as JObject;
-                    foreach (var property in dependencies.Properties())
-                    {
-                        // Replace build numbers in each dependency
-                        property.Value = StripBuildVersion(property.Value.ToString());
-                    }
-
-                    stream.Position = 0;
-                    stream.SetLength(0);
-
-                    // Write JSON back
-                    using (var writer = new JsonTextWriter(new StreamWriter(stream)))
-                    {
-                        modifiedJsonObject.WriteTo(writer);
-                    }
-                }
-            }
-        }
-
-        private sealed class UploadedFileList : IDisposable
-        {
-            private readonly string _path;
-            private Stream _fileStream;
-
-            public UploadedFileList(string path)
-            {
-                _path = path;
-            }
-
-            public IDictionary<string, PackageInfo> Infos { get; private set; }
-
-            public bool TryRead()
-            {
-                try
-                {
-                    _fileStream = File.Open(_path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-                    ReadContents();
-                    return true;
-                }
-                catch (IOException)
-                {
-                    // The file must be locked by another concurrent CI run.
-                }
-                return false;
-            }
-
-            private void ReadContents()
-            {
-                Infos = new ConcurrentDictionary<string, PackageInfo>(StringComparer.OrdinalIgnoreCase);
-                var reader = new StreamReader(_fileStream);
-                var contents = reader.ReadToEnd();
-                foreach (var line in contents.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    var tabs = line.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-                    if (tabs.Length == 3)
-                    {
-                        Infos.Add(tabs[0], new PackageInfo { Id = tabs[0], Version = tabs[1], Hash = tabs[2] });
-                    }
-                }
-            }
-
-            private void UpdateContents()
-            {
-                _fileStream.Position = 0;
-                var writer = new StreamWriter(_fileStream);
-                foreach (var item in Infos.Values)
-                {
-                    writer.WriteLine("{0},{1},{2}", item.Id, item.Version, item.Hash);
-                }
-                writer.Flush();
-            }
-
-            public void Dispose()
-            {
-                if (_fileStream != null)
-                {
-                    UpdateContents();
-                    _fileStream.Dispose();
-                }
-            }
-        }
-
-        private class PackageInfo : IEquatable<PackageInfo>
+        private class PackageInfo
         {
             private static readonly Regex _packageNameRegex = new Regex(@"^(?<id>.+?)\.(?<version>[0-9].*)$");
-            private string _hash;
 
             public string Id { get; set; }
 
             public string Version { get; set; }
-
-            public string Path { get; private set; }
-
-            public string Hash
-            {
-                get
-                {
-                    if (_hash == null)
-                    {
-                        using (var md5 = System.Security.Cryptography.MD5.Create())
-                        using (var fileStream = File.OpenRead(Path))
-                        {
-                            _hash = Convert.ToBase64String(md5.ComputeHash(fileStream));
-                        }
-                    }
-                    return _hash;
-                }
-                set
-                {
-                    _hash = value;
-                }
-            }
 
             public static PackageInfo FromPath(string path)
             {
@@ -347,16 +204,8 @@ namespace PushCoherence
                 return new PackageInfo
                 {
                     Id = match.Groups["id"].Value,
-                    Version = match.Groups["version"].Value,
-                    Path = path
+                    Version = match.Groups["version"].Value
                 };
-            }
-
-            public bool Equals(PackageInfo other)
-            {
-                return string.Equals(Id, other.Id, StringComparison.OrdinalIgnoreCase) &&
-                       string.Equals(Version, other.Version, StringComparison.OrdinalIgnoreCase) &&
-                       string.Equals(Hash, other.Hash, StringComparison.Ordinal);
             }
         }
     }

@@ -12,11 +12,12 @@
     <PropertyGroup>
         <IntermediateOutputPath>$(DNXRootPath)obj\</IntermediateOutputPath>
         <SignedOutputPath>$(DNXBinPath)Signed\</SignedOutputPath>
+        <ArtifactsPath>$(DNXRootPath)artifacts\</ArtifactsPath>
         <OutputPath Condition="'$(Sign)' == 'Sign'">$(SignedOutputPath)</OutputPath>
         <OutputPath Condition="'$(Sign)' != 'Sign'">$(DNXBinPath)$(Configuration)\</OutputPath>
         <PoliCheckPath>$(IntermediateOutputPath)policheck\</PoliCheckPath>
-        <PackagesOutputPath>$(OutputPath)Packages\</PackagesOutputPath>
-        <SymbolsOutputPath>$(OutputPath)Symbols\</SymbolsOutputPath>
+        <PackagesOutputPath>$(ArtifactsPath)Signed\Packages</PackagesOutputPath>
+        <SymbolsOutputPath>$(ArtifactsPath)Signed\Symbols\</SymbolsOutputPath>
     </PropertyGroup>
 
     <PropertyGroup>

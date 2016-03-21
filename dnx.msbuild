@@ -4,12 +4,13 @@
     <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.PoliCheck" />
     <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks.dll" TaskName="Microsoft.Web.MsBuildTasks.RegexReplace" />
 
-    <PropertyGroup>
-        <NuGetV3Feed>https://api.nuget.org/v3/index.json</NuGetV3Feed>
-    </PropertyGroup>
-
     <Import Project="tools\dnx.settings.targets" />
     <Import Project="tools\QERM.targets" />
+
+    <PropertyGroup>
+        <NuGetV3Feed>https://api.nuget.org/v3/index.json</NuGetV3Feed>
+        <CoherenceDestinationDir>$(ArtifactsPath)coherence\</CoherenceDestinationDir>
+    </PropertyGroup>
 
     <Target Name="Build" DependsOnTargets="CopyUnsignedPackages;BinScope;NuGetVerify;" />
 
@@ -22,24 +23,23 @@
     </Target>
 
     <Target Name="FindLatestDropShare">
-        <FindLatestDrop RootPath="$(RootDrop)" SubFolder="ship">
+        <FindLatestDrop RootPath="$(RootDrop)">
             <Output TaskParameter="LatestPath" PropertyName="DropSource"/>
         </FindLatestDrop>
-
-        <PropertyGroup>
-            <SymbolPackagePath>$(DropSource)..\symbols\</SymbolPackagePath>
-        </PropertyGroup>
 
         <Message Text="$(DropSource)" />
     </Target>
 
     <Target Name="CopyAndExtractUnsignedPackages" DependsOnTargets="FindLatestDropShare;$(Clean)">
         <MakeDir Directories="$(OutputPath)" />
-        <Copy SourceFiles="$(DropSource)..\commit" DestinationFolder="$(OutputPath)" />
+        <MakeDir Directories="$(CoherenceDestinationDir)" />
+
+        <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MIR /MT $(DropSource) $(CoherenceDestinationDir) /XD build
+                       IF %ERRORLEVEL% LEQ 1 exit 0" />
 
         <ItemGroup>
-            <UnsignedPackages Include="$(DropSource)*.nupkg" />
-            <UnsignedSymbolPackages Include="$(SymbolPackagePath)Microsoft.Data.Sqlite*.nupkg" />
+            <UnsignedPackages Include="$(CoherenceDestinationDir)\ship\*.nupkg" />
+            <UnsignedSymbolPackages Include="$(CoherenceDestinationDir)\symbols\Microsoft.Data.Sqlite*.nupkg" />
         </ItemGroup>
 
         <Message Text="%(UnsignedPackages.Identity)" Importance="high" />
@@ -228,7 +228,7 @@
 
     <Target Name="PoliCheck" DependsOnTargets="FindLatestDropShare">
         <ItemGroup>
-            <PoliCheckPackages Include="$(SymbolPackagePath)*.nupkg;"/>
+            <PoliCheckPackages Include="$(CoherenceDestinationDir)\symbols\*.nupkg;"/>
         </ItemGroup>
 
         <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)') %(PoliCheckPackages.Identity)" />
