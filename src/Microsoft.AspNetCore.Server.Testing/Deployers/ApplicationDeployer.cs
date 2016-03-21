@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Testing
             var environment =
 #if NET451
                 startInfo.EnvironmentVariables;
-#elif NETSTANDARDAPP1_5
+#else
                 startInfo.Environment;
 #endif
 
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.Testing
 #if NET451
         protected void SetEnvironmentVariable(System.Collections.Specialized.StringDictionary environment, string name, string value)
         {
-#elif NETSTANDARDAPP1_5
+#else
         protected void SetEnvironmentVariable(System.Collections.Generic.IDictionary<string, string> environment, string name, string value)
         {
 #endif

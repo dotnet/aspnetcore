@@ -20,8 +20,7 @@
     "Microsoft.Extensions.Process.Sources": {
       "type": "build",
       "version": "1.0.0-*"
-    },
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    }
   },
   "frameworks": {
     "net451": {
@@ -33,7 +32,7 @@
         "System.Runtime":  { "type": "build" }
       }
     },
-    "netstandardapp1.5": {
+    "netstandard1.3": {
       "dependencies": {
         "System.Diagnostics.Process": "4.1.0-*",
         "System.IO.FileSystem": "4.0.1-*",
