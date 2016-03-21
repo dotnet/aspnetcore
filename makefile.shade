@@ -12,34 +12,48 @@ use namespace='System.Text'
 use namespace='System.Text.RegularExpressions'
 use namespace='System.Threading.Tasks'
 use import="BuildEnv"
+use import="EnvironmentParameters"
 use import="Files"
 use import="Json"
 
 functions
     @{
+        const string DefaultBuildBranch = "dev";
+        const string DefaultCoherenceCacheDir = ".coherence-cache";
         const string UniverseCommitsFileName = "commits-universe";
 
         private static bool Quiet { get; set; }
 
-        static string BUILD_BRANCH = Environment.GetEnvironmentVariable("BUILD_BRANCH") ?? "dev";
-        static string BASE_DIR = Directory.GetCurrentDirectory();
-        static string TARGET_DIR = Path.Combine(BASE_DIR, "artifacts", "build");
-        static string COHERENCE_CACHE_DIR = Environment.GetEnvironmentVariable("COHERENCE_CACHE_DIR") ?? Path.Combine(BASE_DIR, ".coherence-cache");
-        static string DROPS_SHARE = Environment.GetEnvironmentVariable("ASPNETCI_DROPS_SHARE") ?? @"\\aspnetci\drops";
-        static bool SKIP_NO_CREDENTIALS = Environment.GetEnvironmentVariable("UNIVERSE_SKIP_NO_CREDENTIALS") == "1";
+        static string baseDir = Directory.GetCurrentDirectory();
+        static string targetDir = Path.Combine(baseDir, "artifacts", "build");
 
+        static string buildBranch = GetEnvironmentParameter("BUILD_BRANCH") ?? DefaultBuildBranch;
+        static string coherenceCacheDir = GetEnvironmentParameter("COHERENCE_CACHE_DIR") ?? Path.Combine(baseDir, DefaultCoherenceCacheDir);
+        static string dropsShare = GetEnvironmentParameter("ASPNETCI_DROPS_SHARE", DefaultDropsShare);
+        static string kBuildVersion = GetEnvironmentParameter("DNX_BUILD_VERSION");
+        static string ciVolatileShare = GetEnvironmentParameter("CI_VOLATILE_SHARE");
+        static string koreBuildTargets = GetEnvironmentParameter("KOREBUILD_BUILD_TARGETS");
+        static string coherenceFeed = GetEnvironmentParameter("COHERENCE_FEED");
+        static string koreBuildVersion = GetEnvironmentParameter("KOREBUILD_VERSION");
+        static string nugetVersion = GetEnvironmentParameter("NUGET_VERSION");
+        static string nugetExe = GetEnvironmentParameter("PUSH_NUGET_EXE");
+        static string preReleaseTag = GetEnvironmentParameter("PRERELEASETAG");
+        static string universeCommitsFile = GetEnvironmentParameter("UNIVERSE_COMMITS_FILE");
+        static bool skipNoCredentials = GetEnvironmentParameter("UNIVERSE_SKIP_NO_CREDENTIALS", value => value == "1");
+        static string repositoryInclude = GetEnvironmentParameter("KOREBUILD_REPOSITORY_INCLUDE");
+        static string repositoryExclude = GetEnvironmentParameter("KOREBUILD_REPOSITORY_EXCLUDE");
+        
         // Doesn't build on Mono since their contracts don't match
         string[] repositories = GetRepositoriesToBuild().ToArray();
         string[] noSrcRepositoryExclude = GetNoSrcDeleteRepositories().ToArray();
 
-        static bool useHttps = UseHttps(BASE_DIR);
+        static bool useHttps = UseHttps(baseDir);
         static string gitHubUriPrefix = useHttps ? "https://github.com/aspnet/" : "git@github.com:aspnet/";
     }
 
 var buildTarget = "compile"
 
 @{
-    var kBuildVersion = Environment.GetEnvironmentVariable("DNX_BUILD_VERSION");
     if (!string.IsNullOrEmpty(kBuildVersion))
     {
         VERSION += "-" + kBuildVersion;
@@ -62,10 +76,10 @@ var buildTarget = "compile"
 #install .pull
 
 #pack
-    directory create='${TARGET_DIR}'
+    directory create='${targetDir}'
 
 #pack-install .pack
-    nuget-local-publish sourcePackagesDir='${TARGET_DIR}'
+    nuget-local-publish sourcePackagesDir='${targetDir}'
 
 #git-pull target='pull'
     @{
@@ -77,7 +91,7 @@ var buildTarget = "compile"
     
 #sync-commits 
    @{
-       var commitsToSync = GetCommitsToSync();
+       var commitsToSync = GetCommitsToSync(universeCommitsFile);
    
        Parallel.ForEach(repositories, repo =>
        {
@@ -96,12 +110,11 @@ var buildTarget = "compile"
 
 #ci-build
     @{
-        var ciVolatileShare = Environment.GetEnvironmentVariable("CI_VOLATILE_SHARE");
         var nugetExe = Path.Combine(".build", "nuget.exe");
         var universeArtifacts = "artifacts";
         var universeBuild = Path.Combine(universeArtifacts, "build");
         Directory.CreateDirectory(universeBuild);
-        buildTarget = Environment.GetEnvironmentVariable("KOREBUILD_BUILD_TARGETS") ?? "--quiet compile nuget-install";
+        buildTarget = koreBuildTargets ?? "--quiet compile nuget-install";
         var blockLogger = Log as IBlockLogger;
 
         if (blockLogger != null)
@@ -113,11 +126,11 @@ var buildTarget = "compile"
         {
             if (Directory.Exists(repo))
             {
-                GitCommand("", string.Format("pull --ff-only --quiet --depth 1 git@github.com:aspnet/{1}.git {0}:{0}", BUILD_BRANCH, repo));
+                GitCommand("", string.Format("pull --ff-only --quiet --depth 1 git@github.com:aspnet/{1}.git {0}:{0}", buildBranch, repo));
             }
             else
             {
-                GitCommand("", string.Format("clone --quiet --depth 1 --branch {0} git@github.com:aspnet/{1}.git", BUILD_BRANCH, repo));
+                GitCommand("", string.Format("clone --quiet --depth 1 --branch {0} git@github.com:aspnet/{1}.git", buildBranch, repo));
             }
         });
 
@@ -210,15 +223,15 @@ var buildTarget = "compile"
 
 #cache-coherence
     @{
-        if (!string.IsNullOrWhiteSpace(DROPS_SHARE))
+        if (Directory.Exists(dropsShare))
         {
-            var coherenceShare = Path.Combine(DROPS_SHARE, "Coherence", BUILD_BRANCH);
+            var coherenceShare = Path.Combine(dropsShare, "Coherence", buildBranch);
             var latestBuild = Directory.EnumerateDirectories(coherenceShare)
                 .Select(d => Path.GetFileName(d))
                 .Where(d => { int _; return int.TryParse(d, out _); })
                 .OrderByDescending(d => d)
                 .First();
-            var targetCacheDir = Path.Combine(COHERENCE_CACHE_DIR, latestBuild); 
+            var targetCacheDir = Path.Combine(coherenceCacheDir, latestBuild);
             var targetCacheBuildDir = Path.Combine(targetCacheDir, "build");
             
             Log.Info("Latest Coherence build is " + latestBuild);
@@ -237,7 +250,7 @@ var buildTarget = "compile"
             }
             
             Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ASPNETVNEXT", targetCacheBuildDir);
-            Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_EXTERNAL", Path.Combine(DROPS_SHARE, "latest-packages", "external", BUILD_BRANCH));
+            Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_EXTERNAL", Path.Combine(dropsShare, "latest-packages", "external", buildBranch));
             Environment.SetEnvironmentVariable("UNIVERSE_COMMITS_FILE", Path.Combine(targetCacheDir, "commits-universe"));
         }
     }
@@ -246,11 +259,11 @@ var buildTarget = "compile"
     - buildTarget = "verify";
 
 #change-default-build-target-for-coherence-build
-    - buildTarget = Environment.GetEnvironmentVariable("KOREBUILD_BUILD_TARGETS") ?? "compile nuget-install";
+    - buildTarget = koreBuildTargets ?? "compile nuget-install";
 
 #init
     @{
-        var templatePath = Path.Combine(BASE_DIR, "build-template");
+        var templatePath = Path.Combine(baseDir, "build-template");
         var templateFiles = Files.Include(templatePath + Path.DirectorySeparatorChar + "*.*").Select(Path.GetFileName).ToList();
 
         foreach(var repo in repositories)
@@ -355,20 +368,17 @@ var buildTarget = "compile"
     -// More information https://github.com/aspnet/Universe/wiki/%23pin-version-:-Pinning-package-version-for-a-particular-release-in-project.json
     @{
 
-        var COHERENCE_FEED = Environment.GetEnvironmentVariable("COHERENCE_FEED");
-        if (string.IsNullOrEmpty(COHERENCE_FEED))
+        if (string.IsNullOrEmpty(coherenceFeed))
         {
             throw new Exception("COHERENCE_FEED not specified. Usually this is Packages-NoTimestamp directory of Coherence-Signed.");
         }
 
-        var KOREBUILD_VERSION = Environment.GetEnvironmentVariable("KOREBUILD_VERSION");
-        if (string.IsNullOrEmpty(KOREBUILD_VERSION))
+        if (string.IsNullOrEmpty(koreBuildVersion))
         {
             throw new Exception("KOREBUILD_VERSION environment variable is not specified.");
         }
 
-        var NUGET_VERSION = Environment.GetEnvironmentVariable("NUGET_VERSION");
-        if (string.IsNullOrEmpty(NUGET_VERSION))
+        if (string.IsNullOrEmpty(nugetVersion))
         {
             throw new Exception("NUGET_VERSION not specified. This is most recent stable build of NuGet from http://dist.nuget.org/index.html. e.g. v3.2");
         }
@@ -408,8 +418,8 @@ var buildTarget = "compile"
             Exec("dnx",
                 string.Format(@"run ""{0}"" ""{1}"" ""{2}""",
                     Path.Combine(Directory.GetCurrentDirectory(), repo),
-                    COHERENCE_FEED,
-                    KOREBUILD_VERSION),
+                    coherenceFeed,
+                    koreBuildVersion),
                 @"tools\PinVersion");
 
             GitCommand(repo, "commit -am \"Updating json files to pin versions and build.cmd to pin KoreBuild and DNX\"");
@@ -426,8 +436,7 @@ var buildTarget = "compile"
 #update-prerelease-tags
     -// Update tags on each repo to have the latest release tag
     @{
-        var PRERELEASETAG = Environment.GetEnvironmentVariable("PRERELEASETAG");
-        if (string.IsNullOrEmpty(PRERELEASETAG))
+        if (string.IsNullOrEmpty(preReleaseTag))
         {
             throw new Exception("PRERELEASETAG tag not defined");
         }
@@ -455,7 +464,7 @@ var buildTarget = "compile"
 
             var majorVersion = version.Split(new string[]{"-"}, StringSplitOptions.None)[0];
 
-            var newVersion = majorVersion + string.Format("-{0}", PRERELEASETAG);
+            var newVersion = majorVersion + string.Format("-{0}", preReleaseTag);
 
             Log.Info(string.Format("New version for repo is {0}", newVersion));
 
@@ -472,8 +481,6 @@ var buildTarget = "compile"
     @{
         var failed = new Dictionary<string, Exception>();
         var skipped = new List<string>();
-        var ciVolatileShare = Environment.GetEnvironmentVariable("CI_VOLATILE_SHARE");
-        var nugetExe = Environment.GetEnvironmentVariable("PUSH_NUGET_EXE");
         var universeArtifacts = Path.Combine("artifacts", "build");
         Directory.CreateDirectory(universeArtifacts);
 
@@ -488,7 +495,7 @@ var buildTarget = "compile"
             {
                 Log.Info(blockName);
 
-                if (SKIP_NO_CREDENTIALS)
+                if (skipNoCredentials)
                 {
                     if (!Directory.Exists(repo))
                     {
@@ -658,11 +665,10 @@ macro name="CopyFolder" sourceDir='string' outputDir='string' overwrite='bool'
 
 functions
     @{
-        static IDictionary<string, string> GetCommitsToSync()
+        static IDictionary<string, string> GetCommitsToSync(string commitsFile)
         {
             var commits = new Dictionary<string, string>();
         
-            var commitsFile = Environment.GetEnvironmentVariable("UNIVERSE_COMMITS_FILE");
             if (string.IsNullOrEmpty(commitsFile))
             {
                 return commits;
@@ -795,14 +801,14 @@ functions
 
             if(Directory.Exists(repo))
             {
-                GitPull(repoUrl, BUILD_BRANCH, repo);
+                GitPull(repoUrl, buildBranch, repo);
             }
             else
             {
                 if (useHttps &&
                     !IsAccessible(repo))
                 {
-                    if (SKIP_NO_CREDENTIALS)
+                    if (skipNoCredentials)
                     {
                         // This is used on the XPlat CI. Must return because otherwise git will wait for user
                         // input and hang the build
@@ -817,7 +823,7 @@ functions
 
                 try
                 {
-                    GitClone(repoUrl, BUILD_BRANCH);
+                    GitClone(repoUrl, buildBranch);
                 }
                 catch (Exception ex)
                 {
@@ -916,7 +922,6 @@ functions
                 "MusicStore",
             };
 
-            var repositoryInclude = Environment.GetEnvironmentVariable("KOREBUILD_REPOSITORY_INCLUDE");
             if (!string.IsNullOrEmpty(repositoryInclude))
             {
                 reposToBuild = new HashSet<string>(
@@ -924,7 +929,6 @@ functions
                     StringComparer.OrdinalIgnoreCase);
             }
 
-            var repositoryExclude = Environment.GetEnvironmentVariable("KOREBUILD_REPOSITORY_EXCLUDE");
             if (!string.IsNullOrEmpty(repositoryExclude))
             {
                 var reposToExclude = repositoryExclude.Split(new string[] {","}, StringSplitOptions.RemoveEmptyEntries);
@@ -1030,6 +1034,11 @@ functions
                     target.Add(key);
                 }
             }
+        }
+        
+        static string DefaultDropsShare(string value)
+        {
+            return value ?? (Environment.OSVersion.Platform == PlatformID.Unix ? "/aspnetci-drops" : @"\\aspnetci\drops");
         }
 
         string CreateBuildWithFlowId(string repo)
