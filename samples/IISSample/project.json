@@ -14,9 +14,7 @@
   },
   "frameworks": {
     "net451": { },
-    "netstandardapp1.5": {
-      "imports": "portable-net451+win8"
-    }
+    "netstandardapp1.5": { }
   },
   "publishExclude": [
     "node_modules",

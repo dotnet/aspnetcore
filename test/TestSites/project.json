@@ -18,15 +18,12 @@
   },
   "frameworks": {
     "netstandardapp1.5": {
-      "imports": [
-        "portable-net451+win8",
-        "dnxcore50"
-      ],
+      "imports": "portable-net451+win8",
       "dependencies": {
         "System.Net.Primitives": "4.0.11-*",
         "dotnet-test-xunit": "1.0.0-dev-*"
       }
     },
-    "net451": {}
+    "dnx451": {}
   }
 }
