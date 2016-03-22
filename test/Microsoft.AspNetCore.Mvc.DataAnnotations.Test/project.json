@@ -16,9 +16,6 @@
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "testRunner": "xunit",
-  "commands": {
-    "test": "xunit.runner.aspnet"
-  },
   "frameworks": {
     "netstandardapp1.5": {
       "imports": [
@@ -28,13 +25,6 @@
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
         "dotnet-test-xunit": "1.0.0-dev-*"
-      }
-    },
-    "dnx451": {
-      "dependencies": {
-        "Moq": "4.2.1312.1622",
-        "System.Runtime": "4.1.0-*",
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
       }
     },
     "net451": {

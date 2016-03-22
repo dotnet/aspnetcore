@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-#if NETSTANDARD1_3
+#if NETSTANDARD1_5
 using System.Reflection;
 #endif
 using System.Threading.Tasks;

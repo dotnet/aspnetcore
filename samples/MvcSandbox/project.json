@@ -21,12 +21,6 @@
     "dotnet-razor-tooling": "1.0.0-*"
   },
   "frameworks": {
-    "dnx451": {
-      "dependencies": {
-        "Microsoft.AspNetCore.Mvc.Dnx": "1.0.0-*",
-        "System.Runtime": "4.1.0-*"
-      }
-    },
     "net451": { },
     "netstandardapp1.5": {
       "imports": [

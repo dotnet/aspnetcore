@@ -14,9 +14,6 @@ namespace MvcSandbox
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-#if DNX451
-            services.AddMvcDnx();
-#endif
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

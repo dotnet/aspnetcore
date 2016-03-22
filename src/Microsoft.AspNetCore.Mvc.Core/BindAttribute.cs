@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if NETSTANDARD1_3
+#if NETSTANDARD1_5
 using System.Reflection;
 #endif
 using Microsoft.AspNetCore.Mvc.Core;

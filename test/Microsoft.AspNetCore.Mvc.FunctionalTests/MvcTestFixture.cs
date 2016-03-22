@@ -11,9 +11,6 @@ using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
-#if DNX451
-using Microsoft.Extensions.CompilationAbstractions;
-#endif
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
 
@@ -59,26 +56,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             var startupAssembly = typeof(TStartup).GetTypeInfo().Assembly;
             var applicationName = startupAssembly.GetName().Name;
-#if DNX451
-            var libraryManager = DnxPlatformServices.Default.LibraryManager;
-            var library = libraryManager.GetLibrary(applicationName);
-            return Path.GetDirectoryName(library.Path);
-#else
             var applicationBasePath = PlatformServices.Default.Application.ApplicationBasePath;
             return Path.GetFullPath(Path.Combine(applicationBasePath, relativePath, applicationName));
-#endif
         }
 
         protected virtual void InitializeServices(IServiceCollection services)
         {
             var startupAssembly = typeof(TStartup).GetTypeInfo().Assembly;
-            var applicationName = startupAssembly.GetName().Name;
-
-            var applicationEnvironment = PlatformServices.Default.Application;
-#if DNX451
-            services.AddSingleton(CompilationServices.Default.LibraryExporter);
-            services.AddSingleton<ICompilationService, DnxRoslynCompilationService>();
-#endif
 
             // Inject a custom assembly provider. Overrides AddMvc() because that uses TryAdd().
             var assemblyProvider = new StaticAssemblyProvider();

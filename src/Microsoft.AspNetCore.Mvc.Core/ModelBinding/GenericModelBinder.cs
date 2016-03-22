@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-#if NETSTANDARD1_3
+#if NETSTANDARD1_5
 using System.Reflection;
 #endif
 using System.Threading.Tasks;

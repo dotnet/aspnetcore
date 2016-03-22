@@ -211,11 +211,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 return
                     GetAssemblyProvider()
                     .CandidateAssemblies
-                    .SelectMany(a => a.DefinedTypes)
-#if DNX451
-                    .Select(t => t.GetTypeInfo())
-#endif
-                    ;
+                    .SelectMany(a => a.DefinedTypes);
             }
 
             private static IAssemblyProvider GetAssemblyProvider()

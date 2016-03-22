@@ -9,9 +9,9 @@
   },
   "frameworks": {
     "net451": {},
-    "netstandardapp1.5": {
+    "netstandard1.3": {
       "imports": [
-        "dnxcore50",
+        "dotnet4.5",
         "portable-net451+win8"
       ]
     }
