@@ -144,7 +144,8 @@ namespace Microsoft.AspNetCore.Server.WebListener
         /// <summary>
         /// Copies the <see cref="T:HeaderDictionary" /> elements to a one-dimensional Array instance at the specified index.
         /// </summary>
-        /// <param name="array">The one-dimensional Array that is the destination of the specified objects copied from the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" />.</param>
+        /// <param name="array">The one-dimensional Array that is the destination of the specified objects copied from
+        /// the <see cref="T:HeaderDictionary" />.</param>
         /// <param name="arrayIndex">The zero-based index in <paramref name="array" /> at which copying begins.</param>
         public void CopyTo(KeyValuePair<string, StringValues>[] array, int arrayIndex)
         {
@@ -185,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
         /// </summary>
-        /// <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
+        /// <returns>An <see cref="T:IEnumerator" /> object that can be used to iterate through the collection.</returns>
         public IEnumerator GetEnumerator()
         {
             return Store.GetEnumerator();
@@ -194,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
         /// </summary>
-        /// <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
+        /// <returns>An <see cref="T:IEnumerator" /> object that can be used to iterate through the collection.</returns>
         IEnumerator<KeyValuePair<string, StringValues>> IEnumerable<KeyValuePair<string, StringValues>>.GetEnumerator()
         {
             return Store.GetEnumerator();
