@@ -30,7 +30,7 @@ namespace ActionConstraintSample.Web
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseDefaultConfiguration(args)
+                .UseDefaultHostingConfiguration(args)
                 .UseIISPlatformHandlerUrl()
                 .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .UseStartup<Startup>()
