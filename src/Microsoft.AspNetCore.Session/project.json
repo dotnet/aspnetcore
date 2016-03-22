@@ -29,7 +29,7 @@
     "net451": { },
     "netstandard1.3": {
       "dependencies": {
-        "System.Security.Cryptography.Algorithms": "4.1.0-*"
+        "System.Security.Cryptography.Algorithms": "4.0.0-*"
       },
       "imports": [
         "dotnet5.4"

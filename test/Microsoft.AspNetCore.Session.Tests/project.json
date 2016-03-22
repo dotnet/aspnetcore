@@ -12,7 +12,7 @@
     "netstandardapp1.5": {
       "dependencies": {
         "dotnet-test-xunit": "1.0.0-dev-*",
-        "System.Threading.Thread": "4.0.0-*"
+        "Microsoft.NETCore.Platforms": "1.0.1-*"
       },
       "imports": [
         "dnxcore50",
