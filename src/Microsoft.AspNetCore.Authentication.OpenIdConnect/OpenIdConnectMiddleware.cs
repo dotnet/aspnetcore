@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -32,7 +31,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <param name="sharedOptions"></param>
         /// <param name="options"></param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Managed by caller")]
         public OpenIdConnectMiddleware(
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,

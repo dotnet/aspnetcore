@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Builder;
@@ -16,7 +15,6 @@ namespace Microsoft.AspNetCore.Authentication.Google
     /// <summary>
     /// An ASP.NET Core middleware for authenticating users using Google OAuth 2.0.
     /// </summary>
-    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Middleware are not disposable.")]
     public class GoogleMiddleware : OAuthMiddleware<GoogleOptions>
     {
         /// <summary>

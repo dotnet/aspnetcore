@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Microsoft.AspNetCore.Http.Authentication;
 
@@ -15,7 +14,6 @@ namespace Microsoft.AspNetCore.Authentication
 
         public static PropertiesSerializer Default { get; } = new PropertiesSerializer();
 
-        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Dispose is idempotent")]
         public virtual byte[] Serialize(AuthenticationProperties model)
         {
             using (var memory = new MemoryStream())
@@ -29,7 +27,6 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
-        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Dispose is idempotent")]
         public virtual AuthenticationProperties Deserialize(byte[] data)
         {
             using (var memory = new MemoryStream(data))

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -45,7 +44,6 @@ namespace Microsoft.AspNetCore.Builder
         /// <para>UseTokenLifetime: false.</para>
         /// </remarks>
         /// <param name="authenticationScheme"> will be used to when creating the <see cref="System.Security.Claims.ClaimsIdentity"/> for the AuthenticationScheme property.</param>
-        [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "Microsoft.Owin.Security.OpenIdConnect.OpenIdConnectOptions.set_Caption(System.String)", Justification = "Not a LOC field")]
         public OpenIdConnectOptions(string authenticationScheme)
         {
             AuthenticationScheme = authenticationScheme;
@@ -124,8 +122,6 @@ namespace Microsoft.AspNetCore.Builder
         /// Gets or sets the 'post_logout_redirect_uri'
         /// </summary>
         /// <remarks>This is sent to the OP as the redirect for the user-agent.</remarks>
-        [SuppressMessage("Microsoft.Design", "CA1056:UriPropertiesShouldNotBeStrings", Justification = "By design")]
-        [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Logout", Justification = "This is the term used in the spec.")]
         public string PostLogoutRedirectUri { get; set; }
 
         /// <summary>

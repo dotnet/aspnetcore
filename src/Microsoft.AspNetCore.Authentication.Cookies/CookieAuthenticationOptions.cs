@@ -3,7 +3,6 @@
 
 using System;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
@@ -103,13 +102,11 @@ namespace Microsoft.AspNetCore.Builder
         /// LoginPath grants a new SignIn identity, the ReturnUrlParameter value is used to redirect the browser back  
         /// to the url which caused the original unauthorized status code.
         /// </summary>
-        [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Login", Justification = "By design")]
         public PathString LoginPath { get; set; }
 
         /// <summary>
         /// If the LogoutPath is provided the middleware then a request to that path will redirect based on the ReturnUrlParameter.
         /// </summary>
-        [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Logout", Justification = "By design")]
         public PathString LogoutPath { get; set; }
 
         /// <summary>
@@ -124,7 +121,6 @@ namespace Microsoft.AspNetCore.Builder
         /// string parameter looked for when a request arrives on the login path or logout path, in order to return to the 
         /// original url after the action is performed.
         /// </summary>
-        [SuppressMessage("Microsoft.Design", "CA1056:UriPropertiesShouldNotBeStrings", Justification = "ReturnUrl is the name of a querystring parameter")]
         public string ReturnUrlParameter { get; set; }
 
         /// <summary>

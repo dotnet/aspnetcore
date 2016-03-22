@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Microsoft.AspNetCore.Http.Authentication;
 
@@ -20,7 +19,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         /// </summary>
         /// <param name="model">The token to serialize</param>
         /// <returns>A byte array containing the serialized token</returns>
-        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Dispose is idempotent")]
         public virtual byte[] Serialize(RequestToken model)
         {
             using (var memory = new MemoryStream())
@@ -39,7 +37,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         /// </summary>
         /// <param name="data">A byte array containing the serialized token</param>
         /// <returns>The Twitter request token</returns>
-        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Dispose is idempotent")]
         public virtual RequestToken Deserialize(byte[] data)
         {
             using (var memory = new MemoryStream(data))

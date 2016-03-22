@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net.Http;
 using System.Text.Encodings.Web;
@@ -17,7 +16,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
     /// <summary>
     /// ASP.NET Core middleware for authenticating users using Twitter.
     /// </summary>
-    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Middleware are not disposable.")]
     public class TwitterMiddleware : AuthenticationMiddleware<TwitterOptions>
     {
         private readonly HttpClient _httpClient;
