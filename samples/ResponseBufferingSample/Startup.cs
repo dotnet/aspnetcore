@@ -38,7 +38,7 @@ namespace ResponseBufferingSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseDefaultConfiguration(args)
+                .UseDefaultHostingConfiguration(args)
                 .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 // .UseIIS() // This repo can no longer reference IIS because IISIntegration depends on it.
                 .UseStartup<Startup>()
