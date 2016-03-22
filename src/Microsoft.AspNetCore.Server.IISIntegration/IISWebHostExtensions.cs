@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         /// <summary>
         /// Configures the port and base path the server should listen on when running behind AspNetCoreModule.
+        /// The app will also be configured to capture startup errors.
         /// </summary>
         /// <param name="app"></param>
         /// <returns></returns>
@@ -36,6 +37,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 var address = "http://localhost:" + port + path;
                 app.UseSetting(WebHostDefaults.ServerUrlsKey, address);
+                app.CaptureStartupErrors(true);
 
                 app.ConfigureServices(services =>
                 {
