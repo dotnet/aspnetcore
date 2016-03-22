@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 using MusicStore.Mocks.Common;
@@ -54,5 +55,5 @@ namespace MusicStore.Mocks.Facebook
             throw new NotImplementedException(request.RequestUri.AbsoluteUri);
         }
     }
-} 
+}
 #endif
