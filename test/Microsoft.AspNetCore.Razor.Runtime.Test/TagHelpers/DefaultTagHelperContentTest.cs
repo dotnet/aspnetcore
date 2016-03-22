@@ -13,6 +13,20 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     public class DefaultTagHelperContentTest
     {
         [Fact]
+        public void Reset_ClearsTheExpectedFields()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            tagHelperContent.SetContent("hello world");
+
+            // Act
+            tagHelperContent.Reinitialize();
+
+            Assert.False(tagHelperContent.IsModified);
+            Assert.Equal(string.Empty, tagHelperContent.GetContent());
+        }
+
+        [Fact]
         public void CanSetContent()
         {
             // Arrange

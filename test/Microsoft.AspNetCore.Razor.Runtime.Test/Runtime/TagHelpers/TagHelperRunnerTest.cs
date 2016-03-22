@@ -127,10 +127,10 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             executionContext.AddTagHelperAttribute("foo", true);
 
             // Act
-            var output = await runner.RunAsync(executionContext);
+            await runner.RunAsync(executionContext);
 
             // Assert
-            Assert.Equal(tagMode, output.TagMode);
+            Assert.Equal(tagMode, executionContext.Output.TagMode);
         }
 
         [Fact]
@@ -163,9 +163,10 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             // Act
             executionContext.Add(executableTagHelper);
             executionContext.AddHtmlAttribute("class", "btn");
-            var output = await runner.RunAsync(executionContext);
+            await runner.RunAsync(executionContext);
 
             // Assert
+            var output = executionContext.Output;
             Assert.Equal("foo", output.TagName);
             Assert.Equal("somethingelse", output.Attributes["class"].Value);
             Assert.Equal("world", output.Attributes["hello"].Value);
@@ -183,10 +184,10 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             // Act
             executionContext.Add(tagHelper);
             executionContext.AddTagHelperAttribute("foo", true);
-            var output = await runner.RunAsync(executionContext);
+            await runner.RunAsync(executionContext);
 
             // Assert
-            Assert.Equal("True", output.Attributes["foo"].Value);
+            Assert.Equal("True", executionContext.Output.Attributes["foo"].Value);
         }
 
         [Fact]

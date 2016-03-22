@@ -54,7 +54,7 @@ __TestNamespace_PTagHelper.Age = 1337;
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
                 __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
@@ -84,7 +84,7 @@ __TestNamespace_PTagHelper.Age = 42;
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(143, 34, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
@@ -104,7 +104,7 @@ __TestNamespace_PTagHelper.Age = 42 + @int;
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(179, 36, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
@@ -124,7 +124,7 @@ __TestNamespace_PTagHelper.Age = int;
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(217, 31, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
@@ -144,7 +144,7 @@ __TestNamespace_PTagHelper.Age = (@int);
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(250, 34, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
@@ -171,7 +171,7 @@ __TestNamespace_PTagHelper.Age = 4 * @(@int + 2);
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(286, 54, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();

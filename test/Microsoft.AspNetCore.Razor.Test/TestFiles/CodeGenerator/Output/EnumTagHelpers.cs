@@ -50,7 +50,7 @@ __TestNamespace_InputTagHelper.Value = MyEnum.MyValue;
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("value", __TestNamespace_InputTagHelper.Value);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(79, 33, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
@@ -72,7 +72,7 @@ AddHtmlAttributeValue("", 128, MyEnum.MySecondValue, 128, 21, false);
 #line default
 #line hidden
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(114, 39, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
@@ -93,7 +93,7 @@ __TestNamespace_InputTagHelper.Value = global::Microsoft.AspNetCore.Razor.Test.G
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("value", __TestNamespace_InputTagHelper.Value);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(155, 25, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
@@ -120,7 +120,7 @@ __TestNamespace_CatchAllTagHelper.CatchAll = global::Microsoft.AspNetCore.Razor.
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("catch-all", __TestNamespace_CatchAllTagHelper.CatchAll);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(182, 50, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
@@ -147,7 +147,7 @@ __TestNamespace_CatchAllTagHelper.CatchAll = enumValue;
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("catch-all", __TestNamespace_CatchAllTagHelper.CatchAll);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(234, 51, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();

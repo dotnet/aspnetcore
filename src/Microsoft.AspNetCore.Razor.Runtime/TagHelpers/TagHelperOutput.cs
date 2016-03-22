@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     public class TagHelperOutput : IHtmlContentContainer
     {
         private readonly Func<bool, HtmlEncoder, Task<TagHelperContent>> _getChildContentAsync;
-        private TagHelperAttributeList _attributes;
         private TagHelperContent _preElement;
         private TagHelperContent _preContent;
         private TagHelperContent _content;
@@ -27,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         internal TagHelperOutput(string tagName)
             : this(
                 tagName,
-                null,
+                new TagHelperAttributeList(),
                 (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()))
         {
         }
@@ -51,9 +50,14 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(getChildContentAsync));
             }
 
+            if (attributes == null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
+
             TagName = tagName;
             _getChildContentAsync = getChildContentAsync;
-            _attributes = attributes;
+            Attributes = attributes;
         }
 
         /// <summary>
@@ -183,17 +187,26 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// a <c>Microsoft.AspNetCore.Mvc.Rendering.HtmlString</c> instance. MVC converts most other types to a
         /// <see cref="string"/>, then HTML encodes the result.
         /// </remarks>
-        public TagHelperAttributeList Attributes
-        {
-            get
-            {
-                if (_attributes == null)
-                {
-                    _attributes = new TagHelperAttributeList();
-                }
+        public TagHelperAttributeList Attributes { get; }
 
-                return _attributes;
-            }
+        /// <summary>
+        /// Clears the <see cref="TagHelperOutput"/> and updates its state with the provided values.
+        /// </summary>
+        /// <param name="tagName">The tag name to use.</param>
+        /// <param name="tagMode">The <see cref="TagMode"/> to use.</param>
+        public void Reinitialize(string tagName, TagMode tagMode)
+        {
+            TagName = tagName;
+            TagMode = tagMode;
+            Attributes.Clear();
+
+            _preElement?.Reinitialize();
+            _preContent?.Reinitialize();
+            _content?.Reinitialize();
+            _postContent?.Reinitialize();
+            _postElement?.Reinitialize();
+
+            _wasSuppressOutputCalled = false;
         }
 
         /// <summary>
@@ -336,7 +349,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             {
                 destination.AppendHtml("<");
                 destination.AppendHtml(TagName);
-                
+
                 CopyAttributesTo(destination);
 
                 if (TagMode == TagMode.SelfClosing)
@@ -367,7 +380,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             _preContent?.Clear();
             _content?.Clear();
             _postContent?.Clear();
-            _attributes?.Clear();
+            Attributes.Clear();
         }
 
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
@@ -392,9 +405,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 writer.Write(TagName);
 
                 // Perf: Avoid allocating enumerator
-                for (var i = 0; i < (_attributes?.Count ?? 0); i++)
+                for (var i = 0; i < (Attributes.Count); i++)
                 {
-                    var attribute = _attributes[i];
+                    var attribute = Attributes[i];
                     writer.Write(" ");
                     writer.Write(attribute.Name);
 
@@ -469,9 +482,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             StringWriter stringWriter = null;
 
             // Perf: Avoid allocating enumerator
-            for (var i = 0; i < (_attributes?.Count ?? 0); i++)
+            for (var i = 0; i < (Attributes.Count); i++)
             {
-                var attribute = _attributes[i];
+                var attribute = Attributes[i];
                 destination.AppendHtml(" ");
                 destination.AppendHtml(attribute.Name);
 

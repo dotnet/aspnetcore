@@ -17,6 +17,55 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     public class TagHelperOutputTest
     {
         [Fact]
+        public async Task Reinitialize_AllowsOutputToBeReused()
+        {
+            // Arrange
+            var initialOutputChildContent = new DefaultTagHelperContent();
+            initialOutputChildContent.SetContent("Initial output content.");
+            var expectedGetChildContentContent = "Initial get child content content";
+            var initialGetChildContent = new DefaultTagHelperContent();
+            initialGetChildContent.SetContent(expectedGetChildContentContent);
+            Func<bool, HtmlEncoder, Task<TagHelperContent>> initialGetChildContentAsync =
+                (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(initialGetChildContent);
+            var initialTagMode = TagMode.StartTagOnly;
+            var initialAttributes = new TagHelperAttributeList
+            {
+                { "name", "value" }
+            };
+            var initialTagName = "initialTagName";
+            var output = new TagHelperOutput(initialTagName, initialAttributes, initialGetChildContentAsync)
+            {
+                TagMode = initialTagMode,
+                Content = initialOutputChildContent,
+            };
+            output.PreContent.SetContent("something");
+            output.PostContent.SetContent("something");
+            output.PreElement.SetContent("something");
+            output.PostElement.SetContent("something");
+            var expectedTagName = "newTagName";
+            var expectedTagMode = TagMode.SelfClosing;
+
+            // Act
+            output.Reinitialize(expectedTagName, expectedTagMode);
+
+            // Assert
+            Assert.Equal(expectedTagName, output.TagName);
+            Assert.Equal(expectedTagMode, output.TagMode);
+            Assert.Empty(output.Attributes);
+
+            var getChildContent = await output.GetChildContentAsync();
+            var content = getChildContent.GetContent();
+
+            // We're expecting the initial child content here because normally the TagHelper infrastructure would
+            // swap out the inner workings of GetChildContentAsync to work with its reinitialized state.
+            Assert.Equal(expectedGetChildContentContent, content);
+            Assert.False(output.PreContent.IsModified);
+            Assert.False(output.PostContent.IsModified);
+            Assert.False(output.PreElement.IsModified);
+            Assert.False(output.PostElement.IsModified);
+        }
+
+        [Fact]
         public async Task GetChildContentAsync_CallsGetChildContentAsync()
         {
             // Arrange

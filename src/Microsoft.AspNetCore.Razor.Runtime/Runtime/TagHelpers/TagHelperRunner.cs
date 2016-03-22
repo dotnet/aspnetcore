@@ -20,14 +20,14 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         /// </param>
         /// <returns>Resulting <see cref="TagHelperOutput"/> from processing all of the
         /// <paramref name="executionContext"/>'s <see cref="ITagHelper"/>s.</returns>
-        public async Task<TagHelperOutput> RunAsync(TagHelperExecutionContext executionContext)
+        public async Task RunAsync(TagHelperExecutionContext executionContext)
         {
             if (executionContext == null)
             {
                 throw new ArgumentNullException(nameof(executionContext));
             }
 
-            var tagHelperContext = executionContext.CreateTagHelperContext();
+            var tagHelperContext = executionContext.Context;
 
             OrderTagHelpers(executionContext.TagHelpers);
 
@@ -36,14 +36,12 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 executionContext.TagHelpers[i].Init(tagHelperContext);
             }
 
-            var tagHelperOutput = executionContext.CreateTagHelperOutput();
+            var tagHelperOutput = executionContext.Output;
 
             for (var i = 0; i < executionContext.TagHelpers.Count; i++)
             {
                 await executionContext.TagHelpers[i].ProcessAsync(tagHelperContext, tagHelperOutput);
             }
-
-            return tagHelperOutput;
         }
 
         private static void OrderTagHelpers(IList<ITagHelper> tagHelpers)

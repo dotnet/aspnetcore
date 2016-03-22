@@ -39,7 +39,7 @@ AddHtmlAttributeValue(" ", 55, DateTime.Now, 56, 14, false);
 #line default
 #line hidden
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(33, 40, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
@@ -90,7 +90,7 @@ WriteTo(__razor_attribute_value_writer, string.Empty);
             ), 93, 44, false);
             AddHtmlAttributeValue(" ", 137, "suffix", 138, 7, true);
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(77, 71, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
@@ -123,7 +123,7 @@ AddHtmlAttributeValue(" ", 210, DateTime.Now, 211, 14, false);
 #line hidden
             AddHtmlAttributeValue(" ", 224, "suffix", 225, 7, true);
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(152, 83, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
@@ -227,7 +227,7 @@ AddHtmlAttributeValue(" ", 404, int.MaxValue, 405, 14, false);
 #line default
 #line hidden
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(239, 183, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
@@ -259,7 +259,7 @@ AddHtmlAttributeValue(" ", 488, int.MaxValue, 489, 14, false);
 #line default
 #line hidden
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(426, 80, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
@@ -309,7 +309,7 @@ WriteTo(__razor_attribute_value_writer, string.Empty);
             }
             ), 526, 44, false);
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(510, 64, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();

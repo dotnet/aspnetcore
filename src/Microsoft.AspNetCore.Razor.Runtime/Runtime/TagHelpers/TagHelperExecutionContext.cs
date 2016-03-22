@@ -18,12 +18,8 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         private readonly Action<HtmlEncoder> _startTagHelperWritingScope;
         private readonly Func<TagHelperContent> _endTagHelperWritingScope;
         private TagHelperContent _childContent;
-        private string _tagName;
-        private string _uniqueId;
-        private TagMode _tagMode;
         private Func<Task> _executeChildContentAsync;
         private Dictionary<HtmlEncoder, TagHelperContent> _perEncoderChildContent;
-        private TagHelperAttributeList _htmlAttributes;
         private TagHelperAttributeList _allAttributes;
 
         /// <summary>
@@ -74,6 +70,13 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             }
 
             _tagHelpers = new List<ITagHelper>();
+            _allAttributes = new TagHelperAttributeList();
+
+            Context = new TagHelperContext(_allAttributes, items, uniqueId);
+            Output = new TagHelperOutput(tagName, new TagHelperAttributeList(), GetChildContentAsync)
+            {
+                TagMode = tagMode
+            };
 
             Reinitialize(tagName, tagMode, items, uniqueId, executeChildContentAsync);
 
@@ -108,18 +111,16 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             }
         }
 
+        // Internal set for testing.
         /// <summary>
-        /// The <see cref="ITagHelper"/>s' output.
+        /// The <see cref="ITagHelper"/>'s output.
         /// </summary>
-        public TagHelperOutput Output { get; set; }
+        public TagHelperOutput Output { get; internal set; }
 
-        public TagHelperContext CreateTagHelperContext() =>
-            new TagHelperContext(_allAttributes, Items, _uniqueId);
-        public TagHelperOutput CreateTagHelperOutput() =>
-            new TagHelperOutput(_tagName, _htmlAttributes, GetChildContentAsync)
-            {
-                TagMode = _tagMode
-            };
+        /// <summary>
+        /// The <see cref="ITagHelper"/>'s context.
+        /// </summary>
+        public TagHelperContext Context { get; }
 
         /// <summary>
         /// Tracks the given <paramref name="tagHelper"/>.
@@ -177,10 +178,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 throw new ArgumentNullException(nameof(attribute));
             }
 
-            EnsureHtmlAttributes();
-            EnsureAllAttributes();
-
-            _htmlAttributes.Add(attribute);
+            Output.Attributes.Add(attribute);
             _allAttributes.Add(attribute);
         }
 
@@ -196,7 +194,6 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 throw new ArgumentNullException(nameof(name));
             }
 
-            EnsureAllAttributes();
 
             _allAttributes.Add(name, value);
         }
@@ -236,16 +233,14 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 throw new ArgumentNullException(nameof(executeChildContentAsync));
             }
 
-            _tagName = tagName;
-            _tagMode = tagMode;
             Items = items;
-            _uniqueId = uniqueId;
             _executeChildContentAsync = executeChildContentAsync;
             _tagHelpers.Clear();
             _perEncoderChildContent?.Clear();
-            _htmlAttributes = null;
-            _allAttributes = null;
             _childContent = null;
+
+            Context.Reinitialize(Items, uniqueId);
+            Output.Reinitialize(tagName, tagMode);
         }
 
         // Internal for testing.
@@ -287,22 +282,6 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             }
 
             return new DefaultTagHelperContent().SetHtmlContent(childContent);
-        }
-
-        private void EnsureHtmlAttributes()
-        {
-            if (_htmlAttributes == null)
-            {
-                _htmlAttributes = new TagHelperAttributeList();
-            }
-        }
-
-        private void EnsureAllAttributes()
-        {
-            if (_allAttributes == null)
-            {
-                _allAttributes = new TagHelperAttributeList();
-            }
         }
     }
 }

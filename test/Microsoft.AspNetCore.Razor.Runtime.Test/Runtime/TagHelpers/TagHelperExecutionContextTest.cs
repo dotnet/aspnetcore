@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             executionContext.AddMinimizedHtmlAttribute("Another attribute");
 
             // Assert - 1
-            var output = executionContext.CreateTagHelperOutput();
+            var output = executionContext.Output;
             Assert.Equal(updatedTagName, output.TagName);
             Assert.Equal(updatedTagMode, output.TagMode);
             var attribute = Assert.Single(output.Attributes);
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             executionContext.AddMinimizedHtmlAttribute("Another attribute");
 
             // Assert
-            var context = executionContext.CreateTagHelperContext();
+            var context = executionContext.Context;
             var attribute = Assert.Single(context.AllAttributes);
             Assert.Equal(attribute.Name, "Another attribute");
             Assert.Equal(updatedUniqueId, context.UniqueId);
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             var executionContext = new TagHelperExecutionContext("p", tagMode);
 
             // Act
-            var output = executionContext.CreateTagHelperOutput();
+            var output = executionContext.Output;
 
             // Assert
             Assert.Equal(tagMode, output.TagMode);
@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             // Act
             executionContext.AddHtmlAttribute("class", "btn");
             executionContext.AddHtmlAttribute("foo", "bar");
-            var output = executionContext.CreateTagHelperOutput();
+            var output = executionContext.Output;
 
             // Assert
             Assert.Equal(
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             // Act
             executionContext.AddMinimizedHtmlAttribute("checked");
             executionContext.AddMinimizedHtmlAttribute("visible");
-            var output = executionContext.CreateTagHelperOutput();
+            var output = executionContext.Output;
 
             // Assert
             Assert.Equal(
@@ -438,7 +438,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             executionContext.AddHtmlAttribute("foo", "bar");
             executionContext.AddMinimizedHtmlAttribute("checked");
             executionContext.AddMinimizedHtmlAttribute("visible");
-            var output = executionContext.CreateTagHelperOutput();
+            var output = executionContext.Output;
 
             // Assert
             Assert.Equal(
@@ -463,7 +463,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             executionContext.AddHtmlAttribute("class", "btn");
             executionContext.AddTagHelperAttribute("something", true);
             executionContext.AddHtmlAttribute("foo", "bar");
-            var context = executionContext.CreateTagHelperContext();
+            var context = executionContext.Context;
 
             // Assert
             Assert.Equal(

@@ -128,6 +128,13 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// <returns>A reference to this instance after the clear operation has completed.</returns>
         public abstract TagHelperContent Clear();
 
+        /// <summary>
+        /// Clears the <see cref="TagHelperContent"/>,  so it can be reused.
+        /// </summary>
+        /// <remarks>This method does more than what <see cref="Clear"/> does. It also resets the
+        /// <see cref="IsModified"/> flag.</remarks>
+        public abstract void Reinitialize();
+
         /// <inheritdoc />
         public abstract void CopyTo(IHtmlContentBuilder destination);
 

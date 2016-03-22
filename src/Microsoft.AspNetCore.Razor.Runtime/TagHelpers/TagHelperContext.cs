@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     /// </summary>
     public class TagHelperContext
     {
-        private static ReadOnlyTagHelperAttributeList EmptyAttributes = new TagHelperAttributeList();
+        private readonly TagHelperAttributeList _allAttributes;
 
         /// <summary>
         /// Instantiates a new <see cref="TagHelperContext"/>.
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// <param name="uniqueId">The unique identifier for the source element this <see cref="TagHelperContext" />
         /// applies to.</param>
         public TagHelperContext(
-            ReadOnlyTagHelperAttributeList allAttributes,
+            TagHelperAttributeList allAttributes,
             IDictionary<object, object> items,
             string uniqueId)
         {
@@ -35,7 +35,12 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(uniqueId));
             }
 
-            AllAttributes = allAttributes ?? EmptyAttributes;
+            if (allAttributes == null)
+            {
+                throw new ArgumentNullException(nameof(allAttributes));
+            }
+
+            _allAttributes = allAttributes;
             Items = items;
             UniqueId = uniqueId;
         }
@@ -43,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// <summary>
         /// Every attribute associated with the current HTML element.
         /// </summary>
-        public ReadOnlyTagHelperAttributeList AllAttributes { get; }
+        public ReadOnlyTagHelperAttributeList AllAttributes => _allAttributes;
 
         /// <summary>
         /// Gets the collection of items used to communicate with other <see cref="ITagHelper"/>s.
@@ -52,11 +57,23 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// This <see cref="IDictionary{Object, Object}" /> is copy-on-write in order to ensure items added to this
         /// collection are visible only to other <see cref="ITagHelper"/>s targeting child elements.
         /// </remarks>
-        public IDictionary<object, object> Items { get; }
+        public IDictionary<object, object> Items { get; private set; }
 
         /// <summary>
         /// An identifier unique to the HTML element this context is for.
         /// </summary>
-        public string UniqueId { get; }
+        public string UniqueId { get; private set; }
+
+        /// <summary>
+        /// Clears the <see cref="TagHelperContext"/> and updates its state with the provided values.
+        /// </summary>
+        /// <param name="items">The <see cref="IDictionary{Object, Object}"/> to use.</param>
+        /// <param name="uniqueId">The unique id to use.</param>
+        public void Reinitialize(IDictionary<object, object> items, string uniqueId)
+        {
+            _allAttributes.Clear();
+            Items = items;
+            UniqueId = uniqueId;
+        }
     }
 }

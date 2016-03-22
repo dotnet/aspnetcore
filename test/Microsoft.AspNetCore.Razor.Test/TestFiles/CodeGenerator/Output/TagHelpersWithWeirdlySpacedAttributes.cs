@@ -55,7 +55,7 @@ __TestNamespace_PTagHelper.Age = 1337;
 #line hidden
             __tagHelperStringValueBuffer = EndTagHelperWritingScope();
             __tagHelperExecutionContext.AddHtmlAttribute("data-content", Html.Raw(__tagHelperStringValueBuffer.GetContent(HtmlEncoder)));
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
                 __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
@@ -78,7 +78,7 @@ __TestNamespace_PTagHelper.Age = 1337;
             __tagHelperExecutionContext.AddTagHelperAttribute("type", __TestNamespace_InputTagHelper.Type);
             __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
             __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_1);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(122, 47, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
@@ -98,7 +98,7 @@ __TestNamespace_PTagHelper.Age = 1234;
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age);
             __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_2);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(173, 46, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
@@ -117,7 +117,7 @@ __TestNamespace_PTagHelper.Age = 1234;
             __tagHelperExecutionContext.AddTagHelperAttribute("type", __TestNamespace_InputTagHelper.Type);
             __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
             __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_3);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(223, 51, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();

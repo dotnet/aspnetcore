@@ -620,15 +620,11 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
 
         private void RenderRunTagHelpers()
         {
-            _writer.Write(ExecutionContextVariableName)
-                   .Write(".")
-                   .WriteStartAssignment(_tagHelperContext.ExecutionContextOutputPropertyName)
-                   .Write("await ")
-                   .WriteStartInstanceMethodInvocation(RunnerVariableName,
-                                                       _tagHelperContext.RunnerRunAsyncMethodName);
-
-            _writer.Write(ExecutionContextVariableName)
-                   .WriteEndMethodInvocation();
+            _writer
+                .Write("await ")
+                .WriteStartInstanceMethodInvocation(RunnerVariableName, _tagHelperContext.RunnerRunAsyncMethodName)
+                .Write(ExecutionContextVariableName)
+                .WriteEndMethodInvocation();
         }
 
         private void RenderBufferedAttributeValue(TagHelperAttributeDescriptor attributeDescriptor)

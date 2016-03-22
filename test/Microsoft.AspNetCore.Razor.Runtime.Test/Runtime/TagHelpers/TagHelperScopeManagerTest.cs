@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 
             // Act
             var executionContext = BeginDefaultScope(scopeManager, tagName: "p");
-            var output = executionContext.CreateTagHelperOutput();
+            var output = executionContext.Output;
 
             // Assert
             Assert.Equal("p", output.TagName);
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             // Act
             var executionContext = BeginDefaultScope(scopeManager, tagName: "p");
             executionContext = BeginDefaultScope(scopeManager, tagName: "div");
-            var output = executionContext.CreateTagHelperOutput();
+            var output = executionContext.Output;
 
             // Assert
             Assert.Equal("div", output.TagName);
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 
             // Act
             var executionContext = BeginDefaultScope(scopeManager, "p", tagMode);
-            var output = executionContext.CreateTagHelperOutput();
+            var output = executionContext.Output;
 
             // Assert
             Assert.Equal(tagMode, output.TagMode);
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             var executionContext = BeginDefaultScope(scopeManager, tagName: "p");
             executionContext = BeginDefaultScope(scopeManager, tagName: "div");
             executionContext = scopeManager.End();
-            var output = executionContext.CreateTagHelperOutput();
+            var output = executionContext.Output;
 
             // Assert
             Assert.Equal("p", output.TagName);

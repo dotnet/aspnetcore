@@ -43,7 +43,7 @@ namespace TestOutput
                 __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
                 __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_1);
                 __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
-                __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 Instrumentation.BeginContext(96, 59, false);
                 Write(__tagHelperExecutionContext.Output);
                 Instrumentation.EndContext();
@@ -63,7 +63,7 @@ namespace TestOutput
                 __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_2);
                 __TestNamespace_InputTagHelper.BoundRequiredString = "hello";
                 __tagHelperExecutionContext.AddTagHelperAttribute("input-bound-required-string", __TestNamespace_InputTagHelper.BoundRequiredString);
-                __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 Instrumentation.BeginContext(161, 119, false);
                 Write(__tagHelperExecutionContext.Output);
                 Instrumentation.EndContext();
@@ -85,7 +85,7 @@ namespace TestOutput
                 __tagHelperExecutionContext.AddTagHelperAttribute("catchall-bound-string", __TestNamespace_CatchAllTagHelper.BoundRequiredString);
                 __TestNamespace_InputTagHelper.BoundRequiredString = "hello2";
                 __tagHelperExecutionContext.AddTagHelperAttribute("input-bound-required-string", __TestNamespace_InputTagHelper.BoundRequiredString);
-                __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 Instrumentation.BeginContext(286, 176, false);
                 Write(__tagHelperExecutionContext.Output);
                 Instrumentation.EndContext();
@@ -106,7 +106,7 @@ namespace TestOutput
                 __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
                 __TestNamespace_InputTagHelper.BoundRequiredString = "world";
                 __tagHelperExecutionContext.AddTagHelperAttribute("input-bound-required-string", __TestNamespace_InputTagHelper.BoundRequiredString);
-                __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 Instrumentation.BeginContext(468, 206, false);
                 Write(__tagHelperExecutionContext.Output);
                 Instrumentation.EndContext();
@@ -119,7 +119,7 @@ namespace TestOutput
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
             __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
-            __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
                 __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();

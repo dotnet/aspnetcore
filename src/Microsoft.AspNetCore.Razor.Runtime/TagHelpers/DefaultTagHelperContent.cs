@@ -18,11 +18,14 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     public class DefaultTagHelperContent : TagHelperContent
     {
         private List<object> _buffer;
+        private bool _isModified;
 
         private List<object> Buffer
         {
             get
             {
+                _isModified = true;
+
                 if (_buffer == null)
                 {
                     _buffer = new List<object>();
@@ -33,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         }
 
         /// <inheritdoc />
-        public override bool IsModified => _buffer != null;
+        public override bool IsModified => _isModified;
 
         /// <inheritdoc />
         /// <remarks>Returns <c>true</c> for a cleared <see cref="TagHelperContent"/>.</remarks>
@@ -41,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         {
             get
             {
-                if (_buffer == null)
+                if (!IsModified)
                 {
                     return true;
                 }
@@ -83,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         {
             get
             {
-                if (_buffer == null)
+                if (!IsModified)
                 {
                     return true;
                 }
@@ -156,7 +159,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(destination));
             }
 
-            if (_buffer == null)
+            if (!IsModified)
             {
                 return;
             }
@@ -194,7 +197,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(destination));
             }
 
-            if (_buffer == null)
+            if (!IsModified)
             {
                 return;
             }
@@ -234,6 +237,13 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         }
 
         /// <inheritdoc />
+        public override void Reinitialize()
+        {
+            _buffer?.Clear();
+            _isModified = false;
+        }
+
+        /// <inheritdoc />
         public override string GetContent()
         {
             return GetContent(HtmlEncoder.Default);
@@ -267,7 +277,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(encoder));
             }
 
-            if (_buffer == null)
+            if (!IsModified)
             {
                 return;
             }

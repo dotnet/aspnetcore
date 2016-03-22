@@ -10,6 +10,35 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     public class TagHelperContextTest
     {
         [Fact]
+        public void Reinitialize_AllowsContextToBeReused()
+        {
+            // Arrange
+            var initialUniqueId = "123";
+            var expectedUniqueId = "456";
+            var initialItems = new Dictionary<object, object>
+            {
+                { "test-entry", 1234 }
+            };
+            var expectedItems = new Dictionary<object, object>
+            {
+                { "something", "new" }
+            };
+            var initialAttributes = new TagHelperAttributeList
+            {
+                { "name", "value" }
+            };
+            var context = new TagHelperContext(initialAttributes, initialItems, initialUniqueId);
+
+            // Act
+            context.Reinitialize(expectedItems, expectedUniqueId);
+
+            // Assert
+            Assert.Same(expectedItems, context.Items);
+            Assert.Equal(expectedUniqueId, context.UniqueId);
+            Assert.Empty(context.AllAttributes);
+        }
+
+        [Fact]
         public void Constructor_SetsProperties_AsExpected()
         {
             // Arrange

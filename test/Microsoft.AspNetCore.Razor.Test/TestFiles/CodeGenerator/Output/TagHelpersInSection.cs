@@ -60,7 +60,7 @@ namespace TestOutput
                     , StartTagHelperWritingScope, EndTagHelperWritingScope);
                     __TestNamespace_NestedTagHelper = CreateTagHelper<global::TestNamespace.NestedTagHelper>();
                     __tagHelperExecutionContext.Add(__TestNamespace_NestedTagHelper);
-                    __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                    await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                     if (!__tagHelperExecutionContext.Output.IsContentModified)
                     {
                         __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
@@ -95,7 +95,7 @@ AddHtmlAttributeValue(" ", 199, DateTime.Now, 200, 14, false);
 #line default
 #line hidden
                 EndAddHtmlAttributeValues(__tagHelperExecutionContext);
-                __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 if (!__tagHelperExecutionContext.Output.IsContentModified)
                 {
                     __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
