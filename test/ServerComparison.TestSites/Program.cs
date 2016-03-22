@@ -11,7 +11,7 @@ namespace ServerComparison.TestSites
         {
             var host = new WebHostBuilder()
                 .UseServer("Microsoft.AspNetCore.Server.Kestrel")
-                .UseDefaultConfiguration(args)
+                .UseDefaultHostingConfiguration(args)
                 .UseIIS()
                 .UseStartup("ServerComparison.TestSites")
                 .Build();
