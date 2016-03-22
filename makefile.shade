@@ -21,6 +21,7 @@ functions
         const string DefaultBuildBranch = "dev";
         const string DefaultCoherenceCacheDir = ".coherence-cache";
         const string UniverseCommitsFileName = "commits-universe";
+        const string CoherenceCacheVersionFileName = "coherence-version";
 
         private static bool Quiet { get; set; }
 
@@ -231,27 +232,41 @@ var buildTarget = "compile"
                 .Where(d => { int _; return int.TryParse(d, out _); })
                 .OrderByDescending(d => d)
                 .First();
-            var targetCacheDir = Path.Combine(coherenceCacheDir, latestBuild);
-            var targetCacheBuildDir = Path.Combine(targetCacheDir, "build");
+            var latestBuildShare = Path.Combine(coherenceShare, latestBuild, "build");                
+            var coherenceVersionFilePath = Path.Combine(coherenceCacheDir, CoherenceCacheVersionFileName); 
             
             Log.Info("Latest Coherence build is " + latestBuild);
-
-            if (!Directory.Exists(targetCacheDir))
+            
+            if (Directory.Exists(coherenceCacheDir) &&
+                File.Exists(coherenceVersionFilePath) &&
+                File.ReadAllText(coherenceVersionFilePath) == latestBuild)
             {
-                var latestBuildShare = Path.Combine(coherenceShare, latestBuild, "build");
-
-                Log.Info("Caching Coherence build " + latestBuild + " at " + targetCacheDir);
-                CopyFolder(latestBuildShare, targetCacheBuildDir, overwrite: true);
-                File.Copy(Path.Combine(coherenceShare, latestBuild, UniverseCommitsFileName), Path.Combine(targetCacheDir, UniverseCommitsFileName));
+                Log.Info("Coherence build " + latestBuild + " already cached at " + coherenceCacheDir);
             }
             else
             {
-                Log.Info("Coherence build " + latestBuild + " already cached at " + targetCacheDir);
+                if (Directory.Exists(coherenceCacheDir))
+                {
+                    Log.Info("Deleting previous Coherence cache");
+                    Directory.Delete(coherenceCacheDir, true);
+                }
+                
+                Log.Info("Creating new Coherence cache directory at " + coherenceCacheDir);
+                Directory.CreateDirectory(coherenceCacheDir);
+                
+                Log.Info("Caching Coherence build " + latestBuild + " at " + coherenceCacheDir);
+                NuGetPackagesAdd(sourcePackagesDir: latestBuildShare, targetPackagesDir: coherenceCacheDir);
+                
+                Log.Info("Copying Universe commits file");
+                File.Copy(Path.Combine(coherenceShare, latestBuild, UniverseCommitsFileName), Path.Combine(coherenceCacheDir, UniverseCommitsFileName));
+                
+                Log.Info("Saving cached Coherence build version");
+                File.WriteAllText(coherenceVersionFilePath, latestBuild);
             }
             
-            Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ASPNETVNEXT", targetCacheBuildDir);
+            Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ASPNETVNEXT", coherenceCacheDir);
             Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_EXTERNAL", Path.Combine(dropsShare, "latest-packages", "external", buildBranch));
-            Environment.SetEnvironmentVariable("UNIVERSE_COMMITS_FILE", Path.Combine(targetCacheDir, "commits-universe"));
+            Environment.SetEnvironmentVariable("UNIVERSE_COMMITS_FILE", Path.Combine(coherenceCacheDir, "commits-universe"));
         }
     }
 
