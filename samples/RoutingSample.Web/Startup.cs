@@ -65,7 +65,7 @@ namespace RoutingSample.Web
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseDefaultConfiguration(args)
+                .UseDefaultHostingConfiguration(args)
                 .UseIISPlatformHandlerUrl()
                 .UseStartup<Startup>()
                 .Build();
