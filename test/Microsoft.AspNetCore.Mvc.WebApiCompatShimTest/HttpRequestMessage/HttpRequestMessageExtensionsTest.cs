@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.WebApiCompatShim;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Options;

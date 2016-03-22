@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Primitives;

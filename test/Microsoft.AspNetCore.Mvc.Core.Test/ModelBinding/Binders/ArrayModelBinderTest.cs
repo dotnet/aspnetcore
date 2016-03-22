@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Http;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders

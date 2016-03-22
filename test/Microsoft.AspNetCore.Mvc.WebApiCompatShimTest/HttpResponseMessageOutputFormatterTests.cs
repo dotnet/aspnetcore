@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.WebApiCompatShim;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -111,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShimTest
 
             // Assert
             Assert.True(httpContext.Response.Headers.ContainsKey(transferEncodingHeaderKey));
-            Assert.Equal(new string[] { "identity", "chunked" }, 
+            Assert.Equal(new string[] { "identity", "chunked" },
                         httpContext.Response.Headers[transferEncodingHeaderKey]);
             Assert.NotNull(httpContext.Response.ContentLength);
         }

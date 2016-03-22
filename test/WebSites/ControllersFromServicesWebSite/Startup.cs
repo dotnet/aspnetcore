@@ -6,7 +6,6 @@ using ControllersFromServicesClassLibrary;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ControllersFromServicesWebSite

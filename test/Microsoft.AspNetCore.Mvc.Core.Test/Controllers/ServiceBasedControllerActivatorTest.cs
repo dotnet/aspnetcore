@@ -3,8 +3,7 @@
 
 using System;
 using System.Reflection;
-using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Moq;
 using Xunit;

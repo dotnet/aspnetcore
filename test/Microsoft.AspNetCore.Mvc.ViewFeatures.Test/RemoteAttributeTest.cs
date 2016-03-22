@@ -4,7 +4,7 @@
 using System;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;

@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding

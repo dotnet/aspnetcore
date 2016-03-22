@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
@@ -88,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 new Mock<IActionResult>().Object,
                 new object());
 
-            // Act 
+            // Act
             filter.OnResultExecuted(context);
 
             // Assert - The mock will throw if we do the wrong thing.

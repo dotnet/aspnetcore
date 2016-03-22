@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;

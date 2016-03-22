@@ -5,9 +5,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
@@ -49,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc
             };
 
             var result = new NotFoundObjectResult("Test Content");
-            
+
             // Act
             await result.ExecuteResultAsync(actionContext);
 

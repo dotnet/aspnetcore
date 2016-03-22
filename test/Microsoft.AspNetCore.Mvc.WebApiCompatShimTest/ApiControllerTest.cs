@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -28,7 +27,7 @@ namespace System.Web.Http
 
             var httpContext = new DefaultHttpContext();
             httpContext.User = new ClaimsPrincipal();
-            
+
             var actionContext = new ActionContext(httpContext, new RouteData(), new ControllerActionDescriptor());
 
             // Act

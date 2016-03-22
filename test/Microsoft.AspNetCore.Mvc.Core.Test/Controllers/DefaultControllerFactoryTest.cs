@@ -3,8 +3,7 @@
 
 using System;
 using System.Reflection;
-using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -182,7 +181,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             var exception = Assert.Throws<InvalidOperationException>(() => factory.CreateController(context));
             Assert.Equal(
                 $"Unable to resolve service for type '{typeof(TestService).FullName}' while attempting to activate " +
-                $"'{typeof(ControllerThatCannotBeActivated).FullName}'.", 
+                $"'{typeof(ControllerThatCannotBeActivated).FullName}'.",
                 exception.Message);
         }
 

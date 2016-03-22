@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -15,7 +15,7 @@ using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
-{ 
+{
     public class ControllerArgumentBinderTests
     {
         [Fact]

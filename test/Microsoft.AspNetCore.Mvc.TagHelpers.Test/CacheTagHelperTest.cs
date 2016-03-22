@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -13,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -314,7 +312,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Empty(tagHelperOutput.PostContent.GetContent());
             Assert.True(tagHelperOutput.IsContentModified);
             Assert.Equal(childContent, tagHelperOutput.Content.GetContent());
-            
+
             // There are two calls to set (for the TCS and the processed value)
             cache.Verify(c => c.CreateEntry(
                 /*key*/ It.IsAny<string>()),
@@ -439,7 +437,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Assert
             Assert.Equal(expiresOn, cacheEntryOptions.AbsoluteExpiration);
         }
-        
+
         [Fact]
         public void UpdateCacheEntryOptions_SetsAbsoluteExpiration_IfExpiresAfterIsSet()
         {
@@ -493,7 +491,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Assert
             Assert.Equal(priority, cacheEntryOptions.Priority);
         }
-        
+
         [Fact]
         public async Task ProcessAsync_UsesExpiresAfter_ToExpireCacheEntry()
         {
@@ -770,7 +768,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 resetEvent3.Set();
             });
 
-            var task2 = Task.Run(async () => 
+            var task2 = Task.Run(async () =>
             {
                 resetEvent2.WaitOne(5000);
                 await cacheTagHelper2.ProcessAsync(tagHelperContext1, tagHelperOutput2);

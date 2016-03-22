@@ -3,10 +3,9 @@
 
 using System;
 using System.Reflection;
-using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -172,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new RouteData(),
                 action));
 
-            // Act - 1            
+            // Act - 1
             var executor1 = cache.GetControllerActionMethodExecutor(context);
 
             Assert.NotNull(executor1);

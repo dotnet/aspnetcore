@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
