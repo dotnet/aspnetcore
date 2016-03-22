@@ -10,6 +10,7 @@
   },
 
   "dependencies": {
+    "NETStandard.Library": "1.0.0-*",
     "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.DotNet.ProjectModel": "1.0.0-*",

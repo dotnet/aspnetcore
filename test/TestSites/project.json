@@ -17,7 +17,7 @@
     "xunit": "2.1.0"
   },
   "frameworks": {
-    "netstandardapp1.5": {
+    "dnxcore50": {
       "imports": "portable-net451+win8",
       "dependencies": {
         "System.Net.Primitives": "4.0.11-*",
