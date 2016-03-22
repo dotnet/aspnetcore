@@ -41,7 +41,7 @@ namespace SelfHostServer
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseDefaultConfiguration(args)
+                .UseDefaultHostingConfiguration(args)
                 .UseStartup<Startup>()
                 .UseServer("Microsoft.AspNetCore.Server.WebListener")
                 .Build();
