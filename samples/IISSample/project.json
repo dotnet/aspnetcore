@@ -13,8 +13,10 @@
     "web": "IISSample"
   },
   "frameworks": {
-    "dnx451": { },
-    "dnxcore50": { }
+    "net451": { },
+    "netstandardapp1.5": {
+      "imports": "portable-net451+win8"
+    }
   },
   "publishExclude": [
     "node_modules",

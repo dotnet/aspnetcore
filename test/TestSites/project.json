@@ -17,13 +17,16 @@
     "xunit": "2.1.0"
   },
   "frameworks": {
-    "dnxcore50": {
-      "imports": "portable-net451+win8",
+    "netstandardapp1.5": {
+      "imports": [
+        "portable-net451+win8",
+        "dnxcore50"
+      ],
       "dependencies": {
         "System.Net.Primitives": "4.0.11-*",
         "dotnet-test-xunit": "1.0.0-dev-*"
       }
     },
-    "dnx451": {}
+    "net451": {}
   }
 }
