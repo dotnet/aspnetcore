@@ -119,7 +119,7 @@ namespace IdentitySample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseDefaultConfiguration(args)
+                .UseDefaultHostingConfiguration(args)
                 .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .UseStartup<Startup>()
                 .Build();
