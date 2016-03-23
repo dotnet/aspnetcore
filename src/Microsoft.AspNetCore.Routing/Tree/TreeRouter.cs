@@ -249,7 +249,17 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 while (_stack.Count > 0)
                 {
                     var next = _stack.Pop();
-                    if (++_segmentIndex >= _tokenizer.Count)
+
+                    // In case of wild card segment, the request path segment length can be greater
+                    // Example:
+                    // Template:    a/{*path}
+                    // Request Url: a/b/c/d
+                    if (next.IsCatchAll && next.Matches.Count > 0)
+                    {
+                        Current = next;
+                        return true;
+                    }
+                    else if (++_segmentIndex >= _tokenizer.Count)
                     {
                         _segmentIndex--;
                         if (next.Matches.Count > 0)

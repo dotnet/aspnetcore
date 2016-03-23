@@ -120,6 +120,39 @@ namespace Microsoft.AspNetCore.Routing.Tree
         }
 
         [Theory]
+        [InlineData("{*path}", "/a", "a")]
+        [InlineData("{*path}", "/a/b/c", "a/b/c")]
+        [InlineData("a/{*path}", "/a/b", "b")]
+        [InlineData("a/{*path}", "/a/b/c/d", "b/c/d")]
+        [InlineData("a/{*path:regex(10/20/30)}", "/a/10/20/30", "10/20/30")]
+        public async Task TreeRouter_RouteAsync_MatchesWildCard_ForLargerPathSegments(
+            string template,
+            string requestPath,
+            string expectedResult)
+        {
+            // Arrange
+            var next = new Mock<IRouter>();
+            next
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(c => c.Handler = NullHandler)
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+
+            var firstRoute = CreateMatchingEntry(next.Object, template, order: 0);
+            var matchingRoutes = new[] { firstRoute };
+            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
+            var attributeRoute = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
+            var context = CreateRouteContext(requestPath);
+
+            // Act
+            await attributeRoute.RouteAsync(context);
+
+            // Assert
+            Assert.NotNull(context.Handler);
+            Assert.Equal(expectedResult, context.RouteData.Values["path"]);
+        }
+
+        [Theory]
         [InlineData("template/5")]
         [InlineData("template/{parameter:int}")]
         [InlineData("template/{parameter}")]
@@ -761,7 +794,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             IEnumerable<TreeRouteLinkGenerationEntry> namedEntries)
         {
             // Arrange
-            var expectedLink = 
+            var expectedLink =
                 namedEntries.First().Template.Parameters.Any() ? "/template/5" : "/template";
 
             var matchingEntries = Enumerable.Empty<TreeRouteMatchingEntry>();

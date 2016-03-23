@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 {
                     if (current.ConstrainedCatchAlls == null)
                     {
-                        current.ConstrainedCatchAlls = new UrlMatchingNode(length: i + 1);
+                        current.ConstrainedCatchAlls = new UrlMatchingNode(length: i + 1) { IsCatchAll = true };
                     }
 
                     current = current.ConstrainedCatchAlls;
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 {
                     if (current.CatchAlls == null)
                     {
-                        current.CatchAlls = new UrlMatchingNode(length: i + 1);
+                        current.CatchAlls = new UrlMatchingNode(length: i + 1) { IsCatchAll = true };
                     }
 
                     current = current.CatchAlls;

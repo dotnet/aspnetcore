@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
         public int Length { get; }
 
+        public bool IsCatchAll { get; set; }
+
         // These entries are sorted by precedence then template
         public List<TreeRouteMatchingEntry> Matches { get; }
 
