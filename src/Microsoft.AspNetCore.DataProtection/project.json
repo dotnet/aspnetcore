@@ -28,7 +28,7 @@
     "netstandard1.3": {
       "dependencies": {
         "Microsoft.Win32.Registry": "4.0.0-*",
-        "System.Security.Cryptography.X509Certificates": "4.0.0-*",
+        "System.Security.Cryptography.X509Certificates": "4.1.0-*",
         "System.Security.Claims": "4.0.1-*",
         "System.Security.Principal.Windows": "4.0.0-*",
         "System.Xml.XDocument": "4.0.11-*"
