@@ -13,8 +13,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.PlatformAbstractions;
-using System.Reflection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -92,9 +92,26 @@ namespace Microsoft.AspNetCore.Hosting
             using (host)
             {
                 host.Start();
-                var service = host.Services.GetServices<IApplicationLifetime>();
-                Assert.NotNull(service);
+                var services = host.Services.GetServices<IApplicationLifetime>();
+                Assert.NotNull(services);
+                Assert.NotEmpty(services);
+
                 await AssertResponseContains(server.RequestDelegate, "Exception from constructor");
+            }
+        }
+
+        [Fact]
+        public void DefaultObjectPoolProvider_IsRegistered()
+        {
+            var server = new TestServer();
+            var host = CreateWebHostBuilder()
+                .UseServer(server)
+                .Configure(app => { })
+                .Build();
+            using (host)
+            {
+                host.Start();
+                Assert.IsType<DefaultObjectPoolProvider>(host.Services.GetService<ObjectPoolProvider>());
             }
         }
 
@@ -333,7 +350,7 @@ namespace Microsoft.AspNetCore.Hosting
         [Fact]
         public void RelativeContentRootIsResolved()
         {
-            var contentRootNet451 = PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Windows ? 
+            var contentRootNet451 = PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Windows ?
                 "testroot" : "../../../../test/Microsoft.AspNetCore.Hosting.Tests/testroot";
 
             var host = new WebHostBuilder()

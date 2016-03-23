@@ -17,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -135,7 +136,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Configure the provided <see cref="ILoggerFactory"/> which will be available as a hosting service. 
+        /// Configure the provided <see cref="ILoggerFactory"/> which will be available as a hosting service.
         /// </summary>
         /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
@@ -155,7 +156,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             var appEnvironment = hostingContainer.GetRequiredService<IApplicationEnvironment>();
             var startupLoader = hostingContainer.GetRequiredService<IStartupLoader>();
-            
+
             var contentRootPath = ResolveContentRootPath(_options.ContentRootPath, appEnvironment.ApplicationBasePath);
             var applicationName = ResolveApplicationName() ?? appEnvironment.ApplicationName;
 
@@ -200,6 +201,9 @@ namespace Microsoft.AspNetCore.Hosting
 
             // Conjure up a RequestServices
             services.AddTransient<IStartupFilter, AutoRequestServicesStartupFilter>();
+
+            // Ensure object pooling is available everywhere.
+            services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
 
             var defaultPlatformServices = PlatformServices.Default;
             if (defaultPlatformServices.Application != null)
