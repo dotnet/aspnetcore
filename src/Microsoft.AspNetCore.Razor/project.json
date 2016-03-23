@@ -31,7 +31,7 @@
         "System.IO.FileSystem": "4.0.1-*",
         "System.Linq": "4.1.0-*",
         "System.Runtime.Extensions": "4.1.0-*",
-        "System.Security.Cryptography.Algorithms": "4.0.0-*",
+        "System.Security.Cryptography.Algorithms": "4.1.0-*",
         "System.Threading.Thread": "4.0.0-*"
       },
       "imports": [
