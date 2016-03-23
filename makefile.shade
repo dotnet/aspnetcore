@@ -164,6 +164,10 @@ var buildTarget = "compile"
                 {
                     Exec("cmd", "/C xcopy /S/Q/I/Y .build " + Path.Combine(repo, ".build"), "");
                 }
+                else
+                {
+                    CopyFolder(".build", Path.Combine(repo, ".build"), true);
+                }
 
                 Exec(CreateBuildWithFlowId(repo), buildTarget, repo);
                 var repoArtifacts = Path.Combine(repo, "artifacts");
