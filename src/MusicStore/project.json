@@ -17,7 +17,6 @@
     "../../shared/**/*.cs"
   ],
   "tools": {
-    "dotnet-publish-iis": "1.0.0-*",
     "dotnet-razor-tooling": "1.0.0-*"
   },
   "content": [
@@ -37,9 +36,9 @@
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
     "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "1.0.0-*",
     "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.0.0-*",
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.Server.WebListener": "0.1.0-*",
     "Microsoft.AspNetCore.Session": "1.0.0-*",
@@ -69,10 +68,5 @@
         "portable-net451+win8"
       ]
     }
-  },
-  "scripts": {
-    "postpublish": [
-      "dotnet publish-iis --publish-folder %publish:OutputPath%"
-    ]
   }
 }

@@ -139,7 +139,7 @@ namespace E2ETests
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     PublishApplicationBeforeDeployment = true,
-                    PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "dnx451" : "netstandardapp1.5",
+                    PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netstandardapp1.5",
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, _logger);

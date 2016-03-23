@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -31,6 +32,8 @@ namespace E2ETests
         [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5002/")]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5003/")]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5004/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5005/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5006/")]
         public async Task WindowsOS(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
@@ -43,7 +46,7 @@ namespace E2ETests
 
         [ConditionalTheory(Skip = "Temporarily disabling test"), Trait("E2Etests", "Smoke")]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5005/")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5007/")]
         public async Task NonWindowsOS(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
@@ -72,10 +75,12 @@ namespace E2ETests
         [ConditionalTheory, Trait("E2Etests", "Smoke")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        //[InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5006/")]
-        //[InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5007/")]
-        //[InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5008/")]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5009/")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5008/")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5009/")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5010/")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5011/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5012/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5013/")]
         public async Task WindowsOS(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
@@ -88,7 +93,7 @@ namespace E2ETests
 
         [ConditionalTheory, Trait("E2Etests", "Smoke")]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5011/")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5014/")]
         public async Task NonWindowsOS(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
@@ -118,8 +123,8 @@ namespace E2ETests
         [OSSkipCondition(OperatingSystems.Linux)]
         [SkipIfCurrentRuntimeIsCoreClr]
         [SkipIfIISVariationsNotEnabled]
-        //[InlineData(ServerType.IIS, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5012/")]
-        [InlineData(ServerType.IIS, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5013/")]
+        //[InlineData(ServerType.IIS, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5015/")]
+        [InlineData(ServerType.IIS, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5016/")]
         public async Task SmokeTestSuite_On_IIS_X86(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
@@ -162,8 +167,10 @@ namespace E2ETests
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "SocialTesting",
+                    ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
+                    SiteName = "MusicStoreTestSite",
                     PublishApplicationBeforeDeployment = true,
-                    PublishTargetFramework = donetFlavor == RuntimeFlavor.Clr ? "dnx451" : "netstandardapp1.5",
+                    PublishTargetFramework = donetFlavor == RuntimeFlavor.Clr ? "net451" : "netstandardapp1.5",
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, _logger);

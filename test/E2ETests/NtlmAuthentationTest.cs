@@ -26,6 +26,7 @@ namespace E2ETests
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5050/")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5051/")]
         public async Task NtlmAuthenticationTest(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             using (_logger.BeginScope("NtlmAuthenticationTest"))
@@ -35,7 +36,7 @@ namespace E2ETests
                 var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
                 {
                     PublishApplicationBeforeDeployment = true,
-                    PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "dnx451" : "netstandardapp1.5",
+                    PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netstandardapp1.5",
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "NtlmAuthentication", //Will pick the Start class named 'StartupNtlmAuthentication'
                     ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("NtlmAuthentation.config") : null,

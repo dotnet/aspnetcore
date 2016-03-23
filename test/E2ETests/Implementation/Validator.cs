@@ -200,13 +200,7 @@ namespace E2ETests
 
         private string PrefixBaseAddress(string url)
         {
-#if DNX451
-            url = _deploymentResult.DeploymentParameters.ServerType == ServerType.IIS ?
-                string.Format(url, new Uri(_deploymentResult.ApplicationBaseUri).Segments[1].TrimEnd('/')) :
-                string.Format(url, string.Empty);
-#else
             url = string.Format(url, string.Empty);
-#endif
 
             return url.Replace("//", "/").Replace("%2F%2F", "%2F").Replace("%2F/", "%2F");
         }
