@@ -34,6 +34,7 @@ namespace ServerComparison.FunctionalTests
         [Theory]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5067/")]
+        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5068/")]
         public Task HelloWorld_Kestrel(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             return HelloWorld(serverType, runtimeFlavor, architecture, applicationBaseUrl);
@@ -59,11 +60,21 @@ namespace ServerComparison.FunctionalTests
 
             using (logger.BeginScope("HelloWorldTest"))
             {
+                string content = null;
+                if (serverType == ServerType.IISExpress)
+                {
+                    content = File.ReadAllText("Http.config");
+                }
+                else if (serverType == ServerType.Nginx)
+                {
+                    content = File.ReadAllText("nginx.conf");
+                }
+
                 var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
-                    ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
+                    ServerConfigTemplateContent = content,
                     SiteName = "HttpTestSite", // This is configured in the Http.config
                     PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "dnx451" : "netstandardapp1.5"
                 };
