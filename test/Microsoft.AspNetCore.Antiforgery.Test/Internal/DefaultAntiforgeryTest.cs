@@ -5,6 +5,7 @@ using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -181,13 +182,13 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public void GetTokens_ExistingInvalidCookieToken_GeneratesANewCookieTokenAndANewFormToken()
         {
             // Arrange
-            var contextAccessor = new DefaultAntiforgeryContextAccessor();
+            var antiforgeryFeature = new AntiforgeryFeature();
             // Generate a new cookie.
             var context = CreateMockContext(
                 new AntiforgeryOptions(),
                 useOldCookie: false,
                 isOldCookieValid: false,
-                contextAccessor: contextAccessor);
+                antiforgeryFeature: antiforgeryFeature);
             var antiforgery = GetAntiforgery(context);
 
             // Act
@@ -197,14 +198,14 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.Equal(context.TestTokenSet.NewCookieTokenString, tokenset.CookieToken);
             Assert.Equal(context.TestTokenSet.FormTokenString, tokenset.RequestToken);
 
-            Assert.NotNull(contextAccessor.Value);
-            Assert.True(contextAccessor.Value.HaveDeserializedCookieToken);
-            Assert.Equal(context.TestTokenSet.OldCookieToken, contextAccessor.Value.CookieToken);
-            Assert.True(contextAccessor.Value.HaveGeneratedNewCookieToken);
-            Assert.Equal(context.TestTokenSet.NewCookieToken, contextAccessor.Value.NewCookieToken);
-            Assert.Equal(context.TestTokenSet.NewCookieTokenString, contextAccessor.Value.NewCookieTokenString);
-            Assert.Equal(context.TestTokenSet.RequestToken, contextAccessor.Value.NewRequestToken);
-            Assert.Equal(context.TestTokenSet.FormTokenString, contextAccessor.Value.NewRequestTokenString);
+            Assert.NotNull(antiforgeryFeature);
+            Assert.True(antiforgeryFeature.HaveDeserializedCookieToken);
+            Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
+            Assert.True(antiforgeryFeature.HaveGeneratedNewCookieToken);
+            Assert.Equal(context.TestTokenSet.NewCookieToken, antiforgeryFeature.NewCookieToken);
+            Assert.Equal(context.TestTokenSet.NewCookieTokenString, antiforgeryFeature.NewCookieTokenString);
+            Assert.Equal(context.TestTokenSet.RequestToken, antiforgeryFeature.NewRequestToken);
+            Assert.Equal(context.TestTokenSet.FormTokenString, antiforgeryFeature.NewRequestTokenString);
         }
 
         [Fact]
@@ -239,12 +240,12 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public void GetTokens_ExistingValidCookieToken_GeneratesANewFormToken()
         {
             // Arrange
-            var contextAccessor = new DefaultAntiforgeryContextAccessor();
+            var antiforgeryFeature = new AntiforgeryFeature();
             var context = CreateMockContext(
                 new AntiforgeryOptions(),
                 useOldCookie: true,
                 isOldCookieValid: true,
-                contextAccessor: contextAccessor);
+                antiforgeryFeature: antiforgeryFeature);
             var antiforgery = GetAntiforgery(context);
 
             // Act
@@ -254,34 +255,31 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.Null(tokenset.CookieToken);
             Assert.Equal(context.TestTokenSet.FormTokenString, tokenset.RequestToken);
 
-            Assert.NotNull(contextAccessor.Value);
-            Assert.True(contextAccessor.Value.HaveDeserializedCookieToken);
-            Assert.Equal(context.TestTokenSet.OldCookieToken, contextAccessor.Value.CookieToken);
-            Assert.True(contextAccessor.Value.HaveGeneratedNewCookieToken);
-            Assert.Null(contextAccessor.Value.NewCookieToken);
-            Assert.Equal(context.TestTokenSet.RequestToken, contextAccessor.Value.NewRequestToken);
-            Assert.Equal(context.TestTokenSet.FormTokenString, contextAccessor.Value.NewRequestTokenString);
+            Assert.NotNull(antiforgeryFeature);
+            Assert.True(antiforgeryFeature.HaveDeserializedCookieToken);
+            Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
+            Assert.True(antiforgeryFeature.HaveGeneratedNewCookieToken);
+            Assert.Null(antiforgeryFeature.NewCookieToken);
+            Assert.Equal(context.TestTokenSet.RequestToken, antiforgeryFeature.NewRequestToken);
+            Assert.Equal(context.TestTokenSet.FormTokenString, antiforgeryFeature.NewRequestTokenString);
         }
 
         [Fact]
         public void GetTokens_DoesNotSerializeTwice()
         {
             // Arrange
-            var contextAccessor = new DefaultAntiforgeryContextAccessor
+            var antiforgeryFeature = new AntiforgeryFeature
             {
-                Value = new AntiforgeryContext
-                {
-                    HaveDeserializedCookieToken = true,
-                    HaveGeneratedNewCookieToken = true,
-                    NewRequestToken = new AntiforgeryToken(),
-                    NewRequestTokenString = "serialized-form-token-from-context",
-                },
+                HaveDeserializedCookieToken = true,
+                HaveGeneratedNewCookieToken = true,
+                NewRequestToken = new AntiforgeryToken(),
+                NewRequestTokenString = "serialized-form-token-from-context",
             };
             var context = CreateMockContext(
                 new AntiforgeryOptions(),
                 useOldCookie: true,
                 isOldCookieValid: true,
-                contextAccessor: contextAccessor);
+                antiforgeryFeature: antiforgeryFeature);
 
             var antiforgery = GetAntiforgery(context);
 
@@ -292,7 +290,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.Null(tokenset.CookieToken);
             Assert.Equal("serialized-form-token-from-context", tokenset.RequestToken);
 
-            Assert.Null(contextAccessor.Value.NewCookieToken);
+            Assert.Null(antiforgeryFeature.NewCookieToken);
 
             // Token serializer not used.
             context.TokenSerializer.Verify(
@@ -307,12 +305,12 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public void GetAndStoreTokens_ExistingValidCookieToken_NotOverriden()
         {
             // Arrange
-            var contextAccessor = new DefaultAntiforgeryContextAccessor();
+            var antiforgeryFeature = new AntiforgeryFeature();
             var context = CreateMockContext(
                 new AntiforgeryOptions(),
                 useOldCookie: true,
                 isOldCookieValid: true,
-                contextAccessor: contextAccessor);
+                antiforgeryFeature: antiforgeryFeature);
             var antiforgery = GetAntiforgery(context);
 
             // Act
@@ -327,25 +325,25 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.Null(tokenSet.CookieToken);
             Assert.Equal(context.TestTokenSet.FormTokenString, tokenSet.RequestToken);
 
-            Assert.NotNull(contextAccessor.Value);
-            Assert.True(contextAccessor.Value.HaveDeserializedCookieToken);
-            Assert.Equal(context.TestTokenSet.OldCookieToken, contextAccessor.Value.CookieToken);
-            Assert.True(contextAccessor.Value.HaveGeneratedNewCookieToken);
-            Assert.Null(contextAccessor.Value.NewCookieToken);
-            Assert.Equal(context.TestTokenSet.RequestToken, contextAccessor.Value.NewRequestToken);
-            Assert.Equal(context.TestTokenSet.FormTokenString, contextAccessor.Value.NewRequestTokenString);
+            Assert.NotNull(antiforgeryFeature);
+            Assert.True(antiforgeryFeature.HaveDeserializedCookieToken);
+            Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
+            Assert.True(antiforgeryFeature.HaveGeneratedNewCookieToken);
+            Assert.Null(antiforgeryFeature.NewCookieToken);
+            Assert.Equal(context.TestTokenSet.RequestToken, antiforgeryFeature.NewRequestToken);
+            Assert.Equal(context.TestTokenSet.FormTokenString, antiforgeryFeature.NewRequestTokenString);
         }
 
         [Fact]
         public void GetAndStoreTokens_NoExistingCookieToken_Saved()
         {
             // Arrange
-            var contextAccessor = new DefaultAntiforgeryContextAccessor();
+            var antiforgeryFeature = new AntiforgeryFeature();
             var context = CreateMockContext(
                 new AntiforgeryOptions(),
                 useOldCookie: false,
                 isOldCookieValid: false,
-                contextAccessor: contextAccessor);
+                antiforgeryFeature: antiforgeryFeature);
             var antiforgery = GetAntiforgery(context);
 
             // Act
@@ -359,38 +357,35 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.Equal(context.TestTokenSet.NewCookieTokenString, tokenSet.CookieToken);
             Assert.Equal(context.TestTokenSet.FormTokenString, tokenSet.RequestToken);
 
-            Assert.NotNull(contextAccessor.Value);
-            Assert.True(contextAccessor.Value.HaveDeserializedCookieToken);
-            Assert.Equal(context.TestTokenSet.OldCookieToken, contextAccessor.Value.CookieToken);
-            Assert.True(contextAccessor.Value.HaveGeneratedNewCookieToken);
-            Assert.Equal(context.TestTokenSet.NewCookieToken, contextAccessor.Value.NewCookieToken);
-            Assert.Equal(context.TestTokenSet.NewCookieTokenString, contextAccessor.Value.NewCookieTokenString);
-            Assert.Equal(context.TestTokenSet.RequestToken, contextAccessor.Value.NewRequestToken);
-            Assert.Equal(context.TestTokenSet.FormTokenString, contextAccessor.Value.NewRequestTokenString);
-            Assert.True(contextAccessor.Value.HaveStoredNewCookieToken);
+            Assert.NotNull(antiforgeryFeature);
+            Assert.True(antiforgeryFeature.HaveDeserializedCookieToken);
+            Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
+            Assert.True(antiforgeryFeature.HaveGeneratedNewCookieToken);
+            Assert.Equal(context.TestTokenSet.NewCookieToken, antiforgeryFeature.NewCookieToken);
+            Assert.Equal(context.TestTokenSet.NewCookieTokenString, antiforgeryFeature.NewCookieTokenString);
+            Assert.Equal(context.TestTokenSet.RequestToken, antiforgeryFeature.NewRequestToken);
+            Assert.Equal(context.TestTokenSet.FormTokenString, antiforgeryFeature.NewRequestTokenString);
+            Assert.True(antiforgeryFeature.HaveStoredNewCookieToken);
         }
 
         [Fact]
         public void GetAndStoreTokens_DoesNotSerializeTwice()
         {
             // Arrange
-            var contextAccessor = new DefaultAntiforgeryContextAccessor
+            var antiforgeryFeature = new AntiforgeryFeature
             {
-                Value = new AntiforgeryContext
-                {
-                    HaveDeserializedCookieToken = true,
-                    HaveGeneratedNewCookieToken = true,
-                    NewCookieToken = new AntiforgeryToken(),
-                    NewCookieTokenString = "serialized-cookie-token-from-context",
-                    NewRequestToken = new AntiforgeryToken(),
-                    NewRequestTokenString = "serialized-form-token-from-context",
-                },
+                HaveDeserializedCookieToken = true,
+                HaveGeneratedNewCookieToken = true,
+                NewCookieToken = new AntiforgeryToken(),
+                NewCookieTokenString = "serialized-cookie-token-from-context",
+                NewRequestToken = new AntiforgeryToken(),
+                NewRequestTokenString = "serialized-form-token-from-context",
             };
             var context = CreateMockContext(
                 new AntiforgeryOptions(),
                 useOldCookie: true,
                 isOldCookieValid: true,
-                contextAccessor: contextAccessor);
+                antiforgeryFeature: antiforgeryFeature);
             var antiforgery = GetAntiforgery(context);
 
             context.TokenStore
@@ -418,31 +413,28 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.Equal("serialized-cookie-token-from-context", tokenset.CookieToken);
             Assert.Equal("serialized-form-token-from-context", tokenset.RequestToken);
 
-            Assert.True(contextAccessor.Value.HaveStoredNewCookieToken);
+            Assert.True(antiforgeryFeature.HaveStoredNewCookieToken);
         }
 
         [Fact]
         public void GetAndStoreTokens_DoesNotStoreTwice()
         {
             // Arrange
-            var contextAccessor = new DefaultAntiforgeryContextAccessor
+            var antiforgeryFeature = new AntiforgeryFeature
             {
-                Value = new AntiforgeryContext
-                {
-                    HaveDeserializedCookieToken = true,
-                    HaveGeneratedNewCookieToken = true,
-                    HaveStoredNewCookieToken = true,
-                    NewCookieToken = new AntiforgeryToken(),
-                    NewCookieTokenString = "serialized-cookie-token-from-context",
-                    NewRequestToken = new AntiforgeryToken(),
-                    NewRequestTokenString = "serialized-form-token-from-context",
-                },
+                HaveDeserializedCookieToken = true,
+                HaveGeneratedNewCookieToken = true,
+                HaveStoredNewCookieToken = true,
+                NewCookieToken = new AntiforgeryToken(),
+                NewCookieTokenString = "serialized-cookie-token-from-context",
+                NewRequestToken = new AntiforgeryToken(),
+                NewRequestTokenString = "serialized-form-token-from-context",
             };
             var context = CreateMockContext(
                 new AntiforgeryOptions(),
                 useOldCookie: true,
                 isOldCookieValid: true,
-                contextAccessor: contextAccessor);
+                antiforgeryFeature: antiforgeryFeature);
             var antiforgery = GetAntiforgery(context);
 
             // Act
@@ -470,8 +462,8 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public async Task IsRequestValidAsync_FromStore_Failure()
         {
             // Arrange
-            var contextAccessor = new DefaultAntiforgeryContextAccessor();
-            var context = CreateMockContext(new AntiforgeryOptions(), contextAccessor: contextAccessor);
+            var antiforgeryFeature = new AntiforgeryFeature();
+            var context = CreateMockContext(new AntiforgeryOptions(), antiforgeryFeature: antiforgeryFeature);
 
             string message;
             context.TokenGenerator
@@ -493,19 +485,19 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             context.TokenGenerator.Verify();
 
             // Failed _after_ updating the AntiforgeryContext.
-            Assert.NotNull(contextAccessor.Value);
-            Assert.True(contextAccessor.Value.HaveDeserializedCookieToken);
-            Assert.Equal(context.TestTokenSet.OldCookieToken, contextAccessor.Value.CookieToken);
-            Assert.True(contextAccessor.Value.HaveDeserializedRequestToken);
-            Assert.Equal(context.TestTokenSet.RequestToken, contextAccessor.Value.RequestToken);
+            Assert.NotNull(antiforgeryFeature);
+            Assert.True(antiforgeryFeature.HaveDeserializedCookieToken);
+            Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
+            Assert.True(antiforgeryFeature.HaveDeserializedRequestToken);
+            Assert.Equal(context.TestTokenSet.RequestToken, antiforgeryFeature.RequestToken);
         }
 
         [Fact]
         public async Task IsRequestValidAsync_FromStore_Success()
         {
             // Arrange
-            var contextAccessor = new DefaultAntiforgeryContextAccessor();
-            var context = CreateMockContext(new AntiforgeryOptions(), contextAccessor: contextAccessor);
+            var antiforgeryFeature = new AntiforgeryFeature();
+            var context = CreateMockContext(new AntiforgeryOptions(), antiforgeryFeature: antiforgeryFeature);
             context.HttpContext.Request.Method = "POST";
 
             string message;
@@ -528,28 +520,25 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.True(result);
             context.TokenGenerator.Verify();
 
-            Assert.NotNull(contextAccessor.Value);
-            Assert.True(contextAccessor.Value.HaveDeserializedCookieToken);
-            Assert.Equal(context.TestTokenSet.OldCookieToken, contextAccessor.Value.CookieToken);
-            Assert.True(contextAccessor.Value.HaveDeserializedRequestToken);
-            Assert.Equal(context.TestTokenSet.RequestToken, contextAccessor.Value.RequestToken);
+            Assert.NotNull(antiforgeryFeature);
+            Assert.True(antiforgeryFeature.HaveDeserializedCookieToken);
+            Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
+            Assert.True(antiforgeryFeature.HaveDeserializedRequestToken);
+            Assert.Equal(context.TestTokenSet.RequestToken, antiforgeryFeature.RequestToken);
         }
 
         [Fact]
         public async Task IsRequestValidAsync_DoesNotDeserializeTwice()
         {
             // Arrange
-            var contextAccessor = new DefaultAntiforgeryContextAccessor
+            var antiforgeryFeature = new AntiforgeryFeature
             {
-                Value = new AntiforgeryContext
-                {
-                    HaveDeserializedCookieToken = true,
-                    CookieToken = new AntiforgeryToken(),
-                    HaveDeserializedRequestToken = true,
-                    RequestToken = new AntiforgeryToken(),
-                },
+                HaveDeserializedCookieToken = true,
+                CookieToken = new AntiforgeryToken(),
+                HaveDeserializedRequestToken = true,
+                RequestToken = new AntiforgeryToken(),
             };
-            var context = CreateMockContext(new AntiforgeryOptions(), contextAccessor: contextAccessor);
+            var context = CreateMockContext(new AntiforgeryOptions(), antiforgeryFeature: antiforgeryFeature);
             context.HttpContext.Request.Method = "POST";
 
             string message;
@@ -557,8 +546,8 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 .Setup(o => o.TryValidateTokenSet(
                     context.HttpContext,
                     It.IsAny<ClaimsPrincipal>(),
-                    contextAccessor.Value.CookieToken,
-                    contextAccessor.Value.RequestToken,
+                    antiforgeryFeature.CookieToken,
+                    antiforgeryFeature.RequestToken,
                     out message))
                 .Returns(true)
                 .Verifiable();
@@ -712,8 +701,8 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public async Task ValidateRequestAsync_FromStore_Failure()
         {
             // Arrange
-            var contextAccessor = new DefaultAntiforgeryContextAccessor();
-            var context = CreateMockContext(new AntiforgeryOptions(), contextAccessor: contextAccessor);
+            var antiforgeryFeature = new AntiforgeryFeature();
+            var context = CreateMockContext(new AntiforgeryOptions(), antiforgeryFeature: antiforgeryFeature);
 
             var message = "my-message";
             context.TokenGenerator
@@ -734,19 +723,19 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             context.TokenGenerator.Verify();
 
             // Failed _after_ updating the AntiforgeryContext.
-            Assert.NotNull(contextAccessor.Value);
-            Assert.True(contextAccessor.Value.HaveDeserializedCookieToken);
-            Assert.Equal(context.TestTokenSet.OldCookieToken, contextAccessor.Value.CookieToken);
-            Assert.True(contextAccessor.Value.HaveDeserializedRequestToken);
-            Assert.Equal(context.TestTokenSet.RequestToken, contextAccessor.Value.RequestToken);
+            Assert.NotNull(antiforgeryFeature);
+            Assert.True(antiforgeryFeature.HaveDeserializedCookieToken);
+            Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
+            Assert.True(antiforgeryFeature.HaveDeserializedRequestToken);
+            Assert.Equal(context.TestTokenSet.RequestToken, antiforgeryFeature.RequestToken);
         }
 
         [Fact]
         public async Task ValidateRequestAsync_FromStore_Success()
         {
             // Arrange
-            var contextAccessor = new DefaultAntiforgeryContextAccessor();
-            var context = CreateMockContext(new AntiforgeryOptions(), contextAccessor: contextAccessor);
+            var antiforgeryFeature = new AntiforgeryFeature();
+            var context = CreateMockContext(new AntiforgeryOptions(), antiforgeryFeature: antiforgeryFeature);
 
             string message;
             context.TokenGenerator
@@ -767,11 +756,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             // Assert
             context.TokenGenerator.Verify();
 
-            Assert.NotNull(contextAccessor.Value);
-            Assert.True(contextAccessor.Value.HaveDeserializedCookieToken);
-            Assert.Equal(context.TestTokenSet.OldCookieToken, contextAccessor.Value.CookieToken);
-            Assert.True(contextAccessor.Value.HaveDeserializedRequestToken);
-            Assert.Equal(context.TestTokenSet.RequestToken, contextAccessor.Value.RequestToken);
+            Assert.NotNull(antiforgeryFeature);
+            Assert.True(antiforgeryFeature.HaveDeserializedCookieToken);
+            Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
+            Assert.True(antiforgeryFeature.HaveDeserializedRequestToken);
+            Assert.Equal(context.TestTokenSet.RequestToken, antiforgeryFeature.RequestToken);
         }
 
         [Fact]
@@ -881,25 +870,22 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public async Task ValidateRequestAsync_DoesNotDeserializeTwice()
         {
             // Arrange
-            var contextAccessor = new DefaultAntiforgeryContextAccessor
+            var antiforgeryFeature = new AntiforgeryFeature
             {
-                Value = new AntiforgeryContext
-                {
-                    HaveDeserializedCookieToken = true,
-                    CookieToken = new AntiforgeryToken(),
-                    HaveDeserializedRequestToken = true,
-                    RequestToken = new AntiforgeryToken(),
-                },
+                HaveDeserializedCookieToken = true,
+                CookieToken = new AntiforgeryToken(),
+                HaveDeserializedRequestToken = true,
+                RequestToken = new AntiforgeryToken(),
             };
-            var context = CreateMockContext(new AntiforgeryOptions(), contextAccessor: contextAccessor);
+            var context = CreateMockContext(new AntiforgeryOptions(), antiforgeryFeature: antiforgeryFeature);
 
             string message;
             context.TokenGenerator
                 .Setup(o => o.TryValidateTokenSet(
                     context.HttpContext,
                     It.IsAny<ClaimsPrincipal>(),
-                    contextAccessor.Value.CookieToken,
-                    contextAccessor.Value.RequestToken,
+                    antiforgeryFeature.CookieToken,
+                    antiforgeryFeature.RequestToken,
                     out message))
                 .Returns(true)
                 .Verifiable();
@@ -1056,14 +1042,14 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             {
                 SuppressXFrameOptionsHeader = suppressXFrameOptions
             };
-            var contextAccessor = new DefaultAntiforgeryContextAccessor();
+            var antiforgeryFeature = new AntiforgeryFeature();
 
             // Generate a new cookie.
             var context = CreateMockContext(
                 options,
                 useOldCookie: false,
                 isOldCookieValid: false,
-                contextAccessor: contextAccessor);
+                antiforgeryFeature: antiforgeryFeature);
             var antiforgery = GetAntiforgery(context);
 
             // Act
@@ -1073,36 +1059,33 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var xFrameOptions = context.HttpContext.Response.Headers["X-Frame-Options"];
             Assert.Equal(expectedHeaderValue, xFrameOptions);
 
-            Assert.NotNull(contextAccessor.Value);
-            Assert.True(contextAccessor.Value.HaveDeserializedCookieToken);
-            Assert.Equal(context.TestTokenSet.OldCookieToken, contextAccessor.Value.CookieToken);
-            Assert.True(contextAccessor.Value.HaveGeneratedNewCookieToken);
-            Assert.Equal(context.TestTokenSet.NewCookieToken, contextAccessor.Value.NewCookieToken);
-            Assert.Equal(context.TestTokenSet.NewCookieTokenString, contextAccessor.Value.NewCookieTokenString);
-            Assert.True(contextAccessor.Value.HaveStoredNewCookieToken);
+            Assert.NotNull(antiforgeryFeature);
+            Assert.True(antiforgeryFeature.HaveDeserializedCookieToken);
+            Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
+            Assert.True(antiforgeryFeature.HaveGeneratedNewCookieToken);
+            Assert.Equal(context.TestTokenSet.NewCookieToken, antiforgeryFeature.NewCookieToken);
+            Assert.Equal(context.TestTokenSet.NewCookieTokenString, antiforgeryFeature.NewCookieTokenString);
+            Assert.True(antiforgeryFeature.HaveStoredNewCookieToken);
         }
 
         [Fact]
         public void SetCookieTokenAndHeader_DoesNotDeserializeTwice()
         {
             // Arrange
-            var contextAccessor = new DefaultAntiforgeryContextAccessor
+            var antiforgeryFeature = new AntiforgeryFeature
             {
-                Value = new AntiforgeryContext
-                {
-                    HaveDeserializedCookieToken = true,
-                    HaveGeneratedNewCookieToken = true,
-                    NewCookieToken = new AntiforgeryToken(),
-                    NewCookieTokenString = "serialized-cookie-token-from-context",
-                    NewRequestToken = new AntiforgeryToken(),
-                    NewRequestTokenString = "serialized-form-token-from-context",
-                },
+                HaveDeserializedCookieToken = true,
+                HaveGeneratedNewCookieToken = true,
+                NewCookieToken = new AntiforgeryToken(),
+                NewCookieTokenString = "serialized-cookie-token-from-context",
+                NewRequestToken = new AntiforgeryToken(),
+                NewRequestTokenString = "serialized-form-token-from-context",
             };
             var context = CreateMockContext(
                 new AntiforgeryOptions(),
                 useOldCookie: true,
                 isOldCookieValid: true,
-                contextAccessor: contextAccessor);
+                antiforgeryFeature: antiforgeryFeature);
             var antiforgery = GetAntiforgery(context);
 
             context.TokenStore
@@ -1132,24 +1115,21 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public void SetCookieTokenAndHeader_DoesNotStoreTwice()
         {
             // Arrange
-            var contextAccessor = new DefaultAntiforgeryContextAccessor
+            var antiforgeryFeature = new AntiforgeryFeature
             {
-                Value = new AntiforgeryContext
-                {
-                    HaveDeserializedCookieToken = true,
-                    HaveGeneratedNewCookieToken = true,
-                    HaveStoredNewCookieToken = true,
-                    NewCookieToken = new AntiforgeryToken(),
-                    NewCookieTokenString = "serialized-cookie-token-from-context",
-                    NewRequestToken = new AntiforgeryToken(),
-                    NewRequestTokenString = "serialized-form-token-from-context",
-                },
+                HaveDeserializedCookieToken = true,
+                HaveGeneratedNewCookieToken = true,
+                HaveStoredNewCookieToken = true,
+                NewCookieToken = new AntiforgeryToken(),
+                NewCookieTokenString = "serialized-cookie-token-from-context",
+                NewRequestToken = new AntiforgeryToken(),
+                NewRequestTokenString = "serialized-form-token-from-context",
             };
             var context = CreateMockContext(
                 new AntiforgeryOptions(),
                 useOldCookie: true,
                 isOldCookieValid: true,
-                contextAccessor: contextAccessor);
+                antiforgeryFeature: antiforgeryFeature);
             var antiforgery = GetAntiforgery(context);
 
             // Act
@@ -1192,21 +1172,20 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 loggerFactory: loggerFactory);
         }
 
-        private IServiceProvider GetServices(IAntiforgeryContextAccessor contextAccessor)
+        private IServiceProvider GetServices()
         {
             var builder = new ServiceCollection();
-            builder.AddSingleton<IAntiforgeryContextAccessor>(contextAccessor);
             builder.AddSingleton<ILoggerFactory>(new LoggerFactory());
 
             return builder.BuildServiceProvider();
         }
 
-        private HttpContext GetHttpContext(IAntiforgeryContextAccessor contextAccessor = null)
+        private HttpContext GetHttpContext(IAntiforgeryFeature antiforgeryFeature = null)
         {
             var httpContext = new DefaultHttpContext();
-            contextAccessor = contextAccessor ?? new DefaultAntiforgeryContextAccessor();
-            httpContext.RequestServices = GetServices(contextAccessor);
-
+            antiforgeryFeature = antiforgeryFeature ?? new AntiforgeryFeature();
+            httpContext.Features.Set(antiforgeryFeature);
+            httpContext.RequestServices = GetServices();
             httpContext.User = new ClaimsPrincipal(new ClaimsIdentity("some-auth"));
 
             return httpContext;
@@ -1276,10 +1255,10 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             AntiforgeryOptions options,
             bool useOldCookie = false,
             bool isOldCookieValid = true,
-            IAntiforgeryContextAccessor contextAccessor = null)
+            IAntiforgeryFeature antiforgeryFeature = null)
         {
             // Arrange
-            var httpContext = GetHttpContext(contextAccessor);
+            var httpContext = GetHttpContext(antiforgeryFeature);
             var testTokenSet = GetTokenSet();
 
             var mockSerializer = GetTokenSerializer(testTokenSet);

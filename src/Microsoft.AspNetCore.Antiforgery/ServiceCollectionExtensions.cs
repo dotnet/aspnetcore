@@ -37,7 +37,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IAntiforgeryTokenSerializer, DefaultAntiforgeryTokenSerializer>();
             services.TryAddSingleton<IAntiforgeryTokenStore, DefaultAntiforgeryTokenStore>();
             services.TryAddSingleton<IClaimUidExtractor, DefaultClaimUidExtractor>();
-            services.TryAddScoped<IAntiforgeryContextAccessor, DefaultAntiforgeryContextAccessor>();
             services.TryAddSingleton<IAntiforgeryAdditionalDataProvider, DefaultAntiforgeryAdditionalDataProvider>();
 
             services.TryAddSingleton<ObjectPoolProvider>(new DefaultObjectPoolProvider());
