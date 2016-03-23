@@ -37,6 +37,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     {
                         if (SocketInput.RemoteIntakeFin)
                         {
+                            // We need to attempt to consume start lines and headers even after
+                            // SocketInput.RemoteIntakeFin is set to true to ensure we don't close a
+                            // connection without giving the application a chance to respond to a request
+                            // sent immediately before the a FIN from the client.
                             if (TakeStartLine(SocketInput))
                             {
                                 break;
@@ -54,6 +58,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     {
                         if (SocketInput.RemoteIntakeFin)
                         {
+                            // We need to attempt to consume start lines and headers even after
+                            // SocketInput.RemoteIntakeFin is set to true to ensure we don't close a
+                            // connection without giving the application a chance to respond to a request
+                            // sent immediately before the a FIN from the client.
                             if (TakeMessageHeaders(SocketInput, FrameRequestHeaders))
                             {
                                 break;
