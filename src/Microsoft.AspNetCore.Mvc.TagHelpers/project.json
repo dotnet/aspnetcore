@@ -37,10 +37,7 @@
       "imports": [
         "dotnet5.6",
         "portable-net45+win8"
-      ],
-      "dependencies": {
-        "System.Security.Cryptography.Algorithms": "4.0.0-*"
-      }
+      ]
     }
   },
   "exclude": [
