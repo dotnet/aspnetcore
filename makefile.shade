@@ -151,7 +151,7 @@ var buildTarget = "compile"
 
         foreach (var batch in batchedRepos)
         {
-            Parallel.ForEach(batch.ToArray(), new ParallelOptions { MaxDegreeOfParallelism = IsLinux ? 1 : 4 }, repo =>
+            Parallel.ForEach(batch.ToArray(), new ParallelOptions { MaxDegreeOfParallelism = 4 }, repo =>
             {
                 var blockName = string.Format("Building {0}", repo);
 
@@ -996,6 +996,18 @@ functions
                             if (File.Exists(projectJson))
                             {
                                 GetDependencies(projectJson, info.DependencyNames);
+                            }
+                            else
+                            {
+                                // Look for test\Websites\WebsiteName\project.json
+                                foreach (var subDirectory in Directory.EnumerateDirectories(directory))
+                                {
+                                    projectJson = Path.Combine(subDirectory, "project.json");
+                                    if (File.Exists(projectJson))
+                                    {
+                                        GetDependencies(projectJson, info.DependencyNames);
+                                    }
+                                }
                             }
                         }
                     }
