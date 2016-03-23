@@ -12,6 +12,19 @@ param(
 
 $buildAgentFolder="C:\BuildAgent"
 
+Write-Host "`nInstalling Bower globally..."
+npm install -g bower
+
+Write-Host "`nInstalling Grunt globally..."
+npm install -g grunt-cli
+
+Write-Host "`nInstalling Gulp globally..."
+npm install -g gulp
+
+Write-Host "`nInstalling Typescript globally..."
+npm install -g typescript
+npm install -g tsd
+
 Write-Host "`nUpdating build agent name..."
 $agentPropertiesFile="$buildAgentFolder\conf\buildAgent.properties"
 (Get-Content $agentPropertiesFile).replace('#AGENT_NAME#', $buildAgentName) | Set-Content $agentPropertiesFile
