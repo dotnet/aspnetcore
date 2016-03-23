@@ -151,9 +151,8 @@ var buildTarget = "compile"
 
         foreach (var batch in batchedRepos)
         {
-            Parallel.ForEach(batch.ToArray(), new ParallelOptions { MaxDegreeOfParallelism = 4 }, repo =>
+            Parallel.ForEach(batch.ToArray(), new ParallelOptions { MaxDegreeOfParallelism = IsLinux ? 1 : 4 }, repo =>
             {
-                
                 var blockName = string.Format("Building {0}", repo);
 
                 if (blockLogger != null)
