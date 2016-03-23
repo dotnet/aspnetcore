@@ -136,21 +136,11 @@ namespace ServerComparison.FunctionalTests
 
             using (logger.BeginScope("ResponseFormatsTest"))
             {
-                string content = null;
-                if (serverType == ServerType.IISExpress)
-                {
-                    content = File.ReadAllText("Http.config");
-                }
-                else if (serverType == ServerType.Nginx)
-                {
-                    content = File.ReadAllText("nginx.conf");
-                }
-
                 var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "Responses",
-                    ServerConfigTemplateContent = content,
+                    ServerConfigTemplateContent = Helpers.GetConfigContent(serverType),
                     SiteName = "HttpTestSite", // This is configured in the Http.config
                     PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "dnx451" : "netstandardapp1.5"
                 };

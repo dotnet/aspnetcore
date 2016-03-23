@@ -66,21 +66,11 @@ namespace ServerComparison.FunctionalTests
 
             using (logger.BeginScope("HelloWorldTest"))
             {
-                string content = null;
-                if (serverType == ServerType.IISExpress)
-                {
-                    content = File.ReadAllText("Http.config");
-                }
-                else if (serverType == ServerType.Nginx)
-                {
-                    content = File.ReadAllText("nginx.conf");
-                }
-
                 var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
-                    ServerConfigTemplateContent = content,
+                    ServerConfigTemplateContent = Helpers.GetConfigContent(serverType),
                     SiteName = "HttpTestSite", // This is configured in the Http.config
                     PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "dnx451" : "netstandardapp1.5"
                 };
