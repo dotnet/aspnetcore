@@ -19,9 +19,9 @@
   "frameworks": {
     "netstandardapp1.5": {
       "dependencies": {
-        "System.Data.SqlClient": "4.0.0-*",
+        "System.Data.SqlClient": "4.1.0-*",
         "System.Net.Http": "4.0.1-*",
-        "System.Xml.XmlDocument": "4.0.0-*",
+        "System.Xml.XmlDocument": "4.0.1-*",
         "dotnet-test-xunit": "1.0.0-dev-*"
       },
       "imports": [
