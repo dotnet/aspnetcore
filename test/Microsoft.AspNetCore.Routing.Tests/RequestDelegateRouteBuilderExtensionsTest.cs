@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using Moq;
 using Xunit;
 
@@ -128,6 +128,7 @@ namespace Microsoft.AspNetCore.Routing
         private static IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
+            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.AddOptions();
             services.AddRouting();
             services.AddLogging();

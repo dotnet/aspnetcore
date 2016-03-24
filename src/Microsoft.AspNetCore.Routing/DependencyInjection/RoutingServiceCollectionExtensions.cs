@@ -28,7 +28,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddTransient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
             services.TryAddSingleton(UrlEncoder.Default);
-            services.TryAddSingleton<ObjectPoolProvider>(new DefaultObjectPoolProvider());
             services.TryAddSingleton<ObjectPool<UriBuildingContext>>(s =>
             {
                 var provider = s.GetRequiredService<ObjectPoolProvider>();
