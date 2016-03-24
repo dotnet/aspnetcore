@@ -13,5 +13,11 @@ namespace ControllersFromServicesWebSite
         {
             return 1;
         }
+
+        [HttpGet("InServicesViewComponent")]
+        public IActionResult ViewComponentAction()
+        {
+            return ViewComponent("ComponentFromServices");
+        }
     }
 }

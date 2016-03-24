@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
@@ -18,6 +19,7 @@ using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
@@ -120,6 +122,48 @@ namespace Microsoft.AspNetCore.Mvc
                     AssertContainsSingle(services, service.ServiceType, service.ImplementationType);
                 }
             }
+        }
+
+        [Fact]
+        public void AddMvcTwice_DoesNotAddApplicationFeatureProvidersTwice()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var providers = new IApplicationFeatureProvider[]
+            {
+                new ControllerFeatureProvider(),
+                new ViewComponentFeatureProvider()
+            };
+
+            // Act
+            services.AddMvc();
+            services.AddMvc();
+
+            // Assert
+            var descriptor = Assert.Single(services, d => d.ServiceType == typeof(ApplicationPartManager));
+            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
+            Assert.NotNull(descriptor.ImplementationInstance);
+            var manager = Assert.IsType<ApplicationPartManager>(descriptor.ImplementationInstance);
+
+            Assert.Equal(2, manager.FeatureProviders.Count);
+            Assert.IsType<ControllerFeatureProvider>(manager.FeatureProviders[0]);
+            Assert.IsType<ViewComponentFeatureProvider>(manager.FeatureProviders[1]);
+        }
+
+        [Fact]
+        public void AddMvcCore_ReusesExistingApplicationPartManagerInstance_IfFoundOnServiceCollection()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var manager = new ApplicationPartManager();
+            services.AddSingleton(manager);
+
+            // Act
+            services.AddMvc();
+
+            // Assert
+            var descriptor = Assert.Single(services, d => d.ServiceType == typeof(ApplicationPartManager));
+            Assert.Same(manager, descriptor.ImplementationInstance);
         }
 
         private IEnumerable<Type> SingleRegistrationServiceTypes

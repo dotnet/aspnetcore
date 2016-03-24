@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         }
 
         [Fact]
-        public void GetFeature_OnlyRunsOnParts_ThatImplementIExportTypes()
+        public void GetFeature_OnlyRunsOnParts_ThatImplementIApplicationPartTypeProvider()
         {
             // Arrange
             var otherPart = new Mock<ApplicationPart>();

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents
@@ -188,39 +188,36 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 public string Invoke() => "Hello";
             }
         }
-
         // This will only consider types nested inside this class as ViewComponent classes
         private class FilteredViewComponentDescriptorProvider : DefaultViewComponentDescriptorProvider
         {
             public FilteredViewComponentDescriptorProvider()
-                : base(GetAssemblyProvider())
+                : this(typeof(ViewComponentContainer).GetNestedTypes(bindingAttr: BindingFlags.Public))
             {
-                AllowedTypes = typeof(ViewComponentContainer).GetNestedTypes(bindingAttr: BindingFlags.Public);
             }
 
-            public Type[] AllowedTypes { get; }
-
-            protected override bool IsViewComponentType(TypeInfo typeInfo)
+            public FilteredViewComponentDescriptorProvider(params Type[] allowedTypes)
+                : base(GetApplicationPartManager(allowedTypes.Select(t => t.GetTypeInfo())))
             {
-                return AllowedTypes.Contains(typeInfo.AsType());
             }
 
-            // Need to override this since the default provider does not support private classes.
-            protected override IEnumerable<TypeInfo> GetCandidateTypes()
+            private static ApplicationPartManager GetApplicationPartManager(IEnumerable<TypeInfo> types)
             {
-                return
-                    GetAssemblyProvider()
-                    .CandidateAssemblies
-                    .SelectMany(a => a.DefinedTypes);
+                var manager = new ApplicationPartManager();
+                manager.ApplicationParts.Add(new TestApplicationPart(types));
+                manager.FeatureProviders.Add(new TestFeatureProvider());
+                return manager;
             }
 
-            private static IAssemblyProvider GetAssemblyProvider()
+            private class TestFeatureProvider : IApplicationFeatureProvider<ViewComponentFeature>
             {
-                var assemblyProvider = new StaticAssemblyProvider();
-                assemblyProvider.CandidateAssemblies.Add(
-                    typeof(ViewComponentContainer).GetTypeInfo().Assembly);
-
-                return assemblyProvider;
+                public void PopulateFeature(IEnumerable<ApplicationPart> parts, ViewComponentFeature feature)
+                {
+                    foreach (var type in parts.OfType<IApplicationPartTypeProvider>().SelectMany(p => p.Types))
+                    {
+                        feature.ViewComponents.Add(type);
+                    }
+                }
             }
         }
     }

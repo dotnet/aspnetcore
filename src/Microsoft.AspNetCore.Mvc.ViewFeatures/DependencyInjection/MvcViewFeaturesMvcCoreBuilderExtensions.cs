@@ -3,7 +3,9 @@
 
 using System;
 using System.Buffers;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -26,8 +28,17 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             builder.AddDataAnnotations();
+            AddViewComponentApplicationPartsProviders(builder.PartManager);
             AddViewServices(builder.Services);
             return builder;
+        }
+
+        private static void AddViewComponentApplicationPartsProviders(ApplicationPartManager manager)
+        {
+            if (!manager.FeatureProviders.OfType<ViewComponentFeatureProvider>().Any())
+            {
+                manager.FeatureProviders.Add(new ViewComponentFeatureProvider());
+            }
         }
 
         public static IMvcCoreBuilder AddViews(

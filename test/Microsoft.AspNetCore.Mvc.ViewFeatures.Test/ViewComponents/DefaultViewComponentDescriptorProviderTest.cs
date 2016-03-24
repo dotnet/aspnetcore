@@ -6,47 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
     public class DefaultViewComponentDescriptorProviderTest
     {
-        [Fact]
-        public void GetDescriptor_DefaultConventions()
-        {
-            // Arrange
-            var provider = CreateProvider(typeof(ConventionsViewComponent));
-
-            // Act
-            var descriptors = provider.GetViewComponents();
-
-            // Assert
-            var descriptor = Assert.Single(descriptors);
-            Assert.Same(typeof(ConventionsViewComponent).GetTypeInfo(), descriptor.TypeInfo);
-            Assert.Equal("Microsoft.AspNetCore.Mvc.ViewComponents.Conventions", descriptor.FullName);
-            Assert.Equal("Conventions", descriptor.ShortName);
-            Assert.Same(typeof(ConventionsViewComponent).GetMethod("Invoke"), descriptor.MethodInfo);
-        }
-
-        [Fact]
-        public void GetDescriptor_WithAttribute()
-        {
-            // Arrange
-            var provider = CreateProvider(typeof(AttributeViewComponent));
-
-            // Act
-            var descriptors = provider.GetViewComponents();
-
-            // Assert
-            var descriptor = Assert.Single(descriptors);
-            Assert.Equal(typeof(AttributeViewComponent).GetTypeInfo(), descriptor.TypeInfo);
-            Assert.Equal("AttributesAreGreat", descriptor.FullName);
-            Assert.Equal("AttributesAreGreat", descriptor.ShortName);
-            Assert.Same(typeof(AttributeViewComponent).GetMethod("InvokeAsync"), descriptor.MethodInfo);
-        }
-
         [Theory]
         [InlineData(typeof(NoMethodsViewComponent))]
         [InlineData(typeof(NonPublicInvokeAsyncViewComponent))]
@@ -118,17 +84,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(() => provider.GetViewComponents().ToArray());
             Assert.Equal(expected, ex.Message);
-        }
-
-        private class ConventionsViewComponent
-        {
-            public string Invoke() => "Hello world";
-        }
-
-        [ViewComponent(Name = "AttributesAreGreat")]
-        private class AttributeViewComponent
-        {
-            public Task<string> InvokeAsync() => Task.FromResult("Hello world");
         }
 
         private class MultipleInvokeViewComponent
@@ -211,34 +166,27 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         private class FilteredViewComponentDescriptorProvider : DefaultViewComponentDescriptorProvider
         {
             public FilteredViewComponentDescriptorProvider(params Type[] allowedTypes)
-                : base(GetAssemblyProvider())
+                : base(GetApplicationPartManager(allowedTypes.Select(t => t.GetTypeInfo())))
             {
-                AllowedTypes = allowedTypes;
             }
 
-            public Type[] AllowedTypes { get; }
-
-            protected override bool IsViewComponentType(TypeInfo typeInfo)
+            private static ApplicationPartManager GetApplicationPartManager(IEnumerable<TypeInfo> types)
             {
-                return AllowedTypes.Contains(typeInfo.AsType());
+                var manager = new ApplicationPartManager();
+                manager.ApplicationParts.Add(new TestApplicationPart(types));
+                manager.FeatureProviders.Add(new TestFeatureProvider());
+                return manager;
             }
 
-            // Need to override this since the default provider does not support private classes.
-            protected override IEnumerable<TypeInfo> GetCandidateTypes()
+            private class TestFeatureProvider : IApplicationFeatureProvider<ViewComponentFeature>
             {
-                return
-                    GetAssemblyProvider()
-                    .CandidateAssemblies
-                    .SelectMany(a => a.DefinedTypes);
-            }
-
-            private static IAssemblyProvider GetAssemblyProvider()
-            {
-                var assemblyProvider = new StaticAssemblyProvider();
-                assemblyProvider.CandidateAssemblies.Add(
-                    typeof(FilteredViewComponentDescriptorProvider).GetTypeInfo().Assembly);
-
-                return assemblyProvider;
+                public void PopulateFeature(IEnumerable<ApplicationPart> parts, ViewComponentFeature feature)
+                {
+                    foreach (var type in parts.OfType<IApplicationPartTypeProvider>().SelectMany(p => p.Types))
+                    {
+                        feature.ViewComponents.Add(type);
+                    }
+                }
             }
         }
     }

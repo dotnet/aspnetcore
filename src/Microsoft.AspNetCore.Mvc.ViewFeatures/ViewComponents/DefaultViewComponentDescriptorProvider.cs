@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents
@@ -18,64 +18,47 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
     {
         private const string AsyncMethodName = "InvokeAsync";
         private const string SyncMethodName = "Invoke";
-        private readonly IAssemblyProvider _assemblyProvider;
+        private readonly ApplicationPartManager _partManager;
 
         /// <summary>
         /// Creates a new <see cref="DefaultViewComponentDescriptorProvider"/>.
         /// </summary>
-        /// <param name="assemblyProvider">The <see cref="IAssemblyProvider"/>.</param>
-        public DefaultViewComponentDescriptorProvider(IAssemblyProvider assemblyProvider)
+        /// <param name="partManager">The <see cref="ApplicationPartManager"/>.</param>
+        public DefaultViewComponentDescriptorProvider(ApplicationPartManager partManager)
         {
-            _assemblyProvider = assemblyProvider;
+            if (partManager == null)
+            {
+                throw new ArgumentNullException(nameof(partManager));
+            }
+
+            _partManager = partManager;
         }
 
         /// <inheritdoc />
         public virtual IEnumerable<ViewComponentDescriptor> GetViewComponents()
         {
-            var types = GetCandidateTypes();
-
-            return types
-                .Where(IsViewComponentType)
-                .Select(CreateDescriptor);
+            return GetCandidateTypes().Select(CreateDescriptor);
         }
 
         /// <summary>
-        /// Gets the candidate <see cref="TypeInfo"/> instances. The results of this will be provided to
-        /// <see cref="IsViewComponentType"/> for filtering.
+        /// Gets the candidate <see cref="TypeInfo"/> instances provided by the <see cref="ApplicationPartManager"/>.
         /// </summary>
         /// <returns>A list of <see cref="TypeInfo"/> instances.</returns>
         protected virtual IEnumerable<TypeInfo> GetCandidateTypes()
         {
-            var assemblies = _assemblyProvider.CandidateAssemblies;
-            return assemblies.SelectMany(a => a.ExportedTypes).Select(t => t.GetTypeInfo());
-        }
-
-        /// <summary>
-        /// Determines whether or not the given <see cref="TypeInfo"/> is a view component class.
-        /// </summary>
-        /// <param name="typeInfo">The <see cref="TypeInfo"/>.</param>
-        /// <returns>
-        /// <c>true</c> if <paramref name="typeInfo"/>represents a view component class, otherwise <c>false</c>.
-        /// </returns>
-        protected virtual bool IsViewComponentType(TypeInfo typeInfo)
-        {
-            if (typeInfo == null)
-            {
-                throw new ArgumentNullException(nameof(typeInfo));
-            }
-
-            return ViewComponentConventions.IsComponent(typeInfo);
+            var feature = new ViewComponentFeature();
+            _partManager.PopulateFeature(feature);
+            return feature.ViewComponents;
         }
 
         private static ViewComponentDescriptor CreateDescriptor(TypeInfo typeInfo)
         {
-            var type = typeInfo.AsType();
             var candidate = new ViewComponentDescriptor
             {
                 FullName = ViewComponentConventions.GetComponentFullName(typeInfo),
                 ShortName = ViewComponentConventions.GetComponentName(typeInfo),
                 TypeInfo = typeInfo,
-                MethodInfo = FindMethod(type)
+                MethodInfo = FindMethod(typeInfo.AsType())
             };
 
             return candidate;
