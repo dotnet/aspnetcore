@@ -18,10 +18,11 @@ namespace Microsoft.AspNet.Builder
 
         public static void UseWebpackDevMiddleware(this IApplicationBuilder appBuilder, WebpackDevMiddlewareOptions options = null) {
             // Validate options
-            if (options != null) {
-                if (options.ReactHotModuleReplacement && !options.HotModuleReplacement) {
-                    throw new ArgumentException("To enable ReactHotModuleReplacement, you must also enable HotModuleReplacement.");
-                }
+            if (options == null) {
+                options = new WebpackDevMiddlewareOptions();
+            }
+            if (options.ReactHotModuleReplacement && !options.HotModuleReplacement) {
+                throw new ArgumentException("To enable ReactHotModuleReplacement, you must also enable HotModuleReplacement.");
             }
 
             // Unlike other consumers of NodeServices, WebpackDevMiddleware dosen't share Node instances, nor does it
@@ -43,7 +44,7 @@ namespace Microsoft.AspNet.Builder
             // Tell Node to start the server hosting webpack-dev-middleware
             var devServerOptions = new {
                 webpackConfigPath = Path.Combine(appEnv.ApplicationBasePath, options.ConfigFile ?? DefaultConfigFile),
-                suppliedOptions = options ?? new WebpackDevMiddlewareOptions()
+                suppliedOptions = options
             };
             var devServerInfo = nodeServices.InvokeExport<WebpackDevServerInfo>(nodeScript.FileName, "createWebpackDevServer", JsonConvert.SerializeObject(devServerOptions)).Result;
 
