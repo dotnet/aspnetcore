@@ -1,12 +1,12 @@
 $agents = @("aspnetci-a00", "aspnetci-a01", "aspnetci-a02", "aspnetci-a03", "ASPNETCI-A05", "ASPNETCI-A07", "aspnetci-a08", "aspnetci-a09", "aspnetci-a12", "ASPNETCI-A14", "aspnetci-a17", "ASPNETCI-A18")
-$sourcefile = "C:\tools\AspNetCoreModule\v0.8-rc2\aspnetcoremodule_x64_en.msi"
+$sourcefile = "C:\tools\AspNetCoreModule\v0.8\x64\aspnetcoremodule_x64_en.msi"
 $creds = Get-Credential "redmond\asplab"
 
 foreach ($agent in $agents)
 {
     Write-Host $agent
     $remote = New-PSDrive -Name Remote -PSProvider FileSystem -Root "\\$agent\C$" -Credential $creds
-    
+
     Try
     {
         $destinationFolder = "${remote}:\temp\AspNetCoreModule"
@@ -20,7 +20,7 @@ foreach ($agent in $agents)
         Write-Host "Copied msi successfully"
 
         $remoteScript = {
-            & cmd /c "msiexec.exe /i C:\temp\AspNetCoreModule\aspnetcoremodule_x64_en.msi" /quiet
+            & cmd /c "msiexec.exe /uninstall C:\temp\AspNetCoreModule\aspnetcoremodule_x64_en.msi" /quiet
             $lastexitcode
         }
         $remoteJob = Invoke-Command -Credential $creds -ComputerName $agent -ScriptBlock $remoteScript -AsJob
@@ -30,18 +30,13 @@ foreach ($agent in $agents)
         $finalExitCode = $remoteResult[$remoteResult.Length-1]
         if ($finalExitCode -eq 0)
         {
-            Write-Host "Installed Successfully"
+            Write-Host "Uninstalled Successfully"
         }
         else
         {
-            Write-Host "Install Failed"
+            Write-Host "Uninstall Failed"
             exit $finalExitCode
         }
-
-        #Copy the schema files over
-        Copy-Item -Path "${remote}:\Windows\System32\inetsrv\config\schema\aspnetcore_schema.xml" -Destination "${remote}:\Program Files\IIS Express\config\schema\aspnetcore_schema.xml" -Force
-        Copy-Item -Path "${remote}:\Windows\System32\inetsrv\config\schema\aspnetcore_schema.xml" -Destination "${remote}:\Program Files (x86)\IIS Express\config\schema\aspnetcore_schema.xml" -Force
-        Write-Host "Copied schema successfully"
     }
     Finally
     {
