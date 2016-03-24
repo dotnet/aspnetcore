@@ -456,11 +456,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
-        public override IPropertyBindingPredicateProvider PropertyBindingPredicateProvider
+        public override IPropertyFilterProvider PropertyFilterProvider
         {
             get
             {
-                return BindingMetadata.PropertyBindingPredicateProvider;
+                return BindingMetadata.PropertyFilterProvider;
             }
         }
 

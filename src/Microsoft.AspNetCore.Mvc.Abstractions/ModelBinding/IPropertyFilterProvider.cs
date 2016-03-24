@@ -8,11 +8,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// <summary>
     /// Provides a predicate which can determines which model properties should be bound by model binding.
     /// </summary>
-    public interface IPropertyBindingPredicateProvider
+    public interface IPropertyFilterProvider
     {
         /// <summary>
         /// Gets a predicate which can determines which model properties should be bound by model binding.
         /// </summary>
-        Func<ModelBindingContext, string, bool> PropertyFilter { get; }
+        Func<ModelMetadata, bool> PropertyFilter { get; }
     }
 }

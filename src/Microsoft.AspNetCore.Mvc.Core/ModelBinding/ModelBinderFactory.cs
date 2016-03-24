@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     BinderModelName = metadata.BinderModelName,
                     BinderType = metadata.BinderType,
                     BindingSource = metadata.BindingSource,
-                    PropertyBindingPredicateProvider = metadata.PropertyBindingPredicateProvider,
+                    PropertyFilterProvider = metadata.PropertyFilterProvider,
                 };
             }
 

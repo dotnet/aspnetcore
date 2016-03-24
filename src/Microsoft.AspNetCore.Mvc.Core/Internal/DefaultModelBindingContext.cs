@@ -56,8 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             var binderModelName = bindingInfo?.BinderModelName ?? metadata.BinderModelName;
-            var propertyPredicateProvider =
-                bindingInfo?.PropertyBindingPredicateProvider ?? metadata.PropertyBindingPredicateProvider;
+            var propertyFilterProvider = bindingInfo?.PropertyFilterProvider ?? metadata.PropertyFilterProvider;
 
             var valueProvider = operationBindingContext.ValueProvider;
             var bindingSource = bindingInfo?.BindingSource ?? metadata.BindingSource;
@@ -70,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 BinderModelName = binderModelName,
                 BindingSource = bindingSource,
-                PropertyFilter = propertyPredicateProvider?.PropertyFilter,
+                PropertyFilter = propertyFilterProvider?.PropertyFilter,
 
                 // Because this is the top-level context, FieldName and ModelName should be the same.
                 FieldName = binderModelName ?? modelName,
@@ -123,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             FieldName = fieldName;
             BinderModelName = modelMetadata.BinderModelName;
             BindingSource = modelMetadata.BindingSource;
-            PropertyFilter = modelMetadata.PropertyBindingPredicateProvider?.PropertyFilter;
+            PropertyFilter = modelMetadata.PropertyFilterProvider?.PropertyFilter;
 
             IsTopLevelObject = false;
 
@@ -262,7 +261,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public override Func<ModelBindingContext, string, bool> PropertyFilter
+        public override Func<ModelMetadata, bool> PropertyFilter
         {
             get { return _state.PropertyFilter; }
             set { _state.PropertyFilter = value; }
@@ -317,7 +316,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             public string ModelName;
 
             public IValueProvider ValueProvider;
-            public Func<ModelBindingContext, string, bool> PropertyFilter;
+            public Func<ModelMetadata, bool> PropertyFilter;
             public ValidationStateDictionary ValidationState;
             public ModelStateDictionary ModelState;
 

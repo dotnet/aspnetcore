@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             BindingSource = other.BindingSource;
             BinderModelName = other.BinderModelName;
             BinderType = other.BinderType;
-            PropertyBindingPredicateProvider = other.PropertyBindingPredicateProvider;
+            PropertyFilterProvider = other.PropertyFilterProvider;
         }
 
         /// <summary>
@@ -52,9 +52,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public Type BinderType { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="ModelBinding.IPropertyBindingPredicateProvider"/>.
+        /// Gets or sets the <see cref="ModelBinding.IPropertyFilterProvider"/>.
         /// </summary>
-        public IPropertyBindingPredicateProvider PropertyBindingPredicateProvider { get; set; }
+        public IPropertyFilterProvider PropertyFilterProvider { get; set; }
 
         /// <summary>
         /// Constructs a new instance of <see cref="BindingInfo"/> from the given <paramref name="attributes"/>.
@@ -100,46 +100,50 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 }
             }
 
-            // PropertyBindingPredicateProvider
-            var predicateProviders = attributes.OfType<IPropertyBindingPredicateProvider>().ToArray();
-            if (predicateProviders.Length > 0)
+            // PropertyFilterProvider
+            var propertyFilterProviders = attributes.OfType<IPropertyFilterProvider>().ToArray();
+            if (propertyFilterProviders.Length == 1)
             {
                 isBindingInfoPresent = true;
-                bindingInfo.PropertyBindingPredicateProvider = new CompositePredicateProvider(
-                    predicateProviders);
+                bindingInfo.PropertyFilterProvider = propertyFilterProviders[0];
+            }
+            else if (propertyFilterProviders.Length > 1)
+            {
+                isBindingInfoPresent = true;
+                bindingInfo.PropertyFilterProvider = new CompositePropertyFilterProvider(propertyFilterProviders);
             }
 
             return isBindingInfoPresent ? bindingInfo : null;
         }
 
-        private class CompositePredicateProvider : IPropertyBindingPredicateProvider
+        private class CompositePropertyFilterProvider : IPropertyFilterProvider
         {
-            private readonly IEnumerable<IPropertyBindingPredicateProvider> _providers;
+            private readonly IEnumerable<IPropertyFilterProvider> _providers;
 
-            public CompositePredicateProvider(IEnumerable<IPropertyBindingPredicateProvider> providers)
+            public CompositePropertyFilterProvider(IEnumerable<IPropertyFilterProvider> providers)
             {
                 _providers = providers;
             }
 
-            public Func<ModelBindingContext, string, bool> PropertyFilter
+            public Func<ModelMetadata, bool> PropertyFilter
             {
                 get
                 {
-                    return CreatePredicate();
+                    return CreatePropertyFilter();
                 }
             }
 
-            private Func<ModelBindingContext, string, bool> CreatePredicate()
+            private Func<ModelMetadata, bool> CreatePropertyFilter()
             {
-                var predicates = _providers
+                var propertyFilters = _providers
                     .Select(p => p.PropertyFilter)
                     .Where(p => p != null);
 
-                return (context, propertyName) =>
+                return (m) =>
                 {
-                    foreach (var predicate in predicates)
+                    foreach (var propertyFilter in propertyFilters)
                     {
-                        if (!predicate(context, propertyName))
+                        if (!propertyFilter(m))
                         {
                             return false;
                         }

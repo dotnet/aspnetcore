@@ -923,22 +923,6 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// The type '{0}' does not implement the interface '{1}'.
-        /// </summary>
-        internal static string PropertyBindingPredicateProvider_WrongType
-        {
-            get { return GetString("PropertyBindingPredicateProvider_WrongType"); }
-        }
-
-        /// <summary>
-        /// The type '{0}' does not implement the interface '{1}'.
-        /// </summary>
-        internal static string FormatPropertyBindingPredicateProvider_WrongType(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("PropertyBindingPredicateProvider_WrongType"), p0, p1);
-        }
-
-        /// <summary>
         /// The parameter conversion from type '{0}' to type '{1}' failed because no type converter can convert between these types.
         /// </summary>
         internal static string ValueProviderResult_NoConverterExists
@@ -1159,7 +1143,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
         /// </summary>
         internal static string FormatMustSpecifyAtLeastOneAuthenticationScheme()
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("MustSpecifyAtLeastOneAuthenticationScheme"));
+            return GetString("MustSpecifyAtLeastOneAuthenticationScheme");
         }
 
         /// <summary>

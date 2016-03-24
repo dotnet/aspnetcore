@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
     public class ModelMetadataProviderTest
     {
         [Fact]
-        public void ModelMetadataProvider_UsesPredicateOnType()
+        public void ModelMetadataProvider_UsesPropertyFilterProviderOnType()
         {
             // Arrange
             var type = typeof(User);
@@ -32,12 +32,12 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var metadata = provider.GetMetadataForType(type);
 
             // Assert
-            var predicate = metadata.PropertyBindingPredicateProvider.PropertyFilter;
+            var propertyFilter = metadata.PropertyFilterProvider.PropertyFilter;
 
             var matched = new HashSet<string>();
             foreach (var property in metadata.Properties)
             {
-                if (predicate(context, property.PropertyName))
+                if (propertyFilter(property))
                 {
                     matched.Add(property.PropertyName);
                 }

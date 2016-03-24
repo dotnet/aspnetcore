@@ -1151,8 +1151,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
                 // Include and exclude should be null, resulting in property
                 // being included.
-                Assert.True(context.PropertyFilter(context, "Property1"));
-                Assert.True(context.PropertyFilter(context, "Property2"));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
             });
 
             var controller = GetController(binder, valueProvider);
@@ -1179,8 +1179,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
                 // Include and exclude should be null, resulting in property
                 // being included.
-                Assert.True(context.PropertyFilter(context, "Property1"));
-                Assert.True(context.PropertyFilter(context, "Property2"));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
             });
 
             var controller = GetController(binder, valueProvider);
@@ -1206,8 +1206,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
                       // Include and exclude should be null, resulting in property
                       // being included.
-                      Assert.True(context.PropertyFilter(context, "Property1"));
-                      Assert.True(context.PropertyFilter(context, "Property2"));
+                      Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+                      Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
                   });
 
             var controller = GetController(binder, valueProvider: null);
@@ -1221,64 +1221,65 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         }
 
         [Fact]
-        public async Task TryUpdateModel_PredicateOverload_UsesPassedArguments()
+        public async Task TryUpdateModel_PropertyFilterOverload_UsesPassedArguments()
         {
             // Arrange
             var modelName = "mymodel";
 
-            Func<ModelBindingContext, string, bool> includePredicate = (context, propertyName) =>
-                string.Equals(propertyName, "include1", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(propertyName, "include2", StringComparison.OrdinalIgnoreCase);
+            Func<ModelMetadata, bool> propertyFilter = (m) =>
+                string.Equals(m.PropertyName, "Include1", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(m.PropertyName, "Include2", StringComparison.OrdinalIgnoreCase);
 
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new StubModelBinder(context =>
             {
                 Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
-                Assert.True(context.PropertyFilter(context, "include1"));
-                Assert.True(context.PropertyFilter(context, "include2"));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Include1"]));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Include2"]));
 
-                Assert.False(context.PropertyFilter(context, "exclude1"));
-                Assert.False(context.PropertyFilter(context, "exclude2"));
+                Assert.False(context.PropertyFilter(context.ModelMetadata.Properties["Exclude1"]));
+                Assert.False(context.PropertyFilter(context.ModelMetadata.Properties["Exclude2"]));
+
             });
 
             var controller = GetController(binder, valueProvider);
             var model = new MyModel();
 
             // Act
-            await controller.TryUpdateModelAsync(model, modelName, includePredicate);
+            await controller.TryUpdateModelAsync(model, modelName, propertyFilter);
 
             // Assert
             Assert.NotEqual(0, binder.BindModelCount);
         }
 
         [Fact]
-        public async Task TryUpdateModel_PredicateWithValueProviderOverload_UsesPassedArguments()
+        public async Task TryUpdateModel_PropertyFilterWithValueProviderOverload_UsesPassedArguments()
         {
             // Arrange
             var modelName = "mymodel";
 
-            Func<ModelBindingContext, string, bool> includePredicate =
-               (context, propertyName) => string.Equals(propertyName, "include1", StringComparison.OrdinalIgnoreCase) ||
-                                          string.Equals(propertyName, "include2", StringComparison.OrdinalIgnoreCase);
+            Func<ModelMetadata, bool> propertyFilter = (m) => 
+                string.Equals(m.PropertyName, "Include1", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(m.PropertyName, "Include2", StringComparison.OrdinalIgnoreCase);
 
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new StubModelBinder(context =>
             {
                 Assert.Same(valueProvider, context.ValueProvider);
 
-                Assert.True(context.PropertyFilter(context, "include1"));
-                Assert.True(context.PropertyFilter(context, "include2"));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Include1"]));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Include2"]));
 
-                Assert.False(context.PropertyFilter(context, "exclude1"));
-                Assert.False(context.PropertyFilter(context, "exclude2"));
+                Assert.False(context.PropertyFilter(context.ModelMetadata.Properties["Exclude1"]));
+                Assert.False(context.PropertyFilter(context.ModelMetadata.Properties["Exclude2"]));
             });
             var controller = GetController(binder, valueProvider: null);
 
             var model = new MyModel();
 
             // Act
-            await controller.TryUpdateModelAsync(model, modelName, valueProvider, includePredicate);
+            await controller.TryUpdateModelAsync(model, modelName, valueProvider, propertyFilter);
 
             // Assert
             Assert.NotEqual(0, binder.BindModelCount);
@@ -1298,14 +1299,14 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var binder = new StubModelBinder(context =>
             {
                 Assert.Same(
-                          valueProvider.Object,
-                          Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
+                    valueProvider.Object,
+                    Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
-                Assert.True(context.PropertyFilter(context, "Property1"));
-                Assert.True(context.PropertyFilter(context, "Property2"));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
 
-                Assert.False(context.PropertyFilter(context, "exclude1"));
-                Assert.False(context.PropertyFilter(context, "exclude2"));
+                Assert.False(context.PropertyFilter(context.ModelMetadata.Properties["Exclude1"]));
+                Assert.False(context.PropertyFilter(context.ModelMetadata.Properties["Exclude2"]));
             });
 
 
@@ -1335,11 +1336,11 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             {
                 Assert.Same(valueProvider.Object, context.ValueProvider);
 
-                Assert.True(context.PropertyFilter(context, "Property1"));
-                Assert.True(context.PropertyFilter(context, "Property2"));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
 
-                Assert.False(context.PropertyFilter(context, "exclude1"));
-                Assert.False(context.PropertyFilter(context, "exclude2"));
+                Assert.False(context.PropertyFilter(context.ModelMetadata.Properties["Exclude1"]));
+                Assert.False(context.PropertyFilter(context.ModelMetadata.Properties["Exclude2"]));
             });
 
             var controller = GetController(binder, valueProvider: null);
@@ -1353,14 +1354,14 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         }
 
         [Fact]
-        public async Task TryUpdateModelNonGeneric_PredicateWithValueProviderOverload_UsesPassedArguments()
+        public async Task TryUpdateModelNonGeneric_PropertyFilterWithValueProviderOverload_UsesPassedArguments()
         {
             // Arrange
             var modelName = "mymodel";
 
-            Func<ModelBindingContext, string, bool> includePredicate =
-               (context, propertyName) => string.Equals(propertyName, "include1", StringComparison.OrdinalIgnoreCase) ||
-                                          string.Equals(propertyName, "include2", StringComparison.OrdinalIgnoreCase);
+            Func<ModelMetadata, bool> propertyFilter = (m) => 
+                string.Equals(m.PropertyName, "Include1", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(m.PropertyName, "Include2", StringComparison.OrdinalIgnoreCase);
 
             var valueProvider = Mock.Of<IValueProvider>();
 
@@ -1368,11 +1369,11 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             {
                 Assert.Same(valueProvider, context.ValueProvider);
 
-                Assert.True(context.PropertyFilter(context, "include1"));
-                Assert.True(context.PropertyFilter(context, "include2"));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Include1"]));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Include2"]));
 
-                Assert.False(context.PropertyFilter(context, "exclude1"));
-                Assert.False(context.PropertyFilter(context, "exclude2"));
+                Assert.False(context.PropertyFilter(context.ModelMetadata.Properties["Exclude1"]));
+                Assert.False(context.PropertyFilter(context.ModelMetadata.Properties["Exclude2"]));
             });
 
             var controller = GetController(binder, valueProvider: null);
@@ -1380,7 +1381,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var model = new MyModel();
 
             // Act
-            await controller.TryUpdateModelAsync(model, model.GetType(), modelName, valueProvider, includePredicate);
+            await controller.TryUpdateModelAsync(model, model.GetType(), modelName, valueProvider, propertyFilter);
 
             // Assert
             Assert.NotEqual(0, binder.BindModelCount);
@@ -1400,8 +1401,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
                 // Include and exclude should be null, resulting in property
                 // being included.
-                Assert.True(context.PropertyFilter(context, "Property1"));
-                Assert.True(context.PropertyFilter(context, "Property2"));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
             });
 
             var controller = GetController(binder, valueProvider);
@@ -1428,8 +1429,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
                 // Include and exclude should be null, resulting in property
                 // being included.
-                Assert.True(context.PropertyFilter(context, "Property1"));
-                Assert.True(context.PropertyFilter(context, "Property2"));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
             });
 
             var controller = GetController(binder, valueProvider);
@@ -1667,6 +1668,12 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         {
             public string Property1 { get; set; }
             public string Property2 { get; set; }
+
+            public string Include1 { get; set; }
+            public string Include2 { get; set; }
+
+            public string Exclude1 { get; set; }
+            public string Exclude2 { get; set; }
         }
 
         private class MyDerivedModel : MyModel

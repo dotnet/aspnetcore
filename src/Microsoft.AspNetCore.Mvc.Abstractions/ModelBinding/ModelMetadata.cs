@@ -269,10 +269,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract string NullDisplayText { get; }
 
         /// <summary>
-        /// Gets the <see cref="IPropertyBindingPredicateProvider"/>, which can determine which properties
+        /// Gets the <see cref="IPropertyFilterProvider"/>, which can determine which properties
         /// should be model bound.
         /// </summary>
-        public abstract IPropertyBindingPredicateProvider PropertyBindingPredicateProvider { get; }
+        public abstract IPropertyFilterProvider PropertyFilterProvider { get; }
 
         /// <summary>
         /// Gets a value that indicates whether the property should be displayed in read-only views.

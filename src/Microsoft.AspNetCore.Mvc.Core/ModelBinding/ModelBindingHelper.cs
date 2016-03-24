@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 inputFormatters,
                 objectModelValidator,
                 validatorProvider,
-                predicate: (context, propertyName) => true);
+                propertyFilter: (m) => true);
         }
 
         /// <summary>
@@ -198,8 +198,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(includeExpressions));
             }
 
-            var includeExpression = GetIncludePredicateExpression(prefix, includeExpressions);
-            var predicate = includeExpression.Compile();
+            var expression = GetPropertyFilterExpression(includeExpressions);
+            var propertyFilter = expression.Compile();
 
             return TryUpdateModelAsync(
                model,
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                inputFormatters,
                objectModelValidator,
                validatorProvider,
-               predicate: predicate);
+               propertyFilter: propertyFilter);
         }
 
         /// <summary>
@@ -234,8 +234,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// bound values.</param>
         /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/> used for executing validation
         /// on the model instance.</param>
-        /// <param name="predicate">A predicate which can be used to
-        /// filter properties(for inclusion/exclusion) at runtime.</param>
+        /// <param name="propertyFilter">
+        /// A predicate which can be used to filter properties(for inclusion/exclusion) at runtime.
+        /// </param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
         public static Task<bool> TryUpdateModelAsync<TModel>(
             TModel model,
@@ -247,7 +248,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             IList<IInputFormatter> inputFormatters,
             IObjectModelValidator objectModelValidator,
             IModelValidatorProvider validatorProvider,
-            Func<ModelBindingContext, string, bool> predicate)
+            Func<ModelMetadata, bool> propertyFilter)
             where TModel : class
         {
             if (model == null)
@@ -295,9 +296,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(validatorProvider));
             }
 
-            if (predicate == null)
+            if (propertyFilter == null)
             {
-                throw new ArgumentNullException(nameof(predicate));
+                throw new ArgumentNullException(nameof(propertyFilter));
             }
 
             return TryUpdateModelAsync(
@@ -311,7 +312,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                inputFormatters,
                objectModelValidator,
                validatorProvider,
-               predicate: predicate);
+               propertyFilter: propertyFilter);
         }
 
         /// <summary>
@@ -409,7 +410,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 inputFormatters,
                 objectModelValidator,
                 validatorProvider,
-                predicate: (context, propertyName) => true);
+                propertyFilter: (m) => true);
         }
 
         /// <summary>
@@ -432,21 +433,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// bound values.</param>
         /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/> used for executing validation
         /// on the model instance.</param>
-        /// <param name="predicate">A predicate which can be used to
+        /// <param name="propertyFilter">A predicate which can be used to
         /// filter properties(for inclusion/exclusion) at runtime.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
         public static async Task<bool> TryUpdateModelAsync(
-               object model,
-               Type modelType,
-               string prefix,
-               ActionContext actionContext,
-               IModelMetadataProvider metadataProvider,
-               IModelBinderFactory modelBinderFactory,
-               IValueProvider valueProvider,
-               IList<IInputFormatter> inputFormatters,
-               IObjectModelValidator objectModelValidator,
-               IModelValidatorProvider validatorProvider,
-               Func<ModelBindingContext, string, bool> predicate)
+            object model,
+            Type modelType,
+            string prefix,
+            ActionContext actionContext,
+            IModelMetadataProvider metadataProvider,
+            IModelBinderFactory modelBinderFactory,
+            IValueProvider valueProvider,
+            IList<IInputFormatter> inputFormatters,
+            IObjectModelValidator objectModelValidator,
+            IModelValidatorProvider validatorProvider,
+            Func<ModelMetadata, bool> propertyFilter)
         {
             if (model == null)
             {
@@ -498,9 +499,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(validatorProvider));
             }
 
-            if (predicate == null)
+            if (propertyFilter == null)
             {
-                throw new ArgumentNullException(nameof(predicate));
+                throw new ArgumentNullException(nameof(propertyFilter));
             }
 
             if (!modelType.IsAssignableFrom(model.GetType()))
@@ -529,7 +530,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 bindingInfo: null,
                 modelName: prefix ?? string.Empty);
             modelBindingContext.Model = model;
-            modelBindingContext.PropertyFilter = predicate;
+            modelBindingContext.PropertyFilter = propertyFilter;
 
             var factoryContext = new ModelBinderFactoryContext()
             {
@@ -539,7 +540,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     BinderModelName = modelMetadata.BinderModelName,
                     BinderType = modelMetadata.BinderType,
                     BindingSource = modelMetadata.BindingSource,
-                    PropertyBindingPredicateProvider = modelMetadata.PropertyBindingPredicateProvider,
+                    PropertyFilterProvider = modelMetadata.PropertyFilterProvider,
                 },
 
                 // We're using the model metadata as the cache token here so that TryUpdateModelAsync calls
@@ -607,42 +608,36 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Creates an expression for a predicate to limit the set of properties used in model binding.
         /// </summary>
         /// <typeparam name="TModel">The model type.</typeparam>
-        /// <param name="prefix">The model prefix.</param>
         /// <param name="expressions">Expressions identifying the properties to allow for binding.</param>
-        /// <returns>An expression which can be used with <see cref="IPropertyBindingPredicateProvider"/>.</returns>
-        public static Expression<Func<ModelBindingContext, string, bool>> GetIncludePredicateExpression<TModel>(
-            string prefix,
+        /// <returns>An expression which can be used with <see cref="IPropertyFilterProvider"/>.</returns>
+        public static Expression<Func<ModelMetadata, bool>> GetPropertyFilterExpression<TModel>(
             Expression<Func<TModel, object>>[] expressions)
         {
             if (expressions.Length == 0)
             {
-                // If nothing is included explcitly, treat everything as included.
-                return (context, propertyName) => true;
+                // If nothing is included explicitly, treat everything as included.
+                return (m) => true;
             }
 
-            var firstExpression = GetPredicateExpression(prefix, expressions[0]);
+            var firstExpression = GetPredicateExpression(expressions[0]);
             var orWrapperExpression = firstExpression.Body;
             foreach (var expression in expressions.Skip(1))
             {
-                var predicate = GetPredicateExpression(prefix, expression);
-                orWrapperExpression = Expression.OrElse(orWrapperExpression,
-                                                        Expression.Invoke(predicate, firstExpression.Parameters));
+                var predicate = GetPredicateExpression(expression);
+                orWrapperExpression = Expression.OrElse(
+                    orWrapperExpression,
+                    Expression.Invoke(predicate, firstExpression.Parameters));
             }
 
-            return Expression.Lambda<Func<ModelBindingContext, string, bool>>(
-                orWrapperExpression, firstExpression.Parameters);
+            return Expression.Lambda<Func<ModelMetadata, bool>>(orWrapperExpression, firstExpression.Parameters);
         }
 
-        private static Expression<Func<ModelBindingContext, string, bool>> GetPredicateExpression<TModel>
-            (string prefix, Expression<Func<TModel, object>> expression)
+        private static Expression<Func<ModelMetadata, bool>> GetPredicateExpression<TModel>(
+            Expression<Func<TModel, object>> expression)
         {
             var propertyName = GetPropertyName(expression.Body);
-            var property = ModelNames.CreatePropertyModelName(prefix, propertyName);
 
-            return
-             (context, modelPropertyName) =>
-                 property.Equals(ModelNames.CreatePropertyModelName(context.ModelName, modelPropertyName),
-                 StringComparison.OrdinalIgnoreCase);
+            return (metadata) => string.Equals(metadata.PropertyName, propertyName, StringComparison.Ordinal);
         }
 
         /// <summary>

@@ -7,9 +7,7 @@ using System.Linq;
 #if NETSTANDARD1_5
 using System.Reflection;
 #endif
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -17,14 +15,11 @@ namespace Microsoft.AspNetCore.Mvc
     /// This attribute can be used on action parameters and types, to indicate model level metadata.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
-    public class BindAttribute : Attribute, IModelNameProvider, IPropertyBindingPredicateProvider
+    public class BindAttribute : Attribute, IModelNameProvider, IPropertyFilterProvider
     {
-        private static readonly Func<ModelBindingContext, string, bool> _defaultFilter =
-            (context, propertyName) => true;
+        private static readonly Func<ModelMetadata, bool> _default = (m) => true;
 
-        private ObjectFactory _factory;
-
-        private Func<ModelBindingContext, string, bool> _predicateFromInclude;
+        private Func<ModelMetadata, bool> _propertyFilter;
 
         /// <summary>
         /// Creates a new instace of <see cref="BindAttribute"/>.
@@ -40,33 +35,6 @@ namespace Microsoft.AspNetCore.Mvc
 
             Include = items.ToArray();
         }
-
-        /// <summary>
-        /// Creates a new instance of <see cref="BindAttribute"/>.
-        /// </summary>
-        /// <param name="predicateProviderType">The type which implements
-        /// <see cref="IPropertyBindingPredicateProvider"/>.
-        /// </param>
-        public BindAttribute(Type predicateProviderType)
-        {
-            if (predicateProviderType == null)
-            {
-                throw new ArgumentNullException(nameof(predicateProviderType));
-            }
-
-            if (!typeof(IPropertyBindingPredicateProvider).IsAssignableFrom(predicateProviderType))
-            {
-                var message = Resources.FormatPropertyBindingPredicateProvider_WrongType(
-                    predicateProviderType.FullName,
-                    typeof(IPropertyBindingPredicateProvider).FullName);
-                throw new ArgumentException(message, nameof(predicateProviderType));
-            }
-
-            PredicateProviderType = predicateProviderType;
-        }
-
-        /// <inheritdoc />
-        public Type PredicateProviderType { get; }
 
         /// <summary>
         /// Gets the names of properties to include in model binding.
@@ -91,62 +59,24 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <inheritdoc />
-        public Func<ModelBindingContext, string, bool> PropertyFilter
+        public Func<ModelMetadata, bool> PropertyFilter
         {
             get
             {
-                if (PredicateProviderType != null)
+                if (Include != null && Include.Length > 0)
                 {
-                    var factory = GetFactory();
-                    return CreatePredicateFromProviderType(factory);
-                }
-                else if (Include != null && Include.Length > 0)
-                {
-                    if (_predicateFromInclude == null)
+                    if (_propertyFilter == null)
                     {
-                        _predicateFromInclude =
-                            (context, propertyName) => Include.Contains(propertyName, StringComparer.Ordinal);
+                        _propertyFilter = (m) => Include.Contains(m.PropertyName, StringComparer.Ordinal);
                     }
 
-                    return _predicateFromInclude;
+                    return _propertyFilter;
                 }
                 else
                 {
-                    return _defaultFilter;
+                    return _default;
                 }
             }
-        }
-
-        private ObjectFactory GetFactory()
-        {
-            if (_factory == null)
-            {
-                _factory = ActivatorUtilities.CreateFactory(PredicateProviderType, Type.EmptyTypes);
-            }
-            return _factory;
-        }
-
-        private static Func<ModelBindingContext, string, bool> CreatePredicateFromProviderType(
-            ObjectFactory factory)
-        {
-            // Holding state to avoid execessive creation of the provider.
-            var initialized = false;
-            Func<ModelBindingContext, string, bool> predicate = null;
-
-            return (ModelBindingContext context, string propertyName) =>
-            {
-                if (!initialized)
-                {
-                    var services = context.OperationBindingContext.HttpContext.RequestServices;
-
-                    var provider = (IPropertyBindingPredicateProvider)factory(services, arguments: null);
-
-                    initialized = true;
-                    predicate = provider.PropertyFilter ?? _defaultFilter;
-                }
-
-                return predicate(context, propertyName);
-            };
         }
 
         private static IEnumerable<string> SplitString(string original)

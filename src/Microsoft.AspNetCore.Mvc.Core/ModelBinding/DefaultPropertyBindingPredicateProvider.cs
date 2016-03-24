@@ -5,20 +5,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
-    /// Default implementation for <see cref="IPropertyBindingPredicateProvider"/>.
+    /// Default implementation for <see cref="IPropertyFilterProvider"/>.
     /// Provides a expression based way to provide include properties.
     /// </summary>
     /// <typeparam name="TModel">The target model Type.</typeparam>
-    public class DefaultPropertyBindingPredicateProvider<TModel> : IPropertyBindingPredicateProvider
+    public class DefaultPropertyFilterProvider<TModel> : IPropertyFilterProvider
         where TModel : class
     {
-        private static readonly Func<ModelBindingContext, string, bool> _defaultFilter =
-            (context, propertyName) => true;
+        private static readonly Func<ModelMetadata, bool> _default = (m) => true;
 
         /// <summary>
         /// The prefix which is used while generating the property filter.
@@ -44,24 +42,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public virtual Func<ModelBindingContext, string, bool> PropertyFilter
+        public virtual Func<ModelMetadata, bool> PropertyFilter
         {
             get
             {
                 if (PropertyIncludeExpressions == null)
                 {
-                    return _defaultFilter;
+                    return _default;
                 }
 
                 // We do not cache by default.
-                return GetPredicateFromExpression(PropertyIncludeExpressions);
+                return GetPropertyFilterFromExpression(PropertyIncludeExpressions);
             }
         }
 
-        private Func<ModelBindingContext, string, bool> GetPredicateFromExpression(
+        private Func<ModelMetadata, bool> GetPropertyFilterFromExpression(
             IEnumerable<Expression<Func<TModel, object>>> includeExpressions)
         {
-            var expression = ModelBindingHelper.GetIncludePredicateExpression(Prefix, includeExpressions.ToArray());
+            var expression = ModelBindingHelper.GetPropertyFilterExpression(includeExpressions.ToArray());
             return expression.Compile();
         }
     }

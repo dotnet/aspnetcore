@@ -489,39 +489,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [InlineData(nameof(TypeWithExcludedPropertiesUsingBindAttribute.IncludedByDefault1), true)]
-        [InlineData(nameof(TypeWithExcludedPropertiesUsingBindAttribute.IncludedByDefault2), true)]
-        [InlineData(nameof(TypeWithExcludedPropertiesUsingBindAttribute.Excluded1), false)]
-        [InlineData(nameof(TypeWithExcludedPropertiesUsingBindAttribute.Excluded2), false)]
-        public void CanBindProperty_WithPredicate(string property, bool expected)
-        {
-            // Arrange
-            var metadata = GetMetadataForProperty(typeof(TypeWithExcludedPropertiesUsingBindAttribute), property);
-            var bindingContext = new DefaultModelBindingContext()
-            {
-                ModelMetadata = GetMetadataForType(typeof(TypeWithExcludedPropertiesUsingBindAttribute)),
-                OperationBindingContext = new OperationBindingContext()
-                {
-                    ActionContext = new ActionContext()
-                    {
-                        HttpContext = new DefaultHttpContext()
-                        {
-                            RequestServices = new ServiceCollection().BuildServiceProvider(),
-                        },
-                    },
-                },
-            };
-
-            var binder = CreateBinder(bindingContext.ModelMetadata);
-
-            // Act
-            var result = binder.CanBindPropertyPublic(bindingContext, metadata);
-
-            // Assert
-            Assert.Equal(expected, result);
-        }
-
-        [Theory]
         [InlineData(nameof(TypeWithIncludedPropertiesUsingBindAttribute.IncludedExplicitly1), true)]
         [InlineData(nameof(TypeWithIncludedPropertiesUsingBindAttribute.IncludedExplicitly2), true)]
         [InlineData(nameof(TypeWithIncludedPropertiesUsingBindAttribute.ExcludedByDefault1), false)]
@@ -1084,7 +1051,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     BinderModelName = metadata.BinderModelName,
                     BinderType = metadata.BinderType,
                     BindingSource = metadata.BindingSource,
-                    PropertyBindingPredicateProvider = metadata.PropertyBindingPredicateProvider,
+                    PropertyFilterProvider = metadata.PropertyFilterProvider,
                 },
             });
         }
@@ -1284,17 +1251,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             public int IncludedExplicitly2 { get; set; }
         }
 
-        [Bind(typeof(ExcludedProvider))]
-        private class TypeWithExcludedPropertiesUsingBindAttribute
-        {
-            public int Excluded1 { get; set; }
-
-            public int Excluded2 { get; set; }
-
-            public int IncludedByDefault1 { get; set; }
-            public int IncludedByDefault2 { get; set; }
-        }
-
         private class Document
         {
             [NonValueBinderMetadata]
@@ -1317,15 +1273,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             public BindingSource BindingSource { get { return BindingSource.Query; } }
         }
 
-        private class ExcludedProvider : IPropertyBindingPredicateProvider
+        private class ExcludedProvider : IPropertyFilterProvider
         {
-            public Func<ModelBindingContext, string, bool> PropertyFilter
+            public Func<ModelMetadata, bool> PropertyFilter
             {
                 get
                 {
-                    return (context, propertyName) =>
-                       !string.Equals("Excluded1", propertyName, StringComparison.OrdinalIgnoreCase) &&
-                       !string.Equals("Excluded2", propertyName, StringComparison.OrdinalIgnoreCase);
+                    return (m) =>
+                       !string.Equals("Excluded1", m.PropertyName, StringComparison.OrdinalIgnoreCase) &&
+                       !string.Equals("Excluded2", m.PropertyName, StringComparison.OrdinalIgnoreCase);
                 }
             }
         }

@@ -536,7 +536,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 }
             }
 
-            public override IPropertyBindingPredicateProvider PropertyBindingPredicateProvider
+            public override IPropertyFilterProvider PropertyFilterProvider
             {
                 get
                 {

@@ -150,14 +150,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         [Theory]
         [MemberData(nameof(UnsuccessfulModelBindingData))]
-        public async Task TryUpdateModel_UsingIncludePredicateOverload_ReturnsFalse_IfBinderIsUnsuccessful(
+        public async Task TryUpdateModel_UsingPropertyFilterOverload_ReturnsFalse_IfBinderIsUnsuccessful(
             ModelBindingResult? binderResult)
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
             var binder = new StubModelBinder(binderResult);
             var model = new MyModel();
-            Func<ModelBindingContext, string, bool> includePredicate = (context, propertyName) => true;
+            Func<ModelMetadata, bool> propertyFilter = (m) => true;
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 new List<IInputFormatter>(),
                 new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
                 Mock.Of<IModelValidatorProvider>(),
-                includePredicate);
+                propertyFilter);
 
             // Assert
             Assert.False(result);
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task TryUpdateModel_UsingIncludePredicateOverload_ReturnsTrue_ModelBindsAndValidatesSuccessfully()
+        public async Task TryUpdateModel_UsingPropertyFilterOverload_ReturnsTrue_ModelBindsAndValidatesSuccessfully()
         {
             // Arrange
             var binderProviders = new IModelBinderProvider[]
@@ -208,9 +208,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 { "ExcludedProperty", "ExcludedPropertyValue" }
             };
 
-            Func<ModelBindingContext, string, bool> includePredicate = (context, propertyName) =>
-                string.Equals(propertyName, "IncludedProperty", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(propertyName, "MyProperty", StringComparison.OrdinalIgnoreCase);
+            Func<ModelMetadata, bool> propertyFilter = (m) =>
+                string.Equals(m.PropertyName, "IncludedProperty", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(m.PropertyName, "MyProperty", StringComparison.OrdinalIgnoreCase);
 
             var valueProvider = new TestValueProvider(values);
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 new List<IInputFormatter>(),
                 new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
                 validator,
-                includePredicate);
+                propertyFilter);
 
             // Assert
             Assert.True(result);
@@ -491,14 +491,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         [Theory]
         [MemberData(nameof(UnsuccessfulModelBindingData))]
-        public async Task TryUpdateModelNonGeneric_PredicateOverload_ReturnsFalse_IfBinderIsUnsuccessful(
+        public async Task TryUpdateModelNonGeneric_PropertyFilterOverload_ReturnsFalse_IfBinderIsUnsuccessful(
             ModelBindingResult? binderResult)
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
             var binder = new StubModelBinder(binderResult);
             var model = new MyModel();
-            Func<ModelBindingContext, string, bool> includePredicate = (context, propertyName) => true;
+            Func<ModelMetadata, bool> propertyFilter = (m) => true;
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
@@ -512,7 +512,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 inputFormatters: new List<IInputFormatter>(),
                 objectModelValidator: new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
                 validatorProvider: Mock.Of<IModelValidatorProvider>(),
-                predicate: includePredicate);
+                propertyFilter: propertyFilter);
 
             // Assert
             Assert.False(result);
@@ -522,7 +522,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task TryUpdateModelNonGeneric_PredicateOverload_ReturnsTrue_ModelBindsAndValidatesSuccessfully()
+        public async Task TryUpdateModelNonGeneric_PropertyFilterOverload_ReturnsTrue_ModelBindsAndValidatesSuccessfully()
         {
             // Arrange
             var binderProviders = new IModelBinderProvider[]
@@ -550,9 +550,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 { "ExcludedProperty", "ExcludedPropertyValue" }
             };
 
-            Func<ModelBindingContext, string, bool> includePredicate = (context, propertyName) =>
-                string.Equals(propertyName, "IncludedProperty", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(propertyName, "MyProperty", StringComparison.OrdinalIgnoreCase);
+            Func<ModelMetadata, bool> propertyFilter = (m) =>
+                string.Equals(m.PropertyName, "IncludedProperty", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(m.PropertyName, "MyProperty", StringComparison.OrdinalIgnoreCase);
 
             var valueProvider = new TestValueProvider(values);
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -569,7 +569,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 new List<IInputFormatter>(),
                 new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
                 validator,
-                includePredicate);
+                propertyFilter);
 
             // Assert
             Assert.True(result);
@@ -657,7 +657,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             var binder = new StubModelBinder();
             var model = new MyModel();
-            Func<ModelBindingContext, string, bool> includePredicate = (context, propertyName) => true;
+            Func<ModelMetadata, bool> propertyFilter = (m) => true;
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<ArgumentException>(
@@ -672,7 +672,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     new List<IInputFormatter>(),
                     new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
                     Mock.Of<IModelValidatorProvider>(),
-                    includePredicate));
+                    propertyFilter));
 
             var expectedMessage = string.Format("The model's runtime type '{0}' is not assignable to the type '{1}'." +
                 Environment.NewLine +

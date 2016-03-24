@@ -74,9 +74,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="ModelBinding.IPropertyBindingPredicateProvider"/>.
-        /// See <see cref="ModelMetadata.PropertyBindingPredicateProvider"/>.
+        /// Gets or sets the <see cref="ModelBinding.IPropertyFilterProvider"/>.
+        /// See <see cref="ModelMetadata.PropertyFilterProvider"/>.
         /// </summary>
-        public IPropertyBindingPredicateProvider PropertyBindingPredicateProvider { get; set; }
+        public IPropertyFilterProvider PropertyFilterProvider { get; set; }
     }
 }

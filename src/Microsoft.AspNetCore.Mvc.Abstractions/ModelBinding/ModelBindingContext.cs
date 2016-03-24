@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets or sets a predicate which will be evaluated for each property to determine if the property
         /// is eligible for model binding.
         /// </summary>
-        public abstract Func<ModelBindingContext, string, bool> PropertyFilter { get; set; }
+        public abstract Func<ModelMetadata, bool> PropertyFilter { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="ValidationStateDictionary"/>. Used for tracking validation state to

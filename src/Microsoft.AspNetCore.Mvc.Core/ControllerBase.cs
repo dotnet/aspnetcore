@@ -1222,13 +1222,13 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="model">The model instance to update.</param>
         /// <param name="prefix">The prefix to use when looking up values in the current <see cref="IValueProvider"/>.
         /// </param>
-        /// <param name="predicate">A predicate which can be used to filter properties at runtime.</param>
+        /// <param name="propertyFilter">A predicate which can be used to filter properties at runtime.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public Task<bool> TryUpdateModelAsync<TModel>(
             TModel model,
             string prefix,
-            Func<ModelBindingContext, string, bool> predicate)
+            Func<ModelMetadata, bool> propertyFilter)
             where TModel : class
         {
             if (model == null)
@@ -1236,9 +1236,9 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(model));
             }
 
-            if (predicate == null)
+            if (propertyFilter == null)
             {
-                throw new ArgumentNullException(nameof(predicate));
+                throw new ArgumentNullException(nameof(propertyFilter));
             }
 
             return ModelBindingHelper.TryUpdateModelAsync(
@@ -1251,7 +1251,7 @@ namespace Microsoft.AspNetCore.Mvc
                 ControllerContext.InputFormatters,
                 ObjectValidator,
                 new CompositeModelValidatorProvider(ControllerContext.ValidatorProviders),
-                predicate);
+                propertyFilter);
         }
 
         /// <summary>
@@ -1311,14 +1311,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
         /// </param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
-        /// <param name="predicate">A predicate which can be used to filter properties at runtime.</param>
+        /// <param name="propertyFilter">A predicate which can be used to filter properties at runtime.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public Task<bool> TryUpdateModelAsync<TModel>(
             TModel model,
             string prefix,
             IValueProvider valueProvider,
-            Func<ModelBindingContext, string, bool> predicate)
+            Func<ModelMetadata, bool> propertyFilter)
             where TModel : class
         {
             if (model == null)
@@ -1331,9 +1331,9 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(valueProvider));
             }
 
-            if (predicate == null)
+            if (propertyFilter == null)
             {
-                throw new ArgumentNullException(nameof(predicate));
+                throw new ArgumentNullException(nameof(propertyFilter));
             }
 
             return ModelBindingHelper.TryUpdateModelAsync(
@@ -1346,7 +1346,7 @@ namespace Microsoft.AspNetCore.Mvc
                 ControllerContext.InputFormatters,
                 ObjectValidator,
                 new CompositeModelValidatorProvider(ControllerContext.ValidatorProviders),
-                predicate);
+                propertyFilter);
         }
 
         /// <summary>
@@ -1396,7 +1396,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
         /// </param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
-        /// <param name="predicate">A predicate which can be used to filter properties at runtime.</param>
+        /// <param name="propertyFilter">A predicate which can be used to filter properties at runtime.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
         public Task<bool> TryUpdateModelAsync(
@@ -1404,7 +1404,7 @@ namespace Microsoft.AspNetCore.Mvc
             Type modelType,
             string prefix,
             IValueProvider valueProvider,
-            Func<ModelBindingContext, string, bool> predicate)
+            Func<ModelMetadata, bool> propertyFilter)
         {
             if (model == null)
             {
@@ -1421,9 +1421,9 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(valueProvider));
             }
 
-            if (predicate == null)
+            if (propertyFilter == null)
             {
-                throw new ArgumentNullException(nameof(predicate));
+                throw new ArgumentNullException(nameof(propertyFilter));
             }
 
             return ModelBindingHelper.TryUpdateModelAsync(
@@ -1437,7 +1437,7 @@ namespace Microsoft.AspNetCore.Mvc
                 ControllerContext.InputFormatters,
                 ObjectValidator,
                 new CompositeModelValidatorProvider(ControllerContext.ValidatorProviders),
-                predicate);
+                propertyFilter);
         }
 
         /// <summary>

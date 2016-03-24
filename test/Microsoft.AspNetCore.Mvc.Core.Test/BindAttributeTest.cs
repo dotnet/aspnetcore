@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Moq;
 using Xunit;
 
@@ -10,34 +11,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class BindAttributeTest
     {
-        [Fact]
-        public void Constructor_Throws_IfTypeDoesNotImplement_IPropertyBindingPredicateProvider()
-        {
-            // Arrange
-            var expected =
-                "The type 'Microsoft.AspNetCore.Mvc.ModelBinding.BindAttributeTest+UnrelatedType' " +
-                "does not implement the interface " +
-                "'Microsoft.AspNetCore.Mvc.ModelBinding.IPropertyBindingPredicateProvider'." +
-                Environment.NewLine +
-                "Parameter name: predicateProviderType";
-
-            // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => new BindAttribute(typeof(UnrelatedType)));
-            Assert.Equal(expected, exception.Message);
-        }
-
-        [Theory]
-        [InlineData(typeof(DerivedProvider))]
-        [InlineData(typeof(BaseProvider))]
-        public void Constructor_SetsThe_PropertyFilterProviderType_ForValidTypes(Type type)
-        {
-            // Arrange
-            var attribute = new BindAttribute(type);
-
-            // Act & Assert
-            Assert.Equal(type, attribute.PredicateProviderType);
-        }
-
         [Theory]
         [InlineData("UserName", true)]
         [InlineData("Username", false)]
@@ -54,98 +27,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             var context = new DefaultModelBindingContext();
 
-            // Act
-            var predicate = bind.PropertyFilter;
-
-            // Assert
-            Assert.Equal(isIncluded, predicate(context, property));
-        }
-
-        [Theory]
-        [InlineData("UserName", true)]
-        [InlineData("Username", false)]
-        [InlineData("Password", false)]
-        public void BindAttribute_ProviderType(string property, bool isIncluded)
-        {
-            // Arrange
-            var bind = new BindAttribute(typeof(TestProvider));
-
-            var context = new DefaultModelBindingContext();
-            context.OperationBindingContext = new OperationBindingContext()
-            {
-                ActionContext = new ActionContext()
-                {
-                    HttpContext = new DefaultHttpContext(),
-                },
-            };
-            var services = new Mock<IServiceProvider>();
-
-            context.OperationBindingContext.HttpContext.RequestServices = services.Object;
+            var identity = ModelMetadataIdentity.ForProperty(typeof(int), property, typeof(string));
+            context.ModelMetadata = new Mock<ModelMetadata>(identity).Object;
 
             // Act
-            var predicate = bind.PropertyFilter;
+            var propertyFilter = bind.PropertyFilter;
 
             // Assert
-            Assert.Equal(isIncluded, predicate(context, property));
-        }
-
-        // Each time .PropertyFilter is called, a since instance of the provider should
-        // be created and cached.
-        [Fact]
-        public void BindAttribute_ProviderType_Cached()
-        {
-            // Arrange
-            var bind = new BindAttribute(typeof(TestProvider));
-
-            var context = new DefaultModelBindingContext();
-            context.OperationBindingContext = new OperationBindingContext()
-            {
-                ActionContext = new ActionContext()
-                {
-                    HttpContext = new DefaultHttpContext(),
-                },
-            };
-
-            var services = new Mock<IServiceProvider>(MockBehavior.Strict);
-
-            context.OperationBindingContext.HttpContext.RequestServices = services.Object;
-
-            // Act
-            var predicate = bind.PropertyFilter;
-
-            // Assert
-            Assert.True(predicate(context, "UserName"));
-            Assert.True(predicate(context, "UserName"));
-        }
-
-        private class TestProvider : IPropertyBindingPredicateProvider
-        {
-            public Func<ModelBindingContext, string, bool> PropertyFilter
-            {
-                get
-                {
-                    return (context, property) => string.Equals(property, "UserName", StringComparison.Ordinal);
-                }
-            }
-        }
-
-        private class BaseProvider : IPropertyBindingPredicateProvider
-        {
-            public Func<ModelBindingContext, string, bool> PropertyFilter
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-        }
-
-        private class DerivedProvider : BaseProvider
-        {
-        }
-
-        private class UnrelatedType
-        {
+            Assert.Equal(isIncluded, propertyFilter(context.ModelMetadata));
         }
     }
 }

@@ -114,13 +114,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// <returns><c>true</c> if the model property can be bound, otherwise <c>false</c>.</returns>
         protected virtual bool CanBindProperty(ModelBindingContext bindingContext, ModelMetadata propertyMetadata)
         {
-            var modelMetadataPredicate = bindingContext.ModelMetadata.PropertyBindingPredicateProvider?.PropertyFilter;
-            if (modelMetadataPredicate?.Invoke(bindingContext, propertyMetadata.PropertyName) == false)
+            var metadataProviderFilter = bindingContext.ModelMetadata.PropertyFilterProvider?.PropertyFilter;
+            if (metadataProviderFilter?.Invoke(propertyMetadata) == false)
             {
                 return false;
             }
 
-            if (bindingContext.PropertyFilter?.Invoke(bindingContext, propertyMetadata.PropertyName) == false)
+            if (bindingContext.PropertyFilter?.Invoke(propertyMetadata) == false)
             {
                 return false;
             }

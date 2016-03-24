@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             Assert.Null(metadata.BinderModelName);
             Assert.Null(metadata.BinderType);
             Assert.Null(metadata.BindingSource);
-            Assert.Null(metadata.PropertyBindingPredicateProvider);
+            Assert.Null(metadata.PropertyFilterProvider);
         }
 
         [Fact]

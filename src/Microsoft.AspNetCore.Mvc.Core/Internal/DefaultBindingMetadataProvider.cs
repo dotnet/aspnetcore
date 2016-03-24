@@ -69,20 +69,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Provide a unique instance based on one passed to the constructor.
             context.BindingMetadata.ModelBindingMessageProvider = new ModelBindingMessageProvider(_messageProvider);
 
-            // PropertyBindingPredicateProvider
-            var predicateProviders = context.Attributes.OfType<IPropertyBindingPredicateProvider>().ToArray();
-            if (predicateProviders.Length == 0)
+            // PropertyFilterProvider
+            var propertyFilterProviders = context.Attributes.OfType<IPropertyFilterProvider>().ToArray();
+            if (propertyFilterProviders.Length == 0)
             {
-                context.BindingMetadata.PropertyBindingPredicateProvider = null;
+                context.BindingMetadata.PropertyFilterProvider = null;
             }
-            else if (predicateProviders.Length == 1)
+            else if (propertyFilterProviders.Length == 1)
             {
-                context.BindingMetadata.PropertyBindingPredicateProvider = predicateProviders[0];
+                context.BindingMetadata.PropertyFilterProvider = propertyFilterProviders[0];
             }
             else
             {
-                context.BindingMetadata.PropertyBindingPredicateProvider = new CompositePredicateProvider(
-                    predicateProviders);
+                var composite = new CompositePropertyFilterProvider(propertyFilterProviders);
+                context.BindingMetadata.PropertyFilterProvider = composite;
             }
 
             if (context.Key.MetadataKind == ModelMetadataKind.Property)
@@ -107,34 +107,34 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private class CompositePredicateProvider : IPropertyBindingPredicateProvider
+        private class CompositePropertyFilterProvider : IPropertyFilterProvider
         {
-            private readonly IEnumerable<IPropertyBindingPredicateProvider> _providers;
+            private readonly IEnumerable<IPropertyFilterProvider> _providers;
 
-            public CompositePredicateProvider(IEnumerable<IPropertyBindingPredicateProvider> providers)
+            public CompositePropertyFilterProvider(IEnumerable<IPropertyFilterProvider> providers)
             {
                 _providers = providers;
             }
 
-            public Func<ModelBindingContext, string, bool> PropertyFilter
+            public Func<ModelMetadata, bool> PropertyFilter
             {
                 get
                 {
-                    return CreatePredicate();
+                    return CreatePropertyFilter();
                 }
             }
 
-            private Func<ModelBindingContext, string, bool> CreatePredicate()
+            private Func<ModelMetadata, bool> CreatePropertyFilter()
             {
-                var predicates = _providers
+                var propertyFilters = _providers
                     .Select(p => p.PropertyFilter)
                     .Where(p => p != null);
 
-                return (context, propertyName) =>
+                return (m) =>
                 {
-                    foreach (var predicate in predicates)
+                    foreach (var propertyFilter in propertyFilters)
                     {
-                        if (!predicate(context, propertyName))
+                        if (!propertyFilter(m))
                         {
                             return false;
                         }
