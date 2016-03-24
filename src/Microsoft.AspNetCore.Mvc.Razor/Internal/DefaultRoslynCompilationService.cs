@@ -32,7 +32,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     /// </summary>
     public class DefaultRoslynCompilationService : ICompilationService
     {
-        private readonly Lazy<bool> _supportsPdbGeneration = new Lazy<bool>(SymbolsUtility.SupportsSymbolsGeneration);
         private readonly ConcurrentDictionary<string, AssemblyMetadata> _metadataFileCache =
             new ConcurrentDictionary<string, AssemblyMetadata>(StringComparer.OrdinalIgnoreCase);
         private readonly IFileProvider _fileProvider;
@@ -112,13 +111,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 path: assemblyName,
                 options: _parseOptions);
 
-            var references = _applicationReferences.Value;
-
             var compilation = CSharpCompilation.Create(
                 assemblyName,
                 options: _compilationOptions,
                 syntaxTrees: new[] { syntaxTree },
-                references: references);
+                references: _applicationReferences.Value);
 
             compilation = Rewrite(compilation);
 
@@ -126,20 +123,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             _compilationCallback(compilationContext);
             compilation = compilationContext.Compilation;
 
-            using (var ms = new MemoryStream())
+            using (var assemblyStream = new MemoryStream())
             {
-                using (var pdb = new MemoryStream())
+                using (var pdbStream = new MemoryStream())
                 {
-                    EmitResult result;
-
-                    if (_supportsPdbGeneration.Value)
-                    {
-                        result = compilation.Emit(ms, pdbStream: pdb);
-                    }
-                    else
-                    {
-                        result = compilation.Emit(ms);
-                    }
+                    var result = compilation.Emit(
+                        assemblyStream,
+                        pdbStream,
+                        options: new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb));
 
                     if (!result.Success)
                     {
@@ -162,19 +153,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                             result.Diagnostics);
                     }
 
-                    Assembly assembly;
-                    ms.Seek(0, SeekOrigin.Begin);
+                    assemblyStream.Seek(0, SeekOrigin.Begin);
+                    pdbStream.Seek(0, SeekOrigin.Begin);
 
-                    if (_supportsPdbGeneration.Value)
-                    {
-                        pdb.Seek(0, SeekOrigin.Begin);
-                        assembly = LoadStream(ms, pdb);
-                    }
-                    else
-                    {
-                        assembly = LoadStream(ms, assemblySymbols: null);
-                    }
-
+                    var assembly = LoadStream(assemblyStream, pdbStream);
                     var type = assembly.GetExportedTypes().FirstOrDefault(a => !a.IsNested);
                     _logger.GeneratedCodeToAssemblyCompilationEnd(fileInfo.RelativePath, startTimestamp);
 
@@ -186,7 +168,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private Assembly LoadStream(MemoryStream ms, MemoryStream assemblySymbols)
         {
 #if NET451
-            return Assembly.Load(ms.ToArray(), assemblySymbols?.ToArray());
+            return Assembly.Load(ms.ToArray(), assemblySymbols.ToArray());
 #else
             return _razorLoadContext.Load(ms, assemblySymbols);
 #endif
