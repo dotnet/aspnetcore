@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -1449,11 +1450,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 }
             }
 
-            var controllerTypeProvider = new StaticControllerTypeProvider(new[] { controllerTypeInfo });
+            var manager = GetApplicationManager(new[] { controllerTypeInfo });
+
             var modelProvider = new DefaultApplicationModelProvider(options);
 
             var provider = new ControllerActionDescriptorProvider(
-                controllerTypeProvider,
+                manager,
                 new[] { modelProvider },
                 options);
 
@@ -1465,11 +1467,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             var options = new TestOptionsManager<MvcOptions>();
 
-            var controllerTypeProvider = new StaticControllerTypeProvider(controllerTypeInfos);
+            var manager = GetApplicationManager(controllerTypeInfos);
             var modelProvider = new DefaultApplicationModelProvider(options);
 
             var provider = new ControllerActionDescriptorProvider(
-                controllerTypeProvider,
+                manager,
                 new[] { modelProvider },
                 options);
 
@@ -1483,15 +1485,24 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var options = new TestOptionsManager<MvcOptions>();
             options.Value.Conventions.Add(convention);
 
-            var controllerTypeProvider = new StaticControllerTypeProvider(new[] { controllerTypeInfo });
+            var manager = GetApplicationManager(new[] { controllerTypeInfo });
+
             var modelProvider = new DefaultApplicationModelProvider(options);
 
             var provider = new ControllerActionDescriptorProvider(
-                controllerTypeProvider,
+                manager,
                 new[] { modelProvider },
                 options);
 
             return provider;
+        }
+
+        private static ApplicationPartManager GetApplicationManager(IEnumerable<TypeInfo> controllerTypes)
+        {
+            var manager = new ApplicationPartManager();
+            manager.ApplicationParts.Add(new TestApplicationPart(controllerTypes));
+            manager.FeatureProviders.Add(new TestFeatureProvider());
+            return manager;
         }
 
         private IEnumerable<ActionDescriptor> GetDescriptors(params TypeInfo[] controllerTypeInfos)

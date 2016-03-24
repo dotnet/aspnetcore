@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -97,51 +97,23 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Register the specified <paramref name="controllerTypes"/> as services and as a source for controller
-        /// discovery.
+        /// Registers discovered controllers as services in the <see cref="IServiceCollection"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
-        /// <param name="controllerTypes">A sequence of controller <see cref="Type"/>s to register.</param>
         /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
-        public static IMvcCoreBuilder AddControllersAsServices(
-           this IMvcCoreBuilder builder,
-           params Type[] controllerTypes)
+        public static IMvcCoreBuilder AddControllersAsServices(this IMvcCoreBuilder builder)
         {
-            return builder.AddControllersAsServices(controllerTypes.AsEnumerable());
-        }
+            var feature = new ControllerFeature();
+            builder.PartManager.PopulateFeature(feature);
 
-        /// <summary>
-        /// Register the specified <paramref name="controllerTypes"/> as services and as a source for controller
-        /// discovery.
-        /// </summary>
-        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
-        /// <param name="controllerTypes">A sequence of controller <see cref="Type"/>s to register.</param>
-        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
-        public static IMvcCoreBuilder AddControllersAsServices(
-           this IMvcCoreBuilder builder,
-           IEnumerable<Type> controllerTypes)
-        {
-            if (builder == null)
+            foreach (var controller in feature.Controllers.Select(c => c.AsType()))
             {
-                throw new ArgumentNullException(nameof(builder));
+                builder.Services.TryAddTransient(controller, controller);
             }
 
-            ControllersAsServices.AddControllersAsServices(builder.Services, controllerTypes);
-            return builder;
-        }
+            builder.Services.Replace(ServiceDescriptor.Transient<IControllerActivator, ServiceBasedControllerActivator>());
 
-        /// <summary>
-        /// Registers controller types from the specified <paramref name="controllerAssemblies"/> as services and as a source
-        /// for controller discovery.
-        /// </summary>
-        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
-        /// <param name="controllerAssemblies">Assemblies to scan.</param>
-        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
-        public static IMvcCoreBuilder AddControllersAsServices(
-            this IMvcCoreBuilder builder,
-            params Assembly[] controllerAssemblies)
-        {
-            return builder.AddControllersAsServices(controllerAssemblies.AsEnumerable());
+            return builder;
         }
 
         /// <summary>
@@ -191,26 +163,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             setupAction(builder.PartManager);
 
-            return builder;
-        }
-
-        /// <summary>
-        /// Registers controller types from the specified <paramref name="controllerAssemblies"/> as services and as a source
-        /// for controller discovery.
-        /// </summary>
-        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
-        /// <param name="controllerAssemblies">Assemblies to scan.</param>
-        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
-        public static IMvcCoreBuilder AddControllersAsServices(
-            this IMvcCoreBuilder builder,
-            IEnumerable<Assembly> controllerAssemblies)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            ControllersAsServices.AddControllersAsServices(builder.Services, controllerAssemblies);
             return builder;
         }
     }

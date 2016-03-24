@@ -22,6 +22,21 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         }
 
         [Fact]
+        public void AssemblyPart_Types_ReturnsDefinedTypes()
+        {
+            // Arrange
+            var assembly = typeof(AssemblyPartTest).GetTypeInfo().Assembly;
+            var part = new AssemblyPart(assembly);
+
+            // Act
+            var types = part.Types;
+
+            // Assert
+            Assert.Equal(assembly.DefinedTypes, types);
+            Assert.NotSame(assembly.DefinedTypes, types);
+        }
+
+        [Fact]
         public void AssemblyPart_Assembly_ReturnsAssembly()
         {
             // Arrange

@@ -21,7 +21,6 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -45,12 +44,21 @@ namespace Microsoft.Extensions.DependencyInjection
             var partManager = GetApplicationPartManager(services);
             services.TryAddSingleton(partManager);
 
+            ConfigureDefaultFeatureProviders(partManager);
             ConfigureDefaultServices(services);
             AddMvcCoreServices(services);
 
             var builder = new MvcCoreBuilder(services, partManager);
 
             return builder;
+        }
+
+        private static void ConfigureDefaultFeatureProviders(ApplicationPartManager manager)
+        {
+            if (!manager.FeatureProviders.OfType<ControllerFeatureProvider>().Any())
+            {
+                manager.FeatureProviders.Add(new ControllerFeatureProvider());
+            }
         }
 
         private static ApplicationPartManager GetApplicationPartManager(IServiceCollection services)
@@ -126,7 +134,6 @@ namespace Microsoft.Extensions.DependencyInjection
             // These are consumed only when creating action descriptors, then they can be de-allocated
             services.TryAddTransient<IAssemblyProvider, DefaultAssemblyProvider>();
 
-            services.TryAddTransient<IControllerTypeProvider, DefaultControllerTypeProvider>();
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApplicationModelProvider, DefaultApplicationModelProvider>());
             services.TryAddEnumerable(

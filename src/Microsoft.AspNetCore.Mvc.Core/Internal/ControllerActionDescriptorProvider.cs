@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Options;
 
@@ -13,18 +15,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class ControllerActionDescriptorProvider : IActionDescriptorProvider
     {
+        private readonly ApplicationPartManager _partManager;
         private readonly IApplicationModelProvider[] _applicationModelProviders;
-        private readonly IControllerTypeProvider _controllerTypeProvider;
         private readonly IEnumerable<IApplicationModelConvention> _conventions;
 
         public ControllerActionDescriptorProvider(
-            IControllerTypeProvider controllerTypeProvider,
+            ApplicationPartManager partManager,
             IEnumerable<IApplicationModelProvider> applicationModelProviders,
             IOptions<MvcOptions> optionsAccessor)
         {
-            if (controllerTypeProvider == null)
+            if (partManager == null)
             {
-                throw new ArgumentNullException(nameof(controllerTypeProvider));
+                throw new ArgumentNullException(nameof(partManager));
             }
 
             if (applicationModelProviders == null)
@@ -37,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(optionsAccessor));
             }
 
-            _controllerTypeProvider = controllerTypeProvider;
+            _partManager = partManager;
             _applicationModelProviders = applicationModelProviders.OrderBy(p => p.Order).ToArray();
             _conventions = optionsAccessor.Value.Conventions;
         }
@@ -75,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         internal protected ApplicationModel BuildModel()
         {
-            var controllerTypes = _controllerTypeProvider.ControllerTypes;
+            var controllerTypes = GetControllerTypes();
             var context = new ApplicationModelProviderContext(controllerTypes);
 
             for (var i = 0; i < _applicationModelProviders.Length; i++)
@@ -89,6 +91,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             return context.Result;
+        }
+
+        private IEnumerable<TypeInfo> GetControllerTypes()
+        {
+            var feature = new ControllerFeature();
+            _partManager.PopulateFeature(feature);
+
+            return feature.Controllers;
         }
     }
 }

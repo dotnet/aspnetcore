@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.DependencyInjection
                 Mock.Of<IServiceCollection>(),
                 new ApplicationPartManager());
 
-            var part = new TestPart();
+            var part = new TestApplicationPart();
 
             // Act
             var result = builder.ConfigureApplicationPartManager(manager =>
@@ -50,11 +50,6 @@ namespace Microsoft.AspNetCore.Mvc.DependencyInjection
             // Assert
             Assert.Same(result, builder);
             Assert.Equal(new ApplicationPart[] { part }, builder.PartManager.ApplicationParts.ToArray());
-        }
-
-        private class TestPart : ApplicationPart
-        {
-            public override string Name => "Test";
         }
     }
 }

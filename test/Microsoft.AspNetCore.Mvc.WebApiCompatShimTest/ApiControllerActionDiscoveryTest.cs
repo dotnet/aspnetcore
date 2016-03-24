@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -371,9 +372,7 @@ namespace System.Web.Http
 
         private ControllerActionDescriptorProvider CreateProvider()
         {
-            var assemblyProvider = new StaticAssemblyProvider();
-            assemblyProvider.CandidateAssemblies.Add(GetType().GetTypeInfo().Assembly);
-            var controllerTypeProvider = new NamespaceFilteredControllerTypeProvider(assemblyProvider);
+            var manager = GetApplicationManager(GetType().GetTypeInfo().Assembly.DefinedTypes.ToArray());
 
             var options = new MvcOptions();
 
@@ -393,7 +392,7 @@ namespace System.Web.Http
             var modelProvider = new DefaultApplicationModelProvider(optionsAccessor.Object);
 
             var provider = new ControllerActionDescriptorProvider(
-                controllerTypeProvider,
+                manager,
                 new[] { modelProvider },
                 optionsAccessor.Object);
 
@@ -406,20 +405,49 @@ namespace System.Web.Http
             provider.OnProvidersExecuted(context);
         }
 
-        private class NamespaceFilteredControllerTypeProvider : DefaultControllerTypeProvider
+        private static ApplicationPartManager GetApplicationManager(params TypeInfo[] controllerTypes)
         {
-            public NamespaceFilteredControllerTypeProvider(IAssemblyProvider provider)
-                : base(provider)
-            {
+            var manager = new ApplicationPartManager();
+            manager.ApplicationParts.Add(new TestPart(controllerTypes));
+            manager.FeatureProviders.Add(new TestProvider());
+            manager.FeatureProviders.Add(new NamespaceFilteredControllersFeatureProvider());
+            return manager;
+        }
 
+        private class TestPart : ApplicationPart, IApplicationPartTypeProvider
+        {
+            public TestPart(IEnumerable<TypeInfo> types)
+            {
+                Types = types;
             }
 
-            public override IEnumerable<TypeInfo> ControllerTypes
+            public override string Name => "Test";
+
+            public IEnumerable<TypeInfo> Types { get; }
+        }
+
+        private class TestProvider : IApplicationFeatureProvider<ControllerFeature>
+        {
+            public void PopulateFeature(IEnumerable<ApplicationPart> parts, ControllerFeature feature)
             {
-                get
+                foreach (var type in parts.OfType<IApplicationPartTypeProvider>().SelectMany(t => t.Types))
                 {
-                    return base.ControllerTypes
-                               .Where(typeInfo => typeInfo.Namespace == "System.Web.Http.TestControllers");
+                    feature.Controllers.Add(type);
+                }
+            }
+        }
+
+        private class NamespaceFilteredControllersFeatureProvider : IApplicationFeatureProvider<ControllerFeature>
+        {
+            public void PopulateFeature(IEnumerable<ApplicationPart> parts, ControllerFeature feature)
+            {
+                var controllers = feature.Controllers.ToList();
+                foreach (var controller in controllers)
+                {
+                    if (controller.Namespace != "System.Web.Http.TestControllers")
+                    {
+                        feature.Controllers.Remove(controller);
+                    }
                 }
             }
         }

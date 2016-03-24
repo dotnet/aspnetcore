@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc
                 Mock.Of<IServiceCollection>(),
                 new ApplicationPartManager());
 
-            var part = new TestPart();
+            var part = new TestApplicationPart();
 
             // Act
             var result = builder.ConfigureApplicationPartManager(manager =>
@@ -59,22 +60,21 @@ namespace Microsoft.AspNetCore.Mvc
         public void WithControllersAsServices_AddsTypesToControllerTypeProviderAndServiceCollection()
         {
             // Arrange
-            var builder = new Mock<IMvcBuilder>();
             var collection = new ServiceCollection();
-            builder.SetupGet(b => b.Services).Returns(collection);
-
             var controllerTypes = new[]
             {
                 typeof(ControllerTypeA),
                 typeof(TypeBController),
-            };
+            }.Select(t => t.GetTypeInfo()).ToArray();
+
+            var builder = new MvcBuilder(collection, GetApplicationPartManager(controllerTypes));
 
             // Act
-            builder.Object.AddControllersAsServices(controllerTypes);
+            builder.AddControllersAsServices();
 
             // Assert
             var services = collection.ToList();
-            Assert.Equal(4, services.Count);
+            Assert.Equal(3, services.Count);
             Assert.Equal(typeof(ControllerTypeA), services[0].ServiceType);
             Assert.Equal(typeof(ControllerTypeA), services[0].ImplementationType);
             Assert.Equal(ServiceLifetime.Transient, services[0].Lifetime);
@@ -86,16 +86,45 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(typeof(IControllerActivator), services[2].ServiceType);
             Assert.Equal(typeof(ServiceBasedControllerActivator), services[2].ImplementationType);
             Assert.Equal(ServiceLifetime.Transient, services[2].Lifetime);
-
-            Assert.Equal(typeof(IControllerTypeProvider), services[3].ServiceType);
-            var typeProvider = Assert.IsType<StaticControllerTypeProvider>(services[3].ImplementationInstance);
-            Assert.Equal(controllerTypes, typeProvider.ControllerTypes.OrderBy(c => c.Name).Select(t => t.AsType()));
-            Assert.Equal(ServiceLifetime.Singleton, services[3].Lifetime);
         }
 
-        private class TestPart : ApplicationPart
+        [Fact]
+        public void AddControllerAsServices_MultipleCalls_RetainsPreviouslyAddedTypes()
         {
-            public override string Name => "Test";
+            // Arrange
+            var services = new ServiceCollection();
+            var manager = new ApplicationPartManager();
+            manager.ApplicationParts.Add(new TestApplicationPart(typeof(ControllerOne), typeof(ControllerTwo)));
+            manager.FeatureProviders.Add(new TestFeatureProvider());
+            var builder = new MvcBuilder(services, manager);
+
+            builder.AddControllersAsServices();
+
+            // Act
+            builder.AddControllersAsServices();
+
+            // Assert 2
+            var collection = services.ToList();
+            Assert.Equal(3, collection.Count);
+            Assert.Single(collection, d => d.ServiceType.Equals(typeof(ControllerOne)));
+            Assert.Single(collection, d => d.ServiceType.Equals(typeof(ControllerTwo)));
+        }
+
+        private class ControllerOne
+        {
+        }
+
+        private class ControllerTwo
+        {
+        }
+
+        private static ApplicationPartManager GetApplicationPartManager(params TypeInfo[] types)
+        {
+            var manager = new ApplicationPartManager();
+            manager.ApplicationParts.Add(new TestApplicationPart(types));
+            manager.FeatureProviders.Add(new ControllerFeatureProvider());
+
+            return manager;
         }
     }
 }

@@ -1,11 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using ControllersFromServicesClassLibrary;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ControllersFromServicesWebSite
@@ -14,16 +18,27 @@ namespace ControllersFromServicesWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services
+            var builder = services
                 .AddMvc()
-                .AddControllersAsServices(typeof(AnotherController))
-                .AddControllersAsServices(new[]
-                {
-                    typeof(TimeScheduleController).GetTypeInfo().Assembly
-                });
+                .ConfigureApplicationPartManager(manager => manager.ApplicationParts.Clear())
+                .AddApplicationPart(typeof(TimeScheduleController).GetTypeInfo().Assembly)
+                .ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(new TypesPart(typeof(AnotherController))))
+                .AddControllersAsServices();
 
             services.AddTransient<QueryValueService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        }
+
+        private class TypesPart : ApplicationPart, IApplicationPartTypeProvider
+        {
+            public TypesPart(params Type[] types)
+            {
+                Types = types.Select(t => t.GetTypeInfo());
+            }
+
+            public override string Name => string.Join(", ", Types.Select(t => t.FullName));
+
+            public IEnumerable<TypeInfo> Types { get; }
         }
 
         public void Configure(IApplicationBuilder app)

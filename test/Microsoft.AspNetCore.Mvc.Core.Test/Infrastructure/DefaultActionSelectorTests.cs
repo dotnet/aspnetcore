@@ -8,6 +8,8 @@ using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -543,15 +545,24 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var options = new TestOptionsManager<MvcOptions>();
 
-            var controllerTypeProvider = new StaticControllerTypeProvider(controllerTypes);
+            var manager = GetApplicationManager(controllerTypes);
+
             var modelProvider = new DefaultApplicationModelProvider(options);
 
             var provider = new ControllerActionDescriptorProvider(
-                controllerTypeProvider,
+                manager,
                 new[] { modelProvider },
                 options);
 
             return provider;
+        }
+
+        private static ApplicationPartManager GetApplicationManager(List<TypeInfo> controllerTypes)
+        {
+            var manager = new ApplicationPartManager();
+            manager.ApplicationParts.Add(new TestApplicationPart(controllerTypes));
+            manager.FeatureProviders.Add(new TestFeatureProvider());
+            return manager;
         }
 
         private static HttpContext GetHttpContext(string httpMethod)
