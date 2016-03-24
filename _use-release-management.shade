@@ -1,0 +1,191 @@
+#update-release
+    -// Merge dev branch to release
+    @{
+        Parallel.ForEach(GetAllRepos(), CloneOrUpdate);
+
+        Log.Info("************************************* Checking repos for diffs *************************");
+
+        foreach (var repo in GetAllRepos())
+        {
+            Log.Info("Checking repo: " + repo);
+            // Check if the repo previously had a release branch
+            try
+            {
+                GitCommand(repo, "rev-parse --verify --quiet origin/release");
+            }
+            catch
+            {
+                Log.Info("Repository " + repo + " does not have a release branch.");
+                continue;
+            }
+
+            try
+            {
+                GitCommand(repo, "log -1 --exit-code origin/dev..origin/release");
+            }
+            catch
+            {
+                Log.Warn("Unmerged changes in repository " + repo);
+                GitCommand(repo, "log origin/dev..origin/release");
+                throw;
+            }
+        }
+
+        Log.Info("No conflicts in repos, continuing with creating release branch.");
+
+        foreach (var repo in GetAllRepos())
+        {
+            GitCommand(repo, "checkout origin/dev -B release");
+
+            // Update NuGet.Config
+            var nugetConfigPath = Path.Combine(repo, "NuGet.config");
+            if (File.Exists(nugetConfigPath))
+            {
+                var original = File.ReadAllText(nugetConfigPath);
+                var modified = original
+                    .Replace("https://www.myget.org/F/aspnetcidev", "https://www.myget.org/F/aspnetcirelease")
+                    .Replace("https://www.myget.org/F/azureadwebstacknightly", "https://www.myget.org/F/azureadwebstackrelease");
+
+                if (!string.Equals(original, modified, StringComparison.Ordinal))
+                {
+                    File.WriteAllText(nugetConfigPath, modified);
+                    GitCommand(repo, "add NuGet.config");
+                    GitCommand(repo, "commit -m \"Updating to release NuGet.config.\"");
+                }
+            }
+
+            GitCommand(repo, "push origin release:release");
+            GitCommand(repo, "checkout origin/dev -B dev");
+            GitCommand(repo, "merge release -s ours");
+            GitCommand(repo, "push origin dev:dev");
+        }
+    }
+    
+#update-master .pull-all
+    -// Merge release branch to master
+    -// Pin versions of packages in project.json and updated project.lock.json
+    -// More information https://github.com/aspnet/Universe/wiki/%23pin-version-:-Pinning-package-version-for-a-particular-release-in-project.json
+    @{
+
+        if (string.IsNullOrEmpty(coherenceFeed))
+        {
+            throw new Exception("COHERENCE_FEED not specified. Usually this is Packages-NoTimestamp directory of Coherence-Signed.");
+        }
+
+        if (string.IsNullOrEmpty(koreBuildVersion))
+        {
+            throw new Exception("KOREBUILD_VERSION environment variable is not specified.");
+        }
+
+        if (string.IsNullOrEmpty(nugetVersion))
+        {
+            throw new Exception("NUGET_VERSION not specified. This is most recent stable build of NuGet from http://dist.nuget.org/index.html. e.g. v3.2");
+        }
+
+        var excludeReposForJson = new[]
+        {
+          "Coherence",
+          "Coherence-Signed",
+          "dnvm",
+          "Entropy",
+          "Setup",
+          "libuv-build",
+        };
+
+        Exec("cmd", "/C dnu restore", @"tools\PinVersion");
+
+        foreach (var repo in GetAllRepos())
+        {
+            GitCommand(repo, "checkout origin/release -B master");
+
+            if (File.Exists(Path.Combine(repo, "NuGet.config")))
+            {
+                File.Copy(Path.Combine("build-template", "NuGet.master.config"),
+                      Path.Combine(repo, "NuGet.config"),
+                      overwrite: true);
+                GitCommand(repo, "add NuGet.*");
+                GitCommand(repo, "commit -m \"Updating NuGet.config\"");
+            }
+        }
+
+        var reposToPin = GetAllRepos().Except(excludeReposForJson);
+
+        foreach (var repo in reposToPin)
+        {
+            var repoPath = Path.Combine(Directory.GetCurrentDirectory(), repo);
+
+            Exec("dnx",
+                string.Format(@"run ""{0}"" ""{1}"" ""{2}""",
+                    Path.Combine(Directory.GetCurrentDirectory(), repo),
+                    coherenceFeed,
+                    koreBuildVersion),
+                @"tools\PinVersion");
+
+            GitCommand(repo, "commit -am \"Updating json files to pin versions and build.cmd to pin KoreBuild and DNX\"");
+        }
+
+        foreach (var repo in GetAllRepos())
+        {
+            GitCommand(repo, "push origin +master:master");
+        }
+
+        CallTarget("update-prerelease-tags");
+    }
+
+#update-prerelease-tags
+    -// Update tags on each repo to have the latest release tag
+    @{
+        if (string.IsNullOrEmpty(preReleaseTag))
+        {
+            throw new Exception("PRERELEASETAG tag not defined");
+        }
+
+        var versionFile = "version.txt";
+
+        foreach (var repo in GetAllRepos())
+        {
+            GitCommand(repo, "pull --tags");
+
+            try
+            {
+                GitCommand(repo, string.Format("describe --tags > ..\\{0}", versionFile));
+            }
+            catch
+            {
+                Log.Warn(string.Format("{0} repo not tagged. Skipping....", repo));
+                continue;
+            }
+
+            var version = File.ReadAllText(versionFile);
+            File.Delete(versionFile);
+
+            Log.Info(string.Format("Current version on repo {0} is {1}", repo, version));
+
+            var majorVersion = version.Split(new string[]{"-"}, StringSplitOptions.None)[0];
+
+            var newVersion = majorVersion + string.Format("-{0}", preReleaseTag);
+
+            Log.Info(string.Format("New version for repo is {0}", newVersion));
+
+            GitCommand(repo, string.Format("tag -f -a {0} -m \"Tag for new release {0}\"", newVersion));
+
+            GitCommand(repo, "push origin --tags +" + newVersion);
+        }
+    }
+    
+functions
+    @{
+        IEnumerable<string> GetAllRepos()
+        {
+            var nonDefaultRepos = new[]
+            {
+              "DNX",
+              "Coherence",
+              "Coherence-Signed",
+              "dnvm",
+              "Setup",
+            };
+
+            return Enumerable.Concat(nonDefaultRepos, repositories);
+        }
+    }
