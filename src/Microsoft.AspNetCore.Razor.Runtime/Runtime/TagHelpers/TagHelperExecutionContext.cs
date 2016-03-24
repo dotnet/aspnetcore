@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 }
             }
 
-            return new DefaultTagHelperContent().SetContent(childContent);
+            return new DefaultTagHelperContent().SetHtmlContent(childContent);
         }
 
         private void EnsureHtmlAttributes()

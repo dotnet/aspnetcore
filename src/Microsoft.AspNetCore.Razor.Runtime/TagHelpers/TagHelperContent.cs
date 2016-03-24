@@ -33,9 +33,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// </summary>
         /// <param name="htmlContent">The <see cref="IHtmlContent"/> that replaces the content.</param>
         /// <returns>A reference to this instance after the set operation has completed.</returns>
-        public TagHelperContent SetContent(IHtmlContent htmlContent)
+        public TagHelperContent SetHtmlContent(IHtmlContent htmlContent)
         {
-            HtmlContentBuilderExtensions.SetContent(this, htmlContent);
+            HtmlContentBuilderExtensions.SetHtmlContent(this, htmlContent);
             return this;
         }
 

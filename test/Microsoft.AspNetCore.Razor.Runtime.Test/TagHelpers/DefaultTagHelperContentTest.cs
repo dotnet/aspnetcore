@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         [Theory]
         [InlineData("HelloWorld!", "HtmlEncode[[HelloWorld!]]")]
         [InlineData("  ", "HtmlEncode[[  ]]")]
-        public void SetContent_WithTagHelperContent_WorksAsExpected(string content, string expected)
+        public void SetHtmlContent_WithTagHelperContent_WorksAsExpected(string content, string expected)
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             tagHelperContent.SetContent(content);
 
             // Act
-            copiedTagHelperContent.SetContent(tagHelperContent);
+            copiedTagHelperContent.SetHtmlContent(tagHelperContent);
 
             // Assert
             Assert.Equal(expected, copiedTagHelperContent.GetContent(new HtmlTestEncoder()));
