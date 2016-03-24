@@ -12,7 +12,7 @@
       "url": "git://github.com/aspnet/IISIntegration"
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Hosting": "1.0.0-*",
     "Microsoft.AspNetCore.Http": "1.0.0-*",
     "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
     "Microsoft.AspNetCore.HttpOverrides": "1.0.0-*",
@@ -29,7 +29,10 @@
       "dependencies": {
         "System.Security.Principal.Windows": "4.0.0-*"
       },
-      "imports": [ "dotnet5.4" ]
+      "imports": [
+        "dotnet5.4",
+        "portable-net451+win8"
+      ]
     }
   }
 }
