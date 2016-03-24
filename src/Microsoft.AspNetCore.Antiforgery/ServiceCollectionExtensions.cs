@@ -39,7 +39,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IClaimUidExtractor, DefaultClaimUidExtractor>();
             services.TryAddSingleton<IAntiforgeryAdditionalDataProvider, DefaultAntiforgeryAdditionalDataProvider>();
 
-            services.TryAddSingleton<ObjectPoolProvider>(new DefaultObjectPoolProvider());
             services.TryAddSingleton<ObjectPool<AntiforgerySerializationContext>>(serviceProvider =>
             {
                 var provider = serviceProvider.GetRequiredService<ObjectPoolProvider>();
