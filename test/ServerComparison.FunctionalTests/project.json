@@ -13,7 +13,7 @@
   "content": [
     "Http.config",
     "nginx.conf",
-    "NtlmAuthentation.config"
+    "NtlmAuthentication.config"
   ],
 
   "frameworks": {

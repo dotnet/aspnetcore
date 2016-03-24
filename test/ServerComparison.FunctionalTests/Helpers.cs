@@ -13,16 +13,16 @@ namespace ServerComparison.FunctionalTests
             return Path.GetFullPath(Path.Combine("..", "..", "..", "..", "..", "ServerComparison.TestSites"));
         }
 
-        public static string GetConfigContent(ServerType serverType)
+        public static string GetConfigContent(ServerType serverType, string iisConfig, string nginxConfig)
         {
             string content = null;
             if (serverType == ServerType.IISExpress)
             {
-                content = File.ReadAllText("Http.config");
+                content = File.ReadAllText(iisConfig);
             }
             else if (serverType == ServerType.Nginx)
             {
-                content = File.ReadAllText("nginx.conf");
+                content = File.ReadAllText(nginxConfig);
             }
 
             return content;
