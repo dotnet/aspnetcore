@@ -7,14 +7,15 @@
     "Microsoft.AspNetCore.Html.Abstractions": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.WebEncoders": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "xunit": "2.1.0"
   },
   "testRunner": "xunit",
   "frameworks": {
     "netstandardapp1.5": {
       "dependencies": {
-        "dotnet-test-xunit": "1.0.0-dev-*"
+        "dotnet-test-xunit": "1.0.0-dev-*",
+        "NETStandard.Library": "1.5.0-*",
+        "System.Diagnostics.Process": "4.1.0-*"
       },
       "imports": [
         "dnxcore50",
