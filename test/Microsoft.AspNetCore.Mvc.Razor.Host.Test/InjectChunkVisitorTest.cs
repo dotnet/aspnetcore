@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Razor.Chunks;
 using Microsoft.AspNetCore.Razor.Chunks.Generators;
 using Microsoft.AspNetCore.Razor.CodeGenerators;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor
@@ -149,7 +150,7 @@ MyType1
             var chunkTreeCache = new DefaultChunkTreeCache(new TestFileProvider());
             return new CodeGeneratorContext(
                 new ChunkGeneratorContext(
-                    new MvcRazorHost(chunkTreeCache),
+                    new MvcRazorHost(chunkTreeCache, new TagHelperDescriptorResolver(designTime: false)),
                     "MyClass",
                     "MyNamespace",
                     string.Empty,

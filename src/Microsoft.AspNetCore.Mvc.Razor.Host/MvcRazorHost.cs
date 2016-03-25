@@ -143,9 +143,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// Initializes a new instance of <see cref="MvcRazorHost"/> using the specified <paramref name="chunkTreeCache"/>.
         /// </summary>
         /// <param name="chunkTreeCache">An <see cref="IChunkTreeCache"/> rooted at the application base path.</param>
-        public MvcRazorHost(IChunkTreeCache chunkTreeCache)
+        /// <param name="resolver">The <see cref="ITagHelperDescriptorResolver"/> used to resolve tag helpers on razor views.</param>
+        public MvcRazorHost(IChunkTreeCache chunkTreeCache, ITagHelperDescriptorResolver resolver)
             : this(chunkTreeCache, new RazorPathNormalizer())
         {
+            TagHelperDescriptorResolver = resolver;
         }
 
         /// <inheritdoc />

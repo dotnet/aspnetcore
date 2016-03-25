@@ -12,6 +12,7 @@
   ],
   "dependencies": {
     "Microsoft.AspNetCore.Http": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.Razor": "1.0.0-*",

@@ -2,13 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -38,6 +35,23 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             builder.Services.Configure(setupAction);
+            return builder;
+        }
+
+        /// <summary>
+        /// Registers tag helpers as services and replaces the existing <see cref="ITagHelperActivator"/>
+        /// with an <see cref="ServiceBasedTagHelperActivator"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcBuilder"/> instance this method extends.</param>
+        /// <returns>The <see cref="IMvcBuilder"/> instance this method extends.</returns>
+        public static IMvcBuilder AddTagHelpersAsServices(this IMvcBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            TagHelpersAsServices.AddTagHelpersAsServices(builder.PartManager, builder.Services);
             return builder;
         }
 

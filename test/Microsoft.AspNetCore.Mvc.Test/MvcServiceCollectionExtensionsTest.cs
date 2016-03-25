@@ -19,6 +19,8 @@ using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
@@ -125,6 +127,61 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
+        public void AddMvc_AddsAssemblyPartsForFrameworkTagHelpers()
+        {
+            // Arrange
+            var mvcRazorAssembly = typeof(UrlResolutionTagHelper).GetTypeInfo().Assembly;
+            var mvcTagHelpersAssembly = typeof(InputTagHelper).GetTypeInfo().Assembly;
+            var services = new ServiceCollection();
+            var providers = new IApplicationFeatureProvider[]
+            {
+                new ControllerFeatureProvider(),
+                new ViewComponentFeatureProvider()
+            };
+
+            // Act
+            services.AddMvc();
+
+            // Assert
+            var descriptor = Assert.Single(services, d => d.ServiceType == typeof(ApplicationPartManager));
+            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
+            Assert.NotNull(descriptor.ImplementationInstance);
+            var manager = Assert.IsType<ApplicationPartManager>(descriptor.ImplementationInstance);
+
+            Assert.Equal(2, manager.ApplicationParts.Count);
+            Assert.Single(manager.ApplicationParts.OfType<AssemblyPart>(), p => p.Assembly == mvcRazorAssembly);
+            Assert.Single(manager.ApplicationParts.OfType<AssemblyPart>(), p => p.Assembly == mvcTagHelpersAssembly);
+        }
+
+        [Fact]
+        public void AddMvcTwice_DoesNotAddDuplicateFramewokrParts()
+        {
+            // Arrange
+            var mvcRazorAssembly = typeof(UrlResolutionTagHelper).GetTypeInfo().Assembly;
+            var mvcTagHelpersAssembly = typeof(InputTagHelper).GetTypeInfo().Assembly;
+            var services = new ServiceCollection();
+            var providers = new IApplicationFeatureProvider[]
+            {
+                new ControllerFeatureProvider(),
+                new ViewComponentFeatureProvider()
+            };
+
+            // Act
+            services.AddMvc();
+            services.AddMvc();
+
+            // Assert
+            var descriptor = Assert.Single(services, d => d.ServiceType == typeof(ApplicationPartManager));
+            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
+            Assert.NotNull(descriptor.ImplementationInstance);
+            var manager = Assert.IsType<ApplicationPartManager>(descriptor.ImplementationInstance);
+
+            Assert.Equal(2, manager.ApplicationParts.Count);
+            Assert.Single(manager.ApplicationParts.OfType<AssemblyPart>(), p => p.Assembly == mvcRazorAssembly);
+            Assert.Single(manager.ApplicationParts.OfType<AssemblyPart>(), p => p.Assembly == mvcTagHelpersAssembly);
+        }
+
+        [Fact]
         public void AddMvcTwice_DoesNotAddApplicationFeatureProvidersTwice()
         {
             // Arrange
@@ -145,9 +202,10 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.NotNull(descriptor.ImplementationInstance);
             var manager = Assert.IsType<ApplicationPartManager>(descriptor.ImplementationInstance);
 
-            Assert.Equal(2, manager.FeatureProviders.Count);
+            Assert.Equal(3, manager.FeatureProviders.Count);
             Assert.IsType<ControllerFeatureProvider>(manager.FeatureProviders[0]);
             Assert.IsType<ViewComponentFeatureProvider>(manager.FeatureProviders[1]);
+            Assert.IsType<TagHelperFeatureProvider>(manager.FeatureProviders[2]);
         }
 
         [Fact]

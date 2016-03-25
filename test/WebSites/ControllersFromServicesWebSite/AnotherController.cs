@@ -19,5 +19,11 @@ namespace ControllersFromServicesWebSite
         {
             return ViewComponent("ComponentFromServices");
         }
+
+        [HttpGet("InServicesTagHelper")]
+        public IActionResult InServicesTagHelper()
+        {
+            return View();
+        }
     }
 }

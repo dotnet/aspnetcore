@@ -2,8 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -29,6 +34,8 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.AddApiExplorer();
             builder.AddAuthorization();
 
+            AddDefaultFrameworkParts(builder.PartManager);
+
             // Order added affects options setup order
 
             // Default framework order
@@ -46,6 +53,21 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.AddCors();
 
             return new MvcBuilder(builder.Services, builder.PartManager);
+        }
+
+        private static void AddDefaultFrameworkParts(ApplicationPartManager partManager)
+        {
+            var mvcTagHelpersAssembly = typeof(InputTagHelper).GetTypeInfo().Assembly;
+            if(!partManager.ApplicationParts.OfType<AssemblyPart>().Any(p => p.Assembly == mvcTagHelpersAssembly))
+            {
+                partManager.ApplicationParts.Add(new AssemblyPart(mvcTagHelpersAssembly));
+            }
+            
+            var mvcRazorAssembly = typeof(UrlResolutionTagHelper).GetTypeInfo().Assembly;
+            if(!partManager.ApplicationParts.OfType<AssemblyPart>().Any(p => p.Assembly == mvcRazorAssembly))
+            {
+                partManager.ApplicationParts.Add(new AssemblyPart(mvcRazorAssembly));
+            }
         }
 
         /// <summary>

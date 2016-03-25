@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Directives
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Directives
                 new UsingChunk { Namespace = "AppNamespace.Model" },
             };
             var cache = new DefaultChunkTreeCache(fileProvider);
-            using (var host = new MvcRazorHost(cache))
+            using (var host = new MvcRazorHost(cache, new TagHelperDescriptorResolver(designTime: false)))
             {
                 var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
 
@@ -119,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Directives
             fileProvider.AddFile(@"/Views/_Layout.cshtml", string.Empty);
             fileProvider.AddFile(@"/Views/home/_not-viewimports.cshtml", string.Empty);
             var cache = new DefaultChunkTreeCache(fileProvider);
-            using (var host = new MvcRazorHost(cache))
+            using (var host = new MvcRazorHost(cache, new TagHelperDescriptorResolver(designTime: false)))
             {
                 var defaultChunks = new Chunk[]
                 {
@@ -144,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Directives
             fileProvider.AddFile(@"/Views/_ViewImports.cshtml",
                                "@inject DifferentHelper<TModel> Html");
             var cache = new DefaultChunkTreeCache(fileProvider);
-            using (var host = new MvcRazorHost(cache))
+            using (var host = new MvcRazorHost(cache, new TagHelperDescriptorResolver(designTime: false)))
             {
                 var defaultChunks = new Chunk[]
                 {

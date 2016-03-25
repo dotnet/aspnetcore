@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Razor.Chunks.Generators;
 using Microsoft.AspNetCore.Razor.CodeGenerators;
 using Microsoft.AspNetCore.Razor.CodeGenerators.Visitors;
 using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -112,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            using (var host = new MvcRazorHost(new DefaultChunkTreeCache(fileProvider)))
+            using (var host = new MvcRazorHost(new DefaultChunkTreeCache(fileProvider), new TagHelperDescriptorResolver(designTime: false)))
             {
                 // Act
                 var instrumented = host.EnableInstrumentation;
@@ -594,7 +595,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private class MvcRazorHostWithNormalizedNewLine : MvcRazorHost
         {
             public MvcRazorHostWithNormalizedNewLine(IChunkTreeCache codeTreeCache)
-                : base(codeTreeCache)
+                : base(codeTreeCache, new TagHelperDescriptorResolver(designTime: false))
             { }
 
             public override CodeGenerator DecorateCodeGenerator(
@@ -646,7 +647,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private class TestMvcRazorHost : MvcRazorHost
         {
             public TestMvcRazorHost(IChunkTreeCache ChunkTreeCache)
-                : base(ChunkTreeCache)
+                : base(ChunkTreeCache, new TagHelperDescriptorResolver(designTime: false))
             {
             }
 

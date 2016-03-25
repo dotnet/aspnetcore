@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using ControllersFromServicesClassLibrary;
 using ControllersFromServicesWebSite.Components;
+using ControllersFromServicesWebSite.TagHelpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -25,9 +26,11 @@ namespace ControllersFromServicesWebSite
                 .AddApplicationPart(typeof(TimeScheduleController).GetTypeInfo().Assembly)
                 .ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(new TypesPart(
                     typeof(AnotherController),
-                    typeof(ComponentFromServicesViewComponent))))
+                    typeof(ComponentFromServicesViewComponent),
+                    typeof(InServicesTagHelper))))
                 .AddControllersAsServices()
-                .AddViewComponentsAsServices();
+                .AddViewComponentsAsServices()
+                .AddTagHelpersAsServices();
 
             services.AddTransient<QueryValueService>();
             services.AddTransient<ValueService>();
