@@ -12,6 +12,78 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
     {
         private readonly ExpressionTextCache _expressionTextCache = new ExpressionTextCache();
 
+        public static IEnumerable<object[]> ExpressionAndTexts
+        {
+            get
+            {
+                var i = 3;
+                var value = "Test";
+                var Model = new TestModel();
+                var key = "TestModel";
+                var myModels = new List<TestModel>();
+
+                return new TheoryData<Expression, string>
+                {
+                    {
+                        (Expression<Func<TestModel, Category>>)(model => model.SelectedCategory),
+                        "SelectedCategory"
+                    },
+                    {
+                        (Expression<Func<TestModel, Category>>)(m => Model.SelectedCategory),
+                        "SelectedCategory"
+                    },
+                    {
+                        (Expression<Func<TestModel, CategoryName>>)(model => model.SelectedCategory.CategoryName),
+                        "SelectedCategory.CategoryName"
+                    },
+                    {
+                        (Expression<Func<TestModel, int>>)(testModel => testModel.SelectedCategory.CategoryId),
+                        "SelectedCategory.CategoryId"
+                    },
+                    {
+                        (Expression<Func<TestModel, string>>)(model => model.SelectedCategory.CategoryName.MainCategory),
+                        "SelectedCategory.CategoryName.MainCategory"
+                    },
+                    {
+                        (Expression<Func<TestModel, TestModel>>)(model => model),
+                        string.Empty
+                    },
+                    {
+                        (Expression<Func<TestModel, string>>)(model => value),
+                        "value"
+                    },
+                    {
+                        (Expression<Func<TestModel, TestModel>>)(m => Model),
+                        string.Empty
+                    },
+                    {
+                        (Expression<Func<IList<TestModel>, Category>>)(model => model[2].SelectedCategory),
+                        "[2].SelectedCategory"
+                    },
+                    {
+                        (Expression<Func<IList<TestModel>, Category>>)(model => model[i].SelectedCategory),
+                        "[3].SelectedCategory"
+                    },
+                    {
+                        (Expression<Func<IDictionary<string, TestModel>, string>>)(model => model[key].SelectedCategory.CategoryName.MainCategory),
+                        "[TestModel].SelectedCategory.CategoryName.MainCategory"
+                    },
+                    {
+                        (Expression<Func<TestModel, int>>)(model => model.PreferredCategories[i].CategoryId),
+                        "PreferredCategories[3].CategoryId"
+                    },
+                    {
+                        (Expression<Func<IList<TestModel>, Category>>)(model => myModels[i].SelectedCategory),
+                        "myModels[3].SelectedCategory"
+                    },
+                    {
+                        (Expression<Func<IList<TestModel>, int>>)(model => model[2].PreferredCategories[i].CategoryId),
+                        "[2].PreferredCategories[3].CategoryId"
+                    },
+                };
+            }
+        }
+
         public static IEnumerable<object[]> CachedExpressions
         {
             get
@@ -163,6 +235,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         }
 
         [Theory]
+        [MemberData(nameof(ExpressionAndTexts))]
+        public void GetExpressionText_ReturnsExpectedExpressionText(LambdaExpression expression, string expressionText)
+        {
+            // Act
+            var text = ExpressionHelper.GetExpressionText(expression, _expressionTextCache);
+
+            // Assert
+            Assert.Equal(expressionText, text);
+        }
+
+        [Theory]
         [MemberData(nameof(CachedExpressions))]
         public void GetExpressionText_CachesExpression(LambdaExpression expression)
         {
@@ -235,7 +318,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         private class CategoryName
         {
-            public string  MainCategory { get; set; }
+            public string MainCategory { get; set; }
             public string SubCategory { get; set; }
         }
     }

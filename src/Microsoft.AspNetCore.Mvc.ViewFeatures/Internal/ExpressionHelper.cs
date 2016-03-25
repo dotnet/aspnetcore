@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
@@ -38,9 +38,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
 
             var containsIndexers = false;
-            // Split apart the expression string for property/field accessors to create its name
-            var nameParts = new Stack<string>();
             var part = expression.Body;
+
+            // Builder to concatenate the names for property/field accessors within an expression to create a string.
+            var builder = new StringBuilder();
 
             while (part != null)
             {
@@ -54,10 +55,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                         break;
                     }
 
-                    nameParts.Push(
-                        GetIndexerInvocation(
-                            methodExpression.Arguments.Single(),
-                            expression.Parameters.ToArray()));
+                    InsertIndexerInvocationText(
+                        builder,
+                        methodExpression.Arguments.Single(),
+                        expression);
 
                     part = methodExpression.Object;
                 }
@@ -66,10 +67,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                     containsIndexers = true;
                     var binaryExpression = (BinaryExpression)part;
 
-                    nameParts.Push(
-                        GetIndexerInvocation(
-                            binaryExpression.Right,
-                            expression.Parameters.ToArray()));
+                    InsertIndexerInvocationText(
+                        builder,
+                        binaryExpression.Right,
+                        expression);
 
                     part = binaryExpression.Left;
                 }
@@ -87,19 +88,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                         break;
                     }
 
-                    nameParts.Push("." + name);
+                    builder.Insert(0, name);
+                    builder.Insert(0, '.');
                     part = memberExpressionPart.Expression;
-                }
-                else if (part.NodeType == ExpressionType.Parameter)
-                {
-                    // When the expression is parameter based (m => m.Something...), we'll push an empty
-                    // string onto the stack and stop evaluating. The extra empty string makes sure that
-                    // we don't accidentally cut off too much of m => m.Model.
-                    nameParts.Push(string.Empty);
-
-                    // Exit loop. Have the entire name because the parameter cannot be used as an indexer; always the
-                    // leftmost expression node.
-                    break;
                 }
                 else
                 {
@@ -108,16 +99,23 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
 
             // If parts start with "model", then strip that part away.
-            if (nameParts.Count > 0 && string.Equals(nameParts.Peek(), ".model", StringComparison.OrdinalIgnoreCase))
+            if (part == null || part.NodeType != ExpressionType.Parameter)
             {
-                nameParts.Pop();
+                var text = builder.ToString();
+                if (text.StartsWith(".model", StringComparison.OrdinalIgnoreCase))
+                {
+                    // 6 is the length of the string ".model".
+                    builder.Remove(0, 6);
+                }
             }
 
-            expressionText = string.Empty;
-            if (nameParts.Count > 0)
+            if (builder.Length > 0)
             {
-                expressionText = nameParts.Aggregate((left, right) => left + right).TrimStart('.');
+                // Trim the leading "." if present.
+                builder.Replace(".", string.Empty, 0, 1);
             }
+
+            expressionText = builder.ToString();
 
             if (expressionTextCache != null && !containsIndexers)
             {
@@ -127,21 +125,34 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             return expressionText;
         }
 
-        private static string GetIndexerInvocation(
-            Expression expression,
-            ParameterExpression[] parameters)
+        private static void InsertIndexerInvocationText(
+            StringBuilder builder,
+            Expression indexExpression,
+            LambdaExpression parentExpression)
         {
-            if (expression == null)
+            if (builder == null)
             {
-                throw new ArgumentNullException(nameof(expression));
+                throw new ArgumentNullException(nameof(builder));
             }
 
-            if (parameters == null)
+            if (indexExpression == null)
             {
-                throw new ArgumentNullException(nameof(parameters));
+                throw new ArgumentNullException(nameof(indexExpression));
             }
 
-            var converted = Expression.Convert(expression, typeof(object));
+            if (parentExpression == null)
+            {
+                throw new ArgumentNullException(nameof(parentExpression));
+            }
+
+            if (parentExpression.Parameters == null)
+            {
+                throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(parentExpression.Parameters),
+                    nameof(parentExpression)));
+            }
+
+            var converted = Expression.Convert(indexExpression, typeof(object));
             var fakeParameter = Expression.Parameter(typeof(object), null);
             var lambda = Expression.Lambda<Func<object, object>>(converted, fakeParameter);
             Func<object, object> func;
@@ -152,12 +163,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
             catch (InvalidOperationException ex)
             {
+                var parameters = parentExpression.Parameters.ToArray();
                 throw new InvalidOperationException(
-                    Resources.FormatExpressionHelper_InvalidIndexerExpression(expression, parameters[0].Name),
+                    Resources.FormatExpressionHelper_InvalidIndexerExpression(indexExpression, parameters[0].Name),
                     ex);
             }
 
-            return "[" + Convert.ToString(func(null), CultureInfo.InvariantCulture) + "]";
+            builder.Insert(0, ']');
+            builder.Insert(0, Convert.ToString(func(null), CultureInfo.InvariantCulture));
+            builder.Insert(0, '[');
         }
 
         public static bool IsSingleArgumentIndexer(Expression expression)
@@ -178,9 +192,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
 
             // Find default property (the indexer) and confirm its getter is the method in this expression.
-            return declaringType.GetRuntimeProperties().Any(
-                property => (string.Equals(defaultMember.MemberName, property.Name, StringComparison.Ordinal) &&
-                    property.GetMethod == methodExpression.Method));
+            var runtimeProperties = declaringType.GetRuntimeProperties();
+            foreach (var property in runtimeProperties)
+            {
+                if ((string.Equals(defaultMember.MemberName, property.Name, StringComparison.Ordinal) &&
+                    property.GetMethod == methodExpression.Method))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
