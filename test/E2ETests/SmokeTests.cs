@@ -167,7 +167,7 @@ namespace E2ETests
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "SocialTesting",
-                    ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
+                    ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
                     SiteName = "MusicStoreTestSite",
                     PublishApplicationBeforeDeployment = true,
                     PublishTargetFramework = donetFlavor == RuntimeFlavor.Clr ? "net451" : "netstandardapp1.5",
