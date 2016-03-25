@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -278,15 +279,16 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
                 .Setup(f => f.Watch(watchPath)).Returns(changeToken.Object);
 
             object cacheValue = null;
+            var value = new Mock<ICacheEntry>();
+            value.Setup(c => c.Value).Returns(cacheValue);
+            value.Setup(c => c.ExpirationTokens).Returns(new List<IChangeToken>());
             var cache = new Mock<IMemoryCache>();
             cache.CallBase = true;
             cache.Setup(c => c.TryGetValue(It.IsAny<string>(), out cacheValue))
                 .Returns(cacheValue != null);
-            cache.Setup(c => c.Set(
-                /*key*/ filePath,
-                /*value*/ It.IsAny<object>(),
-                /*options*/ It.IsAny<MemoryCacheEntryOptions>()))
-                .Returns((object key, object value, MemoryCacheEntryOptions options) => value)
+            cache.Setup(c => c.CreateEntry(
+                /*key*/ filePath))
+                .Returns((object key) => value.Object)
                 .Verifiable();
             var fileVersionProvider = new FileVersionProvider(
                 fileProvider,

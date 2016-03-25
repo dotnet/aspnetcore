@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
@@ -250,12 +251,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var id = "unique-id";
             var childContent = "original-child-content";
             var cache = new Mock<IMemoryCache>();
-            var value = new DefaultTagHelperContent().SetContent("ok");
-            cache.Setup(c => c.Set(
-                /*key*/ It.IsAny<string>(),
-                /*value*/ value,
-                /*optons*/ It.IsAny<MemoryCacheEntryOptions>()))
-                .Returns(value);
+            var value = new Mock<ICacheEntry>();
+            value.Setup(c => c.Value).Returns(new DefaultTagHelperContent().SetContent("ok"));
+            cache.Setup(c => c.CreateEntry(
+                /*key*/ It.IsAny<string>()))
+                .Returns((object key) => value.Object)
+                .Verifiable();
             object cacheResult;
             cache.Setup(c => c.TryGetValue(It.IsAny<string>(), out cacheResult))
                 .Returns(false);
@@ -274,10 +275,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             // Assert
             Assert.Equal(childContent, tagHelperOutput.Content.GetContent());
-            cache.Verify(c => c.Set(
-                /*key*/ It.IsAny<string>(),
-                /*value*/ It.IsAny<object>(),
-                /*options*/ It.IsAny<MemoryCacheEntryOptions>()),
+            cache.Verify(c => c.CreateEntry(
+                /*key*/ It.IsAny<string>()),
                 Times.Never);
         }
 
@@ -288,13 +287,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var id = "unique-id";
             var childContent = "original-child-content";
             var cache = new Mock<IMemoryCache>();
-            var value = new DefaultTagHelperContent().SetContent("ok");
-            cache.Setup(c => c.CreateLinkingScope()).Returns(new Mock<IEntryLink>().Object);
-            cache.Setup(c => c.Set(
-                /*key*/ It.IsAny<string>(),
-                /*value*/ It.IsAny<object>(),
-                /*options*/ It.IsAny<MemoryCacheEntryOptions>()))
-                .Returns(value);
+            var value = new Mock<ICacheEntry>();
+            value.Setup(c => c.Value).Returns(new DefaultTagHelperContent().SetContent("ok"));
+            value.Setup(c => c.ExpirationTokens).Returns(new List<IChangeToken>());
+            cache.Setup(c => c.CreateEntry(
+                /*key*/ It.IsAny<string>()))
+                .Returns((object key) => value.Object);
             object cacheResult;
             cache.Setup(c => c.TryGetValue(It.IsAny<string>(), out cacheResult))
                 .Returns(false);
@@ -318,10 +316,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Equal(childContent, tagHelperOutput.Content.GetContent());
             
             // There are two calls to set (for the TCS and the processed value)
-            cache.Verify(c => c.Set(
-                /*key*/ It.IsAny<string>(),
-                /*value*/ It.IsAny<object>(),
-                /*options*/ It.IsAny<MemoryCacheEntryOptions>()),
+            cache.Verify(c => c.CreateEntry(
+                /*key*/ It.IsAny<string>()),
                 Times.Exactly(2));
         }
 
@@ -443,51 +439,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Assert
             Assert.Equal(expiresOn, cacheEntryOptions.AbsoluteExpiration);
         }
-
-        [Fact]
-        public void UpdateCacheEntryOptions_UsesAbsoluteExpirationSpecifiedOnEntryLink()
-        {
-            // Arrange
-            var expiresOn = DateTimeOffset.UtcNow.AddMinutes(7);
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var cacheTagHelper = new CacheTagHelper(cache, new HtmlTestEncoder())
-            {
-            };
-
-            var entryLink = new EntryLink();
-            entryLink.SetAbsoluteExpiration(expiresOn);
-
-            // Act
-            var cacheEntryOptions = cacheTagHelper.GetMemoryCacheEntryOptions();
-            cacheEntryOptions.AddEntryLink(entryLink);
-
-            // Assert
-            Assert.Equal(expiresOn, cacheEntryOptions.AbsoluteExpiration);
-        }
-
-        [Fact]
-        public void UpdateCacheEntryOptions_PrefersAbsoluteExpirationSpecifiedOnEntryLinkOverExpiresOn()
-        {
-            // Arrange
-            var expiresOn1 = DateTimeOffset.UtcNow.AddDays(12);
-            var expiresOn2 = DateTimeOffset.UtcNow.AddMinutes(4);
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var cacheTagHelper = new CacheTagHelper(cache, new HtmlTestEncoder())
-            {
-                ExpiresOn = expiresOn1
-            };
-
-            var entryLink = new EntryLink();
-            entryLink.SetAbsoluteExpiration(expiresOn2);
-
-            // Act
-            var cacheEntryOptions = cacheTagHelper.GetMemoryCacheEntryOptions();
-            cacheEntryOptions.AddEntryLink(entryLink);
-
-            // Assert
-            Assert.Equal(expiresOn2, cacheEntryOptions.AbsoluteExpiration);
-        }
-
+        
         [Fact]
         public void UpdateCacheEntryOptions_SetsAbsoluteExpiration_IfExpiresAfterIsSet()
         {
@@ -541,30 +493,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Assert
             Assert.Equal(priority, cacheEntryOptions.Priority);
         }
-
-        [Fact]
-        public void UpdateCacheEntryOptions_CopiesTriggersFromEntryLink()
-        {
-            // Arrange
-            var expiresSliding = TimeSpan.FromSeconds(30);
-            var expected = new[] { Mock.Of<IChangeToken>(), Mock.Of<IChangeToken>() };
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var cacheTagHelper = new CacheTagHelper(cache, new HtmlTestEncoder())
-            {
-                ExpiresSliding = expiresSliding
-            };
-
-            var entryLink = new EntryLink();
-            entryLink.AddExpirationTokens(expected);
-
-            // Act
-            var cacheEntryOptions = cacheTagHelper.GetMemoryCacheEntryOptions();
-            cacheEntryOptions.AddEntryLink(entryLink);
-
-            // Assert
-            Assert.Equal(expected, cacheEntryOptions.ExpirationTokens.ToArray());
-        }
-
+        
         [Fact]
         public async Task ProcessAsync_UsesExpiresAfter_ToExpireCacheEntry()
         {
@@ -959,6 +888,17 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     tagHelperContent.SetHtmlContent(childContent);
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
+        }
+
+        private static TagHelperOutput GetTagHelperOutput(
+            Func<bool, HtmlEncoder, Task<TagHelperContent>> processAsync)
+        {
+            var attributes = new TagHelperAttributeList { { "attr", "value" } };
+
+            return new TagHelperOutput(
+                "cache",
+                attributes,
+                getChildContentAsync: processAsync);
         }
 
         private static string GetHashedBytes(string input)

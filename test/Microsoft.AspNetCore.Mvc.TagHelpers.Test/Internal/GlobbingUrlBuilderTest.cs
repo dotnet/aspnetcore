@@ -275,12 +275,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             var changeToken = new Mock<IChangeToken>();
             var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
             Mock.Get(fileProvider).Setup(f => f.Watch(It.IsAny<string>())).Returns(changeToken.Object);
+            var value = new Mock<ICacheEntry>();
+            value.Setup(c => c.Value).Returns(null);
+            value.Setup(c => c.ExpirationTokens).Returns(new List<IChangeToken>());
             var cache = MakeCache();
-            Mock.Get(cache).Setup(c => c.Set(
-                /*key*/ It.IsAny<object>(),
-                /*value*/ It.IsAny<List<string>>(),
-                /*options*/ It.IsAny<MemoryCacheEntryOptions>()))
-                .Returns((object key, object value, MemoryCacheEntryOptions options) => value)
+            Mock.Get(cache).Setup(c => c.CreateEntry(
+                /*key*/ It.IsAny<object>()))
+                .Returns((object key) => value.Object)
                 .Verifiable();
             var requestPathBase = PathString.Empty;
             var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);

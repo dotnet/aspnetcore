@@ -82,22 +82,28 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
                         var tcs = new TaskCompletionSource<IHtmlContent>();
                          
-                        MemoryCache.Set(key, tcs.Task, options);
+                        // The returned value is ignored, we only do this so that
+                        // the compiler doesn't complain about the returned task
+                        // not being awaited
+                        var localTcs = MemoryCache.Set(key, tcs.Task, options);
                         
                         try 
                         {
-                            using (var link = MemoryCache.CreateLinkingScope())
-                            {
-                                result = ProcessContentAsync(output);
-                                content = await result;
-                                options.AddEntryLink(link);
-                            }
-                            
                             // The entry is set instead of assigning a value to the 
                             // task so that the expiration options are are not impacted 
                             // by the time it took to compute it.
-                            
-                            MemoryCache.Set(key, result, options);
+
+                            using (var entry = MemoryCache.CreateEntry(key))
+                            {
+                                // The result is processed inside an entry
+                                // such that the tokens are inherited.
+
+                                result = ProcessContentAsync(output);
+                                content = await result;
+
+                                entry.SetOptions(options);
+                                entry.Value = result;
+                            }
                         }
                         catch
                         {
