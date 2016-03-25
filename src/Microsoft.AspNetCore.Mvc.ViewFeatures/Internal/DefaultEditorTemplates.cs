@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                     {
                         var labelTag = new TagBuilder("div");
                         labelTag.AddCssClass("editor-label");
-                        labelTag.InnerHtml.SetContent(label);
+                        labelTag.InnerHtml.SetHtmlContent(label);
                         content.AppendLine(labelTag);
                     }
 

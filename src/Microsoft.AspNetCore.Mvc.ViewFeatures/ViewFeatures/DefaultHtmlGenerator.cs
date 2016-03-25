@@ -565,7 +565,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var listItemBuilder = GenerateGroupsAndOptions(optionLabel, selectList);
 
             var tagBuilder = new TagBuilder("select");
-            tagBuilder.InnerHtml.SetContent(listItemBuilder);
+            tagBuilder.InnerHtml.SetHtmlContent(listItemBuilder);
             tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
             tagBuilder.MergeAttribute("name", fullName, true /* replaceExisting */);
             tagBuilder.GenerateId(fullName, IdAttributeDotReplacement);

@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             {
                 selectTag.InnerHtml.AppendHtml(DefaultHtmlGenerator.GenerateOption(item, item.Text));
             }
-            
+
             return selectTag;
         }
 
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
                     var valueDivTag = new TagBuilder("div");
                     valueDivTag.AddCssClass("display-field");
-                    valueDivTag.InnerHtml.SetContent(templateBuilderResult);
+                    valueDivTag.InnerHtml.SetHtmlContent(templateBuilderResult);
                     content.AppendLine(valueDivTag);
                 }
                 else
