@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.StaticFiles
 {
@@ -15,6 +16,8 @@ namespace Microsoft.AspNetCore.StaticFiles
     {
         public static TestServer Create(Action<IApplicationBuilder> configureApp, Action<IServiceCollection> configureServices = null)
         {
+            var contentRootNet451 = PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Windows ?
+                "." : "../../../../test/Microsoft.AspNetCore.StaticFiles.Tests";
             Action<IServiceCollection> defaultConfigureServices = services => { };
             var configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new []
@@ -23,6 +26,9 @@ namespace Microsoft.AspNetCore.StaticFiles
                 })
                 .Build();
             var builder = new WebHostBuilder()
+#if NET451
+                .UseContentRoot(contentRootNet451)
+#endif
                 .UseConfiguration(configuration)
                 .Configure(configureApp)
                 .ConfigureServices(configureServices ?? defaultConfigureServices);
