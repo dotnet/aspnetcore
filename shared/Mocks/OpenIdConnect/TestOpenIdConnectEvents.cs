@@ -20,19 +20,13 @@ namespace MusicStore.Mocks.OpenIdConnect
             return Task.FromResult(0);
         }
 
-        internal static Task AuthenticationValidated(AuthenticationValidatedContext context)
-        {
-            eventsFired.Add(nameof(AuthenticationValidated));
-            return Task.FromResult(0);
-        }
-
-        internal static Task AuthorizationResponseRecieved(AuthorizationResponseReceivedContext context)
+        internal static Task TokenValidated(TokenValidatedContext context)
         {
             Helpers.ThrowIfConditionFailed(() => context.Ticket != null, "context.Ticket is null.");
             Helpers.ThrowIfConditionFailed(() => context.Ticket.Principal != null, "context.Ticket.Principal is null.");
             Helpers.ThrowIfConditionFailed(() => context.Ticket.Principal.Identity != null, "context.Ticket.Principal.Identity is null.");
             Helpers.ThrowIfConditionFailed(() => !string.IsNullOrWhiteSpace(context.Ticket.Principal.Identity.Name), "context.Ticket.Principal.Identity.Name is null.");
-            eventsFired.Add(nameof(AuthorizationResponseRecieved));
+            eventsFired.Add(nameof(TokenValidated));
             return Task.FromResult(0);
         }
 
@@ -43,10 +37,9 @@ namespace MusicStore.Mocks.OpenIdConnect
             eventsFired.Add(nameof(AuthorizationCodeReceived));
 
             // Verify all events are fired.
-            if (eventsFired.Contains(nameof(RedirectToAuthenticationEndpoint)) &&
+            if (eventsFired.Contains(nameof(RedirectToIdentityProvider)) &&
                 eventsFired.Contains(nameof(MessageReceived)) &&
-                eventsFired.Contains(nameof(AuthenticationValidated)) &&
-                eventsFired.Contains(nameof(AuthorizationResponseRecieved)) &&
+                eventsFired.Contains(nameof(TokenValidated)) &&
                 eventsFired.Contains(nameof(AuthorizationCodeReceived)))
             {
                 ((ClaimsIdentity)context.Ticket.Principal.Identity).AddClaim(new Claim("ManageStore", "Allowed"));
@@ -55,9 +48,9 @@ namespace MusicStore.Mocks.OpenIdConnect
             return Task.FromResult(0);
         }
 
-        internal static Task RedirectToAuthenticationEndpoint(RedirectContext context)
+        internal static Task RedirectToIdentityProvider(RedirectContext context)
         {
-            eventsFired.Add(nameof(RedirectToAuthenticationEndpoint));
+            eventsFired.Add(nameof(RedirectToIdentityProvider));
 
             if (context.ProtocolMessage.RequestType == OpenIdConnectRequestType.LogoutRequest)
             {
