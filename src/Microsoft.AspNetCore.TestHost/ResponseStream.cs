@@ -352,6 +352,14 @@ namespace Microsoft.AspNetCore.TestHost
 
         internal void Complete()
         {
+            // If HttpClient.Dispose gets called while HttpClient.SetTask...() is called
+            // there is a chance that this method will be called twice and hang on the lock
+            // to prevent this we can check if there is already a thread inside the lock
+            if (_complete)
+            {
+                return;
+            }
+
             // Prevent race with WaitForDataAsync
             lock (_signalReadLock)
             {
