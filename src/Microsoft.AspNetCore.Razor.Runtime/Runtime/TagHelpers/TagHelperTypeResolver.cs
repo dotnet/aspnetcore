@@ -12,20 +12,11 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
     /// <summary>
     /// Class that locates valid <see cref="ITagHelper"/>s within an assembly.
     /// </summary>
-    public class TagHelperTypeResolver
+    public class TagHelperTypeResolver : ITagHelperTypeResolver
     {
         private static readonly TypeInfo ITagHelperTypeInfo = typeof(ITagHelper).GetTypeInfo();
 
-        /// <summary>
-        /// Locates valid <see cref="ITagHelper"/> types from the <see cref="Assembly"/> named <paramref name="name"/>.
-        /// </summary>
-        /// <param name="name">The name of an <see cref="Assembly"/> to search.</param>
-        /// <param name="documentLocation">The <see cref="SourceLocation"/> of the associated
-        /// <see cref="Parser.SyntaxTree.SyntaxTreeNode"/> responsible for the current <see cref="Resolve"/> call.
-        /// </param>
-        /// <param name="errorSink">The <see cref="ErrorSink"/> used to record errors found when resolving
-        /// <see cref="ITagHelper"/> types.</param>
-        /// <returns>An <see cref="IEnumerable{Type}"/> of valid <see cref="ITagHelper"/> types.</returns>
+        /// <inheritdoc />
         public IEnumerable<Type> Resolve(
             string name,
             SourceLocation documentLocation,
@@ -96,12 +87,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 throw new ArgumentNullException(nameof(typeInfo));
             }
 
-            return
-                !typeInfo.IsNested &&
-                typeInfo.IsPublic &&
-                !typeInfo.IsAbstract &&
-                !typeInfo.IsGenericType &&
-                ITagHelperTypeInfo.IsAssignableFrom(typeInfo);
+            return TagHelperConventions.IsTagHelper(typeInfo);
         }
     }
 }

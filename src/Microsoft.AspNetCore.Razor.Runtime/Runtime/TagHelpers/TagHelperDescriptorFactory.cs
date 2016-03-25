@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
     /// <summary>
     /// Factory for <see cref="TagHelperDescriptor"/>s from <see cref="Type"/>s.
     /// </summary>
-    public class TagHelperDescriptorFactory
+    public class TagHelperDescriptorFactory : ITagHelperDescriptorFactory
     {
         private const string DataDashPrefix = "data-";
         private const string TagHelperNameEnding = "TagHelper";
@@ -59,17 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             _designTime = designTime;
         }
 
-        /// <summary>
-        /// Creates a <see cref="TagHelperDescriptor"/> from the given <paramref name="type"/>.
-        /// </summary>
-        /// <param name="assemblyName">The assembly name that contains <paramref name="type"/>.</param>
-        /// <param name="type">The <see cref="Type"/> to create a <see cref="TagHelperDescriptor"/> from.
-        /// </param>
-        /// <param name="errorSink">The <see cref="ErrorSink"/> used to collect <see cref="RazorError"/>s encountered
-        /// when creating <see cref="TagHelperDescriptor"/>s for the given <paramref name="type"/>.</param>
-        /// <returns>
-        /// A collection of <see cref="TagHelperDescriptor"/>s that describe the given <paramref name="type"/>.
-        /// </returns>
+        /// <inheritdoc />
         public virtual IEnumerable<TagHelperDescriptor> CreateDescriptors(
             string assemblyName,
             Type type,

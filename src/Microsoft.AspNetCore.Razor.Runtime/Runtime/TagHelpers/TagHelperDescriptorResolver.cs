@@ -23,8 +23,8 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 { TagHelperDirectiveType.TagHelperPrefix, SyntaxConstants.CSharp.TagHelperPrefixKeyword },
             };
 
-        private readonly TagHelperTypeResolver _typeResolver;
-        private readonly TagHelperDescriptorFactory _descriptorFactory;
+        private readonly ITagHelperTypeResolver _typeResolver;
+        private readonly ITagHelperDescriptorFactory _descriptorFactory;
 
         /// <summary>
         /// Instantiates a new instance of the <see cref="TagHelperDescriptorResolver"/> class.
@@ -43,8 +43,8 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         /// <param name="typeResolver">The <see cref="TagHelperTypeResolver"/>.</param>
         /// <param name="descriptorFactory">The <see cref="TagHelperDescriptorFactory"/>.</param>
         public TagHelperDescriptorResolver(
-            TagHelperTypeResolver typeResolver,
-            TagHelperDescriptorFactory descriptorFactory)
+            ITagHelperTypeResolver typeResolver,
+            ITagHelperDescriptorFactory descriptorFactory)
         {
             _typeResolver = typeResolver;
             _descriptorFactory = descriptorFactory;
