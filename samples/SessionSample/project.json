@@ -17,6 +17,6 @@
   },
   "exclude": "wwwroot/**/*.*",
   "frameworks": {
-    "dnx451": { }
+    "net451": { }
   }
 }
