@@ -36,7 +36,9 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 var deploymentParameters = new DeploymentParameters(_applicationPath, ServerType.Kestrel, runtimeFlavor, runtimeArchitecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
-                    EnvironmentName = environmentName
+                    EnvironmentName = environmentName,
+                    PublishApplicationBeforeDeployment = true,
+                    PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netstandardapp1.5"
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
