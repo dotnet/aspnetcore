@@ -4,6 +4,7 @@ AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/4mki61bux5vby
 
 Travis:   [![Travis](https://travis-ci.org/aspnet/DataProtection.svg?branch=dev)](https://travis-ci.org/aspnet/DataProtection)
 
-Data Protection APIs 
+Data Protection APIs for protecting and unprotecting data.
+
 
 This project is part of ASP.NET Core. You can find documentation for Data Protection in the [ASP.NET Core Documentation](http://docs.asp.net/en/latest/security/data-protection/index.html). You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo. 

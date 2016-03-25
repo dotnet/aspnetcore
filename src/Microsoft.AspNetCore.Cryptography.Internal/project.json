@@ -1,13 +1,17 @@
 {
   "version": "1.0.0-*",
-  "description": "Infrastructure for ASP.NET 5 cryptographic packages. Developers should not reference this package.",
+  "description": "Infrastructure for ASP.NET Core cryptographic packages. Applications and libraries should not reference this package directly.",
+  "tags": [
+    "aspnetcore",
+    "dataprotection"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/dataprotection"
   },
-  "dependencies": {},
+  "dependencies": { },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
         "System.Diagnostics.Debug": "4.0.11-*",

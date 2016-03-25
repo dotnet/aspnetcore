@@ -1,6 +1,10 @@
 {
   "version": "1.0.0-*",
-  "description": "Contains the core IDataProtector and IDataProtectionProvider abstractions for ASP.NET 5 Data Protection.",
+  "description": "ASP.NET Core data protection abstractions.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.DataProtection.IDataProtectionProvider\r\nMicrosoft.AspNetCore.DataProtection.IDataProtector",
+  "tags": [
+    "aspnetcore",
+    "dataprotection"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/dataprotection"
@@ -13,7 +17,7 @@
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
         "System.ComponentModel": "4.0.1-*",

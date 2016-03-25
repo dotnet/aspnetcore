@@ -1,6 +1,10 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 utilities for key derivation.",
+  "description": "ASP.NET Core utilities for key derivation.",
+  "tags": [
+    "aspnetcore",
+    "dataprotection"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/dataprotection"
@@ -9,7 +13,7 @@
     "Microsoft.AspNetCore.Cryptography.Internal": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
         "System.Runtime.Extensions": "4.1.0-*",

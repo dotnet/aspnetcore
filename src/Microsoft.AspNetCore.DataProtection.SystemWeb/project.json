@@ -1,6 +1,11 @@
 {
   "version": "1.0.0-*",
-  "description": "A component to allow the ASP.NET 5 DataProtection stack to work with the ASP.NET 4.x <machineKey> element.",
+  "description": "A component to allow the ASP.NET Core data protection stack to work with the ASP.NET 4.x <machineKey> element.",
+  "tags": [
+    "aspnet",
+    "aspnetcore",
+    "dataprotection"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/dataprotection"

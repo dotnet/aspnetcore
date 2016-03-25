@@ -2,7 +2,7 @@
 <configuration>
   <appSettings>
     <!--
-    If you want to customize the behavior of the ASP.NET 5 Data Protection stack, set the
+    If you want to customize the behavior of the ASP.NET Core Data Protection stack, set the
     "aspnet:dataProtectionStartupType" switch below to be the fully-qualified name of a
     type which subclasses Microsoft.AspNetCore.DataProtection.SystemWeb.DataProtectionStartup.
     -->

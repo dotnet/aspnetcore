@@ -1,6 +1,10 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 logic to protect and unprotect data, similar to DPAPI.",
+  "description": "ASP.NET Core logic to protect and unprotect data, similar to DPAPI.",
+  "tags": [
+    "aspnetcore",
+    "dataprotection"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/dataprotection"

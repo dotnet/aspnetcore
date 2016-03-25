@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 namespace Microsoft.AspNetCore.DataProtection.SystemWeb
 {
     /// <summary>
-    /// A <see cref="DataProtector"/> that can be used by ASP.NET 4.x to interact with ASP.NET 5's
+    /// A <see cref="DataProtector"/> that can be used by ASP.NET 4.x to interact with ASP.NET Core's
     /// DataProtection stack. This type is for internal use only and shouldn't be directly used by
     /// developers.
     /// </summary>

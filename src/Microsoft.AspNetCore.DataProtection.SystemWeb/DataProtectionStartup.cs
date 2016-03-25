@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.DataProtection.SystemWeb
 {
     /// <summary>
-    /// Allows controlling the configuration of the ASP.NET 5 Data Protection system.
+    /// Allows controlling the configuration of the ASP.NET Core Data Protection system.
     /// </summary>
     /// <remarks>
     /// Developers should not call these APIs directly. Instead, developers should subclass
