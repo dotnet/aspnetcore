@@ -4,8 +4,7 @@
     "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.Configuration": "1.0.0-*",
-    "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    "Microsoft.Extensions.DependencyInjection": "1.0.0-*"
   },
   "frameworks": {
     "net451": {},
@@ -13,7 +12,10 @@
       "imports": [
         "dotnet4.5",
         "portable-net451+win8"
-      ]
+      ],
+      "dependencies": {
+          "NETStandard.Library": "1.5.0-*"
+      }
     }
   }
 }
