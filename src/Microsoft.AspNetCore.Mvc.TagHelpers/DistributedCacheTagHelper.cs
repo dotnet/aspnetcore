@@ -35,12 +35,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
         public DistributedCacheTagHelper(
             IDistributedCacheTagHelperService distributedCacheService,
-            HtmlEncoder htmlEncoder) 
+            HtmlEncoder htmlEncoder)
             : base(htmlEncoder)
         {
             _distributedCacheService = distributedCacheService;
         }
-        
+
         /// <summary>
         /// Gets the <see cref="IMemoryCache"/> instance used to cache workers.
         /// </summary>
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// </summary>
         [HtmlAttributeName(NameAttributeName)]
         public string Name { get; set; }
-        
+
         /// <inheritdoc />
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
@@ -85,9 +85,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Clear the contents of the "cache" element since we don't want to render it.
             output.SuppressOutput();
 
-            output.Content.SetContent(content);
+            output.Content.SetHtmlContent(content);
         }
-        
+
         // Internal for unit testing
         internal DistributedCacheEntryOptions GetDistributedCacheEntryOptions()
         {

@@ -86,11 +86,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         if (childContent.IsWhiteSpace)
                         {
                             // Provide default label text since there was nothing useful in the Razor source.
-                            output.Content.SetContent(tagBuilder.InnerHtml);
+                            output.Content.SetHtmlContent(tagBuilder.InnerHtml);
                         }
                         else
                         {
-                            output.Content.SetContent(childContent);
+                            output.Content.SetHtmlContent(childContent);
                         }
                     }
                 }

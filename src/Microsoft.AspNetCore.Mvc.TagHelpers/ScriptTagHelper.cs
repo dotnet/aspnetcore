@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 BuildFallbackBlock(output.Attributes, builder);
             }
 
-            output.PostElement.SetContent(builder);
+            output.PostElement.SetHtmlContent(builder);
         }
 
         private void BuildGlobbedScriptTags(

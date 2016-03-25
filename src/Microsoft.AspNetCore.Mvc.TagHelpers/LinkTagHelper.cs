@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 {
                     // Only HrefInclude is specified. Don't render the original tag.
                     output.TagName = null;
-                    output.Content.SetContent(HtmlString.Empty);
+                    output.Content.SetHtmlContent(HtmlString.Empty);
                 }
             }
 
@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 BuildFallbackBlock(builder);
             }
 
-            output.PostElement.SetContent(builder);
+            output.PostElement.SetHtmlContent(builder);
         }
 
         private void BuildGlobbedLinkTags(TagHelperAttributeList attributes, TagHelperContent builder)

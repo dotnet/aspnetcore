@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             if (tagBuilder != null)
             {
                 // Overwrite current Content to ensure expression result round-trips correctly.
-                output.Content.SetContent(tagBuilder.InnerHtml);
+                output.Content.SetHtmlContent(tagBuilder.InnerHtml);
 
                 output.MergeAttributes(tagBuilder);
             }

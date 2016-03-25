@@ -58,18 +58,18 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 throw new ArgumentNullException(nameof(output));
             }
-            
+
             IHtmlContent content = null;
 
             if (Enabled)
             {
                 var key = GenerateKey(context);
                 MemoryCacheEntryOptions options;
-    
+
                 while (content == null)
                 {
                     Task<IHtmlContent> result = null;
-                    
+
                     if (!MemoryCache.TryGetValue(key, out result))
                     {
                         var tokenSource = new CancellationTokenSource();
@@ -81,13 +81,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         options.AddExpirationToken(new CancellationChangeToken(tokenSource.Token));
 
                         var tcs = new TaskCompletionSource<IHtmlContent>();
-                         
+
                         // The returned value is ignored, we only do this so that
                         // the compiler doesn't complain about the returned task
                         // not being awaited
                         var localTcs = MemoryCache.Set(key, tcs.Task, options);
-                        
-                        try 
+
+                        try
                         {
                             // The entry is set instead of assigning a value to the 
                             // task so that the expiration options are are not impacted 
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Clear the contents of the "cache" element since we don't want to render it.
             output.SuppressOutput();
 
-            output.Content.SetContent(content);
+            output.Content.SetHtmlContent(content);
         }
 
         // Internal for unit testing
