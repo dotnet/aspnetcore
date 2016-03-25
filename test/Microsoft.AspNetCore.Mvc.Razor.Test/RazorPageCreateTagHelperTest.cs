@@ -69,11 +69,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var activator = new RazorPageActivator(new EmptyModelMetadataProvider());
             var serviceProvider = new Mock<IServiceProvider>();
             var typeActivator = new TypeActivatorCache();
+            var tagHelperActivator = new DefaultTagHelperActivator(typeActivator);
             var myService = new MyService();
             serviceProvider.Setup(mock => mock.GetService(typeof(MyService)))
                            .Returns(myService);
+            serviceProvider.Setup(mock => mock.GetService(typeof(ITagHelperFactory)))
+                .Returns(new DefaultTagHelperFactory(tagHelperActivator));
             serviceProvider.Setup(mock => mock.GetService(typeof(ITagHelperActivator)))
-                           .Returns(new DefaultTagHelperActivator());
+                           .Returns(tagHelperActivator);
             serviceProvider.Setup(mock => mock.GetService(typeof(ITypeActivatorCache)))
                            .Returns(typeActivator);
             serviceProvider.Setup(mock => mock.GetService(It.Is<Type>(serviceType =>

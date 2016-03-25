@@ -32,8 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly Stack<TagHelperScopeInfo> _tagHelperScopes = new Stack<TagHelperScopeInfo>();
         private IUrlHelper _urlHelper;
-        private ITagHelperActivator _tagHelperActivator;
-        private ITypeActivatorCache _typeActivatorCache;
+        private ITagHelperFactory _tagHelperFactory;
         private bool _renderedBody;
         private AttributeInfo _attributeInfo;
         private TagHelperAttributeInfo _tagHelperAttributeInfo;
@@ -122,31 +121,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <inheritdoc />
         public abstract Task ExecuteAsync();
 
-        private ITagHelperActivator TagHelperActivator
+        private ITagHelperFactory TagHelperFactory
         {
             get
             {
-                if (_tagHelperActivator == null)
+                if (_tagHelperFactory == null)
                 {
                     var services = ViewContext.HttpContext.RequestServices;
-                    _tagHelperActivator = services.GetRequiredService<ITagHelperActivator>();
+                    _tagHelperFactory = services.GetRequiredService<ITagHelperFactory>();
                 }
 
-                return _tagHelperActivator;
-            }
-        }
-
-        private ITypeActivatorCache TypeActivatorCache
-        {
-            get
-            {
-                if (_typeActivatorCache == null)
-                {
-                    var services = ViewContext.HttpContext.RequestServices;
-                    _typeActivatorCache = services.GetRequiredService<ITypeActivatorCache>();
-                }
-
-                return _typeActivatorCache;
+                return _tagHelperFactory;
             }
         }
 
@@ -192,13 +177,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </remarks>
         public TTagHelper CreateTagHelper<TTagHelper>() where TTagHelper : ITagHelper
         {
-            var tagHelper = TypeActivatorCache.CreateInstance<TTagHelper>(
-                ViewContext.HttpContext.RequestServices,
-                typeof(TTagHelper));
-
-            TagHelperActivator.Activate(tagHelper, ViewContext);
-
-            return tagHelper;
+            return TagHelperFactory.CreateTagHelper<TTagHelper>(ViewContext);
         }
 
         /// <summary>

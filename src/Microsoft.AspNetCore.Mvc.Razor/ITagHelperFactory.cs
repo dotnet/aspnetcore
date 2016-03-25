@@ -7,16 +7,15 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 namespace Microsoft.AspNetCore.Mvc.Razor
 {
     /// <summary>
-    /// Provides methods to create a tag helper.
+    /// Provides methods to create and initialize tag helpers.
     /// </summary>
-    public interface ITagHelperActivator
+    public interface ITagHelperFactory
     {
         /// <summary>
-        /// Creates an <see cref="ITagHelper"/>.
+        /// Creates a new tag helper for the specified <paramref name="context"/>.
         /// </summary>
-        /// <typeparam name="TTagHelper">The <see cref="ITagHelper"/> type.</typeparam>
-        /// <param name="context">The <see cref="ViewContext"/> for the executing view.</param>
+        /// <param name="context"><see cref="ViewContext"/> for the executing view.</param>
         /// <returns>The tag helper.</returns>
-        TTagHelper Create<TTagHelper>(ViewContext context) where TTagHelper : ITagHelper;
+        TTagHelper CreateTagHelper<TTagHelper>(ViewContext context) where TTagHelper : ITagHelper;
     }
 }
