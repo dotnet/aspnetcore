@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Html
         /// <param name="builder">The <see cref="IHtmlContentBuilder"/>.</param>
         /// <param name="content">The <see cref="IHtmlContent"/> value that replaces the content.</param>
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
-        public static IHtmlContentBuilder SetContent(this IHtmlContentBuilder builder, IHtmlContent content)
+        public static IHtmlContentBuilder SetHtmlContent(this IHtmlContentBuilder builder, IHtmlContent content)
         {
             if (builder == null)
             {

@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Html.Test
             var content = new OtherHtmlContent("Hi");
 
             // Act
-            builder.SetContent(content);
+            builder.SetHtmlContent(content);
 
             // Assert
             Assert.Collection(
