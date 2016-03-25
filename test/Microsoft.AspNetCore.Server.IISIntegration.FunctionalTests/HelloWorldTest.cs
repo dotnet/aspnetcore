@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
-                    ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
+                    ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
                     SiteName = "HttpTestSite", // This is configured in the Http.config
                     PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netstandardapp1.5"
                 };

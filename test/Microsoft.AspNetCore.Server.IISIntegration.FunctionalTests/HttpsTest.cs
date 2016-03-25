@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "HttpsHelloWorld", // Will pick the Start class named 'StartupHttpsHelloWorld',
-                    ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Https.config") : null,
+                    ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Https.config") : null,
                     SiteName = "HttpsTestSite", // This is configured in the Https.config
                     PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netstandardapp1.5"
                 };
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "HttpsHelloWorld", // Will pick the Start class named 'StartupHttpsHelloWorld',
-                    ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Https.config") : null,
+                    ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Https.config") : null,
                     SiteName = "HttpsTestSite", // This is configured in the Https.config
                     PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netstandardapp1.5"
                 };
