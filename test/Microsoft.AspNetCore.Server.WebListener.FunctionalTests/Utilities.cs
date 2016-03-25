@@ -18,8 +18,6 @@
 using System;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Server.Features;
 using Microsoft.Net.Http.Server;
 
@@ -27,14 +25,13 @@ namespace Microsoft.AspNetCore.Server.WebListener
 {
     internal static class Utilities
     {
-        // When tests projects are run in parallel, overlapping port ranges can cause a race condition when looking for free 
-        // ports during dynamic port allocation. To avoid this, make sure the port range here is different from the range in 
+        // When tests projects are run in parallel, overlapping port ranges can cause a race condition when looking for free
+        // ports during dynamic port allocation. To avoid this, make sure the port range here is different from the range in
         // Microsoft.Net.Http.Server.
         private const int BasePort = 5001;
         private const int MaxPort = 8000;
         private static int NextPort = BasePort;
         private static object PortLock = new object();
-        private static IHttpContextFactory Factory = new HttpContextFactory(new HttpContextAccessor());
 
         internal static IServer CreateHttpServer(out string baseAddress, RequestDelegate app)
         {
