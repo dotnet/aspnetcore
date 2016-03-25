@@ -10,7 +10,6 @@
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.Configuration": "1.0.0-*",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "xunit": "2.1.0-*"
   },
   "compile": "../Shared/*.cs",
@@ -19,7 +18,9 @@
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
         "System.Xml.ReaderWriter": "4.0.10-*",
-        "dotnet-test-xunit": "1.0.0-dev-*"
+        "dotnet-test-xunit": "1.0.0-dev-*",
+        "NETStandard.Library": "1.5.0-*",
+        "System.Diagnostics.Process": "4.1.0-*"
       },
       "imports": [
         "dnxcore50",
