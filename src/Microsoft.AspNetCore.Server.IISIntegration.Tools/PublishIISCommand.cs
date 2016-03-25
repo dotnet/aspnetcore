@@ -7,7 +7,6 @@ using System.Xml;
 using System.Xml.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ProjectModel;
-using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
 {
