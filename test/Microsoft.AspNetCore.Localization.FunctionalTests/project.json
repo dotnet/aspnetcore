@@ -7,7 +7,6 @@
     "Microsoft.AspNetCore.Server.Testing": "1.0.0-*",
     "Microsoft.Extensions.Logging": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "xunit": "2.1.0"
   },
   "frameworks": {
@@ -17,7 +16,9 @@
         "portable-net451+win8"
       ],
       "dependencies": {
-        "dotnet-test-xunit": "1.0.0-dev-*"
+        "dotnet-test-xunit": "1.0.0-dev-*",
+        "NETStandard.Library": "1.5.0-*",
+        "System.Diagnostics.Process": "4.1.0-*"
       }
     },
     "net451": {

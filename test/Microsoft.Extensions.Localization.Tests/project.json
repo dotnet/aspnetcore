@@ -6,7 +6,6 @@
   "dependencies": {
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "Microsoft.Extensions.Localization": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "xunit": "2.1.0-*"
   },
   "frameworks": {
@@ -18,7 +17,9 @@
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
         "System.Resources.Writer": "4.0.0-*",
-        "dotnet-test-xunit": "1.0.0-dev-*"
+        "dotnet-test-xunit": "1.0.0-dev-*",
+        "NETStandard.Library": "1.5.0-*",
+        "System.Diagnostics.Process": "4.1.0-*"
       }
     },
     "net451": {
