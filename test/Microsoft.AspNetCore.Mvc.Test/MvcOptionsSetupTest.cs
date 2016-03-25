@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Moq;
 using Newtonsoft.Json.Linq;
@@ -233,7 +234,9 @@ namespace Microsoft.AspNetCore.Mvc
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddMvc();
-            serviceCollection.AddTransient<ILoggerFactory, LoggerFactory>();
+            serviceCollection
+                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
+                .AddTransient<ILoggerFactory, LoggerFactory>();
 
             if (action != null)
             {

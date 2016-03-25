@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
@@ -1038,8 +1039,10 @@ namespace Microsoft.AspNetCore.Mvc
         private static ServiceCollection GetServiceCollection(IStringLocalizerFactory localizerFactory)
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
-            serviceCollection.AddSingleton<UrlEncoder>(new UrlTestEncoder());
+            serviceCollection
+                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
+                .AddSingleton<ILoggerFactory>(new NullLoggerFactory())
+                .AddSingleton<UrlEncoder>(new UrlTestEncoder());
 
             serviceCollection.AddOptions();
             serviceCollection.AddRouting();

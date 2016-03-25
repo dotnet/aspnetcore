@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ObjectPool;
 using Moq;
 using Xunit;
 
@@ -1030,7 +1031,10 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             services.AddOptions();
             services.AddLogging();
             services.AddRouting();
-            services.AddSingleton<UrlEncoder>(UrlEncoder.Default);
+            services
+                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
+                .AddSingleton<UrlEncoder>(UrlEncoder.Default);
+
             return services.BuildServiceProvider();
         }
 

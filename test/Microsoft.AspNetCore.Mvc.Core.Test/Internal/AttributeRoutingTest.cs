@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
@@ -195,6 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var services = new ServiceCollection()
                 .AddSingleton<IInlineConstraintResolver>(new DefaultInlineConstraintResolver(routeOptions.Object))
+                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddSingleton<UrlEncoder>(new UrlTestEncoder());
 
             services.AddRouting();

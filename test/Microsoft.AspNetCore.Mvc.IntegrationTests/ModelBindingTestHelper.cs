@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -12,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests
@@ -83,7 +83,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddMvc();
-            serviceCollection.AddTransient<ILoggerFactory, LoggerFactory>();
+            serviceCollection
+                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
+                .AddTransient<ILoggerFactory, LoggerFactory>();
 
             if (updateOptions != null)
             {
