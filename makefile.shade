@@ -236,7 +236,8 @@ var buildTarget = "compile"
                 .OrderByDescending(d => d)
                 .First();
             var latestBuildShare = Path.Combine(coherenceShare, latestBuild, "build");                
-            var coherenceVersionFilePath = Path.Combine(coherenceCacheDir, CoherenceCacheVersionFileName); 
+            var coherenceVersionFilePath = Path.Combine(coherenceCacheDir, CoherenceCacheVersionFileName);
+            var universeCommitsFileTarget = Path.Combine(coherenceCacheDir, UniverseCommitsFileName); 
             
             Log.Info("Latest Coherence build is " + latestBuild);
             
@@ -258,10 +259,17 @@ var buildTarget = "compile"
                 Directory.CreateDirectory(coherenceCacheDir);
                 
                 Log.Info("Caching Coherence build " + latestBuild + " at " + coherenceCacheDir);
-                NuGetPackagesAdd(sourcePackagesDir: latestBuildShare, targetPackagesDir: coherenceCacheDir);
+                if (IsLinux)
+                {
+                    CopyFolder(latestBuildShare, coherenceCacheDir, overwrite: true);
+                }
+                else
+                {
+                    NuGetPackagesAdd(sourcePackagesDir: latestBuildShare, targetPackagesDir: coherenceCacheDir);
+                }
                 
-                Log.Info("Copying Universe commits file");
-                File.Copy(Path.Combine(coherenceShare, latestBuild, UniverseCommitsFileName), Path.Combine(coherenceCacheDir, UniverseCommitsFileName));
+                Log.Info("Copying Universe commits file to " + universeCommitsFileTarget);
+                File.Copy(Path.Combine(coherenceShare, latestBuild, UniverseCommitsFileName), universeCommitsFileTarget);
                 
                 Log.Info("Saving cached Coherence build version");
                 File.WriteAllText(coherenceVersionFilePath, latestBuild);
@@ -269,7 +277,7 @@ var buildTarget = "compile"
             
             Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ASPNETVNEXT", coherenceCacheDir);
             Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_EXTERNAL", Path.Combine(dropsShare, "latest-packages", "external", buildBranch));
-            Environment.SetEnvironmentVariable("UNIVERSE_COMMITS_FILE", Path.Combine(coherenceCacheDir, "commits-universe"));
+            Environment.SetEnvironmentVariable("UNIVERSE_COMMITS_FILE", universeCommitsFileTarget);
         }
     }
 
