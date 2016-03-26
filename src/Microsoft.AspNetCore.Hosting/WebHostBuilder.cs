@@ -221,8 +221,8 @@ namespace Microsoft.AspNetCore.Hosting
                 configureLogging(_loggerFactory);
             }
 
-            services.AddSingleton(_loggerFactory);
-            services.AddLogging();
+            services.AddSingleton(_loggerFactory); //The configured ILoggerFactory is added as a singleton here. AddLogging below will not add an additional one.
+            services.AddLogging(); //This is required to add ILogger of T.
 
             services.AddTransient<IStartupLoader, StartupLoader>();
 

@@ -170,6 +170,26 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
+        public void MultipleConfigureLoggingInvokedInOrder()
+        {
+            var callCount = 0; //Verify ordering
+            var hostBuilder = new WebHostBuilder()
+                .ConfigureLogging(loggerFactory =>
+                {
+                    Assert.Equal(0, callCount++);
+                })
+                .ConfigureLogging(loggerFactory =>
+                {
+                    Assert.Equal(1, callCount++);
+                })
+                .UseServer(new TestServer())
+                .UseStartup<StartupNoServices>();
+
+            var host = (WebHost)hostBuilder.Build();
+            Assert.Equal(2, callCount);
+        }
+
+        [Fact]
         public void DefaultHostingConfigurationDoesNotCaptureStartupErrors()
         {
             var hostBuilder = new WebHostBuilder()
