@@ -1,6 +1,9 @@
 {
   "version": "1.0.0-*",
-  "description": "Contains registration and configuration APIs for the core framework encoders.",
+  "description": "Contains registration and configuration APIs to add the core framework encoders to a dependency injection container.",
+  "tags": [
+    "aspnetcore"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/httpabstractions"
