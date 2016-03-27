@@ -1,6 +1,9 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 HTTP feature implementations.",
+  "description": "ASP.NET Core default HTTP feature implementations.",
+  "tags": [
+    "aspnetcore"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/httpabstractions"
@@ -21,7 +24,7 @@
     "Microsoft.Net.Http.Headers": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
         "System.Threading": "4.0.11-*"

@@ -1,6 +1,9 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 common extension methods for HTTP abstractions and IApplicationBuilder.",
+  "description": "ASP.NET Core common extension methods for HTTP abstractions, HTTP headers, HTTP request/response, and session state.",
+  "tags": [
+    "aspnetcore"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/httpabstractions"
@@ -20,7 +23,7 @@
     "System.Buffers": "4.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
         "System.IO.FileSystem": "4.0.1-*"

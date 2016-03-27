@@ -1,6 +1,9 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 common helper methods.",
+  "description": "ASP.NET Core utilities, such as for working with forms, multipart messages, and query strings.",
+  "tags": [
+    "aspnetcore"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/httpabstractions"

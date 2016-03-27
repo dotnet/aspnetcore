@@ -1,6 +1,11 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 component for running OWIN middleware.",
+  "description": "ASP.NET Core component for running OWIN middleware in an ASP.NET Core application.",
+  "tags": [
+    "aspnetcore",
+    "katana",
+    "owin"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/httpabstractions"
@@ -17,7 +22,7 @@
     "Microsoft.AspNetCore.Http": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "imports": [
         "dotnet5.4"

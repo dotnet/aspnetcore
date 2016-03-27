@@ -1,6 +1,9 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 HTTP header implementations.",
+  "description": "ASP.NET Core HTTP header parser implementations.",
+  "tags": [
+    "aspnetcore"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/httpabstractions"
@@ -13,7 +16,7 @@
     ],
     "xmlDoc": true
   },
-  "dependencies": {},
+  "dependencies": { },
   "frameworks": {
     "netstandard1.0": {
       "dependencies": {
@@ -23,7 +26,7 @@
         "System.Linq": "4.1.0-*",
         "System.Resources.ResourceManager": "4.0.1-*",
         "System.Runtime.Extensions": "4.1.0-*",
-        "System.Text.Encoding": "4.0.11-*",
+        "System.Text.Encoding": "4.0.11-*"
       },
       "imports": [
         "dotnet5.1"

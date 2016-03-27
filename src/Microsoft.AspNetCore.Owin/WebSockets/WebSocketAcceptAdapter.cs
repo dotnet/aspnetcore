@@ -29,8 +29,8 @@ namespace Microsoft.AspNetCore.Owin
         >;
 
     /// <summary>
-    /// This adapts the ASP.NET WebSocket Accept flow to match the OWIN WebSocket accept flow.
-    /// This enables OWIN based components to use WebSockets on ASP.NET servers.
+    /// This adapts the ASP.NET Core WebSocket Accept flow to match the OWIN WebSocket accept flow.
+    /// This enables OWIN based components to use WebSockets on ASP.NET Core servers.
     /// </summary>
     public class WebSocketAcceptAdapter
     {
