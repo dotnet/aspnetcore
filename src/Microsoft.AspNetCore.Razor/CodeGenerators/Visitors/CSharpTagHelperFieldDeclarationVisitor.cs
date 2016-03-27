@@ -54,18 +54,18 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
                     // whether it's used depends on how a TagHelper is used.
                     Writer.WritePragma("warning disable 0414");
                     WritePrivateField(
-                        "global::" + _tagHelperContext.TagHelperContentTypeName,
+                        _tagHelperContext.TagHelperContentTypeName,
                         CSharpTagHelperCodeRenderer.StringValueBufferVariableName,
                         value: null);
                     Writer.WritePragma("warning restore 0414");
 
                     WritePrivateField(
-                        "global::" + _tagHelperContext.ExecutionContextTypeName,
+                        _tagHelperContext.ExecutionContextTypeName,
                         CSharpTagHelperCodeRenderer.ExecutionContextVariableName,
                         value: null);
 
                     WritePrivateField(
-                        "global::" + _tagHelperContext.RunnerTypeName,
+                        _tagHelperContext.RunnerTypeName,
                         CSharpTagHelperCodeRenderer.RunnerVariableName,
                         value: null);
 
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
                     _declaredTagHelpers.Add(descriptor.TypeName);
 
                     WritePrivateField(
-                        "global::" + descriptor.TypeName,
+                        descriptor.TypeName,
                         CSharpTagHelperCodeRenderer.GetVariableName(descriptor),
                         value: null);
                 }
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
                                 .Write(" ")
                                 .Write(preAllocatedAttributeVariableName)
                                 .Write(" = ")
-                                .WriteStartNewObject(_tagHelperContext.TagHelperAttributeTypeName)
+                                .WriteStartNewObject("global::" + _tagHelperContext.TagHelperAttributeTypeName)
                                 .WriteStringLiteral(attribute.Key)
                                 .WriteEndMethodInvocation();
                         }
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
         private void WritePrivateField(string type, string name, string value)
         {
             Writer
-                .Write("private ")
+                .Write("private global::")
                 .WriteVariableDeclaration(type, name, value);
         }
 

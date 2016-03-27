@@ -654,7 +654,9 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                 {
                     if (attributeDescriptor.IsEnum && isPlainTextValue)
                     {
-                        writer.Write(attributeDescriptor.TypeName)
+                        writer
+                            .Write("global::")
+                            .Write(attributeDescriptor.TypeName)
                             .Write(".");
                     }
 
