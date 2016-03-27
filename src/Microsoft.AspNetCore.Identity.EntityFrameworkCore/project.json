@@ -1,5 +1,11 @@
 {
-  "description": "ASP.NET Identity providers that use Entity Framework.",
+  "description": "ASP.NET Core Identity providers that use Entity Framework Core.",
+  "tags": [
+    "aspnetcore",
+    "entityframeworkcore",
+    "identity",
+    "membership"
+  ],
   "version": "1.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": true,
