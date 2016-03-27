@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Primitives;
 using MusicStore.Models;
 using MusicStore.ViewModels;
@@ -27,8 +28,9 @@ namespace MusicStore.Controllers
             var efServiceProvider = new ServiceCollection().AddEntityFrameworkInMemoryDatabase().BuildServiceProvider();
 
             var services = new ServiceCollection();
-
-            services.AddDbContext<MusicStoreContext>(b => b.UseInMemoryDatabase().UseInternalServiceProvider(efServiceProvider));
+            services
+                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
+                .AddDbContext<MusicStoreContext>(b => b.UseInMemoryDatabase().UseInternalServiceProvider(efServiceProvider));
 
             services.AddMvc();
 
