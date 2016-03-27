@@ -1,6 +1,9 @@
 {
   "version": "1.0.0-*",
-  "description": "Application localization services.",
+  "description": "Application localization services and default implementation based on ResourceManager to load localized assembly resources.",
+  "tags": [
+    "localization"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/aspnet/localization"
@@ -20,7 +23,7 @@
     "Microsoft.Extensions.Options": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
         "System.Collections.Concurrent": "4.0.12-*",

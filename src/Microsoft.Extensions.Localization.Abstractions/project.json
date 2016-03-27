@@ -1,6 +1,9 @@
 {
   "version": "1.0.0-*",
-  "description": "Abstractions of application localization services.",
+  "description": "Abstractions of application localization services.\r\nCommonly used types:\r\nMicrosoft.Extensions.Localization.IStringLocalizer\r\nMicrosoft.Extensions.Localization.IStringLocalizer<T>",
+  "tags": [
+    "localization"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/aspnet/localization"
