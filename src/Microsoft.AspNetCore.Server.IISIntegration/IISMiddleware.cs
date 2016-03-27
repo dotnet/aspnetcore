@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
-using Microsoft.AspNetCore.Http.Features.Authentication.Internal;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -60,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 _logger.LogTrace($"'{MSAspNetCoreToken}' does not match the expected pairing token '{_pairingToken}', skipping {nameof(IISMiddleware)}.");
                 await _next(httpContext);
                 return;
-            }            
+            }
 
             if (_options.ForwardClientCertificate)
             {
