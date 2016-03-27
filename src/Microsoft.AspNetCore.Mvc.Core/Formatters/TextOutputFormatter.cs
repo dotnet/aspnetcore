@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <inheritdoc />
         public sealed override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
         {
-            var message = Resources.FormatTextOutpurFormatter_WriteResponseBodyAsynNotSupported(
+            var message = Resources.FormatTextOutpurFormatter_WriteResponseBodyAsyncNotSupported(
                 $"{nameof(WriteResponseBodyAsync)}({nameof(OutputFormatterWriteContext)})",
                 nameof(TextOutputFormatter),
                 $"{nameof(WriteResponseBodyAsync)}({nameof(OutputFormatterWriteContext)},{nameof(Encoding)})");
