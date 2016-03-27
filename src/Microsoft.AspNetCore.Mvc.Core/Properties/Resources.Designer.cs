@@ -1117,17 +1117,17 @@ namespace Microsoft.AspNetCore.Mvc.Core
         /// <summary>
         /// '{0}' is not supported by '{1}'. Use '{2}' instead.
         /// </summary>
-        internal static string TextOutpurFormatter_WriteResponseBodyAsyncNotSupported
+        internal static string TextOutputFormatter_WriteResponseBodyAsyncNotSupported
         {
-            get { return GetString("TextOutpurFormatter_WriteResponseBodyAsyncNotSupported"); }
+            get { return GetString("TextOutputFormatter_WriteResponseBodyAsyncNotSupported"); }
         }
 
         /// <summary>
         /// '{0}' is not supported by '{1}'. Use '{2}' instead.
         /// </summary>
-        internal static string FormatTextOutpurFormatter_WriteResponseBodyAsyncNotSupported(object p0, object p1, object p2)
+        internal static string FormatTextOutputFormatter_WriteResponseBodyAsyncNotSupported(object p0, object p1, object p2)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TextOutpurFormatter_WriteResponseBodyAsyncNotSupported"), p0, p1, p2);
+            return string.Format(CultureInfo.CurrentCulture, GetString("TextOutputFormatter_WriteResponseBodyAsyncNotSupported"), p0, p1, p2);
         }
 
         /// <summary>
