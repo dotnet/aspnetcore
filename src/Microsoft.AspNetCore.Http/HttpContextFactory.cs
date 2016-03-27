@@ -4,10 +4,9 @@
 using System;
 using System.Text;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Features.Internal;
 using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
     public class HttpContextFactory : IHttpContextFactory
     {

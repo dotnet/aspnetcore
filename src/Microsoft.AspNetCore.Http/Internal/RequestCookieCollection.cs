@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         private static readonly string[] EmptyKeys = Array.Empty<string>();
 #else
         private static readonly string[] EmptyKeys = new string[0];
-#endif 
+#endif
         private static readonly Enumerator EmptyEnumerator = new Enumerator();
         // Pre-box
         private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = EmptyEnumerator;
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Http.Internal
                 return null;
             }
         }
-        
+
         public static RequestCookieCollection Parse(IList<string> values)
         {
             if (values.Count == 0)
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         /// <summary>
         /// Returns an struct enumerator that iterates through a collection without boxing.
         /// </summary>
-        /// <returns>An <see cref="T:Microsoft.AspNetCore.Http.Internal.RequestCookies.Enumerator" /> object that can be used to iterate through the collection.</returns>
+        /// <returns>An <see cref="Enumerator" /> object that can be used to iterate through the collection.</returns>
         public Enumerator GetEnumerator()
         {
             if (Store == null || Store.Count == 0)
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         /// <summary>
         /// Returns an enumerator that iterates through a collection, boxes in non-empty path.
         /// </summary>
-        /// <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
+        /// <returns>An <see cref="IEnumerator{T}" /> object that can be used to iterate through the collection.</returns>
         IEnumerator<KeyValuePair<string, string>> IEnumerable<KeyValuePair<string, string>>.GetEnumerator()
         {
             if (Store == null || Store.Count == 0)
@@ -159,13 +159,13 @@ namespace Microsoft.AspNetCore.Http.Internal
                 return EmptyIEnumeratorType;
             }
             // Boxed Enumerator
-            return GetEnumerator(); 
+            return GetEnumerator();
         }
 
         /// <summary>
         /// Returns an enumerator that iterates through a collection, boxes in non-empty path.
         /// </summary>
-        /// <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
+        /// <returns>An <see cref="IEnumerator" /> object that can be used to iterate through the collection.</returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
             if (Store == null || Store.Count == 0)
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             // Boxed Enumerator
             return GetEnumerator();
         }
-        
+
         public struct Enumerator : IEnumerator<KeyValuePair<string, string>>
         {
             // Do NOT make this readonly, or MoveNext will not work

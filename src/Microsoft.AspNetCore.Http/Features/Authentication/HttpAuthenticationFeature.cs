@@ -3,14 +3,10 @@
 
 using System.Security.Claims;
 
-namespace Microsoft.AspNetCore.Http.Features.Authentication.Internal
+namespace Microsoft.AspNetCore.Http.Features.Authentication
 {
     public class HttpAuthenticationFeature : IHttpAuthenticationFeature
     {
-        public HttpAuthenticationFeature()
-        {
-        }
-
         public ClaimsPrincipal User
         {
             get;

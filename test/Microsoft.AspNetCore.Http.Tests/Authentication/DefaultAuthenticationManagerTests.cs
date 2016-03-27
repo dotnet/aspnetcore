@@ -4,10 +4,7 @@
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
-using Microsoft.AspNetCore.Http.Features.Authentication.Internal;
-using Microsoft.AspNetCore.Http.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Authentication.Internal

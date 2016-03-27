@@ -1,11 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Extensions.Tests

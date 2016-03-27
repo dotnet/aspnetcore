@@ -3,7 +3,7 @@
 
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Http.Features.Internal
+namespace Microsoft.AspNetCore.Http.Features
 {
     public class HttpRequestLifetimeFeature : IHttpRequestLifetimeFeature
     {

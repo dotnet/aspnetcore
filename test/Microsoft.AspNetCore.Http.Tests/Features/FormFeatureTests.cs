@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Http.Features.Internal
+namespace Microsoft.AspNetCore.Http.Features
 {
     public class FormFeatureTests
     {

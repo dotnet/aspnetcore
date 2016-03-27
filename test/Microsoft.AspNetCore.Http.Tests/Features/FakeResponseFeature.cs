@@ -4,9 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features.Internal;
 
-namespace Microsoft.AspNetCore.Http.Features.Internal
+namespace Microsoft.AspNetCore.Http.Features
 {
     public class FakeResponseFeature : HttpResponseFeature
     {

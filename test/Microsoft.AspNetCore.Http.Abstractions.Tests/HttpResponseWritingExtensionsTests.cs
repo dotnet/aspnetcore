@@ -3,7 +3,6 @@
 
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http

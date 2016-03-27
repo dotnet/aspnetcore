@@ -4,7 +4,6 @@
 using System;
 using Microsoft.Extensions.Primitives;
 
-
 namespace Microsoft.AspNetCore.Http.Internal
 {
     internal struct HeaderSegment : IEquatable<HeaderSegment>
@@ -13,7 +12,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         private readonly StringSegment _data;
 
         // <summary>
-        // Initializes a new instance of the <see cref="T:System.Object"/> class.
+        // Initializes a new instance of the <see cref="HeaderSegment/> structure.
         // </summary>
         public HeaderSegment(StringSegment formatting, StringSegment data)
         {

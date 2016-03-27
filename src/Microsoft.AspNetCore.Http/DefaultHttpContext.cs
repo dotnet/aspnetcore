@@ -9,10 +9,9 @@ using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Http.Authentication.Internal;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
-using Microsoft.AspNetCore.Http.Features.Authentication.Internal;
-using Microsoft.AspNetCore.Http.Features.Internal;
+using Microsoft.AspNetCore.Http.Internal;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
     public class DefaultHttpContext : HttpContext
     {
@@ -72,7 +71,7 @@ namespace Microsoft.AspNetCore.Http.Internal
                 _websockets = null;
             }
         }
-        
+
         private IItemsFeature ItemsFeature =>
             _features.Fetch(ref _features.Cache.Items, f => new ItemsFeature());
 
@@ -165,7 +164,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             }
         }
 
-        
+
 
         public override void Abort()
         {

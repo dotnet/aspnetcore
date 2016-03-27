@@ -3,14 +3,10 @@
 
 using System.Net;
 
-namespace Microsoft.AspNetCore.Http.Features.Internal
+namespace Microsoft.AspNetCore.Http.Features
 {
     public class HttpConnectionFeature : IHttpConnectionFeature
     {
-        public HttpConnectionFeature()
-        {
-        }
-
         public string ConnectionId { get; set; }
 
         public IPAddress LocalIpAddress { get; set; }

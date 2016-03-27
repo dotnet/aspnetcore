@@ -4,9 +4,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
     /// Contains the parsed form values.
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Http.Internal
 #else
         private static readonly string[] EmptyKeys = new string[0];
         private static readonly StringValues[] EmptyValues = new StringValues[0];
-#endif 
+#endif
         private static readonly Enumerator EmptyEnumerator = new Enumerator();
         // Pre-box
         private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = EmptyEnumerator;
@@ -77,9 +78,9 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         /// <summary>
-        /// Gets the number of elements contained in the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" />;.
+        /// Gets the number of elements contained in the <see cref="HeaderDictionary" />;.
         /// </summary>
-        /// <returns>The number of elements contained in the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" />.</returns>
+        /// <returns>The number of elements contained in the <see cref="HeaderDictionary" />.</returns>
         public int Count
         {
             get
@@ -101,10 +102,10 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         /// <summary>
-        /// Determines whether the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" /> contains a specific key.
+        /// Determines whether the <see cref="HeaderDictionary" /> contains a specific key.
         /// </summary>
         /// <param name="key">The key.</param>
-        /// <returns>true if the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" /> contains a specific key; otherwise, false.</returns>
+        /// <returns>true if the <see cref="HeaderDictionary" /> contains a specific key; otherwise, false.</returns>
         public bool ContainsKey(string key)
         {
             if (Store == null)
@@ -119,7 +120,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         /// </summary>
         /// <param name="key">The header name.</param>
         /// <param name="value">The value.</param>
-        /// <returns>true if the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" /> contains the key; otherwise, false.</returns>
+        /// <returns>true if the <see cref="HeaderDictionary" /> contains the key; otherwise, false.</returns>
         public bool TryGetValue(string key, out StringValues value)
         {
             if (Store == null)
@@ -131,9 +132,9 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         /// <summary>
-        /// Returns an struct enumerator that iterates through a collection without boxing and is also used via the <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" /> interface.
+        /// Returns an struct enumerator that iterates through a collection without boxing and is also used via the <see cref="IFormCollection" /> interface.
         /// </summary>
-        /// <returns>An <see cref="T:Microsoft.AspNetCore.Http.StructEnumerator" /> object that can be used to iterate through the collection.</returns>
+        /// <returns>An <see cref="Enumerator" /> object that can be used to iterate through the collection.</returns>
         public Enumerator GetEnumerator()
         {
             if (Store == null || Store.Count == 0)
@@ -148,7 +149,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         /// <summary>
         /// Returns an enumerator that iterates through a collection, boxes in non-empty path.
         /// </summary>
-        /// <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
+        /// <returns>An <see cref="IEnumerator" /> object that can be used to iterate through the collection.</returns>
         IEnumerator<KeyValuePair<string, StringValues>> IEnumerable<KeyValuePair<string, StringValues>>.GetEnumerator()
         {
             if (Store == null || Store.Count == 0)
@@ -163,7 +164,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         /// <summary>
         /// Returns an enumerator that iterates through a collection, boxes in non-empty path.
         /// </summary>
-        /// <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
+        /// <returns>An <see cref="IEnumerator" /> object that can be used to iterate through the collection.</returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
             if (Store == null || Store.Count == 0)

@@ -12,7 +12,7 @@ namespace SampleApp
         DefaultHttpRequest _pooledHttpRequest;
         DefaultHttpResponse _pooledHttpResponse;
 
-        public PooledHttpContext(IFeatureCollection featureCollection) : 
+        public PooledHttpContext(IFeatureCollection featureCollection) :
             base(featureCollection)
         {
         }

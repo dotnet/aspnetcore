@@ -7,14 +7,14 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Features.Internal
+namespace Microsoft.AspNetCore.Http.Features
 {
     public class RequestCookiesFeature : IRequestCookiesFeature
     {
         private FeatureReferences<IHttpRequestFeature> _features;
         private StringValues _original;
         private IRequestCookieCollection _parsedValues;
-        
+
         public RequestCookiesFeature(IRequestCookieCollection cookies)
         {
             if (cookies == null)

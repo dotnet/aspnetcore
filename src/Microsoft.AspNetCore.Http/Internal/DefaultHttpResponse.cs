@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Features.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Internal
@@ -37,7 +36,7 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         private IResponseCookiesFeature ResponseCookiesFeature =>
             _features.Fetch(ref _features.Cache.Cookies, f => new ResponseCookiesFeature(f));
-        
+
 
         public override HttpContext HttpContext { get { return _context; } }
 

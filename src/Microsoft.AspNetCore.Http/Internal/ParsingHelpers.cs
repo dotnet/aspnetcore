@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         private readonly StringSegment _data;
 
         // <summary>
-        // Initializes a new instance of the <see cref="T:System.Object"/> class.
+        // Initializes a new instance of the <see cref="HeaderSegment"/> structure.
         // </summary>
         public HeaderSegment(StringSegment formatting, StringSegment data)
         {

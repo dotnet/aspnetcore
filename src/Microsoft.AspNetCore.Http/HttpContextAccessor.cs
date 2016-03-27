@@ -1,15 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 #if NET451
-using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting;
+using System.Runtime.Remoting.Messaging;
 #elif NETSTANDARD1_3
 using System.Threading;
 #endif
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
     public class HttpContextAccessor : IHttpContextAccessor
     {
