@@ -1,8 +1,8 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET Core HTTP header parser implementations.",
+  "description": "HTTP header parser implementations.",
   "tags": [
-    "aspnetcore"
+    "http"
   ],
   "repository": {
     "type": "git",
