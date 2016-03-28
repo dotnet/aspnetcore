@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// </summary>
     public class DefaultAssemblyProvider : IAssemblyProvider
     {
+        private const string NativeImageSufix = ".ni";
         private readonly Assembly _entryAssembly;
         private readonly DependencyContext _dependencyContext;
 
@@ -76,8 +77,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 }
 
                 return GetCandidateLibraries()
-                    .SelectMany(l => l.Assemblies)
-                    .Select(Load);
+                    .SelectMany(library => library.RuntimeAssemblyGroups.GetDefaultGroup().AssetPaths)
+                    .Select(Load)
+                    .Where(assembly => assembly != null);
             }
         }
 
@@ -88,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// </summary>
         /// <returns>A set of <see cref="Library"/>.</returns>
         // Internal for unit testing
-        internal virtual IEnumerable<RuntimeLibrary> GetCandidateLibraries()
+        protected internal virtual IEnumerable<RuntimeLibrary> GetCandidateLibraries()
         {
             if (ReferenceAssemblies == null)
             {
@@ -98,9 +100,20 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return _dependencyContext.RuntimeLibraries.Where(IsCandidateLibrary);
         }
 
-        private static Assembly Load(RuntimeAssembly assembly)
+        private static Assembly Load(string assetPath)
         {
-            return Assembly.Load(assembly.Name);
+            var name = Path.GetFileNameWithoutExtension(assetPath);
+            if (name != null)
+            {
+                if (name.EndsWith(NativeImageSufix, StringComparison.OrdinalIgnoreCase))
+                {
+                    name = name.Substring(0, name.Length - NativeImageSufix.Length);
+                }
+
+                return Assembly.Load(new AssemblyName(name));
+            }
+
+            return null;
         }
 
         private bool IsCandidateLibrary(RuntimeLibrary library)

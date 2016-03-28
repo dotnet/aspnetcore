@@ -24,6 +24,7 @@
       "version": "1.0.0-*"
     },
     "Microsoft.Extensions.FileProviders.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.DependencyModel": "1.0.0-*",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "version": "1.0.0-*",
       "type": "build"
@@ -33,7 +34,6 @@
       "type": "build",
       "version": "1.0.0-*"
     },
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "Microsoft.Extensions.PropertyActivator.Sources": {
       "version": "1.0.0-*",
       "type": "build"
@@ -46,7 +46,6 @@
       "version": "1.0.0-*",
       "type": "build"
     },
-    "Newtonsoft.Json": "8.0.3",
     "System.Buffers": "4.0.0-*",
     "System.Diagnostics.DiagnosticSource": "4.0.0-*"
   },

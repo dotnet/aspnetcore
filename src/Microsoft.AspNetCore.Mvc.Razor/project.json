@@ -13,7 +13,6 @@
     ],
     "xmlDoc": true
   },
-  "compile": "../Microsoft.AspNetCore.Mvc.Core/DependencyContext/**/*.cs",
   "dependencies": {
     "Microsoft.AspNetCore.Mvc.Razor.Host": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.0-*",
