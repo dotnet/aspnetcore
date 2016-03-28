@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds authentication services to the specified <see cref="IServiceCollection" />. 
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
         public static IServiceCollection AddAuthentication(this IServiceCollection services)
         {
             if (services == null)
@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
         /// <param name="configureOptions">An action delegate to configure the provided <see cref="SharedAuthenticationOptions"/>.</param>
-        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
         public static IServiceCollection AddAuthentication(this IServiceCollection services, Action<SharedAuthenticationOptions> configureOptions)
         {
             if (services == null)
