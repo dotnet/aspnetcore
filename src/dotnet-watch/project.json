@@ -11,12 +11,20 @@
     "Microsoft.DotNet.Watcher.Core": "1.0.0-*",
     "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
     "Microsoft.Extensions.Logging": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    "Microsoft.Extensions.Logging.Console": "1.0.0-*"
   },
   "frameworks": {
-    "dnxcore50": {
-      "imports": "portable-net451+win8"
+    "netstandard1.5": {
+      "imports": [
+        "portable-net451+win8",
+        "dnxcore50"
+      ],
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0-*"
+        }
+      }
     }
   }
 }
