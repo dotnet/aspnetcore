@@ -1,5 +1,5 @@
 {
-  "description": "ASP.NET Core Identity provider that use Entity Framework Core.",
+  "description": "ASP.NET Core Identity provider that uses Entity Framework Core.",
   "tags": [
     "aspnetcore",
     "entityframeworkcore",
