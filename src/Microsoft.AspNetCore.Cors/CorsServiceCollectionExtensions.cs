@@ -16,7 +16,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds cross-origin resource sharing services to the specified <see cref="IServiceCollection" />.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-        public static void AddCors(this IServiceCollection services)
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection AddCors(this IServiceCollection services)
         {
             if (services == null)
             {
@@ -27,6 +28,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAdd(ServiceDescriptor.Transient<ICorsService, CorsService>());
             services.TryAdd(ServiceDescriptor.Transient<ICorsPolicyProvider, DefaultCorsPolicyProvider>());
+
+            return services;
         }
 
         /// <summary>
@@ -34,7 +37,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
         /// <param name="setupAction">An <see cref="Action{CorsOptions}"/> to configure the provided <see cref="CorsOptions"/>.</param>
-        public static void AddCors(this IServiceCollection services, Action<CorsOptions> setupAction)
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection AddCors(this IServiceCollection services, Action<CorsOptions> setupAction)
         {
             if (services == null)
             {
@@ -48,6 +52,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddCors();
             services.Configure(setupAction);
+
+            return services;
         }
     }
 }
