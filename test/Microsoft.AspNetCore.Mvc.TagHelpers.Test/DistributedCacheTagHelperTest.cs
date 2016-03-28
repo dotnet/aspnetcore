@@ -826,6 +826,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var childContent = "some-content";
             var resetEvent1 = new ManualResetEvent(false);
             var resetEvent2 = new ManualResetEvent(false);
+            var resetEvent3 = new ManualResetEvent(false);
             var calls = 0;
             var formatter = GetFormatter();
             var storage = GetStorage();
@@ -854,6 +855,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     calls++;
+                    resetEvent3.WaitOne(5000);
 
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetHtmlContent(childContent);
@@ -882,6 +884,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 resetEvent1.WaitOne(5000);
                 await Assert.ThrowsAsync<Exception>(() => cacheTagHelper1.ProcessAsync(tagHelperContext1, tagHelperOutput1));
+                resetEvent3.Set();
             });
 
             var task2 = Task.Run(async () =>
