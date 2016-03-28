@@ -114,10 +114,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             });
 
             // Act
-            var output = await runner.RunAsync(tagHelperExecutionContext);
+            await runner.RunAsync(tagHelperExecutionContext);
 
             // Assert
-            Assert.Equal(expectedOutput, output.PostContent.GetContent());
+            Assert.Equal(expectedOutput, tagHelperExecutionContext.Output.PostContent.GetContent());
         }
 
         private static TagBuilder GetTagBuilder(string tag, string name, string type, string value, TagRenderMode mode)

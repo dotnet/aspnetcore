@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             Assert.Equal(
                 "HtmlEncode[[Level:0]]" +
                 "<t1>" +
-                    "HtmlEncode[[Level:1-A]]" + 
+                    "HtmlEncode[[Level:1-A]]" +
                 "</t1>" +
                 "HtmlEncode[[Level:0]]" +
                 "<t2>" +
@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     "</t3>" +
                     "HtmlEncode[[Level:1-B]]" +
                 "</t2>" +
-                "HtmlEncode[[Level:0]]", 
+                "HtmlEncode[[Level:0]]",
                 page.RenderedContent);
         }
 
@@ -1198,14 +1198,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             page.EndAddHtmlAttributeValues(executionContext);
 
             // Assert
-            var output = executionContext.CreateTagHelperOutput();
+            var output = executionContext.Output;
             var htmlAttribute = Assert.Single(output.Attributes);
             Assert.Equal("someattr", htmlAttribute.Name, StringComparer.Ordinal);
             var htmlContent = Assert.IsAssignableFrom<IHtmlContent>(htmlAttribute.Value);
             Assert.Equal(expectedValue, HtmlContentUtilities.HtmlContentToString(htmlContent), StringComparer.Ordinal);
             Assert.False(htmlAttribute.Minimized);
 
-            var context = executionContext.CreateTagHelperContext();
+            var context = executionContext.Context;
             var allAttribute = Assert.Single(context.AllAttributes);
             Assert.Equal("someattr", allAttribute.Name, StringComparer.Ordinal);
             htmlContent = Assert.IsAssignableFrom<IHtmlContent>(allAttribute.Value);
@@ -1238,9 +1238,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             page.EndAddHtmlAttributeValues(executionContext);
 
             // Assert
-            var output = executionContext.CreateTagHelperOutput();
+            var output = executionContext.Output;
             Assert.Empty(output.Attributes);
-            var context = executionContext.CreateTagHelperContext();
+            var context = executionContext.Context;
             var attribute = Assert.Single(context.AllAttributes);
             Assert.Equal("someattr", attribute.Name, StringComparer.Ordinal);
             Assert.Equal(expectedValue, (string)attribute.Value, StringComparer.Ordinal);
@@ -1268,12 +1268,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             page.EndAddHtmlAttributeValues(executionContext);
 
             // Assert
-            var output = executionContext.CreateTagHelperOutput();
+            var output = executionContext.Output;
             var htmlAttribute = Assert.Single(output.Attributes);
             Assert.Equal("someattr", htmlAttribute.Name, StringComparer.Ordinal);
             Assert.Equal("someattr", (string)htmlAttribute.Value, StringComparer.Ordinal);
             Assert.False(htmlAttribute.Minimized);
-            var context = executionContext.CreateTagHelperContext();
+            var context = executionContext.Context;
             var allAttribute = Assert.Single(context.AllAttributes);
             Assert.Equal("someattr", allAttribute.Name, StringComparer.Ordinal);
             Assert.Equal("someattr", (string)allAttribute.Value, StringComparer.Ordinal);
