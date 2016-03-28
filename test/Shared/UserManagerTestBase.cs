@@ -9,7 +9,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
@@ -1023,7 +1022,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.True(await mgr.IsLockedOutAsync(user));
             Assert.True(await mgr.GetLockoutEndDateAsync(user) > DateTimeOffset.UtcNow.AddMinutes(55));
             IdentityResultAssert.VerifyLogMessage(mgr.Logger, $"User {await mgr.GetUserIdAsync(user)} is locked out.");
-            
+
             Assert.Equal(0, await mgr.GetAccessFailedCountAsync(user));
         }
 
@@ -1769,7 +1768,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             {
                 return;
             }
-            var manager = CreateManager(context: null, services: null, 
+            var manager = CreateManager(context: null, services: null,
                 configureServices: s => s.Configure<IdentityOptions>(
                     o => o.Tokens.ProviderMap["NewProvider2"] = new TokenProviderDescriptor(typeof(EmailTokenProvider<TUser>))));
             manager.Options.Tokens.ChangeEmailTokenProvider = "NewProvider2";

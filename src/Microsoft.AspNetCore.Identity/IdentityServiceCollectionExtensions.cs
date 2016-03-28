@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -39,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="setupAction">An action to configure the <see cref="IdentityOptions"/>.</param>
         /// <returns>An <see cref="IdentityBuilder"/> for creating and configuring the identity system.</returns>
         public static IdentityBuilder AddIdentity<TUser, TRole>(
-            this IServiceCollection services, 
+            this IServiceCollection services,
             Action<IdentityOptions> setupAction)
             where TUser : class
             where TRole : class
