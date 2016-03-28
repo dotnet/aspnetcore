@@ -4,7 +4,6 @@
   },
   "dependencies": {
     "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "MusicStore": "1.0.0-*",
     "XUnit": "2.1.0"
   },
@@ -15,6 +14,7 @@
         "portable-net451+win8"
       ],
       "dependencies": {
+        "NETStandard.Library": "1.5.0-*",
         "dotnet-test-xunit": "1.0.0-dev-*"
       }
     },
