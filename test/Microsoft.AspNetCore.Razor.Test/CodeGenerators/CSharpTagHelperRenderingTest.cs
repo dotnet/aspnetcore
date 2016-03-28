@@ -10,6 +10,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Razor.CodeGenerators;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Test.Generator
@@ -1905,7 +1906,6 @@ namespace Microsoft.AspNetCore.Razor.Test.Generator
                 // Note: The baseline resource name is equivalent to the test resource name.
                 return new TheoryData<string, string, IEnumerable<TagHelperDescriptor>>
                 {
-                    { "CssSelectorTagHelperAttributes", null, CssSelectorTagHelperDescriptors },
                     { "IncompleteTagHelper", null, DefaultPAndInputTagHelperDescriptors },
                     { "SingleTagHelper", null, DefaultPAndInputTagHelperDescriptors },
                     { "SingleTagHelperWithNewlineBeforeAttributes", null, DefaultPAndInputTagHelperDescriptors },
@@ -1943,6 +1943,16 @@ namespace Microsoft.AspNetCore.Razor.Test.Generator
         {
             // Arrange & Act & Assert
             RunTagHelperTest(testName, baseLineName, tagHelperDescriptors: tagHelperDescriptors);
+        }
+
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public void TagHelpers_CssSelectorTagHelperAttributesGeneratesExpectedOutput()
+        {
+            // Arrange & Act & Assert
+            RunTagHelperTest(
+                testName: "CssSelectorTagHelperAttributes",
+                tagHelperDescriptors: CssSelectorTagHelperDescriptors);
         }
 
         [Fact]
