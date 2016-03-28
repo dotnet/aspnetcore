@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -114,15 +115,30 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
             File.Copy(nugetConfigFilePath, tempNugetConfigFile);
         }
 
-        public Process ExecuteDotnet(string arguments, string workDir)
+        public Process ExecuteDotnet(string arguments, string workDir, IDictionary<string, string> environmentVariables = null)
         {
             Console.WriteLine($"Running dotnet {arguments} in {workDir}");
 
             var psi = new ProcessStartInfo("dotnet", arguments)
             {
                 UseShellExecute = false,
-                WorkingDirectory = workDir
+                WorkingDirectory = workDir,
             };
+
+            if (environmentVariables != null)
+            {
+                foreach (var newEnvVar in environmentVariables)
+                {
+                    if (psi.Environment.ContainsKey(newEnvVar.Key))
+                    {
+                        psi.Environment[newEnvVar.Key] = newEnvVar.Value;
+                    }
+                    else
+                    {
+                        psi.Environment.Add(newEnvVar.Key, newEnvVar.Value);
+                    }
+                }
+            }
 
             return Process.Start(psi);
         }

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace Microsoft.DotNet.Watcher.Core.Internal
@@ -12,7 +11,7 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
     {
         private bool _disposed;
 
-        private readonly IDictionary<string, FileSystemWatcher> _watchers = new Dictionary<string, FileSystemWatcher>();
+        private readonly IDictionary<string, IFileSystemWatcher> _watchers = new Dictionary<string, IFileSystemWatcher>();
 
         public event Action<string> OnFileChange;
 
@@ -62,28 +61,16 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
                 }
             }
 
-            var newWatcher = new FileSystemWatcher(directory);
-            newWatcher.IncludeSubdirectories = true;
-
-            newWatcher.Changed += WatcherChangedHandler;
-            newWatcher.Created += WatcherChangedHandler;
-            newWatcher.Deleted += WatcherChangedHandler;
-            newWatcher.Renamed += WatcherRenamedHandler;
-
+            var newWatcher = FileWatcherFactory.CreateWatcher(directory);
+            newWatcher.OnFileChange += WatcherChangedHandler;
             newWatcher.EnableRaisingEvents = true;
 
             _watchers.Add(directory, newWatcher);
         }
 
-        private void WatcherRenamedHandler(object sender, RenamedEventArgs e)
+        private void WatcherChangedHandler(object sender, string changedPath)
         {
-            NotifyChange(e.OldFullPath);
-            NotifyChange(e.FullPath);
-        }
-
-        private void WatcherChangedHandler(object sender, FileSystemEventArgs e)
-        {
-            NotifyChange(e.FullPath);
+            NotifyChange(changedPath);
         }
 
         private void NotifyChange(string path)
@@ -100,11 +87,7 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
             _watchers.Remove(directory);
 
             watcher.EnableRaisingEvents = false;
-
-            watcher.Changed -= WatcherChangedHandler;
-            watcher.Created -= WatcherChangedHandler;
-            watcher.Deleted -= WatcherChangedHandler;
-            watcher.Renamed -= WatcherRenamedHandler;
+            watcher.OnFileChange -= WatcherChangedHandler;
 
             watcher.Dispose();
         }
