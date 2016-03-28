@@ -19,8 +19,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// to the specified <paramref name="services" />.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <returns>The <see cref="IServiceCollection"/> instance after the encoders have been added.</returns>
-        public static void AddWebEncoders(this IServiceCollection services)
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection AddWebEncoders(this IServiceCollection services)
         {
             if (services == null)
             {
@@ -37,6 +37,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 CreateFactory(() => JavaScriptEncoder.Default, settings => JavaScriptEncoder.Create(settings)));
             services.TryAddSingleton(
                 CreateFactory(() => UrlEncoder.Default, settings => UrlEncoder.Create(settings)));
+
+            return services;
         }
 
         /// <summary>
@@ -45,7 +47,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="setupAction">An <see cref="Action{WebEncoderOptions}"/> to configure the provided <see cref="WebEncoderOptions"/>.</param>
-        public static void AddWebEncoders(this IServiceCollection services, Action<WebEncoderOptions> setupAction)
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection AddWebEncoders(this IServiceCollection services, Action<WebEncoderOptions> setupAction)
         {
             if (services == null)
             {
@@ -59,6 +62,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddWebEncoders();
             services.Configure(setupAction);
+
+            return services;
         }
 
         private static Func<IServiceProvider, TService> CreateFactory<TService>(
