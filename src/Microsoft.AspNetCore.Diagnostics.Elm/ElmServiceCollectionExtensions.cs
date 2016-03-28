@@ -16,7 +16,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds error logging middleware services to the specified <see cref="IServiceCollection" />.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-        public static void AddElm(this IServiceCollection services)
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection AddElm(this IServiceCollection services)
         {
             if (services == null)
             {
@@ -26,6 +27,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddOptions();
             services.TryAddSingleton<ElmStore>();
             services.TryAddSingleton<ElmLoggerProvider>();
+
+            return services;
         }
 
         /// <summary>
@@ -33,7 +36,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
         /// <param name="setupAction">An <see cref="Action{ElmOptions}"/> to configure the provided <see cref="ElmOptions"/>.</param>
-        public static void AddElm(this IServiceCollection services, Action<ElmOptions> setupAction)
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection AddElm(this IServiceCollection services, Action<ElmOptions> setupAction)
         {
             if (services == null)
             {
@@ -47,6 +51,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddElm();
             services.Configure(setupAction);
+
+            return services;
         }
     }
 }
