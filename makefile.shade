@@ -45,6 +45,9 @@ functions
         static string repositoryInclude = GetEnvironmentParameter("KOREBUILD_REPOSITORY_INCLUDE");
         static string repositoryExclude = GetEnvironmentParameter("KOREBUILD_REPOSITORY_EXCLUDE");
 
+        static string gateBranch = GetEnvironmentParameter("KOREBUILD_GATE_BRANCH");
+        private static bool UseGateBranch = !string.IsNullOrEmpty(gateBranch);
+
         // Doesn't build on Mono since their contracts don't match
         string[] repositories = GetRepositoriesToBuild().ToArray();
         string[] noSrcRepositoryExclude = GetNoSrcDeleteRepositories().ToArray();
@@ -126,13 +129,56 @@ var buildTarget = "compile"
 
         Parallel.ForEach(repositories, repo =>
         {
+            var useBuildBranch = true;
             if (Directory.Exists(repo))
             {
-                GitCommand("", string.Format("pull --ff-only --quiet --depth 1 git@github.com:aspnet/{1}.git {0}:{0}", buildBranch, repo));
+                if (UseGateBranch)
+                {
+                    try
+                    {
+                        GitCommand("", string.Format("pull --ff-only --quiet --depth 1 git@github.com:aspnet/{1}.git {0}:{0}", gateBranch, repo));
+                        useBuildBranch = false;
+                        Log.Warn(string.Format(
+                            "{0} has a branch '{1}' which is overriding use of {2}. {1} must be deleted before {2} will be used.",
+                            repo,
+                            gateBranch,
+                            buildBranch));
+                    }
+                    catch (Exception ex)
+                    {
+                    	Log.Info(string.Format("{0} doesn't exist, falling back to {1}.", gateBranch, buildBranch));
+                    }
+                }
+
+                if (useBuildBranch)
+                {
+                    GitCommand("", string.Format("pull --ff-only --quiet --depth 1 git@github.com:aspnet/{1}.git {0}:{0}", buildBranch, repo));
+                }
             }
             else
             {
-                GitCommand("", string.Format("clone --quiet --depth 1 --branch {0} git@github.com:aspnet/{1}.git", buildBranch, repo));
+                if (UseGateBranch)
+                {
+                    try
+                    {
+                        GitCommand("", string.Format("clone --quiet --depth 1 --branch {0} git@github.com:aspnet/{1}.git", gateBranch, repo));
+                        useBuildBranch = false;
+                        Log.Warn(string.Format(
+                            "{0} has a branch '{1}' which is overriding use of {2}. {1} must be deleted before {2} will be used.",
+                            repo,
+                            gateBranch,
+                            buildBranch));
+                    }
+                    catch (Exception ex)
+                    {
+                    	Log.Info(string.Format("{0} doesn't exist, falling back to {1}.", gateBranch, buildBranch));
+                    }
+                }
+
+                if (useBuildBranch)
+                {
+                    GitCommand("", string.Format("clone --quiet --depth 1 --branch {0} git@github.com:aspnet/{1}.git", buildBranch, repo));
+                }
             }
         });
 
@@ -402,7 +448,7 @@ var buildTarget = "compile"
 
                 Log.Info(string.Format("Build {0} succeeded", repo));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Warn(string.Format("Build {0} failed: {1}", repo, ex.Message));
                 failed[repo] = ex;
@@ -639,7 +685,7 @@ functions
         {
             var repoUrl = gitHubUriPrefix + repo + ".git";
 
-            if(Directory.Exists(repo))
+            if (Directory.Exists(repo))
             {
                 GitPull(repoUrl, buildBranch, repo);
             }
