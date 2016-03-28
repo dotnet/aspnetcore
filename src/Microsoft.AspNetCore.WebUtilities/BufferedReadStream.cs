@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -16,11 +17,17 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         private readonly Stream _inner;
         private readonly byte[] _buffer;
+        private readonly ArrayPool<byte> _bytePool;
         private int _bufferOffset = 0;
         private int _bufferCount = 0;
         private bool _disposed;
 
         public BufferedReadStream(Stream inner, int bufferSize)
+            : this(inner, bufferSize, ArrayPool<byte>.Shared)
+        {
+        }
+
+        public BufferedReadStream(Stream inner, int bufferSize, ArrayPool<byte> bytePool)
         {
             if (inner == null)
             {
@@ -28,7 +35,8 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             _inner = inner;
-            _buffer = new byte[bufferSize];
+            _bytePool = bytePool;
+            _buffer = bytePool.Rent(bufferSize);
         }
 
         public ArraySegment<byte> BufferedData
@@ -128,10 +136,15 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         protected override void Dispose(bool disposing)
         {
-            _disposed = true;
-            if (disposing)
+            if (!_disposed)
             {
-                _inner.Dispose();
+                _disposed = true;
+                _bytePool.Return(_buffer);
+
+                if (disposing)
+                {
+                    _inner.Dispose();
+                }
             }
         }
 

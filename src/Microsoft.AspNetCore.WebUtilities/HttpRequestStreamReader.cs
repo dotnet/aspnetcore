@@ -34,40 +34,13 @@ namespace Microsoft.AspNetCore.WebUtilities
         private bool _isBlocked;
 
         public HttpRequestStreamReader(Stream stream, Encoding encoding)
-            : this(stream, encoding, DefaultBufferSize)
+            : this(stream, encoding, DefaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared)
         {
         }
 
         public HttpRequestStreamReader(Stream stream, Encoding encoding, int bufferSize)
+            : this(stream, encoding, bufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared)
         {
-            if (stream == null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
-
-            if (!stream.CanRead)
-            {
-                throw new ArgumentException(Resources.HttpRequestStreamReader_StreamNotReadable, nameof(stream));
-            }
-
-            if (encoding == null)
-            {
-                throw new ArgumentNullException(nameof(encoding));
-            }
-
-            _stream = stream;
-            _encoding = encoding;
-            _decoder = encoding.GetDecoder();
-
-            if (bufferSize < MinBufferSize)
-            {
-                bufferSize = MinBufferSize;
-            }
-
-            _byteBufferSize = bufferSize;
-            _byteBuffer = new byte[bufferSize];
-            var maxCharsPerBuffer = encoding.GetMaxCharCount(bufferSize);
-            _charBuffer = new char[maxCharsPerBuffer];
         }
 
         public HttpRequestStreamReader(

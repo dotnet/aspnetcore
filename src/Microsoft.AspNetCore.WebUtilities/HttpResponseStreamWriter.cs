@@ -34,39 +34,13 @@ namespace Microsoft.AspNetCore.WebUtilities
         private int _charBufferCount;
 
         public HttpResponseStreamWriter(Stream stream, Encoding encoding)
-            : this(stream, encoding, DefaultBufferSize)
+            : this(stream, encoding, DefaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared)
         {
         }
 
         public HttpResponseStreamWriter(Stream stream, Encoding encoding, int bufferSize)
+            : this(stream, encoding, bufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared)
         {
-            if (stream == null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
-
-            if (!stream.CanWrite)
-            {
-                throw new ArgumentException(Resources.HttpResponseStreamWriter_StreamNotWritable, nameof(stream));
-            }
-
-            if (encoding == null)
-            {
-                throw new ArgumentNullException(nameof(encoding));
-            }
-
-            _stream = stream;
-            Encoding = encoding;
-            _charBufferSize = bufferSize;
-
-            if (bufferSize < MinBufferSize)
-            {
-                bufferSize = MinBufferSize;
-            }
-
-            _encoder = encoding.GetEncoder();
-            _byteBuffer = new byte[encoding.GetMaxByteCount(bufferSize)];
-            _charBuffer = new char[bufferSize];
         }
 
         public HttpResponseStreamWriter(

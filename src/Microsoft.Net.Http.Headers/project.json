@@ -18,7 +18,7 @@
   },
   "dependencies": { },
   "frameworks": {
-    "netstandard1.0": {
+    "netstandard1.1": {
       "dependencies": {
         "System.Collections": "4.0.11-*",
         "System.Diagnostics.Contracts": "4.0.1-*",
@@ -26,10 +26,11 @@
         "System.Linq": "4.1.0-*",
         "System.Resources.ResourceManager": "4.0.1-*",
         "System.Runtime.Extensions": "4.1.0-*",
-        "System.Text.Encoding": "4.0.11-*"
+        "System.Text.Encoding": "4.0.11-*",
+        "System.Buffers": "4.0.0-*"
       },
       "imports": [
-        "dotnet5.1"
+        "dotnet5.2"
       ]
     }
   }

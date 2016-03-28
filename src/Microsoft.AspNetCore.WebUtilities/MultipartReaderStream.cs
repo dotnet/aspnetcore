@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -13,6 +14,8 @@ namespace Microsoft.AspNetCore.WebUtilities
     {
         private readonly MultipartBoundary _boundary;
         private readonly BufferedReadStream _innerStream;
+        private readonly ArrayPool<byte> _bytePool;
+
         private readonly long _innerOffset;
         private long _position;
         private long _observedLength;
@@ -24,6 +27,17 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <param name="stream">The <see cref="BufferedReadStream"/>.</param>
         /// <param name="boundary">The boundary pattern to use.</param>
         public MultipartReaderStream(BufferedReadStream stream, MultipartBoundary boundary)
+            : this(stream, boundary, ArrayPool<byte>.Shared)
+        {
+        }
+
+        /// <summary>
+        /// Creates a stream that reads until it reaches the given boundary pattern.
+        /// </summary>
+        /// <param name="stream">The <see cref="BufferedReadStream"/>.</param>
+        /// <param name="boundary">The boundary pattern to use.</param>
+        /// <param name="bytePool">The ArrayPool pool to use for temporary byte arrays.</param>
+        public MultipartReaderStream(BufferedReadStream stream, MultipartBoundary boundary, ArrayPool<byte> bytePool)
         {
             if (stream == null)
             {
@@ -35,6 +49,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new ArgumentNullException(nameof(boundary));
             }
 
+            _bytePool = bytePool;
             _innerStream = stream;
             _innerOffset = _innerStream.CanSeek ? _innerStream.Position : 0;
             _boundary = boundary;
@@ -212,14 +227,18 @@ namespace Microsoft.AspNetCore.WebUtilities
                     read = _innerStream.Read(buffer, offset, Math.Min(count, matchOffset - bufferedData.Offset));
                     return UpdatePosition(read);
                 }
-                Debug.Assert(matchCount == _boundary.BoundaryBytes.Length);
+
+                var length = _boundary.BoundaryBytes.Length;
+                Debug.Assert(matchCount == length);
 
                 // "The boundary may be followed by zero or more characters of
                 // linear whitespace. It is then terminated by either another CRLF"
                 // or -- for the final boundary.
-                byte[] boundary = new byte[_boundary.BoundaryBytes.Length];
-                read = _innerStream.Read(boundary, 0, boundary.Length);
-                Debug.Assert(read == boundary.Length); // It should have all been buffered
+                var boundary = _bytePool.Rent(length);
+                read = _innerStream.Read(boundary, 0, length);
+                _bytePool.Return(boundary);
+                Debug.Assert(read == length); // It should have all been buffered
+
                 var remainder = _innerStream.ReadLine(lengthLimit: 100); // Whitespace may exceed the buffer.
                 remainder = remainder.Trim();
                 if (string.Equals("--", remainder, StringComparison.Ordinal))
@@ -227,7 +246,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                     FinalBoundaryFound = true;
                 }
                 Debug.Assert(FinalBoundaryFound || string.Equals(string.Empty, remainder, StringComparison.Ordinal), "Un-expected data found on the boundary line: " + remainder);
-
                 _finished = true;
                 return 0;
             }
@@ -264,14 +282,18 @@ namespace Microsoft.AspNetCore.WebUtilities
                     read = _innerStream.Read(buffer, offset, Math.Min(count, matchOffset - bufferedData.Offset));
                     return UpdatePosition(read);
                 }
-                Debug.Assert(matchCount == _boundary.BoundaryBytes.Length);
+
+                var length = _boundary.BoundaryBytes.Length;
+                Debug.Assert(matchCount == length);
 
                 // "The boundary may be followed by zero or more characters of
                 // linear whitespace. It is then terminated by either another CRLF"
                 // or -- for the final boundary.
-                byte[] boundary = new byte[_boundary.BoundaryBytes.Length];
-                read = _innerStream.Read(boundary, 0, boundary.Length);
-                Debug.Assert(read == boundary.Length); // It should have all been buffered
+                var boundary = _bytePool.Rent(length);
+                read = _innerStream.Read(boundary, 0, length);
+                _bytePool.Return(boundary);
+                Debug.Assert(read == length); // It should have all been buffered
+
                 var remainder = await _innerStream.ReadLineAsync(lengthLimit: 100, cancellationToken: cancellationToken); // Whitespace may exceed the buffer.
                 remainder = remainder.Trim();
                 if (string.Equals("--", remainder, StringComparison.Ordinal))
