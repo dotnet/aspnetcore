@@ -16,7 +16,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds services required for application localization.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-        public static void AddLocalization(this IServiceCollection services)
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection AddLocalization(this IServiceCollection services)
         {
             if (services == null)
             {
@@ -26,6 +27,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddOptions();
 
             AddLocalizationServices(services);
+
+            return services;
         }
 
         /// <summary>
@@ -35,7 +38,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="setupAction">
         /// An <see cref="Action{LocalizationOptions}"/> to configure the <see cref="LocalizationOptions"/>.
         /// </param>
-        public static void AddLocalization(
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection AddLocalization(
             this IServiceCollection services,
             Action<LocalizationOptions> setupAction)
         {
@@ -50,6 +54,8 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             AddLocalizationServices(services, setupAction);
+
+            return services;
         }
 
         // To enable unit testing
