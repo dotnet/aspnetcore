@@ -36,6 +36,35 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             }
         }
 
+        [Fact]
+        public void Process_DoesNothingIfTagNameIsNull()
+        {
+            // Arrange
+            var tagHelperOutput = new TagHelperOutput(
+                tagName: null,
+                attributes: new TagHelperAttributeList
+                {
+                    { "href", "~/home/index.html" }
+                },
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(null));
+
+            var tagHelper = new UrlResolutionTagHelper(Mock.Of<IUrlHelperFactory>(), new HtmlTestEncoder());
+            var context = new TagHelperContext(
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+
+            // Act
+            tagHelper.Process(context, tagHelperOutput);
+
+            // Assert
+            var attribute = Assert.Single(tagHelperOutput.Attributes);
+            Assert.Equal("href", attribute.Name, StringComparer.Ordinal);
+            var attributeValue = Assert.IsType<string>(attribute.Value);
+            Assert.Equal("~/home/index.html", attributeValue, StringComparer.Ordinal);
+        }
+
         [Theory]
         [MemberData(nameof(ResolvableUrlData))]
         public void Process_ResolvesTildeSlashValues(string url, string expectedHref)

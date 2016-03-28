@@ -125,6 +125,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(output));
             }
 
+            if (output.TagName == null)
+            {
+                return;
+            }
+
             string[] attributeNames;
             if (ElementAttributeLookups.TryGetValue(output.TagName, out attributeNames))
             {
