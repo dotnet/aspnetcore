@@ -19,7 +19,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds services required for routing requests.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-        public static void AddRouting(this IServiceCollection services)
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection AddRouting(this IServiceCollection services)
         {
             if (services == null)
             {
@@ -36,6 +37,8 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             services.TryAddSingleton(typeof(RoutingMarkerService));
+
+            return services;
         }
 
         /// <summary>
@@ -43,7 +46,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
         /// <param name="configureOptions">The routing options to configure the middleware with.</param>
-        public static void AddRouting(
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection AddRouting(
             this IServiceCollection services,
             Action<RouteOptions> configureOptions)
         {
@@ -59,6 +63,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.Configure(configureOptions);
             services.AddRouting();
+
+            return services;
         }
     }
 }
