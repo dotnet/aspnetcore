@@ -14,7 +14,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds directory browser middleware services.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-        public static void AddDirectoryBrowser(this IServiceCollection services)
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection AddDirectoryBrowser(this IServiceCollection services)
         {
             if (services == null)
             {
@@ -22,6 +23,8 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddWebEncoders();
+
+            return services;
         }
     }
 }
