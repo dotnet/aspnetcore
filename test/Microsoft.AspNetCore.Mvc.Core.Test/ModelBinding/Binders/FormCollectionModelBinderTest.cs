@@ -36,10 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
 
-            var entry = bindingContext.ValidationState[result.Model];
-            Assert.True(entry.SuppressValidation);
-            Assert.Null(entry.Key);
-            Assert.Null(entry.Metadata);
+            Assert.Empty(bindingContext.ValidationState);
 
             var form = Assert.IsAssignableFrom<IFormCollection>(result.Model);
             Assert.Equal(2, form.Count);

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class FormFileModelBinderTest
     {
         [Fact]
-        public async Task FormFileModelBinder_SuppressesValidation()
+        public async Task FormFileModelBinder_SingleFile_BindSuccessful()
         {
             // Arrange
             var formFiles = new FormFileCollection();
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.True(result.IsModelSet);
 
             var entry = bindingContext.ValidationState[result.Model];
-            Assert.True(entry.SuppressValidation);
+            Assert.False(entry.SuppressValidation);
             Assert.Equal("file", entry.Key);
             Assert.Null(entry.Metadata);
         }
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.True(result.IsModelSet);
 
             var entry = bindingContext.ValidationState[result.Model];
-            Assert.True(entry.SuppressValidation);
+            Assert.False(entry.SuppressValidation);
             Assert.Equal("file", entry.Key);
             Assert.Null(entry.Metadata);
 

@@ -1000,7 +1000,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelStateEntry = kvp.Value;
             Assert.NotNull(modelStateEntry);
             Assert.Empty(modelStateEntry.Errors);
-            Assert.Equal(ModelValidationState.Skipped, modelStateEntry.ValidationState);
+            Assert.Equal(ModelValidationState.Valid, modelStateEntry.ValidationState);
             Assert.Null(modelStateEntry.AttemptedValue);
             Assert.Null(modelStateEntry.RawValue);
         }

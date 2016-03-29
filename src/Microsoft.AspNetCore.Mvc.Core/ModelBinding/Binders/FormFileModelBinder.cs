@@ -98,10 +98,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 }
             }
 
+            // We need to add a ValidationState entry because the modelName might be non-standard. Otherwise
+            // the entry we create in model state might not be marked as valid.
             bindingContext.ValidationState.Add(value, new ValidationStateEntry()
             {
                 Key = modelName,
-                SuppressValidation = true
             });
 
             bindingContext.ModelState.SetModelValue(

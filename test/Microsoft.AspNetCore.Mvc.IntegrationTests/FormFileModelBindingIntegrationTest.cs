@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var key = Assert.Single(modelState.Keys, k => k == "Address.File");
             Assert.Null(modelState[key].RawValue);
             Assert.Empty(modelState[key].Errors);
-            Assert.Equal(ModelValidationState.Skipped, modelState[key].ValidationState);
+            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
 
         private class ListContainer1
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelStateEntry = kvp.Value;
             Assert.NotNull(modelStateEntry);
             Assert.Empty(modelStateEntry.Errors);
-            Assert.Equal(ModelValidationState.Skipped, modelStateEntry.ValidationState);
+            Assert.Equal(ModelValidationState.Valid, modelStateEntry.ValidationState);
             Assert.Null(modelStateEntry.AttemptedValue);
             Assert.Null(modelStateEntry.RawValue);
         }
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelStateEntry = kvp.Value;
             Assert.NotNull(modelStateEntry);
             Assert.Empty(modelStateEntry.Errors);
-            Assert.Equal(ModelValidationState.Skipped, modelStateEntry.ValidationState);
+            Assert.Equal(ModelValidationState.Valid, modelStateEntry.ValidationState);
             Assert.Null(modelStateEntry.AttemptedValue);
             Assert.Null(modelStateEntry.RawValue);
         }
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var entry = Assert.Single(modelState);
             Assert.Equal("CustomParameter", entry.Key);
             Assert.Empty(entry.Value.Errors);
-            Assert.Equal(ModelValidationState.Skipped, entry.Value.ValidationState);
+            Assert.Equal(ModelValidationState.Valid, entry.Value.ValidationState);
             Assert.Null(entry.Value.AttemptedValue);
             Assert.Null(entry.Value.RawValue);
         }

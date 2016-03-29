@@ -36,8 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 model = new EmptyFormCollection();
             }
-
-            bindingContext.ValidationState.Add(model, new ValidationStateEntry() { SuppressValidation = true });
+            
             bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
         }
 
