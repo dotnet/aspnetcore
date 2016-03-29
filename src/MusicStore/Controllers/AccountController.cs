@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -452,7 +453,10 @@ namespace MusicStore.Controllers
             var appEnv = HttpContext.RequestServices.GetService<IHostingEnvironment>();
             if (appEnv.EnvironmentName.StartsWith("OpenIdConnect"))
             {
-                await HttpContext.Authentication.SignOutAsync("OpenIdConnect");
+                return new SignOutResult("OpenIdConnect", new AuthenticationProperties
+                {
+                    RedirectUri = Url.Action("Index", "Home")
+                });
             }
 
             return RedirectToAction("Index", "Home");
