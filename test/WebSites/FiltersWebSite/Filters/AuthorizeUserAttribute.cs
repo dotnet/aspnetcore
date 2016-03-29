@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Reflection;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
@@ -9,9 +10,9 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace FiltersWebSite
 {
-    public class AuthorizeUserAttribute : AuthorizationFilterAttribute
+    public class AuthorizeUserAttribute : Attribute, IAuthorizationFilter
     {
-        public override void OnAuthorization(AuthorizationFilterContext context)
+        public virtual void OnAuthorization(AuthorizationFilterContext context)
         {
             var controllerActionDescriptor = (ControllerActionDescriptor)context.ActionDescriptor;
             if (controllerActionDescriptor.MethodInfo ==

@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace FiltersWebSite
 {
-    public class ThrowingAuthorizationFilter : AuthorizationFilterAttribute
+    public class ThrowingAuthorizationFilter : Attribute, IAuthorizationFilter
     {
-        public override void OnAuthorization(AuthorizationFilterContext context)
+        public void OnAuthorization(AuthorizationFilterContext context)
         {
             throw new InvalidProgramException("Authorization Filter Threw");
         }

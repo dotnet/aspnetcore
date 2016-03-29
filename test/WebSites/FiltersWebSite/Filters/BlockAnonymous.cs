@@ -1,13 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Linq;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace FiltersWebSite
 {
-    public class BlockAnonymous : AuthorizationFilterAttribute
+    public class BlockAnonymous : Attribute, IAuthorizationFilter
     {
-        public override void OnAuthorization(AuthorizationFilterContext context)
+        public void OnAuthorization(AuthorizationFilterContext context)
         {
             if (!HasAllowAnonymous(context))
             {
@@ -19,9 +23,20 @@ namespace FiltersWebSite
 
                 if (userIsAnonymous)
                 {
-                    base.Fail(context);
+                    context.Result = new UnauthorizedResult();
                 }
             }
         }
+
+        private bool HasAllowAnonymous(AuthorizationFilterContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return context.Filters.Any(item => item is IAllowAnonymousFilter);
+        }
+
     }
 }
