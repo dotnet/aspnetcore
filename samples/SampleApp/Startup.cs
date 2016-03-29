@@ -24,9 +24,7 @@ namespace SampleApp
 
             loggerFactory.AddConsole(LogLevel.Trace);
 
-            var testCertPath = Path.Combine(
-                env.ApplicationBasePath,
-                @"../../test/Microsoft.AspNetCore.Server.KestrelTests/TestResources/testCert.pfx");
+            var testCertPath = Path.Combine(env.ApplicationBasePath, "testCert.pfx");
 
             if (File.Exists(testCertPath))
             {
