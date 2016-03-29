@@ -5,12 +5,19 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using MusicStore.Models;
 
 namespace MusicStore.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly AppSettings _appSettings;
+
+        public HomeController(IOptions<AppSettings> options)
+        {
+            _appSettings = options.Value;
+        }
         //
         // GET: /Home/
         public async Task<IActionResult> Index(
@@ -26,14 +33,17 @@ namespace MusicStore.Controllers
 
                 if (albums != null && albums.Count > 0)
                 {
-                    // Refresh it every 10 minutes.
-                    // Let this be the last item to be removed by cache if cache GC kicks in.
-                    cache.Set(
-                        cacheKey,
-                        albums,
-                        new MemoryCacheEntryOptions()
+                    if (_appSettings.CacheDbResults)
+                    {
+                        // Refresh it every 10 minutes.
+                        // Let this be the last item to be removed by cache if cache GC kicks in.
+                        cache.Set(
+                            cacheKey,
+                            albums,
+                            new MemoryCacheEntryOptions()
                             .SetAbsoluteExpiration(TimeSpan.FromMinutes(10))
                             .SetPriority(CacheItemPriority.High));
+                    }
                 }
             }
 

@@ -4,15 +4,19 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using MusicStore.Models;
 
 namespace MusicStore.Controllers
 {
     public class StoreController : Controller
     {
-        public StoreController(MusicStoreContext dbContext)
+        private readonly AppSettings _appSettings;
+
+        public StoreController(MusicStoreContext dbContext, IOptions<AppSettings> options)
         {
             DbContext = dbContext;
+            _appSettings = options.Value;
         }
 
         public MusicStoreContext DbContext { get; }
@@ -60,11 +64,14 @@ namespace MusicStore.Controllers
 
                 if (album != null)
                 {
-                    //Remove it from cache if not retrieved in last 10 minutes
-                    cache.Set(
-                        cacheKey,
-                        album,
-                        new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)));
+                    if (_appSettings.CacheDbResults)
+                    {
+                        //Remove it from cache if not retrieved in last 10 minutes
+                        cache.Set(
+                            cacheKey,
+                            album,
+                            new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)));
+                    }
                 }
             }
 
