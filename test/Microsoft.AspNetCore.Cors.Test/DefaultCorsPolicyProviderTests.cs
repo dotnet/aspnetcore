@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Http;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Cors.Infrastructure
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             };
             var policyProvider = new DefaultCorsPolicyProvider(corsOptions);
 
-            // Act 
+            // Act
             var actualPolicy = await policyProvider.GetPolicyAsync(new DefaultHttpContext(), policyName: null);
 
             // Assert
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             };
             var policyProvider = new DefaultCorsPolicyProvider(corsOptions);
 
-            // Act 
+            // Act
             var actualPolicy = await policyProvider.GetPolicyAsync(new DefaultHttpContext(), policyName);
 
             // Assert
