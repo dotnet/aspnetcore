@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                     {
                         using (writer.BuildMethodDeclaration("public override async", "Task", Host.GeneratedClassContext.ExecuteMethodName))
                         {
-                            new CSharpTagHelperRunnerInitializationVisitor(writer, Context).Accept(Tree.Children);
+                            new CSharpTagHelperPropertyInitializationVisitor(writer, Context).Accept(Tree.Children);
                             csharpCodeVisitor.Accept(Tree.Children);
                         }
                     }

@@ -12,7 +12,7 @@ namespace TestOutput
         #pragma warning restore 0414
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperExecutionContext __tagHelperExecutionContext = null;
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperRunner __tagHelperRunner = null;
-        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager __tagHelperScopeManager = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager();
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager __tagHelperScopeManager = null;
         private global::TestNamespace.MyTagHelper __TestNamespace_MyTagHelper = null;
         private global::TestNamespace.NestedTagHelper __TestNamespace_NestedTagHelper = null;
         #line hidden
@@ -24,6 +24,7 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             __tagHelperRunner = __tagHelperRunner ?? new global::Microsoft.AspNetCore.Razor.Runtime.TagHelperRunner();
+            __tagHelperScopeManager = __tagHelperScopeManager ?? new global::Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager(StartTagHelperWritingScope, EndTagHelperWritingScope);
             Instrumentation.BeginContext(31, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
@@ -57,7 +58,7 @@ namespace TestOutput
 #line hidden
                         Instrumentation.EndContext();
                     }
-                    , StartTagHelperWritingScope, EndTagHelperWritingScope);
+                    );
                     __TestNamespace_NestedTagHelper = CreateTagHelper<global::TestNamespace.NestedTagHelper>();
                     __tagHelperExecutionContext.Add(__TestNamespace_NestedTagHelper);
                     await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
@@ -73,7 +74,7 @@ namespace TestOutput
                     WriteLiteral("\r\n        ");
                     Instrumentation.EndContext();
                 }
-                , StartTagHelperWritingScope, EndTagHelperWritingScope);
+                );
                 __TestNamespace_MyTagHelper = CreateTagHelper<global::TestNamespace.MyTagHelper>();
                 __tagHelperExecutionContext.Add(__TestNamespace_MyTagHelper);
                 StartTagHelperWritingScope(null);

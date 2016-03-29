@@ -20,9 +20,26 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         /// <summary>
         /// Instantiates a new <see cref="TagHelperScopeManager"/>.
         /// </summary>
-        public TagHelperScopeManager()
+        /// <param name="startTagHelperWritingScope">
+        /// A delegate used to start a writing scope in a Razor page and optionally override the page's
+        /// <see cref="HtmlEncoder"/> within that scope.
+        /// </param>
+        /// <param name="endTagHelperWritingScope">A delegate used to end a writing scope in a Razor page.</param>
+        public TagHelperScopeManager(
+            Action<HtmlEncoder> startTagHelperWritingScope,
+            Func<TagHelperContent> endTagHelperWritingScope)
         {
-            _executionContextPool = new ExecutionContextPool();
+            if (startTagHelperWritingScope == null)
+            {
+                throw new ArgumentNullException(nameof(startTagHelperWritingScope));
+            }
+
+            if (endTagHelperWritingScope == null)
+            {
+                throw new ArgumentNullException(nameof(endTagHelperWritingScope));
+            }
+
+            _executionContextPool = new ExecutionContextPool(startTagHelperWritingScope, endTagHelperWritingScope);
         }
 
         /// <summary>
@@ -32,19 +49,12 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         /// <param name="tagMode">HTML syntax of the element in the Razor source.</param>
         /// <param name="uniqueId">An identifier unique to the HTML element this scope is for.</param>
         /// <param name="executeChildContentAsync">A delegate used to execute the child content asynchronously.</param>
-        /// <param name="startTagHelperWritingScope">
-        /// A delegate used to start a writing scope in a Razor page and optionally override the page's
-        /// <see cref="HtmlEncoder"/> within that scope.
-        /// </param>
-        /// <param name="endTagHelperWritingScope">A delegate used to end a writing scope in a Razor page.</param>
         /// <returns>A <see cref="TagHelperExecutionContext"/> to use.</returns>
         public TagHelperExecutionContext Begin(
             string tagName,
             TagMode tagMode,
             string uniqueId,
-            Func<Task> executeChildContentAsync,
-            Action<HtmlEncoder> startTagHelperWritingScope,
-            Func<TagHelperContent> endTagHelperWritingScope)
+            Func<Task> executeChildContentAsync)
         {
             if (tagName == null)
             {
@@ -59,16 +69,6 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             if (executeChildContentAsync == null)
             {
                 throw new ArgumentNullException(nameof(executeChildContentAsync));
-            }
-
-            if (startTagHelperWritingScope == null)
-            {
-                throw new ArgumentNullException(nameof(startTagHelperWritingScope));
-            }
-
-            if (endTagHelperWritingScope == null)
-            {
-                throw new ArgumentNullException(nameof(endTagHelperWritingScope));
             }
 
             IDictionary<object, object> items;
@@ -91,9 +91,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 tagMode,
                 items,
                 uniqueId,
-                executeChildContentAsync,
-                startTagHelperWritingScope,
-                endTagHelperWritingScope);
+                executeChildContentAsync);
 
             return executionContext;
         }
@@ -123,12 +121,18 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 
         private class ExecutionContextPool
         {
+            private readonly Action<HtmlEncoder> _startTagHelperWritingScope;
+            private readonly Func<TagHelperContent> _endTagHelperWritingScope;
             private readonly List<TagHelperExecutionContext> _executionContexts;
             private int _nextIndex;
 
-            public ExecutionContextPool()
+            public ExecutionContextPool(
+                Action<HtmlEncoder> startTagHelperWritingScope,
+                Func<TagHelperContent> endTagHelperWritingScope)
             {
                 _executionContexts = new List<TagHelperExecutionContext>();
+                _startTagHelperWritingScope = startTagHelperWritingScope;
+                _endTagHelperWritingScope = endTagHelperWritingScope;
             }
 
             public TagHelperExecutionContext Current => _nextIndex > 0 ? _executionContexts[_nextIndex - 1] : null;
@@ -138,9 +142,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 TagMode tagMode,
                 IDictionary<object, object> items,
                 string uniqueId,
-                Func<Task> executeChildContentAsync,
-                Action<HtmlEncoder> startTagHelperWritingScope,
-                Func<TagHelperContent> endTagHelperWritingScope)
+                Func<Task> executeChildContentAsync)
             {
                 TagHelperExecutionContext tagHelperExecutionContext;
 
@@ -152,8 +154,8 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                         items,
                         uniqueId,
                         executeChildContentAsync,
-                        startTagHelperWritingScope,
-                        endTagHelperWritingScope);
+                        _startTagHelperWritingScope,
+                        _endTagHelperWritingScope);
 
                     _executionContexts.Add(tagHelperExecutionContext);
                 }

@@ -173,11 +173,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
 
             _context.TargetWriterName = oldWriter;
 
-            _writer.WriteParameterSeparator()
-                   .Write(_tagHelperContext.StartTagHelperWritingScopeMethodName)
-                   .WriteParameterSeparator()
-                   .Write(_tagHelperContext.EndTagHelperWritingScopeMethodName)
-                   .WriteEndMethodInvocation();
+            _writer.WriteEndMethodInvocation();
         }
 
         /// <summary>

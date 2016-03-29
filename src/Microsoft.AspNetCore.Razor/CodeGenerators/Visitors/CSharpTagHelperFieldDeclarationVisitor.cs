@@ -69,13 +69,10 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
                         CSharpTagHelperCodeRenderer.RunnerVariableName,
                         value: null);
 
-                    Writer
-                        .Write("private global::")
-                        .Write(_tagHelperContext.ScopeManagerTypeName)
-                        .Write(" ")
-                        .WriteStartAssignment(CSharpTagHelperCodeRenderer.ScopeManagerVariableName)
-                        .WriteStartNewObject("global::" + _tagHelperContext.ScopeManagerTypeName)
-                        .WriteEndMethodInvocation();
+                    WritePrivateField(
+                        _tagHelperContext.ScopeManagerTypeName,
+                        CSharpTagHelperCodeRenderer.ScopeManagerVariableName,
+                        value: null);
                 }
             }
 

@@ -9,18 +9,19 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
     /// <summary>
     /// The <see cref="CodeVisitor{T}"/> that generates the code to initialize the TagHelperRunner.
     /// </summary>
-    public class CSharpTagHelperRunnerInitializationVisitor : CodeVisitor<CSharpCodeWriter>
+    public class CSharpTagHelperPropertyInitializationVisitor : CodeVisitor<CSharpCodeWriter>
     {
         private readonly GeneratedTagHelperContext _tagHelperContext;
         private bool _foundTagHelpers;
 
         /// <summary>
-        /// Creates a new instance of <see cref="CSharpTagHelperRunnerInitializationVisitor"/>.
+        /// Creates a new instance of <see cref="CSharpTagHelperPropertyInitializationVisitor"/>.
         /// </summary>
         /// <param name="writer">The <see cref="CSharpCodeWriter"/> used to generate code.</param>
         /// <param name="context">The <see cref="CodeGeneratorContext"/>.</param>
-        public CSharpTagHelperRunnerInitializationVisitor(CSharpCodeWriter writer,
-                                                          CodeGeneratorContext context)
+        public CSharpTagHelperPropertyInitializationVisitor(
+            CSharpCodeWriter writer,
+            CodeGeneratorContext context)
             : base(writer, context)
         {
             if (writer == null)
@@ -75,6 +76,16 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
                     .Write(CSharpTagHelperCodeRenderer.RunnerVariableName)
                     .Write(" ?? ")
                     .WriteStartNewObject("global::" + _tagHelperContext.RunnerTypeName)
+                    .WriteEndMethodInvocation();
+
+                Writer
+                    .WriteStartAssignment(CSharpTagHelperCodeRenderer.ScopeManagerVariableName)
+                    .Write(CSharpTagHelperCodeRenderer.ScopeManagerVariableName)
+                    .Write(" ?? ")
+                    .WriteStartNewObject("global::" + _tagHelperContext.ScopeManagerTypeName)
+                    .Write(_tagHelperContext.StartTagHelperWritingScopeMethodName)
+                    .WriteParameterSeparator()
+                    .Write(_tagHelperContext.EndTagHelperWritingScopeMethodName)
                     .WriteEndMethodInvocation();
             }
         }
