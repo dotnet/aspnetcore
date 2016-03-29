@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.PlatformAbstractions;
@@ -221,8 +220,11 @@ namespace Microsoft.AspNetCore.Hosting
                 configureLogging(_loggerFactory);
             }
 
-            services.AddSingleton(_loggerFactory); //The configured ILoggerFactory is added as a singleton here. AddLogging below will not add an additional one.
-            services.AddLogging(); //This is required to add ILogger of T.
+            //The configured ILoggerFactory is added as a singleton here. AddLogging below will not add an additional one.
+            services.AddSingleton(_loggerFactory);
+
+            //This is required to add ILogger of T.
+            services.AddLogging();
 
             services.AddTransient<IStartupLoader, StartupLoader>();
 
@@ -239,17 +241,12 @@ namespace Microsoft.AspNetCore.Hosting
             services.AddTransient<IStartupFilter, AutoRequestServicesStartupFilter>();
 
             // Ensure object pooling is available everywhere.
-            services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
+            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
 
             var defaultPlatformServices = PlatformServices.Default;
-            if (defaultPlatformServices.Application != null)
-            {
-                services.TryAddSingleton(defaultPlatformServices.Application);
-            }
-            if (defaultPlatformServices.Runtime != null)
-            {
-                services.TryAddSingleton(defaultPlatformServices.Runtime);
-            }
+
+            services.AddSingleton(defaultPlatformServices.Application);
+            services.AddSingleton(defaultPlatformServices.Runtime);
 
             foreach (var configureServices in _configureServicesDelegates)
             {

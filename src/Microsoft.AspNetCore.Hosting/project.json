@@ -38,6 +38,12 @@
       "frameworkAssemblies": {
         "System.Runtime": {
           "type": "build"
+        },
+        "System.ComponentModel": {
+          "type": "build"
+        },
+        "System.IO": {
+          "type": "build"
         }
       }
     },
