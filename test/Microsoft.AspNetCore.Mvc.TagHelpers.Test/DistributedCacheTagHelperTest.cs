@@ -753,6 +753,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var childContent = "some-content";
             var resetEvent1 = new ManualResetEvent(false);
             var resetEvent2 = new ManualResetEvent(false);
+            var resetEvent3 = new ManualResetEvent(false);
             var calls = 0;
             var formatter = GetFormatter();
             var storage = GetStorage();
@@ -764,13 +765,26 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var tagHelperContext1 = GetTagHelperContext();
             var tagHelperContext2 = GetTagHelperContext();
 
-            TagHelperOutput tagHelperOutput = new TagHelperOutput(
+            var tagHelperOutput1 = new TagHelperOutput(
                 "distributed-cache",
                 new TagHelperAttributeList(),
                 getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     calls++;
                     resetEvent2.Set();
+
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetHtmlContent(childContent);
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+
+            var tagHelperOutput2 = new TagHelperOutput(
+                "distributed-cache",
+                new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    calls++;
+                    resetEvent3.WaitOne(5000);
 
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetHtmlContent(childContent);
@@ -798,23 +812,29 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var task1 = Task.Run(async () =>
             {
                 resetEvent1.WaitOne(5000);
-                await cacheTagHelper1.ProcessAsync(tagHelperContext1, tagHelperOutput);
+                await cacheTagHelper1.ProcessAsync(tagHelperContext1, tagHelperOutput1);
+                resetEvent3.Set();
             });
 
             var task2 = Task.Run(async () =>
             {
                 resetEvent2.WaitOne(5000);
-                await cacheTagHelper2.ProcessAsync(tagHelperContext1, tagHelperOutput);
+                await cacheTagHelper2.ProcessAsync(tagHelperContext1, tagHelperOutput2);
             });
 
             resetEvent1.Set();
             await Task.WhenAll(task1, task2);
 
             // Assert
-            Assert.Empty(tagHelperOutput.PreContent.GetContent());
-            Assert.Empty(tagHelperOutput.PostContent.GetContent());
-            Assert.True(tagHelperOutput.IsContentModified);
-            Assert.Equal(childContent, tagHelperOutput.Content.GetContent());
+            Assert.Empty(tagHelperOutput1.PreContent.GetContent());
+            Assert.Empty(tagHelperOutput1.PostContent.GetContent());
+            Assert.True(tagHelperOutput1.IsContentModified);
+            Assert.Equal(childContent, tagHelperOutput1.Content.GetContent());
+
+            Assert.Empty(tagHelperOutput2.PreContent.GetContent());
+            Assert.Empty(tagHelperOutput2.PostContent.GetContent());
+            Assert.True(tagHelperOutput2.IsContentModified);
+            Assert.Equal(childContent, tagHelperOutput2.Content.GetContent());
 
             Assert.Equal(1, calls);
         }
