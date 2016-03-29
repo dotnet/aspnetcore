@@ -37,7 +37,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = environmentName,
-                    PublishApplicationBeforeDeployment = true,
                     PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netstandardapp1.5"
                 };
 
