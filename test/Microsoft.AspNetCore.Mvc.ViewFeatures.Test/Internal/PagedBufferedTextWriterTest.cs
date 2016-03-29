@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
@@ -9,11 +10,11 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
-    public class PagedBufferedStringWriterTest
+    public class PagedBufferedTextWriterTest
     {
         private static readonly char[] Content;
 
-        static PagedBufferedStringWriterTest()
+        static PagedBufferedTextWriterTest()
         {
             Content = new char[4 * PagedBufferedTextWriter.PageSize];
             for (var i = 0; i < Content.Length; i++)
@@ -41,6 +42,24 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             // Assert
             Assert.Equal<char>(Content, inner.ToString().ToCharArray());
+        }
+
+        [Fact]
+        public async Task Write_CharArray_Null()
+        {
+            // Arrange
+            var pool = new TestArrayPool();
+            var inner = new StringWriter();
+
+            var writer = new PagedBufferedTextWriter(pool, inner);
+
+            // Act
+            writer.Write((char[])null);
+
+            await writer.FlushAsync();
+
+            // Assert
+            Assert.Empty(inner.ToString());
         }
 
         [Fact]
@@ -83,6 +102,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         }
 
         [Fact]
+        public void Write_CharArray_Bounded_Null()
+        {
+            // Arrange
+            var pool = new TestArrayPool();
+            var inner = new StringWriter();
+
+            var writer = new PagedBufferedTextWriter(pool, inner);
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>("buffer", () => writer.Write(null, 0, 0));
+        }
+
+        [Fact]
         public async Task Write_CharArray_Bounded()
         {
             // Arrange
@@ -107,6 +139,24 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             // Assert
             Assert.Equal<char>(Content, inner.ToString().ToCharArray());
+        }
+
+        [Fact]
+        public async Task Write_String_Null()
+        {
+            // Arrange
+            var pool = new TestArrayPool();
+            var inner = new StringWriter();
+
+            var writer = new PagedBufferedTextWriter(pool, inner);
+
+            // Act
+            writer.Write((string)null);
+
+            await writer.FlushAsync();
+
+            // Assert
+            Assert.Empty(inner.ToString());
         }
 
         [Fact]
@@ -158,7 +208,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             Assert.Equal(3, pool.Returned.Count);
         }
 
-        private class TestArrayPool: ArrayPool<char>
+        private class TestArrayPool : ArrayPool<char>
         {
             public IList<char[]> Returned { get; } = new List<char[]>();
 

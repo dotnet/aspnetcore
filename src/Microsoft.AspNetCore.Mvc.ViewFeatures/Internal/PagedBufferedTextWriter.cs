@@ -83,11 +83,21 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public override void Write(char[] buffer)
         {
+            if (buffer == null)
+            {
+                return;
+            }
+
             Write(buffer, 0, buffer.Length);
         }
 
         public override void Write(char[] buffer, int index, int count)
         {
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+
             while (count > 0)
             {
                 var page = GetCurrentPage();
@@ -110,6 +120,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public override void Write(string value)
         {
+            if (value == null)
+            {
+                return;
+            }
+
             var index = 0;
             var count = value.Length;
 

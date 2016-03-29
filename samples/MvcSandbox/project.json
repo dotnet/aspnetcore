@@ -18,6 +18,9 @@
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
+  "content": [
+    "Views"
+  ],
   "tools": {
     "dotnet-razor-tooling": "1.0.0-*"
   },
