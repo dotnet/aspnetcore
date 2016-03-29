@@ -150,9 +150,10 @@ var buildTarget = "compile"
 
         var commits = new ConcurrentDictionary<string, string>();
 
+        var threads = int.Parse(Environment.GetEnvironmentVariable("UNIVERSE_THREADS") ?? "4");
         foreach (var batch in batchedRepos)
         {
-            Parallel.ForEach(batch.ToArray(), new ParallelOptions { MaxDegreeOfParallelism = 4 }, repo =>
+            Parallel.ForEach(batch.ToArray(), new ParallelOptions { MaxDegreeOfParallelism = threads }, repo =>
             {
                 var blockName = string.Format("Building {0}", repo);
 
@@ -170,7 +171,16 @@ var buildTarget = "compile"
                     CopyFolder(".build", Path.Combine(repo, ".build"), true);
                 }
 
-                Exec(CreateBuildWithFlowId(repo), buildTarget, repo);
+                try
+                {
+                    Exec(CreateBuildWithFlowId(repo), buildTarget, repo);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Building '" + repo + "' failed: " + ex);
+                    throw;
+                }
+
                 var repoArtifacts = Path.Combine(repo, "artifacts");
                 var repoBuild = Path.Combine(repoArtifacts, "build");
                 if (Directory.Exists(repoBuild))
