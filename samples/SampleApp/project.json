@@ -8,6 +8,6 @@
     "SampleApp": "SampleApp"
   },
   "frameworks": {
-    "dnx451": {}
+    "net451": {}
   }
 }
