@@ -10,13 +10,13 @@
   "frameworks": {
     "netstandardapp1.5": {
       "dependencies": {
-        "NETStandard.Library": "1.0.0-*",
+        "NETStandard.Library": "1.5.0-*",
         "System.Dynamic.Runtime": "4.0.11-*"
       },
       "imports": [
         "dnxcore50"
       ]
     },
-    "dnx451": {}
+    "net451": {}
   }
 }
