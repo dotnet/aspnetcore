@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         public void Begin_DoesNotRequireParentExecutionContext()
         {
             // Arrange & Act
-            var scopeManager = new TagHelperScopeManager();
+            var scopeManager = CreateDefaultScopeManager();
 
             // Act
             var executionContext = BeginDefaultScope(scopeManager, tagName: "p");
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         public void Begin_ReturnedExecutionContext_ItemsAreRetrievedFromParentExecutionContext()
         {
             // Arrange
-            var scopeManager = new TagHelperScopeManager();
+            var scopeManager = CreateDefaultScopeManager();
             var parentExecutionContext = BeginDefaultScope(scopeManager, tagName: "p");
             parentExecutionContext.Items["test-entry"] = 1234;
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         public void Begin_DoesShallowCopyOfParentItems()
         {
             // Arrange
-            var scopeManager = new TagHelperScopeManager();
+            var scopeManager = CreateDefaultScopeManager();
             var parentComplexObject = new Dictionary<string, int>(StringComparer.Ordinal);
             var parentExecutionContext = BeginDefaultScope(scopeManager, tagName: "p");
             parentExecutionContext.Items["test-entry"] = parentComplexObject;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         public void Begin_ReturnedExecutionContext_ItemsModificationDoesNotAffectParent()
         {
             // Arrange
-            var scopeManager = new TagHelperScopeManager();
+            var scopeManager = CreateDefaultScopeManager();
             var parentExecutionContext = BeginDefaultScope(scopeManager, tagName: "p");
             parentExecutionContext.Items["test-entry"] = 1234;
             var executionContext = BeginDefaultScope(scopeManager, tagName: "p");
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         public void Begin_ReturnedExecutionContext_ItemsInsertionDoesNotAffectParent()
         {
             // Arrange
-            var scopeManager = new TagHelperScopeManager();
+            var scopeManager = CreateDefaultScopeManager();
             var parentExecutionContext = BeginDefaultScope(scopeManager, tagName: "p");
             var executionContext = BeginDefaultScope(scopeManager, tagName: "p");
 
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         public void Begin_ReturnedExecutionContext_ItemsRemovalDoesNotAffectParent()
         {
             // Arrange
-            var scopeManager = new TagHelperScopeManager();
+            var scopeManager = CreateDefaultScopeManager();
             var parentExecutionContext = BeginDefaultScope(scopeManager, tagName: "p");
             parentExecutionContext.Items["test-entry"] = 1234;
             var executionContext = BeginDefaultScope(scopeManager, tagName: "p");
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         public void Begin_CreatesContexts_TagHelperOutput_WithAppropriateTagName()
         {
             // Arrange
-            var scopeManager = new TagHelperScopeManager();
+            var scopeManager = CreateDefaultScopeManager();
 
             // Act
             var executionContext = BeginDefaultScope(scopeManager, tagName: "p");
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         public void Begin_CanNest()
         {
             // Arrange
-            var scopeManager = new TagHelperScopeManager();
+            var scopeManager = CreateDefaultScopeManager();
 
             // Act
             var executionContext = BeginDefaultScope(scopeManager, tagName: "p");
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         public void Begin_SetsExecutionContexts_TagHelperOutputTagMode(TagMode tagMode)
         {
             // Arrange
-            var scopeManager = new TagHelperScopeManager();
+            var scopeManager = CreateDefaultScopeManager();
 
             // Act
             var executionContext = BeginDefaultScope(scopeManager, "p", tagMode);
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         public void End_ReturnsParentExecutionContext()
         {
             // Arrange
-            var scopeManager = new TagHelperScopeManager();
+            var scopeManager = CreateDefaultScopeManager();
 
             // Act
             var executionContext = BeginDefaultScope(scopeManager, tagName: "p");
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         public void End_ReturnsNullIfNoNestedContext()
         {
             // Arrange
-            var scopeManager = new TagHelperScopeManager();
+            var scopeManager = CreateDefaultScopeManager();
 
             // Act
             var executionContext = BeginDefaultScope(scopeManager, tagName: "p");
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         public void End_ThrowsIfNoScope()
         {
             // Arrange
-            var scopeManager = new TagHelperScopeManager();
+            var scopeManager = CreateDefaultScopeManager();
             var expectedError = string.Format(
                 "Must call '{2}.{1}' before calling '{2}.{0}'.",
                 nameof(TagHelperScopeManager.End),
@@ -222,6 +222,13 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             Assert.Equal(expectedError, ex.Message);
         }
 
+        private static TagHelperScopeManager CreateDefaultScopeManager()
+        {
+            return new TagHelperScopeManager(
+                startTagHelperWritingScope: _ => { },
+                endTagHelperWritingScope: () => new DefaultTagHelperContent());
+        }
+
         private static TagHelperExecutionContext BeginDefaultScope(
             TagHelperScopeManager scopeManager,
             string tagName,
@@ -231,9 +238,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 tagName,
                 tagMode,
                 uniqueId: string.Empty,
-                executeChildContentAsync: async () => await Task.FromResult(result: true),
-                startTagHelperWritingScope: _ => { },
-                endTagHelperWritingScope: () => new DefaultTagHelperContent());
+                executeChildContentAsync: async () => await Task.FromResult(result: true));
         }
     }
 }
