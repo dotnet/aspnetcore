@@ -23,6 +23,7 @@ namespace CorsMiddlewareWebSite
         {
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
+                .UseKestrel()
                 .UseIISPlatformHandlerUrl()
                 .UseStartup<Startup>()
                 .Build();
