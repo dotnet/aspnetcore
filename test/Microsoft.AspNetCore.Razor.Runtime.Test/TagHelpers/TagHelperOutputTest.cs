@@ -1079,11 +1079,11 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             // Assert
             buffer.WriteTo(writer, testEncoder);
 
-            Assert.True(output.PreElement.IsEmpty);
-            Assert.True(output.PreContent.IsEmpty);
-            Assert.True(output.Content.IsEmpty);
-            Assert.True(output.PostContent.IsEmpty);
-            Assert.True(output.PostElement.IsEmpty);
+            Assert.Equal(string.Empty, output.PreElement.GetContent());
+            Assert.Equal(string.Empty, output.PreContent.GetContent());
+            Assert.Equal(string.Empty, output.Content.GetContent());
+            Assert.Equal(string.Empty, output.PostContent.GetContent());
+            Assert.Equal(string.Empty, output.PostElement.GetContent());
             Assert.Empty(output.Attributes);
 
             Assert.Equal(expected, writer.ToString(), StringComparer.Ordinal);

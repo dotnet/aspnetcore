@@ -17,18 +17,27 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     [DebuggerDisplay("{DebuggerToString(),nq}")]
     public class DefaultTagHelperContent : TagHelperContent
     {
-        private List<object> _buffer;
+        private object _singleContent;
+        private bool _isSingleContentSet;
         private bool _isModified;
+        private bool _hasContent;
+        private List<object> _buffer;
 
         private List<object> Buffer
         {
             get
             {
-                _isModified = true;
-
                 if (_buffer == null)
                 {
                     _buffer = new List<object>();
+                }
+
+                if (_isSingleContentSet)
+                {
+                    Debug.Assert(_buffer.Count == 0);
+
+                    _buffer.Add(_singleContent);
+                    _isSingleContentSet = false;
                 }
 
                 return _buffer;
@@ -40,39 +49,27 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
         /// <inheritdoc />
         /// <remarks>Returns <c>true</c> for a cleared <see cref="TagHelperContent"/>.</remarks>
-        public override bool IsWhiteSpace
+        public override bool IsEmptyOrWhiteSpace
         {
             get
             {
-                if (!IsModified)
+                if (!_hasContent)
                 {
                     return true;
                 }
 
                 using (var writer = new EmptyOrWhiteSpaceWriter())
                 {
-                    foreach (var entry in _buffer)
+                    if (_isSingleContentSet)
                     {
-                        if (entry == null)
-                        {
-                            continue;
-                        }
+                        return IsEmptyOrWhiteSpaceCore(_singleContent, writer);
+                    }
 
-                        var stringValue = entry as string;
-                        if (stringValue != null)
+                    for (var i = 0; i < (_buffer?.Count ?? 0); i++)
+                    {
+                        if (!IsEmptyOrWhiteSpaceCore(Buffer[i], writer))
                         {
-                            if (!string.IsNullOrWhiteSpace(stringValue))
-                            {
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            ((IHtmlContent)entry).WriteTo(writer, HtmlEncoder.Default);
-                            if (!writer.IsWhiteSpace)
-                            {
-                                return false;
-                            }
+                            return false;
                         }
                     }
                 }
@@ -82,73 +79,20 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         }
 
         /// <inheritdoc />
-        public override bool IsEmpty
-        {
-            get
-            {
-                if (!IsModified)
-                {
-                    return true;
-                }
-
-                using (var writer = new EmptyOrWhiteSpaceWriter())
-                {
-                    foreach (var entry in _buffer)
-                    {
-                        if (entry == null)
-                        {
-                            continue;
-                        }
-
-                        var stringValue = entry as string;
-                        if (stringValue != null)
-                        {
-                            if (!string.IsNullOrEmpty(stringValue))
-                            {
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            ((IHtmlContent)entry).WriteTo(writer, HtmlEncoder.Default);
-                            if (!writer.IsEmpty)
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                }
-
-                return true;
-            }
-        }
+        public override TagHelperContent Append(string unencoded) => AppendCore(unencoded);
 
         /// <inheritdoc />
-        public override TagHelperContent Append(string unencoded)
-        {
-            Buffer.Add(unencoded);
-            return this;
-        }
+        public override TagHelperContent AppendHtml(IHtmlContent htmlContent) => AppendCore(htmlContent);
 
         /// <inheritdoc />
         public override TagHelperContent AppendHtml(string encoded)
         {
             if (encoded == null)
             {
-                Buffer.Add(null);
+                return AppendCore(null);
             }
-            else
-            {
-                Buffer.Add(new HtmlEncodedString(encoded));
-            }
-            return this;
-        }
 
-        /// <inheritdoc />
-        public override TagHelperContent AppendHtml(IHtmlContent htmlContent)
-        {
-            Buffer.Add(htmlContent);
-            return this;
+            return AppendCore(new HtmlEncodedString(encoded));
         }
 
         /// <inheritdoc />
@@ -159,32 +103,20 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(destination));
             }
 
-            if (!IsModified)
+            if (!_hasContent)
             {
                 return;
             }
 
-            for (var i = 0; i < Buffer.Count; i++)
+            if (_isSingleContentSet)
             {
-                var entry = Buffer[i];
-                if (entry == null)
+                CopyToCore(_singleContent, destination);
+            }
+            else
+            {
+                for (var i = 0; i < (_buffer?.Count ?? 0); i++)
                 {
-                    continue;
-                }
-
-                string entryAsString;
-                IHtmlContentContainer entryAsContainer;
-                if ((entryAsString = entry as string) != null)
-                {
-                    destination.Append(entryAsString);
-                }
-                else if ((entryAsContainer = entry as IHtmlContentContainer) != null)
-                {
-                    entryAsContainer.CopyTo(destination);
-                }
-                else
-                {
-                    destination.AppendHtml((IHtmlContent)entry);
+                    CopyToCore(Buffer[i], destination);
                 }
             }
         }
@@ -197,62 +129,50 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(destination));
             }
 
-            if (!IsModified)
+            if (!_hasContent)
             {
                 return;
             }
 
-            for (var i = 0; i < Buffer.Count; i++)
+            if (_isSingleContentSet)
             {
-                var entry = Buffer[i];
-                if (entry == null)
+                MoveToCore(_singleContent, destination);
+            }
+            else
+            {
+                for (var i = 0; i < (_buffer?.Count ?? 0); i++)
                 {
-                    continue;
-                }
-
-                string entryAsString;
-                IHtmlContentContainer entryAsContainer;
-                if ((entryAsString = entry as string) != null)
-                {
-                    destination.Append(entryAsString);
-                }
-                else if ((entryAsContainer = entry as IHtmlContentContainer) != null)
-                {
-                    entryAsContainer.MoveTo(destination);
-                }
-                else
-                {
-                    destination.AppendHtml((IHtmlContent)entry);
+                    MoveToCore(Buffer[i], destination);
                 }
             }
 
-            Buffer.Clear();
+            Clear();
         }
 
         /// <inheritdoc />
         public override TagHelperContent Clear()
         {
-            Buffer.Clear();
+            _hasContent = false;
+            _isModified = true;
+            _isSingleContentSet = false;
+            _buffer?.Clear();
             return this;
         }
 
         /// <inheritdoc />
         public override void Reinitialize()
         {
-            _buffer?.Clear();
+            Clear();
             _isModified = false;
         }
 
         /// <inheritdoc />
-        public override string GetContent()
-        {
-            return GetContent(HtmlEncoder.Default);
-        }
+        public override string GetContent() => GetContent(HtmlEncoder.Default);
 
         /// <inheritdoc />
         public override string GetContent(HtmlEncoder encoder)
         {
-            if (_buffer == null)
+            if (!_hasContent)
             {
                 return string.Empty;
             }
@@ -277,28 +197,130 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(encoder));
             }
 
-            if (!IsModified)
+            if (!_hasContent)
             {
                 return;
             }
 
-            foreach (var entry in _buffer)
+            if (_isSingleContentSet)
             {
-                if (entry == null)
-                {
-                    continue;
-                }
+                WriteToCore(_singleContent, writer, encoder);
+                return;
+            }
 
-                var stringValue = entry as string;
-                if (stringValue != null)
+            for (var i = 0; i < (_buffer?.Count ?? 0); i++)
+            {
+                WriteToCore(Buffer[i], writer, encoder);
+            }
+        }
+
+        private void WriteToCore(object entry, TextWriter writer, HtmlEncoder encoder)
+        {
+            if (entry == null)
+            {
+                return;
+            }
+
+            var stringValue = entry as string;
+            if (stringValue != null)
+            {
+                encoder.Encode(writer, stringValue);
+            }
+            else
+            {
+                ((IHtmlContent)entry).WriteTo(writer, encoder);
+            }
+        }
+
+        private void CopyToCore(object entry, IHtmlContentBuilder destination)
+        {
+            if (entry == null)
+            {
+                return;
+            }
+
+            string entryAsString;
+            IHtmlContentContainer entryAsContainer;
+            if ((entryAsString = entry as string) != null)
+            {
+                destination.Append(entryAsString);
+            }
+            else if ((entryAsContainer = entry as IHtmlContentContainer) != null)
+            {
+                entryAsContainer.CopyTo(destination);
+            }
+            else
+            {
+                destination.AppendHtml((IHtmlContent)entry);
+            }
+        }
+
+        private void MoveToCore(object entry, IHtmlContentBuilder destination)
+        {
+            if (entry == null)
+            {
+                return;
+            }
+
+            string entryAsString;
+            IHtmlContentContainer entryAsContainer;
+            if ((entryAsString = entry as string) != null)
+            {
+                destination.Append(entryAsString);
+            }
+            else if ((entryAsContainer = entry as IHtmlContentContainer) != null)
+            {
+                entryAsContainer.MoveTo(destination);
+            }
+            else
+            {
+                destination.AppendHtml((IHtmlContent)entry);
+            }
+        }
+
+        private bool IsEmptyOrWhiteSpaceCore(object entry, EmptyOrWhiteSpaceWriter writer)
+        {
+            if (entry == null)
+            {
+                return false;
+            }
+
+            var stringValue = entry as string;
+            if (stringValue != null)
+            {
+                if (!string.IsNullOrWhiteSpace(stringValue))
                 {
-                    encoder.Encode(writer, stringValue);
-                }
-                else
-                {
-                    ((IHtmlContent)entry).WriteTo(writer, encoder);
+                    return false;
                 }
             }
+            else
+            {
+                ((IHtmlContent)entry).WriteTo(writer, HtmlEncoder.Default);
+                if (!writer.IsEmptyOrWhiteSpace)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private TagHelperContent AppendCore(object entry)
+        {
+            if (!_hasContent)
+            {
+                _isSingleContentSet = true;
+                _singleContent = entry;
+            }
+            else
+            {
+                Buffer.Add(entry);
+            }
+
+            _isModified = true;
+            _hasContent = true;
+
+            return this;
         }
 
         private string DebuggerToString()
@@ -317,9 +339,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 }
             }
 
-            public bool IsEmpty { get; private set; } = true;
-
-            public bool IsWhiteSpace { get; private set; } = true;
+            public bool IsEmptyOrWhiteSpace { get; private set; } = true;
 
 #if NETSTANDARD1_5
             // This is an abstract method in DNXCore
@@ -331,14 +351,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
             public override void Write(string value)
             {
-                if (IsEmpty && !string.IsNullOrEmpty(value))
+                if (IsEmptyOrWhiteSpace && !string.IsNullOrWhiteSpace(value))
                 {
-                    IsEmpty = false;
-                }
-
-                if (IsWhiteSpace && !string.IsNullOrWhiteSpace(value))
-                {
-                    IsWhiteSpace = false;
+                    IsEmptyOrWhiteSpace = false;
                 }
             }
         }

@@ -19,14 +19,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         public abstract bool IsModified { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the content is empty.
+        /// Gets a value indicating whether the content is empty or whitespace.
         /// </summary>
-        public abstract bool IsEmpty { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the content is whitespace.
-        /// </summary>
-        public abstract bool IsWhiteSpace { get; }
+        public abstract bool IsEmptyOrWhiteSpace { get; }
 
         /// <summary>
         /// Sets the content.

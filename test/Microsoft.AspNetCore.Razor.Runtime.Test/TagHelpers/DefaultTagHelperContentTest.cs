@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             source.MoveTo(destination);
 
             // Assert
-            Assert.True(source.IsEmpty);
+            Assert.Equal(string.Empty, source.GetContent());
             Assert.Equal(3, items.Count);
 
             Assert.Equal("some-content", Assert.IsType<string>(items[0]));
@@ -191,8 +191,8 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             source.MoveTo(destination);
 
             // Assert
-            Assert.True(source.IsEmpty);
-            Assert.True(nested.IsEmpty);
+            Assert.Equal(string.Empty, source.GetContent());
+            Assert.Equal(string.Empty, nested.GetContent());
             Assert.Equal(3, items.Count);
 
             Assert.Equal("some-content", Assert.IsType<string>(items[0]));
@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         [InlineData("\n")]
         [InlineData("\t")]
         [InlineData("\r")]
-        public void CanIdentifyWhiteSpace(string data)
+        public void CanIdentifyEmptyOrWhiteSpace(string data)
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
@@ -372,7 +372,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             tagHelperContent.Append(data);
 
             // Assert
-            Assert.True(tagHelperContent.IsWhiteSpace);
+            Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
         }
 
         [Fact]
@@ -386,21 +386,22 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             tagHelperContent.Append("Hello");
 
             // Assert
-            Assert.False(tagHelperContent.IsWhiteSpace);
+            Assert.True(tagHelperContent.GetContent().Length > 0);
+            Assert.False(tagHelperContent.IsEmptyOrWhiteSpace);
         }
 
         [Fact]
-        public void IsEmpty_InitiallyTrue()
+        public void IsEmptyOrWhiteSpace_InitiallyTrue()
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
 
             // Act & Assert
-            Assert.True(tagHelperContent.IsEmpty);
+            Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
         }
 
         [Fact]
-        public void IsEmpty_TrueAfterSetEmptyContent()
+        public void IsEmptyOrWhiteSpace_TrueAfterSetEmptyContent()
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
@@ -409,11 +410,11 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             tagHelperContent.SetContent(string.Empty);
 
             // Assert
-            Assert.True(tagHelperContent.IsEmpty);
+            Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
         }
 
         [Fact]
-        public void IsEmpty_TrueAfterAppendEmptyContent()
+        public void IsEmptyOrWhiteSpace_TrueAfterAppendEmptyContent()
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
@@ -423,11 +424,11 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             tagHelperContent.Append(string.Empty);
 
             // Assert
-            Assert.True(tagHelperContent.IsEmpty);
+            Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
         }
 
         [Fact]
-        public void IsEmpty_TrueAfterAppendEmptyTagHelperContent()
+        public void IsEmptyOrWhiteSpace_TrueAfterAppendEmptyTagHelperContent()
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
@@ -438,11 +439,11 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             tagHelperContent.Append(string.Empty);
 
             // Assert
-            Assert.True(tagHelperContent.IsEmpty);
+            Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
         }
 
         [Fact]
-        public void IsEmpty_TrueAfterClear()
+        public void IsEmptyOrWhiteSpace_TrueAfterClear()
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
@@ -451,11 +452,12 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             tagHelperContent.Clear();
 
             // Assert
-            Assert.True(tagHelperContent.IsEmpty);
+            Assert.Equal(string.Empty, tagHelperContent.GetContent());
+            Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
         }
 
         [Fact]
-        public void IsEmpty_FalseAfterSetContent()
+        public void IsEmptyOrWhiteSpace_FalseAfterSetContent()
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
@@ -464,11 +466,11 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             tagHelperContent.SetContent("Hello");
 
             // Assert
-            Assert.False(tagHelperContent.IsEmpty);
+            Assert.False(tagHelperContent.IsEmptyOrWhiteSpace);
         }
 
         [Fact]
-        public void IsEmpty_FalseAfterAppend()
+        public void IsEmptyOrWhiteSpace_FalseAfterAppend()
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
@@ -477,11 +479,11 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             tagHelperContent.Append("Hello");
 
             // Assert
-            Assert.False(tagHelperContent.IsEmpty);
+            Assert.False(tagHelperContent.IsEmptyOrWhiteSpace);
         }
 
         [Fact]
-        public void IsEmpty_FalseAfterAppendTagHelper()
+        public void IsEmptyOrWhiteSpace_FalseAfterAppendTagHelper()
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
@@ -492,7 +494,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             tagHelperContent.AppendHtml(copiedTagHelperContent);
 
             // Assert
-            Assert.False(tagHelperContent.IsEmpty);
+            Assert.False(tagHelperContent.IsEmptyOrWhiteSpace);
         }
 
         [Fact]
@@ -506,7 +508,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             tagHelperContent.Clear();
 
             // Assert
-            Assert.True(tagHelperContent.IsEmpty);
+            Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
         }
 
         [Fact]
