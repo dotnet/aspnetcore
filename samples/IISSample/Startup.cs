@@ -76,7 +76,7 @@ namespace IISSample
         {
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseKestrel()
                 .UseIIS()
                 .UseStartup<Startup>()
                 .Build();
@@ -85,3 +85,4 @@ namespace IISSample
         }
     }
 }
+

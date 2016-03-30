@@ -13,10 +13,11 @@ namespace TestSites
                 .UseDefaultHostingConfiguration(args)
                 .UseIIS()
                 .UseStartup("TestSites")
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseKestrel()
                 .Build();
 
             host.Run();
         }
     }
 }
+
