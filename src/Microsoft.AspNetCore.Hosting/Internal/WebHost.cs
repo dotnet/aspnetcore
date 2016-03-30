@@ -31,14 +31,16 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private RequestDelegate _application;
         private ILogger<WebHost> _logger;
 
+        // Used for testing only
+        internal WebHostOptions Options => _options;
+
         // Only one of these should be set
         internal string StartupAssemblyName { get; set; }
         internal StartupMethods Startup { get; set; }
         internal Type StartupType { get; set; }
 
-        // Only one of these should be set
-        internal IServerFactory ServerFactory { get; set; }
-        internal string ServerFactoryLocation { get; set; }
+        private IServerFactory ServerFactory { get; set; }
+
         private IServer Server { get; set; }
 
         public WebHost(
@@ -207,18 +209,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             if (Server == null)
             {
-                if (ServerFactory == null)
-                {
-                    // Blow up if we don't have a server set at this point
-                    if (ServerFactoryLocation == null)
-                    {
-                        throw new InvalidOperationException("IHostingBuilder.UseServer() is required for " + nameof(Start) + "()");
-                    }
-
-                    ServerFactory = _applicationServices.GetRequiredService<IServerLoader>().LoadServerFactory(ServerFactoryLocation);
-                }
-
+                ServerFactory = _applicationServices.GetRequiredService<IServerFactory>();
                 Server = ServerFactory.CreateServer(_config);
+
                 var addresses = Server.Features?.Get<IServerAddressesFeature>()?.Addresses;
                 if (addresses != null && !addresses.IsReadOnly && addresses.Count == 0)
                 {

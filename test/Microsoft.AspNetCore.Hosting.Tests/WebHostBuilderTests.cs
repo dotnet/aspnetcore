@@ -242,14 +242,14 @@ namespace Microsoft.AspNetCore.Hosting
         public void CodeBasedSettingsCodeBasedOverride()
         {
             var hostBuilder = new WebHostBuilder()
-                .UseSetting(WebHostDefaults.ServerKey, "ServerA")
-                .UseSetting(WebHostDefaults.ServerKey, "ServerB")
+                .UseSetting(WebHostDefaults.EnvironmentKey, "EnvA")
+                .UseSetting(WebHostDefaults.EnvironmentKey, "EnvB")
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
 
             var host = (WebHost)hostBuilder.Build();
 
-            Assert.Equal("ServerB", host.ServerFactoryLocation);
+            Assert.Equal("EnvB", host.Options.Environment);
         }
 
         [Fact]
@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var settings = new Dictionary<string, string>
             {
-                { WebHostDefaults.ServerKey, "ServerB" }
+                { WebHostDefaults.EnvironmentKey, "EnvB" }
             };
 
             var config = new ConfigurationBuilder()
@@ -265,14 +265,14 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build();
 
             var hostBuilder = new WebHostBuilder()
-                .UseSetting(WebHostDefaults.ServerKey, "ServerA")
+                .UseSetting(WebHostDefaults.EnvironmentKey, "EnvA")
                 .UseConfiguration(config)
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
 
             var host = (WebHost)hostBuilder.Build();
 
-            Assert.Equal("ServerB", host.ServerFactoryLocation);
+            Assert.Equal("EnvB", host.Options.Environment);
         }
 
         [Fact]
@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var settings = new Dictionary<string, string>
             {
-                { WebHostDefaults.ServerKey, "ServerA" }
+                { WebHostDefaults.EnvironmentKey, "EnvA" }
             };
 
             var config = new ConfigurationBuilder()
@@ -289,13 +289,13 @@ namespace Microsoft.AspNetCore.Hosting
 
             var hostBuilder = new WebHostBuilder()
                 .UseConfiguration(config)
-                .UseSetting(WebHostDefaults.ServerKey, "ServerB")
+                .UseSetting(WebHostDefaults.EnvironmentKey, "EnvB")
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
 
             var host = (WebHost)hostBuilder.Build();
 
-            Assert.Equal("ServerB", host.ServerFactoryLocation);
+            Assert.Equal("EnvB", host.Options.Environment);
         }
 
         [Fact]
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var settings = new Dictionary<string, string>
             {
-                { WebHostDefaults.ServerKey, "ServerA" }
+                { WebHostDefaults.EnvironmentKey, "EnvA" }
             };
 
             var config = new ConfigurationBuilder()
@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             var overrideSettings = new Dictionary<string, string>
             {
-                { WebHostDefaults.ServerKey, "ServerB" }
+                { WebHostDefaults.EnvironmentKey, "EnvB" }
             };
 
             var overrideConfig = new ConfigurationBuilder()
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             var host = (WebHost)hostBuilder.Build();
 
-            Assert.Equal("ServerB", host.ServerFactoryLocation);
+            Assert.Equal("EnvB", host.Options.Environment);
         }
 
         [Fact]

@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -105,6 +108,27 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
+        /// Specify the <see cref="IServerFactory"/> to be used by the web host.
+        /// </summary>
+        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
+        /// <param name="factory">The <see cref="IServerFactory"/> to be used.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public static IWebHostBuilder UseServer(this IWebHostBuilder hostBuilder, IServerFactory factory)
+        {
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            return hostBuilder.ConfigureServices(services =>
+            {
+                // It would be nicer if this was transient but we need to pass in the
+                // factory instance directly
+                services.AddSingleton(factory);
+            });
+        }
+
+        /// <summary>
         /// Specify the server to be used by the web host.
         /// </summary>
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
@@ -117,6 +141,8 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(server));
             }
 
+            // It would be nicer if this was transient but we need to pass in the
+            // server instance directly
             return hostBuilder.UseServer(new ServerFactory(server));
         }
 

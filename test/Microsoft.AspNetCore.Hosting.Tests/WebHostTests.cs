@@ -24,7 +24,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    public class WebHostTests : IServerFactory, IServer
+    public class WebHostTests : IServerFactory
     {
         private readonly IList<StartInstance> _startInstances = new List<StartInstance>();
         private IFeatureCollection _featuresSupportedByThisHost = NewFeatureCollection();
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Hosting
         public void WebHostThrowsWithNoServer()
         {
             var ex = Assert.Throws<InvalidOperationException>(() => CreateBuilder().Build().Start());
-            Assert.True(ex.Message.Contains("UseServer()"));
+            Assert.Equal("No service for type 'Microsoft.AspNetCore.Hosting.Server.IServerFactory' has been registered.", ex.Message);
         }
 
         [Fact]
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
-        public void CanDefaultAddresseIfNotConfigured()
+        public void CanDefaultAddressesIfNotConfigured()
         {
             var vals = new Dictionary<string, string>
             {
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Hosting
         public void WebHostCanBeStarted()
         {
             var host = CreateBuilder()
-                .UseServer((IServerFactory)this)
+                .UseServer(this)
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Start();
 
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Hosting
         public void WebHostShutsDownWhenTokenTriggers()
         {
             var host = CreateBuilder()
-                .UseServer((IServerFactory)this)
+                .UseServer(this)
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build();
 
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Hosting
         public void WebHostDisposesServiceProvider()
         {
             var host = CreateBuilder()
-                .UseServer((IServerFactory)this)
+                .UseServer(this)
                 .ConfigureServices(s =>
                 {
                     s.AddTransient<IFakeService, FakeService>();
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Hosting
         public void WebHostNotifiesApplicationStarted()
         {
             var host = CreateBuilder()
-                .UseServer((IServerFactory)this)
+                .UseServer(this)
                 .Build();
             var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
 
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Hosting
         public void WebHostInjectsHostingEnvironment()
         {
             var host = CreateBuilder()
-                .UseServer((IServerFactory)this)
+                .UseServer(this)
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .UseEnvironment("WithHostingEnvironment")
                 .Build();
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Hosting
                 {
                     services.AddTransient<IStartupLoader, TestLoader>();
                 })
-                .UseServer((IServerFactory)this)
+                .UseServer(this)
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests");
 
             Assert.Throws<NotImplementedException>(() => builder.Build());
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Hosting
         [Fact]
         public void CanCreateApplicationServicesWithAddedServices()
         {
-            var host = CreateBuilder().UseServer((IServerFactory)this).ConfigureServices(services => services.AddOptions()).Build();
+            var host = CreateBuilder().UseServer(this).ConfigureServices(services => services.AddOptions()).Build();
             Assert.NotNull(host.Services.GetRequiredService<IOptions<object>>());
         }
 
@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Hosting
             // Verify ordering
             var configureOrder = 0;
             var host = CreateBuilder()
-                .UseServer((IServerFactory)this)
+                .UseServer(this)
                 .ConfigureServices(services =>
                 {
                     services.AddTransient<IStartupFilter>(serviceProvider => new TestFilter(
@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.Hosting
         [Fact]
         public void EnvDefaultsToProductionIfNoConfig()
         {
-            var host = CreateBuilder().UseServer((IServerFactory)this).Build();
+            var host = CreateBuilder().UseServer(this).Build();
             var env = host.Services.GetService<IHostingEnvironment>();
             Assert.Equal(EnvironmentName.Production, env.EnvironmentName);
         }
@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
 
-            var host = CreateBuilder(config).UseServer((IServerFactory)this).Build();
+            var host = CreateBuilder(config).UseServer(this).Build();
             var env = host.Services.GetService<IHostingEnvironment>();
             Assert.Equal("Staging", env.EnvironmentName);
         }
@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
 
-            var host = CreateBuilder(config).UseServer((IServerFactory)this).Build();
+            var host = CreateBuilder(config).UseServer(this).Build();
             var env = host.Services.GetService<IHostingEnvironment>();
             Assert.Equal(Path.GetFullPath("testroot"), env.WebRootPath);
             Assert.True(env.WebRootFileProvider.GetFileInfo("TextFile.txt").Exists);
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Hosting
         [Fact]
         public void IsEnvironment_Extension_Is_Case_Insensitive()
         {
-            var host = CreateBuilder().UseServer((IServerFactory)this).Build();
+            var host = CreateBuilder().UseServer(this).Build();
             using (host)
             {
                 host.Start();
@@ -401,7 +401,7 @@ namespace Microsoft.AspNetCore.Hosting
         public void WebHost_InvokesConfigureMethodsOnlyOnce()
         {
             var host = CreateBuilder()
-                .UseServer((IServerFactory)this)
+                .UseServer(this)
                 .UseStartup<CountStartup>()
                 .Build();
             using (host)
@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.Hosting
         public void WebHost_ThrowsForBadConfigureServiceSignature()
         {
             var builder = CreateBuilder()
-                .UseServer((IServerFactory)this)
+                .UseServer(this)
                 .UseStartup<BadConfigureServicesStartup>();
 
             var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
@@ -450,7 +450,7 @@ namespace Microsoft.AspNetCore.Hosting
         private IWebHost CreateHost(RequestDelegate requestDelegate)
         {
             var builder = CreateBuilder()
-                .UseServer((IServerFactory)this)
+                .UseServer(this)
                 .Configure(
                     appBuilder =>
                     {
@@ -497,7 +497,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             _instanceFeaturesSupportedByThisHost = new FeatureCollection();
             _instanceFeaturesSupportedByThisHost.Set<IServerAddressesFeature>(new ServerAddressesFeature());
-            return this;
+            return new FakeServer(this);
         }
 
         private class StartInstance : IDisposable
@@ -670,6 +670,25 @@ namespace Microsoft.AspNetCore.Hosting
         private class StubHttpRequestIdentifierFeature : IHttpRequestIdentifierFeature
         {
             public string TraceIdentifier { get; set; }
+        }
+
+        private class FakeServer : IServer
+        {
+            private readonly WebHostTests _webHostTests;
+
+            public FakeServer(WebHostTests webHostTests)
+            {
+                _webHostTests = webHostTests;
+            }
+
+            public IFeatureCollection Features => _webHostTests.Features;
+
+            public void Dispose() => _webHostTests.Dispose();
+
+            public void Start<TContext>(IHttpApplication<TContext> application)
+            {
+                _webHostTests.Start<TContext>(application);
+            }
         }
     }
 }

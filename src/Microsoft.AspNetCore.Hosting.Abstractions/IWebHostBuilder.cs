@@ -27,13 +27,6 @@ namespace Microsoft.AspNetCore.Hosting
         IWebHostBuilder UseLoggerFactory(ILoggerFactory loggerFactory);
 
         /// <summary>
-        /// Specify the <see cref="IServerFactory"/> to be used by the web host.
-        /// </summary>
-        /// <param name="factory">The <see cref="IServerFactory"/> to be used.</param>
-        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        IWebHostBuilder UseServer(IServerFactory factory);
-
-        /// <summary>
         /// Specify the startup type to be used by the web host. 
         /// </summary>
         /// <param name="startupType">The <see cref="Type"/> to be used.</param>

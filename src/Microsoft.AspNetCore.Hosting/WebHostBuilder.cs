@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Builder;
@@ -37,9 +38,6 @@ namespace Microsoft.AspNetCore.Hosting
         // Only one of these should be set
         private StartupMethods _startup;
         private Type _startupType;
-
-        // Only one of these should be set
-        private IServerFactory _serverFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebHostBuilder"/> class.
@@ -86,22 +84,6 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             _loggerFactory = loggerFactory;
-            return this;
-        }
-
-        /// <summary>
-        /// Specify the <see cref="IServerFactory"/> to be used by the web host.
-        /// </summary>
-        /// <param name="factory">The <see cref="IServerFactory"/> to be used.</param>
-        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public IWebHostBuilder UseServer(IServerFactory factory)
-        {
-            if (factory == null)
-            {
-                throw new ArgumentNullException(nameof(factory));
-            }
-
-            _serverFactory = factory;
             return this;
         }
 
@@ -190,10 +172,6 @@ namespace Microsoft.AspNetCore.Hosting
             var host = new WebHost(hostingServices, startupLoader, _options, _config);
 
             // Only one of these should be set, but they are used in priority
-            host.ServerFactory = _serverFactory;
-            host.ServerFactoryLocation = _options.ServerFactoryLocation;
-
-            // Only one of these should be set, but they are used in priority
             host.Startup = _startup;
             host.StartupType = _startupType;
             host.StartupAssemblyName = _options.Application;
@@ -227,8 +205,6 @@ namespace Microsoft.AspNetCore.Hosting
             services.AddLogging();
 
             services.AddTransient<IStartupLoader, StartupLoader>();
-
-            services.AddTransient<IServerLoader, ServerLoader>();
             services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
             services.AddTransient<IHttpContextFactory, HttpContextFactory>();
             services.AddOptions();
@@ -247,6 +223,13 @@ namespace Microsoft.AspNetCore.Hosting
 
             services.AddSingleton(defaultPlatformServices.Application);
             services.AddSingleton(defaultPlatformServices.Runtime);
+
+            if (!string.IsNullOrEmpty(_options.ServerFactoryAssembly))
+            {
+                // Add the server factory
+                var serverFactoryType = ServerLoader.ResolveServerFactoryType(_options.ServerFactoryAssembly);
+                services.AddSingleton(typeof(IServerFactory), serverFactoryType);
+            }
 
             foreach (var configureServices in _configureServicesDelegates)
             {
