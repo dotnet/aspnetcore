@@ -87,7 +87,7 @@ namespace Microsoft.Net.Http.Server
 
                 HttpResponseMessage response = await responseTask;
                 Assert.Equal(901, (int)response.StatusCode);
-                Assert.True(string.IsNullOrEmpty(response.ReasonPhrase)); // https://github.com/dotnet/corefx/issues/6721
+                Assert.Equal(string.Empty, response.ReasonPhrase);
                 Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
             }
         }
