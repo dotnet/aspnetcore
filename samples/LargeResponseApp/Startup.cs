@@ -41,6 +41,8 @@ namespace LargeResponseApp
         {
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
+                .UseKestrel()
+                .UseUrls("http://localhost:5001/")
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .Build();

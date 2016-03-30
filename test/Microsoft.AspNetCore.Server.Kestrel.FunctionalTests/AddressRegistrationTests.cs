@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var hostBuilder = new WebHostBuilder()
                 .UseConfiguration(config)
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseKestrel()
                 .Configure(ConfigureEchoAddress);
 
             using (var host = hostBuilder.Build())

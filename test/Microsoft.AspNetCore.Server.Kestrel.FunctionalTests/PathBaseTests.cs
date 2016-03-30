@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var builder = new WebHostBuilder()
                 .UseConfiguration(config)
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseKestrel()
                 .Configure(app =>
                 {
                     app.Run(async context =>

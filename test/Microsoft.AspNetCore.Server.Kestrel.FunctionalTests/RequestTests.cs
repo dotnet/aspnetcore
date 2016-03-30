@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var port = PortManager.GetPort();
             var builder = new WebHostBuilder()
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseKestrel()
                 .UseUrls($"http://localhost:{port}/")
                 .Configure(app =>
                 {
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var port = PortManager.GetPort();
             var builder = new WebHostBuilder()
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseKestrel()
                 .UseUrls($"http://localhost:{port}/")
                 .Configure(app =>
                 {
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var port = PortManager.GetPort();
             var builder = new WebHostBuilder()
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseKestrel()
                 .UseUrls($"http://localhost:{port}")
                 .Configure(app =>
                 {
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var port = PortManager.GetPort();
             var builder = new WebHostBuilder()
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseKestrel()
                 .UseUrls($"http://localhost:{port}/\u0041\u030A")
                 .Configure(app =>
                 {
@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var port = PortManager.GetPort();
             var builder = new WebHostBuilder()
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseKestrel()
                 .UseUrls($"http://{registerAddress}:{port}")
                 .Configure(app =>
                 {
