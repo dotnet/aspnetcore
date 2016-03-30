@@ -39,7 +39,7 @@ namespace ResponseBufferingSample
         {
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseKestrel()
                 // .UseIIS() // This repo can no longer reference IIS because IISIntegration depends on it.
                 .UseStartup<Startup>()
                 .Build();
@@ -48,3 +48,4 @@ namespace ResponseBufferingSample
         }
     }
 }
+
