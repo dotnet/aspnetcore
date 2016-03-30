@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -157,7 +157,7 @@ namespace OpenIdConnect.AzureAdSample
         {
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseKestrel()
                 .UseIISPlatformHandlerUrl()
                 .UseStartup<Startup>()
                 .Build();
@@ -166,3 +166,4 @@ namespace OpenIdConnect.AzureAdSample
         }
     }
 }
+
