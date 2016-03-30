@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
                 for (var i = 0; i < _leased.Count; i++)
                 {
-                    _viewBufferPool.Return(_leased[i]);
+                    _viewBufferPool.Return(_leased[i], clearArray: true);
                 }
 
                 _leased.Clear();
