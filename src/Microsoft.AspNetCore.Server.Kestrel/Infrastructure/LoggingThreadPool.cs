@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 {
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                 }
                 catch (Exception e)
                 {
-                    _log.ApplicationError(e);
+                    _log.LogError(0, e, "LoggingThreadPool.Run");
                 }
             };
 
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                 }
                 catch (Exception e)
                 {
-                    _log.ApplicationError(e);
+                    _log.LogError(0, e, "LoggingThreadPool.Complete");
                 }
             };
 
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                 }
                 catch (Exception e)
                 {
-                    _log.ApplicationError(e);
+                    _log.LogError(0, e, "LoggingThreadPool.Cancel");
                 }
             };
         }
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
         public void Error(TaskCompletionSource<object> tcs, Exception ex)
         {
-            // ex ang _log are closure captured 
+            // ex and _log are closure captured 
             ThreadPool.QueueUserWorkItem((o) =>
             {
                 try
@@ -83,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                 }
                 catch (Exception e)
                 {
-                    _log.ApplicationError(e);
+                    _log.LogError(0, e, "LoggingThreadPool.Error");
                 }
             }, tcs);
         }

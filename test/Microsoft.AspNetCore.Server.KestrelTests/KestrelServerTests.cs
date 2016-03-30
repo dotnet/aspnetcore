@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             features.Set(information);
 
             var lifetime = new LifetimeNotImplemented();
-            var logger = new TestKestrelTrace.TestLogger();
+            var logger = new TestApplicationErrorLogger();
 
             return new KestrelServer(features, lifetime, logger);
         }
