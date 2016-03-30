@@ -24,3 +24,9 @@ branches:
     - /^(.*\/)?ci-.*$/
 script:
   - ./build.sh --quiet verify
+notifications:
+  webhooks:
+    secure: "dzKsW/YJVie2UeYKMlKFA9dcHv0WpF4IKd7z/yEhV96eB5e2Pls+vtQFUP86Wg/fcqeLHAmb0GazXnomPg2cX13ihz+mF0hCvA58UTczNpwwfTZd7VHQe9Ti93Zoo49HkTFBbIDMns9eUxhcEo4T4lC85dG4ZRz7v8X6/Nlr71PMIGYI29Uyur/1oPrnNI7DBweOY4Z1Xhl5cfaSPd945VM8QPHeM494XGmgldGpIZs+LjZbA8S3xxB0YaxpAwGKO4gWSXL2fP4y1z5rFEY1JZamPaedA3dICVi3BVDjJ4l3sn3fEBxOAv8QwjHvSu0xWK/MAIX/SmY7ScgIND+UMjGFTaeZLYN18hJDm+a4mAx/tPaqsOGAKm9F/aVQAzP0g4z+VAVDz1iqxDWe+x/cK4DPjUbLXpP6Y6jtrVES/TkKNuLNA/NUOp+vDPXieDaQAmeU2l6M2el1PscQPtla6KIS1oDDiuHeWC/b4suCAJVsads25y7KyncmmwYE1Tgh1sUJa+Vk9c/hxiIuDJQUWxmi/4BGjDYO29y60jc2niimzvQ3sV2x+Rh81zJaLWXNYdIgugzQpe4nG8wQDbLuEAlfINBt7cIxw3MK3ov4MV5MVRaDVMEm0A5yIN9Mz83USPkuXxfhGtOo6YU1Ny/D2bjc9LI7lGHbjQtFlJa6U6c="
+  on_success: always
+  on_failure: always
+  on_start: always
