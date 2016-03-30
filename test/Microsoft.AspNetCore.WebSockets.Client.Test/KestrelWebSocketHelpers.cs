@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.WebSockets.Client.Test
 
             var host = new WebHostBuilder()
                 .UseConfiguration(config)
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseKestrel()
                 .Configure(startup)
                 .Build();
 
@@ -57,3 +57,4 @@ namespace Microsoft.AspNetCore.WebSockets.Client.Test
         }
     }
 }
+
