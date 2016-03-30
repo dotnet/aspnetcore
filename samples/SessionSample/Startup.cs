@@ -81,7 +81,7 @@ namespace SessionSample
         {
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseKestrel()
                 .UseIISPlatformHandlerUrl()
                 .UseStartup<Startup>()
                 .Build();
