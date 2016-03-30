@@ -24,3 +24,9 @@ branches:
     - /^(.*\/)?ci-.*$/
 script:
   - ./build.sh --quiet verify
+notifications:
+  webhooks:
+    secure: "wQWIB0w+JTMEcME/A3EkbE/kOEd2Ir6JLouu8GnKxpAYkkfgZTJvB39vDZlddcUX2KUIh1wEb+pymSYdVuY8IqgnOiafyNHMr+hOOmyijgGGDEgwFhc6kVg9QE9in1W6EhFc3Zc4q1lTTX8lI3y/fxv4ry4D6UDs7ddcDpBvpWk="
+  on_success: always
+  on_failure: always
+  on_start: always
