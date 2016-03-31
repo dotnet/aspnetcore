@@ -1,9 +1,0 @@
-{
-  "name": "ASP.NET",
-  "private": true,
-  "version": "0.0.0",
-  "devDependencies": {
-    "gulp": "^3.9.0",
-    "main-bower-files": "^2.9.0"
-  }
-}
