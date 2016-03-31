@@ -2,9 +2,7 @@ import * as ng from 'angular2/core';
 import { Http } from 'angular2/http';
 
 @ng.Component({
-  selector: 'fetch-data'
-})
-@ng.View({
+  selector: 'fetch-data',
   template: require('./fetch-data.html')
 })
 export class FetchData {

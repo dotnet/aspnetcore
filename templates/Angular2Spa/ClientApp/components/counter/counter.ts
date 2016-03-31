@@ -1,9 +1,7 @@
 import * as ng from 'angular2/core';
 
 @ng.Component({
-  selector: 'counter'
-})
-@ng.View({
+  selector: 'counter',
   template: require('./counter.html')
 })
 export class Counter {

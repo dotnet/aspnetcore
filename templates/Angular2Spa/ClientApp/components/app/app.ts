@@ -7,16 +7,14 @@ import { FetchData } from '../fetch-data/fetch-data';
 import { Counter } from '../counter/counter';
 
 @ng.Component({
-    selector: 'app'
+    selector: 'app',
+    template: require('./app.html'),
+    directives: [NavMenu, router.ROUTER_DIRECTIVES]
 })
 @router.RouteConfig([
     { path: '/', component: Home, name: 'Home' },
     { path: '/counter', component: Counter, name: 'Counter' },
     { path: '/fetch-data', component: FetchData, name: 'FetchData' }
 ])
-@ng.View({
-    template: require('./app.html'),
-    directives: [NavMenu, router.ROUTER_DIRECTIVES]
-})
 export class App {
 }
