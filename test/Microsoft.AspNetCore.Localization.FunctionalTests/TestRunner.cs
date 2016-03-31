@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Testing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Localization.FunctionalTests
@@ -17,7 +19,27 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
 
         public TestRunner(string applicationPath)
         {
-            _applicationPath = applicationPath;
+            _applicationPath = Path.Combine(ResolveRootFolder(PlatformServices.Default.Application.ApplicationBasePath), applicationPath);
+        }
+
+        private static string ResolveRootFolder(string projectFolder)
+        {
+            var di = new DirectoryInfo(projectFolder);
+
+            while (di.Parent != null)
+            {
+                var globalJsonPath = Path.Combine(di.FullName, "global.json");
+
+                if (File.Exists(globalJsonPath))
+                {
+                    return di.FullName;
+                }
+
+                di = di.Parent;
+            }
+
+            // If we don't find any files then make the project folder the root
+            return projectFolder;
         }
 
         private async Task<string> RunTestAndGetResponse(

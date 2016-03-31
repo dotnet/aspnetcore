@@ -12,8 +12,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
 {
     public class LocalizationTest
     {
-        private static readonly string _applicationPath = Path.GetFullPath(
-            Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "..", "..", "..", "..", "..", "LocalizationWebsite"));
+        private static readonly string _applicationPath = Path.Combine("test", "LocalizationWebsite");
         
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
