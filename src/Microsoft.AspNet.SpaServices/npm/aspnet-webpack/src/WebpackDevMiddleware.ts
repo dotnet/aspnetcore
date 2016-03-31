@@ -1,4 +1,4 @@
-import * as express from 'express';
+import * as connect from 'connect';
 import * as webpack from 'webpack';
 import { requireNewCopy } from './RequireNewCopy';
 
@@ -34,7 +34,7 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
         return;
     }
 
-    const app = express();
+    const app = connect();
     const defaultPort = 0; // 0 means 'choose randomly'. Could allow an explicit value to be supplied instead.
     const listener = app.listen(defaultPort, () => {
         // Build the final Webpack config based on supplied options

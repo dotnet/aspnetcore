@@ -5,20 +5,11 @@
   "path": "typings",
   "bundle": "typings/tsd.d.ts",
   "installed": {
-    "express/express.d.ts": {
-      "commit": "0144ad5a74053f2292424847259c4c8e1d0fecaa"
-    },
     "webpack/webpack.d.ts": {
       "commit": "0144ad5a74053f2292424847259c4c8e1d0fecaa"
     },
     "node/node.d.ts": {
-      "commit": "0144ad5a74053f2292424847259c4c8e1d0fecaa"
-    },
-    "serve-static/serve-static.d.ts": {
-      "commit": "0144ad5a74053f2292424847259c4c8e1d0fecaa"
-    },
-    "mime/mime.d.ts": {
-      "commit": "0144ad5a74053f2292424847259c4c8e1d0fecaa"
+      "commit": "e937b3e64af586d19f2ea29fdf771e9dc4feecc8"
     },
     "source-map/source-map.d.ts": {
       "commit": "0144ad5a74053f2292424847259c4c8e1d0fecaa"
@@ -28,6 +19,9 @@
     },
     "es6-promise/es6-promise.d.ts": {
       "commit": "0144ad5a74053f2292424847259c4c8e1d0fecaa"
+    },
+    "connect/connect.d.ts": {
+      "commit": "e937b3e64af586d19f2ea29fdf771e9dc4feecc8"
     }
   }
 }
