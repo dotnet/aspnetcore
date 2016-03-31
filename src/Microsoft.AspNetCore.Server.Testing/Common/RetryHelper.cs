@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Testing
                     else
                     {
                         if (exception is HttpRequestException
-#if DNX451 || NET451
+#if NET451
                         || exception is System.Net.WebException
 #endif
                         )
