@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     internal class TestModelValidatorProvider : CompositeModelValidatorProvider
     {
         // Creates a provider with all the defaults - includes data annotations
-        public static IModelValidatorProvider CreateDefaultProvider()
+        public static CompositeModelValidatorProvider CreateDefaultProvider()
         {
             var providers = new IModelValidatorProvider[]
             {

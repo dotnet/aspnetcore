@@ -31,11 +31,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(JsonOutputFormatter)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
-            var modelState = operationContext.ActionContext.ModelState;
+            var testContext = ModelBindingTestHelper.GetTestContext();
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
 
@@ -68,11 +68,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(JsonOutputFormatter),
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
-            var modelState = operationContext.ActionContext.ModelState;
+            var testContext = ModelBindingTestHelper.GetTestContext();
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             // ModelBindingResult
@@ -104,11 +104,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(IEnumerable<JsonOutputFormatter>),
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
-            var modelState = operationContext.ActionContext.ModelState;
+            var testContext = ModelBindingTestHelper.GetTestContext();
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             // ModelBindingResult
@@ -140,11 +140,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(IEnumerable<IActionResult>),
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
-            var modelState = operationContext.ActionContext.ModelState;
+            var testContext = ModelBindingTestHelper.GetTestContext();
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             // ModelBindingResult
@@ -176,11 +176,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(IActionResult),
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
+            var testContext = ModelBindingTestHelper.GetTestContext();
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => argumentBinder.BindModelAsync(parameter, operationContext));
+                () => argumentBinder.BindModelAsync(parameter, testContext));
             Assert.Contains(typeof(IActionResult).FullName, exception.Message);
         }
     }

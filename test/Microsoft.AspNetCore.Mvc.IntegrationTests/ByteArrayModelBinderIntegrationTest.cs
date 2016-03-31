@@ -37,15 +37,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // any valid base64 string
             var expectedValue = new byte[] { 12, 13 };
             var value = Convert.ToBase64String(expectedValue);
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
                 request =>
                 {
                     request.QueryString = QueryString.Create(queryStringKey, value);
                 });
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
 
@@ -86,11 +86,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             // No data is passed.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
-            var modelState = operationContext.ActionContext.ModelState;
+            var testContext = ModelBindingTestHelper.GetTestContext();
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
 
@@ -120,16 +120,16 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // any valid base64 string
             var value = "four";
             var expectedValue = Convert.FromBase64String(value);
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
                 request =>
                 {
                     request.QueryString = QueryString.Create("CustomParameter", value);
                 });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
 

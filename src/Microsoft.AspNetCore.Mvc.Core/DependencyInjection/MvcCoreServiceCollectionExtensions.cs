@@ -178,18 +178,22 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Singleton<IFilterProvider, DefaultFilterProvider>());
 
             //
-            // ModelBinding, Validation and Formatting
+            // ModelBinding, Validation
             //
             // The DefaultModelMetadataProvider does significant caching and should be a singleton.
             services.TryAddSingleton<IModelMetadataProvider, DefaultModelMetadataProvider>();
-            services.TryAdd(ServiceDescriptor.Transient<ICompositeMetadataDetailsProvider>(serviceProvider =>
+            services.TryAdd(ServiceDescriptor.Transient<ICompositeMetadataDetailsProvider>(s =>
             {
-                var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Value;
+                var options = s.GetRequiredService<IOptions<MvcOptions>>().Value;
                 return new DefaultCompositeMetadataDetailsProvider(options.ModelMetadataDetailsProviders);
             }));
             services.TryAddSingleton<IModelBinderFactory, ModelBinderFactory>();
-            services.TryAddSingleton<IObjectModelValidator, DefaultObjectValidator>();
-            services.TryAddSingleton<ValidatorCache>();
+            services.TryAddSingleton<IObjectModelValidator>(s =>
+            {
+                var options = s.GetRequiredService<IOptions<MvcOptions>>().Value;
+                var metadataProvider = s.GetRequiredService<IModelMetadataProvider>();
+                return new DefaultObjectValidator(metadataProvider, options.ModelValidatorProviders);
+            });
             services.TryAddSingleton<ClientValidatorCache>();
 
             //

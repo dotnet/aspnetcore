@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
@@ -14,34 +15,36 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     {
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly ValidatorCache _validatorCache;
+        private readonly IModelValidatorProvider _validatorProvider;
 
         /// <summary>
         /// Initializes a new instance of <see cref="DefaultObjectValidator"/>.
         /// </summary>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
-        /// <param name="validatorCache">The <see cref="ValidatorCache"/>.</param>
+        /// <param name="validatorProviders">The list of <see cref="IModelValidatorProvider"/>.</param>
         public DefaultObjectValidator(
             IModelMetadataProvider modelMetadataProvider,
-            ValidatorCache validatorCache)
+            IList<IModelValidatorProvider> validatorProviders)
         {
             if (modelMetadataProvider == null)
             {
                 throw new ArgumentNullException(nameof(modelMetadataProvider));
             }
 
-            if (validatorCache == null)
+            if (validatorProviders == null)
             {
-                throw new ArgumentNullException(nameof(validatorCache));
+                throw new ArgumentNullException(nameof(validatorProviders));
             }
 
             _modelMetadataProvider = modelMetadataProvider;
-            _validatorCache = validatorCache;
+            _validatorCache = new ValidatorCache();
+
+            _validatorProvider = new CompositeModelValidatorProvider(validatorProviders);
         }
 
         /// <inheritdoc />
         public void Validate(
             ActionContext actionContext,
-            IModelValidatorProvider validatorProvider,
             ValidationStateDictionary validationState,
             string prefix,
             object model)
@@ -51,14 +54,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(actionContext));
             }
 
-            if (validatorProvider == null)
-            {
-                throw new ArgumentNullException(nameof(validatorProvider));
-            }
-
             var visitor = new ValidationVisitor(
                 actionContext,
-                validatorProvider,
+                _validatorProvider,
                 _validatorCache,
                 _modelMetadataProvider,
                 validationState);

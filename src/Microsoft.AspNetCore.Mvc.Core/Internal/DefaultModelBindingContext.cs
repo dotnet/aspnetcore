@@ -12,7 +12,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// </summary>
     public class DefaultModelBindingContext : ModelBindingContext
     {
-        private OperationBindingContext _operationBindingContext;
+        private IValueProvider _originalValueProvider;
+        private ActionContext _actionContext;
+        private ModelStateDictionary _modelState;
+        private ValidationStateDictionary _validationState;
 
         private State _state;
         private readonly Stack<State> _stack = new Stack<State>();
@@ -24,138 +27,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
         }
 
-        /// <summary>
-        /// Creates a new <see cref="DefaultModelBindingContext"/> for top-level model binding operation.
-        /// </summary>
-        /// <param name="operationBindingContext">
-        /// The <see cref="OperationBindingContext"/> associated with the binding operation.
-        /// </param>
-        /// <param name="metadata"><see cref="ModelMetadata"/> associated with the model.</param>
-        /// <param name="bindingInfo"><see cref="BindingInfo"/> associated with the model.</param>
-        /// <param name="modelName">The name of the property or parameter being bound.</param>
-        /// <returns>A new instance of <see cref="DefaultModelBindingContext"/>.</returns>
-        public static ModelBindingContext CreateBindingContext(
-            OperationBindingContext operationBindingContext,
-            ModelMetadata metadata,
-            BindingInfo bindingInfo,
-            string modelName)
-        {
-            if (operationBindingContext == null)
-            {
-                throw new ArgumentNullException(nameof(operationBindingContext));
-            }
-
-            if (metadata == null)
-            {
-                throw new ArgumentNullException(nameof(metadata));
-            }
-
-            if (modelName == null)
-            {
-                throw new ArgumentNullException(nameof(modelName));
-            }
-
-            var binderModelName = bindingInfo?.BinderModelName ?? metadata.BinderModelName;
-            var propertyFilterProvider = bindingInfo?.PropertyFilterProvider ?? metadata.PropertyFilterProvider;
-
-            var valueProvider = operationBindingContext.ValueProvider;
-            var bindingSource = bindingInfo?.BindingSource ?? metadata.BindingSource;
-            if (bindingSource != null && !bindingSource.IsGreedy)
-            {
-                valueProvider = FilterValueProvider(operationBindingContext.ValueProvider, bindingSource);
-            }
-
-            return new DefaultModelBindingContext()
-            {
-                BinderModelName = binderModelName,
-                BindingSource = bindingSource,
-                PropertyFilter = propertyFilterProvider?.PropertyFilter,
-
-                // Because this is the top-level context, FieldName and ModelName should be the same.
-                FieldName = binderModelName ?? modelName,
-                ModelName = binderModelName ?? modelName,
-
-                IsTopLevelObject = true,
-                ModelMetadata = metadata,
-                ModelState = operationBindingContext.ActionContext.ModelState,
-                OperationBindingContext = operationBindingContext,
-                ValueProvider = valueProvider,
-
-                ValidationState = new ValidationStateDictionary(),
-            };
-        }
-
         /// <inheritdoc />
-        public override NestedScope EnterNestedScope(
-            ModelMetadata modelMetadata,
-            string fieldName,
-            string modelName,
-            object model)
+        public override ActionContext ActionContext
         {
-            if (modelMetadata == null)
-            {
-                throw new ArgumentNullException(nameof(modelMetadata));
-            }
-
-            if (fieldName == null)
-            {
-                throw new ArgumentNullException(nameof(fieldName));
-            }
-
-            if (modelName == null)
-            {
-                throw new ArgumentNullException(nameof(modelName));
-            }
-
-            var scope = EnterNestedScope();
-
-            // Only filter if the new BindingSource affects the value providers. Otherwise we want
-            // to preserve the currrent state.
-            if (modelMetadata.BindingSource != null && !modelMetadata.BindingSource.IsGreedy)
-            {
-                ValueProvider = FilterValueProvider(_operationBindingContext.ValueProvider, modelMetadata.BindingSource);
-            }
-
-            Model = model;
-            ModelMetadata = modelMetadata;
-            ModelName = modelName;
-            FieldName = fieldName;
-            BinderModelName = modelMetadata.BinderModelName;
-            BindingSource = modelMetadata.BindingSource;
-            PropertyFilter = modelMetadata.PropertyFilterProvider?.PropertyFilter;
-
-            IsTopLevelObject = false;
-
-            return scope;
-        }
-
-        /// <inheritdoc />
-        public override NestedScope EnterNestedScope()
-        {
-            _stack.Push(_state);
-
-            Result = null;
-
-            return new NestedScope(this);
-        }
-
-        /// <inheritdoc />
-        protected override void ExitNestedScope()
-        {
-            _state = _stack.Pop();
-        }
-
-        /// <inheritdoc />
-        public override OperationBindingContext OperationBindingContext
-        {
-            get { return _operationBindingContext; }
+            get { return _actionContext; }
             set
             {
                 if (value == null)
                 {
                     throw new ArgumentNullException(nameof(value));
                 }
-                _operationBindingContext = value;
+                _actionContext = value;
             }
         }
 
@@ -211,19 +93,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public override ModelStateDictionary ModelState
         {
-            get { return _state.ModelState; }
+            get { return _modelState; }
             set
             {
                 if (value == null)
                 {
                     throw new ArgumentNullException(nameof(value));
                 }
-                _state.ModelState = value;
+                _modelState = value;
             }
         }
-
-        /// <inheritdoc />
-        public override Type ModelType => ModelMetadata?.ModelType;
 
         /// <inheritdoc />
         public override string BinderModelName
@@ -244,6 +123,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             get { return _state.IsTopLevelObject; }
             set { _state.IsTopLevelObject = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the original value provider to be used when value providers are not filtered.
+        /// </summary>
+        public IValueProvider OriginalValueProvider
+        {
+            get { return _originalValueProvider; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+                _originalValueProvider = value;
+            }
         }
 
         /// <inheritdoc />
@@ -270,8 +165,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public override ValidationStateDictionary ValidationState
         {
-            get { return _state.ValidationState; }
-            set { _state.ValidationState = value; }
+            get { return _validationState; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+                _validationState = value;
+            }
         }
 
         /// <inheritdoc />
@@ -290,6 +192,131 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
                 _state.Result = value;
             }
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="DefaultModelBindingContext"/> for top-level model binding operation.
+        /// </summary>
+        /// <param name="actionContext">
+        /// The <see cref="ActionContext"/> associated with the binding operation.
+        /// </param>
+        /// <param name="valueProvider">The <see cref="IValueProvider"/> to use for binding.</param>
+        /// <param name="metadata"><see cref="ModelMetadata"/> associated with the model.</param>
+        /// <param name="bindingInfo"><see cref="BindingInfo"/> associated with the model.</param>
+        /// <param name="modelName">The name of the property or parameter being bound.</param>
+        /// <returns>A new instance of <see cref="DefaultModelBindingContext"/>.</returns>
+        public static ModelBindingContext CreateBindingContext(
+            ActionContext actionContext,
+            IValueProvider valueProvider,
+            ModelMetadata metadata,
+            BindingInfo bindingInfo,
+            string modelName)
+        {
+            if (actionContext == null)
+            {
+                throw new ArgumentNullException(nameof(actionContext));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
+            if (modelName == null)
+            {
+                throw new ArgumentNullException(nameof(modelName));
+            }
+
+            var binderModelName = bindingInfo?.BinderModelName ?? metadata.BinderModelName;
+            var propertyFilterProvider = bindingInfo?.PropertyFilterProvider ?? metadata.PropertyFilterProvider;
+
+            var bindingSource = bindingInfo?.BindingSource ?? metadata.BindingSource;
+
+            return new DefaultModelBindingContext()
+            {
+                ActionContext = actionContext,
+                BinderModelName = binderModelName,
+                BindingSource = bindingSource,
+                PropertyFilter = propertyFilterProvider?.PropertyFilter,
+
+                // Because this is the top-level context, FieldName and ModelName should be the same.
+                FieldName = binderModelName ?? modelName,
+                ModelName = binderModelName ?? modelName,
+
+                IsTopLevelObject = true,
+                ModelMetadata = metadata,
+                ModelState = actionContext.ModelState,
+
+                OriginalValueProvider = valueProvider,
+                ValueProvider = FilterValueProvider(valueProvider, bindingSource),
+
+                ValidationState = new ValidationStateDictionary(),
+            };
+        }
+
+        /// <inheritdoc />
+        public override NestedScope EnterNestedScope(
+            ModelMetadata modelMetadata,
+            string fieldName,
+            string modelName,
+            object model)
+        {
+            if (modelMetadata == null)
+            {
+                throw new ArgumentNullException(nameof(modelMetadata));
+            }
+
+            if (fieldName == null)
+            {
+                throw new ArgumentNullException(nameof(fieldName));
+            }
+
+            if (modelName == null)
+            {
+                throw new ArgumentNullException(nameof(modelName));
+            }
+
+            var scope = EnterNestedScope();
+
+            // Only filter if the new BindingSource affects the value providers. Otherwise we want
+            // to preserve the currrent state.
+            if (modelMetadata.BindingSource != null && !modelMetadata.BindingSource.IsGreedy)
+            {
+                ValueProvider = FilterValueProvider(OriginalValueProvider, modelMetadata.BindingSource);
+            }
+
+            Model = model;
+            ModelMetadata = modelMetadata;
+            ModelName = modelName;
+            FieldName = fieldName;
+            BinderModelName = modelMetadata.BinderModelName;
+            BindingSource = modelMetadata.BindingSource;
+            PropertyFilter = modelMetadata.PropertyFilterProvider?.PropertyFilter;
+
+            IsTopLevelObject = false;
+
+            return scope;
+        }
+
+        /// <inheritdoc />
+        public override NestedScope EnterNestedScope()
+        {
+            _stack.Push(_state);
+
+            Result = null;
+
+            return new NestedScope(this);
+        }
+
+        /// <inheritdoc />
+        protected override void ExitNestedScope()
+        {
+            _state = _stack.Pop();
         }
 
         private static IValueProvider FilterValueProvider(IValueProvider valueProvider, BindingSource bindingSource)
@@ -317,8 +344,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             public IValueProvider ValueProvider;
             public Func<ModelMetadata, bool> PropertyFilter;
-            public ValidationStateDictionary ValidationState;
-            public ModelStateDictionary ModelState;
 
             public string BinderModelName;
             public BindingSource BindingSource;

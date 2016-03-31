@@ -19,8 +19,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "someName[0]", "42" },
                 { "someName[1]", "84" },
             };
+
             var bindingContext = GetBindingContext(valueProvider);
-            var modelState = bindingContext.ModelState;
+            var metadataProvider = new TestModelMetadataProvider();
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForProperty(
+                typeof(ModelWithIntArrayProperty),
+                nameof(ModelWithIntArrayProperty.ArrayProperty));
+
             var binder = new ArrayModelBinder<int>(new SimpleTypeModelBinder(typeof(int)));
 
             // Act
@@ -45,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Lack of prefix and non-empty model name both ignored.
             context.ModelName = "modelName";
 
-            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            var metadataProvider = new TestModelMetadataProvider();
             context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(string[]));
 
             context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
@@ -72,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var context = CreateContext();
             context.ModelName = ModelNames.CreatePropertyModelName(prefix, "ArrayProperty");
 
-            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            var metadataProvider = new TestModelMetadataProvider();
             context.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithArrayProperty),
                 nameof(ModelWithArrayProperty.ArrayProperty));
@@ -112,9 +117,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "someName[1]", "84" },
             };
 
-            var bindingContext = GetBindingContext(valueProvider, isReadOnly: false);
-            var modelState = bindingContext.ModelState;
+            var bindingContext = GetBindingContext(valueProvider);
             bindingContext.Model = model;
+
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider.ForProperty(
+                typeof(ModelWithIntArrayProperty),
+                nameof(ModelWithIntArrayProperty.ArrayProperty)).BindingDetails(bd => bd.IsReadOnly = false);
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForProperty(
+                typeof(ModelWithIntArrayProperty),
+                nameof(ModelWithIntArrayProperty.ArrayProperty));
 
             var binder = new ArrayModelBinder<int>(new SimpleTypeModelBinder(typeof(int)));
 
@@ -125,7 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
             Assert.Same(model, result.Model);
-            
+
             for (var i = 0; i < arrayLength; i++)
             {
                 // Array should be unchanged.
@@ -147,28 +159,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             });
         }
 
-        private static DefaultModelBindingContext GetBindingContext(
-            IValueProvider valueProvider,
-            bool isReadOnly = false)
+        private static DefaultModelBindingContext GetBindingContext(IValueProvider valueProvider)
         {
-            var metadataProvider = new TestModelMetadataProvider();
-            metadataProvider.ForProperty(
-                typeof(ModelWithIntArrayProperty),
-                nameof(ModelWithIntArrayProperty.ArrayProperty)).BindingDetails(bd => bd.IsReadOnly = isReadOnly);
-
-            var modelMetadata = metadataProvider.GetMetadataForProperty(
-                typeof(ModelWithIntArrayProperty),
-                nameof(ModelWithIntArrayProperty.ArrayProperty));
-            var bindingContext = new DefaultModelBindingContext
+            var bindingContext = new DefaultModelBindingContext()
             {
-                ModelMetadata = modelMetadata,
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = valueProvider,
-                OperationBindingContext = new OperationBindingContext
-                {
-                    MetadataProvider = metadataProvider,
-                },
             };
             return bindingContext;
         }
@@ -177,14 +174,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             var modelBindingContext = new DefaultModelBindingContext()
             {
-                OperationBindingContext = new OperationBindingContext()
+                ActionContext = new ActionContext()
                 {
-                    ActionContext = new ActionContext()
-                    {
-                        HttpContext = new DefaultHttpContext(),
-                    },
-                    MetadataProvider = new TestModelMetadataProvider(),
-                }
+                    HttpContext = new DefaultHttpContext(),
+                },
             };
 
             return modelBindingContext;

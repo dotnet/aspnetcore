@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_SimpleValueType_Valid_WithPrefix()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -38,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, "parameter", model);
+            validator.Validate(actionContext, validationState, "parameter", model);
 
             // Assert
             AssertKeysEqual(modelState, "parameter");
@@ -52,7 +51,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_SimpleReferenceType_Valid_WithPrefix()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -65,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, "parameter", model);
+            validator.Validate(actionContext, validationState, "parameter", model);
 
             // Assert
             Assert.True(modelState.IsValid);
@@ -80,7 +78,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_SimpleType_MaxErrorsReached()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -95,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, "parameter", model);
+            validator.Validate(actionContext, validationState, "parameter", model);
 
             // Assert
             Assert.False(modelState.IsValid);
@@ -110,7 +107,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_SimpleType_SuppressValidation()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -123,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = "parameter", SuppressValidation = true });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, "parameter", model);
+            validator.Validate(actionContext, validationState, "parameter", model);
 
             // Assert
             Assert.True(modelState.IsValid);
@@ -139,7 +135,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_ComplexValueType_Valid()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -153,7 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, "parameter", model);
+            validator.Validate(actionContext, validationState, "parameter", model);
 
             // Assert
             Assert.True(modelState.IsValid);
@@ -172,7 +167,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_ComplexReferenceType_Valid()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -186,7 +180,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, "parameter", model);
+            validator.Validate(actionContext, validationState, "parameter", model);
 
             // Assert
             Assert.True(modelState.IsValid);
@@ -205,7 +199,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_ComplexReferenceType_Invalid()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -217,7 +210,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = string.Empty });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, string.Empty, model);
+            validator.Validate(actionContext, validationState, string.Empty, model);
 
             // Assert
             Assert.False(modelState.IsValid);
@@ -238,7 +231,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_ComplexType_SuppressValidation()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -261,7 +253,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, "person", model);
+            validator.Validate(actionContext, validationState, "person", model);
 
             // Assert
             Assert.True(modelState.IsValid);
@@ -281,7 +273,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_ComplexReferenceType_Invalid_MultipleErrorsOnProperty()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -294,7 +285,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, "parameter", model);
+            validator.Validate(actionContext, validationState, "parameter", model);
 
             // Assert
             Assert.False(modelState.IsValid);
@@ -314,7 +305,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_ComplexReferenceType_Invalid_MultipleErrorsOnProperty_EmptyPrefix()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -327,7 +317,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = string.Empty });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, string.Empty, model);
+            validator.Validate(actionContext, validationState, string.Empty, model);
 
             // Assert
             Assert.False(modelState.IsValid);
@@ -347,7 +337,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_NestedComplexReferenceType_Invalid()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -360,7 +349,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = string.Empty });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, string.Empty, model);
+            validator.Validate(actionContext, validationState, string.Empty, model);
 
             // Assert
             Assert.False(modelState.IsValid);
@@ -392,7 +381,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_ComplexType_IValidatableObject_Invalid()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -406,7 +394,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, "parameter", model);
+            validator.Validate(actionContext, validationState, "parameter", model);
 
             // Assert
             Assert.False(modelState.IsValid);
@@ -447,8 +435,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             httpContext.SetupGet(x => x.RequestServices).Returns(provider);
 
             var actionContext = new ActionContext { HttpContext = httpContext.Object };
-
-            var validatorProvider = CreateValidatorProvider();
+            
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
 
@@ -466,12 +453,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .Returns(new List<ValidationResult>());
 
             // Act
-            validator.Validate(
-                actionContext, 
-                validatorProvider, 
-                validationState, 
-                null, 
-                model.Object);
+            validator.Validate(actionContext, validationState, prefix: null, model: model.Object);
 
             // Assert
             service.Verify();
@@ -482,7 +464,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_ComplexType_FieldsAreIgnored_Valid()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -495,7 +476,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, "parameter", model);
+            validator.Validate(actionContext, validationState, "parameter", model);
 
             // Assert
             Assert.True(modelState.IsValid);
@@ -511,7 +492,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_ComplexType_CyclesNotFollowed_Invalid()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -527,7 +507,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, "parameter", model);
+            validator.Validate(actionContext, validationState, "parameter", model);
 
             // Assert
             Assert.False(modelState.IsValid);
@@ -547,7 +527,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_ComplexType_ShortCircuit_WhenMaxErrorCountIsSet()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -568,7 +547,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = "user", });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, "user", model);
+            validator.Validate(actionContext, validationState, "user", model);
 
             // Assert
             Assert.False(modelState.IsValid);
@@ -585,7 +564,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_CollectionType_ArrayOfSimpleType_Valid_DefaultKeyPattern()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -599,7 +577,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, "parameter", model);
+            validator.Validate(actionContext,  validationState, "parameter", model);
 
             // Assert
             Assert.True(modelState.IsValid);
@@ -619,7 +597,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_CollectionType_ArrayOfComplexType_Invalid()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -631,7 +608,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = string.Empty });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, string.Empty, model);
+            validator.Validate(actionContext, validationState, string.Empty, model);
 
             // Assert
             Assert.False(modelState.IsValid);
@@ -663,7 +640,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_CollectionType_ListOfComplexType_Invalid()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -675,7 +651,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = string.Empty });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, string.Empty, model);
+            validator.Validate(actionContext, validationState, string.Empty, model);
 
             // Assert
             Assert.False(modelState.IsValid);
@@ -739,7 +715,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_IndexedCollectionTypes_Valid(object model, Type type)
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -758,7 +733,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, "items", model);
+            validator.Validate(actionContext, validationState, "items", model);
 
             // Assert
             Assert.True(modelState.IsValid);
@@ -781,7 +756,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_CollectionType_DictionaryOfSimpleType_Invalid()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -801,7 +775,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = "items" });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, "items", model);
+            validator.Validate(actionContext, validationState, "items", model);
 
             // Assert
             Assert.True(modelState.IsValid);
@@ -829,7 +803,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_CollectionType_DictionaryOfComplexType_Invalid()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -843,7 +816,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = string.Empty });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, string.Empty, model);
+            validator.Validate(actionContext, validationState, string.Empty, model);
 
             // Assert
             Assert.False(modelState.IsValid);
@@ -890,7 +863,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_DoesntCatchExceptions_FromPropertyAccessors()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -904,7 +876,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 typeof(InvalidTimeZoneException),
                 () =>
                 {
-                    validator.Validate(actionContext, validatorProvider, validationState, string.Empty, model);
+                    validator.Validate(actionContext, validationState, string.Empty, model);
                 });
         }
 
@@ -913,7 +885,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_DoesNotUseOverridden_GetHashCodeOrEquals()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -927,14 +898,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             };
 
             // Act & Assert (does not throw)
-            validator.Validate(actionContext, validatorProvider, validationState, string.Empty, model);
+            validator.Validate(actionContext, validationState, string.Empty, model);
         }
 
         [Fact]
         public void Validate_ForExcludedComplexType_PropertiesMarkedAsSkipped()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -953,7 +923,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = "user", });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, "user", model);
+            validator.Validate(actionContext, validationState, "user", model);
 
             // Assert
             Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
@@ -968,7 +938,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void Validate_ForExcludedCollectionType_PropertiesMarkedAsSkipped()
         {
             // Arrange
-            var validatorProvider = CreateValidatorProvider();
             var actionContext = new ActionContext();
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
@@ -984,7 +953,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = "userIds", });
 
             // Act
-            validator.Validate(actionContext, validatorProvider, validationState, "userIds", model);
+            validator.Validate(actionContext, validationState, "userIds", model);
 
             // Assert
             Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
@@ -995,11 +964,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Empty(entry.Errors);
         }
 
-        private static IModelValidatorProvider CreateValidatorProvider()
-        {
-            return TestModelValidatorProvider.CreateDefaultProvider();
-        }
-
         private static DefaultObjectValidator CreateValidator(Type excludedType)
         {
             var excludeFilters = new List<ValidationExcludeFilter>();
@@ -1008,14 +972,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 excludeFilters.Add(new ValidationExcludeFilter(excludedType));
             }
 
-            var provider = TestModelMetadataProvider.CreateDefaultProvider(excludeFilters.ToArray());
-            return new DefaultObjectValidator(provider, new ValidatorCache());
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider(excludeFilters.ToArray());
+            var validatorProviders = TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders;
+            return new DefaultObjectValidator(metadataProvider, validatorProviders);
         }
 
         private static DefaultObjectValidator CreateValidator(params IMetadataDetailsProvider[] providers)
         {
-            var provider = TestModelMetadataProvider.CreateDefaultProvider(providers);
-            return new DefaultObjectValidator(provider, new ValidatorCache());
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider(providers);
+            var validatorProviders = TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders;
+            return new DefaultObjectValidator(metadataProvider, validatorProviders);
         }
 
         private static void AssertKeysEqual(ModelStateDictionary modelState, params string[] keys)

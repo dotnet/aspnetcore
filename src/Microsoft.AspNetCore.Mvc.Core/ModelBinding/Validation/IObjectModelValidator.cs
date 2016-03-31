@@ -12,7 +12,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// Validates the provided object.
         /// </summary>
         /// <param name="actionContext">The <see cref="ActionContext"/> associated with the current request.</param>
-        /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/>.</param>
         /// <param name="validationState">The <see cref="ValidationStateDictionary"/>. May be null.</param>
         /// <param name="prefix">
         /// The model prefix. Used to map the model object to entries in <paramref name="validationState"/>.
@@ -20,7 +19,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <param name="model">The model object.</param>
         void Validate(
             ActionContext actionContext,
-            IModelValidatorProvider validatorProvider,
             ValidationStateDictionary validationState,
             string prefix,
             object model);

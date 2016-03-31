@@ -74,16 +74,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var metadataProvider = new EmptyModelMetadataProvider();
             var bindingContext = new DefaultModelBindingContext
             {
+                ActionContext = new ActionContext()
+                {
+                    HttpContext = httpContext,
+                },
                 ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "file",
-                OperationBindingContext = new OperationBindingContext
-                {
-                    ActionContext = new ActionContext()
-                    {
-                        HttpContext = httpContext,
-                    },
-                    MetadataProvider = metadataProvider,
-                },
                 ValidationState = new ValidationStateDictionary(),
             };
 

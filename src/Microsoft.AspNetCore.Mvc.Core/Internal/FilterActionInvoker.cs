@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     {
         private readonly ControllerActionInvokerCache _controllerActionInvokerCache;
         private readonly IReadOnlyList<IInputFormatter> _inputFormatters;
-        private readonly IReadOnlyList<IModelValidatorProvider> _modelValidatorProviders;
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
         private readonly DiagnosticSource _diagnosticSource;
         private readonly int _maxModelValidationErrors;
@@ -46,7 +45,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ActionContext actionContext,
             ControllerActionInvokerCache controllerActionInvokerCache,
             IReadOnlyList<IInputFormatter> inputFormatters,
-            IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
             IReadOnlyList<IValueProviderFactory> valueProviderFactories,
             ILogger logger,
             DiagnosticSource diagnosticSource,
@@ -65,11 +63,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (inputFormatters == null)
             {
                 throw new ArgumentNullException(nameof(inputFormatters));
-            }
-
-            if (modelValidatorProviders == null)
-            {
-                throw new ArgumentNullException(nameof(modelValidatorProviders));
             }
 
             if (valueProviderFactories == null)
@@ -91,7 +84,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             _controllerActionInvokerCache = controllerActionInvokerCache;
             _inputFormatters = inputFormatters;
-            _modelValidatorProviders = modelValidatorProviders;
             _valueProviderFactories = valueProviderFactories;
             Logger = logger;
             _diagnosticSource = diagnosticSource;
@@ -346,10 +338,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 {
                     // We've reached the end of resource filters, so move to setting up state to invoke model
                     // binding.
-                    Context.InputFormatters = new FormatterCollection<IInputFormatter>(
-                        new CopyOnWriteList<IInputFormatter>(_inputFormatters));
-                    Context.ValidatorProviders = new CopyOnWriteList<IModelValidatorProvider>(_modelValidatorProviders);
-
                     var valueProviders = new List<IValueProvider>();
                     var factoryContext = new ValueProviderFactoryContext(Context);
 

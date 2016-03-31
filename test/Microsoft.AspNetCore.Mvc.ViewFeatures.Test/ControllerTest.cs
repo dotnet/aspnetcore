@@ -279,24 +279,25 @@ namespace Microsoft.AspNetCore.Mvc.Test
             var viewData = new ViewDataDictionary(metadataProvider, new ModelStateDictionary());
             var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
 
+            var valiatorProviders = new[]
+            {
+                new DataAnnotationsModelValidatorProvider(
+                    new ValidationAttributeAdapterProvider(),
+                    new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                    stringLocalizerFactory: null),
+            };
+
             var controllerContext = new ControllerContext()
             {
                 HttpContext = httpContext,
                 ValueProviders = new[] { valueProvider, },
-                ValidatorProviders = new[]
-                {
-                    new DataAnnotationsModelValidatorProvider(
-                        new ValidationAttributeAdapterProvider(),
-                        new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
-                        stringLocalizerFactory: null),
-                },
             };
 
             var controller = new TestableController()
             {
                 ControllerContext = controllerContext,
                 MetadataProvider = metadataProvider,
-                ObjectValidator = new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
+                ObjectValidator = new DefaultObjectValidator(metadataProvider, valiatorProviders),
                 TempData = tempData,
                 ViewData = viewData,
             };

@@ -135,7 +135,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             mockValidator
                 .Setup(o => o.Validate(
                     It.IsAny<ActionContext>(),
-                    It.IsAny<IModelValidatorProvider>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()));
@@ -149,7 +148,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             mockValidator
                 .Verify(o => o.Validate(
                     It.IsAny<ActionContext>(),
-                    It.IsAny<IModelValidatorProvider>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()),
@@ -181,7 +179,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             mockValidator
                 .Setup(o => o.Validate(
                     It.IsAny<ActionContext>(),
-                    It.IsAny<IModelValidatorProvider>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()));
@@ -196,7 +193,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             mockValidator
                 .Verify(o => o.Validate(
                     It.IsAny<ActionContext>(),
-                    It.IsAny<IModelValidatorProvider>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()),
@@ -221,7 +217,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             mockValidator
                 .Setup(o => o.Validate(
                     It.IsAny<ActionContext>(),
-                    It.IsAny<IModelValidatorProvider>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()));
@@ -236,7 +231,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             mockValidator
                 .Verify(o => o.Validate(
                     It.IsAny<ActionContext>(),
-                    It.IsAny<IModelValidatorProvider>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()),
@@ -267,7 +261,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             mockValidator
                 .Setup(o => o.Validate(
                     It.IsAny<ActionContext>(),
-                    It.IsAny<IModelValidatorProvider>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()));
@@ -282,7 +275,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             mockValidator
                 .Verify(o => o.Validate(
                     It.IsAny<ActionContext>(),
-                    It.IsAny<IModelValidatorProvider>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()),
@@ -637,7 +629,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             mockValidator
                 .Setup(o => o.Validate(
                     It.IsAny<ActionContext>(),
-                    It.IsAny<IModelValidatorProvider>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()));

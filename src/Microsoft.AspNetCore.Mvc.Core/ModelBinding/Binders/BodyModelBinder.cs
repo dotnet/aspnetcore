@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -18,17 +18,30 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// </summary>
     public class BodyModelBinder : IModelBinder
     {
+        private readonly IList<IInputFormatter> _formatters;
         private readonly Func<Stream, Encoding, TextReader> _readerFactory;
 
         /// <summary>
         /// Creates a new <see cref="BodyModelBinder"/>.
         /// </summary>
+        /// <param name="formatters">The list of <see cref="IInputFormatter"/>.</param>
         /// <param name="readerFactory">
         /// The <see cref="IHttpRequestStreamReaderFactory"/>, used to create <see cref="System.IO.TextReader"/>
         /// instances for reading the request body.
         /// </param>
-        public BodyModelBinder(IHttpRequestStreamReaderFactory readerFactory)
+        public BodyModelBinder(IList<IInputFormatter> formatters, IHttpRequestStreamReaderFactory readerFactory)
         {
+            if (formatters == null)
+            {
+                throw new ArgumentNullException(nameof(formatters));
+            }
+
+            if (readerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(readerFactory));
+            }
+
+            _formatters = formatters;
             _readerFactory = readerFactory.CreateReader;
         }
 
@@ -53,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 modelBindingKey = bindingContext.ModelName;
             }
 
-            var httpContext = bindingContext.OperationBindingContext.HttpContext;
+            var httpContext = bindingContext.HttpContext;
 
             var formatterContext = new InputFormatterContext(
                 httpContext,
@@ -62,13 +75,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 bindingContext.ModelMetadata,
                 _readerFactory);
 
-            var formatters = bindingContext.OperationBindingContext.InputFormatters;
-            var formatter = formatters.FirstOrDefault(f => f.CanRead(formatterContext));
+            var formatter = (IInputFormatter)null;
+            for (var i = 0; i < _formatters.Count; i++)
+            {
+                if (_formatters[i].CanRead(formatterContext))
+                {
+                    formatter = _formatters[i];
+                    break;
+                }
+            }
 
             if (formatter == null)
             {
-                var message = Resources.FormatUnsupportedContentType(
-                    bindingContext.OperationBindingContext.HttpContext.Request.ContentType);
+                var message = Resources.FormatUnsupportedContentType(httpContext.Request.ContentType);
 
                 var exception = new UnsupportedContentTypeException(message);
                 bindingContext.ModelState.AddModelError(modelBindingKey, exception, bindingContext.ModelMetadata);

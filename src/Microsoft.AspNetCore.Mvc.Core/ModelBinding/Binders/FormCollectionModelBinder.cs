@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
 
             object model;
-            var request = bindingContext.OperationBindingContext.HttpContext.Request;
+            var request = bindingContext.HttpContext.Request;
             if (request.HasFormContentType)
             {
                 var form = await request.ReadFormAsync();

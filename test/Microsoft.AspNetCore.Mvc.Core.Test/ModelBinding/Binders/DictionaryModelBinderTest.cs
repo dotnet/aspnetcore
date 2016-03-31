@@ -137,11 +137,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             var context = CreateContext();
             context.ModelName = modelName;
-            context.OperationBindingContext.ValueProvider = CreateEnumerableValueProvider(keyFormat, dictionary);
-            context.ValueProvider = context.OperationBindingContext.ValueProvider;
+            context.ValueProvider = CreateEnumerableValueProvider(keyFormat, dictionary);
             context.FieldName = modelName;
 
-            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            var metadataProvider = new TestModelMetadataProvider();
             context.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithDictionaryProperties),
                 nameof(ModelWithDictionaryProperties.DictionaryProperty));
@@ -175,11 +174,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             var context = CreateContext();
             context.ModelName = "prefix";
-            context.OperationBindingContext.ValueProvider = CreateTestValueProvider("prefix[{0}]", dictionary);
-            context.ValueProvider = context.OperationBindingContext.ValueProvider;
+            context.ValueProvider = CreateTestValueProvider("prefix[{0}]", dictionary);
             context.FieldName = context.ModelName;
 
-            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            var metadataProvider = new TestModelMetadataProvider();
             context.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithDictionaryProperties),
                 nameof(ModelWithDictionaryProperties.DictionaryProperty));
@@ -228,12 +226,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             var context = CreateContext();
             context.ModelName = "prefix";
-            context.OperationBindingContext.ValueProvider =
-                CreateEnumerableValueProvider("prefix[{0}]", stringDictionary);
-            context.ValueProvider = context.OperationBindingContext.ValueProvider;
+            context.ValueProvider = CreateEnumerableValueProvider("prefix[{0}]", stringDictionary);
             context.FieldName = context.ModelName;
 
-            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            var metadataProvider = new TestModelMetadataProvider();
             context.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithDictionaryProperties),
                 nameof(ModelWithDictionaryProperties.DictionaryWithValueTypesProperty));
@@ -269,11 +265,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             var context = CreateContext();
             context.ModelName = "prefix";
-            context.OperationBindingContext.ValueProvider = CreateEnumerableValueProvider("{0}", stringDictionary);
-            context.ValueProvider = context.OperationBindingContext.ValueProvider;
+            context.ValueProvider = CreateEnumerableValueProvider("{0}", stringDictionary);
             context.FieldName = context.ModelName;
 
-            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            var metadataProvider = new TestModelMetadataProvider();
             context.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithDictionaryProperties),
                 nameof(ModelWithDictionaryProperties.DictionaryWithComplexValuesProperty));
@@ -328,11 +323,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var context = CreateContext();
             context.ModelName = modelName;
 
-            context.OperationBindingContext.ValueProvider = CreateEnumerableValueProvider(keyFormat, dictionary);
-            context.ValueProvider = context.OperationBindingContext.ValueProvider;
+            context.ValueProvider = CreateEnumerableValueProvider(keyFormat, dictionary);
             context.FieldName = context.ModelName;
 
-            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            var metadataProvider = new TestModelMetadataProvider();
             context.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithDictionaryProperties),
                 nameof(ModelWithDictionaryProperties.CustomDictionaryProperty));
@@ -363,7 +357,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Lack of prefix and non-empty model name both ignored.
             context.ModelName = "modelName";
 
-            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            var metadataProvider = new TestModelMetadataProvider();
             context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(Dictionary<string, string>));
 
             context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
@@ -392,7 +386,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var context = CreateContext();
             context.ModelName = ModelNames.CreatePropertyModelName(prefix, "ListProperty");
 
-            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            var metadataProvider = new TestModelMetadataProvider();
             context.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithDictionaryProperties),
                 nameof(ModelWithDictionaryProperties.DictionaryProperty));
@@ -444,15 +438,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             var modelBindingContext = new DefaultModelBindingContext()
             {
-                ModelState = new ModelStateDictionary(),
-                OperationBindingContext = new OperationBindingContext()
+                ActionContext = new ActionContext()
                 {
-                    ActionContext = new ActionContext()
-                    {
-                        HttpContext = new DefaultHttpContext(),
-                    },
-                    MetadataProvider = new TestModelMetadataProvider(),
+                    HttpContext = new DefaultHttpContext(),
                 },
+                ModelState = new ModelStateDictionary(),
                 ValidationState = new ValidationStateDictionary(),
             };
 
@@ -510,11 +500,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 ModelMetadata = metadata,
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
-                OperationBindingContext = new OperationBindingContext
-                {
-                    MetadataProvider = metadataProvider,
-                    ValueProvider = valueProvider,
-                },
                 ValueProvider = valueProvider,
                 ValidationState = new ValidationStateDictionary(),
             };

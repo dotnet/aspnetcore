@@ -97,10 +97,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             IModelBinder binder,
             string propertyName)
         {
-            var propertyModelMetadata =
-                bindingContext.OperationBindingContext.MetadataProvider.GetMetadataForType(typeof(TModel));
-            var propertyModelName =
-                ModelNames.CreatePropertyModelName(bindingContext.ModelName, propertyName);
+            var propertyModelMetadata = bindingContext.ModelMetadata.Properties[propertyName];
+            var propertyModelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, propertyName);
 
             using (bindingContext.EnterNestedScope(
                 modelMetadata: propertyModelMetadata,

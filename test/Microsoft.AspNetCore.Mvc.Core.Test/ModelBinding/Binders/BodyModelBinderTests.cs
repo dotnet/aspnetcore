@@ -35,10 +35,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             var bindingContext = GetBindingContext(
                 typeof(Person),
-                new[] { inputFormatter },
                 metadataProvider: provider);
 
-            var binder = CreateBinder();
+            var binder = CreateBinder(new[] { inputFormatter });
 
             // Act
             var binderResult = await binder.BindModelResultAsync(bindingContext);
@@ -59,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             var bindingContext = GetBindingContext(typeof(Person), metadataProvider: provider);
 
-            var binder = CreateBinder();
+            var binder = CreateBinder(new List<IInputFormatter>());
 
             // Act
             var binderResult = await binder.BindModelResultAsync(bindingContext);
@@ -87,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingContext = GetBindingContext(typeof(Person), metadataProvider: provider);
             bindingContext.BinderModelName = "custom";
 
-            var binder = CreateBinder();
+            var binder = CreateBinder(new List<IInputFormatter>());
 
             // Act
             var binderResult = await binder.BindModelResultAsync(bindingContext);
@@ -114,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             var bindingContext = GetBindingContext(typeof(Person), metadataProvider: provider);
 
-            var binder = CreateBinder();
+            var binder = CreateBinder(new List<IInputFormatter>());
 
             // Act
             var binderResult = await binder.BindModelResultAsync(bindingContext);
@@ -137,11 +136,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             var bindingContext = GetBindingContext(
                 typeof(Person),
-                inputFormatters: new[] { new XyzFormatter() },
                 httpContext: httpContext,
                 metadataProvider: provider);
 
-            var binder = CreateBinder();
+            var binder = CreateBinder(new[] { new XyzFormatter() });
 
             // Act
             var binderResult = await binder.BindModelResultAsync(bindingContext);
@@ -172,11 +170,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             var bindingContext = GetBindingContext(
                 typeof(Person),
-                inputFormatters: null,
                 httpContext: httpContext,
                 metadataProvider: provider);
 
-            var binder = CreateBinder();
+            var binder = CreateBinder(new List<IInputFormatter>());
 
             // Act
             var binderResult = await binder.BindModelResultAsync(bindingContext);
@@ -208,11 +205,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 canReadFormatter1,
                 canReadFormatter2
             };
+
             var provider = new TestModelMetadataProvider();
             provider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
-            var bindingContext = GetBindingContext(typeof(Person), inputFormatters, metadataProvider: provider);
+            var bindingContext = GetBindingContext(typeof(Person), metadataProvider: provider);
 
-            var binder = CreateBinder();
+            var binder = CreateBinder(inputFormatters);
 
             // Act
             var binderResult = await binder.BindModelResultAsync(bindingContext);
@@ -224,7 +222,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private static DefaultModelBindingContext GetBindingContext(
             Type modelType,
-            IEnumerable<IInputFormatter> inputFormatters = null,
             HttpContext httpContext = null,
             IModelMetadataProvider metadataProvider = null)
         {
@@ -233,44 +230,32 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 httpContext = new DefaultHttpContext();
             }
 
-            if (inputFormatters == null)
-            {
-                inputFormatters = Enumerable.Empty<IInputFormatter>();
-            }
-
             if (metadataProvider == null)
             {
                 metadataProvider = new EmptyModelMetadataProvider();
             }
 
-            var operationBindingContext = new OperationBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ActionContext = new ActionContext()
                 {
                     HttpContext = httpContext,
                 },
-                InputFormatters = inputFormatters.ToList(),
-                MetadataProvider = metadataProvider,
-            };
-
-            var bindingContext = new DefaultModelBindingContext
-            {
                 FieldName = "someField",
                 IsTopLevelObject = true,
                 ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "someName",
                 ValueProvider = Mock.Of<IValueProvider>(),
                 ModelState = new ModelStateDictionary(),
-                OperationBindingContext = operationBindingContext,
                 BindingSource = BindingSource.Body,
             };
 
             return bindingContext;
         }
 
-        private static BodyModelBinder CreateBinder()
+        private static BodyModelBinder CreateBinder(IList<IInputFormatter> formatters)
         {
-            return new BodyModelBinder(new TestHttpRequestStreamReaderFactory());
+            return new BodyModelBinder(formatters, new TestHttpRequestStreamReaderFactory());
         }
 
         private class Person

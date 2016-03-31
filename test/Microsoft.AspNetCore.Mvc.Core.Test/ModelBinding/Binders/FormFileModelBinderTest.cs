@@ -254,11 +254,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             metadataProvider
                 .ForProperty<ModelWithReadOnlyArray>(nameof(ModelWithReadOnlyArray.ArrayProperty))
                 .BindingDetails(bd => bd.BindingSource = BindingSource.Header);
-            var modelMetadata = metadataProvider.GetMetadataForProperty(
+            var metadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithReadOnlyArray),
                 nameof(ModelWithReadOnlyArray.ArrayProperty));
 
-            return GetBindingContext(metadataProvider, modelMetadata, httpContext);
+            return GetBindingContext(metadata, httpContext);
         }
 
         private static DefaultModelBindingContext GetBindingContext(Type modelType, HttpContext httpContext)
@@ -266,27 +266,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var metadataProvider = new EmptyModelMetadataProvider();
             var metadata = metadataProvider.GetMetadataForType(modelType);
 
-            return GetBindingContext(metadataProvider, metadata, httpContext);
+            return GetBindingContext(metadata, httpContext);
         }
 
         private static DefaultModelBindingContext GetBindingContext(
-            IModelMetadataProvider metadataProvider,
             ModelMetadata metadata,
             HttpContext httpContext)
         {
             var bindingContext = new DefaultModelBindingContext
             {
+                ActionContext = new ActionContext()
+                {
+                    HttpContext = httpContext,
+                },
                 ModelMetadata = metadata,
                 ModelName = "file",
                 ModelState = new ModelStateDictionary(),
-                OperationBindingContext = new OperationBindingContext
-                {
-                    ActionContext = new ActionContext()
-                    {
-                        HttpContext = httpContext,
-                    },
-                    MetadataProvider = metadataProvider,
-                },
                 ValidationState = new ValidationStateDictionary(),
             };
 

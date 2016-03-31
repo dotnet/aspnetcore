@@ -567,13 +567,11 @@ namespace System.Web.Http
         /// </param>
         public void Validate<TEntity>(TEntity entity, string keyPrefix)
         {
-            var validatidationState = new ValidationStateDictionary();
             ObjectValidator.Validate(
                 ControllerContext,
-                new CompositeModelValidatorProvider(ControllerContext.ValidatorProviders),
-                validatidationState,
-                keyPrefix,
-                entity);
+                validationState: null,
+                prefix: keyPrefix,
+                model: entity);
         }
 
         protected virtual void Dispose(bool disposing)

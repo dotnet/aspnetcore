@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var modelBindingContext = GetBindingContext(type);
 
             modelBindingContext.FieldName = header;
-            modelBindingContext.OperationBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
+            modelBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
 
             // Act
             var result = await binder.BindModelResultAsync(modelBindingContext);
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var modelBindingContext = GetBindingContext(type);
 
             modelBindingContext.FieldName = header;
-            modelBindingContext.OperationBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
+            modelBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
 
             // Act
             var result = await binder.BindModelResultAsync(modelBindingContext);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var modelBindingContext = GetBindingContext(destinationType);
 
             modelBindingContext.FieldName = header;
-            modelBindingContext.OperationBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
+            modelBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
 
             // Act
             var result = await binder.BindModelResultAsync(modelBindingContext);
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var modelBindingContext = GetBindingContextForReadOnlyArray();
 
             modelBindingContext.FieldName = header;
-            modelBindingContext.OperationBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
+            modelBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
 
             // Act
             var result = await binder.BindModelResultAsync(modelBindingContext);
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var modelBindingContext = GetBindingContext(typeof(ISet<string>));
 
             modelBindingContext.FieldName = header;
-            modelBindingContext.OperationBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
+            modelBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
 
             // Act
             var result = await binder.BindModelResultAsync(modelBindingContext);
@@ -173,18 +173,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             var bindingContext = new DefaultModelBindingContext
             {
+                ActionContext = new ActionContext()
+                {
+                    HttpContext = new DefaultHttpContext(),
+                },
                 ModelMetadata = modelMetadata,
                 ModelName = "modelName",
                 FieldName = "modelName",
                 ModelState = new ModelStateDictionary(),
-                OperationBindingContext = new OperationBindingContext
-                {
-                    ActionContext = new ActionContext()
-                    {
-                        HttpContext = new DefaultHttpContext(),
-                    },
-                    MetadataProvider = metadataProvider,
-                },
                 BinderModelName = modelMetadata.BinderModelName,
                 BindingSource = modelMetadata.BindingSource,
             };

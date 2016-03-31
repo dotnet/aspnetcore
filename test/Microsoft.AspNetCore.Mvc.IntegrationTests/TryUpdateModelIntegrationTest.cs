@@ -27,12 +27,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_ExistingModel_EmptyPrefix_OverwritesBoundValues()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Address
             {
                 Street = "DefaultStreet",
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var oldModel = model;
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext);
+            var result = await TryUpdateModel(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -67,16 +67,16 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_ExistingModel_EmptyPrefix_GetsBound()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Address();
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext);
+            var result = await TryUpdateModel(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_TopLevelCollection_EmptyPrefix_BindsAfterClearing()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create(new Dictionary<string, string>
                 {
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 });
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new List<Person1>
             {
                 new Person1
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext);
+            var result = await TryUpdateModel(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -166,12 +166,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_NestedPoco_EmptyPrefix_DoesNotTrounceUnboundValues()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("Address.Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Person1
             {
                 Name = "Joe",
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var oldModel = model;
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext);
+            var result = await TryUpdateModel(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -216,16 +216,16 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_SettableCollectionModel_EmptyPrefix_CreatesCollection()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Person2();
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext);
+            var result = await TryUpdateModel(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -252,12 +252,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_SettableCollectionModel_EmptyPrefix_MaintainsCollectionIfNonNull()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Person2
             {
                 Address = new List<Address>(),
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var collection = model.Address;
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext);
+            var result = await TryUpdateModel(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -303,12 +303,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_NonSettableCollectionModel_EmptyPrefix_GetsBound()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Person3
             {
                 Address =
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext);
+            var result = await TryUpdateModel(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -358,16 +358,16 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_ReadOnlyCollectionModel_EmptyPrefix_DoesNotGetBound()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Person6();
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext);
+            var result = await TryUpdateModel(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -397,16 +397,16 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_SettableArrayModel_EmptyPrefix_CreatesArray()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Person4();
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext);
+            var result = await TryUpdateModel(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -433,12 +433,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_SettableArrayModel_EmptyPrefix_OverwritesArray()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Person4
             {
                 Address = new Address[]
@@ -453,7 +453,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var collection = model.Address;
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext);
+            var result = await TryUpdateModel(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -486,16 +486,16 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_NonSettableArrayModel_EmptyPrefix_GetsBound()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Person5();
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext);
+            var result = await TryUpdateModel(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -516,12 +516,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_ExistingModel_WithPrefix_ValuesGetOverwritten()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("prefix.Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Address
             {
                 Street = "DefaultStreet",
@@ -530,7 +530,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var oldModel = model;
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext);
+            var result = await TryUpdateModel(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -556,16 +556,16 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_ExistingModel_WithPrefix_GetsBound()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("prefix.Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Address();
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext);
+            var result = await TryUpdateModel(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -590,7 +590,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_TopLevelCollection_WithPrefix_BindsAfterClearing()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create(new Dictionary<string, string>
                 {
@@ -599,7 +599,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 });
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new List<Person1>
             {
                 new Person1
@@ -616,7 +616,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext);
+            var result = await TryUpdateModel(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -648,12 +648,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_NestedPoco_WithPrefix_DoesNotTrounceUnboundValues()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("prefix.Address.Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Person1
             {
                 Name = "Joe",
@@ -666,7 +666,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var oldModel = model;
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext);
+            var result = await TryUpdateModel(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -693,16 +693,16 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_SettableCollectionModel_WithPrefix_CreatesCollection()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Person2();
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext);
+            var result = await TryUpdateModel(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -729,12 +729,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_SettableCollectionModel_WithPrefix_MaintainsCollectionIfNonNull()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Person2
             {
                 Address = new List<Address>(),
@@ -742,7 +742,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var collection = model.Address;
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext);
+            var result = await TryUpdateModel(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -770,12 +770,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_NonSettableCollectionModel_WithPrefix_GetsBound()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Person3
             {
                 Address =
@@ -794,7 +794,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext);
+            var result = await TryUpdateModel(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -820,16 +820,16 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_ReadOnlyCollectionModel_WithPrefix_DoesNotGetBound()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Person6();
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext);
+            var result = await TryUpdateModel(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -854,16 +854,16 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_SettableArrayModel_WithPrefix_CreatesArray()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Person4();
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext);
+            var result = await TryUpdateModel(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -890,12 +890,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_SettableArrayModel_WithPrefix_OverwritesArray()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Person4
             {
                 Address = new Address[]
@@ -910,7 +910,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var collection = model.Address;
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext);
+            var result = await TryUpdateModel(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -938,16 +938,16 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task TryUpdateModel_NonSettableArrayModel_WithPrefix_GetsBound()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new Person5();
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext);
+            var result = await TryUpdateModel(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -968,9 +968,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         {
             // Arrange
             var data = "some data";
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
                 request => UpdateRequest(request, data, "files"));
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new List<IFormFile>
             {
                 new FormFile(new MemoryStream(), baseStreamOffset: 0, length: 0, name: "file", fileName: "file1"),
@@ -979,7 +979,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             // Act
-            var result = await TryUpdateModel(model, prefix: "files", operationContext: operationContext);
+            var result = await TryUpdateModel(model, prefix: "files", testContext: testContext);
 
             // Assert
             Assert.True(result);
@@ -1088,19 +1088,17 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         private Task<bool> TryUpdateModel(
             object model,
             string prefix,
-            OperationBindingContext operationContext)
+            ModelBindingTestContext testContext)
         {
             return ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 model.GetType(),
                 prefix,
-                operationContext.ActionContext,
-                operationContext.MetadataProvider,
+                testContext,
+                testContext.MetadataProvider,
                 TestModelBinderFactory.CreateDefault(),
-                operationContext.ValueProvider,
-                operationContext.InputFormatters,
-                ModelBindingTestHelper.GetObjectValidator(operationContext.MetadataProvider),
-                operationContext.ValidatorProvider);
+                new CompositeValueProvider(testContext.ValueProviders),
+                ModelBindingTestHelper.GetObjectValidator(testContext.MetadataProvider));
         }
     }
 }

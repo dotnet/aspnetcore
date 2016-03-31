@@ -115,10 +115,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 ModelName = "foo",
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = valueProvider,
-                OperationBindingContext  = new OperationBindingContext
-                {
-                    MetadataProvider = metadataProvider,
-                }
             };
             return bindingContext;
         }

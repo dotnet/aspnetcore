@@ -1121,9 +1121,7 @@ namespace Microsoft.AspNetCore.Mvc
                 MetadataProvider,
                 ModelBinderFactory,
                 valueProvider,
-                ControllerContext.InputFormatters,
-                ObjectValidator,
-                new CompositeModelValidatorProvider(ControllerContext.ValidatorProviders));
+                ObjectValidator);
         }
 
         /// <summary>
@@ -1161,9 +1159,7 @@ namespace Microsoft.AspNetCore.Mvc
                 MetadataProvider,
                 ModelBinderFactory,
                 new CompositeValueProvider(ControllerContext.ValueProviders),
-                ControllerContext.InputFormatters,
                 ObjectValidator,
-                new CompositeModelValidatorProvider(ControllerContext.ValidatorProviders),
                 includeExpressions);
         }
 
@@ -1201,9 +1197,7 @@ namespace Microsoft.AspNetCore.Mvc
                 MetadataProvider,
                 ModelBinderFactory,
                 new CompositeValueProvider(ControllerContext.ValueProviders),
-                ControllerContext.InputFormatters,
                 ObjectValidator,
-                new CompositeModelValidatorProvider(ControllerContext.ValidatorProviders),
                 propertyFilter);
         }
 
@@ -1249,9 +1243,7 @@ namespace Microsoft.AspNetCore.Mvc
                 MetadataProvider,
                 ModelBinderFactory,
                 valueProvider,
-                ControllerContext.InputFormatters,
                 ObjectValidator,
-                new CompositeModelValidatorProvider(ControllerContext.ValidatorProviders),
                 includeExpressions);
         }
 
@@ -1296,9 +1288,7 @@ namespace Microsoft.AspNetCore.Mvc
                 MetadataProvider,
                 ModelBinderFactory,
                 valueProvider,
-                ControllerContext.InputFormatters,
                 ObjectValidator,
-                new CompositeModelValidatorProvider(ControllerContext.ValidatorProviders),
                 propertyFilter);
         }
 
@@ -1335,9 +1325,7 @@ namespace Microsoft.AspNetCore.Mvc
                 MetadataProvider,
                 ModelBinderFactory,
                 new CompositeValueProvider(ControllerContext.ValueProviders),
-                ControllerContext.InputFormatters,
-                ObjectValidator,
-                new CompositeModelValidatorProvider(ControllerContext.ValidatorProviders));
+                ObjectValidator);
         }
 
         /// <summary>
@@ -1387,9 +1375,7 @@ namespace Microsoft.AspNetCore.Mvc
                 MetadataProvider,
                 ModelBinderFactory,
                 valueProvider,
-                ControllerContext.InputFormatters,
                 ObjectValidator,
-                new CompositeModelValidatorProvider(ControllerContext.ValidatorProviders),
                 propertyFilter);
         }
 
@@ -1429,7 +1415,6 @@ namespace Microsoft.AspNetCore.Mvc
 
             ObjectValidator.Validate(
                 ControllerContext,
-                new CompositeModelValidatorProvider(ControllerContext.ValidatorProviders),
                 validationState: null,
                 prefix: prefix ?? string.Empty,
                 model: model);

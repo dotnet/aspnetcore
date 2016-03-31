@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 {
     public static class ModelBindingTestHelper
     {
-        public static OperationBindingContext GetOperationBindingContext(
+        public static ModelBindingTestContext GetTestContext(
             Action<HttpRequest> updateRequest = null,
             Action<MvcOptions> updateOptions = null,
             ControllerActionDescriptor actionDescriptor = null)
@@ -26,21 +27,24 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var httpContext = GetHttpContext(updateRequest, updateOptions);
             var services = httpContext.RequestServices;
 
-            actionDescriptor = actionDescriptor ?? new ControllerActionDescriptor();
-
-            var actionContext = new ActionContext(httpContext, new RouteData(), actionDescriptor);
-            var controllerContext = GetControllerContext(
-                services.GetRequiredService<IOptions<MvcOptions>>().Value,
-                actionContext);
-
-            return new OperationBindingContext()
+            var context = new ModelBindingTestContext()
             {
-                ActionContext = controllerContext,
-                InputFormatters = controllerContext.InputFormatters,
+                ActionDescriptor = actionDescriptor ?? new ControllerActionDescriptor(),
+                HttpContext = httpContext,
                 MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
-                ValidatorProvider = new CompositeModelValidatorProvider(controllerContext.ValidatorProviders),
-                ValueProvider = new CompositeValueProvider(controllerContext.ValueProviders),
+                RouteData = new RouteData(),
             };
+
+            var options = services.GetRequiredService<IOptions<MvcOptions>>();
+            var valueProviderFactoryContext = new ValueProviderFactoryContext(context);
+            foreach (var factory in options.Value.ValueProviderFactories)
+            {
+                factory.CreateValueProviderAsync(valueProviderFactoryContext).GetAwaiter().GetResult();
+            }
+
+            context.ValueProviders = valueProviderFactoryContext.ValueProviders;
+
+            return context;
         }
 
         public static ControllerArgumentBinder GetArgumentBinder(
@@ -74,12 +78,24 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             return new ControllerArgumentBinder(
                 metadataProvider,
                 new ModelBinderFactory(metadataProvider, options),
-                GetObjectValidator(metadataProvider));
+                GetObjectValidator(metadataProvider, options));
         }
 
-        public static IObjectModelValidator GetObjectValidator(IModelMetadataProvider metadataProvider)
+        public static IObjectModelValidator GetObjectValidator(
+            IModelMetadataProvider metadataProvider,
+            IOptions<MvcOptions> options = null)
         {
-            return new DefaultObjectValidator(metadataProvider, new ValidatorCache());
+            IList<IModelValidatorProvider> validatorProviders;
+            if (options == null)
+            {
+                validatorProviders = TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders;
+            }
+            else
+            {
+                validatorProviders = options.Value.ModelValidatorProviders;
+            }
+
+            return new DefaultObjectValidator(metadataProvider, validatorProviders);
         }
 
         private static HttpContext GetHttpContext(
@@ -124,8 +140,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             return new ControllerContext(context)
             {
-                InputFormatters = options.InputFormatters,
-                ValidatorProviders = options.ModelValidatorProviders,
                 ValueProviders = valueProviderFactoryContext.ValueProviders
             };
         }

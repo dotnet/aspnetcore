@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests
@@ -16,9 +18,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public void ModelState_IsInvalid_ForInvalidData_OnDerivedModel()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
+            var testContext = ModelBindingTestHelper.GetTestContext();
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
             var model = new SoftwareViewModel
             {
                 Category = "Technology",
@@ -29,14 +31,14 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 Price = 110,
                 Version = "2"
             };
-            var oldModel = model;
+
+            var controller = CreateController(testContext, testContext.MetadataProvider);
 
             // Act
-            var result = TryValidateModel(model, "software", operationContext);
+            var result = controller.TryValidateModel(model, prefix: "software");
 
             // Assert
             Assert.False(result);
-            Assert.Same(oldModel, model);
             Assert.False(modelState.IsValid);
             var modelStateErrors = GetModelStateErrors(modelState);
             Assert.Single(modelStateErrors);
@@ -47,8 +49,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public void ModelState_IsValid_ForValidData_OnDerivedModel()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
-            var modelState = operationContext.ActionContext.ModelState;
+            var testContext = ModelBindingTestHelper.GetTestContext();
+            var modelState = testContext.ModelState;
             var model = new SoftwareViewModel
             {
                 Category = "Technology",
@@ -60,14 +62,14 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 Price = 110,
                 Version = "2"
             };
-            var oldModel = model;
+
+            var controller = CreateController(testContext, testContext.MetadataProvider);
 
             // Act
-            var result = TryValidateModel(model, prefix: string.Empty, operationContext: operationContext);
+            var result = controller.TryValidateModel(model);
 
             // Assert
             Assert.True(result);
-            Assert.Same(oldModel, model);
             Assert.True(modelState.IsValid);
             var modelStateErrors = GetModelStateErrors(modelState);
             Assert.Empty(modelStateErrors);
@@ -77,8 +79,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public void TryValidateModel_CollectionsModel_ReturnsErrorsForInvalidProperties()
         {
             // Arrange
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
-            var modelState = operationContext.ActionContext.ModelState;
+            var testContext = ModelBindingTestHelper.GetTestContext();
+            var modelState = testContext.ModelState;
             var model = new List<ProductViewModel>();
             model.Add(new ProductViewModel()
             {
@@ -102,10 +104,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                     Detail3 = "d3"
                 }
             });
-            var oldModel = model;
+
+            var controller = CreateController(testContext, testContext.MetadataProvider);
 
             // Act
-            var result = TryValidateModel(model, prefix: string.Empty, operationContext: operationContext);
+            var result = controller.TryValidateModel(model);
 
             // Assert
             Assert.False(result);
@@ -133,18 +136,18 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 modelStateErrors["[1].Contact"]);
         }
 
-        private bool TryValidateModel(
-            object model,
-            string prefix,
-            OperationBindingContext operationContext)
+        private TestController CreateController(
+            ActionContext actionContext,
+            IModelMetadataProvider metadataProvider)
         {
-            var controller = new TestController();
-            controller.ControllerContext = new ControllerContext(operationContext.ActionContext);
-            controller.ObjectValidator = ModelBindingTestHelper.GetObjectValidator(operationContext.MetadataProvider);
-            controller.MetadataProvider = operationContext.MetadataProvider;
-            controller.ControllerContext.ValidatorProviders = new[] { operationContext.ValidatorProvider }.ToList();
+            var options = actionContext.HttpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>();
 
-            return controller.TryValidateModel(model, prefix);
+            var controller = new TestController();
+            controller.ControllerContext = new ControllerContext(actionContext);
+            controller.ObjectValidator = ModelBindingTestHelper.GetObjectValidator(metadataProvider, options);
+            controller.MetadataProvider = metadataProvider;
+
+            return controller;
         }
 
         private void AssertErrorEquals(string expected, string actual)

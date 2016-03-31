@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(bindingContext));
             }
 
-            var requestServices = bindingContext.OperationBindingContext.HttpContext.RequestServices;
+            var requestServices = bindingContext.HttpContext.RequestServices;
             var binder = (IModelBinder)_factory(requestServices, arguments: null);
 
             await binder.BindModelAsync(bindingContext);

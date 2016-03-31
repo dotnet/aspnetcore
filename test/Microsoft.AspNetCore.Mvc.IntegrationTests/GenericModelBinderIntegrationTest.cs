@@ -34,15 +34,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             // Need to have a key here so that the GenericModelBinder will recurse to bind elements.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?parameter.index=10");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -72,15 +72,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(List<IFormCollection>)
             };
             // Need to have a key here so that the GenericModelBinder will recurse to bind elements.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?index=10");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -111,15 +111,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             // Without a key here so the GenericModelBinder will not recurse to bind elements.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -205,13 +205,13 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             // Need to have a key here so that the GenericModelBinder will recurse to bind elements.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
                 request => request.QueryString = new QueryString("?parameter.index=0"));
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -239,13 +239,13 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             // Need to have a key here so that the GenericModelBinder will recurse to bind elements.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
                 request => request.QueryString = new QueryString("?parameter.index=0"));
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -272,15 +272,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(Dictionary<string, int>[])
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?parameter[0][0].Key=key0&parameter[0][0].Value=10");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -317,15 +317,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(Dictionary<string, int>[])
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?[0][0].Key=key0&[0][0].Value=10");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -362,15 +362,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(Dictionary<string, int>[])
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -397,15 +397,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(ICollection<KeyValuePair<string, int>>)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?parameter[0].Key=key0&parameter[0].Value=10");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -441,15 +441,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(ICollection<KeyValuePair<string, int>>)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?[0].Key=key0&[0].Value=10");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -485,15 +485,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(ICollection<KeyValuePair<string, int>>)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -520,16 +520,16 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(Dictionary<string, List<int>>)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString(
                     "?parameter[0].Key=key0&parameter[0].Value[0]=10&parameter[0].Value[1]=11");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -569,15 +569,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(Dictionary<string, List<int>>)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?[0].Key=key0&[0].Value[0]=10&[0].Value[1]=11");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -617,15 +617,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(Dictionary<string, List<int>>)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);

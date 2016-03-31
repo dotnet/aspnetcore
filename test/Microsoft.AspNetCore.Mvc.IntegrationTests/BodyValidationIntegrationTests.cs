@@ -45,17 +45,17 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 }
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
               request =>
               {
                   request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
                   request.ContentType = "application/json;charset=utf-8";
               });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -87,15 +87,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 },
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
                 request.ContentType = "application/json;charset=utf-8";
             });
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var result = await argumentBinding.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var result = await argumentBinding.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelState.IsValid);
@@ -120,17 +120,17 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(ProductViewModel)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
               request =>
               {
                   request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
                   request.ContentType = "application/json";
               });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -172,17 +172,17 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(ProductViewModel)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
               request =>
               {
                   request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
                   request.ContentType = "application/json";
               });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -213,17 +213,17 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(ProductViewModel)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
               request =>
               {
                   request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
                   request.ContentType = "application/json";
               });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -253,17 +253,17 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(SoftwareViewModel)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
               request =>
               {
                   request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
                   request.ContentType = "application/json";
               });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -289,17 +289,17 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(SoftwareViewModel)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
               request =>
               {
                   request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
                   request.ContentType = "application/json";
               });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -332,17 +332,17 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(SoftwareViewModel)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
               request =>
               {
                   request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
                   request.ContentType = "application/json";
               });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -369,17 +369,17 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(Person)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
               request =>
               {
                   request.Body = new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
                   request.ContentType = "application/json";
               });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -409,18 +409,18 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(Person)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
                 request =>
                 {
                     request.Body = new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
                     request.ContentType = "application/json";
                 });
 
-            var httpContext = operationContext.HttpContext;
-            var modelState = operationContext.ActionContext.ModelState;
+            var httpContext = testContext.HttpContext;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -452,17 +452,17 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(Person4)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
                 request =>
                 {
                     request.Body = new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
                     request.ContentType = "application/json";
                 });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -511,17 +511,17 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(Person5)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
                 request =>
                 {
                     request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ \"Number\": 5 }"));
                     request.ContentType = "application/json";
                 });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -549,17 +549,17 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(Person5)
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
                 request =>
                 {
                     request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ \"Number\": \"not a number\" }"));
                     request.ContentType = "application/json";
                 });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -613,17 +613,17 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 Name = "param-name",
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
                 request =>
                 {
                     request.Body = new MemoryStream(Encoding.UTF8.GetBytes(inputText));
                     request.ContentType = "application/json";
                 });
-            var httpContext = operationContext.HttpContext;
-            var modelState = operationContext.ActionContext.ModelState;
+            var httpContext = testContext.HttpContext;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -671,16 +671,16 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 Name = "param-name",
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+            var testContext = ModelBindingTestHelper.GetTestContext(
                 request =>
                 {
                     request.Body = new MemoryStream(Encoding.UTF8.GetBytes(inputText));
                     request.ContentType = "application/json";
                 });
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);

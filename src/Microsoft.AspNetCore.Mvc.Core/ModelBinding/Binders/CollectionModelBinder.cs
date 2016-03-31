@@ -158,10 +158,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             ValueProviderResult values)
         {
             var boundCollection = new List<TElement>();
-
-            var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var elementMetadata = metadataProvider.GetMetadataForType(typeof(TElement));
-
+            
+            var elementMetadata = bindingContext.ModelMetadata.ElementMetadata;
 
             foreach (var value in values)
             {
@@ -223,8 +221,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                                        .Select(i => i.ToString(CultureInfo.InvariantCulture));
             }
 
-            var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var elementMetadata = metadataProvider.GetMetadataForType(typeof(TElement));
+            var elementMetadata = bindingContext.ModelMetadata.ElementMetadata;
 
             var boundCollection = new List<TElement>();
 

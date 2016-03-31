@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 .AddSingleton<IModelBinder, NullModelBinder>()
                 .BuildServiceProvider();
 
-            bindingContext.OperationBindingContext.HttpContext.RequestServices = serviceProvider;
+            bindingContext.HttpContext.RequestServices = serviceProvider;
 
             var binder = new BinderTypeModelBinder(typeof(NotNullModelBinder));
 
@@ -75,23 +75,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var metadataProvider = new TestModelMetadataProvider();
             metadataProvider.ForType(modelType).BindingDetails(bd => bd.BinderType = binderType);
 
-            var operationBindingContext = new OperationBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ActionContext = new ActionContext()
                 {
                     HttpContext = new DefaultHttpContext(),
                 },
-                MetadataProvider = metadataProvider,
-                ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
-            };
-
-            var bindingContext = new DefaultModelBindingContext
-            {
                 ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "someName",
                 ValueProvider = Mock.Of<IValueProvider>(),
                 ModelState = new ModelStateDictionary(),
-                OperationBindingContext = operationBindingContext,
             };
 
             return bindingContext;

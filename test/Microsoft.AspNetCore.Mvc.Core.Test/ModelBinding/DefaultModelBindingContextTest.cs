@@ -25,26 +25,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 Model = new object(),
                 ModelMetadata = new TestModelMetadataProvider().GetMetadataForType(typeof(object)),
                 ModelName = "theName",
-                OperationBindingContext = new OperationBindingContext(),
                 ValueProvider = new SimpleValueProvider(),
                 ModelState = new ModelStateDictionary(),
             };
 
             var metadataProvider = new TestModelMetadataProvider();
             metadataProvider.ForType<object>().BindingDetails(d =>
-                {
-                    d.BindingSource = BindingSource.Custom;
-                    d.BinderType = typeof(TestModelBinder);
-                    d.BinderModelName = "custom";
-                });
+            {
+                d.BindingSource = BindingSource.Custom;
+                d.BinderType = typeof(TestModelBinder);
+                d.BinderModelName = "custom";
+            });
 
             var newModelMetadata = metadataProvider.GetMetadataForType(typeof(object));
 
             // Act
             var originalBinderModelName = bindingContext.BinderModelName;
             var originalBindingSource = bindingContext.BindingSource;
-            var originalModelState = bindingContext.ModelState;
-            var originalOperationBindingContext = bindingContext.OperationBindingContext;
             var originalValueProvider = bindingContext.ValueProvider;
 
             var disposable = bindingContext.EnterNestedScope(
@@ -61,8 +58,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Null(bindingContext.Model);
             Assert.Same(newModelMetadata, bindingContext.ModelMetadata);
             Assert.Equal("modelprefix.fieldName", bindingContext.ModelName);
-            Assert.Same(originalModelState, bindingContext.ModelState);
-            Assert.Same(originalOperationBindingContext, bindingContext.OperationBindingContext);
             Assert.Same(originalValueProvider, bindingContext.ValueProvider);
 
             disposable.Dispose();
@@ -75,15 +70,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var metadataProvider = new TestModelMetadataProvider();
 
             var original = CreateDefaultValueProvider();
-            var operationBindingContext = new OperationBindingContext()
-            {
-                ActionContext = new ActionContext(),
-                ValueProvider = original,
-            };
 
             // Act
             var context = DefaultModelBindingContext.CreateBindingContext(
-                operationBindingContext,
+                new ActionContext(),
+                original,
                 metadataProvider.GetMetadataForType(typeof(object)),
                 new BindingInfo() { BindingSource = BindingSource.Query },
                 "model");
@@ -104,14 +95,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 .BindingDetails(b => b.BindingSource = BindingSource.Query);
 
             var original = CreateDefaultValueProvider();
-            var operationBindingContext = new OperationBindingContext()
-            {
-                ActionContext = new ActionContext(),
-                ValueProvider = original,
-            };
-
             var context = DefaultModelBindingContext.CreateBindingContext(
-                operationBindingContext,
+                new ActionContext(),
+                original,
                 metadataProvider.GetMetadataForType(typeof(string)),
                 new BindingInfo(),
                 "model");
@@ -137,14 +123,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 .BindingDetails(b => b.BindingSource = BindingSource.Form);
 
             var original = CreateDefaultValueProvider();
-            var operationBindingContext = new OperationBindingContext()
-            {
-                ActionContext = new ActionContext(),
-                ValueProvider = original,
-            };
 
             var context = DefaultModelBindingContext.CreateBindingContext(
-                operationBindingContext,
+                new ActionContext(),
+                original,
                 metadataProvider.GetMetadataForType(typeof(string)),
                 new BindingInfo() { BindingSource = BindingSource.Query },
                 "model");

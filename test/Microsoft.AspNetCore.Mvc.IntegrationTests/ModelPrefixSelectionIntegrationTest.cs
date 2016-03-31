@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(Person1),
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 // This will cause selection of the "parameter" prefix.
                 request.QueryString = new QueryString("?parameter=");
@@ -44,10 +44,10 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 });
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 },
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 // This will cause selection of the "parameter" prefix.
                 request.QueryString = new QueryString("?parameter=");
@@ -94,10 +94,10 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 });
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -128,16 +128,16 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(Person3),
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 // This can't be used because of [FromForm] on the property.
                 request.QueryString = new QueryString("?Name=");
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 },
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 // This will only match empty prefix, but can't be used because of [FromForm] on the property.
                 request.QueryString = new QueryString("?Name=");
@@ -184,10 +184,10 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 });
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 },
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 // This value won't be used to select a prefix, because we're only looking at the query string.
                 request.Form = new FormCollection(new Dictionary<string, StringValues>()
@@ -231,10 +231,10 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 });
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);

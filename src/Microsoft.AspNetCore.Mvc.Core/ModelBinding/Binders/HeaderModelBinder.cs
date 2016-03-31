@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(bindingContext));
             }
 
-            var request = bindingContext.OperationBindingContext.HttpContext.Request;
+            var request = bindingContext.HttpContext.Request;
 
             // Property name can be null if the model metadata represents a type (rather than a property or parameter).
             var headerName = bindingContext.FieldName;

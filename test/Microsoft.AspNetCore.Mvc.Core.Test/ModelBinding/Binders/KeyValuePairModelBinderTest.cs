@@ -106,16 +106,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             ModelBindingResult? innerResult;
             if (isSuccess)
             {
-                innerResult = ModelBindingResult.Success("somename.key", model);
+                innerResult = ModelBindingResult.Success("somename.Key", model);
             }
             else
             {
-                innerResult = ModelBindingResult.Failed("somename.key");
+                innerResult = ModelBindingResult.Failed("somename.Key");
             }
 
             var innerBinder = new StubModelBinder(context =>
             {
-                Assert.Equal("someName.key", context.ModelName);
+                Assert.Equal("someName.Key", context.ModelName);
                 return innerResult;
             });
 
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new KeyValuePairModelBinder<int, string>(innerBinder, innerBinder);
 
             // Act
-            var result = await binder.TryBindStrongModel<int>(bindingContext, innerBinder, "key");
+            var result = await binder.TryBindStrongModel<int>(bindingContext, innerBinder, "Key");
 
             // Assert
             Assert.Equal(innerResult.Value, result);
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Lack of prefix and non-empty model name both ignored.
             context.ModelName = "modelName";
 
-            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            var metadataProvider = new TestModelMetadataProvider();
             context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(KeyValuePair<string, string>));
 
             context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var context = CreateContext();
             context.ModelName = ModelNames.CreatePropertyModelName(prefix, "KeyValuePairProperty");
 
-            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            var metadataProvider = new TestModelMetadataProvider();
             context.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithKeyValuePairProperty),
                 nameof(ModelWithKeyValuePairProperty.KeyValuePairProperty));
@@ -194,13 +194,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             var modelBindingContext = new DefaultModelBindingContext()
             {
-                OperationBindingContext = new OperationBindingContext()
+                ActionContext = new ActionContext()
                 {
-                    ActionContext = new ActionContext()
-                    {
-                        HttpContext = new DefaultHttpContext(),
-                    },
-                    MetadataProvider = new TestModelMetadataProvider(),
+                    HttpContext = new DefaultHttpContext(),
                 },
                 ModelState = new ModelStateDictionary(),
             };
@@ -212,21 +208,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             IValueProvider valueProvider,
             Type keyValuePairType)
         {
-            var metataProvider = new EmptyModelMetadataProvider();
+            var metadataProvider = new TestModelMetadataProvider();
             var bindingContext = new DefaultModelBindingContext
             {
-                ModelMetadata = metataProvider.GetMetadataForType(keyValuePairType),
+                ModelMetadata = metadataProvider.GetMetadataForType(keyValuePairType),
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = valueProvider,
-                OperationBindingContext = new OperationBindingContext
-                {
-                    MetadataProvider = metataProvider,
-                    ValidatorProvider = new DataAnnotationsModelValidatorProvider(
-                        new ValidationAttributeAdapterProvider(),
-                        new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
-                        stringLocalizerFactory: null)
-                }
             };
             return bindingContext;
         }

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Assert
             Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
-            Assert.Equal(bindingContext.OperationBindingContext.HttpContext.RequestAborted, result.Model);
+            Assert.Equal(bindingContext.HttpContext.RequestAborted, result.Model);
         }
 
         private static DefaultModelBindingContext GetBindingContext(Type modelType)
@@ -33,17 +33,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var metadataProvider = new EmptyModelMetadataProvider();
             DefaultModelBindingContext bindingContext = new DefaultModelBindingContext
             {
+                ActionContext = new ActionContext()
+                {
+                    HttpContext = new DefaultHttpContext(),
+                },
                 ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "someName",
                 ValueProvider = new SimpleValueProvider(),
-                OperationBindingContext = new OperationBindingContext
-                {
-                    ActionContext = new ActionContext()
-                    {
-                        HttpContext = new DefaultHttpContext(),
-                    },
-                    MetadataProvider = metadataProvider,
-                },
                 ValidationState = new ValidationStateDictionary(),
             };
 

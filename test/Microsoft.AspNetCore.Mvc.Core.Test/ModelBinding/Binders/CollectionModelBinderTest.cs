@@ -187,7 +187,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "someName", null },
             };
             var bindingContext = GetModelBindingContext(valueProvider, isReadOnly: false);
-            var modelState = bindingContext.ModelState;
 
             // Act
             var result = await binder.BindModelResultAsync(bindingContext);
@@ -228,7 +227,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Lack of prefix and non-empty model name both ignored.
             context.ModelName = "modelName";
 
-            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            var metadataProvider = new TestModelMetadataProvider();
             context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(List<string>));
 
             context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
@@ -261,7 +260,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Lack of prefix and non-empty model name both ignored.
             context.ModelName = "modelName";
 
-            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            var metadataProvider = new TestModelMetadataProvider();
             context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(List<string>));
 
             context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
@@ -289,7 +288,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var context = CreateContext();
             context.ModelName = ModelNames.CreatePropertyModelName(prefix, "ListProperty");
 
-            var metadataProvider = context.OperationBindingContext.MetadataProvider;
+            var metadataProvider = new TestModelMetadataProvider();
             context.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithListProperty),
                 nameof(ModelWithListProperty.ListProperty));
@@ -376,10 +375,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 ModelName = "someName",
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = valueProvider,
-                OperationBindingContext = new OperationBindingContext
-                {
-                    MetadataProvider = metadataProvider
-                },
                 ValidationState = new ValidationStateDictionary(),
                 FieldName = "testfieldname",
             };
@@ -413,14 +408,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             var modelBindingContext = new DefaultModelBindingContext()
             {
-                OperationBindingContext = new OperationBindingContext()
+                ActionContext = new ActionContext()
                 {
-                    ActionContext = new ActionContext()
-                    {
-                        HttpContext = new DefaultHttpContext(),
-                    },
-                    MetadataProvider = new TestModelMetadataProvider(),
-                }
+                    HttpContext = new DefaultHttpContext(),
+                },
             };
 
             return modelBindingContext;

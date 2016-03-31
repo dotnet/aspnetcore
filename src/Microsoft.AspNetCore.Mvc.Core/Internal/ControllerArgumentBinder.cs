@@ -39,12 +39,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         public Task<IDictionary<string, object>> BindActionArgumentsAsync(
-            ControllerContext context,
+            ControllerContext controllerContext,
             object controller)
         {
-            if (context == null)
+            if (controllerContext == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(controllerContext));
             }
 
             if (controller == null)
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(controller));
             }
 
-            if (context.ActionDescriptor == null)
+            if (controllerContext.ActionDescriptor == null)
             {
                 throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
                     nameof(ControllerContext.ActionDescriptor),
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Perf: Avoid allocating async state machines where possible. We only need the state
             // machine if you need to bind properties.
-            var actionDescriptor = context.ActionDescriptor;
+            var actionDescriptor = controllerContext.ActionDescriptor;
             if (actionDescriptor.BoundProperties.Count == 0 &&
                 actionDescriptor.Parameters.Count == 0)
             {
@@ -70,53 +70,51 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
             else if (actionDescriptor.BoundProperties.Count == 0)
             {
-                var operationBindingContext = GetOperationBindingContext(context);
-                return PopulateArgumentsAsync(operationBindingContext, actionDescriptor.Parameters);
+                return PopulateArgumentsAsync(controllerContext, actionDescriptor.Parameters);
             }
             else
             {
                 return BindActionArgumentsAndPropertiesCoreAsync(
-                    context,
+                    controllerContext,
                     controller,
                     actionDescriptor);
             }
         }
 
         private async Task<IDictionary<string, object>> BindActionArgumentsAndPropertiesCoreAsync(
-            ControllerContext context,
+            ControllerContext controllerContext,
             object controller,
             ControllerActionDescriptor actionDescriptor)
         {
-            var operationBindingContext = GetOperationBindingContext(context);
-
             var controllerProperties = await PopulateArgumentsAsync(
-                operationBindingContext,
+                controllerContext,
                 actionDescriptor.BoundProperties);
             ActivateProperties(actionDescriptor, controller, controllerProperties);
 
             var actionArguments = await PopulateArgumentsAsync(
-                operationBindingContext,
+                controllerContext,
                 actionDescriptor.Parameters);
             return actionArguments;
         }
 
         public async Task<ModelBindingResult?> BindModelAsync(
             ParameterDescriptor parameter,
-            OperationBindingContext operationContext)
+            ControllerContext controllerContext)
         {
             if (parameter == null)
             {
                 throw new ArgumentNullException(nameof(parameter));
             }
 
-            if (operationContext == null)
+            if (controllerContext == null)
             {
-                throw new ArgumentNullException(nameof(operationContext));
+                throw new ArgumentNullException(nameof(controllerContext));
             }
 
             var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterType);
             var modelBindingContext = DefaultModelBindingContext.CreateBindingContext(
-                operationContext,
+                controllerContext,
+                new CompositeValueProvider(controllerContext.ValueProviders),
                 metadata,
                 parameter.BindingInfo,
                 parameter.Name);
@@ -150,8 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (modelBindingResult != null && modelBindingResult.Value.IsModelSet)
             {
                 _validator.Validate(
-                    operationContext.ActionContext,
-                    operationContext.ValidatorProvider,
+                    controllerContext,
                     modelBindingContext.ValidationState,
                     modelBindingResult.Value.Key,
                     modelBindingResult.Value.Model);
@@ -243,16 +240,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         private async Task<IDictionary<string, object>> PopulateArgumentsAsync(
-            OperationBindingContext operationContext,
-            IList<ParameterDescriptor> parameterMetadata)
+            ControllerContext controllerContext,
+            IList<ParameterDescriptor> parameters)
         {
             var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             // Perf: Avoid allocations
-            for (var i = 0; i < parameterMetadata.Count; i++)
+            for (var i = 0; i < parameters.Count; i++)
             {
-                var parameter = parameterMetadata[i];
-                var modelBindingResult = await BindModelAsync(parameter, operationContext);
+                var parameter = parameters[i];
+                var modelBindingResult = await BindModelAsync(parameter, controllerContext);
                 if (modelBindingResult != null && modelBindingResult.Value.IsModelSet)
                 {
                     arguments[parameter.Name] = modelBindingResult.Value.Model;
@@ -260,18 +257,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             return arguments;
-        }
-
-        private OperationBindingContext GetOperationBindingContext(ControllerContext context)
-        {
-            return new OperationBindingContext
-            {
-                ActionContext = context,
-                InputFormatters = context.InputFormatters,
-                ValidatorProvider = new CompositeModelValidatorProvider(context.ValidatorProviders),
-                MetadataProvider = _modelMetadataProvider,
-                ValueProvider = new CompositeValueProvider(context.ValueProviders),
-            };
         }
     }
 }

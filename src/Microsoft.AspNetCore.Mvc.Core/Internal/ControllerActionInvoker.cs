@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -32,7 +31,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ControllerActionDescriptor descriptor,
             IReadOnlyList<IInputFormatter> inputFormatters,
             IControllerActionArgumentBinder argumentBinder,
-            IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
             IReadOnlyList<IValueProviderFactory> valueProviderFactories,
             ILogger logger,
             DiagnosticSource diagnosticSource,
@@ -41,7 +39,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                   actionContext,
                   controllerActionInvokerCache,
                   inputFormatters,
-                  modelValidatorProviders,
                   valueProviderFactories,
                   logger,
                   diagnosticSource,

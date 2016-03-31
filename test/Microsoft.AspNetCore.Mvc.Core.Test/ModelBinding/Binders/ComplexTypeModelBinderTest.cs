@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             bindingContext.IsTopLevelObject = false;
             bindingContext.ModelName = "SimpleContainer.Simple";
             bindingContext.ValueProvider = valueProvider.Object;
-            bindingContext.OperationBindingContext.ValueProvider = valueProvider.Object;
+            bindingContext.OriginalValueProvider = valueProvider.Object;
 
             var binder = CreateBinder(bindingContext.ModelMetadata);
 
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingContext = CreateContext(GetMetadataForType(modelType));
             bindingContext.IsTopLevelObject = false;
             bindingContext.ValueProvider = valueProvider.Object;
-            bindingContext.OperationBindingContext.ValueProvider = valueProvider.Object;
+            bindingContext.OriginalValueProvider = valueProvider.Object;
 
             var binder = CreateBinder(bindingContext.ModelMetadata);
 
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingContext = CreateContext(GetMetadataForType(modelType));
             bindingContext.IsTopLevelObject = false;
             bindingContext.ValueProvider = valueProvider.Object;
-            bindingContext.OperationBindingContext.ValueProvider = originalValueProvider.Object;
+            bindingContext.OriginalValueProvider = originalValueProvider.Object;
 
             var binder = CreateBinder(bindingContext.ModelMetadata);
 
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingContext = CreateContext(GetMetadataForType(modelType));
             bindingContext.IsTopLevelObject = false;
             bindingContext.ValueProvider = valueProvider.Object;
-            bindingContext.OperationBindingContext.ValueProvider = originalValueProvider.Object;
+            bindingContext.OriginalValueProvider = originalValueProvider.Object;
 
             var binder = CreateBinder(bindingContext.ModelMetadata);
 
@@ -268,11 +268,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 ModelMetadata = GetMetadataForType(typeof(Person)),
                 ModelName = string.Empty,
                 ValueProvider = mockValueProvider.Object,
-                OperationBindingContext = new OperationBindingContext
-                {
-                    MetadataProvider = _metadataProvider,
-                    ValidatorProvider = Mock.Of<IModelValidatorProvider>()
-                },
                 ModelState = new ModelStateDictionary(),
             };
 
@@ -405,17 +400,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var metadata = GetMetadataForProperty(typeof(PersonWithBindExclusion), property);
             var bindingContext = new DefaultModelBindingContext()
             {
-                ModelMetadata = GetMetadataForType(typeof(PersonWithBindExclusion)),
-                OperationBindingContext = new OperationBindingContext()
+                ActionContext = new ActionContext()
                 {
-                    ActionContext = new ActionContext()
+                    HttpContext = new DefaultHttpContext()
                     {
-                        HttpContext = new DefaultHttpContext()
-                        {
-                            RequestServices = new ServiceCollection().BuildServiceProvider(),
-                        },
+                        RequestServices = new ServiceCollection().BuildServiceProvider(),
                     },
                 },
+                ModelMetadata = GetMetadataForType(typeof(PersonWithBindExclusion)),
             };
 
             var binder = CreateBinder(bindingContext.ModelMetadata);
@@ -435,17 +427,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var metadata = GetMetadataForProperty(typeof(PersonWithBindExclusion), property);
             var bindingContext = new DefaultModelBindingContext()
             {
-                ModelMetadata = GetMetadataForType(typeof(PersonWithBindExclusion)),
-                OperationBindingContext = new OperationBindingContext()
+                ActionContext = new ActionContext()
                 {
-                    ActionContext = new ActionContext()
+                    HttpContext = new DefaultHttpContext()
                     {
-                        HttpContext = new DefaultHttpContext()
-                        {
-                            RequestServices = new ServiceCollection().BuildServiceProvider(),
-                        },
+                        RequestServices = new ServiceCollection().BuildServiceProvider(),
                     },
                 },
+                ModelMetadata = GetMetadataForType(typeof(PersonWithBindExclusion)),
             };
 
             var binder = CreateBinder(bindingContext.ModelMetadata);
@@ -466,17 +455,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var metadata = GetMetadataForProperty(typeof(PersonWithBindExclusion), property);
             var bindingContext = new DefaultModelBindingContext()
             {
-                ModelMetadata = GetMetadataForType(typeof(PersonWithBindExclusion)),
-                OperationBindingContext = new OperationBindingContext()
+                ActionContext = new ActionContext()
                 {
-                    ActionContext = new ActionContext()
-                    {
-                        HttpContext = new DefaultHttpContext()
-                        {
-                            RequestServices = new ServiceCollection().BuildServiceProvider(),
-                        },
-                    },
+                    HttpContext = new DefaultHttpContext(),
                 },
+                ModelMetadata = GetMetadataForType(typeof(PersonWithBindExclusion)),
             };
 
             var binder = CreateBinder(bindingContext.ModelMetadata);
@@ -499,17 +482,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var metadata = GetMetadataForProperty(typeof(TypeWithIncludedPropertiesUsingBindAttribute), property);
             var bindingContext = new DefaultModelBindingContext()
             {
-                ModelMetadata = GetMetadataForType(typeof(TypeWithIncludedPropertiesUsingBindAttribute)),
-                OperationBindingContext = new OperationBindingContext()
+                ActionContext = new ActionContext()
                 {
-                    ActionContext = new ActionContext()
-                    {
-                        HttpContext = new DefaultHttpContext()
-                        {
-                            RequestServices = new ServiceCollection().BuildServiceProvider(),
-                        },
-                    },
+                    HttpContext = new DefaultHttpContext()
                 },
+                ModelMetadata = GetMetadataForType(typeof(TypeWithIncludedPropertiesUsingBindAttribute)),
             };
 
             var binder = CreateBinder(bindingContext.ModelMetadata);
@@ -531,17 +508,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var metadata = GetMetadataForProperty(typeof(ModelWithMixedBindingBehaviors), property);
             var bindingContext = new DefaultModelBindingContext()
             {
-                ModelMetadata = GetMetadataForType(typeof(ModelWithMixedBindingBehaviors)),
-                OperationBindingContext = new OperationBindingContext()
+                ActionContext = new ActionContext()
                 {
-                    ActionContext = new ActionContext()
-                    {
-                        HttpContext = new DefaultHttpContext()
-                        {
-                            RequestServices = new ServiceCollection().BuildServiceProvider(),
-                        },
-                    },
+                    HttpContext = new DefaultHttpContext(),
                 },
+                ModelMetadata = GetMetadataForType(typeof(ModelWithMixedBindingBehaviors)),
             };
 
             var binder = CreateBinder(bindingContext.ModelMetadata);
@@ -794,9 +765,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var model = new Person();
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
-
-            var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var metadata = metadataProvider.GetMetadataForType(typeof(Person));
+            
+            var metadata = GetMetadataForType(typeof(Person));
             var propertyMetadata = metadata.Properties[nameof(model.PropertyWithDefaultValue)];
 
             var result = ModelBindingResult.Failed("foo");
@@ -817,9 +787,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var model = new Person();
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
-
-            var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var metadata = metadataProvider.GetMetadataForType(typeof(Person));
+            
+            var metadata = GetMetadataForType(typeof(Person));
             var propertyMetadata = metadata.Properties[nameof(model.PropertyWithInitializedValue)];
 
             // The null model value won't be used because IsModelBound = false.
@@ -842,9 +811,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var model = new Person();
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
-
-            var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var metadata = metadataProvider.GetMetadataForType(typeof(Person));
+            
+            var metadata = GetMetadataForType(typeof(Person));
             var propertyMetadata = metadata.Properties[nameof(model.PropertyWithInitializedValueAndDefault)];
 
             // The null model value won't be used because IsModelBound = false.
@@ -867,9 +835,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var model = new Person();
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
-
-            var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var metadata = metadataProvider.GetMetadataForType(typeof(Person));
+            
+            var metadata = GetMetadataForType(typeof(Person));
             var propertyMetadata = metadata.Properties[nameof(model.NonUpdateableProperty)];
 
             var result = ModelBindingResult.Failed("foo");
@@ -912,8 +879,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var type = model.GetType();
             var bindingContext = CreateContext(GetMetadataForType(type), model);
             var modelState = bindingContext.ModelState;
-            var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var metadata = metadataProvider.GetMetadataForType(type);
+            var metadata = GetMetadataForType(type);
 
             var propertyMetadata = bindingContext.ModelMetadata.Properties[propertyName];
             var result = ModelBindingResult.Success(
@@ -960,9 +926,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var model = new Person();
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
-
-            var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var metadata = metadataProvider.GetMetadataForType(typeof(Person));
+            
+            var metadata = GetMetadataForType(typeof(Person));
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.DateOfBirth)];
 
             var result = ModelBindingResult.Success("foo", new DateTime(2001, 1, 1));
@@ -987,9 +952,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             };
 
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
-
-            var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var metadata = metadataProvider.GetMetadataForType(typeof(Person));
+            
+            var metadata = GetMetadataForType(typeof(Person));
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.DateOfDeath)];
 
             var result = ModelBindingResult.Success("foo", new DateTime(1800, 1, 1));
@@ -1012,9 +976,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var model = new ModelWhosePropertySetterThrows();
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
             bindingContext.ModelName = "foo";
-
-            var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var metadata = metadataProvider.GetMetadataForType(typeof(ModelWhosePropertySetterThrows));
+            
+            var metadata = GetMetadataForType(typeof(ModelWhosePropertySetterThrows));
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.NameNoAttribute)];
 
             var result = ModelBindingResult.Success("foo.NameNoAttribute", model: null);
@@ -1068,12 +1031,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 ModelMetadata = metadata,
                 ModelName = "theModel",
                 ModelState = new ModelStateDictionary(),
-                OperationBindingContext = new OperationBindingContext
-                {
-                    MetadataProvider = _metadataProvider,
-                    ValidatorProvider = TestModelValidatorProvider.CreateDefaultProvider(),
-                    ValueProvider = valueProvider,
-                },
                 ValueProvider = valueProvider,
             };
         }

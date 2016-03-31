@@ -5,9 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -16,8 +14,6 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class ControllerContext : ActionContext
     {
-        private FormatterCollection<IInputFormatter> _inputFormatters;
-        private IList<IModelValidatorProvider> _validatorProviders;
         private IList<IValueProvider> _valueProviders;
 
         /// <summary>
@@ -53,56 +49,6 @@ namespace Microsoft.AspNetCore.Mvc
         {
             get { return (ControllerActionDescriptor)base.ActionDescriptor; }
             set { base.ActionDescriptor = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the list of <see cref="IInputFormatter"/> instances for the current request.
-        /// </summary>
-        public virtual FormatterCollection<IInputFormatter> InputFormatters
-        {
-            get
-            {
-                if (_inputFormatters == null)
-                {
-                    _inputFormatters = new FormatterCollection<IInputFormatter>();
-                }
-
-                return _inputFormatters;
-            }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _inputFormatters = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the list of <see cref="IModelValidatorProvider"/> instances for the current request.
-        /// </summary>
-        public virtual IList<IModelValidatorProvider> ValidatorProviders
-        {
-            get
-            {
-                if (_validatorProviders == null)
-                {
-                    _validatorProviders = new List<IModelValidatorProvider>();
-                }
-
-                return _validatorProviders;
-            }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _validatorProviders = value;
-            }
         }
 
         /// <summary>

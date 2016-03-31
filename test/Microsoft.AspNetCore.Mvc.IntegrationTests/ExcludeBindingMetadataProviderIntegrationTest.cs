@@ -36,25 +36,24 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(TypesBundle),
             };
 
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.Form = new FormCollection(new Dictionary<string, StringValues>
-                    {
-                        { "name", new[] { "Fred" } },
-                        { "type", new[] { "SomeType" } },
-                        { "typeArray", new[] { "SomeType1", "SomeType2" } },
-                        { "typeList", new[] { "SomeType1", "SomeType2" } },
-                        { "typeDictionary", new[] { "parameter[0].Key=key", "parameter[0].Value=value" } },
-                        { "methodInfo", new[] { "value" } },
-                        { "func", new[] { "value" } },
-                    }
-                );
+                {
+                    { "name", new[] { "Fred" } },
+                    { "type", new[] { "SomeType" } },
+                    { "typeArray", new[] { "SomeType1", "SomeType2" } },
+                    { "typeList", new[] { "SomeType1", "SomeType2" } },
+                    { "typeDictionary", new[] { "parameter[0].Key=key", "parameter[0].Value=value" } },
+                    { "methodInfo", new[] { "value" } },
+                    { "func", new[] { "value" } },
+                });
             });
 
-            var modelState = operationContext.ActionContext.ModelState;
+            var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ??
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ??
                 default(ModelBindingResult);
 
             // Assert

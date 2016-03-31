@@ -252,8 +252,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         modelName: modelName,
                         model: null))
                     {
-                        // If any property can return a true value.
-                        if (CanBindValue(bindingContext))
+                        // If any property can be bound from a value provider then continue.
+                        if (bindingContext.ValueProvider.ContainsPrefix(bindingContext.ModelName))
                         {
                             return true;
                         }
@@ -265,33 +265,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 // All the properties are marked with a non value provider based marker like [FromHeader] or
                 // [FromBody].
-                return true;
-            }
-
-            return false;
-        }
-
-        private bool CanBindValue(ModelBindingContext bindingContext)
-        {
-            var valueProvider = bindingContext.ValueProvider;
-
-            var bindingSource = bindingContext.BindingSource;
-            if (bindingSource != null && !bindingSource.IsGreedy)
-            {
-                var rootValueProvider = bindingContext.OperationBindingContext.ValueProvider as IBindingSourceValueProvider;
-                if (rootValueProvider != null)
-                {
-                    valueProvider = rootValueProvider.Filter(bindingSource);
-                    if (valueProvider == null)
-                    {
-                        // Unable to find a value provider for this binding source. Binding will fail.
-                        return false;
-                    }
-                }
-            }
-
-            if (valueProvider.ContainsPrefix(bindingContext.ModelName))
-            {
                 return true;
             }
 

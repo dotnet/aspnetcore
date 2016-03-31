@@ -81,8 +81,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
 
             // Update the existing successful but empty ModelBindingResult.
-            var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
-            var valueMetadata = metadataProvider.GetMetadataForType(typeof(TValue));
+            var elementMetadata = bindingContext.ModelMetadata.ElementMetadata;
+            var valueMetadata = elementMetadata.Properties[nameof(KeyValuePair<TKey, TValue>.Value)];
 
             var keyMappings = new Dictionary<string, TKey>(StringComparer.Ordinal);
             foreach (var kvp in keys)

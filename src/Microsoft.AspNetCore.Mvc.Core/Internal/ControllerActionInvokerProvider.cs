@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private readonly IControllerFactory _controllerFactory;
         private readonly ControllerActionInvokerCache _controllerActionInvokerCache;
         private readonly IReadOnlyList<IInputFormatter> _inputFormatters;
-        private readonly IReadOnlyList<IModelValidatorProvider> _modelValidatorProviders;
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
         private readonly int _maxModelValidationErrors;
         private readonly ILogger _logger;
@@ -39,7 +38,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _controllerActionInvokerCache = controllerActionInvokerCache;
             _argumentBinder = argumentBinder;
             _inputFormatters = optionsAccessor.Value.InputFormatters.ToArray();
-            _modelValidatorProviders = optionsAccessor.Value.ModelValidatorProviders.ToArray();
             _valueProviderFactories = optionsAccessor.Value.ValueProviderFactories.ToArray();
             _maxModelValidationErrors = optionsAccessor.Value.MaxModelValidationErrors;
             _logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
@@ -70,7 +68,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     actionDescriptor,
                     _inputFormatters,
                     _argumentBinder,
-                    _modelValidatorProviders,
                     _valueProviderFactories,
                     _logger,
                     _diagnosticSource,

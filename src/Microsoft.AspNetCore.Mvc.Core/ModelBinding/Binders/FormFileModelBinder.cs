@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             ModelBindingContext bindingContext,
             ICollection<IFormFile> postedFiles)
         {
-            var request = bindingContext.OperationBindingContext.HttpContext.Request;
+            var request = bindingContext.HttpContext.Request;
             if (request.HasFormContentType)
             {
                 var form = await request.ReadFormAsync();

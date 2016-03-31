@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(bindingContext));
             }
 
-            var requestServices = bindingContext.OperationBindingContext.HttpContext.RequestServices;
+            var requestServices = bindingContext.HttpContext.RequestServices;
             var model = requestServices.GetRequiredService(bindingContext.ModelType);
 
             bindingContext.ValidationState.Add(model, new ValidationStateEntry() { SuppressValidation = true });

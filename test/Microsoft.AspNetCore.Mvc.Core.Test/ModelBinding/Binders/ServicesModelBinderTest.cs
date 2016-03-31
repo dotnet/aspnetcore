@@ -42,27 +42,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             metadataProvider.ForType(modelType).BindingDetails(d => d.BindingSource = BindingSource.Services);
             var modelMetadata = metadataProvider.GetMetadataForType(modelType);
 
-
             var services = new ServiceCollection();
             services.AddSingleton<IService>(new Service());
 
             var bindingContext = new DefaultModelBindingContext
             {
+                ActionContext = new ActionContext()
+                {
+                    HttpContext = new DefaultHttpContext()
+                    {
+                        RequestServices = services.BuildServiceProvider(),
+                    }
+                },
                 ModelMetadata = modelMetadata,
                 ModelName = "modelName",
                 FieldName = "modelName",
                 ModelState = new ModelStateDictionary(),
-                OperationBindingContext = new OperationBindingContext
-                {
-                    ActionContext = new ActionContext()
-                    {
-                        HttpContext = new DefaultHttpContext()
-                        {
-                            RequestServices = services.BuildServiceProvider(),
-                        }
-                    },
-                    MetadataProvider = metadataProvider,
-                },
                 BinderModelName = modelMetadata.BinderModelName,
                 BindingSource = modelMetadata.BindingSource,
                 ValidationState = new ValidationStateDictionary(),

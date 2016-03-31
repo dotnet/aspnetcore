@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
             // Arrange
             var binder = new HttpRequestMessageModelBinder();
             var bindingContext = GetBindingContext(typeof(HttpRequestMessage));
-            var expectedModel = bindingContext.OperationBindingContext.HttpContext.GetHttpRequestMessage();
+            var expectedModel = bindingContext.HttpContext.GetHttpRequestMessage();
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -42,20 +42,16 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
             var metadataProvider = new EmptyModelMetadataProvider();
             DefaultModelBindingContext bindingContext = new DefaultModelBindingContext
             {
+                ActionContext = new ActionContext()
+                {
+                    HttpContext = new DefaultHttpContext(),
+                },
                 ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "someName",
-                OperationBindingContext = new OperationBindingContext
-                {
-                    ActionContext = new ActionContext()
-                    {
-                        HttpContext = new DefaultHttpContext(),
-                    },
-                    MetadataProvider = metadataProvider,
-                },
                 ValidationState = new ValidationStateDictionary(),
             };
 
-            bindingContext.OperationBindingContext.HttpContext.Request.Method = "GET";
+            bindingContext.HttpContext.Request.Method = "GET";
 
             return bindingContext;
         }

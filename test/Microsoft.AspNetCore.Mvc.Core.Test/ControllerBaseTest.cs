@@ -1373,10 +1373,9 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var binder = new StubModelBinder();
             var controller = GetController(binder, valueProvider: null);
-            controller.ControllerContext.ValidatorProviders = new List<IModelValidatorProvider>()
-            {
-                Mock.Of<IModelValidatorProvider>(),
-            };
+            controller.ObjectValidator = new DefaultObjectValidator(
+                controller.MetadataProvider,
+                new[] { Mock.Of<IModelValidatorProvider>() });
 
             var model = new TryValidateModelModel();
 
@@ -1410,10 +1409,9 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             var binder = new StubModelBinder();
             var controller = GetController(binder, valueProvider: null);
-            controller.ControllerContext.ValidatorProviders = new List<IModelValidatorProvider>()
-            {
-                provider.Object,
-            };
+            controller.ObjectValidator = new DefaultObjectValidator(
+                controller.MetadataProvider,
+                new[] { provider.Object });
 
             // Act
             var result = controller.TryValidateModel(model, "Prefix");
@@ -1447,10 +1445,9 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             var binder = new StubModelBinder();
             var controller = GetController(binder, valueProvider: null);
-            controller.ControllerContext.ValidatorProviders = new List<IModelValidatorProvider>()
-            {
-                provider.Object,
-            };
+            controller.ObjectValidator = new DefaultObjectValidator(
+                controller.MetadataProvider, 
+                new[] { provider.Object });
 
             // Act
             var result = controller.TryValidateModel(model);
@@ -1483,17 +1480,18 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var httpContext = new DefaultHttpContext();
 
+            var validatorProviders = new[]
+            {
+                new DataAnnotationsModelValidatorProvider(
+                    new ValidationAttributeAdapterProvider(),
+                    new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                    stringLocalizerFactory: null),
+            };
+
             var controllerContext = new ControllerContext()
             {
                 HttpContext = httpContext,
                 ValueProviders = new[] { valueProvider, },
-                ValidatorProviders = new[]
-                {
-                    new DataAnnotationsModelValidatorProvider(
-                        new ValidationAttributeAdapterProvider(),
-                        new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
-                        stringLocalizerFactory: null),
-                },
             };
 
             var binderFactory = new Mock<IModelBinderFactory>();
@@ -1506,7 +1504,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                 ControllerContext = controllerContext,
                 MetadataProvider = metadataProvider,
                 ModelBinderFactory = binderFactory.Object,
-                ObjectValidator = new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
+                ObjectValidator = new DefaultObjectValidator(metadataProvider, validatorProviders),
             };
 
             return controller;

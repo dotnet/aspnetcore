@@ -52,9 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider,
                 GetModelBinderFactory(binder),
                 Mock.Of<IValueProvider>(),
-                new List<IInputFormatter>(),
-                new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
-                Mock.Of<IModelValidatorProvider>());
+                new Mock<IObjectModelValidator>(MockBehavior.Strict).Object);
 
             // Assert
             Assert.False(result);
@@ -84,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 { "", null }
             };
             var valueProvider = new TestValueProvider(values);
-            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
 
             var actionContext = new ActionContext() { HttpContext = new DefaultHttpContext() };
             var modelState = actionContext.ModelState;
@@ -94,12 +92,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 model,
                 "",
                 actionContext,
-                modelMetadataProvider,
+                metadataProvider,
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
-                new List<IInputFormatter>(),
-                new DefaultObjectValidator(modelMetadataProvider, new ValidatorCache()),
-                validator);
+                new DefaultObjectValidator(metadataProvider, new[] { validator }));
 
             // Assert
             Assert.False(result);
@@ -139,9 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider,
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
-                new List<IInputFormatter>(),
-                new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
-                validator);
+                new DefaultObjectValidator(metadataProvider, new[] { validator }));
 
             // Assert
             Assert.True(result);
@@ -167,9 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider,
                 GetModelBinderFactory(binder),
                 Mock.Of<IValueProvider>(),
-                new List<IInputFormatter>(),
                 new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
-                Mock.Of<IModelValidatorProvider>(),
                 propertyFilter);
 
             // Assert
@@ -223,9 +215,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider,
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
-                new List<IInputFormatter>(),
-                new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
-                validator,
+                new DefaultObjectValidator(metadataProvider, new[] { validator }),
                 propertyFilter);
 
             // Assert
@@ -253,9 +243,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider,
                 GetModelBinderFactory(binder),
                 Mock.Of<IValueProvider>(),
-                new List<IInputFormatter>(),
                 new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
-                Mock.Of<IModelValidatorProvider>(),
                 m => m.IncludedProperty);
 
             // Assert
@@ -305,9 +293,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 TestModelMetadataProvider.CreateDefaultProvider(),
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
-                new List<IInputFormatter>(),
-                new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
-                validator,
+                new DefaultObjectValidator(metadataProvider, new[] { validator }),
                 m => m.IncludedProperty,
                 m => m.MyProperty);
 
@@ -358,9 +344,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider,
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
-                new List<IInputFormatter>(),
-                new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
-                validator);
+                new DefaultObjectValidator(metadataProvider, new[] { validator }));
 
             // Assert
             // Includes everything.
@@ -509,9 +493,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider: metadataProvider,
                 modelBinderFactory: GetModelBinderFactory(binder),
                 valueProvider: Mock.Of<IValueProvider>(),
-                inputFormatters: new List<IInputFormatter>(),
                 objectModelValidator: new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
-                validatorProvider: Mock.Of<IModelValidatorProvider>(),
                 propertyFilter: propertyFilter);
 
             // Assert
@@ -566,9 +548,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider,
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
-                new List<IInputFormatter>(),
-                new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
-                validator,
+                new DefaultObjectValidator(metadataProvider, new[] { validator }),
                 propertyFilter);
 
             // Assert
@@ -598,9 +578,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider: metadataProvider,
                 modelBinderFactory: GetModelBinderFactory(binder.Object),
                 valueProvider: Mock.Of<IValueProvider>(),
-                inputFormatters: new List<IInputFormatter>(),
-                objectModelValidator: new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
-                validatorProvider: Mock.Of<IModelValidatorProvider>());
+                objectModelValidator: new Mock<IObjectModelValidator>(MockBehavior.Strict).Object);
 
             // Assert
             Assert.False(result);
@@ -637,12 +615,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 model.GetType(),
                 "",
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
-                TestModelMetadataProvider.CreateDefaultProvider(),
+                metadataProvider,
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
-                new List<IInputFormatter>(),
-                new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
-                validator);
+                new DefaultObjectValidator(metadataProvider, new[] { validator }));
 
             // Assert
             Assert.True(result);
@@ -669,9 +645,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     metadataProvider,
                     GetModelBinderFactory(binder.Object),
                     Mock.Of<IValueProvider>(),
-                    new List<IInputFormatter>(),
-                    new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
-                    Mock.Of<IModelValidatorProvider>(),
+                    new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
                     propertyFilter));
 
             var expectedMessage = string.Format("The model's runtime type '{0}' is not assignable to the type '{1}'." +
@@ -1547,7 +1521,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var modelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithReadOnlyAndSpecialCaseProperties),
                 propertyName);
-            var bindingContext = GetBindingContext(metadataProvider, modelMetadata);
+            var bindingContext = GetBindingContext(modelMetadata);
 
             var container = new ModelWithReadOnlyAndSpecialCaseProperties();
             bindingContext.Model = modelMetadata.PropertyGetter(container);
@@ -1560,20 +1534,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var metadataProvider = new EmptyModelMetadataProvider();
             var metadata = metadataProvider.GetMetadataForType(modelType);
 
-            return GetBindingContext(metadataProvider, metadata);
+            return GetBindingContext(metadata);
         }
 
-        private static DefaultModelBindingContext GetBindingContext(
-            IModelMetadataProvider metadataProvider,
-            ModelMetadata metadata)
+        private static DefaultModelBindingContext GetBindingContext(ModelMetadata metadata)
         {
             var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = metadata,
-                OperationBindingContext = new OperationBindingContext
-                {
-                    MetadataProvider = metadataProvider,
-                },
             };
 
             return bindingContext;
