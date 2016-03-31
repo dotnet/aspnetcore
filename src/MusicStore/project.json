@@ -23,7 +23,6 @@
     "Areas",
     "Views",
     "wwwroot",
-    "hosting.json",
     "config.json"
   ],
   "dependencies": {
