@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -51,14 +52,36 @@ namespace Microsoft.AspNetCore.Authorization
 
             if (authContext.HasSucceeded)
             {
-                _logger.UserAuthorizationSucceeded(user?.Identity?.Name);
+                _logger.UserAuthorizationSucceeded(GetUserNameForLogging(user));
                 return true;
             }
             else
             {
-                _logger.UserAuthorizationFailed(user?.Identity?.Name);
+                _logger.UserAuthorizationFailed(GetUserNameForLogging(user));
                 return false;
             }
+        }
+
+        private string GetUserNameForLogging(ClaimsPrincipal user)
+        {
+            var identity = user?.Identity;
+            if (identity != null)
+            {
+                var name = identity.Name;
+                if (name != null)
+                {
+                    return name;
+                }
+                return GetClaimValue(identity, "sub")
+                    ?? GetClaimValue(identity, ClaimTypes.Name)
+                    ?? GetClaimValue(identity, ClaimTypes.NameIdentifier);
+            }
+            return null;
+        }
+
+        private static string GetClaimValue(IIdentity identity, string claimsType)
+        {
+            return (identity as ClaimsIdentity)?.FindFirst(claimsType)?.Value;
         }
 
         public async Task<bool> AuthorizeAsync(ClaimsPrincipal user, object resource, string policyName)
