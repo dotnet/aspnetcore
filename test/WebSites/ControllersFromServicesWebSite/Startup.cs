@@ -41,10 +41,11 @@ namespace ControllersFromServicesWebSite
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
                 .UseStartup<Startup>()
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseKestrel()
                 .Build();
 
             host.Run();
         }
     }
 }
+
