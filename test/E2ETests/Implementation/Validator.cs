@@ -45,7 +45,6 @@ namespace E2ETests
             _logger.LogInformation("GET {0}", uri.ToString());
             var resp= await _httpClient.GetAsync(uri);
             LogHeaders(resp, LogLevel.Information);
-            SaveCookies(resp);
             return resp;
         }
 
@@ -57,7 +56,6 @@ namespace E2ETests
             _logger.LogInformation("POST {0}", uri.ToString());
             var resp= await _httpClient.PostAsync(uri, content);
             LogHeaders(resp, LogLevel.Information);
-            SaveCookies(resp);
             return resp;
         }
         private void LogHeaders(HttpResponseMessage response, LogLevel logLevel)
@@ -73,35 +71,6 @@ namespace E2ETests
                 new FormattedLogValues("Response headers: {0}", responseHeaders),
                 exception: null,
                 formatter: (o, e) => o.ToString());
-        }
-
-        // TODO https://github.com/dotnet/corefx/issues/6737
-        private void SaveCookies(HttpResponseMessage response)
-        {
-            if (!_httpClientHandler.UseCookies)
-            {
-                return;
-            }
-            foreach (var cookieString in response.Headers
-                .Where(k => k.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
-                .SelectMany(k => k.Value))
-            {
-                try
-                {
-                    var helper = new CookieContainer();
-                    helper.SetCookies(response.RequestMessage.RequestUri, cookieString);
-                    foreach (Cookie cookie in helper.GetCookies(response.RequestMessage.RequestUri))
-                    {
-                        _httpClientHandler.CookieContainer.Add(response.RequestMessage.RequestUri, cookie);
-                    }
-                }
-                catch
-                {
-                    //bad cookie
-                    _logger.LogInformation("Received bad cookie string: {0}", cookieString);
-                }
-
-            }
         }
 
         public async Task VerifyHomePage(
