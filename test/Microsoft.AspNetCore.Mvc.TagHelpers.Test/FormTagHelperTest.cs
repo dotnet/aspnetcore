@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("action"));
             Assert.Equal("home/index", attribute.Value);
             Assert.Empty(output.PreContent.GetContent());
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
             Assert.Equal(expectedPostContent, output.PostContent.GetContent());
             Assert.Equal(expectedTagName, output.TagName);
         }
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var attribute = Assert.Single(output.Attributes);
             Assert.Equal(expectedAttribute, attribute);
             Assert.Empty(output.PreContent.GetContent());
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
             Assert.Equal(expectedPostContent, output.PostContent.GetContent());
         }
 
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var attribute = Assert.Single(output.Attributes);
             Assert.Equal(expectedAttribute, attribute);
             Assert.Empty(output.PreContent.GetContent());
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
             Assert.Empty(output.PostContent.GetContent());
             generator.Verify();
         }
@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Empty(output.Attributes);
             Assert.Empty(output.PreElement.GetContent());
             Assert.Empty(output.PreContent.GetContent());
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
             Assert.Empty(output.PostContent.GetContent());
         }
 
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Empty(output.Attributes);
             Assert.Empty(output.PreElement.GetContent());
             Assert.Empty(output.PreContent.GetContent());
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
             Assert.Empty(output.PostContent.GetContent());
         }
 
@@ -391,7 +391,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Empty(output.Attributes);
             Assert.Empty(output.PreElement.GetContent());
             Assert.Empty(output.PreContent.GetContent());
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
             Assert.Empty(output.PostContent.GetContent());
         }
 
@@ -448,7 +448,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Empty(output.Attributes);
             Assert.Empty(output.PreElement.GetContent());
             Assert.Empty(output.PreContent.GetContent());
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
             Assert.Empty(output.PostContent.GetContent());
         }
 
@@ -501,7 +501,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Empty(output.Attributes);
             Assert.Empty(output.PreElement.GetContent());
             Assert.Empty(output.PreContent.GetContent());
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
             Assert.Empty(output.PostContent.GetContent());
             Assert.Empty(output.PostElement.GetContent());
         }
@@ -554,7 +554,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var attribute = Assert.Single(output.Attributes);
             Assert.Equal(new TagHelperAttribute("aCTiON", "my-action"), attribute);
             Assert.Empty(output.PreContent.GetContent());
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
             Assert.Equal(expectedPostContent, output.PostContent.GetContent());
         }
 

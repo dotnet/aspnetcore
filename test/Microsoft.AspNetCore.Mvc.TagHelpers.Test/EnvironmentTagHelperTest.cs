@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Test
             // Assert
             Assert.Null(output.TagName);
             Assert.Empty(output.PreContent.GetContent());
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
             Assert.Empty(output.PostContent.GetContent());
             Assert.True(output.IsContentModified);
         }

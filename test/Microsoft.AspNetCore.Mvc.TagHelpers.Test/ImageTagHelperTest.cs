@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             helper.Process(context, output);
 
             // Assert
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
             Assert.Equal("img", output.TagName);
             Assert.Equal(2, output.Attributes.Count);
             var srcAttribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("src"));
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             helper.Process(context, output);
 
             // Assert
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
             Assert.Equal("img", output.TagName);
             Assert.Equal(2, output.Attributes.Count);
             var srcAttribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("src"));
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Act
             helper.Process(context, output);
             // Assert
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
             Assert.Equal("img", output.TagName);
             Assert.Equal(2, output.Attributes.Count);
             var srcAttribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("src"));

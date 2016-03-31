@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 {
                     var childContent = await output.GetChildContentAsync();
 
-                    if (childContent.IsWhiteSpace)
+                    if (childContent.IsEmptyOrWhiteSpace)
                     {
                         // Provide default label text since there was nothing useful in the Razor source.
                         output.Content.SetHtmlContent(tagBuilder.InnerHtml);

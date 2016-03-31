@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             generator.Verify();
             Assert.Equal("a", output.TagName);
             Assert.Empty(output.Attributes);
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
         }
 
         [Fact]
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             generator.Verify();
             Assert.Equal("a", output.TagName);
             Assert.Empty(output.Attributes);
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
         }
 
         [Fact]
@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             Assert.Equal("a", output.TagName);
             Assert.Empty(output.Attributes);
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
         }
 
         [Fact]
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             Assert.Equal("a", output.TagName);
             Assert.Empty(output.Attributes);
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
         }
 
         [Fact]
@@ -356,7 +356,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             Assert.Equal("a", output.TagName);
             Assert.Empty(output.Attributes);
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
         }
 
         [Theory]

@@ -395,7 +395,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Assert
             Assert.Null(output.TagName);
             Assert.True(output.IsContentModified);
-            Assert.True(output.Content.IsEmpty);
+            Assert.True(output.Content.GetContent().Length == 0);
             Assert.True(output.PostElement.IsModified);
         }
 
@@ -494,7 +494,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.NotNull(output.TagName);
             Assert.False(output.IsContentModified);
             Assert.Empty(output.Attributes);
-            Assert.True(output.PostElement.IsEmpty);
+            Assert.True(output.PostElement.GetContent().Length == 0);
         }
 
         [Fact]
@@ -522,7 +522,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Equal("script", output.TagName);
             Assert.False(output.IsContentModified);
             Assert.Empty(output.Attributes);
-            Assert.True(output.PostElement.IsEmpty);
+            Assert.True(output.PostElement.GetContent().Length == 0);
         }
 
         [Fact]
