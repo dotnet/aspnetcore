@@ -232,19 +232,28 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             if (callback != null)
             {
-                try
+                // Offload callbacks to avoid stack dives on sync completions.
+                var ignored = Task.Run(() =>
                 {
-                    callback(tcs.Task);
-                }
-                catch (Exception)
-                {
-                    // Suppress exceptions on background threads.
-                }
+                    try
+                    {
+                        callback(tcs.Task);
+                    }
+                    catch (Exception)
+                    {
+                        // Suppress exceptions on background threads.
+                    }
+                });
             }
         }
 
         public override int EndRead(IAsyncResult asyncResult)
         {
+            if (asyncResult == null)
+            {
+                throw new ArgumentNullException(nameof(asyncResult));
+            }
+
             var task = (Task<int>)asyncResult;
             return task.GetAwaiter().GetResult();
         }

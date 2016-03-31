@@ -229,7 +229,18 @@ namespace Microsoft.AspNetCore.WebUtilities
                 tcs.TrySetResult(toCopy);
                 if (callback != null)
                 {
-                    callback(tcs.Task);
+                    // Offload callbacks to avoid stack dives on sync completions.
+                    var ignored = Task.Run(() =>
+                    {
+                        try
+                        {
+                            callback(tcs.Task);
+                        }
+                        catch (Exception)
+                        {
+                            // Suppress exceptions on background threads.
+                        }
+                    });
                 }
                 return tcs.Task;
             }
@@ -239,6 +250,11 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override int EndRead(IAsyncResult asyncResult)
         {
+            if (asyncResult == null)
+            {
+                throw new ArgumentNullException(nameof(asyncResult));
+            }
+
             Task<int> task = asyncResult as Task<int>;
             if (task != null)
             {
