@@ -10,7 +10,7 @@ using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-    public class DnxAssemblyProvider : IAssemblyProvider
+    public class DnxAssemblyProvider
     {
         private readonly ILibraryManager _libraryManager;
 

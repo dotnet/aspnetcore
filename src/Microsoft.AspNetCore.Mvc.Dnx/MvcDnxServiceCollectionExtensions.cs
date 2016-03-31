@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
@@ -20,9 +22,15 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (DnxPlatformServices.Default.LibraryManager != null)
             {
+                var partManager = GetApplicationPartManager(services);
+                var provider = new DnxAssemblyProvider(DnxPlatformServices.Default.LibraryManager);
+                foreach (var assembly in provider.CandidateAssemblies)
+                {
+                    partManager.ApplicationParts.Add(new AssemblyPart(assembly));
+                }
+
                 // Add IAssemblyProvider services
                 services.AddSingleton(DnxPlatformServices.Default.LibraryManager);
-                services.AddTransient<IAssemblyProvider, DnxAssemblyProvider>();
 
                 // Add compilation services
                 services.AddSingleton(CompilationServices.Default.LibraryExporter);
@@ -30,6 +38,24 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services;
+        }
+
+        private static ApplicationPartManager GetApplicationPartManager(IServiceCollection services)
+        {
+            var manager = GetServiceFromCollection<ApplicationPartManager>(services);
+            if (manager == null)
+            {
+                manager = new ApplicationPartManager();
+            }
+
+            return manager;
+        }
+
+        private static T GetServiceFromCollection<T>(IServiceCollection services)
+        {
+            return (T)services
+                .FirstOrDefault(d => d.ServiceType == typeof(T))
+                ?.ImplementationInstance;
         }
     }
 }

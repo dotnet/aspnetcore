@@ -66,11 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             var startupAssembly = typeof(TStartup).GetTypeInfo().Assembly;
 
-            // Inject a custom assembly provider. Overrides AddMvc() because that uses TryAdd().
-            var assemblyProvider = new StaticAssemblyProvider();
-            assemblyProvider.CandidateAssemblies.Add(startupAssembly);
-            services.AddSingleton<IAssemblyProvider>(assemblyProvider);
-
+            // Inject a custom application part manager. Overrides AddMvcCore() because that uses TryAdd().
             var manager = new ApplicationPartManager();
             manager.ApplicationParts.Add(new AssemblyPart(startupAssembly));
 
@@ -78,13 +74,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             manager.FeatureProviders.Add(new ViewComponentFeatureProvider());
 
             services.AddSingleton(manager);
-        }
-
-        private class StaticAssemblyProvider : IAssemblyProvider
-        {
-            public IList<Assembly> CandidateAssemblies { get; } = new List<Assembly>();
-
-            IEnumerable<Assembly> IAssemblyProvider.CandidateAssemblies => CandidateAssemblies;
         }
     }
 }
