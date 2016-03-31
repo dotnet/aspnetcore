@@ -76,12 +76,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         public readonly FrameRequestHeaders RequestHeaders = new FrameRequestHeaders();
         public readonly FrameResponseHeaders ResponseHeaders = new FrameResponseHeaders();
 
-        public Headers()
-        {
-            RequestHeaders = new FrameRequestHeaders();
-            ResponseHeaders = new FrameResponseHeaders();
-        }
-
         public void Initialize(DateHeaderValueManager dateValueManager)
         {
             ResponseHeaders.SetRawDate(
