@@ -155,7 +155,7 @@ namespace E2ETests
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, _logger))
                 {
                     var deploymentResult = deployer.Deploy();
-                    var httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true, AllowAutoRedirect = false };
+                    var httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
                     var httpClient = new HttpClient(httpClientHandler);
                     httpClient.BaseAddress = new Uri(deploymentResult.ApplicationBaseUri);
 

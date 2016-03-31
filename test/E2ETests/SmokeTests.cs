@@ -188,11 +188,7 @@ namespace E2ETests
                     var deploymentResult = deployer.Deploy();
                     Helpers.SetInMemoryStoreForIIS(deploymentParameters, _logger);
 
-                    var httpClientHandler = new HttpClientHandler()
-                    {
-                        // Temporary workaround for issue https://github.com/dotnet/corefx/issues/4960
-                        AllowAutoRedirect = false
-                    };
+                    var httpClientHandler = new HttpClientHandler();
                     var httpClient = new HttpClient(httpClientHandler)
                     {
                         BaseAddress = new Uri(deploymentResult.ApplicationBaseUri),

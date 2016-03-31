@@ -42,7 +42,7 @@ namespace E2ETests
             Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNetCore.OpenIdConnect.Nonce.protectedString"));
 
             // This is just enable the auto-redirect.
-            _httpClientHandler = new HttpClientHandler() { AllowAutoRedirect = true };
+            _httpClientHandler = new HttpClientHandler();
             _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
             foreach (var header in Microsoft.Net.Http.Headers.SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()))
             {

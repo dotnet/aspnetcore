@@ -209,7 +209,6 @@ namespace E2ETests
         {
             _logger.LogInformation("Trying to access StoreManager that needs ManageStore claim with the current user : {email}", email ?? "Anonymous");
             var response = await DoGetAsync("Admin/StoreManager/");
-            response = await DoGetAsync(response.Headers.Location);
             var responseContent = await response.Content.ReadAsStringAsync();
             ValidateLayoutPage(responseContent);
 
@@ -327,7 +326,6 @@ namespace E2ETests
 
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = await DoPostAsync("Account/LogOff", content);
-            response = await DoGetAsync(response.Headers.Location);
             responseContent = await response.Content.ReadAsStringAsync();
 
             if (!Helpers.RunningOnMono)
@@ -386,7 +384,6 @@ namespace E2ETests
 
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = await DoPostAsync("Account/Login", content);
-            response = await DoGetAsync(response.Headers.Location);
             responseContent = await response.Content.ReadAsStringAsync();
             Assert.Contains(string.Format("Hello {0}!", email), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
@@ -410,7 +407,6 @@ namespace E2ETests
 
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = await DoPostAsync("Manage/ChangePassword", content);
-            response = await DoGetAsync(response.Headers.Location);
             responseContent = await response.Content.ReadAsStringAsync();
             Assert.Contains("Your password has been changed.", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(IdentityCookieName));
@@ -436,7 +432,6 @@ namespace E2ETests
 
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = await DoPostAsync("Admin/StoreManager/create", content);
-            response = await DoGetAsync(response.Headers.Location);
             responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + "Admin/StoreManager", response.RequestMessage.RequestUri.AbsoluteUri);
             Assert.Contains(albumName, responseContent);
@@ -482,7 +477,6 @@ namespace E2ETests
         {
             _logger.LogInformation("Getting details of a non-existing album with Id '-1'");
             var response = await DoGetAsync("Admin/StoreManager/Details?id=-1");
-            response = await DoGetAsync(response.Headers.Location);
             await ThrowIfResponseStatusNotOk(response);
             var responseContent = await response.Content.ReadAsStringAsync();
             Assert.Contains("Item not found.", responseContent, StringComparison.OrdinalIgnoreCase);
@@ -504,7 +498,6 @@ namespace E2ETests
         {
             _logger.LogInformation("Adding album id '{albumId}' to the cart", albumId);
             var response = await DoGetAsync(string.Format("ShoppingCart/AddToCart?id={0}", albumId));
-            response = await DoGetAsync(response.Headers.Location);
             await ThrowIfResponseStatusNotOk(response);
             var responseContent = await response.Content.ReadAsStringAsync();
             Assert.Contains(albumName, responseContent, StringComparison.OrdinalIgnoreCase);
@@ -536,7 +529,6 @@ namespace E2ETests
 
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = await DoPostAsync("Checkout/AddressAndPayment", content);
-            response = await DoGetAsync(response.Headers.Location);
             responseContent = await response.Content.ReadAsStringAsync();
             Assert.Contains("<h2>Checkout Complete</h2>", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.StartsWith(_deploymentResult.ApplicationBaseUri + "Checkout/Complete/", response.RequestMessage.RequestUri.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
@@ -553,7 +545,6 @@ namespace E2ETests
 
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             var response = await DoPostAsync("Admin/StoreManager/RemoveAlbum", content);
-            response = await DoGetAsync(response.Headers.Location);
             await ThrowIfResponseStatusNotOk(response);
 
             _logger.LogInformation("Verifying if the album '{album}' is deleted from store", albumName);
