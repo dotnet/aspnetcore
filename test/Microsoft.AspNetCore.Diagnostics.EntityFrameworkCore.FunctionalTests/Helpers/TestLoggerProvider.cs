@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.H
                 return true;
             }
 
-            public IDisposable BeginScopeImpl(object state)
+            public IDisposable BeginScope<TState>(TState state)
             {
                 return NullScope.Instance;
             }

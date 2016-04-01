@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             return true;
         }
 
-        public virtual IDisposable BeginScopeImpl(object state)
+        public virtual IDisposable BeginScope<TState>(TState state)
         {
             return NullScope.Instance;
         }

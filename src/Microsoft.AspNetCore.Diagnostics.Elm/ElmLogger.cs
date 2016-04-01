@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Elm
             return _options.Filter(_name, logLevel);
         }
 
-        public IDisposable BeginScopeImpl(object state)
+        public IDisposable BeginScope<TState>(TState state)
         {
             var scope = new ElmScope(_name, state);
             scope.Context = ElmScope.Current?.Context ?? GetNewActivityContext();
