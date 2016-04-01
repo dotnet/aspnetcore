@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Authentication
             if (ShouldHandleScheme(AuthenticationManager.AutomaticScheme, Options.AutomaticAuthenticate))
             {
                 var result = await HandleAuthenticateOnceAsync();
-                if (result.Failure != null)
+                if (result?.Failure != null)
                 {
                     Logger.AuthenticationSchemeNotAuthenticatedWithFailure(Options.AuthenticationScheme, result.Failure.Message);
                 }
