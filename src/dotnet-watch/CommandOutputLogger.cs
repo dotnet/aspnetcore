@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Watcher
             _loggerName = loggerName;
         }
 
-        public IDisposable BeginScopeImpl(object state)
+        public IDisposable BeginScope<TState>(TState state)
         {
             throw new NotImplementedException();
         }
