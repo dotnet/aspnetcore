@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
@@ -15,20 +14,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// For use when creating a <see cref="ViewDataDictionary{TModel}"/> for a new top-level scope.
         /// </remarks>
         /// <inheritdoc />
-        // References may not show up due to ActivatorUtilities use in RazorPageActivator.
+        // References may not show up due to Type.GetConstructor() use in RazorPageActivator.
         public ViewDataDictionary(
             IModelMetadataProvider metadataProvider,
             ModelStateDictionary modelState)
             : base(metadataProvider, modelState, declaredModelType: typeof(TModel))
         {
-            if (metadataProvider == null)
-            {
-                throw new ArgumentNullException(nameof(metadataProvider));
-            }
-            if (modelState == null)
-            {
-                throw new ArgumentNullException(nameof(modelState));
-            }
         }
 
         /// <summary>
@@ -48,14 +39,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </para>
         /// </remarks>
         /// <inheritdoc />
-        // References may not show up due to ActivatorUtilities use in RazorPageActivator.
+        // References may not show up due to Type.GetConstructor() use in RazorPageActivator.
         public ViewDataDictionary(ViewDataDictionary source)
             : base(source, declaredModelType: typeof(TModel))
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
         }
 
         /// <summary>
@@ -80,10 +67,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public ViewDataDictionary(ViewDataDictionary source, object model)
             : base(source, model, declaredModelType: typeof(TModel))
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
         }
 
         /// <summary>
@@ -94,10 +77,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         internal ViewDataDictionary(IModelMetadataProvider metadataProvider)
             : base(metadataProvider, declaredModelType: typeof(TModel))
         {
-            if (metadataProvider == null)
-            {
-                throw new ArgumentNullException(nameof(metadataProvider));
-            }
         }
 
         public new TModel Model

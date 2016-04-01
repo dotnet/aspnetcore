@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Reflection;
 using System.Linq.Expressions;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private ViewDataDictionary CreateViewDataDictionary(ViewContext context, PageActivationInfo activationInfo)
         {
             // Create a ViewDataDictionary<TModel> if the ViewContext.ViewData is not set or the type of
-            // ViewContext.ViewData is an incompatibile type.
+            // ViewContext.ViewData is an incompatible type.
             if (context.ViewData == null)
             {
                 // Create ViewDataDictionary<TModel>(IModelMetadataProvider, ModelStateDictionary).

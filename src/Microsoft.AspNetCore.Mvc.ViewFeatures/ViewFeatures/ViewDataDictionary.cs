@@ -33,14 +33,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             ModelStateDictionary modelState)
             : this(metadataProvider, modelState, declaredModelType: typeof(object))
         {
-            if (metadataProvider == null)
-            {
-                throw new ArgumentNullException(nameof(metadataProvider));
-            }
-            if (modelState == null)
-            {
-                throw new ArgumentNullException(nameof(modelState));
-            }
         }
 
         /// <summary>
@@ -56,10 +48,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public ViewDataDictionary(ViewDataDictionary source)
             : this(source, source.Model, source._declaredModelType)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
         }
 
         /// <summary>
@@ -77,10 +65,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public ViewDataDictionary(ViewDataDictionary source, object model)
             : this(source, model, declaredModelType: typeof(object))
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
         }
 
         /// <summary>
@@ -94,10 +78,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         internal ViewDataDictionary(IModelMetadataProvider metadataProvider)
             : this(metadataProvider, new ModelStateDictionary())
         {
-            if (metadataProvider == null)
-            {
-                throw new ArgumentNullException(nameof(metadataProvider));
-            }
         }
 
         /// <summary>
@@ -119,14 +99,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Type declaredModelType)
             : this(metadataProvider, new ModelStateDictionary(), declaredModelType)
         {
-            if (metadataProvider == null)
-            {
-                throw new ArgumentNullException(nameof(metadataProvider));
-            }
-            if (declaredModelType == null)
-            {
-                throw new ArgumentNullException(nameof(declaredModelType));
-            }
         }
 
         /// <summary>
@@ -198,10 +170,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         protected ViewDataDictionary(ViewDataDictionary source, Type declaredModelType)
             : this(source, model: source.Model, declaredModelType: declaredModelType)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
         }
 
         /// <summary>

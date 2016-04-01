@@ -130,11 +130,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(view));
             }
 
-            var services = actionContext.HttpContext.RequestServices;
             if (viewData == null)
             {
+                var services = actionContext.HttpContext.RequestServices;
                 var metadataProvider = services.GetRequiredService<IModelMetadataProvider>();
-                viewData = new ViewDataDictionary(metadataProvider);
+                viewData = new ViewDataDictionary(metadataProvider, actionContext.ModelState);
             }
 
             if (tempData == null)
