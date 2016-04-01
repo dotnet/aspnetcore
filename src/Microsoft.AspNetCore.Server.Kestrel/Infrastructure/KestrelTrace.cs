@@ -154,9 +154,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             return _logger.IsEnabled(logLevel);
         }
 
-        public virtual IDisposable BeginScopeImpl(object state)
+        public virtual IDisposable BeginScope<TState>(TState state)
         {
-            return _logger.BeginScopeImpl(state);
+            return _logger.BeginScope(state);
         }
     }
 }

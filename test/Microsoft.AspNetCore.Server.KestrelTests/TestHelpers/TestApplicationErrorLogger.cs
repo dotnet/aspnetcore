@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         public int ApplicationErrorsLogged { get; set; }
 
-        public IDisposable BeginScopeImpl(object state)
+        public IDisposable BeginScope<TState>(TState state)
         {
             return new Disposable(() => { });
         }
