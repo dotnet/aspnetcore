@@ -4,10 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
@@ -15,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -30,218 +27,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 {
     public class CacheTagHelperTest
     {
-        [Fact]
-        public void GenerateKey_ReturnsKeyBasedOnTagHelperUniqueId()
-        {
-            // Arrange
-            var id = Guid.NewGuid().ToString();
-            var tagHelperContext = GetTagHelperContext(id);
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
-            {
-                ViewContext = GetViewContext()
-            };
-            var expected = GetHashedBytes("CacheTagHelper||" + id);
-
-            // Act
-            var key = cacheTagHelper.GenerateKey(tagHelperContext);
-
-            // Assert
-            Assert.Equal(expected, key);
-        }
-
-        [Theory]
-        [InlineData("Vary-By-Value")]
-        [InlineData("Vary  with spaces")]
-        [InlineData("  Vary  with more spaces   ")]
-        public void GenerateKey_UsesVaryByPropertyToGenerateKey(string varyBy)
-        {
-            // Arrange
-            var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
-            {
-                ViewContext = GetViewContext(),
-                VaryBy = varyBy
-            };
-            var expected = GetHashedBytes("CacheTagHelper||testid||VaryBy||" + varyBy);
-
-            // Act
-            var key = cacheTagHelper.GenerateKey(tagHelperContext);
-
-            // Assert
-            Assert.Equal(expected, key);
-        }
-
-        [Theory]
-        [InlineData("Cookie0", "CacheTagHelper||testid||VaryByCookie(Cookie0||Cookie0Value)")]
-        [InlineData("Cookie0,Cookie1",
-            "CacheTagHelper||testid||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
-        [InlineData("Cookie0, Cookie1",
-            "CacheTagHelper||testid||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
-        [InlineData("   Cookie0,   ,   Cookie1   ",
-            "CacheTagHelper||testid||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
-        [InlineData(",Cookie0,,Cookie1,",
-            "CacheTagHelper||testid||VaryByCookie(Cookie0||Cookie0Value||Cookie1||Cookie1Value)")]
-        public void GenerateKey_UsesVaryByCookieName(string varyByCookie, string expected)
-        {
-            // Arrange
-            var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
-            {
-                ViewContext = GetViewContext(),
-                VaryByCookie = varyByCookie
-            };
-            cacheTagHelper.ViewContext.HttpContext.Request.Headers["Cookie"] =
-                "Cookie0=Cookie0Value;Cookie1=Cookie1Value";
-
-            // Act
-            var key = cacheTagHelper.GenerateKey(tagHelperContext);
-
-            // Assert
-            Assert.Equal(GetHashedBytes(expected), key);
-        }
-
-        [Theory]
-        [InlineData("Accept-Language", "CacheTagHelper||testid||VaryByHeader(Accept-Language||en-us;charset=utf8)")]
-        [InlineData("X-CustomHeader,Accept-Encoding, NotAvailable",
-            "CacheTagHelper||testid||VaryByHeader(X-CustomHeader||Header-Value||Accept-Encoding||utf8||NotAvailable||)")]
-        [InlineData("X-CustomHeader,  , Accept-Encoding, NotAvailable",
-            "CacheTagHelper||testid||VaryByHeader(X-CustomHeader||Header-Value||Accept-Encoding||utf8||NotAvailable||)")]
-        public void GenerateKey_UsesVaryByHeader(string varyByHeader, string expected)
-        {
-            // Arrange
-            var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
-            {
-                ViewContext = GetViewContext(),
-                VaryByHeader = varyByHeader
-            };
-            var headers = cacheTagHelper.ViewContext.HttpContext.Request.Headers;
-            headers["Accept-Language"] = "en-us;charset=utf8";
-            headers["Accept-Encoding"] = "utf8";
-            headers["X-CustomHeader"] = "Header-Value";
-
-            // Act
-            var key = cacheTagHelper.GenerateKey(tagHelperContext);
-
-            // Assert
-            Assert.Equal(GetHashedBytes(expected), key);
-        }
-
-        [Theory]
-        [InlineData("category", "CacheTagHelper||testid||VaryByQuery(category||cats)")]
-        [InlineData("Category,SortOrder,SortOption",
-            "CacheTagHelper||testid||VaryByQuery(Category||cats||SortOrder||||SortOption||Adorability)")]
-        [InlineData("Category,  SortOrder, SortOption,  ",
-            "CacheTagHelper||testid||VaryByQuery(Category||cats||SortOrder||||SortOption||Adorability)")]
-        public void GenerateKey_UsesVaryByQuery(string varyByQuery, string expected)
-        {
-            // Arrange
-            var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
-            {
-                ViewContext = GetViewContext(),
-                VaryByQuery = varyByQuery
-            };
-            cacheTagHelper.ViewContext.HttpContext.Request.QueryString =
-                new QueryString("?sortoption=Adorability&Category=cats&sortOrder=");
-
-            // Act
-            var key = cacheTagHelper.GenerateKey(tagHelperContext);
-
-            // Assert
-            Assert.Equal(GetHashedBytes(expected), key);
-        }
-
-        [Theory]
-        [InlineData("id", "CacheTagHelper||testid||VaryByRoute(id||4)")]
-        [InlineData("Category,,Id,OptionRouteValue",
-            "CacheTagHelper||testid||VaryByRoute(Category||MyCategory||Id||4||OptionRouteValue||)")]
-        [InlineData(" Category,  , Id,   OptionRouteValue,   ",
-            "CacheTagHelper||testid||VaryByRoute(Category||MyCategory||Id||4||OptionRouteValue||)")]
-        public void GenerateKey_UsesVaryByRoute(string varyByRoute, string expected)
-        {
-            // Arrange
-            var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
-            {
-                ViewContext = GetViewContext(),
-                VaryByRoute = varyByRoute
-            };
-            cacheTagHelper.ViewContext.RouteData.Values["id"] = 4;
-            cacheTagHelper.ViewContext.RouteData.Values["category"] = "MyCategory";
-
-            // Act
-            var key = cacheTagHelper.GenerateKey(tagHelperContext);
-
-            // Assert
-            Assert.Equal(GetHashedBytes(expected), key);
-        }
-
-        [Fact]
-        public void GenerateKey_UsesVaryByUser_WhenUserIsNotAuthenticated()
-        {
-            // Arrange
-            var expected = "CacheTagHelper||testid||VaryByUser||";
-            var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
-            {
-                ViewContext = GetViewContext(),
-                VaryByUser = true
-            };
-
-            // Act
-            var key = cacheTagHelper.GenerateKey(tagHelperContext);
-
-            // Assert
-            Assert.Equal(GetHashedBytes(expected), key);
-        }
-
-        [Fact]
-        public void GenerateKey_UsesVaryByUserAndAuthenticatedUserName()
-        {
-            // Arrange
-            var expected = "CacheTagHelper||testid||VaryByUser||test_name";
-            var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
-            {
-                ViewContext = GetViewContext(),
-                VaryByUser = true
-            };
-            var identity = new ClaimsIdentity(new[] { new Claim(ClaimsIdentity.DefaultNameClaimType, "test_name") });
-            cacheTagHelper.ViewContext.HttpContext.User = new ClaimsPrincipal(identity);
-
-            // Act
-            var key = cacheTagHelper.GenerateKey(tagHelperContext);
-
-            // Assert
-            Assert.Equal(GetHashedBytes(expected), key);
-        }
-
-        [Fact]
-        public void GenerateKey_WithMultipleVaryByOptions_CreatesCombinedKey()
-        {
-            // Arrange
-            var expected = GetHashedBytes("CacheTagHelper||testid||VaryBy||custom-value||" +
-                "VaryByHeader(content-type||text/html)||VaryByUser||someuser");
-            var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
-            {
-                ViewContext = GetViewContext(),
-                VaryByUser = true,
-                VaryByHeader = "content-type",
-                VaryBy = "custom-value"
-            };
-            cacheTagHelper.ViewContext.HttpContext.Request.Headers["Content-Type"] = "text/html";
-            var identity = new ClaimsIdentity(new[] { new Claim(ClaimsIdentity.DefaultNameClaimType, "someuser") });
-            cacheTagHelper.ViewContext.HttpContext.User = new ClaimsPrincipal(identity);
-
-            // Act
-            var key = cacheTagHelper.GenerateKey(tagHelperContext);
-
-            // Assert
-            Assert.Equal(expected, key);
-        }
-
         [Fact]
         public async Task ProcessAsync_DoesNotCache_IfDisabled()
         {
@@ -284,21 +69,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var id = "unique-id";
             var childContent = "original-child-content";
-            var cache = new Mock<IMemoryCache>();
-            var value = new Mock<ICacheEntry>();
-            value.Setup(c => c.Value).Returns(new DefaultTagHelperContent().SetContent("ok"));
-            value.Setup(c => c.ExpirationTokens).Returns(new List<IChangeToken>());
-            cache.Setup(c => c.CreateEntry(
-                /*key*/ It.IsAny<string>()))
-                .Returns((object key) => value.Object);
-            object cacheResult;
-            cache.Setup(c => c.TryGetValue(It.IsAny<string>(), out cacheResult))
-                .Returns(false);
+            var cache = new MemoryCache(new MemoryCacheOptions());
             var tagHelperContext = GetTagHelperContext(id);
             var tagHelperOutput = GetTagHelperOutput(
                 attributes: new TagHelperAttributeList(),
                 childContent: childContent);
-            var cacheTagHelper = new CacheTagHelper(cache.Object, new HtmlTestEncoder())
+            var cacheTagHelper = new CacheTagHelper(cache, new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 Enabled = true
@@ -312,11 +88,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Empty(tagHelperOutput.PostContent.GetContent());
             Assert.True(tagHelperOutput.IsContentModified);
             Assert.Equal(childContent, tagHelperOutput.Content.GetContent());
-
-            // There are two calls to set (for the TCS and the processed value)
-            cache.Verify(c => c.CreateEntry(
-                /*key*/ It.IsAny<string>()),
-                Times.Exactly(2));
         }
 
         [Fact]
@@ -686,12 +457,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 ViewContext = GetViewContext(),
             };
-            var key = cacheTagHelper.GenerateKey(tagHelperContext);
+
+            var cacheTagKey = new CacheTagKey(cacheTagHelper, tagHelperContext);
+            var key = cacheTagKey.GenerateKey();
 
             // Act - 1
             await cacheTagHelper.ProcessAsync(tagHelperContext, tagHelperOutput);
             Task<IHtmlContent> cachedValue;
-            var result = cache.TryGetValue(key, out cachedValue);
+            var result = cache.TryGetValue(cacheTagKey, out cachedValue);
 
             // Assert - 1
             Assert.Equal("HtmlEncode[[some-content]]", tagHelperOutput.Content.GetContent());
@@ -699,7 +472,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             // Act - 2
             tokenSource.Cancel();
-            result = cache.TryGetValue(key, out cachedValue);
+            result = cache.TryGetValue(cacheTagKey, out cachedValue);
 
             // Assert - 2
             Assert.False(result);
@@ -910,26 +683,5 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
         }
-
-        private static TagHelperOutput GetTagHelperOutput(
-            Func<bool, HtmlEncoder, Task<TagHelperContent>> processAsync)
-        {
-            var attributes = new TagHelperAttributeList { { "attr", "value" } };
-
-            return new TagHelperOutput(
-                "cache",
-                attributes,
-                getChildContentAsync: processAsync);
-        }
-
-        private static string GetHashedBytes(string input)
-        {
-            using (var sha = SHA256.Create())
-            {
-                var contentBytes = Encoding.UTF8.GetBytes(input);
-                var hashedBytes = sha.ComputeHash(contentBytes);
-                return Convert.ToBase64String(hashedBytes);
-            }
-        }
-    }
+    }    
 }

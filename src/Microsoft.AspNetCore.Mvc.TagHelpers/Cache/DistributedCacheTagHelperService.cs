@@ -1,44 +1,81 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
 {
     /// <summary>
-    /// Implements <see cref="IDistributedCacheTagHelperService"/> and ensure
+    /// Implements <see cref="IDistributedCacheTagHelperService"/> and ensures
     /// multiple concurrent requests are gated.
+    /// The entries are stored like this:
+    /// <list type="bullet">
+    /// <item>
+    /// <description>Int32 representing the hashed cache key size.</description>
+    /// </item>
+    /// <item>
+    /// <description>The UTF8 encoded hashed cache key.</description>
+    /// </item>
+    /// <item>
+    /// <description>The UTF8 encoded cached content.</description>
+    /// </item>
+    /// </list>
     /// </summary>
     public class DistributedCacheTagHelperService : IDistributedCacheTagHelperService
     {
         private readonly IDistributedCacheTagHelperStorage _storage;
         private readonly IDistributedCacheTagHelperFormatter _formatter;
         private readonly HtmlEncoder _htmlEncoder;
-        private readonly ConcurrentDictionary<string, Task<IHtmlContent>> _workers;
+        private readonly ILogger _logger;
+        private readonly ConcurrentDictionary<CacheTagKey, Task<IHtmlContent>> _workers;
 
         public DistributedCacheTagHelperService(
             IDistributedCacheTagHelperStorage storage,
             IDistributedCacheTagHelperFormatter formatter,
-            HtmlEncoder HtmlEncoder 
-        )
+            HtmlEncoder HtmlEncoder,
+            ILoggerFactory loggerFactory)
         {
+            if (storage == null)
+            {
+                throw new ArgumentNullException(nameof(storage));
+            }
+
+            if (formatter == null)
+            {
+                throw new ArgumentNullException(nameof(formatter));
+            }
+
+            if (HtmlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(HtmlEncoder));
+            }
+
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _formatter = formatter;
             _storage = storage;
             _htmlEncoder = HtmlEncoder;
-
-            _workers = new ConcurrentDictionary<string, Task<IHtmlContent>>();
+            _logger = loggerFactory.CreateLogger<DistributedCacheTagHelperService>();
+            _workers = new ConcurrentDictionary<CacheTagKey, Task<IHtmlContent>>();
         }
 
         /// <inheritdoc />
-        public async Task<IHtmlContent> ProcessContentAsync(TagHelperOutput output, string key, DistributedCacheEntryOptions options)
+        public async Task<IHtmlContent> ProcessContentAsync(TagHelperOutput output, CacheTagKey key, DistributedCacheEntryOptions options)
         {
             IHtmlContent content = null;
 
@@ -55,10 +92,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
 
                     try
                     {
-                        var value = await _storage.GetAsync(key);
-
+                        var serializedKey = Encoding.UTF8.GetBytes(key.GenerateKey());
+                        var storageKey = key.GenerateHashedKey();
+                        var value = await _storage.GetAsync(storageKey);
+                                                
                         if (value == null)
                         {
+                            // The value is not cached, we need to render the tag helper output
                             var processedContent = await output.GetChildContentAsync();
 
                             var stringBuilder = new StringBuilder();
@@ -72,28 +112,48 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
                                 Html = new HtmlString(stringBuilder.ToString())
                             };
 
+                            // Then cache the result
                             value = await _formatter.SerializeAsync(formattingContext);
 
-                            await _storage.SetAsync(key, value, options);
+                            var encodeValue = Encode(value, serializedKey);
+
+                            await _storage.SetAsync(storageKey, encodeValue, options);
 
                             content = formattingContext.Html;
                         }
                         else
                         {
-                            content = await _formatter.DeserializeAsync(value);
-
-                            // If the deserialization fails, it can return null, for instance when the 
-                            // value is not in the expected format.
-                            if (content == null)
+                            // The value was found in the storage, decode and ensure
+                            // there is no cache key hash collision
+                            byte[] decodedValue = Decode(value, serializedKey);
+                            
+                            try
                             {
-                                content = await output.GetChildContentAsync();
+                                if (decodedValue != null)
+                                {
+                                    content = await _formatter.DeserializeAsync(decodedValue);
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                _logger.DistributedFormatterDeserializationException(storageKey, e);
+                            }
+                            finally
+                            {
+                                // If the deserialization fails the content is rendered
+                                if (content == null)
+                                {
+                                    content = await output.GetChildContentAsync();
+                                }
                             }
                         }
 
+                        // Notify all other awaiters of the final content
                         tcs.TrySetResult(content);
                     }
                     catch
                     {
+                        // Notify all other awaiters to render the content
                         tcs.TrySetResult(null);
                         throw;
                     }
@@ -111,6 +171,44 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
             }
 
             return content;
+        }
+
+        private byte[] Encode(byte[] value, byte[] serializedKey)
+        {
+            using (var buffer = new MemoryStream())
+            {
+                var keyLength = BitConverter.GetBytes(serializedKey.Length);
+
+                buffer.Write(keyLength, 0, keyLength.Length);
+                buffer.Write(serializedKey, 0, serializedKey.Length);
+                buffer.Write(value, 0, value.Length);
+
+                return buffer.ToArray();
+            }
+        }
+
+        private byte[] Decode(byte[] value, byte[] expectedKey)
+        {
+            byte[] decoded = null;
+
+            using (var buffer = new MemoryStream(value))
+            {
+                var keyLengthBuffer = new byte[sizeof(int)];
+                buffer.Read(keyLengthBuffer, 0, keyLengthBuffer.Length);
+
+                var keyLength = BitConverter.ToInt32(keyLengthBuffer, 0);
+                var serializedKeyBuffer = new byte[keyLength];
+                buffer.Read(serializedKeyBuffer, 0, serializedKeyBuffer.Length);
+
+                // Ensure we are reading the expected key before continuing
+                if (serializedKeyBuffer.SequenceEqual(expectedKey))
+                {
+                    decoded = new byte[value.Length - keyLengthBuffer.Length - serializedKeyBuffer.Length];
+                    buffer.Read(decoded, 0, decoded.Length);
+                }
+            }
+
+            return decoded;
         }
     }
 }

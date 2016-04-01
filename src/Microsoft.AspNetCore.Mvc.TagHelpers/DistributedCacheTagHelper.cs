@@ -73,9 +73,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             if (Enabled)
             {
-                var key = GenerateKey(context);
+                var cacheKey = new CacheTagKey(this);
 
-                content = await _distributedCacheService.ProcessContentAsync(output, key, GetDistributedCacheEntryOptions());
+                content = await _distributedCacheService.ProcessContentAsync(output, cacheKey, GetDistributedCacheEntryOptions());
             }
             else
             {
@@ -109,15 +109,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             return options;
         }
-
-        protected override string GetUniqueId(TagHelperContext context)
-        {
-            return Name;
-        }
-
-        protected override string GetKeyPrefix(TagHelperContext context)
-        {
-            return CacheKeyPrefix;
-        }
+        
     }
 }
