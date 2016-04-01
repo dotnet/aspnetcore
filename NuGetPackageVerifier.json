@@ -5,7 +5,9 @@
         ],
         "packages": {
             "Microsoft.AspNetCore.Razor": { },
-            "Microsoft.AspNetCore.Razor.Runtime": { }
+            "Microsoft.AspNet.Razor.VSRC1": { },
+            "Microsoft.AspNetCore.Razor.Runtime": { },
+            "Microsoft.AspNet.Razor.Runtime.VSRC1": { }
         }
     },
     "adx-nonshipping": { // Packages written by the ADX team but that don't ship on NuGet.org (thus, no need to scan anything in them)
