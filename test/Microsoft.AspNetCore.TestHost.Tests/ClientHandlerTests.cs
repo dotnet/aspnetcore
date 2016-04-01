@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.TestHost
 
         private class VerifierLogger : ILogger<WebHost>
         {
-            public IDisposable BeginScopeImpl(object state) => new NoopDispoasble();
+            public IDisposable BeginScope<TState>(TState state) => new NoopDispoasble();
 
             public bool IsEnabled(LogLevel logLevel) => true;
 

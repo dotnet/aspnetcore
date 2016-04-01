@@ -577,7 +577,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             public ILogger CreateLogger(string name) => this;
 
-            public IDisposable BeginScopeImpl(object state)
+            public IDisposable BeginScope<TState>(TState state)
             {
                 var stringified = state.ToString();
                 return this;

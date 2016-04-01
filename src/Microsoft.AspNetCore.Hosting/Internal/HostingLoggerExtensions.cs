@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext)
         {
-            return logger.BeginScopeImpl(new HostingLogScope(httpContext));
+            return logger.BeginScope(new HostingLogScope(httpContext));
         }
 
         public static void RequestStarting(this ILogger logger, HttpContext httpContext)
