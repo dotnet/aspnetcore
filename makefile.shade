@@ -44,7 +44,7 @@ functions
         static bool skipNoCredentials = GetEnvironmentParameter("UNIVERSE_SKIP_NO_CREDENTIALS", value => value == "1");
         static string repositoryInclude = GetEnvironmentParameter("KOREBUILD_REPOSITORY_INCLUDE");
         static string repositoryExclude = GetEnvironmentParameter("KOREBUILD_REPOSITORY_EXCLUDE");
-        
+
         // Doesn't build on Mono since their contracts don't match
         string[] repositories = GetRepositoriesToBuild().ToArray();
         string[] noSrcRepositoryExclude = GetNoSrcDeleteRepositories().ToArray();
@@ -90,11 +90,11 @@ var buildTarget = "compile"
             CloneOrUpdate(repo);
         });
     }
-    
-#sync-commits 
+
+#sync-commits
    @{
        var commitsToSync = GetCommitsToSync(universeCommitsFile);
-   
+
        Parallel.ForEach(repositories, repo =>
        {
             if (commitsToSync.ContainsKey(repo))
@@ -155,11 +155,9 @@ var buildTarget = "compile"
         {
             Parallel.ForEach(batch.ToArray(), new ParallelOptions { MaxDegreeOfParallelism = threads }, repo =>
             {
-                var blockName = string.Format("Building {0}", repo);
-
-                if (blockLogger != null)
+                if (IsTeamCity)
                 {
-                    blockLogger.StartBlock(blockName);
+                    Console.WriteLine(string.Format("##teamcity[blockOpened name='{0}' flowId='KOREBUILD_{0}']", repo));
                 }
 
                 if (!IsLinux)
@@ -174,53 +172,54 @@ var buildTarget = "compile"
                 try
                 {
                     Exec(CreateBuildWithFlowId(repo), buildTarget, repo);
+                    var repoArtifacts = Path.Combine(repo, "artifacts");
+                    var repoBuild = Path.Combine(repoArtifacts, "build");
+                    if (Directory.Exists(repoBuild))
+                    {
+                        foreach (var source in Directory.EnumerateFiles(repoBuild, "*.nupkg"))
+                        {
+                            File.Copy(source, Path.Combine(universeBuild, Path.GetFileName(source)), overwrite: true);
+                        }
+
+                        if (Environment.GetEnvironmentVariable("KOREBUILD_ADD_ASSEMBLY_INFO") == "1")
+                        {
+                            var commitFile = Path.Combine(repoArtifacts, "commit");
+                            if (!File.Exists(commitFile))
+                            {
+                                throw new FileNotFoundException("Couldn't find the commit file for " + repo + ": " + commitFile);
+                            }
+
+                            commits.TryAdd(repo, File.ReadAllLines(commitFile)[0]);
+                        }
+
+                        if (!string.IsNullOrEmpty(ciVolatileShare))
+                        {
+                            Log.Info("Publishing packages to " + ciVolatileShare);
+                            NuGetPackagesAdd(repoBuild, ciVolatileShare);
+                        }
+                    }
+
+                    Log.Info(string.Format("Build {0} succeeded", repo));
                 }
                 catch (Exception ex)
                 {
                     Log.Error("Building '" + repo + "' failed: " + ex);
                     throw;
                 }
-
-                var repoArtifacts = Path.Combine(repo, "artifacts");
-                var repoBuild = Path.Combine(repoArtifacts, "build");
-                if (Directory.Exists(repoBuild))
+                finally
                 {
-                    foreach (var source in Directory.EnumerateFiles(repoBuild, "*.nupkg"))
+                    if (IsTeamCity)
                     {
-                        File.Copy(source, Path.Combine(universeBuild, Path.GetFileName(source)), overwrite: true);
+                        Console.WriteLine(string.Format("##teamcity[blockClosed name='{0}' flowId='KOREBUILD_{0}']", repo));
                     }
-
-                    if (Environment.GetEnvironmentVariable("KOREBUILD_ADD_ASSEMBLY_INFO") == "1")
-                    {
-                        var commitFile = Path.Combine(repoArtifacts, "commit");
-                        if (!File.Exists(commitFile))
-                        {
-                            throw new FileNotFoundException("Couldn't find the commit file for " + repo + ": " + commitFile);
-                        }
-
-                        commits.TryAdd(repo, File.ReadAllLines(commitFile)[0]);
-                    }
-
-                    if (!string.IsNullOrEmpty(ciVolatileShare))
-                    {
-                        Log.Info("Publishing packages to " + ciVolatileShare);
-                        NuGetPackagesAdd(repoBuild, ciVolatileShare);
-                    }
-                }
-
-                Log.Info(string.Format("Build {0} succeeded", repo));
-
-                if (blockLogger != null)
-                {
-                    blockLogger.EndBlock(blockName);
                 }
             });
         }
-        
+
         var commitsAsString = string.Join("\n", commits.Select(c => c.Key + ":" + c.Value));
         File.WriteAllText(Path.Combine(universeArtifacts, "commits"), commitsAsString);
     }
-    
+
 #remove-src-folders
     @{
         foreach (var repo in GetRepositoriesToBuild())
@@ -229,7 +228,7 @@ var buildTarget = "compile"
             {
                 RemoveSrcFolder(repo);
             }
-            else 
+            else
             {
                 Console.WriteLine("Keeping the sources for " + repo + " because it's explicitly excluded");
             }
@@ -246,12 +245,12 @@ var buildTarget = "compile"
                 .Where(d => { int _; return int.TryParse(d, out _); })
                 .OrderByDescending(d => d)
                 .First();
-            var latestBuildShare = Path.Combine(coherenceShare, latestBuild, "build");                
+            var latestBuildShare = Path.Combine(coherenceShare, latestBuild, "build");
             var coherenceVersionFilePath = Path.Combine(coherenceCacheDir, CoherenceCacheVersionFileName);
-            var universeCommitsFileTarget = Path.Combine(coherenceCacheDir, UniverseCommitsFileName); 
-            
+            var universeCommitsFileTarget = Path.Combine(coherenceCacheDir, UniverseCommitsFileName);
+
             Log.Info("Latest Coherence build is " + latestBuild);
-            
+
             if (Directory.Exists(coherenceCacheDir) &&
                 File.Exists(coherenceVersionFilePath) &&
                 File.ReadAllText(coherenceVersionFilePath) == latestBuild)
@@ -265,10 +264,10 @@ var buildTarget = "compile"
                     Log.Info("Deleting previous Coherence cache");
                     Directory.Delete(coherenceCacheDir, true);
                 }
-                
+
                 Log.Info("Creating new Coherence cache directory at " + coherenceCacheDir);
                 Directory.CreateDirectory(coherenceCacheDir);
-                
+
                 Log.Info("Caching Coherence build " + latestBuild + " at " + coherenceCacheDir);
                 if (IsLinux)
                 {
@@ -278,14 +277,14 @@ var buildTarget = "compile"
                 {
                     NuGetPackagesAdd(sourcePackagesDir: latestBuildShare, targetPackagesDir: coherenceCacheDir);
                 }
-                
+
                 Log.Info("Copying Universe commits file to " + universeCommitsFileTarget);
                 File.Copy(Path.Combine(coherenceShare, latestBuild, UniverseCommitsFileName), universeCommitsFileTarget);
-                
+
                 Log.Info("Saving cached Coherence build version");
                 File.WriteAllText(coherenceVersionFilePath, latestBuild);
             }
-            
+
             Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ASPNETVNEXT", coherenceCacheDir);
             Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_EXTERNAL", Path.Combine(dropsShare, "latest-packages", "external", buildBranch));
             Environment.SetEnvironmentVariable("UNIVERSE_COMMITS_FILE", universeCommitsFileTarget);
@@ -523,12 +522,12 @@ functions
         static IDictionary<string, string> GetCommitsToSync(string commitsFile)
         {
             var commits = new Dictionary<string, string>();
-        
+
             if (string.IsNullOrEmpty(commitsFile))
             {
                 return commits;
             }
-            
+
             Console.WriteLine("Using commits file: " + commitsFile);
             var lines = File.ReadAllLines(commitsFile);
             foreach(var line in lines)
@@ -536,10 +535,10 @@ functions
                 var parts = line.Split(new string[] {":"}, StringSplitOptions.RemoveEmptyEntries);
                 commits.Add(parts[0], parts[1]);
             }
-            
+
             return commits;
         }
-    
+
         static bool UseHttps(string directory)
         {
             var filename = Path.Combine(directory, ".git", "config");
@@ -629,7 +628,7 @@ functions
         void RemoveSrcFolder(string repo)
         {
             var srcDir = Path.Combine(repo, "src");
-            if (Directory.Exists(srcDir)) 
+            if (Directory.Exists(srcDir))
             {
                 Console.WriteLine("Deleting " + srcDir);
                 Directory.Delete(srcDir, recursive: true);
@@ -750,7 +749,7 @@ functions
 
             return reposToBuild.ToList();
         }
-        
+
         static IEnumerable<string> GetNoSrcDeleteRepositories()
         {
             var repositoryExclude = Environment.GetEnvironmentVariable("KOREBUILD_NOSRC_EXCLUDE");
@@ -758,8 +757,8 @@ functions
             {
                 return new string[0];
             }
-            
-            return repositoryExclude.Split(new string[] {","}, StringSplitOptions.RemoveEmptyEntries); 
+
+            return repositoryExclude.Split(new string[] {","}, StringSplitOptions.RemoveEmptyEntries);
         }
 
         static IList<IGrouping<int, string>> GetBuildGraph()
@@ -860,7 +859,7 @@ functions
                 }
             }
         }
-        
+
         static string DefaultDropsShare(string value)
         {
             return value ?? (Environment.OSVersion.Platform == PlatformID.Unix ? "/aspnetci-drops" : @"\\aspnetci\drops");
