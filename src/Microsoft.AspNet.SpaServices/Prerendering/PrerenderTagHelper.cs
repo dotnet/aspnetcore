@@ -1,10 +1,13 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Extensions;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNet.NodeServices;
-using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.PlatformAbstractions;
 using Newtonsoft.Json;
 
@@ -28,16 +31,18 @@ namespace Microsoft.AspNet.SpaServices.Prerendering
         [HtmlAttributeName(PrerenderWebpackConfigAttributeName)]
         public string WebpackConfigPath { get; set; }
 
+        [HtmlAttributeNotBound]
+        [ViewContext]
+        public ViewContext ViewContext { get; set; }
+
         private string applicationBasePath;
-        private IHttpContextAccessor contextAccessor;
         private INodeServices nodeServices;
 
-        public PrerenderTagHelper(IServiceProvider serviceProvider, IHttpContextAccessor contextAccessor)
+        public PrerenderTagHelper(IServiceProvider serviceProvider)
         {
-            var appEnv = (IApplicationEnvironment)serviceProvider.GetService(typeof(IApplicationEnvironment));
-            this.contextAccessor = contextAccessor;
+            var hostEnv = (IHostingEnvironment)serviceProvider.GetService(typeof (IHostingEnvironment));
             this.nodeServices = (INodeServices)serviceProvider.GetService(typeof (INodeServices)) ?? fallbackNodeServices;
-            this.applicationBasePath = appEnv.ApplicationBasePath;
+            this.applicationBasePath = hostEnv.ContentRootPath;
 
             // Consider removing the following. Having it means you can get away with not putting app.AddNodeServices()
             // in your startup file, but then again it might be confusing that you don't need to.
@@ -51,7 +56,7 @@ namespace Microsoft.AspNet.SpaServices.Prerendering
 
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
-            var request = this.contextAccessor.HttpContext.Request;
+            var request = this.ViewContext.HttpContext.Request;
             var result = await Prerenderer.RenderToString(
                 applicationBasePath: this.applicationBasePath,
                 nodeServices: this.nodeServices,
@@ -59,7 +64,7 @@ namespace Microsoft.AspNet.SpaServices.Prerendering
                     exportName = this.ExportName,
                     webpackConfig = this.WebpackConfigPath
                 },
-                requestAbsoluteUrl: UriHelper.GetEncodedUrl(this.contextAccessor.HttpContext.Request),
+                requestAbsoluteUrl: UriHelper.GetEncodedUrl(request),
                 requestPathAndQuery: request.Path + request.QueryString.Value);
             output.Content.SetHtmlContent(result.Html);
 

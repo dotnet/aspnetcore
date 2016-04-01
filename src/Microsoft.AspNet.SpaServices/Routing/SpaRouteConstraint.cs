@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNet.SpaServices
 {
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.SpaServices
             this.clientRouteTokenName = clientRouteTokenName;
         }
 
-        public bool Match(HttpContext httpContext, IRouter route, string routeKey, IDictionary<string, object> values, RouteDirection routeDirection)
+        public bool Match(HttpContext httpContext, IRouter route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
         {
             var clientRouteValue = (values[this.clientRouteTokenName] as string) ?? string.Empty;
             return !HasDotInLastSegment(clientRouteValue);

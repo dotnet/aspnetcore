@@ -10,23 +10,24 @@
     "url": "git://github.com/aspnet/nodeservices"
   },
   "dependencies": {
-    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-rc1-final",
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc1-final",
-    "Newtonsoft.Json": "8.0.1-beta3",
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*",
+    "Newtonsoft.Json": "8.0.3",
     "System.Net.Http": "4.0.1-beta-*"
   },
   "frameworks": {
-    "net451": { },
-    "dotnet5.4": {
+    "dnx451": {},
+    "netstandard1.5": {
+      "imports": [
+        "dotnet5.6",
+        "portable-net451+win8"
+      ],
       "dependencies": {
-        "Microsoft.CSharp": "4.0.1-beta-*",
-        "System.Collections": "4.0.11-beta-*",
-        "System.Console": "4.0.0-beta-*",
+        "System.Text.Encoding": "4.0.11-*",
+        "System.Text.RegularExpressions": "4.0.10",
         "System.Diagnostics.Process": "4.1.0-beta-*",
-        "System.IO.FileSystem": "4.0.1-beta-*",
-        "System.Linq": "4.0.1-beta-*",
-        "System.Text.RegularExpressions": "4.0.11-beta-*",
-        "System.Threading": "4.0.11-beta-*"
+        "System.Console": "4.0.0-beta-*"
       }
     }
   },

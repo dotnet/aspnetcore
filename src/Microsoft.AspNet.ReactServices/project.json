@@ -13,19 +13,18 @@
     "defaultNamespace": "Microsoft.AspNet.ReactServices"
   },
   "dependencies": {
-    "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-rc1-final",
-    "Microsoft.AspNet.NodeServices": "1.0.0-alpha7",
-    "Microsoft.AspNet.SpaServices": "1.0.0-alpha7-1"
+    "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
+    "Microsoft.AspNet.NodeServices": "1.0.0-*",
+    "Microsoft.AspNet.SpaServices": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { },
-    "dotnet5.4": {
+    "dnx451": {},
+    "netstandard1.5": {
+      "imports": [
+        "dotnet5.6",
+        "portable-net451+win8"
+      ],
       "dependencies": {
-        "Microsoft.CSharp": "4.0.1-beta-*",
-        "System.Collections": "4.0.11-beta-*",
-        "System.Linq": "4.0.1-beta-*",
-        "System.Runtime": "4.0.21-beta-*",
-        "System.Threading": "4.0.11-beta-*"
       }
     }
   }

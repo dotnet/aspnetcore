@@ -2,7 +2,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.AngularServices {
                 var responseBody = await response.Content.ReadAsStringAsync();
                 return new HtmlString(FormatAsScript(url, response.StatusCode, responseBody));
             } catch (Exception ex) {
-                var logger = (ILogger)html.ViewContext.HttpContext.ApplicationServices.GetService(typeof (ILogger));
+                var logger = (ILogger)html.ViewContext.HttpContext.RequestServices.GetService(typeof (ILogger));
                 if (logger != null) {
                     logger.LogWarning("Error priming cache for URL: " + url, ex);
                 }

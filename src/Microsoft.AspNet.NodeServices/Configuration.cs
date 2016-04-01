@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNet.NodeServices {
     public static class Configuration {
@@ -15,9 +16,9 @@ namespace Microsoft.AspNet.NodeServices {
 
         public static void AddNodeServices(this IServiceCollection serviceCollection, NodeServicesOptions options) {
             serviceCollection.AddSingleton(typeof(INodeServices), (serviceProvider) => {
-                var appEnv = serviceProvider.GetRequiredService<IApplicationEnvironment>();
+                var hostEnv = serviceProvider.GetRequiredService<IHostingEnvironment>();
                 if (string.IsNullOrEmpty(options.ProjectPath)) {
-                    options.ProjectPath = appEnv.ApplicationBasePath;
+                    options.ProjectPath = hostEnv.ContentRootPath;
                 }
                 return CreateNodeServices(options);
             });

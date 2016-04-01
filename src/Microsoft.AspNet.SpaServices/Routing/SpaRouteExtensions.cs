@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNet.SpaServices;
 
 // Putting in this namespace so it's always available whenever MapRoute is
-namespace Microsoft.AspNet.Builder
+namespace Microsoft.AspNetCore.Builder
 {
     public static class SpaRouteExtensions
     {

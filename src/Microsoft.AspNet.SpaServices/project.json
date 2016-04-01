@@ -13,13 +13,17 @@
   "projectUrl": "",
   "licenseUrl": "",
   "dependencies": {
-    "Microsoft.AspNet.Mvc": "6.0.0-rc1-final",
-    "Microsoft.AspNet.Routing": "1.0.0-rc1-final",
-    "Microsoft.AspNet.NodeServices": "1.0.0-alpha7"
+    "Microsoft.AspNetCore.Mvc": "1.0.0-*",
+    "Microsoft.AspNetCore.Routing": "1.0.0-*",
+    "Microsoft.AspNet.NodeServices": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { },
-    "dotnet5.4": {
+    "dnx451": {},
+    "netstandard1.5": {
+      "imports": [
+        "dotnet5.6",
+        "portable-net451+win8"
+      ],
       "dependencies": {
       }
     }

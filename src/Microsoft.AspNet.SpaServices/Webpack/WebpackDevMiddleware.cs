@@ -3,11 +3,13 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.NodeServices;
 using Microsoft.AspNet.SpaServices.Webpack;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.PlatformAbstractions;
 using Newtonsoft.Json;
 
 // Putting in this namespace so it's always available whenever MapRoute is
-namespace Microsoft.AspNet.Builder
+namespace Microsoft.AspNetCore.Builder
 {
     public static class WebpackDevMiddleware
     {
@@ -30,10 +32,10 @@ namespace Microsoft.AspNet.Builder
             // because it must *not* restart when files change (if it did, you'd lose all the benefits of Webpack
             // middleware). And since this is a dev-time-only feature, it doesn't matter if the default transport isn't
             // as fast as some theoretical future alternative.
-            var appEnv = (IApplicationEnvironment)appBuilder.ApplicationServices.GetService(typeof(IApplicationEnvironment));
+            var hostEnv = (IHostingEnvironment)appBuilder.ApplicationServices.GetService(typeof (IHostingEnvironment));
             var nodeServices = Configuration.CreateNodeServices(new NodeServicesOptions {
                 HostingModel = NodeHostingModel.Http,
-                ProjectPath = appEnv.ApplicationBasePath,
+                ProjectPath = hostEnv.ContentRootPath,
                 WatchFileExtensions = new string[] {} // Don't watch anything
             });
 
@@ -43,7 +45,7 @@ namespace Microsoft.AspNet.Builder
 
             // Tell Node to start the server hosting webpack-dev-middleware
             var devServerOptions = new {
-                webpackConfigPath = Path.Combine(appEnv.ApplicationBasePath, options.ConfigFile ?? DefaultConfigFile),
+                webpackConfigPath = Path.Combine(hostEnv.ContentRootPath, options.ConfigFile ?? DefaultConfigFile),
                 suppliedOptions = options
             };
             var devServerInfo = nodeServices.InvokeExport<WebpackDevServerInfo>(nodeScript.FileName, "createWebpackDevServer", JsonConvert.SerializeObject(devServerOptions)).Result;
