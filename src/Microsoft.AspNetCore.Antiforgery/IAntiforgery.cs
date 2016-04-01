@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -48,18 +47,6 @@ namespace Microsoft.AspNetCore.Antiforgery
         Task<bool> IsRequestValidAsync(HttpContext httpContext);
 
         /// <summary>
-        /// Asynchronously returns a value indicating whether the request passes antiforgery validation. If the
-        /// request uses a safe HTTP method (GET, HEAD, OPTIONS, TRACE), the antiforgery token is not validated.
-        /// </summary>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
-        /// <param name="principal">The claims-based principal to validate.</param>
-        /// <returns>
-        /// A <see cref="Task{Boolean}"/> that, when completed, returns <c>true</c> if the is requst uses a safe HTTP
-        /// method or contains a value antiforgery token, otherwise returns <c>false</c>.
-        /// </returns>
-        Task<bool> IsRequestValidAsync(HttpContext httpContext, ClaimsPrincipal principal);
-
-        /// <summary>
         /// Validates an antiforgery token that was supplied as part of the request.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
@@ -67,16 +54,6 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// Thrown when the request does not include a valid antiforgery token.
         /// </exception>
         Task ValidateRequestAsync(HttpContext httpContext);
-
-        /// <summary>
-        /// Validates an antiforgery token that was supplied as part of the request.
-        /// </summary>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
-        /// <param name="principal">The claims-based principal to validate.</param>
-        /// <exception cref="AntiforgeryValidationException">
-        /// Thrown when the request does not include a valid antiforgery token.
-        /// </exception>
-        Task ValidateRequestAsync(HttpContext httpContext, ClaimsPrincipal principal);
 
         /// <summary>
         /// Generates and stores an antiforgery cookie token if one is not available or not valid.

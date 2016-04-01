@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Antiforgery.Internal
@@ -21,13 +20,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         /// Generates a request token corresponding to <paramref name="cookieToken"/>.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
-        /// <param name="principal">The claims-based principal to use for token generation.</param>
         /// <param name="cookieToken">A valid cookie token.</param>
         /// <returns>An <see cref="AntiforgeryToken"/>.</returns>
-        AntiforgeryToken GenerateRequestToken(
-            HttpContext httpContext,
-            ClaimsPrincipal principal,
-            AntiforgeryToken cookieToken);
+        AntiforgeryToken GenerateRequestToken(HttpContext httpContext, AntiforgeryToken cookieToken);
 
         /// <summary>
         /// Attempts to validate a cookie token.
@@ -40,7 +35,6 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         /// Attempts to validate a cookie and request token set for the given <paramref name="httpContext"/>.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
-        /// <param name="principal">The claims-based principal to use for token validation.</param>
         /// <param name="cookieToken">A cookie token.</param>
         /// <param name="requestToken">A request token.</param>
         /// <param name="message">
@@ -49,7 +43,6 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         /// <returns><c>true</c> if the tokens are valid, otherwise <c>false</c>.</returns>
         bool TryValidateTokenSet(
             HttpContext httpContext,
-            ClaimsPrincipal principal,
             AntiforgeryToken cookieToken,
             AntiforgeryToken requestToken,
             out string message);

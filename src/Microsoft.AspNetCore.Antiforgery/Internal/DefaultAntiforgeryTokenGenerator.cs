@@ -35,7 +35,6 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         /// <inheritdoc />
         public AntiforgeryToken GenerateRequestToken(
             HttpContext httpContext,
-            ClaimsPrincipal principal,
             AntiforgeryToken cookieToken)
         {
             if (httpContext == null)
@@ -64,11 +63,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var isIdentityAuthenticated = false;
 
             // populate Username and ClaimUid
-            var authenticatedIdentity = GetAuthenticatedIdentity(principal);
+            var authenticatedIdentity = GetAuthenticatedIdentity(httpContext.User);
             if (authenticatedIdentity != null)
             {
                 isIdentityAuthenticated = true;
-                requestToken.ClaimUid = GetClaimUidBlob(_claimUidExtractor.ExtractClaimUid(principal));
+                requestToken.ClaimUid = GetClaimUidBlob(_claimUidExtractor.ExtractClaimUid(httpContext.User));
 
                 if (requestToken.ClaimUid == null)
                 {
@@ -110,7 +109,6 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         /// <inheritdoc />
         public bool TryValidateTokenSet(
             HttpContext httpContext,
-            ClaimsPrincipal principal,
             AntiforgeryToken cookieToken,
             AntiforgeryToken requestToken,
             out string message)
@@ -152,10 +150,10 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var currentUsername = string.Empty;
             BinaryBlob currentClaimUid = null;
 
-            var authenticatedIdentity = GetAuthenticatedIdentity(principal);
+            var authenticatedIdentity = GetAuthenticatedIdentity(httpContext.User);
             if (authenticatedIdentity != null)
             {
-                currentClaimUid = GetClaimUidBlob(_claimUidExtractor.ExtractClaimUid(principal));
+                currentClaimUid = GetClaimUidBlob(_claimUidExtractor.ExtractClaimUid(httpContext.User));
                 if (currentClaimUid == null)
                 {
                     currentUsername = authenticatedIdentity.Name ?? string.Empty;
