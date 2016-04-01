@@ -16,7 +16,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.Mvc.Razor.Host": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.0-*",
-    "Microsoft.CodeAnalysis.CSharp": "1.3.0-*",
+    "Microsoft.CodeAnalysis.CSharp": "1.1.0-rc1-20151109-01",
     "Microsoft.Extensions.FileProviders.Composite": "1.0.0-*",
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
       "version": "1.0.0-*",
@@ -29,7 +29,11 @@
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "version": "1.0.0-*",
       "type": "build"
-    }
+    },
+    "System.Collections": "4.0.11-*",
+    "System.IO": "4.1.0-*",
+    "System.Reflection": "4.1.0-*",
+    "System.Threading": "4.0.11-*"
   },
   "frameworks": {
     "net451": {
