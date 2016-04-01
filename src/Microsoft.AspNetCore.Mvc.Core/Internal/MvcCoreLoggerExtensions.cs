@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static IDisposable ActionScope(this ILogger logger, ActionDescriptor action)
         {
-            return logger.BeginScopeImpl(new ActionLogScope(action));
+            return logger.BeginScope(new ActionLogScope(action));
         }
 
         public static void ExecutingAction(this ILogger logger, ActionDescriptor action)

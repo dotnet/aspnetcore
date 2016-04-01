@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     {
         public List<LoggerData> Logged { get; } = new List<LoggerData>();
 
-        public IDisposable BeginScopeImpl(object state)
+        public IDisposable BeginScope<TState>(TState state)
         {
             return null;
         }

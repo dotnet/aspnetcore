@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public static IDisposable ViewComponentScope(this ILogger logger, ViewComponentContext context)
         {
-            return logger.BeginScopeImpl(new ViewComponentLogScope(context.ViewComponentDescriptor));
+            return logger.BeginScope(new ViewComponentLogScope(context.ViewComponentDescriptor));
         }
 
         public static void ViewComponentExecuting(
