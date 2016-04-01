@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.DataProtection
                 _factory = factory;
             }
 
-            public IDisposable BeginScopeImpl(object state)
+            public IDisposable BeginScope<TState>(TState state)
             {
                 return new DummyDisposable();
             }
