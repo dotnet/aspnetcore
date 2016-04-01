@@ -249,29 +249,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     while (_mode == Mode.Prefix)
                     {
+                        var fin = input.RemoteIntakeFin;
+
                         ParseChunkedPrefix(input);
+
                         if (_mode != Mode.Prefix)
                         {
                             break;
                         }
+                        else if (fin)
+                        {
+                            ThrowChunkedRequestIncomplete();
+                        }
 
-                        await GetDataAsync(input);
+                        await input;
                     }
 
                     while (_mode == Mode.Extension)
                     {
+                        var fin = input.RemoteIntakeFin;
+
                         ParseExtension(input);
+
                         if (_mode != Mode.Extension)
                         {
                             break;
                         }
+                        else if (fin)
+                        {
+                            ThrowChunkedRequestIncomplete();
+                        }
 
-                        await GetDataAsync(input);
+                        await input;
                     }
 
                     while (_mode == Mode.Data)
                     {
+                        var fin = input.RemoteIntakeFin;
+
                         int actual = ReadChunkedData(input, buffer.Array, buffer.Offset, buffer.Count);
+
                         if (actual != 0)
                         {
                             return actual;
@@ -280,39 +297,69 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         {
                             break;
                         }
+                        else if (fin)
+                        {
+                            ThrowChunkedRequestIncomplete();
+                        }
 
-                        await GetDataAsync(input);
+                        await input;
                     }
 
                     while (_mode == Mode.Suffix)
                     {
+                        var fin = input.RemoteIntakeFin;
+
                         ParseChunkedSuffix(input);
+
                         if (_mode != Mode.Suffix)
                         {
                             break;
                         }
+                        else if (fin)
+                        {
+                            ThrowChunkedRequestIncomplete();
+                        }
 
-                        await GetDataAsync(input);
+                        await input;
                     }
                 }
 
                 // Chunks finished, parse trailers
                 while (_mode == Mode.Trailer)
                 {
+                    var fin = input.RemoteIntakeFin;
+
                     ParseChunkedTrailer(input);
+
                     if (_mode != Mode.Trailer)
                     {
                         break;
                     }
+                    else if (fin)
+                    {
+                        ThrowChunkedRequestIncomplete();
+                    }
 
-                    await GetDataAsync(input);
+                    await input;
                 }
 
                 if (_mode == Mode.TrailerHeaders)
                 {
                     while (!_context.TakeMessageHeaders(input, _requestHeaders))
                     {
-                        await GetDataAsync(input);
+                        if (input.RemoteIntakeFin)
+                        {
+                            if (_context.TakeMessageHeaders(input, _requestHeaders))
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                ThrowChunkedRequestIncomplete();
+                            }
+                        }
+
+                        await input;
                     }
 
                     _mode = Mode.Complete;
@@ -444,10 +491,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     _mode = Mode.Suffix;
                 }
-                else if (actual == 0)
-                {
-                    ThrowIfRequestIncomplete(input);
-                }
 
                 return actual;
             }
@@ -532,19 +575,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }
             }
 
-            private SocketInput GetDataAsync(SocketInput input)
+            private void ThrowChunkedRequestIncomplete()
             {
-                ThrowIfRequestIncomplete(input);
-
-                return input;
-            }
-
-            private void ThrowIfRequestIncomplete(SocketInput input)
-            {
-                if (input.RemoteIntakeFin)
-                {
-                    ThrowBadRequestException("Chunked request incomplete");
-                }
+                ThrowBadRequestException("Chunked request incomplete");
             }
 
             private enum Mode

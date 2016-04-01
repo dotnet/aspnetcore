@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             while (input.IsCompleted)
             {
+                var fin = input.RemoteIntakeFin;
+
                 var begin = input.ConsumingStart();
                 int actual;
                 var end = begin.CopyTo(buffer, offset, count, out actual);
@@ -21,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     return actual;
                 }
-                if (input.RemoteIntakeFin)
+                else if (fin)
                 {
                     return 0;
                 }
@@ -36,6 +38,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 await input;
 
+                var fin = input.RemoteIntakeFin;
+
                 var begin = input.ConsumingStart();
                 int actual;
                 var end = begin.CopyTo(buffer, offset, count, out actual);
@@ -45,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     return actual;
                 }
-                if (input.RemoteIntakeFin)
+                else if (fin)
                 {
                     return 0;
                 }
