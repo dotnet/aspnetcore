@@ -41,7 +41,7 @@ namespace E2ETests.Common
         public bool IsEnabled(LogLevel logLevel)
             => logLevel >= _minLogLevel && !_disposed;
 
-        public IDisposable BeginScopeImpl(object state)
+        public IDisposable BeginScope<TState>(TState state)
             => new NullScope();
 
         private class NullScope : IDisposable
