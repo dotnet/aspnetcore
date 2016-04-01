@@ -5,26 +5,27 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
 {
     public class RequestServicesContainerMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IServiceProvider _services;
+        private IServiceScopeFactory _scopeFactory;
 
-        public RequestServicesContainerMiddleware(RequestDelegate next, IServiceProvider services)
+        public RequestServicesContainerMiddleware(RequestDelegate next, IServiceScopeFactory scopeFactory)
         {
             if (next == null)
             {
                 throw new ArgumentNullException(nameof(next));
             }
-            if (services == null)
+            if (scopeFactory == null)
             {
-                throw new ArgumentNullException(nameof(services));
+                throw new ArgumentNullException(nameof(scopeFactory));
             }
 
-            _services = services;
+            _scopeFactory = scopeFactory;
             _next = next;
         }
 
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 return;
             }
 
-            using (var feature = new RequestServicesFeature(_services))
+            using (var feature = new RequestServicesFeature(_scopeFactory))
             {
                 try
                 {

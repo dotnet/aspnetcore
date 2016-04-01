@@ -9,19 +9,19 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 {
     public class RequestServicesFeature : IServiceProvidersFeature, IDisposable
     {
-        private IServiceProvider _appServices;
+        private IServiceScopeFactory _scopeFactory;
         private IServiceProvider _requestServices;
         private IServiceScope _scope;
         private bool _requestServicesSet;
 
-        public RequestServicesFeature(IServiceProvider applicationServices)
+        public RequestServicesFeature(IServiceScopeFactory scopeFactory)
         {
-            if (applicationServices == null)
+            if (scopeFactory == null)
             {
-                throw new ArgumentNullException(nameof(applicationServices));
+                throw new ArgumentNullException(nameof(scopeFactory));
             }
 
-            _appServices = applicationServices;
+            _scopeFactory = scopeFactory;
         }
 
         public IServiceProvider RequestServices
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 if (!_requestServicesSet)
                 {
-                    _scope = _appServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
+                    _scope = _scopeFactory.CreateScope();
                     _requestServices = _scope.ServiceProvider;
                     _requestServicesSet = true;
                 }
