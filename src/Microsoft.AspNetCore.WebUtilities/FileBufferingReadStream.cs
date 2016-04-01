@@ -192,10 +192,26 @@ namespace Microsoft.AspNetCore.WebUtilities
             if (_inMemory && _buffer.Length + read > _memoryThreshold)
             {
                 _inMemory = false;
+                var oldBuffer = _buffer;
                 _buffer = CreateTempFile();
-                _buffer.Write(_rentedBuffer, 0, (int)_buffer.Length);
-                _bytePool.Return(_rentedBuffer);
-                _rentedBuffer = null;
+                if (_rentedBuffer == null)
+                {
+                    oldBuffer.Position = 0;
+                    var rentedBuffer = _bytePool.Rent(Math.Min((int)oldBuffer.Length, _maxRentedBufferSize));
+                    var copyRead = oldBuffer.Read(rentedBuffer, 0, rentedBuffer.Length);
+                    while (copyRead > 0)
+                    {
+                        _buffer.Write(rentedBuffer, 0, copyRead);
+                        copyRead = oldBuffer.Read(rentedBuffer, 0, rentedBuffer.Length);
+                    }
+                    _bytePool.Return(rentedBuffer);
+                }
+                else
+                {
+                    _buffer.Write(_rentedBuffer, 0, (int)oldBuffer.Length);
+                    _bytePool.Return(_rentedBuffer);
+                    _rentedBuffer = null;
+                }
             }
 
             if (read > 0)
@@ -272,10 +288,27 @@ namespace Microsoft.AspNetCore.WebUtilities
             if (_inMemory && _buffer.Length + read > _memoryThreshold)
             {
                 _inMemory = false;
+                var oldBuffer = _buffer;
                 _buffer = CreateTempFile();
-                await _buffer.WriteAsync(_rentedBuffer, 0, (int)_buffer.Length, cancellationToken);
-                _bytePool.Return(_rentedBuffer);
-                _rentedBuffer = null;
+                if (_rentedBuffer == null)
+                {
+                    oldBuffer.Position = 0;
+                    var rentedBuffer = _bytePool.Rent(Math.Min((int)oldBuffer.Length, _maxRentedBufferSize));
+                    // oldBuffer is a MemoryStream, no need to do async reads.
+                    var copyRead = oldBuffer.Read(rentedBuffer, 0, rentedBuffer.Length);
+                    while (copyRead > 0)
+                    {
+                        await _buffer.WriteAsync(rentedBuffer, 0, copyRead, cancellationToken);
+                        copyRead = oldBuffer.Read(rentedBuffer, 0, rentedBuffer.Length);
+                    }
+                    _bytePool.Return(rentedBuffer);
+                }
+                else
+                {
+                    await _buffer.WriteAsync(_rentedBuffer, 0, (int)oldBuffer.Length, cancellationToken);
+                    _bytePool.Return(_rentedBuffer);
+                    _rentedBuffer = null;
+                }
             }
 
             if (read > 0)
