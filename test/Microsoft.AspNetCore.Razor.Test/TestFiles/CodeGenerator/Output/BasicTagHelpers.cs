@@ -111,7 +111,7 @@ __TestNamespace_InputTagHelper2.Checked = true;
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(104, 216, false);
             Write(__tagHelperExecutionContext.Output);

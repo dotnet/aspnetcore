@@ -96,7 +96,7 @@ __TestNamespace_CatchAllTagHelper.Event1 = doSomething();
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(374, 79, false);
             Write(__tagHelperExecutionContext.Output);
@@ -124,7 +124,7 @@ __TestNamespace_CatchAllTagHelper.Event2 = doSomething();
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(455, 81, false);
             Write(__tagHelperExecutionContext.Output);
@@ -148,7 +148,7 @@ __TestNamespace_CatchAllTagHelper.Event2 = doSomething();
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(538, 67, false);
             Write(__tagHelperExecutionContext.Output);

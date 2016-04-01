@@ -15,6 +15,33 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
     public class TagHelperExecutionContextTest
     {
         [Fact]
+        public async Task SetOutputContentAsync_SetsOutputsContent()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            var content = "Hello from child content";
+            var executionContext = new TagHelperExecutionContext(
+                "p",
+                tagMode: TagMode.StartTagAndEndTag,
+                items: new Dictionary<object, object>(),
+                uniqueId: string.Empty,
+                executeChildContentAsync: () =>
+                {
+                    tagHelperContent.SetContent(content);
+
+                    return Task.FromResult(result: true);
+                },
+                startTagHelperWritingScope: _ => { },
+                endTagHelperWritingScope: () => tagHelperContent);
+
+            // Act
+            await executionContext.SetOutputContentAsync();
+
+            // Assert
+            Assert.Equal(content, executionContext.Output.Content.GetContent());
+        }
+
+        [Fact]
         public async Task ExecutionContext_Reinitialize_UpdatesTagHelperOutputAsExpected()
         {
             // Arrange

@@ -583,13 +583,10 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                 using (_writer.BuildScope())
                 {
                     _writer
-                        .Write(tagHelperOutputAccessor)
-                        .Write(".")
-                        .WriteStartAssignment(_tagHelperContext.TagHelperOutputContentPropertyName)
                         .Write("await ")
                         .WriteInstanceMethodInvocation(
-                            tagHelperOutputAccessor,
-                            _tagHelperContext.TagHelperOutputGetChildContentAsyncMethodName);
+                            ExecutionContextVariableName,
+                            _tagHelperContext.ExecutionContextSetOutputContentAsyncMethodName);
                 }
             }
 

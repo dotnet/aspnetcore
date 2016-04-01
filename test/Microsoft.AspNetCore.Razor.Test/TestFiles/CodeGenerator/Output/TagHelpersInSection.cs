@@ -64,7 +64,7 @@ namespace TestOutput
                     await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                     if (!__tagHelperExecutionContext.Output.IsContentModified)
                     {
-                        __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                        await __tagHelperExecutionContext.SetOutputContentAsync();
                     }
                     Instrumentation.BeginContext(267, 66, false);
                     Write(__tagHelperExecutionContext.Output);
@@ -99,7 +99,7 @@ AddHtmlAttributeValue(" ", 199, DateTime.Now, 200, 14, false);
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 if (!__tagHelperExecutionContext.Output.IsContentModified)
                 {
-                    __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                    await __tagHelperExecutionContext.SetOutputContentAsync();
                 }
                 Instrumentation.BeginContext(112, 245, false);
                 WriteTo(__razor_section_writer, __tagHelperExecutionContext.Output);

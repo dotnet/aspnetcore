@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
             HtmlEncoderPropertyName = "HtmlEncoder";
             TagHelperOutputIsContentModifiedPropertyName = "IsContentModified";
             TagHelperOutputContentPropertyName = "Content";
-            TagHelperOutputGetChildContentAsyncMethodName = "GetChildContentAsync";
+            ExecutionContextSetOutputContentAsyncMethodName = "SetOutputContentAsync";
             TagHelperAttributeTypeName = "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute";
             EncodedHtmlStringTypeName = "Microsoft.AspNetCore.Html.HtmlEncodedString";
         }
@@ -209,10 +209,10 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
         public string TagHelperOutputContentPropertyName { get; set; }
 
         /// <summary>
-        /// The name of the method on the property <see cref="ExecutionContextOutputPropertyName"/> used to retrieve
-        /// tag helper child content.
+        /// The name of the method on the property <see cref="ExecutionContextOutputPropertyName"/> used to execute
+        /// child content and set the rendered results on its <see cref="ExecutionContextOutputPropertyName"/> property.
         /// </summary>
-        public string TagHelperOutputGetChildContentAsyncMethodName { get; set; }
+        public string ExecutionContextSetOutputContentAsyncMethodName { get; set; }
 
         /// <summary>
         /// The name of the type used to represent tag helper attributes.

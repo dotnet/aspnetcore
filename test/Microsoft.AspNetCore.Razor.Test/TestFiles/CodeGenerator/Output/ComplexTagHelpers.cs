@@ -96,7 +96,7 @@ namespace TestOutput
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 if (!__tagHelperExecutionContext.Output.IsContentModified)
                 {
-                    __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                    await __tagHelperExecutionContext.SetOutputContentAsync();
                 }
                 Instrumentation.BeginContext(265, 83, false);
                 Write(__tagHelperExecutionContext.Output);
@@ -155,7 +155,7 @@ namespace TestOutput
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 if (!__tagHelperExecutionContext.Output.IsContentModified)
                 {
-                    __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                    await __tagHelperExecutionContext.SetOutputContentAsync();
                 }
                 Instrumentation.BeginContext(414, 58, false);
                 Write(__tagHelperExecutionContext.Output);
@@ -266,7 +266,7 @@ AddHtmlAttributeValue(" ", 159, DateTime.Now, 160, 14, false);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(137, 529, false);
             Write(__tagHelperExecutionContext.Output);
@@ -330,7 +330,7 @@ __TestNamespace_InputTagHelper2.Checked = (@object);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(678, 181, false);
             Write(__tagHelperExecutionContext.Output);
@@ -379,7 +379,7 @@ __TestNamespace_PTagHelper.Age = -1970 + @DateTimeOffset.Now.Year;
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(869, 155, false);
             Write(__tagHelperExecutionContext.Output);
@@ -426,7 +426,7 @@ __TestNamespace_PTagHelper.Age = DateTimeOffset.Now.Year - 1970;
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(1034, 116, false);
             Write(__tagHelperExecutionContext.Output);
@@ -473,7 +473,7 @@ __TestNamespace_PTagHelper.Age = ("My age is this long.".Length);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(1160, 133, false);
             Write(__tagHelperExecutionContext.Output);
@@ -518,7 +518,7 @@ __TestNamespace_PTagHelper.Age = 123;
     await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
     if (!__tagHelperExecutionContext.Output.IsContentModified)
     {
-        __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+        await __tagHelperExecutionContext.SetOutputContentAsync();
     }
     Instrumentation.BeginContext(1316, 57, false);
     WriteTo(__razor_template_writer, __tagHelperExecutionContext.Output);

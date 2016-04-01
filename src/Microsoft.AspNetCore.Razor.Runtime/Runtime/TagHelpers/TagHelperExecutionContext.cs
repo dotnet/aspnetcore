@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -241,6 +242,28 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 
             Context.Reinitialize(Items, uniqueId);
             Output.Reinitialize(tagName, tagMode);
+        }
+
+        /// <summary>
+        /// Executes children asynchronously with the page's <see cref="HtmlEncoder" /> in scope and
+        /// sets <see cref="Output"/>'s <see cref="TagHelperOutput.Content"/> to the rendered results.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> that on completion sets <see cref="Output"/>'s
+        /// <see cref="TagHelperOutput.Content"/> to the children's rendered content.</returns>
+        public async Task SetOutputContentAsync()
+        {
+            var childContent = _childContent;
+
+            if (childContent == null)
+            {
+                _startTagHelperWritingScope(null);
+                await _executeChildContentAsync();
+                childContent = _endTagHelperWritingScope();
+            }
+
+            Debug.Assert(!Output.IsContentModified);
+
+            Output.Content.SetHtmlContent(childContent);
         }
 
         // Internal for testing.

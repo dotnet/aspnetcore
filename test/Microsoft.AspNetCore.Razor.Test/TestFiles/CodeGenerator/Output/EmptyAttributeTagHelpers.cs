@@ -97,7 +97,7 @@ __TestNamespace_PTagHelper.Age = ;
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(78, 64, false);
             Write(__tagHelperExecutionContext.Output);

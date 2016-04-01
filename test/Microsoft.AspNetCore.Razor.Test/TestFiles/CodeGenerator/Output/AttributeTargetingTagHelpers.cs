@@ -48,7 +48,7 @@ namespace TestOutput
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 if (!__tagHelperExecutionContext.Output.IsContentModified)
                 {
-                    __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                    await __tagHelperExecutionContext.SetOutputContentAsync();
                 }
                 Instrumentation.BeginContext(54, 36, false);
                 Write(__tagHelperExecutionContext.Output);
@@ -116,7 +116,7 @@ __TestNamespace_InputTagHelper2.Checked = true;
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(30, 228, false);
             Write(__tagHelperExecutionContext.Output);
