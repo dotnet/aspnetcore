@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Identity.Test
                     }
                     logStore.Append(" ");
                 });
-            logger.Setup(x => x.BeginScopeImpl(It.IsAny<object>())).Callback((object state) =>
+            logger.Setup(x => x.BeginScope(It.IsAny<object>())).Callback((object state) =>
                 {
                     logStore.Append(state.ToString());
                     logStore.Append(" ");
