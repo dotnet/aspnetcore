@@ -16,6 +16,7 @@
             "Microsoft.AspNetCore.Mvc.Localization": { },
             "Microsoft.AspNetCore.Mvc.Razor": { },
             "Microsoft.AspNetCore.Mvc.Razor.Host": { },
+            "Microsoft.AspNet.Mvc.Razor.Host.VSRC1": { },
             "Microsoft.AspNetCore.Mvc.TagHelpers": { },
             "Microsoft.AspNetCore.Mvc.ViewFeatures": { },
             "Microsoft.AspNetCore.Mvc.WebApiCompatShim": { }
