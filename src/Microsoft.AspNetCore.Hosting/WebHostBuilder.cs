@@ -159,14 +159,7 @@ namespace Microsoft.AspNetCore.Hosting
             var hostingServices = BuildHostingServices();
             var hostingContainer = hostingServices.BuildServiceProvider();
 
-            var appEnvironment = hostingContainer.GetRequiredService<IApplicationEnvironment>();
             var startupLoader = hostingContainer.GetRequiredService<IStartupLoader>();
-
-            var contentRootPath = ResolveContentRootPath(_options.ContentRootPath, appEnvironment.ApplicationBasePath);
-            var applicationName = ResolveApplicationName() ?? appEnvironment.ApplicationName;
-
-            // Initialize the hosting environment
-            _hostingEnvironment.Initialize(applicationName, contentRootPath, _options);
 
             var host = new WebHost(hostingServices, startupLoader, _options, _config);
 
@@ -183,6 +176,14 @@ namespace Microsoft.AspNetCore.Hosting
         private IServiceCollection BuildHostingServices()
         {
             _options = new WebHostOptions(_config);
+
+            var defaultPlatformServices = PlatformServices.Default;
+            var appEnvironment = defaultPlatformServices.Application;
+            var contentRootPath = ResolveContentRootPath(_options.ContentRootPath, appEnvironment.ApplicationBasePath);
+            var applicationName = ResolveApplicationName() ?? appEnvironment.ApplicationName;
+
+            // Initialize the hosting environment
+            _hostingEnvironment.Initialize(applicationName, contentRootPath, _options);
 
             var services = new ServiceCollection();
             services.AddSingleton(_hostingEnvironment);
@@ -217,8 +218,6 @@ namespace Microsoft.AspNetCore.Hosting
 
             // Ensure object pooling is available everywhere.
             services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
-
-            var defaultPlatformServices = PlatformServices.Default;
 
             services.AddSingleton(defaultPlatformServices.Application);
             services.AddSingleton(defaultPlatformServices.Runtime);
