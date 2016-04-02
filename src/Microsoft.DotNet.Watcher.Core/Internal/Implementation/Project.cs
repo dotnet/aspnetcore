@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
             
             if (File.Exists(projectLockJsonPath))
             {
-                var lockFile = LockFileReader.Read(projectLockJsonPath);
+                var lockFile = LockFileReader.Read(projectLockJsonPath, designTime: false);
                 ProjectDependencies = lockFile.ProjectLibraries.Select(dep => GetProjectRelativeFullPath(dep.Path)).ToList();
             }
             else
