@@ -161,10 +161,10 @@ var buildTarget = "compile"
 
 #ci-build
     @{
-        var nugetExe = Path.Combine(".build", "nuget.exe");
-        var universeArtifacts = "artifacts";
+        var nugetExe = Path.Combine(Directory.GetCurrentDirectory(), ".build", "nuget.exe");
+        var universeArtifacts = Path.Combine(Directory.GetCurrentDirectory(), "artifacts");
         var universeBuild = Path.Combine(universeArtifacts, "build");
-        var packagesPublishDir = Path.Combine(".nuget", "publishDir");
+        var packagesPublishDir = Path.Combine(Directory.GetCurrentDirectory(), ".nuget", "publishDir");
 
         var blockLogger = Log as IBlockLogger;
         var commits = new ConcurrentDictionary<string, string>();
