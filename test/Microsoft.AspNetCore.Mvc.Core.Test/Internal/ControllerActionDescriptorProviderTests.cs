@@ -780,12 +780,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             // Arrange
             var controllerTypeInfo = typeof(UserController).GetTypeInfo();
-            var controllerTypeProvider = new StaticControllerTypeProvider(new[] { controllerTypeInfo });
+            var manager = GetApplicationManager(new[] { controllerTypeInfo });
             var options = new TestOptionsManager<MvcOptions>();
             options.Value.Conventions.Add(new TestRoutingConvention());
             var modelProvider = new DefaultApplicationModelProvider(options);
             var provider = new ControllerActionDescriptorProvider(
-                controllerTypeProvider,
+                manager,
                 new[] { modelProvider },
                 options);
             var assemblyName = controllerTypeInfo.Assembly.GetName().Name;
