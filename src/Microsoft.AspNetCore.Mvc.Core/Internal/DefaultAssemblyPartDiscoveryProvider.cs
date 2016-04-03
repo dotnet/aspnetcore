@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -15,8 +14,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     // Discovers assemblies that are part of the MVC application using the DependencyContext.
     public static class DefaultAssemblyPartDiscoveryProvider
     {
-        private const string NativeImageSufix = ".ni";
-
         internal static HashSet<string> ReferenceAssemblies { get; } = new HashSet<string>(StringComparer.Ordinal)
         {
             "Microsoft.AspNetCore.Mvc",
@@ -51,9 +48,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             return GetCandidateLibraries(dependencyContext)
-                .SelectMany(library => library.RuntimeAssemblyGroups.GetDefaultGroup().AssetPaths)
-                .Select(Load)
-                .Where(assembly => assembly != null);
+                .SelectMany(library => library.GetDefaultAssemblyNames(dependencyContext))
+                .Select(Assembly.Load);
         }
 
         // Returns a list of libraries that references the assemblies in <see cref="ReferenceAssemblies"/>.
@@ -68,22 +64,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             return dependencyContext.RuntimeLibraries.Where(IsCandidateLibrary);
-        }
-
-        private static Assembly Load(string assetPath)
-        {
-            var name = Path.GetFileNameWithoutExtension(assetPath);
-            if (name != null)
-            {
-                if (name.EndsWith(NativeImageSufix, StringComparison.OrdinalIgnoreCase))
-                {
-                    name = name.Substring(0, name.Length - NativeImageSufix.Length);
-                }
-
-                return Assembly.Load(new AssemblyName(name));
-            }
-
-            return null;
         }
 
         private static bool IsCandidateLibrary(RuntimeLibrary library)
