@@ -17,10 +17,8 @@
     "netstandardapp1.5": {
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
-        "System.Xml.ReaderWriter": "4.0.10-*",
         "dotnet-test-xunit": "1.0.0-dev-*",
-        "NETStandard.Library": "1.5.0-*",
-        "System.Diagnostics.Process": "4.1.0-*"
+        "NETStandard.Library": "1.5.0-*"
       },
       "imports": [
         "dnxcore50",
