@@ -113,15 +113,9 @@ var buildTarget = "compile"
 
 #ci-test .cache-coherence .pull .sync-commits .remove-src-folders .change-default-build-target-to-verify .build-all
 
-#ci-build
+#ci-pull
     @{
-        var nugetExe = Path.Combine(".build", "nuget.exe");
-        var universeArtifacts = "artifacts";
-        var universeBuild = Path.Combine(universeArtifacts, "build");
-        Directory.CreateDirectory(universeBuild);
-        buildTarget = koreBuildTargets ?? "--quiet compile nuget-install";
         var blockLogger = Log as IBlockLogger;
-
         if (blockLogger != null)
         {
             blockLogger.StartBlock("Cloning repos");
@@ -132,53 +126,30 @@ var buildTarget = "compile"
             var useBuildBranch = true;
             if (Directory.Exists(repo))
             {
-                if (UseGateBranch)
-                {
-                    try
-                    {
-                        GitCommand("", string.Format("pull --ff-only --quiet --depth 1 git@github.com:aspnet/{1}.git {0}:{0}", gateBranch, repo));
-                        useBuildBranch = false;
-                        Log.Warn(string.Format(
-                            "{0} has a branch '{1}' which is overriding use of {2}. {1} must be deleted before {2} will be used.",
-                            repo,
-                            gateBranch,
-                            buildBranch));
-                    }
-                    catch (Exception ex)
-                    {
-                    	Log.Info(string.Format("{0} doesn't exist, falling back to {1}.", gateBranch, buildBranch));
-                    }
-                }
+                Directory.Delete(repo, recursive: true);
+            }
 
-                if (useBuildBranch)
+            if (UseGateBranch)
+            {
+                try
                 {
-                    GitCommand("", string.Format("pull --ff-only --quiet --depth 1 git@github.com:aspnet/{1}.git {0}:{0}", buildBranch, repo));
+                    GitCommand("", string.Format("clone --quiet --depth 1 --branch {0} git@github.com:aspnet/{1}.git", gateBranch, repo));
+                    useBuildBranch = false;
+                    Log.Warn(string.Format(
+                        "{0} has a branch '{1}' which is overriding use of {2}. {1} must be deleted before {2} will be used.",
+                        repo,
+                        gateBranch,
+                        buildBranch));
+                }
+                catch (Exception ex)
+                {
+                    Log.Info(string.Format("{0} doesn't exist, falling back to {1}.", gateBranch, buildBranch));
                 }
             }
-            else
-            {
-                if (UseGateBranch)
-                {
-                    try
-                    {
-                        GitCommand("", string.Format("clone --quiet --depth 1 --branch {0} git@github.com:aspnet/{1}.git", gateBranch, repo));
-                        useBuildBranch = false;
-                        Log.Warn(string.Format(
-                            "{0} has a branch '{1}' which is overriding use of {2}. {1} must be deleted before {2} will be used.",
-                            repo,
-                            gateBranch,
-                            buildBranch));
-                    }
-                    catch (Exception ex)
-                    {
-                    	Log.Info(string.Format("{0} doesn't exist, falling back to {1}.", gateBranch, buildBranch));
-                    }
-                }
 
-                if (useBuildBranch)
-                {
-                    GitCommand("", string.Format("clone --quiet --depth 1 --branch {0} git@github.com:aspnet/{1}.git", buildBranch, repo));
-                }
+            if (useBuildBranch)
+            {
+                GitCommand("", string.Format("clone --quiet --depth 1 --branch {0} git@github.com:aspnet/{1}.git", buildBranch, repo));
             }
         });
 
@@ -186,6 +157,19 @@ var buildTarget = "compile"
         {
             blockLogger.EndBlock("Cloning repos");
         }
+    }
+
+#ci-build
+    @{
+        var nugetExe = Path.Combine(".build", "nuget.exe");
+        var universeArtifacts = "artifacts";
+        var universeBuild = Path.Combine(universeArtifacts, "build");
+        var packagesPublishDir = Path.Combine(".nuget", "publishDir");
+
+        var blockLogger = Log as IBlockLogger;
+        var commits = new ConcurrentDictionary<string, string>();
+        var threads = int.Parse(Environment.GetEnvironmentVariable("UNIVERSE_THREADS") ?? "4");
+        buildTarget = koreBuildTargets ?? "--quiet compile nuget-install";
 
         var batchedRepos = GetBuildGraph();
         Log.Info("Building repositories in batches: ");
@@ -194,16 +178,30 @@ var buildTarget = "compile"
             Log.Info(string.Format("{0} - {1}", repos.Key, string.Join(", ", repos)));
         }
 
-        var commits = new ConcurrentDictionary<string, string>();
+        Directory.CreateDirectory(universeBuild);
+        if (!IsLinux)
+        {
+            // Publish to a directory and use that as a package source for later builds. This doesn't work in Linux due to
+            // https://github.com/NuGet/Home/issues/2383
 
-        var threads = int.Parse(Environment.GetEnvironmentVariable("UNIVERSE_THREADS") ?? "4");
+            Directory.CreateDirectory(packagesPublishDir);
+            Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ARTIFACTS", packagesPublishDir);
+            Environment.SetEnvironmentVariable("PACKAGES_PUBLISH_DIR", packagesPublishDir);
+        }
+        else
+        {
+            Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ARTIFACTS", universeBuild);
+        }
+
         foreach (var batch in batchedRepos)
         {
             Parallel.ForEach(batch.ToArray(), new ParallelOptions { MaxDegreeOfParallelism = threads }, repo =>
             {
-                if (IsTeamCity)
+                var blockName = string.Format("Building {0}", repo);
+
+                if (blockLogger != null)
                 {
-                    Console.WriteLine(string.Format("##teamcity[blockOpened name='{0}' flowId='KOREBUILD_{0}']", repo));
+                    blockLogger.StartBlock(blockName);
                 }
 
                 if (!IsLinux)
@@ -254,9 +252,9 @@ var buildTarget = "compile"
                 }
                 finally
                 {
-                    if (IsTeamCity)
+                    if (blockLogger != null)
                     {
-                        Console.WriteLine(string.Format("##teamcity[blockClosed name='{0}' flowId='KOREBUILD_{0}']", repo));
+                        blockLogger.EndBlock(blockName);
                     }
                 }
             });
