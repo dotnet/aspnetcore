@@ -69,7 +69,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static bool IsCandidateLibrary(RuntimeLibrary library)
         {
             Debug.Assert(ReferenceAssemblies != null);
-            return library.Dependencies.Any(dependency => ReferenceAssemblies.Contains(dependency.Name));
+            return !ReferenceAssemblies.Contains(library.Name) &&
+                library.Dependencies.Any(dependency => ReferenceAssemblies.Contains(dependency.Name));
         }
     }
 }

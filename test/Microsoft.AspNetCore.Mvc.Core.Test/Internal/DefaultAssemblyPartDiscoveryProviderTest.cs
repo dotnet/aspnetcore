@@ -73,6 +73,32 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal(new[] { "Foo", "Bar", "Baz" }, candidates.Select(a => a.Name));
         }
 
+        [Fact]
+        public void GetCandidateLibraries_SkipsMvcAssemblies()
+        {
+            // Arrange
+            var dependencyContext = new DependencyContext(
+                new TargetInfo("framework", "runtime", "signature", isPortable: true),
+                CompilationOptions.Default,
+                new CompilationLibrary[0],
+                new[]
+                {
+                     GetLibrary("MvcSandbox", "Microsoft.AspNetCore.Mvc.Core", "Microsoft.AspNetCore.Mvc"),
+                     GetLibrary("Microsoft.AspNetCore.Mvc.TagHelpers", "Microsoft.AspNetCore.Mvc.Razor"),
+                     GetLibrary("Microsoft.AspNetCore.Mvc", "Microsoft.AspNetCore.Mvc.Abstractions", "Microsoft.AspNetCore.Mvc.Core"),
+                     GetLibrary("Microsoft.AspNetCore.Mvc.Core", "Microsoft.AspNetCore.HttpAbstractions"),
+                     GetLibrary("ControllersAssembly", "Microsoft.AspNetCore.Mvc"),
+
+                },
+                Enumerable.Empty<RuntimeFallbacks>());
+
+            // Act
+            var candidates = DefaultAssemblyPartDiscoveryProvider.GetCandidateLibraries(dependencyContext);
+
+            // Assert
+            Assert.Equal(new[] { "MvcSandbox", "ControllersAssembly" }, candidates.Select(a => a.Name));
+        }
+
         // This test verifies DefaultAssemblyPartDiscoveryProvider.ReferenceAssemblies reflects the actual loadable assemblies
         // of the libraries that Microsoft.AspNetCore.Mvc dependes on.
         // If we add or remove dependencies, this test should be changed together.
