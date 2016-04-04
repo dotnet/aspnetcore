@@ -92,7 +92,7 @@ namespace MusicStore
             });
         }
 
-        //This method is invoked when ASPNET_ENV is 'Development' or is not defined
+        //This method is invoked when ASPNETCORE_ENVIRONMENT is 'Development' or is not defined
         //The allowed values are Development,Staging and Production
         public void ConfigureDevelopment(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
@@ -115,7 +115,7 @@ namespace MusicStore
             Configure(app);
         }
 
-        //This method is invoked when ASPNET_ENV is 'Staging'
+        //This method is invoked when ASPNETCORE_ENVIRONMENT is 'Staging'
         //The allowed values are Development,Staging and Production
         public void ConfigureStaging(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
@@ -129,7 +129,7 @@ namespace MusicStore
             Configure(app);
         }
 
-        //This method is invoked when ASPNET_ENV is 'Production'
+        //This method is invoked when ASPNETCORE_ENVIRONMENT is 'Production'
         //The allowed values are Development,Staging and Production
         public void ConfigureProduction(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {

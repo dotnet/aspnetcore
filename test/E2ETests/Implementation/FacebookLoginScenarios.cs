@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -39,7 +40,10 @@ namespace E2ETests
             Assert.Equal<string>("ValidStateData", queryItems["state"]);
             Assert.Equal<string>("custom", queryItems["custom_redirect_uri"]);
             //Check for the correlation cookie
-            //Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNetCore.Correlation.Facebook"));
+            Assert.NotEmpty(
+                _httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri))
+                .Cast<Cookie>()
+                .Where(cookie => cookie.Name.StartsWith(".AspNetCore.Correlation.Facebook")));
 
             //This is just to generate a correlation cookie. Previous step would generate this cookie, but we have reset the handler now.
             _httpClientHandler = new HttpClientHandler();
