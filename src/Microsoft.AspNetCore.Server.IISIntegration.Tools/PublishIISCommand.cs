@@ -91,7 +91,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
             }
 
             var builder = new ConfigurationBuilder()
-                .AddJsonFile(Path.Combine(applicationBasePath, "hosting.json"), optional: true);
+                .SetBasePath(applicationBasePath)
+                .AddJsonFile("hosting.json", optional: true);
 
             var webroot = builder.Build()["webroot"];
 
