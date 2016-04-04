@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.IO.Packaging;
+using System.IO.Compression;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -74,12 +74,12 @@ namespace PushCoherence
             Console.WriteLine("Creating timestamp free version at {0}", targetPath);
             File.Copy(packagePath, targetPath);
 
-            using (var package = Package.Open(targetPath))
+            using (var fileStream = File.Open(targetPath, FileMode.Open, FileAccess.ReadWrite))
+            using (var package = new ZipArchive(fileStream, ZipArchiveMode.Update))
             {
-                var relationshipType = package.GetRelationshipsByType("http://schemas.microsoft.com/packaging/2010/07/manifest");
-                var manifest = package.GetPart(relationshipType.SingleOrDefault().TargetUri);
+                var manifest = package.Entries.First(f => f.FullName.EndsWith(".nuspec"));
 
-                using (var stream = manifest.GetStream(FileMode.Open, FileAccess.ReadWrite))
+                using (var stream = manifest.Open())
                 {
                     var xdoc = XDocument.Load(stream);
                     var ns = xdoc.Root.Name.NamespaceName;
