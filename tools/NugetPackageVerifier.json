@@ -115,6 +115,7 @@
             "Microsoft.AspNetCore.Routing": {},
             "Microsoft.AspNetCore.Routing.Abstractions": {},
             "Microsoft.AspNetCore.Server.IISIntegration": {},
+            "Microsoft.AspNetCore.Server.IISIntegration.Tools": {},
             "Microsoft.AspNetCore.Server.Kestrel": {
                 "SIGN_AUTHENTICODE": {
                     "runtimes/win7-arm/native/libuv.dll": "We don't sign 3rd party DLLs",
@@ -168,7 +169,6 @@
             "Microsoft.Extensions.Configuration.CommandLine": {},
             "Microsoft.Extensions.Configuration.EnvironmentVariables": {},
             "Microsoft.Extensions.Configuration.FileExtensions": {},
-            "Microsoft.Extensions.Configuration.FileProviderExtensions": {},
             "Microsoft.Extensions.Configuration.Ini": {},
             "Microsoft.Extensions.Configuration.Json": {},
             "Microsoft.Extensions.Configuration.UserSecrets": {},
@@ -191,6 +191,7 @@
             "Microsoft.Extensions.Logging.Console": {},
             "Microsoft.Extensions.Logging.Debug": {},
             "Microsoft.Extensions.Logging.EventLog": {},
+            "Microsoft.Extensions.Logging.Filter": {},
             "Microsoft.Extensions.Logging.TraceSource": {},
             "Microsoft.Extensions.ObjectPool": {},
             "Microsoft.Extensions.Options.ConfigurationExtensions": {},
@@ -202,6 +203,7 @@
             "Microsoft.Net.Http.Headers": {},
             "Microsoft.Net.Http.Server": {},
             "Microsoft.Net.WebSockets.Server": {},
+            "Microsoft.Owin.Security.Interop": {},
             "Microsoft.VisualStudio.Web.BrowserLink.Loader": {}
         }
     },
