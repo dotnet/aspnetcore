@@ -16,7 +16,7 @@
         <OutputPath Condition="'$(Sign)' == 'Sign'">$(SignedOutputPath)</OutputPath>
         <OutputPath Condition="'$(Sign)' != 'Sign'">$(DNXBinPath)$(Configuration)\</OutputPath>
         <PoliCheckPath>$(IntermediateOutputPath)policheck\</PoliCheckPath>
-        <PackagesOutputPath>$(ArtifactsPath)Signed\Packages</PackagesOutputPath>
+        <PackagesOutputPath>$(ArtifactsPath)Signed\Packages\</PackagesOutputPath>
         <SymbolsOutputPath>$(ArtifactsPath)Signed\Symbols\</SymbolsOutputPath>
     </PropertyGroup>
 

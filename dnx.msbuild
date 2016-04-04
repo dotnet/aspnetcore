@@ -12,7 +12,7 @@
         <CoherenceDestinationDir>$(ArtifactsPath)coherence\</CoherenceDestinationDir>
     </PropertyGroup>
 
-    <Target Name="Build" DependsOnTargets="CopyUnsignedPackages;BinScope;NuGetVerify;" />
+    <Target Name="Build" DependsOnTargets="BinScope;NuGetVerify;" />
 
     <Target Name="Clean">
         <RemoveDir Directories="$(KBinPath);$(IntermediateOutputPath);$(UnsignedBinariesPath)" />
@@ -173,14 +173,6 @@
         </PropertyGroup>
         <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
         <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(PackageName).nupkg *" WorkingDirectory="$(WorkingDir)" />
-    </Target>
-
-    <Target Name="CopyUnsignedPackages" DependsOnTargets="RebuildPackages">
-        <ItemGroup>
-            <AllPackages Include="$(DropSource)**\*.nupkg" />
-        </ItemGroup>
-
-        <Copy SourceFiles="@(AllPackages)" DestinationFolder="$(PackagesOutputPath)" Condition="!Exists('$(PackagesOutputPath)%(FileName)%(Extension)')" />
     </Target>
 
     <Target Name="NuGetVerify" DependsOnTargets="RebuildPackages" Condition="'$(VerifySignatures)' == 'true'">
@@ -453,52 +445,12 @@
             DetailedExclusions="@(SrcExclusions)" />
     </Target>
 
-    <Target Name="CopyNativePackageSymbols">
-        <!-- Special cases for Native code that don't have symbol packages -->
-        <ItemGroup>
-            <NativePackages Include="$(PackagesOutputPath)**\Microsoft.AspNetCore.Loader.IIS.Interop.*.nupkg">
-                <BasePath>$(DNXDropRoot)Helios\$(BUILD_BRANCH)\</BasePath>
-                <RelativeBinPath>build\Microsoft.AspNetCore.Loader.IIS.Interop\bin</RelativeBinPath>
-            </NativePackages>
-        </ItemGroup>
-
-        <Message Text="%(NativePackages.Identity)" />
-
-        <MSBuild Projects="dnx.msbuild"
-                 Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NativePackageSymbolsBasePath=%(NativePackages.BasePath);
-                             NativePackageSymbolsRelativeBinPath=%(NativePackages.RelativeBinPath);NativePackage=%(NativePackages.Identity)"
-                 Condition="'@(NativePackages->Count())' &gt; '0'"
-                 Targets="LocateAndCopyNativeSymbolsUsingBuildNumber" />
-    </Target>
-
-    <Target Name="LocateAndCopyNativeSymbolsUsingBuildNumber">
-        <GetBuildNumberFromPackageName PackagePath="$(NativePackage)">
-            <Output TaskParameter="BuildNumber" PropertyName="NativePackageBuildNumber" />
-        </GetBuildNumberFromPackageName>
-
-        <PropertyGroup>
-            <AdditionalNativeSymbolsPath>$(NativePackageSymbolsBasePath)$(NativePackageBuildNumber)\$(NativePackageSymbolsRelativeBinPath)\</AdditionalNativeSymbolsPath>
-        </PropertyGroup>
-
-        <Message Text="$(AdditionalNativeSymbolsPath)" />
-
-        <ItemGroup>
-            <NativeAssembliesAndSymbols Include="$(AdditionalNativeSymbolsPath)\**\*.pdb" />
-            <NativeAssembliesAndSymbols Include="$(AdditionalNativeSymbolsPath)\**\*.dll" />
-        </ItemGroup>
-
-        <Message Text="$(UnsignedSymbolPackagesPath)%(NativeSymbols.Directory)" />
-
-        <Copy SourceFiles="@(NativeAssembliesAndSymbols)" DestinationFiles="@(NativeAssembliesAndSymbols->'$(UnsignedSymbolPackagesPath)native\%(Directory)%(FileName)%(Extension)')" />
-    </Target>
-
-    <Target Name="BeforeBinScope" DependsOnTargets="RebuildPackages;CopyNativePackageSymbols" Condition="'$(Sign)' == 'Sign'">
+    <Target Name="BeforeBinScope" DependsOnTargets="RebuildPackages" Condition="'$(Sign)' == 'Sign'">
         <ItemGroup>
             <SignedPackagesForBinScope Include="$(PackagesOutputPath)**\*.nupkg"
                                        Exclude="$(PackagesOutputPath)**\CoreCLR*.nupkg;
                                                 $(PackagesOutputPath)**\dnx*.nupkg;
-                                                $(PackagesOutputPath)**\Microsoft.CSharp*.nupkg;
-                                                $(PackagesOutputPath)**\Microsoft.AspNetCore.Loader.IIS.Interop*.nupkg" />
+                                                $(PackagesOutputPath)**\Microsoft.CSharp*.nupkg;" />
         </ItemGroup>
 
         <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(SignedPackagesForBinScope->'$(BinScopePackagesPath)%(Filename)') %(SignedPackagesForBinScope.Identity)" />
