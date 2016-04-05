@@ -12,11 +12,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
     <handlers>
       <add name=""aspNetCore"" path=""*"" verb=""*"" modules=""AspNetCoreModule"" resourceType=""Unspecified""/>
     </handlers>
-    <aspNetCore processPath=""..\test.exe"" stdoutLogEnabled=""false"" stdoutLogFile=""..\logs\stdout.log"" startupTimeLimit=""3600"">
-      <environmentVariables>
-        <environmentVariable name=""ASPNETCORE_CONTENTROOT"" value=""."" />
-      </environmentVariables>
-    </aspNetCore>
+    <aspNetCore processPath="".\test.exe"" stdoutLogEnabled=""false"" stdoutLogFile="".\logs\stdout.log"" startupTimeLimit=""3600""/>
   </system.webServer>
 </configuration>");
 
@@ -79,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
                 (string)WebConfigTransform.Transform(WebConfigTemplate, "app.exe", configureForAzure: false)
                     .Descendants("aspNetCore").Single().Attribute("processPath");
 
-            Assert.Equal(@"..\app.exe", newProcessPath);
+            Assert.Equal(@".\app.exe", newProcessPath);
         }
 
         [Fact]
@@ -99,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
                 new XElement("environmentVariable", new XAttribute("name", "ENVVAR"), new XAttribute("value", "123"));
 
             var input = WebConfigTemplate;
-            input.Descendants("environmentVariable").Single().Add(envVarElement);
+            input.Descendants("aspNetCore").Single().Add(envVarElement);
 
             Assert.True(XNode.DeepEquals(envVarElement,
                 WebConfigTransform.Transform(input, "app.exe", configureForAzure: false)
@@ -134,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
             }
 
             Assert.Equal(
-                @"..\logs\stdout.log",
+                @".\logs\stdout.log",
                 (string)WebConfigTransform.Transform(input, "test.exe", configureForAzure: false)
                     .Descendants().Attributes("stdoutLogFile").Single());
         }
@@ -175,16 +171,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
                 XDocument.Parse(@"<aspNetCore processPath=""%home%\site\test.exe"" stdoutLogEnabled=""false""
                     stdoutLogFile=""\\?\%home%\LogFiles\stdout.log"" startupTimeLimit=""3600""/>").Root,
                 aspNetCoreElement));
-        }
-
-        [Fact]
-        public void WebConfigTransform_overrites_value_for_ASPNET_APPLICATIONBASE()
-        {
-            var input = WebConfigTemplate;
-            input.Descendants("environmentVariable").Single().SetAttributeValue("value", "abc");
-
-            Assert.True(XNode.DeepEquals(WebConfigTemplate,
-                WebConfigTransform.Transform(input, "test.exe", configureForAzure: false)));
         }
 
         private bool VerifyMissingElementCreated(params string[] elementNames)

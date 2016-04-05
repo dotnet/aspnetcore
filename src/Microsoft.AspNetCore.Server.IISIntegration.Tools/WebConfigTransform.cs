@@ -57,32 +57,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
 
         private static void TransformAspNetCore(XElement aspNetCoreElement, string appName, bool configureForAzure)
         {
-            var appPath = Path.Combine(configureForAzure ? @"%home%\site" : "..", appName);
-            var logPath = Path.Combine(configureForAzure ? @"\\?\%home%\LogFiles" : @"..\logs", "stdout.log");
+            var appPath = Path.Combine(configureForAzure ? @"%home%\site" : ".", appName);
+            var logPath = Path.Combine(configureForAzure ? @"\\?\%home%\LogFiles" : @".\logs", "stdout.log");
 
             aspNetCoreElement.SetAttributeValue("processPath", appPath);
             SetAttributeValueIfEmpty(aspNetCoreElement, "stdoutLogEnabled", "false");
             SetAttributeValueIfEmpty(aspNetCoreElement, "stdoutLogFile", logPath);
             SetAttributeValueIfEmpty(aspNetCoreElement, "startupTimeLimit", "3600");
-
-            AddApplicationBase(aspNetCoreElement);
-        }
-
-        private static void AddApplicationBase(XElement aspNetCoreElement)
-        {
-            const string contentRootKeyName = "ASPNETCORE_CONTENTROOT";
-
-            var envVariables = GetOrCreateChild(aspNetCoreElement, "environmentVariables");
-            var appBaseElement = envVariables.Elements("environmentVariable").SingleOrDefault(e =>
-                string.Equals((string)e.Attribute("name"), contentRootKeyName, StringComparison.CurrentCultureIgnoreCase));
-
-            if (appBaseElement == null)
-            {
-                appBaseElement = new XElement("environmentVariable", new XAttribute("name", contentRootKeyName));
-                envVariables.AddFirst(appBaseElement);
-            }
-
-            appBaseElement.SetAttributeValue("value", ".");
         }
 
         private static XElement GetOrCreateChild(XElement parent, string childName)
