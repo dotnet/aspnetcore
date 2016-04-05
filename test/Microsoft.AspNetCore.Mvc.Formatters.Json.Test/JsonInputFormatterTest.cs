@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
@@ -21,7 +20,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     public class JsonInputFormatterTest
     {
-
         [Theory]
         [InlineData("application/json", true)]
         [InlineData("application/*", false)]
@@ -356,6 +354,37 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var modelErrorMessage = modelState.Values.First().Errors[0].Exception.Message;
             Assert.Contains("Required property 'Password' not found in JSON", modelErrorMessage);
+        }
+
+        [Fact]
+        public void CreateJsonSerializer_UsesJsonSerializerSettings()
+        {
+            // Arrange
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = Mock.Of<IContractResolver>(),
+                MaxDepth = 2,
+                DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
+            };
+            var formatter = new TestableJsonInputFormatter(GetLogger(), settings);
+
+            // Act
+            var actual = formatter.CreateJsonSerializer();
+
+            // Assert
+            Assert.Same(settings.ContractResolver, actual.ContractResolver);
+            Assert.Equal(settings.MaxDepth, actual.MaxDepth);
+            Assert.Equal(settings.DateTimeZoneHandling, actual.DateTimeZoneHandling);
+        }
+
+        private class TestableJsonInputFormatter : JsonInputFormatter
+        {
+            public TestableJsonInputFormatter(ILogger logger, JsonSerializerSettings settings)
+                : base(logger, settings)
+            {
+            }
+
+            public new JsonSerializer CreateJsonSerializer() => base.CreateJsonSerializer();
         }
 
         private static ILogger GetLogger()

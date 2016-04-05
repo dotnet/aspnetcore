@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             if (_jsonSerializerPool == null)
             {
-                _jsonSerializerPool = _objectPoolProvider.Create<JsonSerializer>();
+                _jsonSerializerPool = _objectPoolProvider.Create(new JsonSerializerObjectPolicy(SerializerSettings));
             }
 
             return _jsonSerializerPool.Get();
