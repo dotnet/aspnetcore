@@ -104,9 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                         Post(t => t.OnStopImmediate());
                         if (!_thread.Join(stepTimeout))
                         {
-#if NET451
-                            _thread.Abort();
-#endif
+                            _log.LogError(0, null, "KestrelThread.Stop failed to terminate libuv thread.");
                         }
                     }
                 }
@@ -116,9 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     // Until we rework this logic, ODEs are bound to happen sometimes.
                     if (!_thread.Join(stepTimeout))
                     {
-#if NET451
-                        _thread.Abort();
-#endif
+                        _log.LogError(0, null, "KestrelThread.Stop failed to terminate libuv thread.");
                     }
                 }
             }
