@@ -106,11 +106,13 @@
             CreateTestJob="$(CodeSignCreateTestJob)"
             Test="$(TestCodeSign)">
             <Output TaskParameter="JobNumber" ItemName="CodeSignJobNumbers" />
+            <Output TaskParameter="CompletionPath" ItemName="CodeSignCompletionPath" />
         </SubmitCodeSignJob>
 
         <WaitForCodeSignJobs JobNumbers="@(CodeSignJobNumbers)" Test="$(TestCodeSign)" />
 
-        <Exec Command="$(CodeSignScriptsPath)\%(BinariesToSign.CopyScript)" />
+        <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MIR /MT $(CodeSignCompletionPath) $(SignedOutputPath)
+                       IF %ERRORLEVEL% LEQ 1 exit 0" />
     </Target>
 
     <Target Name="ReplaceUnsignedFiles" DependsOnTargets="SignFiles">
