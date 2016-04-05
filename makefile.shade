@@ -166,6 +166,16 @@ var buildTarget = "compile"
         var universeBuild = Path.Combine(universeArtifacts, "build");
         var packagesPublishDir = Path.Combine(Directory.GetCurrentDirectory(), ".nuget", "publishDir");
 
+        // Snapshot the .build folder
+        if (!IsLinux)
+        {
+            Exec("cmd", "/C xcopy /S/Q/I/Y .build " + Path.Combine(universeArtifacts, ".build"), "");
+        }
+        else
+        {
+            CopyFolder(".build", Path.Combine(universeArtifacts, ".build"), true);
+        }
+
         var blockLogger = Log as IBlockLogger;
         var commits = new ConcurrentDictionary<string, string>();
         var threads = int.Parse(Environment.GetEnvironmentVariable("UNIVERSE_THREADS") ?? "4");
