@@ -36,3 +36,4 @@ nuget.exe
 *.sln.ide
 node_modules
 *launchSettings.json
+*.orig
