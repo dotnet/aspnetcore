@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Authorization;
-using Microsoft.AspNet.Mvc;
-using Microsoft.Data.Entity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using MusicStore.Models;
 using MusicStore.Infrastructure;
@@ -97,7 +97,7 @@ namespace MusicStore.Apis
             if (!ModelState.IsValid)
             {
                 // Return the model errors
-                return HttpBadRequest(ModelState);
+                return BadRequest(ModelState);
             }
 
             // Save the changes to the DB
@@ -119,7 +119,7 @@ namespace MusicStore.Apis
             if (!ModelState.IsValid)
             {
                 // Return the model errors
-                return HttpBadRequest(ModelState);
+                return BadRequest(ModelState);
             }
 
             var dbAlbum = await _storeContext.Albums.SingleOrDefaultAsync(a => a.AlbumId == albumId);

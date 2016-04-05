@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Authorization;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.Data.Entity;
+using System.IO;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,39 +19,16 @@ namespace MusicStore
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env, IApplicationEnvironment appEnv)
-        {
-            // Setup configuration sources.
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(appEnv.ApplicationBasePath)
-                .AddJsonFile("appsettings.json")
-                .AddEnvironmentVariables();
-            Configuration = builder.Build();
-        }
-
-        public IConfigurationRoot Configuration { get; set; }
-
-        // This method gets called by the runtime.
+        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<SiteSettings>(settings =>
-            {
-                settings.DefaultAdminUsername = Configuration["DefaultAdminUsername"];
-                settings.DefaultAdminPassword = Configuration["DefaultAdminPassword"];
-            });
-
-            // Add MVC services to the services container.
             services.AddMvc();
-
-            // Uncomment the following line to add Web API services which makes it easier to port Web API 2 controllers.
-            // You will also need to add the Microsoft.AspNet.Mvc.WebApiCompatShim package to the 'dependencies' section of project.json.
-            // services.AddWebApiConventions();
-
+            
             // Add EF services to the service container
             services.AddEntityFramework()
-                .AddSqlite()
+                .AddEntityFrameworkSqlite()
                 .AddDbContext<MusicStoreContext>(options => {
-                    options.UseSqlite(Configuration["DbConnectionString"]);
+                    options.UseSqlite("Data Source=music-db.sqlite");
                 });
 
             // Add Identity services to the services container
@@ -77,41 +56,24 @@ namespace MusicStore
             Mapper.CreateMap<GenreResultDto, Genre>();
         }
 
-        // Configure is called after ConfigureServices is called.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory, IHostingEnvironment env)
         {
+            app.UseDeveloperExceptionPage();
+            
             // Initialize the sample data
-            SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();
+            //SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();
 
-            loggerFactory.MinimumLevel = LogLevel.Warning;
-            loggerFactory.AddConsole();
-            loggerFactory.AddDebug();
-
-            // Configure the HTTP request pipeline.
-
-            // Add the platform handler to the request pipeline.
-            app.UseIISPlatformHandler();
-
-            // Add the following to the request pipeline only in development environment.
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                // Add Error handling middleware which catches all application specific errors and
-                // send the request to the following path or controller action.
-                app.UseExceptionHandler("/Home/Error");
-            }
-
-            // Add static files to the request pipeline.
             app.UseStaticFiles();
+            loggerFactory.AddConsole();
 
             // Add MVC to the request pipeline.
             app.UseMvc(routes =>
             {
                 // Matches requests that correspond to an existent controller/action pair
-                routes.MapRoute("default", "{controller}/{action}/{id:int?}");
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
 
                 // Matches any other request that doesn't appear to have a filename extension (defined as 'having a dot in the last URI segment').
                 // This means you'll correctly get 404s for /some/dir/non-existent-image.png instead of returning the SPA HTML.
@@ -121,10 +83,20 @@ namespace MusicStore
                 // (which of course will match /customers/isaac.png too, so in that case it would serve the PNG image at that URL if one is on disk,
                 // or the SPA HTML if not).
                 routes.MapSpaFallbackRoute("spa-fallback", new { controller = "Home", action = "Index" });
-
-                // Uncomment the following line to add a route for porting Web API 2 controllers.
-                // routes.MapWebApiRoute("DefaultApi", "api/{controller}/{id?}");
             });
+        }
+
+        public static void Main(string[] args)
+        {
+            var host = new WebHostBuilder()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseDefaultHostingConfiguration(args)
+                .UseIISPlatformHandlerUrl()
+                .UseKestrel()
+                .UseStartup<Startup>()
+                .Build();
+
+            host.Run();
         }
     }
 }
