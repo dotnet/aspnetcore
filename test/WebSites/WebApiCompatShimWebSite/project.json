@@ -21,7 +21,9 @@
         "portable-net451+win8"
       ],
       "dependencies": {
-          "NETStandard.Library": "1.5.0-*"
+          "NETStandard.Library": "1.5.0-*",
+          "System.Diagnostics.TraceSource": "4.0.0-*",
+          "System.Diagnostics.Tracing": "4.1.0-*"
       }
     }
   }
