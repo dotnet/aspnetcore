@@ -223,6 +223,29 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         [Theory]
         [InlineData(1023)]
         [InlineData(1024)]
+        public async Task FlushWriteThrows_DontFlushInDispose(int byteLength)
+        {
+            // Arrange
+            var stream = new TestMemoryStream() { ThrowOnWrite = true };
+            var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+
+            await writer.WriteAsync(new string('a', byteLength));
+            await Assert.ThrowsAsync<IOException>(() =>  writer.FlushAsync());
+
+            // Act
+            writer.Dispose();
+
+            // Assert
+            Assert.Equal(1, stream.WriteAsyncCallCount);
+            Assert.Equal(0, stream.WriteCallCount);
+            Assert.Equal(0, stream.FlushCallCount);
+            Assert.Equal(0, stream.FlushAsyncCallCount);
+            Assert.Equal(0, stream.Length);
+        }
+
+        [Theory]
+        [InlineData(1023)]
+        [InlineData(1024)]
         [InlineData(1050)]
         [InlineData(2048)]
         public void WriteChar_WritesToStream(int byteLength)
@@ -419,6 +442,8 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 
             public int WriteAsyncCallCount { get; private set; }
 
+            public bool ThrowOnWrite { get; set; }
+
             public override void Flush()
             {
                 FlushCallCount++;
@@ -434,12 +459,20 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             public override void Write(byte[] buffer, int offset, int count)
             {
                 WriteCallCount++;
+                if (ThrowOnWrite)
+                {
+                    throw new IOException("Test IOException");
+                }
                 base.Write(buffer, offset, count);
             }
 
             public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
             {
                 WriteAsyncCallCount++;
+                if (ThrowOnWrite)
+                {
+                    throw new IOException("Test IOException");
+                }
                 return base.WriteAsync(buffer, offset, count, cancellationToken);
             }
 

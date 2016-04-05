@@ -302,12 +302,12 @@ namespace Microsoft.AspNetCore.WebUtilities
                 0,
                 flush: flushEncoder);
 
+            _charBufferCount = 0;
+
             if (count > 0)
             {
                 _stream.Write(_byteBuffer, 0, count);
             }
-
-            _charBufferCount = 0;
         }
 
         // Note: our FlushInternalAsync method does NOT flush the underlying stream. This would result in
@@ -327,12 +327,12 @@ namespace Microsoft.AspNetCore.WebUtilities
                 0,
                 flush: flushEncoder);
 
+            _charBufferCount = 0;
+
             if (count > 0)
             {
                 await _stream.WriteAsync(_byteBuffer, 0, count);
             }
-
-            _charBufferCount = 0;
         }
 
         private void CopyToCharBuffer(string value, ref int index, ref int count)
