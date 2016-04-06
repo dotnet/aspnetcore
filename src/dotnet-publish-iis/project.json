@@ -8,12 +8,11 @@
     "nowarn": [ "CS1591" ],
     "xmlDoc": true
   },
-
+  "compile": "../Microsoft.AspNetCore.Server.IISIntegration.Tools/Internal/*.cs",
   "dependencies": {
     "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.DotNet.ProjectModel": "1.0.0-*",
-    "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
     "System.Diagnostics.Process": "4.1.0-*"
   },
 
