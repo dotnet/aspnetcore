@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Host
     internal static class Resources
     {
         private static readonly ResourceManager _resourceManager
-            = new ResourceManager("Microsoft.AspNet.Mvc.Razor.Host.Resources", typeof(Resources).GetTypeInfo().Assembly);
+            = new ResourceManager("Microsoft.AspNet.Mvc.Razor.Host.VSRC1.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
         /// Value cannot be null or empty.
