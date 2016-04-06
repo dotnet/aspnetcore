@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Razor
     internal static class CommonResources
     {
         private static readonly ResourceManager _resourceManager
-            = new ResourceManager("Microsoft.AspNet.Razor.CommonResources", typeof(CommonResources).GetTypeInfo().Assembly);
+            = new ResourceManager("Microsoft.AspNet.Razor.VSRC1.CommonResources", typeof(CommonResources).GetTypeInfo().Assembly);
 
         /// <summary>
         /// Value cannot be null or an empty string.
