@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 {
     public class DistributedCacheTagHelperTest
     {
-        
+
         [Fact]
         public async Task ProcessAsync_DoesNotCache_IfDisabled()
         {

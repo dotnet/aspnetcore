@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             IHtmlContent content = null;
 
-            // Create a cancellation token that will be used 
+            // Create a cancellation token that will be used
             // to release the task from the memory cache.
             var tokenSource = new CancellationTokenSource();
 
@@ -109,6 +109,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             return options;
         }
-        
+
     }
 }

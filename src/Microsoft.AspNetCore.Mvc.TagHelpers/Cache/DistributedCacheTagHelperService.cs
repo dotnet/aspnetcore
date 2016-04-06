@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
                         var serializedKey = Encoding.UTF8.GetBytes(key.GenerateKey());
                         var storageKey = key.GenerateHashedKey();
                         var value = await _storage.GetAsync(storageKey);
-                                                
+
                         if (value == null)
                         {
                             // The value is not cached, we need to render the tag helper output
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
                             // The value was found in the storage, decode and ensure
                             // there is no cache key hash collision
                             byte[] decodedValue = Decode(value, serializedKey);
-                            
+
                             try
                             {
                                 if (decodedValue != null)
@@ -147,21 +147,21 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
                                 }
                             }
                         }
-
-                        // Notify all other awaiters of the final content
-                        tcs.TrySetResult(content);
                     }
                     catch
                     {
-                        // Notify all other awaiters to render the content
-                        tcs.TrySetResult(null);
+                        content = null;
                         throw;
                     }
                     finally
                     {
-                        // Remove the worker task from the in-memory cache
-                        Task<IHtmlContent> worker;
-                        _workers.TryRemove(key, out worker);
+                        // Remove the worker task before setting the result.
+                        // If the result is null, other threads would potentially
+                        // acquire it otherwise.
+                        _workers.TryRemove(key, out result);
+
+                        // Notify all other awaiters to render the content
+                        tcs.TrySetResult(content);
                     }
                 }
                 else
