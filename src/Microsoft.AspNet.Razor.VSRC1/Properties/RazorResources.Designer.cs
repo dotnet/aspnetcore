@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Razor
     internal static class RazorResources
     {
         private static readonly ResourceManager _resourceManager
-            = new ResourceManager("Microsoft.AspNet.Razor.RazorResources", typeof(RazorResources).GetTypeInfo().Assembly);
+            = new ResourceManager("Microsoft.AspNet.Razor.VSRC1.RazorResources", typeof(RazorResources).GetTypeInfo().Assembly);
 
         /// <summary>
         /// The active parser must be the same as either the markup or code parser.

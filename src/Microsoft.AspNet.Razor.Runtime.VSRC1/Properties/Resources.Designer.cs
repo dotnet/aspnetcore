@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Razor.Runtime
     internal static class Resources
     {
         private static readonly ResourceManager _resourceManager
-            = new ResourceManager("Microsoft.AspNet.Razor.Runtime.Resources", typeof(Resources).GetTypeInfo().Assembly);
+            = new ResourceManager("Microsoft.AspNet.Razor.Runtime.VSRC1.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
         /// Invalid tag helper directive look up text '{0}'. The correct look up text format is: "typeName, assemblyName".
