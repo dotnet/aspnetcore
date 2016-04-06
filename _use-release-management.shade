@@ -36,6 +36,7 @@
         foreach (var repo in GetAllRepos())
         {
             GitCommand(repo, "checkout origin/dev -B release");
+            var filesChanged = false;
 
             // Update NuGet.Config
             var nugetConfigPath = Path.Combine(repo, "NuGet.config");
@@ -43,15 +44,49 @@
             {
                 var original = File.ReadAllText(nugetConfigPath);
                 var modified = original
-                    .Replace("https://www.myget.org/F/aspnetcidev", "https://www.myget.org/F/aspnetcirelease")
-                    .Replace("https://www.myget.org/F/azureadwebstacknightly", "https://www.myget.org/F/azureadwebstackrelease");
+                    .Replace("https://www.myget.org/F/aspnetcidev", "https://www.myget.org/F/aspnetcirelease");
 
                 if (!string.Equals(original, modified, StringComparison.Ordinal))
                 {
                     File.WriteAllText(nugetConfigPath, modified);
                     GitCommand(repo, "add NuGet.config");
-                    GitCommand(repo, "commit -m \"Updating to release NuGet.config.\"");
+                    filesChanged = true;
                 }
+            }
+
+            var buildPs1Path = Path.Combine(repo, "build.ps1");
+            if (File.Exists(buildPs1Path))
+            {
+                var original = File.ReadAllText(buildPs1Path);
+                var modified = original
+                    .Replace("https://github.com/aspnet/KoreBuild/archive/dev.zip", "https://github.com/aspnet/KoreBuild/archive/release.zip");
+
+                if (!string.Equals(original, modified, StringComparison.Ordinal))
+                {
+                    File.WriteAllText(buildPs1Path, modified);
+                    GitCommand(repo, "add build.ps1");
+                    filesChanged = true;
+                }
+            }
+
+            var buildShPath = Path.Combine(repo, "build.sh");
+            if (File.Exists(buildShPath))
+            {
+                var original = File.ReadAllText(buildShPath);
+                var modified = original
+                    .Replace("https://github.com/aspnet/KoreBuild/archive/dev.zip", "https://github.com/aspnet/KoreBuild/archive/release.zip");
+
+                if (!string.Equals(original, modified, StringComparison.Ordinal))
+                {
+                    File.WriteAllText(buildShPath, modified);
+                    GitCommand(repo, "add build.sh");
+                    filesChanged = true;
+                }
+            }
+
+            if (filesChanged)
+            {
+                GitCommand(repo, "commit -m \"Updating to release.\"");
             }
 
             GitCommand(repo, "push origin release:release");
@@ -60,7 +95,7 @@
             GitCommand(repo, "push origin dev:dev");
         }
     }
-    
+
 #update-master .pull-all
     -// Merge release branch to master
     -// Pin versions of packages in project.json and updated project.lock.json
@@ -172,18 +207,18 @@
             GitCommand(repo, "push origin --tags +" + newVersion);
         }
     }
-    
+
 functions
     @{
         IEnumerable<string> GetAllRepos()
         {
             var nonDefaultRepos = new[]
             {
-              "DNX",
+              "CoreCLR",
               "Coherence",
               "Coherence-Signed",
-              "dnvm",
-              "Setup",
+              "KoreBuild",
+              "Universe",
             };
 
             return Enumerable.Concat(nonDefaultRepos, repositories);
