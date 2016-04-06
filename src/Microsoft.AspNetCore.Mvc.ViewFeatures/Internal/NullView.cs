@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
     }
 }

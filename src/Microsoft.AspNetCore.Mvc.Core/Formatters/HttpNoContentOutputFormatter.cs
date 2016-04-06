@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 response.StatusCode = StatusCodes.Status204NoContent;
             }
 
-            return Task.FromResult(true);
+            return TaskCache.CompletedTask;
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Cors.Internal
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             }
 
             // Let the action be executed.
-            return Task.FromResult(true);
+            return TaskCache.CompletedTask;
         }
     }
 }

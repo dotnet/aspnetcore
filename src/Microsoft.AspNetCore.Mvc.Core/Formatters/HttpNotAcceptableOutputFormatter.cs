@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             var response = context.HttpContext.Response;
             response.StatusCode = StatusCodes.Status406NotAcceptable;
-            return Task.FromResult(true);
+            return TaskCache.CompletedTask;
         }
     }
 }
