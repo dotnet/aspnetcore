@@ -106,7 +106,7 @@
             CreateTestJob="$(CodeSignCreateTestJob)"
             Test="$(TestCodeSign)">
             <Output TaskParameter="JobNumber" ItemName="CodeSignJobNumbers" />
-            <Output TaskParameter="CompletionPath" ItemName="CodeSignCompletionPath" />
+            <Output TaskParameter="CompletionPath" PropertyName="CodeSignCompletionPath" />
         </SubmitCodeSignJob>
 
         <WaitForCodeSignJobs JobNumbers="@(CodeSignJobNumbers)" Test="$(TestCodeSign)" />
