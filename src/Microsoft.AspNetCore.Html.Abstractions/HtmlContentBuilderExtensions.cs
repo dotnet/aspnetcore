@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Html
                 throw new ArgumentNullException(nameof(args));
             }
 
-            builder.AppendHtml(new HtmlFormatString(format, args));
+            builder.AppendHtml(new HtmlFormattableString(format, args));
             return builder;
         }
 
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Html
                 throw new ArgumentNullException(nameof(args));
             }
 
-            builder.AppendHtml(new HtmlFormatString(formatProvider, format, args));
+            builder.AppendHtml(new HtmlFormattableString(formatProvider, format, args));
             return builder;
         }
 
@@ -218,148 +218,6 @@ namespace Microsoft.AspNetCore.Html
             builder.Clear();
             builder.AppendHtml(encoded);
             return builder;
-        }
-
-        [DebuggerDisplay("{DebuggerToString()}")]
-        private class HtmlFormatString : IHtmlContent
-        {
-            private readonly IFormatProvider _formatProvider;
-            private readonly string _format;
-            private readonly object[] _args;
-
-            public HtmlFormatString(string format, object[] args)
-                : this(null, format, args)
-            {
-            }
-
-            public HtmlFormatString(IFormatProvider formatProvider, string format, object[] args)
-            {
-                Debug.Assert(format != null);
-                Debug.Assert(args != null);
-
-                _formatProvider = formatProvider ?? CultureInfo.CurrentCulture;
-                _format = format;
-                _args = args;
-            }
-
-            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
-            {
-                if (writer == null)
-                {
-                    throw new ArgumentNullException(nameof(writer));
-                }
-
-                if (encoder == null)
-                {
-                    throw new ArgumentNullException(nameof(encoder));
-                }
-
-                var formatProvider = new EncodingFormatProvider(_formatProvider, encoder);
-                writer.Write(string.Format(formatProvider, _format, _args));
-            }
-
-            private string DebuggerToString()
-            {
-                using (var writer = new StringWriter())
-                {
-                    WriteTo(writer, HtmlEncoder.Default);
-                    return writer.ToString();
-                }
-            }
-        }
-
-        // This class implements Html encoding via an ICustomFormatter. Passing an instance of this
-        // class into a string.Format method or anything similar will evaluate arguments implementing
-        // IHtmlContent without HTML encoding them, and will give other arguments the standard
-        // composite format string treatment, and then HTML encode the result.
-        //
-        // Plenty of examples of ICustomFormatter and the interactions with string.Format here:
-        // https://msdn.microsoft.com/en-us/library/system.string.format(v=vs.110).aspx#Format6_Example
-        private class EncodingFormatProvider : IFormatProvider, ICustomFormatter
-        {
-            private readonly HtmlEncoder _encoder;
-            private readonly IFormatProvider _formatProvider;
-
-            public EncodingFormatProvider(IFormatProvider formatProvider, HtmlEncoder encoder)
-            {
-                Debug.Assert(formatProvider != null);
-                Debug.Assert(encoder != null);
-
-                _formatProvider = formatProvider;
-                _encoder = encoder;
-            }
-
-            public string Format(string format, object arg, IFormatProvider formatProvider)
-            {
-                // These are the cases we need to special case. We trust the HtmlEncodedString or IHtmlContent instance
-                // to do the right thing with encoding.
-                var htmlString = arg as HtmlEncodedString;
-                if (htmlString != null)
-                {
-                    return htmlString.ToString();
-                }
-
-                var htmlContent = arg as IHtmlContent;
-                if (htmlContent != null)
-                {
-                    using (var writer = new StringWriter())
-                    {
-                        htmlContent.WriteTo(writer, _encoder);
-                        return writer.ToString();
-                    }
-                }
-
-                // If we get here then 'arg' is not an IHtmlContent, and we want to handle it the way a normal
-                // string.Format would work, but then HTML encode the result.
-                //
-                // First check for an ICustomFormatter - if the IFormatProvider is a CultureInfo, then it's likely
-                // that ICustomFormatter will be null.
-                var customFormatter = (ICustomFormatter)_formatProvider.GetFormat(typeof(ICustomFormatter));
-                if (customFormatter != null)
-                {
-                    var result = customFormatter.Format(format, arg, _formatProvider);
-                    if (result != null)
-                    {
-                        return _encoder.Encode(result);
-                    }
-                }
-
-                // Next check if 'arg' is an IFormattable (DateTime is an example).
-                //
-                // An IFormattable will likely call back into the IFormatterProvider and ask for more information
-                // about how to format itself. This is the typical case when IFormatterProvider is a CultureInfo.
-                var formattable = arg as IFormattable;
-                if (formattable != null)
-                {
-                    var result = formattable.ToString(format, _formatProvider);
-                    if (result != null)
-                    {
-                        return _encoder.Encode(result);
-                    }
-                }
-
-                // If we get here then there's nothing really smart left to try.
-                if (arg != null)
-                {
-                    var result = arg.ToString();
-                    if (result != null)
-                    {
-                        return _encoder.Encode(result);
-                    }
-                }
-
-                return string.Empty;
-            }
-
-            public object GetFormat(Type formatType)
-            {
-                if (formatType == typeof(ICustomFormatter))
-                {
-                    return this;
-                }
-
-                return null;
-            }
         }
     }
 }
