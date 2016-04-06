@@ -1,1 +1,0 @@
-﻿Sample demonstrating ASP.NET Core Session middleware.
