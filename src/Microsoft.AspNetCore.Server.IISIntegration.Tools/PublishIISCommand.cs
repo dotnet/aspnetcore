@@ -15,23 +15,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
     {
         private readonly string _publishFolder;
         private readonly string _projectPath;
-        private readonly string _webRoot;
 
-        public PublishIISCommand(string publishFolder, string projectPath, string webRoot)
+        public PublishIISCommand(string publishFolder, string projectPath)
         {
             _publishFolder = publishFolder;
             _projectPath = projectPath;
-            _webRoot = webRoot;
         }
 
         public int Run()
         {
             var applicationBasePath = GetApplicationBasePath();
-            var webRoot = GetWebRoot(applicationBasePath);
 
             XDocument webConfigXml = null;
-            var webRootDirectory = Path.Combine(_publishFolder, webRoot);
-            var webConfigPath = Path.Combine(webRootDirectory, "web.config");
+            var webConfigPath = Path.Combine(_publishFolder, "web.config");
             if (File.Exists(webConfigPath))
             {
                 Reporter.Output.WriteLine($"Updating web.config at '{webConfigPath}'");
@@ -44,12 +40,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
             }
             else
             {
-                if (!Directory.Exists(webRootDirectory))
-                {
-                    Reporter.Output.WriteLine($"No webroot directory found. Creating '{webRootDirectory}'");
-                    Directory.CreateDirectory(webRootDirectory);
-                }
-
                 Reporter.Output.WriteLine($"No web.config found. Creating '{webConfigPath}'");
             }
 
@@ -81,32 +71,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
         private string GetApplicationName(string applicationBasePath)
         {
             return ProjectReader.GetProject(Path.Combine(applicationBasePath, "project.json")).Name;
-        }
-
-        private string GetWebRoot(string applicationBasePath)
-        {
-            if (!string.IsNullOrEmpty(_webRoot))
-            {
-                return _webRoot;
-            }
-
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(applicationBasePath)
-                .AddJsonFile("hosting.json", optional: true);
-
-            var webroot = builder.Build()["webroot"];
-
-            if (!string.IsNullOrEmpty(webroot))
-            {
-                return webroot;
-            }
-
-            if (Directory.Exists(Path.Combine(applicationBasePath, "wwwroot")))
-            {
-                return "wwwroot";
-            }
-
-            return string.Empty;
         }
 
         private static bool ConfigureForAzure()

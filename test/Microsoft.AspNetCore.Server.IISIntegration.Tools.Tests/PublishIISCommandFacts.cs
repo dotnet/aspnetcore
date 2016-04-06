@@ -18,15 +18,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
         [Fact]
         public void PublishIIS_uses_default_values_if_options_not_specified()
         {
-            var webRoot = "wwwroot";
-            var folders = CreateTestDir("{}", webRoot);
+            var folders = CreateTestDir("{}");
 
-            new PublishIISCommand(folders.PublishOutput, folders.ProjectPath, null).Run();
+            new PublishIISCommand(folders.PublishOutput, folders.ProjectPath).Run();
 
-            var processPath = (string)GetPublishedWebConfig(folders.PublishOutput, webRoot)
+            var processPath = (string)GetPublishedWebConfig(folders.PublishOutput)
                 .Descendants("aspNetCore").Attributes("processPath").Single();
 
-            Assert.Equal($@"..\projectDir.exe", processPath);
+            Assert.Equal($@".\projectDir.exe", processPath);
 
             Directory.Delete(folders.TestRoot, recursive: true);
         }
@@ -36,49 +35,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
         [InlineData("awesome.App")]
         public void PublishIIS_reads_application_name_from_project_json_if_exists(string projectName)
         {
-            var webRoot = "wwwroot";
-            var folders = CreateTestDir($@"{{ ""name"": ""{projectName}"" }}", webRoot);
+            var folders = CreateTestDir($@"{{ ""name"": ""{projectName}"" }}");
 
-            new PublishIISCommand(folders.PublishOutput, folders.ProjectPath, null).Run();
+            new PublishIISCommand(folders.PublishOutput, folders.ProjectPath).Run();
 
-            var processPath = (string)GetPublishedWebConfig(folders.PublishOutput, webRoot)
+            var processPath = (string)GetPublishedWebConfig(folders.PublishOutput)
                 .Descendants("aspNetCore").Attributes("processPath").Single();
 
-            Assert.Equal($@"..\{projectName}.exe", processPath);
-
-            Directory.Delete(folders.TestRoot, recursive: true);
-        }
-
-        [Fact]
-        public void PublishIIS_uses_webroot_from_hosting_json()
-        {
-            var webRoot = "mywebroot";
-            var folders = CreateTestDir("{}", webRoot);
-            File.WriteAllText(Path.Combine(folders.ProjectPath, "hosting.json"), $"{{ \"webroot\": \"{webRoot}\"}}");
-
-            new PublishIISCommand(folders.PublishOutput, folders.ProjectPath, null).Run();
-
-            var processPath = (string)GetPublishedWebConfig(folders.PublishOutput, webRoot)
-                .Descendants("aspNetCore").Attributes("processPath").Single();
-
-            Assert.Equal(@"..\projectDir.exe", processPath);
-
-            Directory.Delete(folders.TestRoot, recursive: true);
-        }
-
-        [Fact]
-        public void PublishIIS_webroot_switch_takes_precedence_over_hosting_json()
-        {
-            var webRoot = "mywebroot";
-            var folders = CreateTestDir("{}", webRoot);
-            File.WriteAllText(Path.Combine(folders.ProjectPath, "hosting.json"), $"{{ \"webroot\": \"wwwroot\"}}");
-
-            new PublishIISCommand(folders.PublishOutput, folders.ProjectPath, webRoot).Run();
-
-            var processPath = (string)GetPublishedWebConfig(folders.PublishOutput, webRoot)
-                .Descendants("aspNetCore").Attributes("processPath").Single();
-
-            Assert.Equal(@"..\projectDir.exe", processPath);
+            Assert.Equal($@".\{projectName}.exe", processPath);
 
             Directory.Delete(folders.TestRoot, recursive: true);
         }
@@ -88,15 +52,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
         [InlineData("project.Dir")]
         public void PublishIIS_accepts_path_to_project_json_as_project_path(string projectDir)
         {
-            var webRoot = "wwwroot";
-            var folders = CreateTestDir("{}", webRoot, projectDir);
+            var folders = CreateTestDir("{}", projectDir);
 
-            new PublishIISCommand(folders.PublishOutput, Path.Combine(folders.ProjectPath, "project.json"), null).Run();
+            new PublishIISCommand(folders.PublishOutput, Path.Combine(folders.ProjectPath, "project.json")).Run();
 
-            var processPath = (string)GetPublishedWebConfig(folders.PublishOutput, webRoot)
+            var processPath = (string)GetPublishedWebConfig(folders.PublishOutput)
                 .Descendants("aspNetCore").Attributes("processPath").Single();
 
-            Assert.Equal($@"..\{projectDir}.exe", processPath);
+            Assert.Equal($@".\{projectDir}.exe", processPath);
 
             Directory.Delete(folders.TestRoot, recursive: true);
         }
@@ -104,10 +67,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
         [Fact]
         public void PublishIIS_modifies_existing_web_config()
         {
-            var webRoot = "wwwroot";
-            var folders = CreateTestDir("{}", webRoot);
+            var folders = CreateTestDir("{}");
 
-            File.WriteAllText(Path.Combine(folders.PublishOutput, webRoot, "web.config"),
+            File.WriteAllText(Path.Combine(folders.PublishOutput, "web.config"),
 @"<configuration>
   <system.webServer>
     <handlers>
@@ -117,35 +79,33 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
   </system.webServer>
 </configuration>");
 
-            new PublishIISCommand(folders.PublishOutput, Path.Combine(folders.ProjectPath, "project.json"), null).Run();
+            new PublishIISCommand(folders.PublishOutput, Path.Combine(folders.ProjectPath, "project.json")).Run();
 
-            var aspNetCoreElement = GetPublishedWebConfig(folders.PublishOutput, webRoot)
+            var aspNetCoreElement = GetPublishedWebConfig(folders.PublishOutput)
                 .Descendants("aspNetCore").Single();
 
-            Assert.Equal(@"..\projectDir.exe", (string)aspNetCoreElement.Attribute("processPath"));
+            Assert.Equal(@".\projectDir.exe", (string)aspNetCoreElement.Attribute("processPath"));
             Assert.Equal(@"1234", (string)aspNetCoreElement.Attribute("startupTimeLimit"));
 
             Directory.Delete(folders.TestRoot, recursive: true);
         }
 
-        private XDocument GetPublishedWebConfig(string publishOut, string webRoot)
+        private XDocument GetPublishedWebConfig(string publishOut)
         {
-            return XDocument.Load(Path.Combine(publishOut, webRoot, "web.config"));
+            return XDocument.Load(Path.Combine(publishOut, "web.config"));
         }
 
-        private Folders CreateTestDir(string projectJson, string webRoot, string projectDir = "projectDir")
+        private Folders CreateTestDir(string projectJson, string projectDir = "projectDir")
         {
             var testRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(testRoot);
 
             var projectPath = Path.Combine(testRoot, projectDir);
             Directory.CreateDirectory(projectPath);
-            Directory.CreateDirectory(Path.Combine(projectPath, webRoot));
             File.WriteAllText(Path.Combine(projectPath, "project.json"), projectJson);
 
             var publishOut = Path.Combine(testRoot, "publishOut");
             Directory.CreateDirectory(publishOut);
-            Directory.CreateDirectory(Path.Combine(publishOut, webRoot));
 
             return new Folders { TestRoot = testRoot, ProjectPath = projectPath, PublishOutput = publishOut };
         }

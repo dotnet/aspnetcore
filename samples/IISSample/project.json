@@ -9,25 +9,16 @@
   "compilationOptions": {
     "emitEntryPoint": true
   },
-  "commands": {
-    "web": "IISSample"
-  },
   "frameworks": {
     "net451": { },
     "netstandardapp1.5": {
-      "imports": "portable-net451+win8"
+      "dependencies": {
+          "NETStandard.Library": "1.5.0-*"
+        },
+      "imports": "dnxcore50"
     }
   },
-  "publishExclude": [
-    "node_modules",
-    "bower_components",
-    "**.xproj",
-    "**.user",
-    "**.vspscc"
-  ],
-  "exclude": [
-    "wwwroot",
-    "node_modules",
-    "bower_components"
+  "content": [
+    "web.config"
   ]
 }
