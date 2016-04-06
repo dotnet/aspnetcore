@@ -4,7 +4,7 @@
     "emitEntryPoint": true
   },
   "content": [
-    "wwwroot/**/*"
+    "web.config"
   ],
   "dependencies": {
     "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
