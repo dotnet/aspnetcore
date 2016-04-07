@@ -28,8 +28,12 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Runtime": { "type": "build" },
-        "System.Threading.Tasks": { "type": "build" }
+        "System.Runtime": {
+          "type": "build"
+        },
+        "System.Threading.Tasks": {
+          "type": "build"
+        }
       }
     },
     "netstandard1.3": {
@@ -50,7 +54,6 @@
         "System.Threading.Timer": "4.0.1-*"
       },
       "imports": [
-        "dotnet5.4",
         "portable-net45+win8"
       ]
     }
