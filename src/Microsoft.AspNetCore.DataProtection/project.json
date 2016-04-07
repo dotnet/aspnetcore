@@ -23,7 +23,9 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Runtime": { "type": "build" },
+        "System.Runtime": {
+          "type": "build"
+        },
         "System.Security": "",
         "System.Xml": "",
         "System.Xml.Linq": ""
@@ -36,10 +38,7 @@
         "System.Security.Claims": "4.0.1-*",
         "System.Security.Principal.Windows": "4.0.0-*",
         "System.Xml.XDocument": "4.0.11-*"
-      },
-      "imports": [
-        "dotnet5.4"
-      ]
+      }
     }
   },
   "compilationOptions": {

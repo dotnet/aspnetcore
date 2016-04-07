@@ -9,9 +9,9 @@
     "type": "git",
     "url": "git://github.com/aspnet/dataprotection"
   },
-  "dependencies": { },
+  "dependencies": {},
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netstandard1.3": {
       "dependencies": {
         "System.Diagnostics.Debug": "4.0.11-*",
@@ -20,10 +20,7 @@
         "System.Runtime.InteropServices": "4.1.0-*",
         "System.Security.Cryptography.Primitives": "4.0.0-*",
         "System.Threading": "4.0.11-*"
-      },
-      "imports": [
-        "dotnet5.4"
-      ]
+      }
     }
   },
   "compilationOptions": {

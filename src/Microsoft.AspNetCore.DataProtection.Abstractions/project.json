@@ -17,15 +17,12 @@
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netstandard1.3": {
       "dependencies": {
         "System.ComponentModel": "4.0.1-*",
         "System.Diagnostics.Debug": "4.0.11-*"
-      },
-      "imports": [
-        "dotnet5.4"
-      ]
+      }
     }
   },
   "compilationOptions": {
