@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             var builder = new WebHostBuilder()
                 .UseSetting("PORT", "12345")
                 .UseSetting("APPL_PATH", "/")
-                .UseIIS()
+                .UseIISIntegration()
                 .Configure(app =>
                 {
                     app.Run(context =>
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 .UseSetting("TOKEN", "TestToken")
                 .UseSetting("PORT", "12345")
                 .UseSetting("APPL_PATH", "/")
-                .UseIIS()
+                .UseIISIntegration()
                 .Configure(app =>
                 {
                     app.Run(context =>
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 .UseSetting("TOKEN", "TestToken")
                 .UseSetting("PORT", "12345")
                 .UseSetting("APPL_PATH", "/")
-                .UseIIS()
+                .UseIISIntegration()
                 .Configure(app =>
                 {
                     app.Run(context =>
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 .UseSetting("TOKEN", "TestToken")
                 .UseSetting("PORT", "12345")
                 .UseSetting("APPL_PATH", "/")
-                .UseIIS()
+                .UseIISIntegration()
                 .ConfigureServices(services =>
                 {
                     services.Configure<IISOptions>(options =>

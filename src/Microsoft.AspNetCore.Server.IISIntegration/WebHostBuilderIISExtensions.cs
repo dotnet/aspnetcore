@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    public static class IISWebHostExtensions
+    public static class WebHostBuilderIISExtensions
     {
         // These are defined as ASPNETCORE_ environment variables by IIS's AspNetCoreModule.
         private static readonly string ServerPort = "PORT";
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// </summary>
         /// <param name="app"></param>
         /// <returns></returns>
-        public static IWebHostBuilder UseIIS(this IWebHostBuilder app)
+        public static IWebHostBuilder UseIISIntegration(this IWebHostBuilder app)
         {
             if (app == null)
             {

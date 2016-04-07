@@ -11,7 +11,7 @@ namespace TestSites
         {
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
-                .UseIIS()
+                .UseIISIntegration()
                 .UseStartup("TestSites")
                 .UseKestrel()
                 .Build();
