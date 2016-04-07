@@ -27,10 +27,7 @@
         "System.Threading.Tasks": "4.0.11-*",
         "System.Threading.Timer": "4.0.1-*",
         "System.Threading.ThreadPool": "4.0.10-*"
-      },
-      "imports": [
-        "dotnet5.4"
-      ]
+      }
     }
   }
 }

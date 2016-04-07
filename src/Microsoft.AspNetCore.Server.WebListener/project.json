@@ -22,7 +22,6 @@
         "System.Security.Claims": "4.0.1-*"
       },
       "imports": [
-        "dotnet5.4",
         "portable-net451+win8"
       ]
     }
