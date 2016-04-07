@@ -24,10 +24,7 @@
       "dependencies": {
         "System.Collections": "4.0.11-*",
         "System.Resources.ResourceManager": "4.0.1-*"
-      },
-      "imports": [
-        "dotnet5.1"
-      ]
+      }
     }
   }
 }
