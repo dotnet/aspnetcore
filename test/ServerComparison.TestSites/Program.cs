@@ -12,7 +12,7 @@ namespace ServerComparison.TestSites
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseDefaultHostingConfiguration(args)
-                .UseIIS()
+                .UseIISIntegration()
                 .UseStartup("ServerComparison.TestSites")
                 .Build();
 
