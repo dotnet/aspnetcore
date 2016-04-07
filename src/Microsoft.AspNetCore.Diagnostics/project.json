@@ -5,7 +5,6 @@
     "aspnetcore",
     "diagnostics"
   ],
-
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
@@ -33,14 +32,11 @@
     "System.Diagnostics.DiagnosticSource": "4.0.0-*"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netstandard1.3": {
       "dependencies": {
         "System.Reflection.Extensions": "4.0.1-*"
-      },
-      "imports": [
-        "dotnet5.4"
-      ]
+      }
     }
   },
   "compileExclude": [

@@ -5,7 +5,6 @@
     "aspnetcore",
     "diagnostics"
   ],
-
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/diagnostics"
@@ -22,10 +21,7 @@
     "netstandard1.0": {
       "dependencies": {
         "System.Resources.ResourceManager": "4.0.1-*"
-      },
-      "imports": [
-        "dotnet5.1"
-      ]
+      }
     }
   }
 }
