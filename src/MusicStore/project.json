@@ -16,14 +16,12 @@
   "compile": [
     "../../shared/**/*.cs"
   ],
-  "tools": {
-    "dotnet-razor-tooling": "1.0.0-*"
-  },
   "content": [
     "Areas",
     "Views",
     "wwwroot",
-    "config.json"
+    "config.json",
+    "web.config"
   ],
   "dependencies": {
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
@@ -50,11 +48,6 @@
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
-    "System.IO": "4.1.0-*",
-    "System.Runtime": "4.1.0-*"
-  },
-  "commands": {
-    "web": "MusicStore"
   },
   "frameworks": {
     "net451": {},
