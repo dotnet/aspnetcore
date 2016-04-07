@@ -11,12 +11,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     /// <inheritdoc />
     public class TempDataDictionary : ITempDataDictionary
     {
+        // Perf: Everything here is lazy because the TempDataDictionary is frequently created and passed around
+        // without being manipulated.
         private Dictionary<string, object> _data;
         private bool _loaded;
         private readonly ITempDataProvider _provider;
         private readonly HttpContext _context;
-        private HashSet<string> _initialKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private HashSet<string> _retainedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private HashSet<string> _initialKeys;
+        private HashSet<string> _retainedKeys;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TempDataDictionary"/> class.
@@ -132,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 ? new Dictionary<string, object>(providerDictionary, StringComparer.OrdinalIgnoreCase)
                 : new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             _initialKeys = new HashSet<string>(_data.Keys, StringComparer.OrdinalIgnoreCase);
-            _retainedKeys.Clear();
+            _retainedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             _loaded = true;
         }
 
