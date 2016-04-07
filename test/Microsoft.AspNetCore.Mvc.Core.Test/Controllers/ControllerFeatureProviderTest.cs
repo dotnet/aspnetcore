@@ -121,6 +121,21 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             // Assert
             Assert.Empty(feature.Controllers);
         }
+        
+        [Fact]
+        public void ValueTypeClass_IsNotController()
+        {
+            // Arrange
+            var controllerType = typeof(int).GetTypeInfo();
+            var manager = GetApplicationPartManager(controllerType);
+            var feature = new ControllerFeature();
+
+            // Act
+            manager.PopulateFeature(feature);
+
+            // Assert
+            Assert.Empty(feature.Controllers);
+        }
 
         [Fact]
         public void AbstractClass_IsNotController()

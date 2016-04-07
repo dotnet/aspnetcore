@@ -35,6 +35,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         // The Attribute does apply to derived classes.
         [InlineData(typeof(WithAttribute), true)]
         [InlineData(typeof(DerivedWithAttribute), true)]
+        
+        // Value types cannot be view components
+        [InlineData(typeof(int), false)]
         public void IsComponent(Type type, bool expected)
         {
             // Arrange & Act

@@ -46,16 +46,12 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             }
 
             var controllerTypeInfo = controllerContext.ActionDescriptor.ControllerTypeInfo;
-            if (controllerTypeInfo.IsValueType ||
-                controllerTypeInfo.IsInterface ||
-                controllerTypeInfo.IsAbstract ||
-                (controllerTypeInfo.IsGenericType && controllerTypeInfo.IsGenericTypeDefinition))
-            {
-                var message = Resources.FormatValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated(
-                    controllerTypeInfo.FullName,
-                    GetType().FullName);
 
-                throw new InvalidOperationException(message);
+            if (controllerTypeInfo == null)
+            {
+                throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(controllerContext.ActionDescriptor.ControllerTypeInfo),
+                    nameof(ControllerContext.ActionDescriptor)));
             }
 
             var serviceProvider = controllerContext.HttpContext.RequestServices;

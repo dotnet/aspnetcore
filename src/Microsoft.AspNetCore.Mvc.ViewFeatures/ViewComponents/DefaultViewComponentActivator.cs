@@ -45,17 +45,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             }
 
             var componentType = context.ViewComponentDescriptor.TypeInfo;
-
-            if (componentType.IsValueType ||
-                componentType.IsInterface ||
-                componentType.IsAbstract ||
-                (componentType.IsGenericType && componentType.IsGenericTypeDefinition))
+            
+            if (componentType == null)
             {
-                var message = Resources.FormatValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated(
-                    componentType.FullName,
-                    GetType().FullName);
-
-                throw new InvalidOperationException(message);
+                throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(context.ViewComponentDescriptor.TypeInfo),
+                    nameof(context.ViewComponentDescriptor)));
             }
 
             var viewComponent = _typeActivatorCache.CreateInstance<object>(

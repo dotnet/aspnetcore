@@ -58,38 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             // Assert
             Assert.Equal(true, controller.Disposed);
         }
-
-        [Theory]
-        [InlineData(typeof(int))]
-        [InlineData(typeof(OpenGenericType<>))]
-        [InlineData(typeof(AbstractType))]
-        [InlineData(typeof(InterfaceType))]
-        public void CreateController_ThrowsIfControllerCannotBeActivated(Type type)
-        {
-            // Arrange
-            var actionDescriptor = new ControllerActionDescriptor
-            {
-                ControllerTypeInfo = type.GetTypeInfo()
-            };
-
-            var context = new ControllerContext()
-            {
-                ActionDescriptor = actionDescriptor,
-                HttpContext = new DefaultHttpContext()
-                {
-                    RequestServices = GetServices(),
-                },
-            };
-            var factory = new DefaultControllerActivator(new TypeActivatorCache());
-
-            // Act and Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => factory.Create(context));
-            Assert.Equal(
-                $"The type '{type.FullName}' cannot be activated by '{typeof(DefaultControllerActivator).FullName}' " +
-                "because it is either a value type, an interface, an abstract class or an open generic type.",
-                exception.Message);
-        }
-
+                
         [Fact]
         public void DefaultControllerActivator_ReleasesNonIDisposableController()
         {
@@ -171,18 +140,6 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         }
 
         private class TestService
-        {
-        }
-
-        private class OpenGenericType<T> : Controller
-        {
-        }
-
-        private abstract class AbstractType : Controller
-        {
-        }
-
-        private interface InterfaceType
         {
         }
 
