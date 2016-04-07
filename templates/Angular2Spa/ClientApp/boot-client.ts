@@ -1,4 +1,4 @@
-import 'angular2/bundles/angular2-polyfills.js';
+import 'angular2-universal-preview/polyfills';
 import 'bootstrap';
 import './styles/site.css';
 
