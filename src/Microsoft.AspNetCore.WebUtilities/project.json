@@ -24,7 +24,9 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Runtime": { "type": "build" }
+        "System.Runtime": {
+          "type": "build"
+        }
       }
     },
     "netstandard1.3": {
@@ -32,10 +34,7 @@
         "System.Collections": "4.0.11-*",
         "System.IO": "4.1.0-*",
         "System.IO.FileSystem": "4.0.1-*"
-      },
-      "imports": [
-        "dotnet5.4"
-      ]
+      }
     }
   }
 }
