@@ -63,8 +63,13 @@ namespace Microsoft.AspNetCore.Routing.Template
 
         public RouteTemplate Template { get; }
 
-        public RouteValueDictionary Match(PathString path)
+        public bool TryMatch(PathString path, RouteValueDictionary values)
         {
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
             var i = 0;
             var pathTokenizer = new PathTokenizer(path);
 
@@ -84,7 +89,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 {
                     // If pathSegment is null, then we're out of route segments. All we can match is the empty
                     // string.
-                    return null;
+                    return false;
                 }
                 else if (routeSegment.IsSimple && routeSegment.Parts[0].IsLiteral)
                 {
@@ -92,7 +97,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                     var part = routeSegment.Parts[0];
                     if (!requestSegment.Equals(part.Text, StringComparison.OrdinalIgnoreCase))
                     {
-                        return null;
+                        return false;
                     }
                 }
                 else if (routeSegment.IsSimple && routeSegment.Parts[0].IsCatchAll)
@@ -111,7 +116,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                         !part.IsOptional)
                     {
                         // There's no value for this parameter, the route can't match.
-                        return null;
+                        return false;
                     }
                 }
                 else
@@ -134,14 +139,14 @@ namespace Microsoft.AspNetCore.Routing.Template
                 {
                     // If the segment is a complex segment, it MUST contain literals, and we've parsed the full
                     // path so far, so it can't match.
-                    return null;
+                    return false;
                 }
 
                 var part = routeSegment.Parts[0];
                 if (part.IsLiteral)
                 {
                     // If the segment is a simple literal - which need the URL to provide a value, so we don't match.
-                    return null;
+                    return false;
                 }
 
                 if (part.IsCatchAll)
@@ -158,12 +163,11 @@ namespace Microsoft.AspNetCore.Routing.Template
                 if (!_hasDefaultValue[i] && !part.IsOptional)
                 {
                     // There's no default for this (non-optional) parameter so it can't match.
-                    return null;
+                    return false;
                 }
             }
 
             // At this point we've very likely got a match, so start capturing values for real.
-            var values = new RouteValueDictionary();
 
             i = 0;
             foreach (var requestSegment in pathTokenizer)
@@ -177,12 +181,12 @@ namespace Microsoft.AspNetCore.Routing.Template
                     var captured = requestSegment.Buffer.Substring(requestSegment.Offset);
                     if (captured.Length > 0)
                     {
-                        values.Add(part.Name, captured);
+                        values[part.Name] = captured;
                     }
                     else
                     {
                         // It's ok for a catch-all to produce a null value, so we don't check _hasDefaultValue.
-                        values.Add(part.Name, _defaultValues[i]);
+                        values[part.Name] =_defaultValues[i];
                     }
 
                     // A catch-all has to be the last part, so we're done.
@@ -195,13 +199,13 @@ namespace Microsoft.AspNetCore.Routing.Template
                     var part = routeSegment.Parts[0];
                     if (requestSegment.Length > 0)
                     {
-                        values.Add(part.Name, requestSegment.ToString());
+                        values[part.Name] = requestSegment.ToString();
                     }
                     else
                     {
                         if (_hasDefaultValue[i])
                         {
-                            values.Add(part.Name, _defaultValues[i]);
+                            values[part.Name] = _defaultValues[i];
                         }
                     }
                 }
@@ -209,7 +213,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 {
                     if (!MatchComplexSegment(routeSegment, requestSegment.ToString(), Defaults, values))
                     {
-                        return null;
+                        return false;
                     }
                 }
             }
@@ -228,7 +232,12 @@ namespace Microsoft.AspNetCore.Routing.Template
                 // It's ok for a catch-all to produce a null value
                 if (_hasDefaultValue[i] || part.IsCatchAll)
                 {
-                    values.Add(part.Name, _defaultValues[i]);
+                    // Don't trounce an existing value with a null.
+                    var defaultValue = _defaultValues[i];
+                    if (defaultValue != null || !values.ContainsKey(part.Name))
+                    {
+                        values[part.Name] = _defaultValues[i];
+                    }
                 }
             }
 
@@ -241,7 +250,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 }
             }
 
-            return values;
+            return true;
         }
 
         private bool MatchComplexSegment(

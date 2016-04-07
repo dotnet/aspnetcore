@@ -82,9 +82,8 @@ namespace Microsoft.AspNetCore.Routing
             EnsureLoggers(context.HttpContext);
 
             var requestPath = context.HttpContext.Request.Path;
-            var values = _matcher.Match(requestPath);
 
-            if (values == null)
+            if (!_matcher.TryMatch(requestPath, context.RouteData.Values))
             {
                 // If we got back a null value set, that means the URI did not match
                 return TaskCache.CompletedTask;
@@ -95,11 +94,6 @@ namespace Microsoft.AspNetCore.Routing
             if (DataTokens.Count > 0)
             {
                 MergeValues(context.RouteData.DataTokens, DataTokens);
-            }
-
-            if (values.Count > 0)
-            {
-                MergeValues(context.RouteData.Values, values);
             }
 
             if (!RouteConstraintMatcher.Match(

@@ -166,36 +166,37 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
                 var treeEnumerator = new TreeEnumerator(root, tokenizer);
 
+                // Create a snapshot before processing the route. We'll restore this snapshot before running each
+                // to restore the state. This is likely an "empty" snapshot, which doesn't allocate.
+                var snapshot = context.RouteData.PushState(router: null, values: null, dataTokens: null);
+
                 while (treeEnumerator.MoveNext())
                 {
                     var node = treeEnumerator.Current;
                     foreach (var item in node.Matches)
                     {
-                        var values = item.TemplateMatcher.Match(context.HttpContext.Request.Path);
-                        if (values == null)
+                        if (!item.TemplateMatcher.TryMatch(context.HttpContext.Request.Path, context.RouteData.Values))
                         {
                             continue;
                         }
 
-                        var match = new TemplateMatch(item, values);
-                        var snapshot = context.RouteData.PushState(match.Entry.Target, match.Values, dataTokens: null);
-
                         try
                         {
                             if (!RouteConstraintMatcher.Match(
-                                    match.Entry.Constraints,
-                                    context.RouteData.Values,
-                                    context.HttpContext,
-                                    this,
-                                    RouteDirection.IncomingRequest,
-                                    _constraintLogger))
+                                item.Constraints,
+                                context.RouteData.Values,
+                                context.HttpContext,
+                                this,
+                                RouteDirection.IncomingRequest,
+                                _constraintLogger))
                             {
                                 continue;
                             }
 
-                            _logger.MatchedRoute(match.Entry.RouteName, match.Entry.RouteTemplate.TemplateText);
+                            _logger.MatchedRoute(item.RouteName, item.RouteTemplate.TemplateText);
 
-                            await match.Entry.Target.RouteAsync(context);
+                            context.RouteData.Routers.Add(item.Target);
+                            await item.Target.RouteAsync(context);
                             if (context.Handler != null)
                             {
                                 return;
@@ -312,54 +313,6 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 _stack.Clear();
                 Current = null;
                 _segmentIndex = -1;
-            }
-        }
-
-        private struct TemplateMatch : IEquatable<TemplateMatch>
-        {
-            public TemplateMatch(TreeRouteMatchingEntry entry, RouteValueDictionary values)
-            {
-                Entry = entry;
-                Values = values;
-            }
-
-            public TreeRouteMatchingEntry Entry { get; }
-
-            public RouteValueDictionary Values { get; }
-
-            public override bool Equals(object obj)
-            {
-                if (obj is TemplateMatch)
-                {
-                    return Equals((TemplateMatch)obj);
-                }
-
-                return false;
-            }
-
-            public bool Equals(TemplateMatch other)
-            {
-                return
-                    object.ReferenceEquals(Entry, other.Entry) &&
-                    object.ReferenceEquals(Values, other.Values);
-            }
-
-            public override int GetHashCode()
-            {
-                var hash = new HashCodeCombiner();
-                hash.Add(Entry);
-                hash.Add(Values);
-                return hash.CombinedHash;
-            }
-
-            public static bool operator ==(TemplateMatch left, TemplateMatch right)
-            {
-                return left.Equals(right);
-            }
-
-            public static bool operator !=(TemplateMatch left, TemplateMatch right)
-            {
-                return !left.Equals(right);
             }
         }
 

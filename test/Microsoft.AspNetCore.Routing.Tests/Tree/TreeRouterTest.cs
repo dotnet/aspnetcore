@@ -1533,7 +1533,6 @@ namespace Microsoft.AspNetCore.Routing.Tree
             // Assert
             Assert.NotEqual(nestedValues, context.RouteData.Values);
 
-            // The new routedata is a copy
             Assert.Equal("Index", context.RouteData.Values["action"]);
             Assert.Equal("Index", nestedValues["action"]);
             Assert.DoesNotContain(context.RouteData.Values, kvp => kvp.Key == "test_route_group");

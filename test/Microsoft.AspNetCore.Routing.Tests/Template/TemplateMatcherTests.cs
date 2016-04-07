@@ -14,88 +14,103 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         private static IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
 
         [Fact]
-        public void MatchSingleRoute()
+        public void TryMatch_Success()
         {
             // Arrange
             var matcher = CreateMatcher("{controller}/{action}/{id}");
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var match = matcher.Match("/Bank/DoAction/123");
+            var match = matcher.TryMatch("/Bank/DoAction/123", values);
 
             // Assert
-            Assert.NotNull(match);
-            Assert.Equal("Bank", match["controller"]);
-            Assert.Equal("DoAction", match["action"]);
-            Assert.Equal("123", match["id"]);
+            Assert.True(match);
+            Assert.Equal("Bank", values["controller"]);
+            Assert.Equal("DoAction", values["action"]);
+            Assert.Equal("123", values["id"]);
         }
 
         [Fact]
-        public void NoMatchSingleRoute()
+        public void TryMatch_Fails()
         {
             // Arrange
             var matcher = CreateMatcher("{controller}/{action}/{id}");
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var match = matcher.Match("/Bank/DoAction");
+            var match = matcher.TryMatch("/Bank/DoAction", values);
 
             // Assert
-            Assert.Null(match);
+            Assert.False(match);
         }
 
         [Fact]
-        public void MatchSingleRouteWithDefaults()
+        public void TryMatch_WithDefaults_Success()
         {
             // Arrange
             var matcher = CreateMatcher("{controller}/{action}/{id}", new { id = "default id" });
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/Bank/DoAction");
+            var match = matcher.TryMatch("/Bank/DoAction", values);
 
             // Assert
-            Assert.Equal("Bank", rd["controller"]);
-            Assert.Equal("DoAction", rd["action"]);
-            Assert.Equal("default id", rd["id"]);
+            Assert.True(match);
+            Assert.Equal("Bank", values["controller"]);
+            Assert.Equal("DoAction", values["action"]);
+            Assert.Equal("default id", values["id"]);
         }
 
         [Fact]
-        public void NoMatchSingleRouteWithDefaults()
+        public void TryMatch_WithDefaults_Fails()
         {
             // Arrange
             var matcher = CreateMatcher("{controller}/{action}/{id}", new { id = "default id" });
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/Bank");
+            var match = matcher.TryMatch("/Bank", values);
 
             // Assert
-            Assert.Null(rd);
+            Assert.False(match);
         }
 
         [Fact]
-        public void MatchRouteWithLiterals()
+        public void TryMatch_WithLiterals_Success()
         {
             // Arrange
             var matcher = CreateMatcher("moo/{p1}/bar/{p2}", new { p2 = "default p2" });
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/moo/111/bar/222");
+            var match = matcher.TryMatch("/moo/111/bar/222", values);
 
             // Assert
-            Assert.Equal("111", rd["p1"]);
-            Assert.Equal("222", rd["p2"]);
+            Assert.True(match);
+            Assert.Equal("111", values["p1"]);
+            Assert.Equal("222", values["p2"]);
         }
 
         [Fact]
-        public void MatchRouteWithLiteralsAndDefaults()
+        public void TryMatch_RouteWithLiteralsAndDefaults_Success()
         {
             // Arrange
             var matcher = CreateMatcher("moo/{p1}/bar/{p2}", new { p2 = "default p2" });
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/moo/111/bar/");
+            var match = matcher.TryMatch("/moo/111/bar/", values);
 
             // Assert
-            Assert.Equal("111", rd["p1"]);
-            Assert.Equal("default p2", rd["p2"]);
+            Assert.True(match);
+            Assert.Equal("111", values["p1"]);
+            Assert.Equal("default p2", values["p2"]);
         }
 
         [Theory]
@@ -103,54 +118,60 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData(@"{p1:regex(^\w+\@\w+\.\w+)}", "/asd@assds.com")] // email
         [InlineData(@"{p1:regex(([}}])\w+)}", "/}sda")] // Not balanced }
         [InlineData(@"{p1:regex(([{{)])\w+)}", "/})sda")] // Not balanced {
-        public void MatchRoute_RegularExpression_Valid(
+        public void TryMatch_RegularExpressionConstraint_Valid(
             string template,
             string path)
         {
             // Arrange
             var matcher = CreateMatcher(template);
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match(path);
+            var match = matcher.TryMatch(path, values);
 
             // Assert
-            Assert.NotNull(rd);
+            Assert.True(match);
         }
 
         [Theory]
-        [InlineData("moo/{p1}.{p2?}", "/moo/foo.bar", "foo", "bar")]
-        [InlineData("moo/{p1?}", "/moo/foo", "foo", null)]
-        [InlineData("moo/{p1?}", "/moo", null, null)]
-        [InlineData("moo/{p1}.{p2?}", "/moo/foo", "foo", null)]
-        [InlineData("moo/{p1}.{p2?}", "/moo/foo..bar", "foo.", "bar")]
-        [InlineData("moo/{p1}.{p2?}", "/moo/foo.moo.bar", "foo.moo", "bar")]
-        [InlineData("moo/{p1}.{p2}", "/moo/foo.bar", "foo", "bar")]
-        [InlineData("moo/foo.{p1}.{p2?}", "/moo/foo.moo.bar", "moo", "bar")]
-        [InlineData("moo/foo.{p1}.{p2?}", "/moo/foo.moo", "moo", null)]
-        [InlineData("moo/.{p2?}", "/moo/.foo", null, "foo")]
-        [InlineData("moo/.{p2?}", "/moo", null, null)]
-        [InlineData("moo/{p1}.{p2?}", "/moo/....", "..", ".")]
-        [InlineData("moo/{p1}.{p2?}", "/moo/.bar", ".bar", null)]
-        public void MatchRoute_OptionalParameter_FollowedByPeriod_Valid(
+        [InlineData("moo/{p1}.{p2?}", "/moo/foo.bar", true, "foo", "bar")]
+        [InlineData("moo/{p1?}", "/moo/foo", true, "foo", null)]
+        [InlineData("moo/{p1?}", "/moo", true, null, null)]
+        [InlineData("moo/{p1}.{p2?}", "/moo/foo", true, "foo", null)]
+        [InlineData("moo/{p1}.{p2?}", "/moo/foo..bar", true, "foo.", "bar")]
+        [InlineData("moo/{p1}.{p2?}", "/moo/foo.moo.bar", true, "foo.moo", "bar")]
+        [InlineData("moo/{p1}.{p2}", "/moo/foo.bar", true, "foo", "bar")]
+        [InlineData("moo/foo.{p1}.{p2?}", "/moo/foo.moo.bar", true, "moo", "bar")]
+        [InlineData("moo/foo.{p1}.{p2?}", "/moo/foo.moo", true, "moo", null)]
+        [InlineData("moo/.{p2?}", "/moo/.foo", true, null, "foo")]
+        [InlineData("moo/.{p2?}", "/moo", false, null, null)]
+        [InlineData("moo/{p1}.{p2?}", "/moo/....", true, "..", ".")]
+        [InlineData("moo/{p1}.{p2?}", "/moo/.bar", true, ".bar", null)]
+        public void TryMatch_OptionalParameter_FollowedByPeriod_Valid(
             string template,
             string path,
+            bool expectedMatch,
             string p1,
             string p2)
         {
             // Arrange
             var matcher = CreateMatcher(template);
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match(path);
+            var match = matcher.TryMatch(path, values);
 
             // Assert
+            Assert.Equal(expectedMatch, match);
             if (p1 != null)
             {
-                Assert.Equal(p1, rd["p1"]);
+                Assert.Equal(p1, values["p1"]);
             }
             if (p2 != null)
             {
-                Assert.Equal(p2, rd["p2"]);
+                Assert.Equal(p2, values["p2"]);
             }
         }
 
@@ -162,7 +183,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData("{p1}.{p2?}/{p3}", "/foo/bar", "foo", null, "bar")]
         [InlineData("{p1}.{p2?}/{p3}", "/.foo/bar", ".foo", null, "bar")]
         [InlineData("{p1}/{p2}/{p3?}", "/foo/bar/baz", "foo", "bar", "baz")]
-        public void MatchRoute_OptionalParameter_FollowedByPeriod_3Parameters_Valid(
+        public void TryMatch_OptionalParameter_FollowedByPeriod_3Parameters_Valid(
             string template,
             string path,
             string p1,
@@ -172,20 +193,23 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             // Arrange
             var matcher = CreateMatcher(template);
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match(path);
+            var match = matcher.TryMatch(path, values);
 
             // Assert
-            Assert.Equal(p1, rd["p1"]);
+            Assert.True(match);
+            Assert.Equal(p1, values["p1"]);
 
             if (p2 != null)
             {
-                Assert.Equal(p2, rd["p2"]);
+                Assert.Equal(p2, values["p2"]);
             }
 
             if (p3 != null)
             {
-                Assert.Equal(p3, rd["p3"]);
+                Assert.Equal(p3, values["p3"]);
             }
         }
 
@@ -202,125 +226,143 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData("{p1}.{p2?}/{p3}", "/foo./bar")]
         [InlineData("moo/.{p2?}", "/moo/.")]
         [InlineData("{p1}.{p2}/{p3}", "/.foo/bar")]
-        public void MatchRoute_OptionalParameter_FollowedByPeriod_Invalid(string template, string path)
+        public void TryMatch_OptionalParameter_FollowedByPeriod_Invalid(string template, string path)
         {
             // Arrange
             var matcher = CreateMatcher(template);
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match(path);
+            var match = matcher.TryMatch(path, values);
 
             // Assert
-            Assert.Null(rd);
+            Assert.False(match);
         }
 
         [Fact]
-        public void MatchRouteWithOnlyLiterals()
+        public void TryMatch_RouteWithOnlyLiterals_Success()
         {
             // Arrange
             var matcher = CreateMatcher("moo/bar");
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/moo/bar");
+            var match = matcher.TryMatch("/moo/bar", values);
 
             // Assert
-            Assert.NotNull(rd);
-            Assert.Equal<int>(0, rd.Count);
+            Assert.True(match);
+            Assert.Empty(values);
         }
 
         [Fact]
-        public void NoMatchRouteWithOnlyLiterals()
+        public void TryMatch_RouteWithOnlyLiterals_Fails()
         {
             // Arrange
             var matcher = CreateMatcher("moo/bars");
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/moo/bar");
+            var match = matcher.TryMatch("/moo/bar", values);
 
             // Assert
-            Assert.Null(rd);
+            Assert.False(match);
         }
 
         [Fact]
-        public void MatchRouteWithExtraSeparators()
+        public void TryMatch_RouteWithExtraSeparators_Success()
         {
             // Arrange
             var matcher = CreateMatcher("moo/bar");
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/moo/bar/");
+            var match = matcher.TryMatch("/moo/bar/", values);
 
             // Assert
-            Assert.NotNull(rd);
-            Assert.Equal<int>(0, rd.Count);
+            Assert.True(match);
+            Assert.Empty(values);
         }
 
         [Fact]
-        public void MatchRouteUrlWithExtraSeparators()
+        public void TryMatch_UrlWithExtraSeparators_Success()
         {
             // Arrange
             var matcher = CreateMatcher("moo/bar/");
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/moo/bar");
+            var match = matcher.TryMatch("/moo/bar", values);
 
             // Assert
-            Assert.NotNull(rd);
-            Assert.Equal<int>(0, rd.Count);
+            Assert.True(match);
+            Assert.Empty(values);
         }
 
         [Fact]
-        public void MatchRouteUrlWithParametersAndExtraSeparators()
+        public void TryMatch_RouteWithParametersAndExtraSeparators_Success()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{p2}/");
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/moo/bar");
+            var match = matcher.TryMatch("/moo/bar", values);
 
             // Assert
-            Assert.NotNull(rd);
-            Assert.Equal("moo", rd["p1"]);
-            Assert.Equal("bar", rd["p2"]);
+            Assert.True(match);
+            Assert.Equal("moo", values["p1"]);
+            Assert.Equal("bar", values["p2"]);
         }
 
         [Fact]
-        public void NoMatchRouteUrlWithDifferentLiterals()
+        public void TryMatch_RouteWithDifferentLiterals_Fails()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{p2}/baz");
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/moo/bar/boo");
+            var match = matcher.TryMatch("/moo/bar/boo", values);
 
             // Assert
-            Assert.Null(rd);
+            Assert.False(match);
         }
 
         [Fact]
-        public void NoMatchLongerUrl()
+        public void TryMatch_LongerUrl_Fails()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}");
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/moo/bar");
+            var match = matcher.TryMatch("/moo/bar", values);
 
             // Assert
-            Assert.Null(rd);
+            Assert.False(match);
         }
 
         [Fact]
-        public void MatchSimpleFilename()
+        public void TryMatch_SimpleFilename_Success()
         {
             // Arrange
             var matcher = CreateMatcher("DEFAULT.ASPX");
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/default.aspx");
+            var match = matcher.TryMatch("/default.aspx", values);
 
             // Assert
-            Assert.NotNull(rd);
+            Assert.True(match);
         }
 
         [Theory]
@@ -332,57 +374,63 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData("{prefix}xyz{suffix}", "/xyzxyzxyz")]
         [InlineData("{prefix}aa{suffix}", "/aaaaa")]
         [InlineData("{prefix}aaa{suffix}", "/aaaaa")]
-        public void VerifyRouteMatchesWithContext(string template, string path)
+        public void TryMatch_RouteWithComplexSegment_Success(string template, string path)
         {
             var matcher = CreateMatcher(template);
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match(path);
+            var match = matcher.TryMatch(path, values);
 
             // Assert
-            Assert.NotNull(rd);
+            Assert.True(match);
         }
 
         [Fact]
-        public void MatchRouteWithExtraDefaultValues()
+        public void TryMatch_RouteWithExtraDefaultValues_Success()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{p2}", new { p2 = (string)null, foo = "bar" });
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/v1");
+            var match = matcher.TryMatch("/v1", values);
 
             // Assert
-            Assert.NotNull(rd);
-            Assert.Equal<int>(3, rd.Count);
-            Assert.Equal("v1", rd["p1"]);
-            Assert.Null(rd["p2"]);
-            Assert.Equal("bar", rd["foo"]);
+            Assert.True(match);
+            Assert.Equal<int>(3, values.Count);
+            Assert.Equal("v1", values["p1"]);
+            Assert.Null(values["p2"]);
+            Assert.Equal("bar", values["foo"]);
         }
 
         [Fact]
-        public void MatchPrettyRouteWithExtraDefaultValues()
+        public void TryMatch_PrettyRouteWithExtraDefaultValues_Success()
         {
             // Arrange
             var matcher = CreateMatcher(
                 "date/{y}/{m}/{d}",
                 new { controller = "blog", action = "showpost", m = (string)null, d = (string)null });
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/date/2007/08");
+            var match = matcher.TryMatch("/date/2007/08", values);
 
             // Assert
-            Assert.NotNull(rd);
-            Assert.Equal<int>(5, rd.Count);
-            Assert.Equal("blog", rd["controller"]);
-            Assert.Equal("showpost", rd["action"]);
-            Assert.Equal("2007", rd["y"]);
-            Assert.Equal("08", rd["m"]);
-            Assert.Null(rd["d"]);
+            Assert.True(match);
+            Assert.Equal<int>(5, values.Count);
+            Assert.Equal("blog", values["controller"]);
+            Assert.Equal("showpost", values["action"]);
+            Assert.Equal("2007", values["y"]);
+            Assert.Equal("08", values["m"]);
+            Assert.Null(values["d"]);
         }
 
         [Fact]
-        public void GetRouteDataWithMultiSegmentParamsOnBothEndsMatches()
+        public void TryMatch_WithMultiSegmentParamsOnBothEndsMatches()
         {
             RunTest(
                 "language/{lang}-{region}",
@@ -392,7 +440,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithMultiSegmentParamsOnLeftEndMatches()
+        public void TryMatch_WithMultiSegmentParamsOnLeftEndMatches()
         {
             RunTest(
                 "language/{lang}-{region}a",
@@ -402,7 +450,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithMultiSegmentParamsOnRightEndMatches()
+        public void TryMatch_WithMultiSegmentParamsOnRightEndMatches()
         {
             RunTest(
                 "language/a{lang}-{region}",
@@ -412,7 +460,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithMultiSegmentParamsOnNeitherEndMatches()
+        public void TryMatch_WithMultiSegmentParamsOnNeitherEndMatches()
         {
             RunTest(
                 "language/a{lang}-{region}a",
@@ -422,7 +470,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithMultiSegmentParamsOnNeitherEndDoesNotMatch()
+        public void TryMatch_WithMultiSegmentParamsOnNeitherEndDoesNotMatch()
         {
             RunTest(
                 "language/a{lang}-{region}a",
@@ -432,7 +480,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithMultiSegmentParamsOnNeitherEndDoesNotMatch2()
+        public void TryMatch_WithMultiSegmentParamsOnNeitherEndDoesNotMatch2()
         {
             RunTest(
                 "language/a{lang}-{region}a",
@@ -442,7 +490,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithSimpleMultiSegmentParamsOnBothEndsMatches()
+        public void TryMatch_WithSimpleMultiSegmentParamsOnBothEndsMatches()
         {
             RunTest(
                 "language/{lang}",
@@ -452,7 +500,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithSimpleMultiSegmentParamsOnBothEndsTrailingSlashDoesNotMatch()
+        public void TryMatch_WithSimpleMultiSegmentParamsOnBothEndsTrailingSlashDoesNotMatch()
         {
             RunTest(
                 "language/{lang}",
@@ -462,7 +510,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithSimpleMultiSegmentParamsOnBothEndsDoesNotMatch()
+        public void TryMatch_WithSimpleMultiSegmentParamsOnBothEndsDoesNotMatch()
         {
             RunTest(
                 "language/{lang}",
@@ -472,7 +520,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithSimpleMultiSegmentParamsOnLeftEndMatches()
+        public void TryMatch_WithSimpleMultiSegmentParamsOnLeftEndMatches()
         {
             RunTest(
                 "language/{lang}-",
@@ -482,7 +530,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithSimpleMultiSegmentParamsOnRightEndMatches()
+        public void TryMatch_WithSimpleMultiSegmentParamsOnRightEndMatches()
         {
             RunTest(
                 "language/a{lang}",
@@ -492,7 +540,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithSimpleMultiSegmentParamsOnNeitherEndMatches()
+        public void TryMatch_WithSimpleMultiSegmentParamsOnNeitherEndMatches()
         {
             RunTest(
                 "language/a{lang}a",
@@ -502,7 +550,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithMultiSegmentStandardMvcRouteMatches()
+        public void TryMatch_WithMultiSegmentStandamatchMvcRouteMatches()
         {
             RunTest(
                 "{controller}.mvc/{action}/{id}",
@@ -512,7 +560,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithMultiSegmentParamsOnBothEndsWithDefaultValuesMatches()
+        public void TryMatch_WithMultiSegmentParamsOnBothEndsWithDefaultValuesMatches()
         {
             RunTest(
                 "language/{lang}-{region}",
@@ -522,7 +570,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithMultiSegmentWithRepeatedDots()
+        public void TryMatch_WithUrlWithMultiSegmentWithRepeatedDots()
         {
             RunTest(
                 "{Controller}..mvc/{id}/{Param1}",
@@ -532,7 +580,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithTwoRepeatedDots()
+        public void TryMatch_WithUrlWithTwoRepeatedDots()
         {
             RunTest(
                 "{Controller}.mvc/../{action}",
@@ -542,7 +590,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithThreeRepeatedDots()
+        public void TryMatch_WithUrlWithThreeRepeatedDots()
         {
             RunTest(
                 "{Controller}.mvc/.../{action}",
@@ -552,7 +600,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithManyRepeatedDots()
+        public void TryMatch_WithUrlWithManyRepeatedDots()
         {
             RunTest(
                 "{Controller}.mvc/../../../{action}",
@@ -562,7 +610,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithExclamationPoint()
+        public void TryMatch_WithUrlWithExclamationPoint()
         {
             RunTest(
                 "{Controller}.mvc!/{action}",
@@ -572,7 +620,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithStartingDotDotSlash()
+        public void TryMatch_WithUrlWithStartingDotDotSlash()
         {
             RunTest(
                 "../{Controller}.mvc",
@@ -582,7 +630,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithStartingBackslash()
+        public void TryMatch_WithUrlWithStartingBackslash()
         {
             RunTest(
                 @"\{Controller}.mvc",
@@ -592,7 +640,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithBackslashSeparators()
+        public void TryMatch_WithUrlWithBackslashSeparators()
         {
             RunTest(
                 @"{Controller}.mvc\{id}\{Param1}",
@@ -602,7 +650,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithParenthesesLiterals()
+        public void TryMatch_WithUrlWithParenthesesLiterals()
         {
             RunTest(
                 @"(Controller).mvc",
@@ -612,7 +660,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithTrailingSlashSpace()
+        public void TryMatch_WithUrlWithTrailingSlashSpace()
         {
             RunTest(
                 @"Controller.mvc/ ",
@@ -622,7 +670,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithTrailingSpace()
+        public void TryMatch_WithUrlWithTrailingSpace()
         {
             RunTest(
                 @"Controller.mvc ",
@@ -632,7 +680,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithCatchAllCapturesDots()
+        public void TryMatch_WithCatchAllCapturesDots()
         {
             // DevDiv Bugs 189892: UrlRouting: Catch all parameter cannot capture url segments that contain the "."
             RunTest(
@@ -649,87 +697,97 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void RouteWithCatchAllClauseCapturesManySlashes()
+        public void TryMatch_RouteWithCatchAllClauseCapturesManySlashes()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{*p2}");
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/v1/v2/v3");
+            var match = matcher.TryMatch("/v1/v2/v3", values);
 
             // Assert
-            Assert.NotNull(rd);
-            Assert.Equal<int>(2, rd.Count);
-            Assert.Equal("v1", rd["p1"]);
-            Assert.Equal("v2/v3", rd["p2"]);
+            Assert.True(match);
+            Assert.Equal<int>(2, values.Count);
+            Assert.Equal("v1", values["p1"]);
+            Assert.Equal("v2/v3", values["p2"]);
         }
 
         [Fact]
-        public void RouteWithCatchAllClauseCapturesTrailingSlash()
+        public void TryMatch_RouteWithCatchAllClauseCapturesTrailingSlash()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{*p2}");
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/v1/");
+            var match = matcher.TryMatch("/v1/", values);
 
             // Assert
-            Assert.NotNull(rd);
-            Assert.Equal<int>(2, rd.Count);
-            Assert.Equal("v1", rd["p1"]);
-            Assert.Null(rd["p2"]);
+            Assert.True(match);
+            Assert.Equal<int>(2, values.Count);
+            Assert.Equal("v1", values["p1"]);
+            Assert.Null(values["p2"]);
         }
 
         [Fact]
-        public void RouteWithCatchAllClauseCapturesEmptyContent()
+        public void TryMatch_RouteWithCatchAllClauseCapturesEmptyContent()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{*p2}");
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/v1");
+            var match = matcher.TryMatch("/v1", values);
 
             // Assert
-            Assert.NotNull(rd);
-            Assert.Equal<int>(2, rd.Count);
-            Assert.Equal("v1", rd["p1"]);
-            Assert.Null(rd["p2"]);
+            Assert.True(match);
+            Assert.Equal<int>(2, values.Count);
+            Assert.Equal("v1", values["p1"]);
+            Assert.Null(values["p2"]);
         }
 
         [Fact]
-        public void RouteWithCatchAllClauseUsesDefaultValueForEmptyContent()
+        public void TryMatch_RouteWithCatchAllClauseUsesDefaultValueForEmptyContent()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{*p2}", new { p2 = "catchall" });
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/v1");
+            var match = matcher.TryMatch("/v1", values);
 
             // Assert
-            Assert.NotNull(rd);
-            Assert.Equal<int>(2, rd.Count);
-            Assert.Equal("v1", rd["p1"]);
-            Assert.Equal("catchall", rd["p2"]);
+            Assert.True(match);
+            Assert.Equal<int>(2, values.Count);
+            Assert.Equal("v1", values["p1"]);
+            Assert.Equal("catchall", values["p2"]);
         }
 
         [Fact]
-        public void RouteWithCatchAllClauseIgnoresDefaultValueForNonEmptyContent()
+        public void TryMatch_RouteWithCatchAllClauseIgnoresDefaultValueForNonEmptyContent()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{*p2}", new { p2 = "catchall" });
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var rd = matcher.Match("/v1/hello/whatever");
+            var match = matcher.TryMatch("/v1/hello/whatever", values);
 
             // Assert
-            Assert.NotNull(rd);
-            Assert.Equal<int>(2, rd.Count);
-            Assert.Equal("v1", rd["p1"]);
-            Assert.Equal("hello/whatever", rd["p2"]);
+            Assert.True(match);
+            Assert.Equal<int>(2, values.Count);
+            Assert.Equal("v1", values["p1"]);
+            Assert.Equal("hello/whatever", values["p2"]);
         }
 
         [Fact]
-        public void GetRouteDataDoesNotMatchOnlyLeftLiteralMatch()
+        public void TryMatch_DoesNotMatchOnlyLeftLiteralMatch()
         {
             // DevDiv Bugs 191180: UrlRouting: Wrong template getting matched if a url segment is a substring of the requested url
             RunTest(
@@ -740,7 +798,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataDoesNotMatchOnlyRightLiteralMatch()
+        public void TryMatch_DoesNotMatchOnlyRightLiteralMatch()
         {
             // DevDiv Bugs 191180: UrlRouting: Wrong template getting matched if a url segment is a substring of the requested url
             RunTest(
@@ -751,7 +809,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataDoesNotMatchMiddleLiteralMatch()
+        public void TryMatch_DoesNotMatchMiddleLiteralMatch()
         {
             // DevDiv Bugs 191180: UrlRouting: Wrong template getting matched if a url segment is a substring of the requested url
             RunTest(
@@ -762,7 +820,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataDoesMatchesExactLiteralMatch()
+        public void TryMatch_DoesMatchesExactLiteralMatch()
         {
             // DevDiv Bugs 191180: UrlRouting: Wrong template getting matched if a url segment is a substring of the requested url
             RunTest(
@@ -773,17 +831,17 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithWeirdParameterNames()
+        public void TryMatch_WithWeimatchParameterNames()
         {
             RunTest(
                 "foo/{ }/{.!$%}/{dynamic.data}/{op.tional}",
-                "/foo/space/weird/orderid",
+                "/foo/space/weimatch/omatcherid",
                 new RouteValueDictionary() { { " ", "not a space" }, { "op.tional", "default value" }, { "ran!dom", "va@lue" } },
-                new RouteValueDictionary() { { " ", "space" }, { ".!$%", "weird" }, { "dynamic.data", "orderid" }, { "op.tional", "default value" }, { "ran!dom", "va@lue" } });
+                new RouteValueDictionary() { { " ", "space" }, { ".!$%", "weimatch" }, { "dynamic.data", "omatcherid" }, { "op.tional", "default value" }, { "ran!dom", "va@lue" } });
         }
 
         [Fact]
-        public void GetRouteDataDoesNotMatchRouteWithLiteralSeparatorDefaultsButNoValue()
+        public void TryMatch_DoesNotMatchRouteWithLiteralSeparatomatchefaultsButNoValue()
         {
             RunTest(
                 "{controller}/{language}-{locale}",
@@ -793,7 +851,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataDoesNotMatchesRouteWithLiteralSeparatorDefaultsAndLeftValue()
+        public void TryMatch_DoesNotMatchesRouteWithLiteralSeparatomatchefaultsAndLeftValue()
         {
             RunTest(
                 "{controller}/{language}-{locale}",
@@ -803,7 +861,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataDoesNotMatchesRouteWithLiteralSeparatorDefaultsAndRightValue()
+        public void TryMatch_DoesNotMatchesRouteWithLiteralSeparatomatchefaultsAndRightValue()
         {
             RunTest(
                 "{controller}/{language}-{locale}",
@@ -813,7 +871,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataMatchesRouteWithLiteralSeparatorDefaultsAndValue()
+        public void TryMatch_MatchesRouteWithLiteralSeparatomatchefaultsAndValue()
         {
             RunTest(
                 "{controller}/{language}-{locale}",
@@ -823,86 +881,96 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void MatchSetsOptionalParameter()
+        public void TryMatch_SetsOptionalParameter()
         {
             // Arrange
             var route = CreateMatcher("{controller}/{action?}");
             var url = "/Home/Index";
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var match = route.Match(url);
+            var match = route.TryMatch(url, values);
 
             // Assert
-            Assert.NotNull(match);
-            Assert.Equal(2, match.Values.Count);
-            Assert.Equal("Home", match["controller"]);
-            Assert.Equal("Index", match["action"]);
+            Assert.True(match);
+            Assert.Equal(2, values.Count);
+            Assert.Equal("Home", values["controller"]);
+            Assert.Equal("Index", values["action"]);
         }
 
         [Fact]
-        public void MatchDoesNotSetOptionalParameter()
+        public void TryMatch_DoesNotSetOptionalParameter()
         {
             // Arrange
             var route = CreateMatcher("{controller}/{action?}");
             var url = "/Home";
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var match = route.Match(url);
+            var match = route.TryMatch(url, values);
 
             // Assert
-            Assert.NotNull(match);
-            Assert.Equal(1, match.Values.Count);
-            Assert.Equal("Home", match["controller"]);
-            Assert.False(match.ContainsKey("action"));
+            Assert.True(match);
+            Assert.Equal(1, values.Count);
+            Assert.Equal("Home", values["controller"]);
+            Assert.False(values.ContainsKey("action"));
         }
 
         [Fact]
-        public void MatchDoesNotSetOptionalParameter_EmptyString()
+        public void TryMatch_DoesNotSetOptionalParameter_EmptyString()
         {
             // Arrange
             var route = CreateMatcher("{controller?}");
             var url = "";
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var match = route.Match(url);
+            var match = route.TryMatch(url, values);
 
             // Assert
-            Assert.NotNull(match);
-            Assert.Equal(0, match.Values.Count);
-            Assert.False(match.ContainsKey("controller"));
+            Assert.True(match);
+            Assert.Equal(0, values.Count);
+            Assert.False(values.ContainsKey("controller"));
         }
 
         [Fact]
-        public void Match_EmptyRouteWith_EmptyString()
+        public void TryMatch__EmptyRouteWith_EmptyString()
         {
             // Arrange
             var route = CreateMatcher("");
             var url = "";
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var match = route.Match(url);
+            var match = route.TryMatch(url, values);
 
             // Assert
-            Assert.NotNull(match);
-            Assert.Equal(0, match.Values.Count);
+            Assert.True(match);
+            Assert.Equal(0, values.Count);
         }
 
         [Fact]
-        public void MatchMultipleOptionalParameters()
+        public void TryMatch_MultipleOptionalParameters()
         {
             // Arrange
             var route = CreateMatcher("{controller}/{action?}/{id?}");
             var url = "/Home/Index";
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var match = route.Match(url);
+            var match = route.TryMatch(url, values);
 
             // Assert
-            Assert.NotNull(match);
-            Assert.Equal(2, match.Values.Count);
-            Assert.Equal("Home", match["controller"]);
-            Assert.Equal("Index", match["action"]);
-            Assert.False(match.ContainsKey("id"));
+            Assert.True(match);
+            Assert.Equal(2, values.Count);
+            Assert.Equal("Home", values["controller"]);
+            Assert.Equal("Index", values["action"]);
+            Assert.False(values.ContainsKey("id"));
         }
 
         private TemplateMatcher CreateMatcher(string template, object defaults = null)
@@ -923,21 +991,23 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 TemplateParser.Parse(template), 
                 defaults ?? new RouteValueDictionary());
 
+            var values = new RouteValueDictionary();
+
             // Act
-            var match = matcher.Match(new PathString(path));
+            var match = matcher.TryMatch(new PathString(path), values);
 
             // Assert
             if (expected == null)
             {
-                Assert.Null(match);
+                Assert.False(match);
             }
             else
             {
-                Assert.NotNull(match);
-                Assert.Equal(expected.Count, match.Values.Count);
-                foreach (string key in match.Keys)
+                Assert.True(match);
+                Assert.Equal(expected.Count, values.Count);
+                foreach (string key in values.Keys)
                 {
-                    Assert.Equal(expected[key], match[key]);
+                    Assert.Equal(expected[key], values[key]);
                 }
             }
         }
