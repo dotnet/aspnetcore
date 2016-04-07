@@ -2,7 +2,7 @@
   "authors": [
     "Microsoft"
   ],
-  "description": "Identity sample MVC application on K",
+  "description": "Identity sample MVC application on ASP.NET Core",
   "version": "1.0.0-*",
   "dependencies": {
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
@@ -18,6 +18,7 @@
     "Microsoft.AspNetCore.Authentication.Twitter": "1.0.0-*",
     "Microsoft.AspNetCore.Authorization": "1.0.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.EntityFrameworkCore.Commands": "1.0.0-*",
     "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-*",
@@ -31,23 +32,18 @@
   "compilationOptions": {
     "emitEntryPoint": true
   },
-  "commands": {
-    "web": "IdentitySample.Mvc"
-  },
   "frameworks": {
-    "net451": {
-    },
+    "net451": {},
     "netstandardapp1.5": {
       "imports": [
         "dnxcore50",
         "portable-net45+win8"
-      ]
+      ],
+      "dependencies": {
+          "NETStandard.Library": "1.5.0-*"
+      }
     }
   },
-  "exclude": [
-    "wwwroot",
-    "node_modules"
-  ],
   "scripts": {
     "prepublish": [
       "npm install",
@@ -57,6 +53,7 @@
     ]
   },
   "content": [
-    "appsettings.json"
+    "appsettings.json",
+    "web.config"
   ]
 }
