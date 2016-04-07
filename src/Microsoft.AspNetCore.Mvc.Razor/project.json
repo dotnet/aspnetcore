@@ -34,12 +34,13 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Threading.Tasks": { "type": "build" }
+        "System.Threading.Tasks": {
+          "type": "build"
+        }
       }
     },
     "netstandard1.5": {
       "imports": [
-        "dotnet5.6",
         "portable-net451+win8"
       ],
       "dependencies": {

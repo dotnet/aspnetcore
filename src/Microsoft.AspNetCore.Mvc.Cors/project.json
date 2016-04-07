@@ -21,7 +21,6 @@
     "net451": {},
     "netstandard1.5": {
       "imports": [
-        "dotnet5.6",
         "portable-net451+win8"
       ]
     }
