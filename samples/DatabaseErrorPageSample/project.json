@@ -2,7 +2,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
     "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "1.0.0-*",
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-*",
     "Microsoft.EntityFrameworkCore.Commands": "1.0.0-*",
@@ -11,16 +11,19 @@
   "compilationOptions": {
     "emitEntryPoint": true
   },
-  "commands": {
-    "web": "DatabaseErrorPageSample"
-  },
   "frameworks": {
     "net451": {},
     "netstandardapp1.5": {
       "imports": [
         "dnxcore50",
         "portable-net451+win8"
-      ]
+      ],
+      "dependencies": {
+          "NETStandard.Library": "1.5.0-*"
+      }
     }
-  }
+  },
+  "content": [
+    "web.config"
+  ]
 }
