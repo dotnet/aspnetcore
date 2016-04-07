@@ -9,8 +9,7 @@ var typescript = require('gulp-typescript');
 var inlineNg2Template = require('gulp-inline-ng2-template');
 var sourcemaps = require('gulp-sourcemaps');
 
-var project = require("./project.json");
-var webroot = "./" + project.webroot + "/";
+var webroot = "./wwwroot/";
 
 var config = {
     libBase: 'node_modules',

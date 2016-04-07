@@ -62,7 +62,7 @@ namespace MusicStore
             app.UseDeveloperExceptionPage();
             
             // Initialize the sample data
-            //SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();
+            SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();
 
             app.UseStaticFiles();
             loggerFactory.AddConsole();
