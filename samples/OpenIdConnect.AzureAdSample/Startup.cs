@@ -62,8 +62,6 @@ namespace OpenIdConnect.AzureAdSample
                 }
             });
 
-            app.UseIISPlatformHandler();
-
             app.UseCookieAuthentication(new CookieAuthenticationOptions());
 
             var clientId = Configuration["oidc:clientid"];
@@ -158,7 +156,7 @@ namespace OpenIdConnect.AzureAdSample
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
                 .UseKestrel()
-                .UseIISPlatformHandlerUrl()
+                .UseIISIntegration()()
                 .UseStartup<Startup>()
                 .Build();
 

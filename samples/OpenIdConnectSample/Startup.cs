@@ -57,8 +57,6 @@ namespace OpenIdConnectSample
                 }
             });
 
-            app.UseIISPlatformHandler();
-
             app.UseCookieAuthentication(new CookieAuthenticationOptions());
 
             app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions
@@ -104,7 +102,7 @@ namespace OpenIdConnectSample
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
                 .UseKestrel()
-                .UseIISPlatformHandlerUrl()
+                .UseIISIntegration()()
                 .UseStartup<Startup>()
                 .Build();
 
