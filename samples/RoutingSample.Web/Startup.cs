@@ -38,7 +38,7 @@ namespace RoutingSample.Web
                 b.Use(next => async (c) =>
                 {
                     var culture = new CultureInfo((string)c.GetRouteValue("lang"));
-#if DNX451
+#if NET451
                     Thread.CurrentThread.CurrentCulture = culture;
                     Thread.CurrentThread.CurrentUICulture = culture;
 #else
@@ -66,7 +66,8 @@ namespace RoutingSample.Web
         {
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
-                .UseIISPlatformHandlerUrl()
+                .UseKestrel()
+                .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
 

@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.Routing": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*"
@@ -8,16 +8,18 @@
   "compilationOptions": {
     "emitEntryPoint": true
   },
-  "commands": {
-    "web": "RoutingSample.Web"
-  },
   "frameworks": {
-    "dnx451": {},
+    "net451": {},
     "netstandardapp1.5": {
+      "dependencies": {
+        "NETStandard.Library": "1.5.0-*"
+      },
       "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
+        "dnxcore50"
       ]
     }
-  }
+  },
+  "content": [
+    "web.config"
+  ]
 }
