@@ -14,12 +14,13 @@
   },
   "frameworks": {
     "dnx451": {},
-    "netstandard1.5": {
+    "netstandardapp1.5": {
       "imports": [
-        "dotnet5.6",
+        "dnxcore50",
         "portable-net451+win8"
       ],
       "dependencies": {
+        "NETStandard.Library": "1.5.0-*"
       }
     }
   },
