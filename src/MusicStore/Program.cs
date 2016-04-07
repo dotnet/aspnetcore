@@ -11,7 +11,7 @@ namespace MusicStore
                 // This is used to allow deployers to choose the server for testing.
                 .UseKestrel()
                 .UseDefaultHostingConfiguration(args)
-                .UseIIS()
+                .UseIISIntegration()
                 .UseStartup("MusicStore")
                 .Build();
 
