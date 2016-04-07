@@ -54,7 +54,6 @@
         "System.Reflection.Extensions": "4.0.1-*"
       },
       "imports": [
-        "dotnet5.4",
         "portable-net45+win8"
       ]
     }
