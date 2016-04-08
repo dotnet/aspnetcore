@@ -1,19 +1,21 @@
 {
-  "webroot": "wwwroot",
   "version": "1.0.0-*",
-  "tooling": {
-    "defaultNamespace": "ReactExample"
+  "compilationOptions": {
+    "emitEntryPoint": true,
+    "warningsAsErrors": true,
+    "preserveCompilationContext": true
   },
   "dependencies": {
-    "Microsoft.AspNet.Diagnostics": "1.0.0-rc1-*",
-    "Microsoft.AspNet.IISPlatformHandler": "1.0.0-rc1-*",
-    "Microsoft.AspNet.Mvc": "6.0.0-rc1-*",
-    "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-rc1-*",
-    "Microsoft.AspNet.Server.Kestrel": "1.0.0-rc1-*",
-    "Microsoft.AspNet.StaticFiles": "1.0.0-rc1-*",
-    "Microsoft.AspNet.Tooling.Razor": "1.0.0-rc1-*",
-    "Microsoft.Extensions.Logging.Console": "1.0.0-rc1-*",
-    "Microsoft.Extensions.Logging.Debug": "1.0.0-rc1-*",
+    "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
+    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
+    "Microsoft.Extensions.Logging.Debug": "1.0.0-*",
     "Microsoft.AspNet.ReactServices": "1.0.0-*"
   },
   "commands": {
@@ -21,23 +23,31 @@
   },
   "frameworks": {
     "dnx451": {},
-    "dnxcore50": {}
+    "netstandardapp1.5": {
+      "imports": [
+        "dnxcore50",
+        "portable-net451+win8"
+      ],
+      "dependencies": {
+        "NETStandard.Library": "1.5.0-*"
+      }
+    }
   },
+
   "exclude": [
     "wwwroot",
-    "node_modules",
-    "bower_components"
+    "node_modules"
   ],
   "publishExclude": [
     "node_modules",
-    "bower_components",
     "**.xproj",
     "**.user",
     "**.vspscc"
   ],
   "scripts": {
-    "prepublish": [
-      "npm install"
+    "prepare": [
+      "npm install",
+      "webpack"
     ]
   }
 }

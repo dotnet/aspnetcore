@@ -1,60 +1,34 @@
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNet.SpaServices.Webpack;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.PlatformAbstractions;
+using Newtonsoft.Json.Serialization;
 
-namespace ReactExample
+namespace ReactGrid
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env, IApplicationEnvironment appEnv)
-        {
-            // Setup configuration sources.
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(appEnv.ApplicationBasePath)
-                .AddJsonFile("appsettings.json")
-                .AddEnvironmentVariables();
-            Configuration = builder.Build();
-        }
-
-        public IConfigurationRoot Configuration { get; set; }
-
-        // This method gets called by the runtime.
+        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add MVC services to the services container.
-            services.AddMvc();
+            services.AddMvc().AddJsonOptions(options =>
+            {
+                options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            });
         }
 
-        // Configure is called after ConfigureServices is called.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory, IHostingEnvironment env)
         {
-            loggerFactory.MinimumLevel = LogLevel.Warning;
-            loggerFactory.AddConsole();
-            loggerFactory.AddDebug();
+            app.UseDeveloperExceptionPage();
 
-            // Configure the HTTP request pipeline.
-
-            // Add the platform handler to the request pipeline.
-            app.UseIISPlatformHandler();
-
-            // Add the following to the request pipeline only in development environment.
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                // Add Error handling middleware which catches all application specific errors and
-                // send the request to the following path or controller action.
-                app.UseExceptionHandler("/Home/Error");
-            }
-
-            // In dev mode, the JS/TS/etc is compiled and served dynamically and supports hot replacement.
-            // In production, we assume you've used webpack to emit the prebuilt content to disk.
             if (env.IsDevelopment()) {
                 app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
                     HotModuleReplacement = true,
@@ -62,16 +36,31 @@ namespace ReactExample
                 });
             }
 
-            // Add static files to the request pipeline.
             app.UseStaticFiles();
-
-            // Add MVC to the request pipeline.
+            loggerFactory.AddConsole();
             app.UseMvc(routes =>
             {
-                routes.MapSpaFallbackRoute(
+                routes.MapRoute(
                     name: "default",
-                    defaults: new { controller="Home", action = "Index" });
+                    template: "{controller=Home}/{action=Index}/{id?}");
+
+                routes.MapSpaFallbackRoute(
+                    name: "spa-fallback",
+                    defaults: new { controller = "Home", action = "Index" });
             });
+        }
+
+        public static void Main(string[] args)
+        {
+            var host = new WebHostBuilder()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseDefaultHostingConfiguration(args)
+                .UseIISPlatformHandlerUrl()
+                .UseKestrel()
+                .UseStartup<Startup>()
+                .Build();
+
+            host.Run();
         }
     }
 }

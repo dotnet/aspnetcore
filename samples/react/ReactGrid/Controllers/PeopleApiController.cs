@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ReactExample.Controllers
 {
@@ -10,9 +10,9 @@ namespace ReactExample.Controllers
         public ActionResult UpdatePerson([FromBody] PersonDto person)
         {
             if (!ModelState.IsValid) {
-                return HttpBadRequest(ModelState);
+                return BadRequest(ModelState);
             } else {
-                return new HttpOkResult();
+                return new OkResult();
             }
         }
     }
