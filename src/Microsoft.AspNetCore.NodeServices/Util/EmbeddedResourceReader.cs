@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace Microsoft.AspNet.NodeServices {
+namespace Microsoft.AspNetCore.NodeServices {
     public static class EmbeddedResourceReader {
         public static string Read(Type assemblyContainingType, string path) {
             var asm = assemblyContainingType.GetTypeInfo().Assembly;

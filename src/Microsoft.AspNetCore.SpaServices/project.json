@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "description": "Microsoft.AspNet.SpaServices",
+  "description": "Helpers for building single-page applications on ASP.NET Core",
   "compilationOptions": {
     "keyFile": "../../tools/Key.snk"
   },
@@ -15,7 +15,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Routing": "1.0.0-*",
-    "Microsoft.AspNet.NodeServices": "1.0.0-*"
+    "Microsoft.AspNetCore.NodeServices": "1.0.0-*"
   },
   "frameworks": {
     "dnx451": {},

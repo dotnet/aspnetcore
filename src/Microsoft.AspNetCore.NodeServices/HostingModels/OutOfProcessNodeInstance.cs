@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.NodeServices {
+namespace Microsoft.AspNetCore.NodeServices {
     /**
      * Class responsible for launching the Node child process, determining when it is ready to accept invocations,
      * and finally killing it when the parent process exits. Also it restarts the child process if it dies.
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.NodeServices {
             this._nodeProcessIsReadySource = new TaskCompletionSource<bool>();
 
             this._nodeProcess.OutputDataReceived += (sender, evt) => {
-                if (evt.Data == "[Microsoft.AspNet.NodeServices:Listening]" && !initializationIsCompleted) {
+                if (evt.Data == "[Microsoft.AspNetCore.NodeServices:Listening]" && !initializationIsCompleted) {
                     this._nodeProcessIsReadySource.SetResult(true);
                     initializationIsCompleted = true;
                 } else if (evt.Data != null) {

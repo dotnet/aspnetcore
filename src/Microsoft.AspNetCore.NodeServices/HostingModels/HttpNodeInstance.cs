@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.AspNet.NodeServices {
+namespace Microsoft.AspNetCore.NodeServices {
 	internal class HttpNodeInstance : OutOfProcessNodeInstance {
-        private readonly static Regex PortMessageRegex = new Regex(@"^\[Microsoft.AspNet.NodeServices.HttpNodeHost:Listening on port (\d+)\]$");
+        private readonly static Regex PortMessageRegex = new Regex(@"^\[Microsoft.AspNetCore.NodeServices.HttpNodeHost:Listening on port (\d+)\]$");
 
 		private readonly static JsonSerializerSettings jsonSerializerSettings =  new JsonSerializerSettings {
             ContractResolver = new CamelCasePropertyNamesContractResolver()

@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNet.NodeServices;
+using Microsoft.AspNetCore.NodeServices;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.PlatformAbstractions;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNet.SpaServices.Prerendering
+namespace Microsoft.AspNetCore.SpaServices.Prerendering
 {
     [HtmlTargetElement(Attributes = PrerenderModuleAttributeName)]
     public class PrerenderTagHelper : TagHelper

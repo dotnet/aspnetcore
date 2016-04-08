@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNet.SpaServices.Webpack
+namespace Microsoft.AspNetCore.SpaServices.Webpack
 {
     // Based on https://github.com/aspnet/Proxy/blob/dev/src/Microsoft.AspNetCore.Proxy/ProxyMiddleware.cs
     // Differs in that, if the proxied request returns a 404, we pass through to the next middleware in the chain

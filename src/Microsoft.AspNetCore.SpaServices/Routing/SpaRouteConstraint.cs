@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNet.SpaServices
+namespace Microsoft.AspNetCore.SpaServices
 {
     internal class SpaRouteConstraint : IRouteConstraint
     {

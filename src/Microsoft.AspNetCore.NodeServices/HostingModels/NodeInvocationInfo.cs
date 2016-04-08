@@ -1,4 +1,4 @@
-namespace Microsoft.AspNet.NodeServices {
+namespace Microsoft.AspNetCore.NodeServices {
     public class NodeInvocationInfo
     {
         public string ModuleName;

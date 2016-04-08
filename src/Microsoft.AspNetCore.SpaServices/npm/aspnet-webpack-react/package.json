@@ -1,7 +1,7 @@
 {
   "name": "aspnet-webpack-react",
   "version": "1.0.1",
-  "description": "Helpers for using Webpack with React in ASP.NET projects. Works in conjunction with the Microsoft.AspNet.SpaServices NuGet package.",
+  "description": "Helpers for using Webpack with React in ASP.NET Core projects. Works in conjunction with the Microsoft.AspNetCore.SpaServices NuGet package.",
   "main": "index.js",
   "scripts": {
     "prepublish": "tsd update && tsc && echo 'Finished building NPM package \"aspnet-webpack-react\"'",

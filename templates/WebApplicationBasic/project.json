@@ -23,7 +23,7 @@
   },
 
   "commands": {
-    "web": "Microsoft.AspNet.Server.Kestrel"
+    "web": "Microsoft.AspNetCore.Server.Kestrel"
   },
 
   "frameworks": {

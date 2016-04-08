@@ -5,9 +5,9 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 
 ## What is this?
 
-This repo hosts sources for the `Microsoft.AspNet.AngularServices` and `Microsoft.AspNet.ReactServices` packages, along with samples and the underlying `Microsoft.AspNet.NodeServices` project.
+This repo hosts sources for the `Microsoft.AspNetCore.AngularServices` and `Microsoft.AspNetCore.ReactServices` packages, along with samples and the underlying `Microsoft.AspNetCore.NodeServices project`.
 
-#### `Microsoft.AspNet.AngularServices`
+#### `Microsoft.AspNetCore.AngularServices`
 
 This package provides facilities for developers building Angular 2 applications on ASP.NET.
 
@@ -20,7 +20,7 @@ A sample is included in this repo.
 
 We are also working with the Angular team to add support for other client+server features such as cache priming, so that the client-side SPA code does not need to wait for an initial set of ajax requests to complete - the necessary data can be bundled with the initial page. Another possible future feature would be helpers to emit a JSON representation of C# class model metadata, so some validation rules can transparently apply both on the server and the client.
 
-#### `Microsoft.AspNet.ReactServices`
+#### `Microsoft.AspNetCore.ReactServices`
 
 This package provides similar facilities for React applications on ASP.NET.
 
@@ -32,7 +32,7 @@ We are open to adding other client+server features that will make React develope
 
 Although we have finite resources and are currently focused on adding Angular 2 and React support, the architecture here is designed so that you can build your own server-side support for other client-side libraries and frameworks.
 
-The underlying `Microsoft.AspNet.NodeServices` package is a general-purpose way for ASP.NET applications (or .NET applications more generally) to interoperate with code running inside Node.js. That's how `AngularServices`/`ReactServices` server-side rendering works - those packages transparently spin up Node.js instances that can perform the server-side rendering. Any code that runs inside Node can efficiently be invoked from .NET via this package, which takes care of starting and stopping Node instances and manages the communication between .NET and Node.
+The underlying `Microsoft.AspNetCore.NodeServices` package is a general-purpose way for ASP.NET applications (or .NET applications more generally) to interoperate with code running inside Node.js. That's how `AngularServices`/`ReactServices` server-side rendering works - those packages transparently spin up Node.js instances that can perform the server-side rendering. Any code that runs inside Node can efficiently be invoked from .NET via this package, which takes care of starting and stopping Node instances and manages the communication between .NET and Node.
 
 ## Using AngularServices/ReactServices in your own projects
 

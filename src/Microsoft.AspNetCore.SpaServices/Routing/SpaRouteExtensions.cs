@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNet.SpaServices;
+using Microsoft.AspNetCore.SpaServices;
 
 // Putting in this namespace so it's always available whenever MapRoute is
 namespace Microsoft.AspNetCore.Builder

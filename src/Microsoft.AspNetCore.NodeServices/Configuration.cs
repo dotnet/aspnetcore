@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Microsoft.AspNet.NodeServices {
+namespace Microsoft.AspNetCore.NodeServices {
     public static class Configuration {
         private readonly static string[] defaultWatchFileExtensions = new[] { ".js", ".jsx", ".ts", ".tsx", ".json", ".html" };
         private readonly static NodeServicesOptions defaultOptions = new NodeServicesOptions {

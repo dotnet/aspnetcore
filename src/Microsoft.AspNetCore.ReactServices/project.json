@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "description": "Helpers for building React applications on ASP.NET 5.",
+  "description": "Helpers for building React applications on ASP.NET Core.",
   "compilationOptions": {
     "keyFile": "../../tools/Key.snk"
   },
@@ -10,12 +10,12 @@
     "url": "git://github.com/aspnet/nodeservices"
   },
   "tooling": {
-    "defaultNamespace": "Microsoft.AspNet.ReactServices"
+    "defaultNamespace": "Microsoft.AspNetCore.ReactServices"
   },
   "dependencies": {
     "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
-    "Microsoft.AspNet.NodeServices": "1.0.0-*",
-    "Microsoft.AspNet.SpaServices": "1.0.0-*"
+    "Microsoft.AspNetCore.NodeServices": "1.0.0-*",
+    "Microsoft.AspNetCore.SpaServices": "1.0.0-*"
   },
   "frameworks": {
     "dnx451": {},

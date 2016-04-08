@@ -7,10 +7,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepublish": "tsd install && tsc && node build.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aspnet/NodeServices/tree/master/Microsoft.AspNet.AngularServices"
-  },
   "typings": "dist/Exports",
   "author": "Microsoft",
   "license": "Apache-2.0",

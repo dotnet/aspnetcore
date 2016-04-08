@@ -20,11 +20,11 @@
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.Extensions.Logging.Debug": "1.0.0-*",
-    "Microsoft.AspNet.SpaServices": "1.0.0-*"
+    "Microsoft.AspNetCore.SpaServices": "1.0.0-*"
   },
 
   "commands": {
-    "web": "Microsoft.AspNet.Server.Kestrel"
+    "web": "Microsoft.AspNetCore.Server.Kestrel"
   },
 
   "frameworks": {

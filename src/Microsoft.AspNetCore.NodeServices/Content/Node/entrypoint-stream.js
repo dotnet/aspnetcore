@@ -20,4 +20,4 @@ readline.createInterface({ input: process.stdin }).on('line', function (message)
   }
 });
 
-console.log('[Microsoft.AspNet.NodeServices:Listening]'); // The .NET app waits for this signal before sending any invocations
+console.log('[Microsoft.AspNetCore.NodeServices:Listening]'); // The .NET app waits for this signal before sending any invocations

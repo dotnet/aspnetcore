@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.AspNet.NodeServices {
+namespace Microsoft.AspNetCore.NodeServices {
     // Makes it easier to pass script files to Node in a way that's sure to clean up after the process exits
     public sealed class StringAsTempFile : IDisposable {
         public string FileName { get; private set; }

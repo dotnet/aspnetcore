@@ -20,7 +20,7 @@
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.Extensions.Logging.Debug": "1.0.0-*",
-    "Microsoft.AspNet.NodeServices": "1.0.0-*"
+    "Microsoft.AspNetCore.NodeServices": "1.0.0-*"
   },
   "frameworks": {
     "dnx451": {},

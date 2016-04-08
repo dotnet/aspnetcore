@@ -52,10 +52,10 @@ var server = http.createServer(function(req, res) {
 
 server.listen(requestedPortOrZero, 'localhost', function () {
     // Signal to HttpNodeHost which port it should make its HTTP connections on
-    console.log('[Microsoft.AspNet.NodeServices.HttpNodeHost:Listening on port ' + server.address().port + '\]');
+    console.log('[Microsoft.AspNetCore.NodeServices.HttpNodeHost:Listening on port ' + server.address().port + '\]');
 
     // Signal to the NodeServices base class that we're ready to accept invocations
-    console.log('[Microsoft.AspNet.NodeServices:Listening]');
+    console.log('[Microsoft.AspNetCore.NodeServices:Listening]');
 });
 
 function readRequestBodyAsJson(request, callback) {

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNet.AngularServices {
+namespace Microsoft.AspNetCore.AngularServices {
     public static class PrimeCacheHelper {
         public static async Task<HtmlString> PrimeCache(this IHtmlHelper html, string url) {
             // TODO: Consider deduplicating the PrimeCache calls (that is, if there are multiple requests to precache

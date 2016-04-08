@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNet.NodeServices;
-using Microsoft.AspNet.SpaServices.Webpack;
+using Microsoft.AspNetCore.NodeServices;
+using Microsoft.AspNetCore.SpaServices.Webpack;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.PlatformAbstractions;
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Builder
             appBuilder.UseMiddleware<ConditionalProxyMiddleware>(devServerInfo.PublicPath, proxyOptions);
 
             // While it would be nice to proxy the /__webpack_hmr requests too, these return an EventStream,
-            // and the Microsoft.Aspnet.Proxy code doesn't handle that entirely - it throws an exception after
+            // and the Microsoft.AspNetCore.Proxy code doesn't handle that entirely - it throws an exception after
             // a while. So, just serve a 302 for those.
             appBuilder.Map(WebpackHotMiddlewareEndpoint, builder => {
                 builder.Use(next => async ctx => {

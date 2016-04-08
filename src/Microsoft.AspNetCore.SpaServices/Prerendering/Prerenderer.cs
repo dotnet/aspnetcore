@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.NodeServices;
+using Microsoft.AspNetCore.NodeServices;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNet.SpaServices.Prerendering
+namespace Microsoft.AspNetCore.SpaServices.Prerendering
 {
     public static class Prerenderer
     {

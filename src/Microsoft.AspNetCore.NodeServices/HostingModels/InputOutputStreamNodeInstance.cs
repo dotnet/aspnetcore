@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.AspNet.NodeServices {
+namespace Microsoft.AspNetCore.NodeServices {
     // This is just to demonstrate that other transports are possible. This implementation is extremely
     // dubious - if the Node-side code fails to conform to the expected protocol in any way (e.g., has an
     // error), then it will just hang forever. So don't use this.

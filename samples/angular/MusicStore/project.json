@@ -22,11 +22,11 @@
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.Extensions.Logging.Debug": "1.0.0-*",
     "Microsoft.EntityFrameworkCore.SQLite": "1.0.0-*",
-    "Microsoft.AspNet.AngularServices": "1.0.0-*",
+    "Microsoft.AspNetCore.AngularServices": "1.0.0-*",
     "AutoMapper": "4.1.1"
   },
   "commands": {
-    "web": "Microsoft.AspNet.Server.Kestrel"
+    "web": "Microsoft.AspNetCore.Server.Kestrel"
   },
   "frameworks": {
     "netstandardapp1.5": {

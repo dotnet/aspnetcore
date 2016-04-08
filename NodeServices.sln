@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{E6E88944-4800-40BA-8AF5-069EA3ADFEB8}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.NodeServices", "src\Microsoft.AspNet.NodeServices\Microsoft.AspNet.NodeServices.xproj", "{B0FA4175-8B29-4904-9780-28B3C24B0567}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.NodeServices", "src\Microsoft.AspNetCore.NodeServices\Microsoft.AspNetCore.NodeServices.xproj", "{B0FA4175-8B29-4904-9780-28B3C24B0567}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ES2015Transpilation", "samples\misc\ES2015Transpilation\ES2015Transpilation.xproj", "{6D4BCDD6-7951-449B-BE55-CB7F014B7430}"
 EndProject
@@ -18,11 +18,11 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore", "samples\angul
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ReactGrid", "samples\react\ReactGrid\ReactGrid.xproj", "{ABF90A5B-F4E0-438C-A6E4-9549FB43690B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.AngularServices", "src\Microsoft.AspNet.AngularServices\Microsoft.AspNet.AngularServices.xproj", "{421807E6-B62C-417B-B901-46C5DEDAA8F1}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.AngularServices", "src\Microsoft.AspNetCore.AngularServices\Microsoft.AspNetCore.AngularServices.xproj", "{421807E6-B62C-417B-B901-46C5DEDAA8F1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.ReactServices", "src\Microsoft.AspNet.ReactServices\Microsoft.AspNet.ReactServices.xproj", "{B04381DE-991F-4831-A0B5-FE1BD3EF80C4}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.ReactServices", "src\Microsoft.AspNetCore.ReactServices\Microsoft.AspNetCore.ReactServices.xproj", "{B04381DE-991F-4831-A0B5-FE1BD3EF80C4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.SpaServices", "src\Microsoft.AspNet.SpaServices\Microsoft.AspNet.SpaServices.xproj", "{4624F728-6DFF-44B6-93B5-3C7D9C94BF3F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.SpaServices", "src\Microsoft.AspNetCore.SpaServices\Microsoft.AspNetCore.SpaServices.xproj", "{4624F728-6DFF-44B6-93B5-3C7D9C94BF3F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{727E6D58-6830-4792-96C6-E138A33959FB}"
 EndProject

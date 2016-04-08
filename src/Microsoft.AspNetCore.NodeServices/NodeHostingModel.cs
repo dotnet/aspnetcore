@@ -1,4 +1,4 @@
-namespace Microsoft.AspNet.NodeServices {
+namespace Microsoft.AspNetCore.NodeServices {
     public enum NodeHostingModel {
         Http,
         InputOutputStream,
