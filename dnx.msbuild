@@ -216,15 +216,15 @@
         <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(ServiceFabricPackageOutDir)" />
     </Target>
 
-    <Target Name="PoliCheck" DependsOnTargets="FindLatestDropShare">
+    <Target Name="PoliCheck" DependsOnTargets="CopyAndExtractUnsignedPackages">
         <ItemGroup>
             <PoliCheckPackages Include="$(CoherenceDestinationDir)\symbols\*.nupkg;"/>
         </ItemGroup>
 
         <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)') %(PoliCheckPackages.Identity)" />
 
-        <RemoveDir Directories="@(PoliCheckPackages->'%(PoliCheckPath)%(Filename)\_rels')" />
-        <Delete Files="@(PoliCheckPackages->'%(PoliCheckPath)%(Filename)\[Content_Types].xml')" />
+        <RemoveDir Directories="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\_rels')" />
+        <Delete Files="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\[Content_Types].xml')" />
 
         <!-- These are terms that originate in resource strings from some DLLs, as well as common terminology in the sources. -->
         <PropertyGroup>
