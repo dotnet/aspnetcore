@@ -29,7 +29,9 @@
       },
       "frameworkAssemblies": {
         "System.Net.Http": "",
-        "System.Runtime":  { "type": "build" }
+        "System.Runtime": {
+          "type": "build"
+        }
       }
     },
     "netstandard1.3": {
@@ -45,7 +47,6 @@
         "System.Threading.Thread": "4.0.0-*"
       },
       "imports": [
-        "dnxcore50",
         "portable-net45+win8"
       ]
     }
