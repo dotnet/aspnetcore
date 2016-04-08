@@ -3,12 +3,9 @@
     "emitEntryPoint": true,
     "preserveCompilationContext": true
   },
-  "commands": {
-    "web": "EmbeddedViewSample.Web"
-  },
   "resource": "EmbeddedResources/**",
   "dependencies": {
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*",
@@ -25,5 +22,8 @@
         "NETStandard.Library": "1.5.0-*"
       }
     }
-  }
+  },
+  "content": [
+    "web.config"
+  ]
 }

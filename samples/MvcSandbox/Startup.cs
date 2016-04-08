@@ -36,7 +36,7 @@ namespace MvcSandbox
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISPlatformHandlerUrl()
+                .UseIISIntegration()
                 .UseKestrel()
                 .UseStartup<Startup>()
                 .Build();
