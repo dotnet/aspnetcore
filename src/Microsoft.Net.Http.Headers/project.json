@@ -16,7 +16,7 @@
     ],
     "xmlDoc": true
   },
-  "dependencies": { },
+  "dependencies": {},
   "frameworks": {
     "netstandard1.1": {
       "dependencies": {
@@ -28,10 +28,7 @@
         "System.Runtime.Extensions": "4.1.0-*",
         "System.Text.Encoding": "4.0.11-*",
         "System.Buffers": "4.0.0-*"
-      },
-      "imports": [
-        "dotnet5.2"
-      ]
+      }
     }
   }
 }
