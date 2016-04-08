@@ -31,10 +31,7 @@
         "System.Collections.Concurrent": "4.0.12-*",
         "System.Threading.Tasks": "4.0.11-*",
         "System.Reflection.Extensions": "4.0.1-*"
-      },
-      "imports": [
-        "dotnet5.4"
-      ]
+      }
     }
   }
 }
