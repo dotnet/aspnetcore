@@ -219,6 +219,7 @@ functions
               "Coherence-Signed",
               "KoreBuild",
               "Universe",
+              "libuv-build",
             };
 
             return Enumerable.Concat(nonDefaultRepos, repositories);
