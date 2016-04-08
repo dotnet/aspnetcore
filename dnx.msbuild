@@ -48,10 +48,6 @@
         <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(UnsignedSymbolPackages->'$(UnsignedSymbolPackagesPath)%(Filename)') %(UnsignedSymbolPackages.Identity)" />
 
         <RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
-
-        <!-- Delete metadata -->
-        <RemoveDir Directories="@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)\_rels')" />
-        <Delete Files="@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)\[Content_Types].xml')" />
     </Target>
 
     <Target Name="PrepareFilesForSigning" DependsOnTargets="CopyAndExtractUnsignedPackages">
