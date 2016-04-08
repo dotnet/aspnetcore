@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsFailure(await manager.CreateAsync(user), _errorDescriber.InvalidEmail(email));
         }
 
-#if DNX451
+#if NET451
         [Theory]
         [InlineData("@@afd")]
         [InlineData("bogus")]
