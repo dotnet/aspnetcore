@@ -18,7 +18,6 @@
     "Microsoft.AspNetCore.SpaServices": "1.0.0-*"
   },
   "frameworks": {
-    "dnx451": {},
     "netstandardapp1.5": {
       "imports": [
         "dnxcore50",

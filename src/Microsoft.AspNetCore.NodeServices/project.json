@@ -16,7 +16,6 @@
     "Newtonsoft.Json": "8.0.3"
   },
   "frameworks": {
-    "dnx451": {},
     "netstandardapp1.5": {
       "imports": [
         "dnxcore50",

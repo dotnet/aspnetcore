@@ -22,7 +22,6 @@
     "web": "Microsoft.AspNetCore.Server.Kestrel"
   },
   "frameworks": {
-    "dnx451": {},
     "netstandardapp1.5": {
       "imports": [
         "dnxcore50",
