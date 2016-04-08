@@ -1,11 +1,11 @@
 {
   "name": "angular2-aspnet",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Helpers for Angular 2 apps built on ASP.NET",
   "main": "./dist/Exports",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublish": "tsc && node build.js"
+    "prepublish": "tsd install && tsc && node build.js"
   },
   "repository": {
     "type": "git",
@@ -15,11 +15,14 @@
   "author": "Microsoft",
   "license": "Apache-2.0",
   "dependencies": {
-    "angular2": "2.0.0-beta.1",
-    "rxjs": "5.0.0-beta.0"
+    "angular2": "2.0.0-beta.13",
+    "rxjs": "5.0.0-beta.2"
   },
   "devDependencies": {
+    "es6-shim": "^0.35.0",
+    "reflect-metadata": "^0.1.2",
     "systemjs-builder": "^0.14.11",
-    "typescript": "^1.7.3"
+    "typescript": "^1.7.3",
+    "zone.js": "^0.6.10"
   }
 }
