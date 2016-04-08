@@ -740,6 +740,7 @@ functions
         {
             IEnumerable<string> reposToBuild = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
                 // The repos list is topologically sorted based on build order
+                "libuv-build",
                 "PlatformAbstractions",
                 "Common",
                 "JsonPatch",
