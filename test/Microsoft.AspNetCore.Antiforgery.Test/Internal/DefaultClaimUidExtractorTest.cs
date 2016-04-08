@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             identity.AddClaim(new Claim(ClaimTypes.Email, "someone@antifrogery.com"));
             identity.AddClaim(new Claim(ClaimTypes.GivenName, "some"));
             identity.AddClaim(new Claim(ClaimTypes.Surname, "one"));
-#if DNX451
+#if NET451
             // CoreCLR doesn't support an 'empty' name
             identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, string.Empty));
 #endif
