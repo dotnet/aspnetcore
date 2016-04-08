@@ -189,6 +189,35 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             }
         }
 
+        // Testing how ModelMetadata is handled as ViewDataDictionary instances are created.
+        [Theory]
+        [InlineData("AtViewModel")]
+        [InlineData("NullViewModel")]
+        [InlineData("ViewModel")]
+        public async Task CheckViewData_GeneratesExpectedResults(string action)
+        {
+            // Arrange
+            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+            var outputFile = "compiler/resources/HtmlGenerationWebSite.CheckViewData." + action + ".html";
+            var expectedContent =
+                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
+
+            // Act
+            var response = await Client.GetAsync("http://localhost/CheckViewData/" + action);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+
+            responseContent = responseContent.Trim();
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+#else
+            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
+#endif
+        }
+
         [Fact]
         public async Task ValidationTagHelpers_GeneratesExpectedSpansAndDivs()
         {

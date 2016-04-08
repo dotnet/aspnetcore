@@ -79,6 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
         }
 
+        /// <inheritdoc />
         public new TModel Model
         {
             get
