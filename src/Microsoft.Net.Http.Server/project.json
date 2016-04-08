@@ -17,7 +17,9 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Runtime": { "type": "build" }
+        "System.Runtime": {
+          "type": "build"
+        }
       }
     },
     "netstandard1.3": {
@@ -37,10 +39,7 @@
         "System.Text.Encoding.Extensions": "4.0.11-*",
         "System.Threading": "4.0.11-*",
         "System.Threading.Overlapped": "4.0.1-*"
-      },
-      "imports": [
-        "dotnet5.4"
-      ]
+      }
     }
   }
 }
