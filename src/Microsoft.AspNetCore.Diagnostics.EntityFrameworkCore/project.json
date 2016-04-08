@@ -6,7 +6,6 @@
     "diagnostics",
     "entityframeworkcore"
   ],
-
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/diagnostics"
@@ -39,7 +38,6 @@
         "System.Threading": "4.0.11-*"
       },
       "imports": [
-        "dotnet5.4",
         "portable-net451+win8"
       ]
     }
