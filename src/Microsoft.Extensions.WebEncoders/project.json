@@ -23,10 +23,6 @@
     "System.Text.Encodings.Web": "4.0.0-*"
   },
   "frameworks": {
-    "netstandard1.0": {
-      "imports": [
-        "dotnet5.1"
-      ]
-    }
+    "netstandard1.0": {}
   }
 }
