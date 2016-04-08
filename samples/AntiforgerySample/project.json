@@ -4,7 +4,7 @@
     "Microsoft.AspNetCore.Antiforgery": "1.0.0-*",
     "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
     "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
@@ -13,28 +13,19 @@
   "compilationOptions": {
     "emitEntryPoint": true
   },
-  "commands": {
-    "web": "AntiforgerySample"
-  },
   "frameworks": {
     "net451": {},
     "netstandardapp1.5": {
       "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ]
+        "dnxcore50"
+      ],
+      "dependencies": {
+        "NETStandard.Library": "1.5.0-*"
+      }
     }
   },
-  "publishExclude": [
-    "node_modules",
-    "bower_components",
-    "**.xproj",
-    "**.user",
-    "**.vspscc"
-  ],
-  "exclude": [
+  "content": [
     "wwwroot",
-    "node_modules",
-    "bower_components"
+    "web.config"
   ]
 }
