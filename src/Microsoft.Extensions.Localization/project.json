@@ -23,15 +23,12 @@
     "Microsoft.Extensions.Options": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netstandard1.3": {
       "dependencies": {
         "System.Collections.Concurrent": "4.0.12-*",
         "System.Resources.Reader": "4.0.0-*"
-      },
-      "imports": [
-        "dotnet5.4"
-      ]
+      }
     }
   }
 }

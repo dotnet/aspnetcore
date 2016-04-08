@@ -24,11 +24,7 @@
     "Microsoft.Extensions.Options": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { },
-    "netstandard1.3": {
-      "imports": [
-        "dotnet5.4"
-      ]
-    }
+    "net451": {},
+    "netstandard1.3": {}
   }
 }
