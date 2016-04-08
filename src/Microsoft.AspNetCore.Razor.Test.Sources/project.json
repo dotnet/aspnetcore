@@ -8,7 +8,7 @@
     "net451": {},
     "netstandard1.3": {
       "imports": [
-        "dotnet5.4"
+        "dotnet"
       ]
     }
   }

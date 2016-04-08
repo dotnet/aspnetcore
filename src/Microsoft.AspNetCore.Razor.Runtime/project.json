@@ -40,8 +40,12 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Runtime": { "type": "build" },
-        "System.IO": { "type": "build" },
+        "System.Runtime": {
+          "type": "build"
+        },
+        "System.IO": {
+          "type": "build"
+        },
         "System.Xml": "4.0.0.0",
         "System.Xml.Linq": "4.0.0.0"
       }
@@ -62,10 +66,7 @@
         "System.Reflection.TypeExtensions": "4.1.0-*",
         "System.Text.RegularExpressions": "4.0.12-*",
         "System.Xml.XDocument": "4.0.11-*"
-      },
-      "imports": [
-        "dotnet5.6"
-      ]
+      }
     }
   }
 }
