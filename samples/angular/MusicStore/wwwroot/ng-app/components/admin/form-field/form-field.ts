@@ -3,9 +3,7 @@ import { AbstractControl } from 'angular2/common';
 
 @ng.Component({
   selector: 'form-field',
-  properties: ['label', 'validate']
-})
-@ng.View({
+  properties: ['label', 'validate'],
   templateUrl: './ng-app/components/admin/form-field/form-field.html'
 })
 export class FormField {

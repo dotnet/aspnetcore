@@ -3,15 +3,12 @@
 }
 
 <cache vary-by="@Context.Request.Path">
-    <app asp-ng2-prerender-module="wwwroot/ng-app/components/app/app">
-        Loading...
-    </app>
+    <app asp-prerender-module="wwwroot/ng-app/boot-server">Loading...</app>
+    @await Html.PrimeCache(Url.Action("GenreMenuList", "GenresApi"))
+    @await Html.PrimeCache(Url.Action("MostPopular", "AlbumsApi"))
 </cache>
 
 @section scripts {
-    @await Html.PrimeCache(Url.Action("GenreMenuList", "GenresApi"))
-    @await Html.PrimeCache(Url.Action("MostPopular", "AlbumsApi"))
-
     <script src="~/lib/angular2/bundles/angular2-polyfills.js"></script>
     <script src="~/lib/traceur/bin/traceur-runtime.js"></script>
     <script src="~/lib/es6-module-loader/dist/es6-module-loader-sans-promises.js"></script>
@@ -22,5 +19,5 @@
     <script src="~/lib/angular2/bundles/router.dev.js"></script>
     <script src="~/lib/angular2/bundles/http.dev.js"></script>
     <script src="~/lib/angular2-aspnet/bundles/angular2-aspnet.js"></script>
-    <script>System.import('./ng-app/components/app/bootstrap');</script>
+    <script>System.import('./ng-app/boot-client');</script>
 }

@@ -5,9 +5,7 @@ import { Http, HTTP_BINDINGS } from 'angular2/http';
 import { AlbumDeletePrompt } from '../album-delete-prompt/album-delete-prompt';
 
 @ng.Component({
-  selector: 'album-details'
-})
-@ng.View({
+  selector: 'album-details',
   templateUrl: './ng-app/components/admin/album-details/album-details.html',
   directives: [router.ROUTER_DIRECTIVES, AlbumDeletePrompt]
 })

@@ -5,9 +5,7 @@ import * as models from '../../../models/models';
 import { AlbumTile } from '../album-tile/album-tile';
 
 @ng.Component({
-  selector: 'genre-contents'
-})
-@ng.View({
+  selector: 'genre-contents',
   templateUrl: './ng-app/components/public/genre-contents/genre-contents.html',
   directives: [AlbumTile]
 })

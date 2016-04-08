@@ -5,17 +5,15 @@ import { AlbumDetails } from '../album-details/album-details';
 import { AlbumEdit } from '../album-edit/album-edit';
 
 @ng.Component({
-  selector: 'admin-home'
+  selector: 'admin-home',
+  templateUrl: './ng-app/components/admin/admin-home/admin-home.html',
+  directives: [router.ROUTER_DIRECTIVES]
 })
 @router.RouteConfig([
   { path: 'albums', name: 'Albums', component: AlbumsList },
   { path: 'album/details/:albumId', name: 'AlbumDetails', component: AlbumDetails },
   { path: 'album/edit/:albumId', name: 'AlbumEdit', component: AlbumEdit }
 ])
-@ng.View({
-  templateUrl: './ng-app/components/admin/admin-home/admin-home.html',
-  directives: [router.ROUTER_DIRECTIVES]
-})
 export class AdminHome {
 
 }

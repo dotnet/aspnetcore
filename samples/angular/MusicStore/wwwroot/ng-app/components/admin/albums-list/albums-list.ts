@@ -5,9 +5,7 @@ import * as models from '../../../models/models';
 import { AlbumDeletePrompt } from '../album-delete-prompt/album-delete-prompt';
 
 @ng.Component({
-  selector: 'albums-list'
-})
-@ng.View({
+  selector: 'albums-list',
   templateUrl: './ng-app/components/admin/albums-list/albums-list.html',
   directives: [router.ROUTER_DIRECTIVES, AlbumDeletePrompt]
 })

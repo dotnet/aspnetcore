@@ -4,9 +4,7 @@ import { Http } from 'angular2/http';
 import * as models from '../../../models/models';
 
 @ng.Component({
-  selector: 'album-details'
-})
-@ng.View({
+  selector: 'album-details',
   templateUrl: './ng-app/components/public/album-details/album-details.html'
 })
 export class AlbumDetails {

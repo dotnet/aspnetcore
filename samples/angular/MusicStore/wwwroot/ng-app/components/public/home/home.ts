@@ -4,9 +4,7 @@ import { AlbumTile } from '../album-tile/album-tile';
 import * as models from '../../../models/models';
 
 @ng.Component({
-  selector: 'home'
-})
-@ng.View({
+  selector: 'home',
   templateUrl: './ng-app/components/public/home/home.html',
   directives: [AlbumTile]
 })

@@ -4,9 +4,7 @@ import * as models from '../../../models/models';
 
 @ng.Component({
   selector: 'album-tile',
-  properties: ['albumData']
-})
-@ng.View({
+  properties: ['albumData'],
   templateUrl: './ng-app/components/public/album-tile/album-tile.html',
   directives: [router.ROUTER_DIRECTIVES]
 })

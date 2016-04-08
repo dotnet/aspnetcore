@@ -9,9 +9,7 @@ import { FormField } from '../form-field/form-field';
 import * as AspNet from 'angular2-aspnet';
 
 @ng.Component({
-    selector: 'album-edit'
-})
-@ng.View({
+    selector: 'album-edit',
     templateUrl: './ng-app/components/admin/album-edit/album-edit.html',
     directives: [router.ROUTER_DIRECTIVES, AlbumDeletePrompt, FormField, FORM_DIRECTIVES]
 })

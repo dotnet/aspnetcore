@@ -38,7 +38,7 @@ gulp.task('build.lib', function () {
 
 gulp.task('build', ['build.lib'], function () {
     var tsProject = typescript.createProject('./tsconfig.json', { typescript: require('typescript') });
-    var tsSrcInlined = gulp.src([webroot + '**/*.ts'], { base: webroot })
+    var tsSrcInlined = gulp.src([webroot + '**/*.ts', 'typings/**/*.d.ts'], { base: webroot })
         .pipe(inlineNg2Template({ base: webroot }));
     return tsSrcInlined
         .pipe(sourcemaps.init())

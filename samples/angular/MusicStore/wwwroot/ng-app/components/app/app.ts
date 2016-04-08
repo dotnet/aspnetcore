@@ -9,7 +9,10 @@ import { AdminHome } from '../admin/admin-home/admin-home';
 import * as models from '../../models/models';
 
 @ng.Component({
-    selector: 'app'
+    selector: 'app',
+    templateUrl: './ng-app/components/app/app.html',
+    styleUrls: ['./ng-app/components/app/app.css'],
+    directives: [router.ROUTER_DIRECTIVES]
 })
 @router.RouteConfig([
     { path: '/', component: Home, name: 'Home' },
@@ -18,11 +21,6 @@ import * as models from '../../models/models';
     { path: '/genres', component: GenresList, name: 'GenresList' },
     { path: '/admin/...', component: AdminHome, name: 'Admin' }
 ])
-@ng.View({
-    templateUrl: './ng-app/components/app/app.html',
-    styleUrls: ['./ng-app/components/app/app.css'],
-    directives: [router.ROUTER_DIRECTIVES]
-})
 export class App {
     public genres: models.Genre[];
 

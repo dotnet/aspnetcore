@@ -4,9 +4,7 @@ import { Http } from 'angular2/http';
 import * as models from '../../../models/models';
 
 @ng.Component({
-  selector: 'genres-list'
-})
-@ng.View({
+  selector: 'genres-list',
   templateUrl: './ng-app/components/public/genres-list/genres-list.html',
   directives: [router.ROUTER_DIRECTIVES]
 })
