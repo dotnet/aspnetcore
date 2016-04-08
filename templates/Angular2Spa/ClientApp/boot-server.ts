@@ -1,7 +1,7 @@
-import 'angular2-universal-polyfills';
+import 'angular2-universal/polyfills';
 import * as ngCore from 'angular2/core';
 import * as ngRouter from 'angular2/router';
-import * as ngUniversal from 'angular2-universal-preview';
+import * as ngUniversal from 'angular2-universal';
 import { App } from './components/app/app';
 
 export default function (params: any): Promise<{ html: string, globals?: any }> {
