@@ -13,16 +13,13 @@
     "Microsoft.AspNetCore.Cryptography.Internal": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netstandard1.3": {
       "dependencies": {
         "System.Runtime.Extensions": "4.1.0-*",
         "System.Security.Cryptography.Algorithms": "4.1.0-*",
         "System.Text.Encoding.Extensions": "4.0.11-*"
-      },
-      "imports": [
-        "dotnet5.4"
-      ]
+      }
     }
   },
   "compilationOptions": {
