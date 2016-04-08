@@ -70,7 +70,7 @@
         "portable-net451+win8"
       ]
     },
-    "net451": {}
+    "net451": { }
   },
   "exclude": [
     "wwwroot",

@@ -3,6 +3,11 @@
     "emitEntryPoint": true,
     "preserveCompilationContext": true
   },
+  "content": [
+    "Views",
+    "Shared-Views",
+    "web.config"
+  ],
   "dependencies": {
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Localization": "1.0.0-*",
@@ -39,10 +44,6 @@
       }
     }
   },
-  "content": [
-    "Views",
-    "web.config"
-  ],
   "tools": {
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": {
       "version": "1.0.0-*",

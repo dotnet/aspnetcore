@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.IO;
 using InlineConstraintSample.Web.Constraints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -14,7 +15,7 @@ namespace InlineConstraintSample.Web
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRouting( routeOptions =>
+            services.AddRouting(routeOptions =>
             {
                 routeOptions.ConstraintMap.Add("IsbnDigitScheme10", typeof(IsbnDigitScheme10Constraint));
                 routeOptions.ConstraintMap.Add("IsbnDigitScheme13", typeof(IsbnDigitScheme13Constraint));
@@ -39,6 +40,7 @@ namespace InlineConstraintSample.Web
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseDefaultHostingConfiguration(args)
                 .UseIISIntegration()
                 .UseKestrel()
