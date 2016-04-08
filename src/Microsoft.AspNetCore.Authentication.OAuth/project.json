@@ -13,7 +13,9 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "dependencies": {
@@ -21,10 +23,9 @@
     "Newtonsoft.Json": "8.0.3"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netstandard1.3": {
       "imports": [
-        "dotnet5.4",
         "portable-net451+win8"
       ]
     }
