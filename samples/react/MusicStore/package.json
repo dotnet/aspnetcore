@@ -20,6 +20,9 @@
     "webpack-hot-middleware": "^2.6.4"
   },
   "dependencies": {
+    "aspnet-prerendering": "^1.0.0",
+    "aspnet-webpack": "^1.0.3",
+    "aspnet-webpack-react": "^1.0.1",
     "bootstrap": "^3.3.6",
     "domain-context": "^0.5.1",
     "domain-task": "^1.0.0",

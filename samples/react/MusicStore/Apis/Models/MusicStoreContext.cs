@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.Data.Entity;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace MusicStore.Models
 {
@@ -7,7 +7,7 @@ namespace MusicStore.Models
 
     public class MusicStoreContext : IdentityDbContext<ApplicationUser>
     {
-        public MusicStoreContext()
+        public MusicStoreContext(DbContextOptions options) : base(options)
         {
         }
 
