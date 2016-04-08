@@ -24,14 +24,12 @@
     "Microsoft.Extensions.ObjectPool": "1.0.0-*"
   },
   "frameworks": {
-    "netstandard1.3": {
-      "imports": [
-        "dotnet5.4"
-      ]
-    },
+    "netstandard1.3": {},
     "net451": {
       "frameworkAssemblies": {
-        "System.Runtime": { "type": "build"}
+        "System.Runtime": {
+          "type": "build"
+        }
       }
     }
   }
