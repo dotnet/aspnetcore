@@ -1,6 +1,7 @@
 {
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
     "Microsoft.NETCore.Platforms": "1.0.1-*",

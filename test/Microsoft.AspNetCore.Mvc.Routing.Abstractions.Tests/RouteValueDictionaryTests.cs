@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -12,163 +12,82 @@ namespace Microsoft.AspNetCore.Routing.Tests
     public class RouteValueDictionaryTests
     {
         [Fact]
-        public void CreateEmpty_UsesOrdinalIgnoreCase()
+        public void DefaultCtor_UsesEmptyStorage()
         {
             // Arrange
             // Act
             var dict = new RouteValueDictionary();
 
             // Assert
-            Assert.Same(StringComparer.OrdinalIgnoreCase, dict.Comparer);
+            Assert.Empty(dict);
+            Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
         }
 
         [Fact]
-        public void CreateFromDictionary_UsesOrdinalIgnoreCase()
+        public void CreateFromNull_UsesEmptyStorage()
         {
             // Arrange
             // Act
-            var dict = new RouteValueDictionary(new Dictionary<string, object>(StringComparer.Ordinal));
+            var dict = new RouteValueDictionary(null);
 
             // Assert
-            Assert.Same(StringComparer.OrdinalIgnoreCase, dict.Comparer);
+            Assert.Empty(dict);
+            Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
         }
 
         [Fact]
-        public void CreateFromObject_UsesOrdinalIgnoreCase()
+        public void CreateFromRouteValueDictionary_WithListStorage_CopiesStorage()
         {
             // Arrange
-            // Act
-            var dict = new RouteValueDictionary(new { cool = "beans" });
-
-            // Assert
-            Assert.Same(StringComparer.OrdinalIgnoreCase, dict.Comparer);
-        }
-
-        [Fact]
-        public void CreateFromObject_CopiesPropertiesFromAnonymousType()
-        {
-            // Arrange
-            var obj = new { cool = "beans", awesome = 123 };
-
-            // Act
-            var dict = new RouteValueDictionary(obj);
-
-            // Assert
-            Assert.Equal(2, dict.Count);
-            Assert.Equal("beans", dict["cool"]);
-            Assert.Equal(123, dict["awesome"]);
-        }
-
-        [Fact]
-        public void CreateFromObject_CopiesPropertiesFromRegularType()
-        {
-            // Arrange
-            var obj = new RegularType() { CoolnessFactor = 73 };
-
-            // Act
-            var dict = new RouteValueDictionary(obj);
-
-            // Assert
-            Assert.Equal(2, dict.Count);
-            Assert.Equal(false, dict["IsAwesome"]);
-            Assert.Equal(73, dict["CoolnessFactor"]);
-        }
-
-        [Fact]
-        public void CreateFromObject_CopiesPropertiesFromRegularType_PublicOnly()
-        {
-            // Arrange
-            var obj = new Visibility() { IsPublic = true, ItsInternalDealWithIt = 5 };
-
-            // Act
-            var dict = new RouteValueDictionary(obj);
-
-            // Assert
-            Assert.Equal(1, dict.Count);
-            Assert.Equal(true, dict["IsPublic"]);
-        }
-
-        [Fact]
-        public void CreateFromObject_CopiesPropertiesFromRegularType_IgnoresStatic()
-        {
-            // Arrange
-            var obj = new StaticProperty();
-
-            // Act
-            var dict = new RouteValueDictionary(obj);
-
-            // Assert
-            Assert.Equal(0, dict.Count);
-        }
-
-        [Fact]
-        public void CreateFromObject_CopiesPropertiesFromRegularType_IgnoresSetOnly()
-        {
-            // Arrange
-            var obj = new SetterOnly() { CoolSetOnly = false };
-
-            // Act
-            var dict = new RouteValueDictionary(obj);
-
-            // Assert
-            Assert.Equal(0, dict.Count);
-        }
-
-        [Fact]
-        public void CreateFromObject_CopiesPropertiesFromRegularType_IncludesInherited()
-        {
-            // Arrange
-            var obj = new Derived() { TotallySweetProperty = true, DerivedProperty = false };
-
-            // Act
-            var dict = new RouteValueDictionary(obj);
-
-            // Assert
-            Assert.Equal(2, dict.Count);
-            Assert.Equal(true, dict["TotallySweetProperty"]);
-            Assert.Equal(false, dict["DerivedProperty"]);
-        }
-
-        [Fact]
-        public void CreateFromObject_CopiesPropertiesFromRegularType_WithHiddenProperty()
-        {
-            // Arrange
-            var obj = new DerivedHiddenProperty() { DerivedProperty = 5 };
-
-            // Act
-            var dict = new RouteValueDictionary(obj);
-
-            // Assert
-            Assert.Equal(1, dict.Count);
-            Assert.Equal(5, dict["DerivedProperty"]);
-        }
-
-        [Fact]
-        public void CreateFromObject_CopiesPropertiesFromRegularType_WithIndexerProperty()
-        {
-            // Arrange
-            var obj = new IndexerProperty();
-
-            // Act
-            var dict = new RouteValueDictionary(obj);
-
-            // Assert
-            Assert.Equal(0, dict.Count);
-        }
-
-        [Fact]
-        public void CreateFromObject_MixedCaseThrows()
-        {
-            // Arrange
-            var obj = new { controller = "Home", Controller = "Home" };
-
-            // Act & Assert
-            ExceptionAssert.Throws<ArgumentException>(
-            () =>
+            var other = new RouteValueDictionary()
             {
-                var dictionary = new RouteValueDictionary(obj);
-                dictionary.Add("Hi", "There");
-            });
+                { "1", 1 }
+            };
+
+            // Act
+            var dict = new RouteValueDictionary(other);
+
+            // Assert
+            Assert.Equal(other, dict);
+
+            var storage = Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            var otherStorage = Assert.IsType<RouteValueDictionary.ListStorage>(other._storage);
+            Assert.NotSame(otherStorage, storage);
+            Assert.NotSame(otherStorage._inner, storage._inner);
+        }
+
+        [Fact]
+        public void CreateFromRouteValueDictionary_WithPropertyStorage_CopiesStorage()
+        {
+            // Arrange
+            var other = new RouteValueDictionary(new { key = "value" });
+
+            // Act
+            var dict = new RouteValueDictionary(other);
+
+            // Assert
+            Assert.Equal(other, dict);
+
+            var storage = Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            var otherStorage = Assert.IsType<RouteValueDictionary.PropertyStorage>(other._storage);
+            Assert.Same(otherStorage, storage);
+        }
+
+        [Fact]
+        public void CreateFromRouteValueDictionary_WithEmptyStorage_SharedInstance()
+        {
+            // Arrange
+            var other = new RouteValueDictionary();
+
+            // Act
+            var dict = new RouteValueDictionary(other);
+
+            // Assert
+            Assert.Equal(other, dict);
+
+            var storage = Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
+            var otherStorage = Assert.IsType<RouteValueDictionary.EmptyStorage>(other._storage);
+            Assert.Same(otherStorage, storage);
         }
 
         public static IEnumerable<object[]> IEnumerableKeyValuePairData
@@ -192,36 +111,1279 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
         [Theory]
         [MemberData(nameof(IEnumerableKeyValuePairData))]
-        public void RouteValueDictionary_CopiesValues_FromIEnumerableKeyValuePair(object values)
+        public void CreateFromIEnumerableKeyValuePair_CopiesValues(object values)
         {
             // Arrange & Act
             var dict = new RouteValueDictionary(values);
 
             // Assert
-            Assert.Equal(3, dict.Count);
-            Assert.Equal("James", dict["Name"]);
-            Assert.Equal(30, dict["Age"]);
-            var address = Assert.IsType<Address>(dict["Address"]);
-            Assert.Equal("Redmond", address.City);
-            Assert.Equal("WA", address.State);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.Collection(
+                dict.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("Address", kvp.Key);
+                    var address = Assert.IsType<Address>(kvp.Value);
+                    Assert.Equal("Redmond", address.City);
+                    Assert.Equal("WA", address.State);
+                },
+                kvp => { Assert.Equal("Age", kvp.Key); Assert.Equal(30, kvp.Value); },
+                kvp => { Assert.Equal("Name", kvp.Key); Assert.Equal("James", kvp.Value); });
         }
 
-        [Theory]
-        [MemberData(nameof(IEnumerableKeyValuePairData))]
-        public void CreatedFrom_IEnumerableKeyValuePair_AllowsAddingOrModifyingValues(object values)
+        [Fact]
+        public void CreateFromIEnumerableKeyValuePair_ThrowsExceptionForDuplicateKey()
         {
-            // Arrange & Act
-            var routeValueDictionary = new RouteValueDictionary(values);
-            routeValueDictionary.Add("City", "Redmond");
+            // Arrange
+            var values = new List<KeyValuePair<string, object>>()
+            {
+                new KeyValuePair<string, object>("name", "Billy"),
+                new KeyValuePair<string, object>("Name", "Joey"),
+            };
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgument(
+                () => new RouteValueDictionary(values),
+                "values",
+                $"An element with the key 'Name' already exists in the {nameof(RouteValueDictionary)}.");
+        }
+
+        [Fact]
+        public void CreateFromObject_CopiesPropertiesFromAnonymousType()
+        {
+            // Arrange
+            var obj = new { cool = "beans", awesome = 123 };
+
+            // Act
+            var dict = new RouteValueDictionary(obj);
 
             // Assert
-            Assert.Equal(4, routeValueDictionary.Count);
-            Assert.Equal("James", routeValueDictionary["Name"]);
-            Assert.Equal(30, routeValueDictionary["Age"]);
-            Assert.Equal("Redmond", routeValueDictionary["City"]);
-            var address = Assert.IsType<Address>(routeValueDictionary["Address"]);
-            address.State = "Washington";
-            Assert.Equal("Washington", ((Address)routeValueDictionary["Address"]).State);
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.Collection(
+                dict.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("awesome", kvp.Key); Assert.Equal(123, kvp.Value); },
+                kvp => { Assert.Equal("cool", kvp.Key); Assert.Equal("beans", kvp.Value); });
+        }
+
+        [Fact]
+        public void CreateFromObject_CopiesPropertiesFromRegularType()
+        {
+            // Arrange
+            var obj = new RegularType() { CoolnessFactor = 73 };
+
+            // Act
+            var dict = new RouteValueDictionary(obj);
+
+            // Assert
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.Collection(
+                dict.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("CoolnessFactor", kvp.Key); Assert.Equal(73, kvp.Value); },
+                kvp => { Assert.Equal("IsAwesome", kvp.Key); Assert.Equal(false, kvp.Value); });
+        }
+
+        [Fact]
+        public void CreateFromObject_CopiesPropertiesFromRegularType_PublicOnly()
+        {
+            // Arrange
+            var obj = new Visibility() { IsPublic = true, ItsInternalDealWithIt = 5 };
+
+            // Act
+            var dict = new RouteValueDictionary(obj);
+
+            // Assert
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.Collection(
+                dict.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("IsPublic", kvp.Key); Assert.Equal(true, kvp.Value); });
+        }
+
+        [Fact]
+        public void CreateFromObject_CopiesPropertiesFromRegularType_IgnoresStatic()
+        {
+            // Arrange
+            var obj = new StaticProperty();
+
+            // Act
+            var dict = new RouteValueDictionary(obj);
+
+            // Assert
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.Empty(dict);
+        }
+
+        [Fact]
+        public void CreateFromObject_CopiesPropertiesFromRegularType_IgnoresSetOnly()
+        {
+            // Arrange
+            var obj = new SetterOnly() { CoolSetOnly = false };
+
+            // Act
+            var dict = new RouteValueDictionary(obj);
+
+            // Assert
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.Empty(dict);
+        }
+
+        [Fact]
+        public void CreateFromObject_CopiesPropertiesFromRegularType_IncludesInherited()
+        {
+            // Arrange
+            var obj = new Derived() { TotallySweetProperty = true, DerivedProperty = false };
+
+            // Act
+            var dict = new RouteValueDictionary(obj);
+
+            // Assert
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.Collection(
+                dict.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("DerivedProperty", kvp.Key); Assert.Equal(false, kvp.Value); },
+                kvp => { Assert.Equal("TotallySweetProperty", kvp.Key); Assert.Equal(true, kvp.Value); });
+        }
+
+        [Fact]
+        public void CreateFromObject_CopiesPropertiesFromRegularType_WithHiddenProperty()
+        {
+            // Arrange
+            var obj = new DerivedHiddenProperty() { DerivedProperty = 5 };
+
+            // Act
+            var dict = new RouteValueDictionary(obj);
+
+            // Assert
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.Collection(
+                dict.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("DerivedProperty", kvp.Key); Assert.Equal(5, kvp.Value); });
+        }
+
+        [Fact]
+        public void CreateFromObject_CopiesPropertiesFromRegularType_WithIndexerProperty()
+        {
+            // Arrange
+            var obj = new IndexerProperty();
+
+            // Act
+            var dict = new RouteValueDictionary(obj);
+
+            // Assert
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+            Assert.Empty(dict);
+        }
+
+        [Fact]
+        public void CreateFromObject_MixedCaseThrows()
+        {
+            // Arrange		
+            var obj = new { controller = "Home", Controller = "Home" };
+
+            var message =
+                $"The type '{obj.GetType().FullName}' defines properties 'controller' and 'Controller' which differ " +
+                $"only by casing. This is not supported by {nameof(RouteValueDictionary)} which uses " +
+                $"case-insensitive comparisons.";
+
+            // Act & Assert		
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+            {
+                var dictionary = new RouteValueDictionary(obj);
+            });
+
+            // Ignoring case to make sure we're not testing reflection's ordering.
+            Assert.Equal(message, exception.Message, ignoreCase: true);
+        }
+
+        // Our comparer is hardcoded to be OrdinalIgnoreCase no matter what.
+        [Fact]
+        public void Comparer_IsOrdinalIgnoreCase()
+        {
+            // Arrange
+            // Act
+            var dict = new RouteValueDictionary();
+
+            // Assert
+            Assert.Same(StringComparer.OrdinalIgnoreCase, dict.Comparer);
+        }
+
+        // Our comparer is hardcoded to be IsReadOnly==false no matter what.
+        [Fact]
+        public void IsReadOnly_False()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            var result = ((ICollection<KeyValuePair<string, object>>)dict).IsReadOnly;
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IndexGet_EmptyStorage_ReturnsNull()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            var value = dict["key"];
+
+            // Assert
+            Assert.Null(value);
+            Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void IndexGet_PropertyStorage_NoMatch_ReturnsNull()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { age = 30 });
+
+            // Act
+            var value = dict["key"];
+
+            // Assert
+            Assert.Null(value);
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void IndexGet_PropertyStorage_Match_ReturnsValue()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value" });
+
+            // Act
+            var value = dict["key"];
+
+            // Assert
+            Assert.Equal("value", value);
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void IndexGet_PropertyStorage_MatchIgnoreCase_ReturnsValue()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value" });
+
+            // Act
+            var value = dict["kEy"];
+
+            // Assert
+            Assert.Equal("value", value);
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void IndexGet_ListStorage_NoMatch_ReturnsNull()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "age", 30 },
+            };
+
+            // Act
+            var value = dict["key"];
+
+            // Assert
+            Assert.Null(value);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void IndexGet_ListStorage_Match_ReturnsValue()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            var value = dict["key"];
+
+            // Assert
+            Assert.Equal("value", value);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void IndexGet_ListStorage_MatchIgnoreCase_ReturnsValue()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            var value = dict["kEy"];
+
+            // Assert
+            Assert.Equal("value", value);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void IndexSet_EmptyStorage_UpgradesToList()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            dict["key"] = "value";
+
+            // Assert
+            Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void IndexSet_PropertyStorage_NoMatch_AddsValue()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { age = 30 });
+
+            // Act
+            dict["key"] = "value";
+
+            // Assert
+            Assert.Collection(
+                dict.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("age", kvp.Key); Assert.Equal(30, kvp.Value); },
+                kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void IndexSet_PropertyStorage_Match_SetsValue()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value" });
+
+            // Act
+            dict["key"] = "value";
+
+            // Assert
+            Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void IndexSet_PropertyStorage_MatchIgnoreCase_SetsValue()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value" });
+
+            // Act
+            dict["kEy"] = "value";
+
+            // Assert
+            Assert.Collection(dict, kvp => { Assert.Equal("kEy", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void IndexSet_ListStorage_NoMatch_AddsValue()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "age", 30 },
+            };
+
+            // Act
+            dict["key"] = "value";
+
+            // Assert
+            Assert.Collection(
+                dict.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("age", kvp.Key); Assert.Equal(30, kvp.Value); },
+                kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void IndexSet_ListStorage_Match_SetsValue()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            dict["key"] = "value";
+
+            // Assert
+            Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void IndexSet_ListStorage_MatchIgnoreCase_SetsValue()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            dict["key"] = "value";
+
+            // Assert
+            Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Count_EmptyStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            var count = dict.Count;
+
+            // Assert
+            Assert.Equal(0, count);
+            Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Count_PropertyStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value", });
+
+            // Act
+            var count = dict.Count;
+
+            // Assert
+            Assert.Equal(1, count);
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Count_ListStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            var count = dict.Count;
+
+            // Assert
+            Assert.Equal(1, count);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Keys_EmptyStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            var keys = dict.Keys;
+
+            // Assert
+            Assert.Empty(keys);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Keys_PropertyStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value", });
+
+            // Act
+            var keys = dict.Keys;
+
+            // Assert
+            Assert.Equal(new[] { "key" }, keys);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Keys_ListStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            var keys = dict.Keys;
+
+            // Assert
+            Assert.Equal(new[] { "key" }, keys);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Values_EmptyStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            var values = dict.Values;
+
+            // Assert
+            Assert.Empty(values);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Values_PropertyStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value", });
+
+            // Act
+            var values = dict.Values;
+
+            // Assert
+            Assert.Equal(new object[] { "value" }, values);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Values_ListStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            var values = dict.Values;
+
+            // Assert
+            Assert.Equal(new object[] { "value" }, values);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Add_EmptyStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            dict.Add("key", "value");
+
+            // Assert
+            Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Add_PropertyStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { age = 30 });
+
+            // Act
+            dict.Add("key", "value");
+
+            // Assert
+            Assert.Collection(
+                dict.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("age", kvp.Key); Assert.Equal(30, kvp.Value); },
+                kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Add_ListStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "age", 30 },
+            };
+
+            // Act
+            dict.Add("key", "value");
+
+            // Assert
+            Assert.Collection(
+                dict.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("age", kvp.Key); Assert.Equal(30, kvp.Value); },
+                kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Add_DuplicateKey()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            var message = $"An element with the key 'key' already exists in the {nameof(RouteValueDictionary)}";
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgument(() => dict.Add("key", "value2"), "key", message);
+
+            // Assert
+            Assert.Collection(
+                dict.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Add_DuplicateKey_CaseInsensitive()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            var message = $"An element with the key 'kEy' already exists in the {nameof(RouteValueDictionary)}";
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgument(() => dict.Add("kEy", "value2"), "key", message);
+
+            // Assert
+            Assert.Collection(
+                dict.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Add_KeyValuePair()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "age", 30 },
+            };
+
+            // Act
+            ((ICollection<KeyValuePair<string, object>>)dict).Add(new KeyValuePair<string, object>("key", "value"));
+
+            // Assert
+            Assert.Collection(
+                dict.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("age", kvp.Key); Assert.Equal(30, kvp.Value); },
+                kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Clear_EmptyStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            dict.Clear();
+
+            // Assert
+            Assert.Empty(dict);
+            Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Clear_PropertyStorage_AlreadyEmpty()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { });
+
+            // Act
+            dict.Clear();
+
+            // Assert
+            Assert.Empty(dict);
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Clear_PropertyStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value" });
+
+            // Act
+            dict.Clear();
+
+            // Assert
+            Assert.Empty(dict);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Clear_ListStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            dict.Clear();
+
+            // Assert
+            Assert.Empty(dict);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Contains_KeyValuePair_True()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            var input = new KeyValuePair<string, object>("key", "value");
+
+            // Act
+            var result = ((ICollection<KeyValuePair<string, object>>)dict).Contains(input);
+
+            // Assert
+            Assert.True(result);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Contains_KeyValuePair_True_CaseInsensitive()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            var input = new KeyValuePair<string, object>("KEY", "value");
+
+            // Act
+            var result = ((ICollection<KeyValuePair<string, object>>)dict).Contains(input);
+
+            // Assert
+            Assert.True(result);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Contains_KeyValuePair_False()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            var input = new KeyValuePair<string, object>("other", "value");
+
+            // Act
+            var result = ((ICollection<KeyValuePair<string, object>>)dict).Contains(input);
+
+            // Assert
+            Assert.False(result);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        // Value comparisons use the default equality comparer.
+        [Fact]
+        public void Contains_KeyValuePair_False_ValueComparisonIsDefault()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            var input = new KeyValuePair<string, object>("key", "valUE");
+
+            // Act
+            var result = ((ICollection<KeyValuePair<string, object>>)dict).Contains(input);
+
+            // Assert
+            Assert.False(result);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void ContainsKey_EmptyStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            var result = dict.ContainsKey("key");
+
+            // Assert
+            Assert.False(result);
+            Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void ContainsKey_PropertyStorage_False()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value" });
+
+            // Act
+            var result = dict.ContainsKey("other");
+
+            // Assert
+            Assert.False(result);
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void ContainsKey_PropertyStorage_True()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value" });
+
+            // Act
+            var result = dict.ContainsKey("key");
+
+            // Assert
+            Assert.True(result);
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void ContainsKey_PropertyStorage_True_CaseInsensitive()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value" });
+
+            // Act
+            var result = dict.ContainsKey("kEy");
+
+            // Assert
+            Assert.True(result);
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void ContainsKey_ListStorage_False()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            var result = dict.ContainsKey("other");
+
+            // Assert
+            Assert.False(result);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void ContainsKey_ListStorage_True()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            var result = dict.ContainsKey("key");
+
+            // Assert
+            Assert.True(result);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void ContainsKey_ListStorage_True_CaseInsensitive()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            var result = dict.ContainsKey("kEy");
+
+            // Assert
+            Assert.True(result);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void CopyTo()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            var array = new KeyValuePair<string, object>[2];
+
+            // Act
+            ((ICollection<KeyValuePair<string, object>>)dict).CopyTo(array, 1);
+
+            // Assert
+            Assert.Equal(
+                new KeyValuePair<string, object>[]
+                {
+                    default(KeyValuePair<string, object>),
+                    new KeyValuePair<string, object>("key", "value")
+                },
+                array);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Remove_KeyValuePair_True()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            var input = new KeyValuePair<string, object>("key", "value");
+
+            // Act
+            var result = ((ICollection<KeyValuePair<string, object>>)dict).Remove(input);
+
+            // Assert
+            Assert.True(result);
+            Assert.Empty(dict);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Remove_KeyValuePair_True_CaseInsensitive()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            var input = new KeyValuePair<string, object>("KEY", "value");
+
+            // Act
+            var result = ((ICollection<KeyValuePair<string, object>>)dict).Remove(input);
+
+            // Assert
+            Assert.True(result);
+            Assert.Empty(dict);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Remove_KeyValuePair_False()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            var input = new KeyValuePair<string, object>("other", "value");
+
+            // Act
+            var result = ((ICollection<KeyValuePair<string, object>>)dict).Remove(input);
+
+            // Assert
+            Assert.False(result);
+            Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        // Value comparisons use the default equality comparer.
+        [Fact]
+        public void Remove_KeyValuePair_False_ValueComparisonIsDefault()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            var input = new KeyValuePair<string, object>("key", "valUE");
+
+            // Act
+            var result = ((ICollection<KeyValuePair<string, object>>)dict).Remove(input);
+
+            // Assert
+            Assert.False(result);
+            Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Remove_EmptyStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            var result = dict.Remove("key");
+
+            // Assert
+            Assert.False(result);
+            Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Remove_PropertyStorage_Empty()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { });
+
+            // Act
+            var result = dict.Remove("other");
+
+            // Assert
+            Assert.False(result);
+            Assert.Empty(dict);
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Remove_PropertyStorage_False()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value" });
+
+            // Act
+            var result = dict.Remove("other");
+
+            // Assert
+            Assert.False(result);
+            Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Remove_PropertyStorage_True()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value" });
+
+            // Act
+            var result = dict.Remove("key");
+
+            // Assert
+            Assert.True(result);
+            Assert.Empty(dict);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Remove_PropertyStorage_True_CaseInsensitive()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value" });
+
+            // Act
+            var result = dict.Remove("kEy");
+
+            // Assert
+            Assert.True(result);
+            Assert.Empty(dict);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Remove_ListStorage_False()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            var result = dict.Remove("other");
+
+            // Assert
+            Assert.False(result);
+            Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Remove_ListStorage_True()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            var result = dict.Remove("key");
+
+            // Assert
+            Assert.True(result);
+            Assert.Empty(dict);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void Remove_ListStorage_True_CaseInsensitive()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            var result = dict.Remove("kEy");
+
+            // Assert
+            Assert.True(result);
+            Assert.Empty(dict);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void TryGetValue_EmptyStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            object value;
+            var result = dict.TryGetValue("key", out value);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(value);
+            Assert.IsType<RouteValueDictionary.EmptyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void TryGetValue_PropertyStorage_False()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value" });
+
+            // Act
+            object value;
+            var result = dict.TryGetValue("other", out value);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(value);
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void TryGetValue_PropertyStorage_True()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value" });
+
+            // Act
+            object value;
+            var result = dict.TryGetValue("key", out value);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal("value", value);
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void TryGetValue_PropertyStorage_True_CaseInsensitive()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value" });
+
+            // Act
+            object value;
+            var result = dict.TryGetValue("kEy", out value);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal("value", value);
+            Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void TryGetValue_ListStorage_False()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            object value;
+            var result = dict.TryGetValue("other", out value);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(value);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void TryGetValue_ListStorage_True()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            object value;
+            var result = dict.TryGetValue("key", out value);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal("value", value);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void TryGetValue_ListStorage_True_CaseInsensitive()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            object value;
+            var result = dict.TryGetValue("kEy", out value);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal("value", value);
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
         }
 
         private class RegularType
