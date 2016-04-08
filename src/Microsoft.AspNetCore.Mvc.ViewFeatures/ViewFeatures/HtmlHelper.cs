@@ -589,7 +589,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 // Determine which ViewData we should use to construct a new ViewData
                 var baseViewData = viewData ?? ViewData;
 
-                var newViewData = new ViewDataDictionary(baseViewData, model);
+                var newViewData = new ViewDataDictionary<object>(baseViewData, model);
                 var viewContext = new ViewContext(ViewContext, view, newViewData, writer);
 
                 await viewEngineResult.View.RenderAsync(viewContext);

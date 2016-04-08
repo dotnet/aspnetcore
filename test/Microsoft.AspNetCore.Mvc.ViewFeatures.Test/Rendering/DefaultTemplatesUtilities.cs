@@ -304,12 +304,6 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             return htmlHelper;
         }
 
-        public static string FormatOutput(IHtmlHelper helper, object model)
-        {
-            var modelExplorer = helper.MetadataProvider.GetModelExplorerForType(model.GetType(), model);
-            return FormatOutput(modelExplorer);
-        }
-
         private static ICompositeViewEngine CreateViewEngine()
         {
             var view = new Mock<IView>();
@@ -333,6 +327,12 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 .Verifiable();
 
             return viewEngine.Object;
+        }
+
+        public static string FormatOutput(IHtmlHelper helper, object model)
+        {
+            var modelExplorer = helper.MetadataProvider.GetModelExplorerForType(model.GetType(), model);
+            return FormatOutput(modelExplorer);
         }
 
         private static string FormatOutput(ModelExplorer modelExplorer)

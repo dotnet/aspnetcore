@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             ViewContext = new ViewContext(
                 viewContext,
                 viewContext.View,
-                new ViewDataDictionary(viewContext.ViewData),
+                new ViewDataDictionary<object>(viewContext.ViewData),
                 writer);
         }
 

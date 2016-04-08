@@ -101,14 +101,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 return HtmlString.Empty;
             }
 
-            // We need to copy the ModelExplorer to copy the model metadata. Otherwise we might
-            // lose track of the model type/property. Passing null here explicitly, because
-            // this might be a typed VDD, and the model value might not be compatible.
-            // Create VDD of type object so it retains the correct metadata when the model type is not known.
-            var viewData = new ViewDataDictionary<object>(_viewData, model: null);
+            // Create VDD of type object so any model type is allowed.
+            var viewData = new ViewDataDictionary<object>(_viewData);
 
-            // We're setting ModelExplorer in order to preserve the model metadata of the original
-            // _viewData even though _model may be null.
+            // Create a new ModelExplorer in order to preserve the model metadata of the original _viewData even
+            // though _model may have been reset to null. Otherwise we might lose track of the model type /property.
             viewData.ModelExplorer = _modelExplorer.GetExplorerForModel(_model);
 
             viewData.TemplateInfo.FormattedModelValue = formattedModelValue;
