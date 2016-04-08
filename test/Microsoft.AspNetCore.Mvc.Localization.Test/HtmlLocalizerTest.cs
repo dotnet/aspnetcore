@@ -76,10 +76,15 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
                     new object[] { 10, new DateTime(2015, 10, 10) },
                     "Bonjour {HtmlEncode[[x}]] Bienvenue {1:yyyy}"
                 };
-                yield return new object[] {
+                yield return new object[] { // padding happens after encoding
                     "Bonjour {0,6} Bienvenue {{1:yyyy}}",
                     new object[] { 10, new DateTime(2015, 10, 10) },
-                    "Bonjour HtmlEncode[[    10]] Bienvenue {1:yyyy}"
+                    "Bonjour HtmlEncode[[10]] Bienvenue {1:yyyy}"
+                };
+                yield return new object[] { // padding happens after encoding
+                    "Bonjour {0,20} Bienvenue {{1:yyyy}}",
+                    new object[] { 10, new DateTime(2015, 10, 10) },
+                    "Bonjour     HtmlEncode[[10]] Bienvenue {1:yyyy}"
                 };
                 if (!TestPlatformHelper.IsMono)
                 {
