@@ -161,6 +161,8 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".man", "application/x-troff-man" },
                 { ".manifest", "application/x-ms-manifest" },
                 { ".map", "text/plain" },
+                { ".markdown", "text/markdown" },
+                { ".md", "text/markdown" },
                 { ".mdb", "application/x-msaccess" },
                 { ".mdp", "application/octet-stream" },
                 { ".me", "application/x-troff-me" },
