@@ -5,7 +5,7 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 
 ## What is this?
 
-This repo hosts sources for the `Microsoft.AspNet.AngularServices` and `Microsoft.AspNet.ReactServices` packages, along with samples and the underlying `Microsoft.AspNet.NodeServices project`.
+This repo hosts sources for the `Microsoft.AspNet.AngularServices` and `Microsoft.AspNet.ReactServices` packages, along with samples and the underlying `Microsoft.AspNet.NodeServices` project.
 
 #### `Microsoft.AspNet.AngularServices`
 
