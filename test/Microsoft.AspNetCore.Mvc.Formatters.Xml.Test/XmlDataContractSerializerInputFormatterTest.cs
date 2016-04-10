@@ -224,9 +224,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono | RuntimeFrameworks.CoreCLR,
-            SkipReason = "Mono issue - https://github.com/aspnet/External/issues/18; " +
-            "CoreCLR issue - https://github.com/aspnet/External/issues/51")]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono,
+            SkipReason = "Mono issue - https://github.com/aspnet/External/issues/18")]
         public async Task ReadAsync_ThrowsOnExceededMaxDepth()
         {
             // Arrange
@@ -244,9 +243,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono | RuntimeFrameworks.CoreCLR, 
-            SkipReason = "Mono issue - https://github.com/aspnet/External/issues/18; " +
-            "CoreCLR issue - https://github.com/aspnet/External/issues/51")]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono,
+            SkipReason = "Mono issue - https://github.com/aspnet/External/issues/18")]
         public async Task ReadAsync_ThrowsWhenReaderQuotasAreChanged()
         {
             // Arrange
