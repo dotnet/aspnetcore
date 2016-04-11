@@ -82,7 +82,7 @@ namespace SessionSample
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
                 .UseKestrel()
-                .UseIISPlatformHandlerUrl()
+                .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
 
