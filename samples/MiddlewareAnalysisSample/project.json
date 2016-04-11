@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.MiddlewareAnalysis": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.Extensions.DiagnosticAdapter": "1.0.0-*",
@@ -11,15 +11,18 @@
   "compilationOptions": {
     "emitEntryPoint": true
   },
-  "commands": {
-    "web": "MiddlewareAnalysisSample"
-  },
   "frameworks": {
     "net451": {},
     "netstandardapp1.5": {
       "imports": [
         "dnxcore50"
-      ]
+      ],
+      "dependencies": {
+          "NETStandard.Library": "1.5.0-*"
+      }
     }
-  }
+  },
+  "content": [
+    "web.config"
+  ]
 }

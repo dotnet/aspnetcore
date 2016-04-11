@@ -1,22 +1,25 @@
 {
   "dependencies": {
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "compilationOptions": {
     "emitEntryPoint": true
   },
-  "commands": {
-    "web": "DeveloperExceptionPageSample"
-  },
   "frameworks": {
     "net451": {},
     "netstandardapp1.5": {
       "imports": [
         "dnxcore50"
-      ]
+      ],
+      "dependencies": {
+          "NETStandard.Library": "1.5.0-*"
+      }
     }
-  }
+  },
+  "content": [
+    "web.config"
+  ]
 }

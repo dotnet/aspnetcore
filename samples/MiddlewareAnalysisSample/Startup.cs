@@ -29,7 +29,6 @@ namespace MiddlewareAnaysisSample
 
             // Named via app.UseMiddleware<T>()
             app.UseDeveloperExceptionPage();
-            app.UseIISPlatformHandler();
 
             // Anonymous method inline middleware
             app.Use((context, next) =>
@@ -88,7 +87,7 @@ namespace MiddlewareAnaysisSample
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
                 .UseKestrel()
-                .UseIISPlatformHandlerUrl()
+                .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
 
