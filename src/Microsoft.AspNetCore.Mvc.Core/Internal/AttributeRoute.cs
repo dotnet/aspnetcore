@@ -98,23 +98,28 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // it on startup.
             if (_router == null || _router.Version != actions.Version)
             {
-                _router = BuildRoute(actions);
+                var entries = GetEntries(actions);
+                _router = BuildRoute(entries, actions.Version);
             }
 
             return _router;
         }
 
-        private TreeRouter BuildRoute(ActionDescriptorCollection actions)
+        // internal for testing
+        internal AttributeRouteEntries GetEntries(ActionDescriptorCollection actions)
         {
-            var routeBuilder = new TreeRouteBuilder(_target, _loggerFactory);
+            var entries = new AttributeRouteEntries();
+
             var routeInfos = GetRouteInfos(_constraintResolver, actions.Items);
 
-            // We're creating one AttributeRouteGenerationEntry per action. This allows us to match the intended
+            // We're creating one TreeRouteLinkGenerationEntry per action. This allows us to match the intended
             // action by expected route values, and then use the TemplateBinder to generate the link.
             foreach (var routeInfo in routeInfos)
             {
-                routeBuilder.Add(new TreeRouteLinkGenerationEntry()
+                entries.LinkGenerationEntries.Add(new TreeRouteLinkGenerationEntry()
                 {
+                    // Using routeInfo.Defaults here WITHOUT adding the RouteGroupKey. We don't want to impact the
+                    // behavior of link generation.
                     Binder = new TemplateBinder(_urlEncoder, _contextPool, routeInfo.ParsedTemplate, routeInfo.Defaults),
                     Defaults = routeInfo.Defaults,
                     Constraints = routeInfo.Constraints,
@@ -133,24 +138,44 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var distinctRouteInfosByGroup = GroupRouteInfosByGroupId(routeInfos);
             foreach (var routeInfo in distinctRouteInfosByGroup)
             {
-                routeBuilder.Add(new TreeRouteMatchingEntry()
+                // Note that because we only support 'inline' defaults, each routeInfo group also has the same
+                // set of defaults. 
+                //
+                // We then inject the route group as a default for the matcher so it gets passed back to MVC
+                // for use in action selection.
+                var defaults = new RouteValueDictionary(routeInfo.Defaults);
+                defaults[TreeRouter.RouteGroupKey] = routeInfo.RouteGroup;
+
+                entries.MatchingEntries.Add(new TreeRouteMatchingEntry()
                 {
                     Order = routeInfo.Order,
                     Precedence = routeInfo.MatchPrecedence,
                     Target = _target,
                     RouteName = routeInfo.Name,
-                    RouteTemplate = TemplateParser.Parse(routeInfo.RouteTemplate),
-                    TemplateMatcher = new TemplateMatcher(
-                        routeInfo.ParsedTemplate,
-                        new RouteValueDictionary(StringComparer.OrdinalIgnoreCase)
-                        {
-                            { TreeRouter.RouteGroupKey, routeInfo.RouteGroup }
-                        }),
-                    Constraints = routeInfo.Constraints
+                    RouteTemplate = routeInfo.ParsedTemplate,
+                    TemplateMatcher = new TemplateMatcher(routeInfo.ParsedTemplate, defaults),
+                    Constraints = routeInfo.Constraints,
                 });
             }
 
-            return routeBuilder.Build(actions.Version);
+            return entries;
+        }
+
+        private TreeRouter BuildRoute(AttributeRouteEntries entries, int version)
+        {
+            var routeBuilder = new TreeRouteBuilder(_target, _loggerFactory);
+
+            foreach (var entry in entries.LinkGenerationEntries)
+            {
+                routeBuilder.Add(entry);
+            }
+
+            foreach (var entry in entries.MatchingEntries)
+            {
+                routeBuilder.Add(entry);
+            }
+
+            return routeBuilder.Build(version);
         }
 
         private static IEnumerable<RouteInfo> GroupRouteInfosByGroupId(List<RouteInfo> routeInfos)
@@ -182,8 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // of memory, so sharing is worthwhile.
             var templateCache = new Dictionary<string, RouteTemplate>(StringComparer.OrdinalIgnoreCase);
 
-            var attributeRoutedActions = actions.Where(a => a.AttributeRouteInfo != null &&
-                a.AttributeRouteInfo.Template != null);
+            var attributeRoutedActions = actions.Where(a => a.AttributeRouteInfo?.Template != null);
             foreach (var action in attributeRoutedActions)
             {
                 var routeInfo = GetRouteInfo(constraintResolver, templateCache, action);

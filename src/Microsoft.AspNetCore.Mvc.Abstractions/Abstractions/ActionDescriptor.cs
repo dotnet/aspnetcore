@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
 
         public AttributeRouteInfo AttributeRouteInfo { get; set; }
 
-        public IDictionary<string, object> RouteValueDefaults { get; }
+        public IDictionary<string, object> RouteValueDefaults { get; set; }
 
         /// <summary>
         /// The set of constraints for this action. Must all be satisfied for the action to be selected.
@@ -53,6 +53,6 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         /// <summary>
         /// Stores arbitrary metadata properties associated with the <see cref="ActionDescriptor"/>.
         /// </summary>
-        public IDictionary<object, object> Properties { get; }
+        public IDictionary<object, object> Properties { get; set; }
     }
 }
