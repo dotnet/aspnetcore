@@ -427,8 +427,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
 #if !NETCOREAPP1_0
-        // DataContractSerializer in CoreCLR does not throw if the declared type is different from the type being
-        // serialized.
         [ConditionalFact]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
@@ -444,6 +442,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
                 async () => await formatter.WriteAsync(outputFormatterContext));
         }
 #else
+        // DataContractSerializer in CoreCLR does not throw if the declared type is different from the type being
+        // serialized.
         [Fact]
         public async Task WriteAsync_SerializesObjectWhenDeclaredTypeIsDifferentFromActualType()
         {

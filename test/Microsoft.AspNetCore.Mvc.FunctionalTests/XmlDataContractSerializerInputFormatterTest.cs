@@ -10,7 +10,6 @@ using System.Net.Http.Headers;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
 using XmlFormattersWebSite;
 using Xunit;
 
@@ -34,6 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
+        [Fact]
         public async Task ThrowsOnInvalidInput_AndAddsToModelState()
         {
             // Arrange
@@ -53,6 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 data);
         }
 
+        [Fact]
         public async Task RequiredDataIsProvided_AndModelIsBound_NoValidationErrors()
         {
             // Arrange
@@ -79,6 +80,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Empty(modelBindingInfo.ModelStateErrorMessages);
         }
 
+        // Verifies that the model state has errors related to body model validation.
+        [Fact]
         public async Task DataMissingForRefereneceTypeProperties_AndModelIsBound_AndHasMixedValidationErrors()
         {
             // Arrange

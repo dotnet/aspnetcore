@@ -10,8 +10,6 @@ using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Moq;
 using Xunit;
 
@@ -52,6 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             public TestLevelOne TestOne { get; set; }
         }
 
+        [Theory]
         [InlineData("application/xml", true)]
         [InlineData("application/*", false)]
         [InlineData("*/*", false)]
@@ -86,6 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Equal(expectedCanRead, result);
         }
 
+        [Fact]
         public void XmlDataContractSerializer_CachesSerializerForType()
         {
             // Arrange
@@ -129,6 +129,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.True(formatter.SupportedEncodings.Any(i => i.WebName == "utf-16"));
         }
 
+        [Fact]
         public async Task ReadAsync_ReadsSimpleTypes()
         {
             // Arrange
@@ -155,6 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Equal(expectedString, model.sampleString);
         }
 
+        [Fact]
         public async Task ReadAsync_ReadsComplexTypes()
         {
             // Arrange
@@ -184,6 +186,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Equal(expectedString, model.TestOne.sampleString);
         }
 
+        [Fact]
         public async Task ReadAsync_ReadsWhenMaxDepthIsModified()
         {
             // Arrange
@@ -207,6 +210,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Equal(expectedInt, model.SampleInt);
         }
 
+        [Fact]
         public async Task ReadAsync_ThrowsOnExceededMaxDepth()
         {
             // Arrange
@@ -223,6 +227,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             await Assert.ThrowsAsync(typeof(SerializationException), async () => await formatter.ReadAsync(context));
         }
 
+        [Fact]
         public async Task ReadAsync_ThrowsWhenReaderQuotasAreChanged()
         {
             // Arrange
@@ -249,6 +254,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Throws(typeof(ArgumentException), () => formatter.MaxDepth = 0);
         }
 
+        [Fact]
         public async Task ReadAsync_VerifyStreamIsOpenAfterRead()
         {
             // Arrange
@@ -268,6 +274,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.True(context.HttpContext.Request.Body.CanRead);
         }
 
+        [Fact]
         public async Task ReadAsync_FallsbackToUTF8_WhenCharSet_NotInContentType()
         {
             // Arrange
@@ -291,6 +298,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Contains("utf-16LE", ex.Message);
         }
 
+        [Fact]
         public async Task ReadAsync_UsesContentTypeCharSet_ToReadStream()
         {
             // Arrange
@@ -319,6 +327,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Contains("utf-8", ex.Message);
         }
 
+        [Fact]
         public async Task ReadAsync_IgnoresBOMCharacters()
         {
             // Arrange
@@ -350,6 +359,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Equal(expectedBytes, Encoding.UTF8.GetBytes(model.SampleString));
         }
 
+        [Fact]
         public async Task ReadAsync_AcceptsUTF16Characters()
         {
             // Arrange
@@ -387,6 +397,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Equal(expectedString, model.sampleString);
         }
 
+        [Fact]
         public async Task ReadAsync_ThrowsWhenNotConfiguredWithRootName()
         {
             // Arrange
@@ -405,6 +416,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             await Assert.ThrowsAsync(typeof(SerializationException), async () => await formatter.ReadAsync(context));
         }
 
+        [Fact]
         public async Task ReadAsync_ReadsWhenConfiguredWithRootName()
         {
             // Arrange
@@ -441,6 +453,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Equal(expectedInt, model.SampleInt);
         }
 
+        [Fact]
         public async Task ReadAsync_ThrowsWhenNotConfiguredWithKnownTypes()
         {
             // Arrange
@@ -460,6 +473,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             await Assert.ThrowsAsync(typeof(SerializationException), async () => await formatter.ReadAsync(context));
         }
 
+        [Fact]
         public async Task ReadAsync_ReadsWhenConfiguredWithKnownTypes()
         {
             // Arrange
