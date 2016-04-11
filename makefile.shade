@@ -341,7 +341,14 @@ var buildTarget = "compile"
 
             Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ASPNETVNEXT", coherenceCacheDir);
             Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_EXTERNAL", Path.Combine(dropsShare, "latest-packages", "external", buildBranch));
-            Environment.SetEnvironmentVariable("UNIVERSE_COMMITS_FILE", universeCommitsFileTarget);
+            
+            // Only update commits file location if it hadn't been previously set
+            if (string.IsNullOrWhiteSpace(universeCommitsFile))
+            {
+                universeCommitsFile = universeCommitsFileTarget;
+                Log.Info("Updating UNIVERSE_COMMITS_FILE to " + universeCommitsFileTarget);
+                Environment.SetEnvironmentVariable("UNIVERSE_COMMITS_FILE", universeCommitsFileTarget);
+            }
         }
     }
 
