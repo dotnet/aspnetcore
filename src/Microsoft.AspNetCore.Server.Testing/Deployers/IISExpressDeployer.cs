@@ -65,14 +65,8 @@ namespace Microsoft.AspNetCore.Server.Testing
                 File.WriteAllText(DeploymentParameters.ServerConfigLocation, DeploymentParameters.ServerConfigTemplateContent);
             }
 
-            var webroot = DeploymentParameters.ApplicationPath;
-            if (!webroot.EndsWith("wwwroot"))
-            {
-                webroot = Path.Combine(webroot, "wwwroot");
-            }
-
             var parameters = string.IsNullOrWhiteSpace(DeploymentParameters.ServerConfigLocation) ?
-                            string.Format("/port:{0} /path:\"{1}\" /trace:error", uri.Port, webroot) :
+                            string.Format("/port:{0} /path:\"{1}\" /trace:error", uri.Port, DeploymentParameters.ApplicationPath) :
                             string.Format("/site:{0} /config:{1} /trace:error", DeploymentParameters.SiteName, DeploymentParameters.ServerConfigLocation);
 
             var iisExpressPath = GetIISExpressPath();

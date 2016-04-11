@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.Testing
             DeploymentParameters.ApplicationPath =
                 (DeploymentParameters.ServerType == ServerType.IISExpress ||
                  DeploymentParameters.ServerType == ServerType.IIS) ?
-                Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "wwwroot") :
+                DeploymentParameters.PublishedApplicationRootPath :
                 DeploymentParameters.ApplicationPath;
 
             Logger.LogInformation($"{DotnetCommandName} publish finished with exit code : {hostProcess.ExitCode}");
