@@ -5,14 +5,32 @@ using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class ChunkedResponseTests
     {
-        [Fact]
-        public async Task ResponsesAreChunkedAutomatically()
+        public static TheoryData<ServiceContext> ConnectionFilterData
+        {
+            get
+            {
+                return new TheoryData<ServiceContext>
+                {
+                    {
+                        new TestServiceContext()
+                    },
+                    {
+                        new TestServiceContext(new PassThroughConnectionFilter())
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task ResponsesAreChunkedAutomatically(ServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
             {
@@ -20,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 response.Headers.Clear();
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
-            }))
+            }, testContext))
             {
                 using (var connection = new TestConnection(server.Port))
                 {
@@ -43,8 +61,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        [Fact]
-        public async Task ZeroLengthWritesAreIgnored()
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task ZeroLengthWritesAreIgnored(ServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
             {
@@ -53,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
                 await response.Body.WriteAsync(new byte[0], 0, 0);
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
-            }))
+            }, testContext))
             {
                 using (var connection = new TestConnection(server.Port))
                 {
@@ -76,15 +95,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        [Fact]
-        public async Task EmptyResponseBodyHandledCorrectlyWithZeroLengthWrite()
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task EmptyResponseBodyHandledCorrectlyWithZeroLengthWrite(ServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
                 response.Headers.Clear();
                 await response.Body.WriteAsync(new byte[0], 0, 0);
-            }))
+            }, testContext))
             {
                 using (var connection = new TestConnection(server.Port))
                 {
@@ -103,8 +123,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        [Fact]
-        public async Task ConnectionClosedIfExeptionThrownAfterWrite()
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task ConnectionClosedIfExeptionThrownAfterWrite(ServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
             {
@@ -112,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 response.Headers.Clear();
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World!"), 0, 12);
                 throw new Exception();
-            }))
+            }, testContext))
             {
                 using (var connection = new TestConnection(server.Port))
                 {
@@ -133,8 +154,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        [Fact]
-        public async Task ConnectionClosedIfExeptionThrownAfterZeroLengthWrite()
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task ConnectionClosedIfExeptionThrownAfterZeroLengthWrite(ServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
             {
@@ -142,7 +164,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 response.Headers.Clear();
                 await response.Body.WriteAsync(new byte[0], 0, 0);
                 throw new Exception();
-            }))
+            }, testContext))
             {
                 using (var connection = new TestConnection(server.Port))
                 {
@@ -162,8 +184,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        [Fact]
-        public async Task WritesAreFlushedPriorToResponseCompletion()
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task WritesAreFlushedPriorToResponseCompletion(ServiceContext testContext)
         {
             var flushWh = new ManualResetEventSlim();
 
@@ -177,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 flushWh.Wait();
 
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
-            }))
+            }, testContext))
             {
                 using (var connection = new TestConnection(server.Port))
                 {

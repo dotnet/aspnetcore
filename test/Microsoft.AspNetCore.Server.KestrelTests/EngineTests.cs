@@ -1018,5 +1018,37 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 Assert.True(registrationWh.Wait(1000));
             }
         }
+        
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task NoErrorsLoggedWhenServerEndsConnectionBeforeClient(ServiceContext testContext)
+        {
+            var testLogger = new TestApplicationErrorLogger();
+            testContext.Log = new KestrelTrace(testLogger);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+                response.Headers.Clear();
+                response.Headers["Content-Length"] = new[] { "11" };
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11);
+            }, testContext))
+            {
+                using (var connection = new TestConnection(server.Port))
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.0",
+                        "",
+                        "");
+                    await connection.ReceiveForcedEnd(
+                        "HTTP/1.0 200 OK",
+                        "Content-Length: 11",
+                        "",
+                        "Hello World");
+                }
+            }
+
+            Assert.Equal(0, testLogger.TotalErrorsLogged);
+        }
     }
 }

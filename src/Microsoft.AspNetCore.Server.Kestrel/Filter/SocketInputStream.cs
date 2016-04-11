@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
         protected override void Dispose(bool disposing)
         {
             // Close _socketInput with a fake zero-length write that will result in a zero-length read.
-            _socketInput.IncomingData(null, 0, 0);
+            _socketInput.IncomingFin();
             base.Dispose(disposing);
         }
     }

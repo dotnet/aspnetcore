@@ -32,11 +32,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Console.WriteLine($"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception?.Message}");
 #endif
 
-            TotalErrorsLogged++;
-
             if (eventId.Id == ApplicationErrorEventId)
             {
                 ApplicationErrorsLogged++;
+            }
+
+            if (logLevel == LogLevel.Error)
+            {
+                TotalErrorsLogged++;
             }
         }
     }
