@@ -73,12 +73,6 @@ namespace SocialSample
                 }
             });
 
-            // Forward the scheme from IISPlatformHandler
-            app.UseForwardedHeaders(new ForwardedHeadersOptions()
-            {
-                ForwardedHeaders = ForwardedHeaders.XForwardedProto,
-            });
-
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
                 AutomaticAuthenticate = true,
@@ -344,7 +338,7 @@ namespace SocialSample
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
                 .UseKestrel()
-                .UseIISPlatformHandlerUrl()
+                .UseIISIntegration()()
                 .UseStartup<Startup>()
                 .Build();
 

@@ -5,34 +5,27 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Authentication.JwtBearer": "1.0.0-*",
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
     "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
-  "commands": {
-    "web": "JwtBearerSample"
-  },
   "frameworks": {
-    "dnx451": { },
+    "net451": { },
     "netstandardapp1.5": {
       "imports": [
         "dnxcore50"
-      ]
+      ],
+      "dependencies": {
+          "NETStandard.Library": "1.5.0-*"
+      }
     }
   },
-  "exclude": [
-    "wwwroot",
-    "node_modules"
-  ],
-  "publishExclude": [
-    "**.user",
-    "**.vspscc"
-  ],
   "content": [
     "project.json",
-    "wwwroot"
+    "wwwroot",
+    "web.config"
   ],
   "userSecretsId": "aspnet5-JwtBearerSample-20151210102827"
 }

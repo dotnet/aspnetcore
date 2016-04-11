@@ -2,7 +2,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
     "Microsoft.AspNetCore.DataProtection": "1.0.0-*",
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
@@ -11,15 +11,18 @@
   "compilationOptions": {
     "emitEntryPoint": true
   },
-  "commands": {
-    "web": "CookieSessionSample"
-  },
   "frameworks": {
-    "dnx451": {},
+    "net451": {},
     "netstandardapp1.5": {
       "imports": [
         "dnxcore50"
-      ]
+      ],
+      "dependencies": {
+          "NETStandard.Library": "1.5.0-*"
+      }
     }
-  }
+  },
+  "content": [
+    "web.config"
+  ]
 }

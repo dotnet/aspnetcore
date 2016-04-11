@@ -6,8 +6,7 @@
     "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.Twitter": "1.0.0-*",
     "Microsoft.AspNetCore.DataProtection": "1.0.0-*",
-    "Microsoft.AspNetCore.HttpOverrides": "1.0.0-*",
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel.Https": "1.0.0-*",
     "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0-*",
@@ -18,20 +17,21 @@
   "compilationOptions": {
     "emitEntryPoint": true
   },
-  "commands": {
-    "web": "SocialSample"
-  },
   "frameworks": {
-    "dnx451": {},
+    "net451": {},
     "netstandardapp1.5": {
       "imports": [
         "dnxcore50"
-      ]
+      ],
+      "dependencies": {
+          "NETStandard.Library": "1.5.0-*"
+      }
     }
   },
   "userSecretsId": "aspnet5-SocialSample-20151210111056",
   "content": [
     "config.json",
-    "project.json"
+    "project.json",
+    "web.config"
   ]
 }

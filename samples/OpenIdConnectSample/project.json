@@ -2,28 +2,29 @@
   "dependencies": {
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.OpenIdConnect": "0.1.0-*",
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
-    "dnx451": { },
+    "net451": { },
     "netstandardapp1.5": {
       "imports": [
         "dnxcore50"
-      ]
+      ],
+      "dependencies": {
+          "NETStandard.Library": "1.5.0-*"
+      }
     }
   },
   "compilationOptions": {
     "emitEntryPoint": true
   },
-  "commands": {
-    "web": "OpenIdConnectSample"
-  },
   "content": [
-    "project.json"
+    "project.json",
+    "web.config"
   ],
   "userSecretsId": "aspnet5-OpenIdConnectSample-20151210110318"
 }
