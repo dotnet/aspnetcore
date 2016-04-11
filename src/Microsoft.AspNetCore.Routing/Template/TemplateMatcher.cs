@@ -232,11 +232,11 @@ namespace Microsoft.AspNetCore.Routing.Template
                 // It's ok for a catch-all to produce a null value
                 if (_hasDefaultValue[i] || part.IsCatchAll)
                 {
-                    // Don't trounce an existing value with a null.
+                    // Don't replace an existing value with a null.
                     var defaultValue = _defaultValues[i];
                     if (defaultValue != null || !values.ContainsKey(part.Name))
                     {
-                        values[part.Name] = _defaultValues[i];
+                        values[part.Name] = defaultValue;
                     }
                 }
             }

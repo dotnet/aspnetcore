@@ -153,6 +153,97 @@ namespace Microsoft.AspNetCore.Routing.Tree
         }
 
         [Theory]
+        [InlineData("a/{*path}", "/a")]
+        [InlineData("a/{*path}", "/a/")]
+        public async Task TreeRouter_RouteAsync_MatchesCatchAll_NullValue(
+            string template,
+            string requestPath)
+        {
+            // Arrange
+            var next = new Mock<IRouter>();
+            next
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(c => c.Handler = NullHandler)
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+
+            var firstRoute = CreateMatchingEntry(next.Object, template, order: 0);
+            var matchingRoutes = new[] { firstRoute };
+            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
+            var attributeRoute = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
+            var context = CreateRouteContext(requestPath);
+
+            // Act
+            await attributeRoute.RouteAsync(context);
+
+            // Assert
+            Assert.NotNull(context.Handler);
+            Assert.Null(context.RouteData.Values["path"]);
+        }
+
+        [Theory]
+        [InlineData("a/{*path}", "/a")]
+        [InlineData("a/{*path}", "/a/")]
+        public async Task TreeRouter_RouteAsync_MatchesCatchAll_NullValue_DoesNotReplaceExistingValue(
+            string template,
+            string requestPath)
+        {
+            // Arrange
+            var next = new Mock<IRouter>();
+            next
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(c => c.Handler = NullHandler)
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+
+            var firstRoute = CreateMatchingEntry(next.Object, template, order: 0);
+            var matchingRoutes = new[] { firstRoute };
+            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
+            var attributeRoute = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
+
+            var context = CreateRouteContext(requestPath);
+            context.RouteData.Values["path"] = "existing-value";
+
+            // Act
+            await attributeRoute.RouteAsync(context);
+
+            // Assert
+            Assert.NotNull(context.Handler);
+            Assert.Equal("existing-value", context.RouteData.Values["path"]);
+        }
+
+        [Theory]
+        [InlineData("a/{*path=default}", "/a")]
+        [InlineData("a/{*path=default}", "/a/")]
+        public async Task TreeRouter_RouteAsync_MatchesCatchAll_UsesDefaultValue(
+            string template,
+            string requestPath)
+        {
+            // Arrange
+            var next = new Mock<IRouter>();
+            next
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(c => c.Handler = NullHandler)
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+
+            var firstRoute = CreateMatchingEntry(next.Object, template, order: 0);
+            var matchingRoutes = new[] { firstRoute };
+            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
+            var attributeRoute = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
+
+            var context = CreateRouteContext(requestPath);
+            context.RouteData.Values["path"] = "existing-value";
+
+            // Act
+            await attributeRoute.RouteAsync(context);
+
+            // Assert
+            Assert.NotNull(context.Handler);
+            Assert.Equal("default", context.RouteData.Values["path"]);
+        }
+
+        [Theory]
         [InlineData("template/5")]
         [InlineData("template/{parameter:int}")]
         [InlineData("template/{parameter}")]
@@ -1581,9 +1672,19 @@ namespace Microsoft.AspNetCore.Routing.Tree
             entry.Target = router;
             entry.RouteTemplate = TemplateParser.Parse(template);
             var parsedRouteTemplate = TemplateParser.Parse(template);
-            entry.TemplateMatcher = new TemplateMatcher(
-                parsedRouteTemplate,
-                new RouteValueDictionary(new { test_route_group = routeGroup }));
+
+            var defaults = new RouteValueDictionary();
+            foreach (var parameter in parsedRouteTemplate.Parameters)
+            {
+                if (parameter.DefaultValue != null)
+                {
+                    defaults.Add(parameter.Name, parameter.DefaultValue);
+                }
+            }
+
+            defaults["test_route_group"] = routeGroup;
+
+            entry.TemplateMatcher = new TemplateMatcher(parsedRouteTemplate, defaults);
             entry.Precedence = RoutePrecedence.ComputeMatched(parsedRouteTemplate);
             entry.Order = order;
             entry.Constraints = GetRouteConstriants(CreateConstraintResolver(), template, parsedRouteTemplate);

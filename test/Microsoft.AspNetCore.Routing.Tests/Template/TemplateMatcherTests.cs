@@ -697,7 +697,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void TryMatch_RouteWithCatchAllClauseCapturesManySlashes()
+        public void TryMatch_RouteWithCatchAll_MatchesMultiplePathSegments()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{*p2}");
@@ -715,7 +715,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void TryMatch_RouteWithCatchAllClauseCapturesTrailingSlash()
+        public void TryMatch_RouteWithCatchAll_MatchesTrailingSlash()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{*p2}");
@@ -733,7 +733,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void TryMatch_RouteWithCatchAllClauseCapturesEmptyContent()
+        public void TryMatch_RouteWithCatchAll_MatchesEmptyContent()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{*p2}");
@@ -751,12 +751,30 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void TryMatch_RouteWithCatchAllClauseUsesDefaultValueForEmptyContent()
+        public void TryMatch_RouteWithCatchAll_MatchesEmptyContent_DoesNotReplaceExistingRouteValue()
+        {
+            // Arrange
+            var matcher = CreateMatcher("{p1}/{*p2}");
+
+            var values = new RouteValueDictionary(new { p2 = "hello" });
+
+            // Act
+            var match = matcher.TryMatch("/v1", values);
+
+            // Assert
+            Assert.True(match);
+            Assert.Equal<int>(2, values.Count);
+            Assert.Equal("v1", values["p1"]);
+            Assert.Equal("hello", values["p2"]);
+        }
+
+        [Fact]
+        public void TryMatch_RouteWithCatchAll_UsesDefaultValueForEmptyContent()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{*p2}", new { p2 = "catchall" });
 
-            var values = new RouteValueDictionary();
+            var values = new RouteValueDictionary(new { p2 = "overridden" });
 
             // Act
             var match = matcher.TryMatch("/v1", values);
@@ -769,12 +787,12 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void TryMatch_RouteWithCatchAllClauseIgnoresDefaultValueForNonEmptyContent()
+        public void TryMatch_RouteWithCatchAll_IgnoresDefaultValueForNonEmptyContent()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{*p2}", new { p2 = "catchall" });
 
-            var values = new RouteValueDictionary();
+            var values = new RouteValueDictionary(new { p2 = "overridden" });
 
             // Act
             var match = matcher.TryMatch("/v1/hello/whatever", values);
