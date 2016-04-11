@@ -100,7 +100,7 @@ var buildTarget = "compile"
 
        Parallel.ForEach(repositories, repo =>
        {
-            if (commitsToSync.ContainsKey(repo))
+            if (commitsToSync.ContainsKey(repo) && Directory.Exists(repo))
             {
                 var syncHash = commitsToSync[repo];
                 Console.WriteLine(string.Format("Syncing {0} to {1}", repo, syncHash));
