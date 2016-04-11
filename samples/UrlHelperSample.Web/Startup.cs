@@ -41,6 +41,7 @@ namespace UrlHelperSample.Web
                 .UseDefaultHostingConfiguration(args)
                 .UseStartup<Startup>()
                 .UseKestrel()
+                .UseIISIntegration()
                 .Build();
 
             host.Run();

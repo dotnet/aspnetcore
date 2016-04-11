@@ -3,11 +3,8 @@
     "emitEntryPoint": true,
     "preserveCompilationContext": true
   },
-  "commands": {
-    "web": "MvcSubAreaSample.Web"
-  },
   "dependencies": {
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
@@ -26,5 +23,9 @@
         "NETStandard.Library": "1.5.0-*"
       }
     }
-  }
+  },
+  "content": [
+    "Views",
+    "web.config"
+  ]
 }

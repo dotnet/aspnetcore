@@ -4,11 +4,8 @@
     "warningsAsErrors": true,
     "preserveCompilationContext": true
   },
-  "commands": {
-    "web": "TagHelperSample.Web"
-  },
   "dependencies": {
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
@@ -16,9 +13,6 @@
     "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*"
-  },
-  "tools": {
-    "dotnet-razor-tooling": "1.0.0-*"
   },
   "frameworks": {
     "net451": {},
@@ -32,13 +26,9 @@
       }
     }
   },
-  "exclude": [
+  "content": [
+    "Views",
     "wwwroot",
-    "node_modules",
-    "bower_components"
-  ],
-  "publishExclude": [
-    "**.user",
-    "**.vspscc"
+    "web.config"
   ]
 }

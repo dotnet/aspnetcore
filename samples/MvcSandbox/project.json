@@ -1,7 +1,4 @@
 {
-  "commands": {
-    "web": "MvcSandbox"
-  },
   "compilationOptions": {
     "emitEntryPoint": true,
     "warningsAsErrors": true,
@@ -9,7 +6,7 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
@@ -19,11 +16,9 @@
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "content": [
-    "Views"
+    "Views",
+    "web.config"
   ],
-  "tools": {
-    "dotnet-razor-tooling": "1.0.0-*"
-  },
   "frameworks": {
     "net451": {},
     "netstandardapp1.5": {
@@ -35,14 +30,5 @@
         "NETStandard.Library": "1.5.0-*"
       }
     }
-  },
-  "exclude": [
-    "wwwroot",
-    "node_modules",
-    "bower_components"
-  ],
-  "publishExclude": [
-    "**.user",
-    "**.vspscc"
-  ]
+  }
 }

@@ -40,7 +40,7 @@ namespace InlineConstraintSample.Web
         {
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
-                .UseIISPlatformHandlerUrl()
+                .UseIISIntegration()
                 .UseKestrel()
                 .UseStartup<Startup>()
                 .Build();

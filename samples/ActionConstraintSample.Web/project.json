@@ -3,11 +3,8 @@
     "emitEntryPoint": true,
     "preserveCompilationContext": true
   },
-  "commands": {
-    "web": "ActionConstraintSample.Web"
-  },
   "dependencies": {
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*"
@@ -23,5 +20,8 @@
         "NETStandard.Library": "1.5.0-*"
       }
     }
-  }
+  },
+  "content": [
+    "web.config"
+  ]
 }
