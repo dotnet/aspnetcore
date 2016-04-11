@@ -113,7 +113,7 @@ namespace JwtBearerSample
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
                 .UseKestrel()
-                .UseIISIntegration()()
+                .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
 
