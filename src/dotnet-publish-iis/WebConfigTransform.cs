@@ -57,8 +57,8 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS
 
         private static void TransformHttpPlatform(XElement httpPlatformElement, string appName, bool configureForAzure)
         {
-            var appPath = Path.Combine(configureForAzure ? @"%home%\site" : "..", appName);
-            var logPath = Path.Combine(configureForAzure ? @"\\?\%home%\LogFiles" : @"..\logs", "stdout.log");
+            var appPath = Path.Combine(configureForAzure ? @"%home%\site" : "..", appName).Replace("/", "\\");
+            var logPath = Path.Combine(configureForAzure ? @"\\?\%home%\LogFiles" : @"..\logs", "stdout.log").Replace("/", "\\");
 
             httpPlatformElement.SetAttributeValue("processPath", appPath);
             SetAttributeValueIfEmpty(httpPlatformElement, "stdoutLogEnabled", "false");
