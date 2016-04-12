@@ -137,7 +137,6 @@
             "Microsoft.AspNetCore.Session": {},
             "Microsoft.AspNetCore.StaticFiles": {},
             "Microsoft.AspNetCore.TestHost": {},
-            "Microsoft.AspNetCore.WebSockets.Client": {},
             "Microsoft.AspNetCore.WebSockets.Protocol": {},
             "Microsoft.AspNetCore.WebSockets.Server": {},
             "Microsoft.AspNetCore.WebUtilities": {},
