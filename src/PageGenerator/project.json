@@ -3,6 +3,7 @@
   "description": "Builds the pages for the Diagnostics projects. Runs in build.cmd.",
   "compilationOptions": {
     "warningsAsErrors": true,
+    "emitEntryPoint": true,
     "keyFile": "../../tools/Key.snk"
   },
   "repository": {

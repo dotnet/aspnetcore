@@ -137,7 +137,7 @@
     };
 
     function frame(el) {
-        ns(el).children(".source .collapsible").toggle();
+        ns(".source .collapsible", el).toggle();
     }
 
     function tab(el) {
