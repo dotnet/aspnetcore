@@ -13,6 +13,9 @@
     ],
     "preserveCompilationContext": true
   },
+  "commands": {
+    "web": "MusicStore"
+  },
   "compile": [
     "../../shared/**/*.cs"
   ],
@@ -50,7 +53,7 @@
     "Microsoft.NETCore.Platforms": "1.0.1-*",
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandardapp1.5": {
       "dependencies": {
         "NETStandard.Library": "1.5.0-*"

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MusicStore.Models;
 using MusicStore.ViewModels;
 
@@ -10,9 +11,12 @@ namespace MusicStore.Controllers
 {
     public class ShoppingCartController : Controller
     {
-        public ShoppingCartController(MusicStoreContext dbContext)
+        private readonly ILogger<ShoppingCartController> _logger;
+
+        public ShoppingCartController(MusicStoreContext dbContext, ILogger<ShoppingCartController> logger)
         {
             DbContext = dbContext;
+            _logger = logger;
         }
 
         public MusicStoreContext DbContext { get; }
@@ -49,6 +53,7 @@ namespace MusicStore.Controllers
             cart.AddToCart(addedAlbum);
 
             await DbContext.SaveChangesAsync(requestAborted);
+            _logger.LogInformation("Album {albumId} was added to the cart.", addedAlbum.AlbumId);
 
             // Go back to the main store page for more shopping
             return RedirectToAction("Index");
@@ -89,6 +94,8 @@ namespace MusicStore.Controllers
                 ItemCount = itemCount,
                 DeleteId = id
             };
+
+            _logger.LogInformation("Album {id} was removed from a cart.", id);
 
             return Json(results);
         }

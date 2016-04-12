@@ -6,12 +6,13 @@
     "../../shared/**/*.cs"
   ],
   "dependencies": {
-    "Microsoft.AspNetCore.Identity": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.OpenIdConnect": "0.1.0-*",
+    "Microsoft.AspNetCore.Identity": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Testing": "1.0.0-*",
     "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
+    "Microsoft.Extensions.Logging": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "xunit": "2.1.0"
   },

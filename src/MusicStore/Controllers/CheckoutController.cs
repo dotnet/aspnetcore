@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MusicStore.Models;
 
 namespace MusicStore.Controllers
@@ -14,6 +15,13 @@ namespace MusicStore.Controllers
     public class CheckoutController : Controller
     {
         private const string PromoCode = "FREE";
+
+        private readonly ILogger<CheckoutController> _logger;
+
+        public CheckoutController(ILogger<CheckoutController> logger)
+        {
+            _logger = logger;
+        }
 
         //
         // GET: /Checkout/
@@ -58,6 +66,8 @@ namespace MusicStore.Controllers
                     var cart = ShoppingCart.GetCart(dbContext, HttpContext);
                     await cart.CreateOrder(order);
 
+                    _logger.LogInformation("User {userName} started checkout of {orderId}.", order.Username, order.OrderId);
+
                     // Save all changes
                     await dbContext.SaveChangesAsync(requestAborted);
 
@@ -78,17 +88,24 @@ namespace MusicStore.Controllers
             [FromServices] MusicStoreContext dbContext,
             int id)
         {
+            var userName = HttpContext.User.Identity.Name;
+
             // Validate customer owns this order
             bool isValid = await dbContext.Orders.AnyAsync(
                 o => o.OrderId == id &&
-                o.Username == HttpContext.User.Identity.Name);
+                o.Username == userName);
 
             if (isValid)
             {
+                _logger.LogInformation("User {userName} completed checkout on order {orderId}.", userName, id);
                 return View(id);
             }
             else
             {
+                _logger.LogError(
+                    "User {userName} tried to checkout with an order ({orderId}) that doesn't belong to them.",
+                    userName,
+                    id);
                 return View("Error");
             }
         }

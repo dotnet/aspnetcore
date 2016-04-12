@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using MusicStore.Models;
 using Xunit;
@@ -33,7 +34,7 @@ namespace MusicStore.Controllers
         public void AddressAndPayment_ReturnsDefaultView()
         {
             // Arrange
-            var controller = new CheckoutController();
+            var controller = new CheckoutController(_serviceProvider.GetService<ILogger<CheckoutController>>());
 
             // Act
             var result = controller.AddressAndPayment();
@@ -81,7 +82,7 @@ namespace MusicStore.Controllers
             dbContext.AddRange(cartItems);
             dbContext.SaveChanges();
 
-            var controller = new CheckoutController();
+            var controller = new CheckoutController(_serviceProvider.GetService<ILogger<CheckoutController>>());
             controller.ControllerContext.HttpContext = httpContext;
 
             // Act
@@ -107,7 +108,7 @@ namespace MusicStore.Controllers
             context.Request.Form =
                 new FormCollection(new Dictionary<string, StringValues>());
 
-            var controller = new CheckoutController();
+            var controller = new CheckoutController(_serviceProvider.GetService<ILogger<CheckoutController>>());
             controller.ControllerContext.HttpContext = context;
 
             // Do not need actual data for Order; the Order object will be checked for the reference equality.
@@ -133,7 +134,7 @@ namespace MusicStore.Controllers
                 new FormCollection(new Dictionary<string, StringValues>());
             var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
 
-            var controller = new CheckoutController();
+            var controller = new CheckoutController(_serviceProvider.GetService<ILogger<CheckoutController>>());
             controller.ControllerContext.HttpContext = context;
 
             var order = new Order();
@@ -153,7 +154,7 @@ namespace MusicStore.Controllers
         public async Task AddressAndPayment_ReturnsOrderIfInvalidOrderModel()
         {
             // Arrange
-            var controller = new CheckoutController();
+            var controller = new CheckoutController(_serviceProvider.GetService<ILogger<CheckoutController>>());
             controller.ModelState.AddModelError("a", "ModelErrorA");
             var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
 
@@ -192,7 +193,7 @@ namespace MusicStore.Controllers
             });
             dbContext.SaveChanges();
 
-            var controller = new CheckoutController();
+            var controller = new CheckoutController(_serviceProvider.GetService<ILogger<CheckoutController>>());
             controller.ControllerContext.HttpContext = httpContext;
 
             // Act
@@ -214,7 +215,7 @@ namespace MusicStore.Controllers
             var dbContext =
                 _serviceProvider.GetRequiredService<MusicStoreContext>();
 
-            var controller = new CheckoutController();
+            var controller = new CheckoutController(_serviceProvider.GetService<ILogger<CheckoutController>>());
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             // Act

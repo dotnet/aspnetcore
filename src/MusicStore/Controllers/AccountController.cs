@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MusicStore.Models;
 
 namespace MusicStore.Controllers
@@ -15,12 +16,16 @@ namespace MusicStore.Controllers
     [Authorize]
     public class AccountController : Controller
     {
+        private readonly ILogger<AccountController> _logger;
+
         public AccountController(
             UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager)
+            SignInManager<ApplicationUser> signInManager,
+            ILogger<AccountController> logger)
         {
             UserManager = userManager;
             SignInManager = signInManager;
+            _logger = logger;
         }
 
         public UserManager<ApplicationUser> UserManager { get; }
@@ -53,6 +58,7 @@ namespace MusicStore.Controllers
             var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
             if (result.Succeeded)
             {
+                _logger.LogInformation("Logged in {userName}.", model.Email);
                 return RedirectToLocal(returnUrl);
             }
             if (result.RequiresTwoFactor)
@@ -65,6 +71,7 @@ namespace MusicStore.Controllers
             }
             else
             {
+                _logger.LogWarning("Failed to log in {userName}.", model.Email);
                 ModelState.AddModelError("", "Invalid login attempt.");
                 return View(model);
             }
@@ -145,6 +152,7 @@ namespace MusicStore.Controllers
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
+                    _logger.LogInformation("User {userName} was created.", model.Email);
                     //Bug: Remember browser option missing?
                     //Uncomment this and comment the later part if account verification is not needed.
                     //await SignInManager.SignInAsync(user, isPersistent: false);
@@ -162,10 +170,10 @@ namespace MusicStore.Controllers
                     ViewBag.Link = callbackUrl;
                     return View("DemoLinkDisplay");
 #endif
+
                 }
                 AddErrors(result);
             }
-
             // If we got this far, something failed, redisplay form
             return View(model);
         }
@@ -443,6 +451,7 @@ namespace MusicStore.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> LogOff()
         {
+            var userName = HttpContext.User.Identity.Name;
             // clear all items from the cart
             HttpContext.Session.Clear();
 
@@ -459,6 +468,7 @@ namespace MusicStore.Controllers
                 });
             }
 
+            _logger.LogInformation("{userName} logged out.", userName);
             return RedirectToAction("Index", "Home");
         }
 
@@ -477,6 +487,7 @@ namespace MusicStore.Controllers
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError("", error.Description);
+                _logger.LogWarning("Error in creating user: {error}", error.Description);
             }
         }
 
