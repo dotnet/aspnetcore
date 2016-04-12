@@ -15,12 +15,14 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
     {
         private const string NugetConfigFileName = "NuGet.config";
 
+        private static readonly object _restoreLock = new object();
+
         public ProjectToolScenario()
         {
             Console.WriteLine($"The temporary test folder is {TempFolder}");
 
             WorkFolder = Path.Combine(TempFolder, "work");
-         
+
             CreateTestDirectory();
         }
 
@@ -65,7 +67,13 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
             Console.WriteLine($"Adding {toolName} to {projectFile}");
 
             var projectJson = JObject.Parse(File.ReadAllText(projectFile));
-            projectJson.Add("tools", new JObject(new JProperty(toolName, "1.0.0-*")));
+            projectJson.Add("tools",
+              new JObject(
+                new JProperty(toolName,
+                  new JObject(
+                    new JProperty("version", "1.0.0-*"),
+                    new JProperty("imports", "portable-net451+win8")))));
+
             File.WriteAllText(projectFile, projectJson.ToString());
         }
 
@@ -80,12 +88,18 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
                 project = Path.Combine(WorkFolder, project);
             }
 
-            var restore = ExecuteDotnet($"restore -v Minimal", project);
-            restore.WaitForExit();
-
-            if (restore.ExitCode != 0)
+            // Tests are run in parallel and they try to restore tools concurrently.
+            // This causes issues because the deps json file for a tool is being written from
+            // multiple threads - which results in either sharing violation or corrupted json.
+            lock(_restoreLock)
             {
-                throw new Exception($"Exit code {restore.ExitCode}");
+                var restore = ExecuteDotnet($"restore -v Minimal", project);
+                restore.WaitForExit();
+
+                if (restore.ExitCode != 0)
+                {
+                    throw new Exception($"Exit code {restore.ExitCode}");
+                }
             }
         }
 

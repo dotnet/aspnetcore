@@ -13,15 +13,18 @@
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.FileSystemGlobbing": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
+    "NETStandard.Library": "1.5.0-*",
     "Microsoft.Extensions.Process.Sources": {
       "type": "build",
       "version": "1.0.0-*"
     }
   },
   "frameworks": {
-    "dnxcore50": {
-      "imports": "portable-net451+win8"
+    "netstandard1.5": {
+      "imports": [
+        "dnxcore50",
+        "portable-net451+win8"
+      ]
     }
   }
 }
