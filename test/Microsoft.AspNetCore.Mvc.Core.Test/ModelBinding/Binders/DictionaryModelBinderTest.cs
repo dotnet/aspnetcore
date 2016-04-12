@@ -35,7 +35,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingContext = GetModelBindingContext(isReadOnly, values);
             bindingContext.ValueProvider = CreateEnumerableValueProvider("{0}", values);
 
-            var binder = new DictionaryModelBinder<int, string>(new SimpleTypeModelBinder(), new SimpleTypeModelBinder());
+            var binder = new DictionaryModelBinder<int, string>(
+                new SimpleTypeModelBinder(typeof(int)), 
+                new SimpleTypeModelBinder(typeof(string)));
 
             // Act
             var result = await binder.BindModelResultAsync(bindingContext);
@@ -73,7 +75,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var dictionary = new Dictionary<int, string>();
             bindingContext.Model = dictionary;
 
-            var binder = new DictionaryModelBinder<int, string>(new SimpleTypeModelBinder(), new SimpleTypeModelBinder());
+            var binder = new DictionaryModelBinder<int, string>(
+                new SimpleTypeModelBinder(typeof(int)), 
+                new SimpleTypeModelBinder(typeof(string)));
 
             // Act
             var result = await binder.BindModelResultAsync(bindingContext);
@@ -127,7 +131,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             IDictionary<string, string> dictionary)
         {
             // Arrange
-            var binder = new DictionaryModelBinder<string, string>(new SimpleTypeModelBinder(), new SimpleTypeModelBinder());
+            var binder = new DictionaryModelBinder<string, string>(
+                new SimpleTypeModelBinder(typeof(string)), 
+                new SimpleTypeModelBinder(typeof(string)));
 
             var context = CreateContext();
             context.ModelName = modelName;
@@ -163,7 +169,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "three", "three" },
             };
 
-            var binder = new DictionaryModelBinder<string, string>(new SimpleTypeModelBinder(), new SimpleTypeModelBinder());
+            var binder = new DictionaryModelBinder<string, string>(
+                new SimpleTypeModelBinder(typeof(string)), 
+                new SimpleTypeModelBinder(typeof(string)));
 
             var context = CreateContext();
             context.ModelName = "prefix";
@@ -214,7 +222,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var stringDictionary = dictionary.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value.ToString());
 
-            var binder = new DictionaryModelBinder<long, int>(new SimpleTypeModelBinder(), new SimpleTypeModelBinder());
+            var binder = new DictionaryModelBinder<long, int>(
+                new SimpleTypeModelBinder(typeof(long)), 
+                new SimpleTypeModelBinder(typeof(int)));
 
             var context = CreateContext();
             context.ModelName = "prefix";
@@ -271,11 +281,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var valueMetadata = metadataProvider.GetMetadataForType(typeof(ModelWithProperties));
 
             var binder = new DictionaryModelBinder<int, ModelWithProperties>(
-                new SimpleTypeModelBinder(),
+                new SimpleTypeModelBinder(typeof(int)),
                 new ComplexTypeModelBinder(new Dictionary<ModelMetadata, IModelBinder>()
                 {
-                    { valueMetadata.Properties["Id"], new SimpleTypeModelBinder() },
-                    { valueMetadata.Properties["Name"], new SimpleTypeModelBinder() },
+                    { valueMetadata.Properties["Id"], new SimpleTypeModelBinder(typeof(int)) },
+                    { valueMetadata.Properties["Name"], new SimpleTypeModelBinder(typeof(string)) },
                 }));
 
             // Act
@@ -311,7 +321,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             // Arrange
             var expectedDictionary = new SortedDictionary<string, string>(dictionary);
-            var binder = new DictionaryModelBinder<string, string>(new SimpleTypeModelBinder(), new SimpleTypeModelBinder());
+            var binder = new DictionaryModelBinder<string, string>(
+                new SimpleTypeModelBinder(typeof(string)), 
+                new SimpleTypeModelBinder(typeof(string)));
 
             var context = CreateContext();
             context.ModelName = modelName;
@@ -341,7 +353,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task DictionaryModelBinder_CreatesEmptyCollection_IfIsTopLevelObject()
         {
             // Arrange
-            var binder = new DictionaryModelBinder<string, string>(new SimpleTypeModelBinder(), new SimpleTypeModelBinder());
+            var binder = new DictionaryModelBinder<string, string>(
+                new SimpleTypeModelBinder(typeof(string)), 
+                new SimpleTypeModelBinder(typeof(string)));
 
             var context = CreateContext();
             context.IsTopLevelObject = true;
@@ -371,7 +385,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task DictionaryModelBinder_DoesNotCreateCollection_IfNotIsTopLevelObject(string prefix)
         {
             // Arrange
-            var binder = new DictionaryModelBinder<int, int>(new SimpleTypeModelBinder(), new SimpleTypeModelBinder());
+            var binder = new DictionaryModelBinder<int, int>(
+                new SimpleTypeModelBinder(typeof(int)), 
+                new SimpleTypeModelBinder(typeof(int)));
 
             var context = CreateContext();
             context.ModelName = ModelNames.CreatePropertyModelName(prefix, "ListProperty");
@@ -413,7 +429,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public void CanCreateInstance_ReturnsExpectedValue(Type modelType, bool expectedResult)
         {
             // Arrange
-            var binder = new DictionaryModelBinder<int, int>(new SimpleTypeModelBinder(), new SimpleTypeModelBinder());
+            var binder = new DictionaryModelBinder<int, int>(
+                new SimpleTypeModelBinder(typeof(int)), 
+                new SimpleTypeModelBinder(typeof(int)));
 
             // Act
             var result = binder.CanCreateInstance(modelType);

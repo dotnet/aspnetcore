@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             };
             var bindingContext = GetBindingContext(valueProvider);
             var modelState = bindingContext.ModelState;
-            var binder = new ArrayModelBinder<int>(new SimpleTypeModelBinder());
+            var binder = new ArrayModelBinder<int>(new SimpleTypeModelBinder(typeof(int)));
 
             // Act
             var result = await binder.BindModelResultAsync(bindingContext);
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task ArrayModelBinder_CreatesEmptyCollection_IfIsTopLevelObject()
         {
             // Arrange
-            var binder = new ArrayModelBinder<string>(new SimpleTypeModelBinder());
+            var binder = new ArrayModelBinder<string>(new SimpleTypeModelBinder(typeof(string)));
 
             var context = CreateContext();
             context.IsTopLevelObject = true;
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task ArrayModelBinder_DoesNotCreateCollection_IfNotIsTopLevelObject(string prefix)
         {
             // Arrange
-            var binder = new ArrayModelBinder<string>(new SimpleTypeModelBinder());
+            var binder = new ArrayModelBinder<string>(new SimpleTypeModelBinder(typeof(string)));
 
             var context = CreateContext();
             context.ModelName = ModelNames.CreatePropertyModelName(prefix, "ArrayProperty");
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var modelState = bindingContext.ModelState;
             bindingContext.Model = model;
 
-            var binder = new ArrayModelBinder<int>(new SimpleTypeModelBinder());
+            var binder = new ArrayModelBinder<int>(new SimpleTypeModelBinder(typeof(int)));
 
             // Act
             var result = await binder.BindModelResultAsync(bindingContext);

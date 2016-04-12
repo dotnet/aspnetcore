@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             if (!context.Metadata.IsComplexType)
             {
-                return new SimpleTypeModelBinder();
+                return new SimpleTypeModelBinder(context.Metadata.ModelType);
             }
 
             return null;

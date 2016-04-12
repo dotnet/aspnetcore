@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Internal;
 
@@ -12,6 +14,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// </summary>
     public class SimpleTypeModelBinder : IModelBinder
     {
+        private readonly TypeConverter _typeConverter;
+
+        public SimpleTypeModelBinder(Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            _typeConverter = TypeDescriptor.GetConverter(type);
+        }
+
         /// <inheritdoc />
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
@@ -32,7 +46,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             try
             {
-                var model = valueProviderResult.ConvertTo(bindingContext.ModelType);
+                var value = valueProviderResult.FirstValue;
+
+                object model = null;
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    model = _typeConverter.ConvertFrom(
+                        context: null,
+                        culture: valueProviderResult.Culture,
+                        value: value);
+                }
 
                 if (bindingContext.ModelType == typeof(string))
                 {
@@ -65,6 +88,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
             catch (Exception exception)
             {
+                var isFormatException = exception is FormatException;
+                if (!isFormatException && exception.InnerException != null)
+                {
+                    // TypeConverter throws System.Exception wrapping the FormatException,
+                    // so we capture the inner exception.
+                    exception = ExceptionDispatchInfo.Capture(exception.InnerException).SourceException;
+                }
+
                 bindingContext.ModelState.TryAddModelError(
                     bindingContext.ModelName,
                     exception,
