@@ -14,6 +14,8 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
         {
             var watch = new Stopwatch();
 
+            Exception lastException = null;
+
             watch.Start();
             while (watch.Elapsed < timeout)
             {
@@ -23,14 +25,21 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
                     watch.Stop();
                     return;
                 }
-                catch
+                catch (Exception e)
                 {
+                    lastException = e;
                 }
                 Thread.Sleep(500);
             }
             watch.Stop();
 
-            throw new Exception($"{file} is not readable.");
+            if (lastException != null)
+            {
+                Console.WriteLine("Last exception:");
+                Console.WriteLine(lastException);
+            }
+
+            throw new InvalidOperationException($"{file} is not readable.");
         }
 
         public static void WaitForProcessToStop(int processId, TimeSpan timeout, bool expectedToStop, string errorMessage)
@@ -41,8 +50,10 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
             {
                 process = Process.GetProcessById(processId);
             }
-            catch
+            catch (Exception e)
             {
+                Console.WriteLine("Could not get process id:");
+                Console.WriteLine(e);
             }
 
             var watch = new Stopwatch();
@@ -60,7 +71,7 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
             bool isStopped = process == null || process.HasExited;
             if (isStopped != expectedToStop)
             {
-                throw new Exception(errorMessage);
+                throw new InvalidOperationException(errorMessage);
             }
         }
     }
