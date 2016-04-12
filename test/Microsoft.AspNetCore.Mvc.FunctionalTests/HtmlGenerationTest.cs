@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(expected1, response1.Trim());
 
             // Act - 2
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await Task.Delay(TimeSpan.FromSeconds(2));
             var response2 = await Client.GetStringAsync("/catalog/3");
 
             // Assert - 2
