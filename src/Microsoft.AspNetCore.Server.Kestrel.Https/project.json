@@ -1,5 +1,10 @@
 {
   "version": "1.0.0-*",
+  "description": "HTTPS support for the ASP.NET Core Kestrel cross-platform web server.",
+  "tags": [
+    "aspnetcore",
+    "kestrel"
+  ],
   "compilationOptions": {
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -7,7 +12,6 @@
     ],
     "xmlDoc": true
   },
-  "description": "Adds HTTPS support to Kestrel",
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/kestrelhttpserver"
@@ -16,7 +20,7 @@
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
         "System.Net.Security": "4.0.0-*"
