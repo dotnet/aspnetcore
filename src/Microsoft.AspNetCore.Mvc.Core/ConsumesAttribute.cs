@@ -16,7 +16,8 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// Specifies the allowed content types which can be used to select the action based on request's content-type.
+    /// A filter that specifies the supported request content types. <see cref="ContentTypes"/> is used to select an
+    /// action when there would otherwise be multiple matches.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class ConsumesAttribute :
@@ -54,7 +55,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// <inheritdoc />
         int IActionConstraint.Order { get; } = ConsumesActionConstraintOrder;
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Gets or sets the supported request content types. Used to select an action when there would otherwise be
+        /// multiple matches.
+        /// </summary>
         public MediaTypeCollection ContentTypes { get; set; }
 
         /// <inheritdoc />
@@ -103,6 +107,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
+        /// <inheritdoc />
         public bool Accept(ActionConstraintContext context)
         {
             // If this constraint is not closest to the action, it will be skipped.

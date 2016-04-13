@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 namespace Microsoft.AspNetCore.Mvc.Cors.Internal
 {
     /// <summary>
-    /// A filter which can be used to enable/disable cors support for a resource.
+    /// A filter that can be used to enable/disable CORS support for a resource.
     /// </summary>
     public interface ICorsAuthorizationFilter : IAsyncAuthorizationFilter, IOrderedFilter
     {

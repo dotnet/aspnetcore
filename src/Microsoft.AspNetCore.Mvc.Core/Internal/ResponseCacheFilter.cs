@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             set { _cacheVaryByHeader = value; }
         }
 
-        // <inheritdoc />
+        /// <inheritdoc />
         public void OnActionExecuting(ActionExecutingContext context)
         {
             if (context == null)
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        // <inheritdoc />
+        /// <inheritdoc />
         public void OnActionExecuted(ActionExecutedContext context)
         {
         }

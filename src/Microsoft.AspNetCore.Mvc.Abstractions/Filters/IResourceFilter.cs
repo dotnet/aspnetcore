@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Mvc.Filters
 {
     /// <summary>
-    /// A filter which surrounds execution of model binding, the action (and filters) and the action result
+    /// A filter that surrounds execution of model binding, the action (and filters) and the action result
     /// (and filters).
     /// </summary>
     public interface IResourceFilter : IFilterMetadata

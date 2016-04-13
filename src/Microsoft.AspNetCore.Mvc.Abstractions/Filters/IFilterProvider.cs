@@ -3,6 +3,10 @@
 
 namespace Microsoft.AspNetCore.Mvc.Filters
 {
+    /// <summary>
+    /// A <see cref="FilterItem"/> provider. Implementations should update <see cref="FilterProviderContext.Results"/>
+    /// to make executable filters available.
+    /// </summary>
     public interface IFilterProvider
     {
         /// <summary>
@@ -26,8 +30,16 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// </remarks>
         int Order { get; }
 
+        /// <summary>
+        /// Called in increasing <see cref="Order"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="FilterProviderContext"/>.</param>
         void OnProvidersExecuting(FilterProviderContext context);
 
+        /// <summary>
+        /// Called in decreasing <see cref="Order"/>, after all <see cref="IFilterProvider"/>s have executed once.
+        /// </summary>
+        /// <param name="context">The <see cref="FilterProviderContext"/>.</param>
         void OnProvidersExecuted(FilterProviderContext context);
     }
 }

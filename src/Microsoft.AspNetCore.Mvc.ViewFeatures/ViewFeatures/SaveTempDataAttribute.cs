@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     /// <summary>
-    /// Adds a filter which will save the <see cref="ITempDataDictionary"/> for a request.
+    /// A filter that saves the <see cref="ITempDataDictionary"/> for a request.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class SaveTempDataAttribute : Attribute, IFilterFactory, IOrderedFilter

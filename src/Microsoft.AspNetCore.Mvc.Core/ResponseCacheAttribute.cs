@@ -88,6 +88,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <inheritdoc />
         public bool IsReusable => true;
 
+        /// <inheritdoc />
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
             if (serviceProvider == null)

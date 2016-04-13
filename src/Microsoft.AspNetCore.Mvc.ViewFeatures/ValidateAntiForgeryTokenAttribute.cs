@@ -14,7 +14,8 @@ namespace Microsoft.AspNetCore.Mvc
     /// and the action method will not execute.
     /// </summary>
     /// <remarks>
-    /// This attribute helps defend against cross-site request forgery. It won't prevent other forgery or tampering attacks.
+    /// This attribute helps defend against cross-site request forgery. It won't prevent other forgery or tampering
+    /// attacks.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class ValidateAntiForgeryTokenAttribute : Attribute, IFilterFactory, IOrderedFilter
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <inheritdoc />
         public bool IsReusable => true;
 
+        /// <inheritdoc />
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
             return serviceProvider.GetRequiredService<ValidateAntiforgeryTokenAuthorizationFilter>();
