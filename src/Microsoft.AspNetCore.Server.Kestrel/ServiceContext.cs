@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             ThreadPool = context.ThreadPool;
             FrameFactory = context.FrameFactory;
             DateHeaderValueManager = context.DateHeaderValueManager;
-            ServerInformation = context.ServerInformation;
+            ServerOptions = context.ServerOptions;
             HttpComponentFactory = context.HttpComponentFactory;
         }
 
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         public DateHeaderValueManager DateHeaderValueManager { get; set; }
 
-        public IKestrelServerInformation ServerInformation { get; set; }
+        public KestrelServerOptions ServerOptions { get; set; }
 
         internal IHttpComponentFactory HttpComponentFactory { get; set; }
     }

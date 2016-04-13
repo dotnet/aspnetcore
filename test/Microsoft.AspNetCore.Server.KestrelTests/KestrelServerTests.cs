@@ -4,9 +4,10 @@
 using System;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -18,11 +19,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData(-1337)]
         public void StartWithNonPositiveThreadCountThrows(int threadCount)
         {
-            var server = CreateServer(configuration =>
-                new KestrelServerInformation(configuration)
-                {
-                    ThreadCount = threadCount
-                });
+            var server = CreateServer(new KestrelServerOptions() { ThreadCount = threadCount });
 
             var exception = Assert.Throws<ArgumentOutOfRangeException>(() => StartDummyApplication(server));
 
@@ -32,11 +29,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void StartWithInvalidAddressThrows()
         {
-            var server = CreateServer(configuration =>
-                new KestrelServerInformation(configuration)
-                {
-                    Addresses = {"http:/asdf"}
-                });
+            var addressesFeature = new ServerAddressesFeature();
+            addressesFeature.Addresses.Add("http:/asdf");
+            var server = CreateServer(new KestrelServerOptions(), addressesFeature);
 
             var exception = Assert.Throws<FormatException>(() => StartDummyApplication(server));
 
@@ -46,32 +41,25 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void StartWithEmptyAddressesThrows()
         {
-            var server = CreateServer(configuration =>
-            {
-                var information = new KestrelServerInformation(configuration);
-
-                information.Addresses.Clear();
-
-                return information;
-            });
+            var server = CreateServer(new KestrelServerOptions(), new ServerAddressesFeature());
 
             var exception = Assert.Throws<InvalidOperationException>(() => StartDummyApplication(server));
 
             Assert.Equal("No recognized listening addresses were configured.", exception.Message);
         }
 
-        private static KestrelServer CreateServer(Func<IConfiguration, IKestrelServerInformation> serverInformationFactory)
+        private static KestrelServer CreateServer(KestrelServerOptions options, IServerAddressesFeature addressesFeature = null)
         {
-            var configuration = new ConfigurationBuilder().Build();
-            var information = serverInformationFactory(configuration);
-
             var features = new FeatureCollection();
-            features.Set(information);
+            if (addressesFeature != null)
+            {
+                features.Set(addressesFeature);
+            }
 
             var lifetime = new LifetimeNotImplemented();
             var logger = new TestApplicationErrorLogger();
 
-            return new KestrelServer(features, lifetime, logger);
+            return new KestrelServer(features, options, lifetime, logger);
         }
 
         private static void StartDummyApplication(IServer server)
