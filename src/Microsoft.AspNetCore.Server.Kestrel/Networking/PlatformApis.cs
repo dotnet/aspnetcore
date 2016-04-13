@@ -21,41 +21,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
             if (!IsWindows)
             {
                 // When running on Mono in Darwin OSVersion doesn't return Darwin. It returns Unix instead.
-                // Fallback to use uname.
-                IsDarwin = string.Equals(GetUname(), "Darwin", StringComparison.Ordinal);
+                IsDarwin = PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Darwin;    
             }
 #endif
-
-            IsMono = PlatformServices.Default.Runtime.RuntimeType == "Mono";
         }
 
         public static bool IsWindows { get; }
 
         public static bool IsDarwin { get; }
-
-        public static bool IsMono { get; }
-
-        [DllImport("libc")]
-        static extern int uname(IntPtr buf);
-
-        static unsafe string GetUname()
-        {
-            var buffer = new byte[8192];
-            try
-            {
-                fixed (byte* buf = buffer)
-                {
-                    if (uname((IntPtr)buf) == 0)
-                    {
-                        return Marshal.PtrToStringAnsi((IntPtr)buf);
-                    }
-                }
-                return string.Empty;
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
     }
 }

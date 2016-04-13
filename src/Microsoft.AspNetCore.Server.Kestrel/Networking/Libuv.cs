@@ -12,99 +12,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
         {
             IsWindows = PlatformApis.IsWindows;
 
-            var isDnxDarwinMono =
-#if NET451
-                PlatformApis.IsDarwin && PlatformApis.IsMono && AppDomain.CurrentDomain.GetData("DNX_SERVICEPROVIDER") != null;
-#else
-                false;
-#endif
-
-            if (isDnxDarwinMono)
+            _uv_loop_init = NativeMethods.uv_loop_init;
+            _uv_loop_close = NativeMethods.uv_loop_close;
+            _uv_run = NativeMethods.uv_run;
+            _uv_stop = NativeMethods.uv_stop;
+            _uv_ref = NativeMethods.uv_ref;
+            _uv_unref = NativeMethods.uv_unref;
+            _uv_fileno = NativeMethods.uv_fileno;
+            _uv_close = NativeMethods.uv_close;
+            _uv_async_init = NativeMethods.uv_async_init;
+            _uv_async_send = NativeMethods.uv_async_send;
+            _uv_unsafe_async_send = NativeMethods.uv_unsafe_async_send;
+            _uv_tcp_init = NativeMethods.uv_tcp_init;
+            _uv_tcp_bind = NativeMethods.uv_tcp_bind;
+            _uv_tcp_open = NativeMethods.uv_tcp_open;
+            _uv_tcp_nodelay = NativeMethods.uv_tcp_nodelay;
+            _uv_pipe_init = NativeMethods.uv_pipe_init;
+            _uv_pipe_bind = NativeMethods.uv_pipe_bind;
+            _uv_listen = NativeMethods.uv_listen;
+            _uv_accept = NativeMethods.uv_accept;
+            _uv_pipe_connect = NativeMethods.uv_pipe_connect;
+            _uv_pipe_pending_count = NativeMethods.uv_pipe_pending_count;
+            _uv_read_start = NativeMethods.uv_read_start;
+            _uv_read_stop = NativeMethods.uv_read_stop;
+            _uv_try_write = NativeMethods.uv_try_write;
+            unsafe
             {
-                _uv_loop_init = NativeDarwinMonoMethods.uv_loop_init;
-                _uv_loop_close = NativeDarwinMonoMethods.uv_loop_close;
-                _uv_run = NativeDarwinMonoMethods.uv_run;
-                _uv_stop = NativeDarwinMonoMethods.uv_stop;
-                _uv_ref = NativeDarwinMonoMethods.uv_ref;
-                _uv_unref = NativeDarwinMonoMethods.uv_unref;
-                _uv_fileno = NativeDarwinMonoMethods.uv_fileno;
-                _uv_close = NativeDarwinMonoMethods.uv_close;
-                _uv_async_init = NativeDarwinMonoMethods.uv_async_init;
-                _uv_async_send = NativeDarwinMonoMethods.uv_async_send;
-                _uv_unsafe_async_send = NativeDarwinMonoMethods.uv_unsafe_async_send;
-                _uv_tcp_init = NativeDarwinMonoMethods.uv_tcp_init;
-                _uv_tcp_bind = NativeDarwinMonoMethods.uv_tcp_bind;
-                _uv_tcp_open = NativeDarwinMonoMethods.uv_tcp_open;
-                _uv_tcp_nodelay = NativeDarwinMonoMethods.uv_tcp_nodelay;
-                _uv_pipe_init = NativeDarwinMonoMethods.uv_pipe_init;
-                _uv_pipe_bind = NativeDarwinMonoMethods.uv_pipe_bind;
-                _uv_listen = NativeDarwinMonoMethods.uv_listen;
-                _uv_accept = NativeDarwinMonoMethods.uv_accept;
-                _uv_pipe_connect = NativeDarwinMonoMethods.uv_pipe_connect;
-                _uv_pipe_pending_count = NativeDarwinMonoMethods.uv_pipe_pending_count;
-                _uv_read_start = NativeDarwinMonoMethods.uv_read_start;
-                _uv_read_stop = NativeDarwinMonoMethods.uv_read_stop;
-                _uv_try_write = NativeDarwinMonoMethods.uv_try_write;
-                unsafe
-                {
-                    _uv_write = NativeDarwinMonoMethods.uv_write;
-                    _uv_write2 = NativeDarwinMonoMethods.uv_write2;
-                }
-                _uv_shutdown = NativeDarwinMonoMethods.uv_shutdown;
-                _uv_err_name = NativeDarwinMonoMethods.uv_err_name;
-                _uv_strerror = NativeDarwinMonoMethods.uv_strerror;
-                _uv_loop_size = NativeDarwinMonoMethods.uv_loop_size;
-                _uv_handle_size = NativeDarwinMonoMethods.uv_handle_size;
-                _uv_req_size = NativeDarwinMonoMethods.uv_req_size;
-                _uv_ip4_addr = NativeDarwinMonoMethods.uv_ip4_addr;
-                _uv_ip6_addr = NativeDarwinMonoMethods.uv_ip6_addr;
-                _uv_tcp_getpeername = NativeDarwinMonoMethods.uv_tcp_getpeername;
-                _uv_tcp_getsockname = NativeDarwinMonoMethods.uv_tcp_getsockname;
-                _uv_walk = NativeDarwinMonoMethods.uv_walk;
+                _uv_write = NativeMethods.uv_write;
+                _uv_write2 = NativeMethods.uv_write2;
             }
-            else
-            {
-                _uv_loop_init = NativeMethods.uv_loop_init;
-                _uv_loop_close = NativeMethods.uv_loop_close;
-                _uv_run = NativeMethods.uv_run;
-                _uv_stop = NativeMethods.uv_stop;
-                _uv_ref = NativeMethods.uv_ref;
-                _uv_unref = NativeMethods.uv_unref;
-                _uv_fileno = NativeMethods.uv_fileno;
-                _uv_close = NativeMethods.uv_close;
-                _uv_async_init = NativeMethods.uv_async_init;
-                _uv_async_send = NativeMethods.uv_async_send;
-                _uv_unsafe_async_send = NativeMethods.uv_unsafe_async_send;
-                _uv_tcp_init = NativeMethods.uv_tcp_init;
-                _uv_tcp_bind = NativeMethods.uv_tcp_bind;
-                _uv_tcp_open = NativeMethods.uv_tcp_open;
-                _uv_tcp_nodelay = NativeMethods.uv_tcp_nodelay;
-                _uv_pipe_init = NativeMethods.uv_pipe_init;
-                _uv_pipe_bind = NativeMethods.uv_pipe_bind;
-                _uv_listen = NativeMethods.uv_listen;
-                _uv_accept = NativeMethods.uv_accept;
-                _uv_pipe_connect = NativeMethods.uv_pipe_connect;
-                _uv_pipe_pending_count = NativeMethods.uv_pipe_pending_count;
-                _uv_read_start = NativeMethods.uv_read_start;
-                _uv_read_stop = NativeMethods.uv_read_stop;
-                _uv_try_write = NativeMethods.uv_try_write;
-                unsafe
-                {
-                    _uv_write = NativeMethods.uv_write;
-                    _uv_write2 = NativeMethods.uv_write2;
-                }
-                _uv_shutdown = NativeMethods.uv_shutdown;
-                _uv_err_name = NativeMethods.uv_err_name;
-                _uv_strerror = NativeMethods.uv_strerror;
-                _uv_loop_size = NativeMethods.uv_loop_size;
-                _uv_handle_size = NativeMethods.uv_handle_size;
-                _uv_req_size = NativeMethods.uv_req_size;
-                _uv_ip4_addr = NativeMethods.uv_ip4_addr;
-                _uv_ip6_addr = NativeMethods.uv_ip6_addr;
-                _uv_tcp_getpeername = NativeMethods.uv_tcp_getpeername;
-                _uv_tcp_getsockname = NativeMethods.uv_tcp_getsockname;
-                _uv_walk = NativeMethods.uv_walk;
-            }
+            _uv_shutdown = NativeMethods.uv_shutdown;
+            _uv_err_name = NativeMethods.uv_err_name;
+            _uv_strerror = NativeMethods.uv_strerror;
+            _uv_loop_size = NativeMethods.uv_loop_size;
+            _uv_handle_size = NativeMethods.uv_handle_size;
+            _uv_req_size = NativeMethods.uv_req_size;
+            _uv_ip4_addr = NativeMethods.uv_ip4_addr;
+            _uv_ip6_addr = NativeMethods.uv_ip6_addr;
+            _uv_tcp_getpeername = NativeMethods.uv_tcp_getpeername;
+            _uv_tcp_getsockname = NativeMethods.uv_tcp_getsockname;
+            _uv_walk = NativeMethods.uv_walk;
         }
 
         // Second ctor that doesn't set any fields only to be used by MockLibuv
@@ -659,123 +606,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
                 IntPtr lpOverlapped,
                 IntPtr lpCompletionRoutine
             );
-            
+
             [DllImport("WS2_32.dll", CallingConvention = CallingConvention.Winapi)]
             public static extern int WSAGetLastError();
-        }
-
-        private static class NativeDarwinMonoMethods
-        {
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_loop_init(UvLoopHandle handle);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_loop_close(IntPtr a0);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_run(UvLoopHandle handle, int mode);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void uv_stop(UvLoopHandle handle);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void uv_ref(UvHandle handle);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void uv_unref(UvHandle handle);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_fileno(UvHandle handle, ref IntPtr socket);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void uv_close(IntPtr handle, uv_close_cb close_cb);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_async_init(UvLoopHandle loop, UvAsyncHandle handle, uv_async_cb cb);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public extern static int uv_async_send(UvAsyncHandle handle);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl, EntryPoint = "uv_async_send")]
-            public extern static int uv_unsafe_async_send(IntPtr handle);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_tcp_init(UvLoopHandle loop, UvTcpHandle handle);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_tcp_bind(UvTcpHandle handle, ref SockAddr addr, int flags);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_tcp_open(UvTcpHandle handle, IntPtr hSocket);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_tcp_nodelay(UvTcpHandle handle, int enable);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_pipe_init(UvLoopHandle loop, UvPipeHandle handle, int ipc);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_pipe_bind(UvPipeHandle loop, string name);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_listen(UvStreamHandle handle, int backlog, uv_connection_cb cb);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_accept(UvStreamHandle server, UvStreamHandle client);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-            public static extern void uv_pipe_connect(UvConnectRequest req, UvPipeHandle handle, string name, uv_connect_cb cb);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public extern static int uv_pipe_pending_count(UvPipeHandle handle);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public extern static int uv_read_start(UvStreamHandle handle, uv_alloc_cb alloc_cb, uv_read_cb read_cb);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_read_stop(UvStreamHandle handle);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_try_write(UvStreamHandle handle, uv_buf_t[] bufs, int nbufs);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            unsafe public static extern int uv_write(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, uv_write_cb cb);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            unsafe public static extern int uv_write2(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, UvStreamHandle sendHandle, uv_write_cb cb);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_shutdown(UvShutdownReq req, UvStreamHandle handle, uv_shutdown_cb cb);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public extern static IntPtr uv_err_name(int err);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr uv_strerror(int err);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_loop_size();
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_handle_size(HandleType handleType);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_req_size(RequestType reqType);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_ip4_addr(string ip, int port, out SockAddr addr);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_ip6_addr(string ip, int port, out SockAddr addr);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_tcp_getsockname(UvTcpHandle handle, out SockAddr name, ref int namelen);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_tcp_getpeername(UvTcpHandle handle, out SockAddr name, ref int namelen);
-
-            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            unsafe public static extern int uv_walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg);
         }
     }
 }
