@@ -38,6 +38,7 @@ namespace ApplicationModelWebSite
                 .UseDefaultHostingConfiguration(args)
                 .UseStartup<Startup>()
                 .UseKestrel()
+                .UseIISIntegration()
                 .Build();
 
             host.Run();

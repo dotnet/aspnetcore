@@ -48,6 +48,7 @@ namespace HtmlGenerationWebSite
                 .UseDefaultHostingConfiguration(args)
                 .UseStartup<Startup>()
                 .UseKestrel()
+                .UseIISIntegration()
                 .Build();
 
             host.Run();

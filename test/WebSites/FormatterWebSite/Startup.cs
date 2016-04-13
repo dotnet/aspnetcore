@@ -40,6 +40,7 @@ namespace FormatterWebSite
                 .UseDefaultHostingConfiguration(args)
                 .UseStartup<Startup>()
                 .UseKestrel()
+                .UseIISIntegration()
                 .Build();
 
             host.Run();

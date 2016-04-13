@@ -31,6 +31,7 @@ namespace FilesWebSite
                 .UseDefaultHostingConfiguration(args)
                 .UseStartup<Startup>()
                 .UseKestrel()
+                .UseIISIntegration()
                 .Build();
 
             host.Run();

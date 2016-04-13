@@ -50,6 +50,7 @@ namespace RazorPageExecutionInstrumentationWebSite
                 .UseDefaultHostingConfiguration(args)
                 .UseStartup<Startup>()
                 .UseKestrel()
+                .UseIISIntegration()
                 .Build();
 
             host.Run();
