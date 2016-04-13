@@ -8,7 +8,7 @@ using System.Runtime.ExceptionServices;
 namespace Microsoft.AspNetCore.Mvc.Filters
 {
     /// <summary>
-    /// A context for resource filters.
+    /// A context for resource filters, specifically <see cref="IResourceFilter.OnResourceExecuted"/> calls.
     /// </summary>
     public class ResourceExecutedContext : FilterContext
     {
@@ -36,10 +36,13 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// Gets or set the current <see cref="Exception"/>.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// Setting <see cref="Exception"/> or <see cref="ExceptionDispatchInfo"/> to <c>null</c> will treat
         /// the exception as handled, and it will not be rethrown by the runtime.
-        /// 
+        /// </para>
+        /// <para>
         /// Setting <see cref="ExceptionHandled"/> to <c>true</c> will also mark the exception as handled.
+        /// </para>
         /// </remarks>
         public virtual Exception Exception
         {
@@ -66,10 +69,13 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// Gets or set the current <see cref="Exception"/>.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// Setting <see cref="Exception"/> or <see cref="ExceptionDispatchInfo"/> to <c>null</c> will treat
         /// the exception as handled, and it will not be rethrown by the runtime.
-        /// 
+        /// </para>
+        /// <para>
         /// Setting <see cref="ExceptionHandled"/> to <c>true</c> will also mark the exception as handled.
+        /// </para>
         /// </remarks>
         public virtual ExceptionDispatchInfo ExceptionDispatchInfo
         {
@@ -86,10 +92,13 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         }
 
         /// <summary>
+        /// <para>
         /// Gets or sets a value indicating whether or not the current <see cref="Exception"/> has been handled.
-        /// 
+        /// </para>
+        /// <para>
         /// If <c>false</c> the <see cref="Exception"/> will be rethrown by the runtime after resource filters
         /// have executed.
+        /// </para>
         /// </summary>
         public virtual bool ExceptionHandled { get; set; }
 
@@ -97,11 +106,14 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// Gets or sets the result.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// The <see cref="Result"/> may be provided by execution of the action itself or by another
-        /// filter. 
-        /// 
+        /// filter.
+        /// </para>
+        /// <para>
         /// The <see cref="Result"/> has already been written to the response before being made available
         /// to resource filters.
+        /// </para>
         /// </remarks>
         public virtual IActionResult Result { get; set; }
     }

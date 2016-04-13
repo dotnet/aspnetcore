@@ -6,7 +6,8 @@ using System.Collections.Generic;
 namespace Microsoft.AspNetCore.Mvc.Filters
 {
     /// <summary>
-    /// A context for resource filters.
+    /// A context for resource filters, specifically <see cref="IResourceFilter.OnResourceExecuting"/> and
+    /// <see cref="IAsyncResourceFilter.OnResourceExecutionAsync"/> calls.
     /// </summary>
     public class ResourceExecutingContext : FilterContext
     {
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             : base(actionContext, filters)
         {
         }
-        
+
         /// <summary>
         /// Gets or sets the result of the action to be executed.
         /// </summary>

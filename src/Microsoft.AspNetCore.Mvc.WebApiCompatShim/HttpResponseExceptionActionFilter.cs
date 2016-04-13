@@ -9,19 +9,22 @@ using Microsoft.AspNetCore.Mvc.Filters;
 namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
     /// <summary>
-    /// An action filter which sets <see cref="ActionExecutedContext.Result"/> to an <see cref="ObjectResult"/>
+    /// An action filter that sets <see cref="ActionExecutedContext.Result"/> to an <see cref="ObjectResult"/>
     /// if the exception type is <see cref="HttpResponseException"/>.
     /// This filter runs immediately after the action.
     /// </summary>
     public class HttpResponseExceptionActionFilter : IActionFilter, IOrderedFilter
     {
+        /// <inheritdoc />
         // Return a high number by default so that it runs closest to the action.
         public int Order { get; set; } = int.MaxValue - 10;
 
+        /// <inheritdoc />
         public void OnActionExecuting(ActionExecutingContext context)
         {
         }
 
+        /// <inheritdoc />
         public void OnActionExecuted(ActionExecutedContext context)
         {
             if (context == null)

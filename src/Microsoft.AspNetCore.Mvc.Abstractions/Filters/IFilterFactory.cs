@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNetCore.Mvc.Filters
 {
     /// <summary>
-    /// An interface for for filter metadata which can create an instance of an executable filter.
+    /// An interface for filter metadata which can create an instance of an executable filter.
     /// </summary>
     public interface IFilterFactory : IFilterMetadata
     {

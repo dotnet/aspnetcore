@@ -13,12 +13,14 @@ using Microsoft.Extensions.Internal;
 namespace Microsoft.AspNetCore.Mvc.Authorization
 {
     /// <summary>
-    /// An implementation of <see cref="IAsyncAuthorizationFilter"/>
+    /// An implementation of <see cref="IAsyncAuthorizationFilter"/> which applies a specific
+    /// <see cref="AuthorizationPolicy"/>. MVC recognizes the <see cref="AuthorizeAttribute"/> and adds an instance of
+    /// this filter to the associated action or controller.
     /// </summary>
     public class AuthorizeFilter : IAsyncAuthorizationFilter
     {
         /// <summary>
-        /// Authorize filter for a specific policy.
+        /// Initialize a new <see cref="AuthorizeFilter"/> instance.
         /// </summary>
         /// <param name="policy">Authorization policy to be used.</param>
         public AuthorizeFilter(AuthorizationPolicy policy)
@@ -32,9 +34,9 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         }
 
         /// <summary>
-        /// Authorization policy to be used.
+        /// Gets the authorization policy to be used.
         /// </summary>
-        public AuthorizationPolicy Policy { get; private set; }
+        public AuthorizationPolicy Policy { get; }
 
         /// <inheritdoc />
         public virtual async Task OnAuthorizationAsync(Filters.AuthorizationFilterContext context)

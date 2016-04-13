@@ -4,10 +4,13 @@
 namespace Microsoft.AspNetCore.Mvc.Filters
 {
     /// <summary>
+    /// <para>
     /// Contains constant values for known filter scopes.
-    ///
+    /// </para>
+    /// <para>
     /// Scope defines the ordering of filters that have the same order. Scope is by-default
     /// defined by how a filter is registered.
+    /// </para>
     /// </summary>
     public static class FilterScope
     {

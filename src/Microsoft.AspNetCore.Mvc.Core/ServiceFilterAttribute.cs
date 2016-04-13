@@ -9,10 +9,26 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc
 {
+    /// <summary>
+    /// A filter that finds another filter in an <see cref="IServiceProvider"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Primarily used in <see cref="M:FilterCollection.AddService"/> calls.
+    /// </para>
+    /// <para>
+    /// Similar to the <see cref="TypeFilterAttribute"/> in that both use constructor injection. Use
+    /// <see cref="TypeFilterAttribute"/> instead if the filter is not itself a service.
+    /// </para>
+    /// </remarks>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     [DebuggerDisplay("ServiceFilter: Type={ServiceType} Order={Order}")]
     public class ServiceFilterAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
+        /// <summary>
+        /// Instantiates a new <see cref="ServiceFilterAttribute"/> instance.
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> of filter to find.</param>
         public ServiceFilterAttribute(Type type)
         {
             if (type == null)
@@ -26,11 +42,15 @@ namespace Microsoft.AspNetCore.Mvc
         /// <inheritdoc />
         public int Order { get; set; }
 
-        public Type ServiceType { get; private set; }
+        /// <summary>
+        /// Gets the <see cref="Type"/> of filter to find.
+        /// </summary>
+        public Type ServiceType { get; }
 
         /// <inheritdoc />
         public bool IsReusable { get; set; }
 
+        /// <inheritdoc />
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
             if (serviceProvider == null)

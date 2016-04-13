@@ -3,13 +3,12 @@
 
 using System;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// Filter to prevent StatusCodePages middleware to handle responses.
+    /// A filter that prevents execution of the StatusCodePages middleware.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class SkipStatusCodePagesAttribute : Attribute, IResourceFilter

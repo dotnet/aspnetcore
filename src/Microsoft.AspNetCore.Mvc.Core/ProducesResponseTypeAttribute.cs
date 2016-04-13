@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// Specifies the type of the value and status code returned by the action.
+    /// A filter that specifies the type of the value and status code returned by the action.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class ProducesResponseTypeAttribute : Attribute, IApiResponseMetadataProvider, IFilterMetadata
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Initializes an instance of <see cref="ProducesResponseTypeAttribute"/>.
         /// </summary>
         /// <param name="type">The <see cref="Type"/> of object that is going to be written in the response.</param>
-        /// <param name="statusCode">HTTP response status code</param>
+        /// <param name="statusCode">The HTTP response status code.</param>
         public ProducesResponseTypeAttribute(Type type, int statusCode)
         {
             if (type == null)

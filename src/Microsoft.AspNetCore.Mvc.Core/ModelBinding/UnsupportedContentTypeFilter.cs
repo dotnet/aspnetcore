@@ -1,15 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
     /// A filter that scans for <see cref="UnsupportedContentTypeException"/> in the
-    /// <see cref="ActionContext.ModelState"/> and shortcircuits the pipeline
+    /// <see cref="ActionContext.ModelState"/> and short-circuits the pipeline
     /// with an Unsupported Media Type (415) response.
     /// </summary>
     public class UnsupportedContentTypeFilter : IActionFilter

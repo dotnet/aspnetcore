@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     /// <summary>
-    /// A filter which saves temp data.
+    /// A filter that saves temp data.
     /// </summary>
     public class SaveTempDataFilter : IResourceFilter, IResultFilter
     {
