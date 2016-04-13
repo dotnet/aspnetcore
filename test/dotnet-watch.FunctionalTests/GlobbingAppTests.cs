@@ -15,13 +15,26 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
 
         private static readonly TimeSpan _negativeTestWaitTime = TimeSpan.FromSeconds(10);
 
-        // Change a file included in compilation
         [Fact]
-        public void ChangeCompiledFile()
+        public void ChangeCompiledFile_PollingWatcher()
+        {
+            ChangeCompiledFile(usePollingWatcher: true);
+        }
+
+        [Fact]
+        public void ChangeCompiledFile_DotNetWatcher()
+        {
+            ChangeCompiledFile(usePollingWatcher: false);
+        }
+
+        // Change a file included in compilation
+        private void ChangeCompiledFile(bool usePollingWatcher)
         {
             using (var scenario = new GlobbingAppScenario())
             using (var wait = new WaitForFileToChange(scenario.StartedFile))
             {
+                scenario.UsePollingWatcher = usePollingWatcher;
+
                 scenario.Start();
 
                 var fileToChange = Path.Combine(scenario.TestAppFolder, "include", "Foo.cs");
@@ -91,12 +104,25 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
             }
         }
 
-        // Add a file that's in a included folder but not matching the globbing pattern
         [Fact]
-        public void ChangeNonCompiledFile()
+        public void ChangeNonCompiledFile_PollingWatcher()
         {
+            ChangeNonCompiledFile(usePollingWatcher: true);
+        }
+
+        [Fact]
+        public void ChangeNonCompiledFile_DotNetWatcher()
+        {
+            ChangeNonCompiledFile(usePollingWatcher: false);
+        }
+
+        // Add a file that's in a included folder but not matching the globbing pattern
+        private void ChangeNonCompiledFile(bool usePollingWatcher)
+        { 
             using (var scenario = new GlobbingAppScenario())
             {
+                scenario.UsePollingWatcher = usePollingWatcher;
+
                 scenario.Start();
 
                 var ids = File.ReadAllLines(scenario.StatusFile);

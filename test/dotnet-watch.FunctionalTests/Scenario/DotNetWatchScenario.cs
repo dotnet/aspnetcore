@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.Extensions.Internal;
@@ -25,9 +26,20 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
 
         public Process WatcherProcess { get; private set; }
 
+        public bool UsePollingWatcher { get; set; }
+
         protected void RunDotNetWatch(string arguments, string workingFolder)
         {
-            WatcherProcess = _scenario.ExecuteDotnet("watch " + arguments, workingFolder);
+            IDictionary<string, string> envVariables = null;
+            if (UsePollingWatcher)
+            {
+                envVariables = new Dictionary<string, string>()
+                {
+                    ["USE_POLLING_FILE_WATCHER"] = "true"
+                };
+            }
+
+            WatcherProcess = _scenario.ExecuteDotnet("watch " + arguments, workingFolder, envVariables);
         }
 
         public virtual void Dispose()
