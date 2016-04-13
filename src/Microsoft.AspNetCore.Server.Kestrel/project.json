@@ -1,6 +1,10 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 cross platform web server.",
+  "description": "ASP.NET Core Kestrel cross-platform web server.",
+  "tags": [
+    "aspnetcore",
+    "kestrel"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/kestrelhttpserver"
