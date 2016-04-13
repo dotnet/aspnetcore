@@ -43,12 +43,12 @@ namespace MusicStore
             if (useInMemoryStore)
             {
                 services.AddDbContext<MusicStoreContext>(options =>
-                            options.UseInMemoryDatabase());
+                    options.UseInMemoryDatabase());
             }
             else
             {
                 services.AddDbContext<MusicStoreContext>(options =>
-                            options.UseSqlServer(Configuration[StoreConfig.ConnectionStringKey.Replace("__", ":")]));
+                    options.UseSqlServer(Configuration[StoreConfig.ConnectionStringKey.Replace("__", ":")]));
             }
 
             // Add Identity services to the services container

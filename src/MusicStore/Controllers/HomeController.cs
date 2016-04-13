@@ -55,12 +55,12 @@ namespace MusicStore.Controllers
             return View("~/Views/Shared/AccessDenied.cshtml");
         }
 
-        private async Task<List<Album>> GetTopSellingAlbumsAsync(MusicStoreContext dbContext, int count)
+        private Task<List<Album>> GetTopSellingAlbumsAsync(MusicStoreContext dbContext, int count)
         {
             // Group the order details by album and return
             // the albums with the highest count
 
-            return await dbContext.Albums
+            return dbContext.Albums
                 .OrderByDescending(a => a.OrderDetails.Count)
                 .Take(count)
                 .ToListAsync();

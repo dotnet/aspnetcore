@@ -88,10 +88,22 @@ namespace MusicStore.Models
 
         public Task<List<CartItem>> GetCartItems()
         {
-            return _dbContext.CartItems.
-                Where(cart => cart.CartId == _shoppingCartId).
-                Include(c => c.Album).
-                ToListAsync();
+            return _dbContext
+                .CartItems
+                .Where(cart => cart.CartId == _shoppingCartId)
+                .Include(c => c.Album)
+                .ToListAsync();
+        }
+        
+        public Task<List<string>> GetCartAlbumTitles()
+        {
+            return _dbContext
+                .CartItems
+                .Where(cart => cart.CartId == _shoppingCartId)
+                .Select(c => c.Album.Title)
+                .Distinct()
+                .OrderBy(n => n)
+                .ToListAsync();
         }
 
         public Task<int> GetCount()
@@ -110,7 +122,8 @@ namespace MusicStore.Models
             // the current price for each of those albums in the cart
             // sum all album price totals to get the cart total
 
-            return _dbContext.CartItems
+            return _dbContext
+                .CartItems
                 .Include(c => c.Album)
                 .Where(c => c.CartId == _shoppingCartId)
                 .Select(c => c.Album.Price * c.Count)

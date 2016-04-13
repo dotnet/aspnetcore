@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -17,21 +18,14 @@ namespace MusicStore.Components
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var cartItems = await GetCartItems();
+            var cart = ShoppingCart.GetCart(DbContext, HttpContext);
+            
+            var cartItems = await cart.GetCartAlbumTitles();
 
-            ViewBag.CartCount = cartItems.Count();
-            ViewBag.CartSummary = string.Join("\n", cartItems.Distinct());
+            ViewBag.CartCount = cartItems.Count;
+            ViewBag.CartSummary = string.Join("\n", cartItems);
 
             return View();
-        }
-
-        private async Task<IOrderedEnumerable<string>> GetCartItems()
-        {
-            var cart = ShoppingCart.GetCart(DbContext, HttpContext);
-
-            return (await cart.GetCartItems())
-                .Select(a => a.Album.Title)
-                .OrderBy(x => x);
         }
     }
 }

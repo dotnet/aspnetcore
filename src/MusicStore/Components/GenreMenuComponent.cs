@@ -24,9 +24,9 @@ namespace MusicStore.Components
             return View(genres);
         }
 
-        private async Task<List<Genre>> GetGenres()
+        private Task<List<Genre>> GetGenres()
         {
-            return await DbContext.Genres
+            return DbContext.Genres
                 .Include(g => g.Albums).ThenInclude(a => a.OrderDetails)
                 // TODO use nested sum https://github.com/aspnet/EntityFramework/issues/3792
                 //.OrderByDescending(
