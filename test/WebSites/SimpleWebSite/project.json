@@ -3,11 +3,9 @@
     "emitEntryPoint": true,
     "preserveCompilationContext": true
   },
-  "commands": {
-    "web": "SimpleWebSite"
-  },
   "dependencies": {
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*"
   },
   "frameworks": {
@@ -21,5 +19,8 @@
           "NETStandard.Library": "1.5.0-*"
       }
     }
-  }
+  },
+  "content": [
+    "web.config"
+  ]
 }

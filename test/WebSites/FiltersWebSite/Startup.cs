@@ -59,7 +59,6 @@ namespace FiltersWebSite
         {
             app.UseCultureReplacer();
 
-
             app.UseMiddleware<AuthorizeBasicMiddleware>("Interactive");
             app.UseMiddleware<AuthorizeBasicMiddleware>("Api");
             app.UseMiddleware<ErrorReporterMiddleware>();
@@ -73,6 +72,7 @@ namespace FiltersWebSite
                 .UseDefaultHostingConfiguration(args)
                 .UseStartup<Startup>()
                 .UseKestrel()
+                .UseIISIntegration()
                 .Build();
 
             host.Run();

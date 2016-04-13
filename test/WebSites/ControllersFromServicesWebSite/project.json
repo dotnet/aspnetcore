@@ -1,13 +1,11 @@
 {
-  "commands": {
-    "web": "ControllersFromServicesWebSite"
-  },
   "compilationOptions": {
     "emitEntryPoint": true,
     "preserveCompilationContext": true
   },
   "dependencies": {
     "ControllersFromServicesClassLibrary": "1.0.0",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.TestConfiguration": "1.0.0",
@@ -24,5 +22,9 @@
           "NETStandard.Library": "1.5.0-*"
       }
     }
-  }
+  },
+  "content": [
+    "Views",
+    "web.config"
+  ]
 }

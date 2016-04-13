@@ -3,13 +3,11 @@
     "emitEntryPoint": true,
     "preserveCompilationContext": true
   },
-  "commands": {
-    "web": "WebApiCompatShimWebSite"
-  },
   "dependencies": {
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.TestConfiguration": "1.0.0",
     "Microsoft.AspNetCore.Mvc.WebApiCompatShim": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*"
   },
@@ -26,5 +24,8 @@
           "System.Diagnostics.Tracing": "4.1.0-*"
       }
     }
-  }
+  },
+  "content": [
+    "web.config"
+  ]
 }

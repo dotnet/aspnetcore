@@ -5,13 +5,11 @@
     "warningsAsErrors": true,
     "preserveCompilationContext": true
   },
-  "commands": {
-    "web": "TagHelpersWebSite"
-  },
   "dependencies": {
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.TestConfiguration": "1.0.0",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*"
   },
@@ -26,5 +24,9 @@
           "NETStandard.Library": "1.5.0-*"
       }
     }
-  }
+  },
+  "content": [
+    "Views",
+    "web.config"
+  ]
 }
