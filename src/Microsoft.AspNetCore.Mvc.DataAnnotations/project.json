@@ -1,5 +1,9 @@
 {
-  "description": "Metadata and Validation using System.ComponentModel.DataAnnotations for the MVC runtime",
+  "description": "ASP.NET Core MVC metadata and validation system using System.ComponentModel.DataAnnotations.",
+  "tags": [
+    "aspnetcore",
+    "aspnetcoremvc"
+  ],
   "version": "1.0.0-*",
   "repository": {
     "type": "git",

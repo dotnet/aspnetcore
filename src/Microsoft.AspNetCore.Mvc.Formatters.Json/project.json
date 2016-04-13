@@ -1,5 +1,10 @@
 {
-  "description": "JSON input and output for the MVC runtime",
+  "description": "ASP.NET Core MVC formatters for JSON input and output and for JSON PATCH input using Json.NET.",
+  "tags": [
+    "aspnetcore",
+    "aspnetcoremvc",
+    "json"
+  ],
   "version": "1.0.0-*",
   "repository": {
     "type": "git",
@@ -22,7 +27,7 @@
     }
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.5": {
       "imports": [
         "portable-net451+win8"

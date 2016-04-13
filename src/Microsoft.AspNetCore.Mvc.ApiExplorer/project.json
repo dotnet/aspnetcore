@@ -1,5 +1,9 @@
 {
-  "description": "Contains API explorer functionality for ASP.NET MVC for discovering metadata such as the list of controllers and actions, and their URLs and allowed HTTP methods.",
+  "description": "ASP.NET Core MVC API explorer functionality for discovering metadata such as the list of controllers and actions, and their URLs and allowed HTTP methods.",
+  "tags": [
+    "aspnetcore",
+    "aspnetcoremvc"
+  ],
   "version": "1.0.0-*",
   "repository": {
     "type": "git",
@@ -25,7 +29,7 @@
     }
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.5": {
       "imports": [
         "portable-net451+win8"

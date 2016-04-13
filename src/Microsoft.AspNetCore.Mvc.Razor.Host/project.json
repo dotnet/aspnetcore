@@ -1,5 +1,11 @@
 {
-  "description": "Design time hosting infrastructure for the ASP.NET MVC Razor view engine.",
+  "description": "ASP.NET Core MVC design time hosting infrastructure for the Razor view engine.",
+  "tags": [
+    "aspnetcore",
+    "aspnetcoremvc",
+    "cshtml",
+    "razor"
+  ],
   "version": "1.0.0-*",
   "repository": {
     "type": "git",
@@ -23,7 +29,7 @@
     }
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.5": {
       "dependencies": {
         "System.Collections.Concurrent": "4.0.12-*",

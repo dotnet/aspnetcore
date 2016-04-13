@@ -1,5 +1,10 @@
 {
-  "description": "Provides compatibility in ASP.NET MVC with ASP.NET Web API 2 to simplify migration of existing Web API implementations.",
+  "description": "Provides compatibility in ASP.NET Core MVC with ASP.NET Web API 2 to simplify migration of existing Web API implementations.\r\nCommonly used types:\r\nSystem.Web.Http.ApiController",
+  "tags": [
+    "aspnetcore",
+    "aspnetcoremvc",
+    "aspnetwebapi"
+  ],
   "version": "1.0.0-*",
   "repository": {
     "type": "git",
