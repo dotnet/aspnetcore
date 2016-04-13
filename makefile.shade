@@ -115,13 +115,15 @@ var buildTarget = "compile"
 
 #ci-pull
     @{
+        var threads = int.Parse(Environment.GetEnvironmentVariable("UNIVERSE_THREADS") ?? "4");
+
         var blockLogger = Log as IBlockLogger;
         if (blockLogger != null)
         {
             blockLogger.StartBlock("Cloning repos");
         }
 
-        Parallel.ForEach(repositories, repo =>
+        Parallel.ForEach(repositories, new ParallelOptions { MaxDegreeOfParallelism = threads }, repo =>
         {
             var useBuildBranch = true;
             if (Directory.Exists(repo))
