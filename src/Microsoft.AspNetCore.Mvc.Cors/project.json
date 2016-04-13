@@ -1,5 +1,10 @@
 {
-  "description": "CORS features for the core MVC runtime",
+  "description": "ASP.NET Core MVC cross-origin resource sharing (CORS) features.",
+  "tags": [
+    "aspnetcore",
+    "aspnetcoremvc",
+    "cors"
+  ],
   "version": "1.0.0-*",
   "repository": {
     "type": "git",
@@ -18,7 +23,7 @@
     "Microsoft.AspNetCore.Mvc.Core": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.5": {
       "imports": [
         "portable-net451+win8"

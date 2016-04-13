@@ -1,5 +1,10 @@
 {
-  "description": "Features that enable globalization & localization of MVC applications.",
+  "description": "ASP.NET Core MVC features that enable globalization and localization of applications.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.Mvc.Localization.IHtmlLocalizer<TResource>\r\nMicrosoft.AspNetCore.Mvc.Localization.IViewLocalizer",
+  "tags": [
+    "aspnetcore",
+    "aspnetcoremvc",
+    "localization"
+  ],
   "version": "1.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": true,
@@ -20,7 +25,7 @@
     }
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.5": {
       "imports": [
         "portable-net45+win8"
