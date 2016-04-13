@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
 
             // Don't initialize _frame until SocketInput and SocketOutput are set to their final values.
-            if (ServerInformation.ConnectionFilter == null)
+            if (ServerOptions.ConnectionFilter == null)
             {
                 lock (_stateLock)
                 {
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                 try
                 {
-                    ServerInformation.ConnectionFilter.OnConnectionAsync(_filterContext).ContinueWith((task, state) =>
+                    ServerOptions.ConnectionFilter.OnConnectionAsync(_filterContext).ContinueWith((task, state) =>
                     {
                         var connection = (Connection)state;
 

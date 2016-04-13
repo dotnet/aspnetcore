@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -18,11 +19,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         private readonly IApplicationLifetime _applicationLifetime;
         private readonly ILogger _logger;
 
-        public KestrelServer(IFeatureCollection features, IApplicationLifetime applicationLifetime, ILogger logger)
+        public KestrelServer(IFeatureCollection features, KestrelServerOptions options, IApplicationLifetime applicationLifetime, ILogger logger)
         {
             if (features == null)
             {
                 throw new ArgumentNullException(nameof(features));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
             }
 
             if (applicationLifetime == null)
@@ -38,9 +44,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             _applicationLifetime = applicationLifetime;
             _logger = logger;
             Features = features;
+            Options = options;
         }
 
         public IFeatureCollection Features { get; }
+
+        public KestrelServerOptions Options { get; }
 
         public void Start<TContext>(IHttpApplication<TContext> application)
         {
@@ -53,7 +62,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
             try
             {
-                var information = (KestrelServerInformation)Features.Get<IKestrelServerInformation>();
                 var componentFactory = Features.Get<IHttpComponentFactory>();
                 var dateHeaderValueManager = new DateHeaderValueManager();
                 var trace = new KestrelTrace(_logger);
@@ -67,14 +75,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     Log = trace,
                     ThreadPool = new LoggingThreadPool(trace),
                     DateHeaderValueManager = dateHeaderValueManager,
-                    ServerInformation = information,
+                    ServerOptions = Options,
                     HttpComponentFactory = componentFactory
                 });
 
                 _disposables.Push(engine);
                 _disposables.Push(dateHeaderValueManager);
 
-                var threadCount = information.ThreadCount;
+                var threadCount = Options.ThreadCount;
 
                 if (threadCount <= 0)
                 {
@@ -86,7 +94,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 engine.Start(threadCount);
                 var atLeastOneListener = false;
 
-                foreach (var address in information.Addresses)
+                var addressesFeature = Features.Get<IServerAddressesFeature>();
+                if (addressesFeature == null)
+                {
+                    throw new InvalidOperationException($"{nameof(IServerAddressesFeature)} is missing.");
+                }
+
+                foreach (var address in addressesFeature.Addresses)
                 {
                     var parsedAddress = ServerAddress.FromUrl(address);
                     if (parsedAddress == null)

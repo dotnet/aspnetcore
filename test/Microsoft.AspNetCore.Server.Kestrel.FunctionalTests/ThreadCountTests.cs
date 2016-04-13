@@ -26,11 +26,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var hostBuilder = new WebHostBuilder()
                 .UseConfiguration(config)
-                .UseKestrel()
+                .UseKestrel(options =>
+                {
+                    options.ThreadCount = threadCount;
+                })
                 .Configure(app =>
                 {
-                    var serverInfo = app.ServerFeatures.Get<IKestrelServerInformation>();
-                    serverInfo.ThreadCount = threadCount;
                     app.Run(context =>
                     {
                         return context.Response.WriteAsync("Hello World");

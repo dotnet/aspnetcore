@@ -3,12 +3,9 @@
 
 using System;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel;
-using Microsoft.AspNetCore.Server.Kestrel.Filter;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
 
@@ -18,24 +15,7 @@ namespace SampleApp
     {
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory, IApplicationEnvironment env)
         {
-            var ksi = app.ServerFeatures.Get<IKestrelServerInformation>();
-            //ksi.ThreadCount = 4;
-            ksi.NoDelay = true;
-
             loggerFactory.AddConsole(LogLevel.Trace);
-
-            var testCertPath = Path.Combine(env.ApplicationBasePath, "testCert.pfx");
-
-            if (File.Exists(testCertPath))
-            {
-                app.UseKestrelHttps(new X509Certificate2(testCertPath, "testPassword"));
-            }
-            else
-            {
-                Console.WriteLine("Could not find certificate at '{0}'. HTTPS is not enabled.", testCertPath);
-            }
-
-            app.UseKestrelConnectionLogging();
 
             app.Run(async context =>
             {
@@ -63,7 +43,13 @@ namespace SampleApp
         {
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
-                .UseKestrel()
+                .UseKestrel(options =>
+                {
+                    // options.ThreadCount = 4;
+                    options.NoDelay = true;
+                    options.UseHttps("testCert.pfx", "testPassword");
+                    options.UseConnectionLogging();
+                })
                 .UseUrls("http://localhost:5000", "https://localhost:5001")
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()

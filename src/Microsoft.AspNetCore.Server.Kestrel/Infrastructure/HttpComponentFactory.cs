@@ -13,11 +13,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         private ConcurrentQueue<Streams> _streamPool = new ConcurrentQueue<Streams>();
         private ConcurrentQueue<Headers> _headerPool = new ConcurrentQueue<Headers>();
 
-        public IKestrelServerInformation ServerInformation { get; set; }
+        public KestrelServerOptions ServerOptions { get; set; }
 
-        public HttpComponentFactory(IKestrelServerInformation serverInformation)
+        public HttpComponentFactory(KestrelServerOptions serverOptions)
         {
-            ServerInformation = serverInformation;
+            ServerOptions = serverOptions;
         }
 
         public Streams CreateStreams(FrameContext owner)
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
         public void DisposeStreams(Streams streams)
         {
-            if (_streamPool.Count < ServerInformation.PoolingParameters.MaxPooledStreams)
+            if (_streamPool.Count < ServerOptions.MaxPooledStreams)
             {
                 streams.Uninitialize();
 
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
         public void DisposeHeaders(Headers headers)
         {
-            if (_headerPool.Count < ServerInformation.PoolingParameters.MaxPooledHeaders)
+            if (_headerPool.Count < ServerOptions.MaxPooledHeaders)
             {
                 headers.Uninitialize();
 

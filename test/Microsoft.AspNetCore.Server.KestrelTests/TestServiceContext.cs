@@ -22,17 +22,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             ThreadPool = new LoggingThreadPool(Log);
             DateHeaderValueManager = new TestDateHeaderValueManager();
 
-            var configuration = new ConfigurationBuilder().Build();
-            ServerInformation = new KestrelServerInformation(configuration);
-            ServerInformation.ShutdownTimeout = TimeSpan.FromSeconds(5);
+            ServerOptions = new KestrelServerOptions();
+            ServerOptions.ShutdownTimeout = TimeSpan.FromSeconds(5);
 
-            HttpComponentFactory = new HttpComponentFactory(ServerInformation);
+            HttpComponentFactory = new HttpComponentFactory(ServerOptions);
         }
 
         public TestServiceContext(IConnectionFilter filter)
             : this()
         {
-            ServerInformation.ConnectionFilter = filter;
+            ServerOptions.ConnectionFilter = filter;
         }
 
         public RequestDelegate App

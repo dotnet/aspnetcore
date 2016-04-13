@@ -17,15 +17,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void InitialDictionaryContainsServerAndDate()
         {
-            var configuration = new ConfigurationBuilder().Build();
-            var serverInformation = new KestrelServerInformation(configuration);
+            var serverOptions = new KestrelServerOptions();
             var connectionContext = new ConnectionContext
             {
                 DateHeaderValueManager = new DateHeaderValueManager(),
                 ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
-                ServerInformation = serverInformation,
-                HttpComponentFactory = new HttpComponentFactory(serverInformation)
-        };
+                ServerOptions = serverOptions,
+                HttpComponentFactory = new HttpComponentFactory(serverOptions)
+            };
             var frame = new Frame<object>(application: null, context: connectionContext);
             frame.InitializeHeaders();
 
@@ -51,14 +50,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void InitialEntriesCanBeCleared()
         {
-            var configuration = new ConfigurationBuilder().Build();
-            var serverInformation = new KestrelServerInformation(configuration);
+            var serverOptions = new KestrelServerOptions();
             var connectionContext = new ConnectionContext
             {
                 DateHeaderValueManager = new DateHeaderValueManager(),
                 ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
-                ServerInformation = serverInformation,
-                HttpComponentFactory = new HttpComponentFactory(serverInformation)
+                ServerOptions = serverOptions,
+                HttpComponentFactory = new HttpComponentFactory(serverOptions)
             };
             var frame = new Frame<object>(application: null, context: connectionContext);
             frame.InitializeHeaders();

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             var socket = new UvTcpHandle(Log);
             socket.Init(Thread.Loop, Thread.QueueCloseHandle);
-            socket.NoDelay(ServerInformation.NoDelay);
+            socket.NoDelay(ServerOptions.NoDelay);
             socket.Bind(ServerAddress);
             socket.Listen(Constants.ListenBacklog, (stream, status, error, state) => ConnectionCallback(stream, status, error, state), this);
             return socket;
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             try
             {
                 acceptSocket.Init(Thread.Loop, Thread.QueueCloseHandle);
-                acceptSocket.NoDelay(ServerInformation.NoDelay);
+                acceptSocket.NoDelay(ServerOptions.NoDelay);
                 listenSocket.Accept(acceptSocket);
                 DispatchConnection(acceptSocket);
 

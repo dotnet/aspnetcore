@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 {
     interface IHttpComponentFactory
     {
-        IKestrelServerInformation ServerInformation { get; set; }
+        KestrelServerOptions ServerOptions { get; set; }
 
         Streams CreateStreams(FrameContext owner);
 
