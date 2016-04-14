@@ -5,8 +5,8 @@ using System;
 using System.IO;
 using System.Xml;
 using System.Xml.Linq;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ProjectModel;
+using Microsoft.Extensions.Cli.Utils;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Tools.PublishIIS
