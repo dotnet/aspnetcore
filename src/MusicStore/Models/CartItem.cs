@@ -14,7 +14,7 @@ namespace MusicStore.Models
         public int Count { get; set; }
 
         [DataType(DataType.DateTime)]
-        public DateTime DateCreated { get; set; }
+        public DateTime DateCreated { get; set; } 
 
         public virtual Album Album { get; set; }
     }
