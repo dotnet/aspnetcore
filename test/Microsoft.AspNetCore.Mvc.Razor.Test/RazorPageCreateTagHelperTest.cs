@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -14,10 +15,12 @@ using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -66,7 +69,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         private static TestRazorPage CreateTestRazorPage()
         {
-            var activator = new RazorPageActivator(new EmptyModelMetadataProvider());
+            var activator = new RazorPageActivator(
+                new EmptyModelMetadataProvider(),
+                new UrlHelperFactory(),
+                new JsonHelper(new Formatters.JsonOutputFormatter()),
+                new DiagnosticListener("Microsoft.AspNetCore"),
+                new HtmlTestEncoder());
+
             var serviceProvider = new Mock<IServiceProvider>();
             var typeActivator = new TypeActivatorCache();
             var tagHelperActivator = new DefaultTagHelperActivator(typeActivator);
