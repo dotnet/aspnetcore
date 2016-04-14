@@ -4,14 +4,18 @@
     "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "xunit": "2.1.0"
   },
   "frameworks": {
-    "netstandardapp1.5": {
+    "netcoreapp1.0": {
       "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        },
         "dotnet-test-xunit": "1.0.0-dev-*",
-        "System.Net.Http": "4.0.1-*"
+        "System.Net.Http": "4.0.1-*",
+        "System.Runtime.Serialization.Primitives": "4.1.1-*"
       },
       "imports": [
         "dnxcore50",
