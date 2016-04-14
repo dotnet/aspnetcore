@@ -37,6 +37,9 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
             _pollingThread = new Thread(new ThreadStart(PollingLoop));
             _pollingThread.IsBackground = true;
             _pollingThread.Name = nameof(PollingFileWatcher);
+
+            CreateKnownFilesSnapshot();
+
             _pollingThread.Start();
         }
 
@@ -55,17 +58,6 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
             set
             {
                 EnsureNotDisposed();
-
-                if (value == true)
-                {
-                    CreateKnownFilesSnapshot();
-
-                    if (_pollingThread.ThreadState == System.Threading.ThreadState.Unstarted)
-                    {
-                        // Start the loop the first time events are enabled
-                        _pollingThread.Start();
-                    }
-                }
                 _raiseEvents = value;
             }
         }
@@ -124,6 +116,7 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
                 else
                 {
                     var fileMeta = _knownEntities[fullFilePath];
+
                     if (fileMeta.FileInfo.LastWriteTime != f.LastWriteTime)
                     {
                         // File changed

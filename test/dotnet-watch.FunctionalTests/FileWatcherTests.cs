@@ -65,6 +65,10 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
                     };
                     watcher.EnableRaisingEvents = true;
 
+                    // On Unix the file write time is in 1s increments;
+                    // if we don't wait, there's a chance that the polling
+                    // watcher will not detect the change
+                    Thread.Sleep(1000);
                     File.WriteAllText(testFileFullPath, string.Empty);
 
                     Assert.True(changedEv.WaitOne(DefaultTimeout));
@@ -113,10 +117,8 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
             });
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void FileInSubdirectory(bool usePolling)
+        [Fact]
+        public void FileInSubdirectory()
         {
             UsingTempDirectory(dir =>
             {
@@ -127,7 +129,7 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
                 File.WriteAllText(testFileFullPath, string.Empty);
 
                 using (var changedEv = new ManualResetEvent(false))
-                using (var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling))
+                using (var watcher = FileWatcherFactory.CreateWatcher(dir, true))
                 {
                     var filesChanged = new HashSet<string>();
 
@@ -144,6 +146,10 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
                     };
                     watcher.EnableRaisingEvents = true;
 
+                    // On Unix the file write time is in 1s increments;
+                    // if we don't wait, there's a chance that the polling
+                    // watcher will not detect the change
+                    Thread.Sleep(1000);
                     File.WriteAllText(testFileFullPath, string.Empty);
 
                     Assert.True(changedEv.WaitOne(DefaultTimeout));
@@ -169,6 +175,11 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
                     watcher.EnableRaisingEvents = false;
 
                     var testFileFullPath = Path.Combine(dir, "foo");
+
+                    // On Unix the file write time is in 1s increments;
+                    // if we don't wait, there's a chance that the polling
+                    // watcher will not detect the change
+                    Thread.Sleep(1000);
                     File.WriteAllText(testFileFullPath, string.Empty);
 
                     Assert.False(changedEv.WaitOne(DefaultTimeout / 2));
@@ -192,6 +203,11 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
                     }
 
                     var testFileFullPath = Path.Combine(dir, "foo");
+
+                    // On Unix the file write time is in 1s increments;
+                    // if we don't wait, there's a chance that the polling
+                    // watcher will not detect the change
+                    Thread.Sleep(1000);
                     File.WriteAllText(testFileFullPath, string.Empty);
 
                     Assert.False(changedEv.WaitOne(DefaultTimeout / 2));
@@ -226,6 +242,11 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
                     };
                     watcher.EnableRaisingEvents = true;
 
+                    // On Unix the file write time is in 1s increments;
+                    // if we don't wait, there's a chance that the polling
+                    // watcher will not detect the change
+                    Thread.Sleep(1000);
+
                     File.WriteAllText(testFileFullPath, string.Empty);
 
                     Assert.True(changedEv.WaitOne(DefaultTimeout));
@@ -253,11 +274,21 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
                     };
                     watcher.EnableRaisingEvents = true;
 
+                    // On Unix the file write time is in 1s increments;
+                    // if we don't wait, there's a chance that the polling
+                    // watcher will not detect the change
+                    Thread.Sleep(1000);
+
                     var testFileFullPath = Path.Combine(dir, "foo1");
                     File.WriteAllText(testFileFullPath, string.Empty);
                     Assert.True(changedEv.WaitOne(DefaultTimeout));
                     Assert.Equal(testFileFullPath, filesChanged.Single());
                     filesChanged.Clear();
+
+                    // On Unix the file write time is in 1s increments;
+                    // if we don't wait, there's a chance that the polling
+                    // watcher will not detect the change
+                    Thread.Sleep(1000);
 
                     testFileFullPath = Path.Combine(dir, "foo2");
                     File.WriteAllText(testFileFullPath, string.Empty);
@@ -265,11 +296,21 @@ namespace Microsoft.DotNet.Watcher.FunctionalTests
                     Assert.Equal(testFileFullPath, filesChanged.Single());
                     filesChanged.Clear();
 
+                    // On Unix the file write time is in 1s increments;
+                    // if we don't wait, there's a chance that the polling
+                    // watcher will not detect the change
+                    Thread.Sleep(1000);
+
                     testFileFullPath = Path.Combine(dir, "foo3");
                     File.WriteAllText(testFileFullPath, string.Empty);
                     Assert.True(changedEv.WaitOne(DefaultTimeout));
                     Assert.Equal(testFileFullPath, filesChanged.Single());
                     filesChanged.Clear();
+
+                    // On Unix the file write time is in 1s increments;
+                    // if we don't wait, there's a chance that the polling
+                    // watcher will not detect the change
+                    Thread.Sleep(1000);
 
                     File.WriteAllText(testFileFullPath, string.Empty);
                     Assert.True(changedEv.WaitOne(DefaultTimeout));
