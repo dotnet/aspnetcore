@@ -10,11 +10,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Fakes;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Hosting.Startup;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -24,11 +25,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    public class WebHostTests : IServerFactory
+    public class WebHostTests : IServer
     {
         private readonly IList<StartInstance> _startInstances = new List<StartInstance>();
         private IFeatureCollection _featuresSupportedByThisHost = NewFeatureCollection();
-        private IFeatureCollection _instanceFeaturesSupportedByThisHost;
 
         public IFeatureCollection Features
         {
@@ -41,14 +41,6 @@ namespace Microsoft.AspNetCore.Hosting
                     features[feature.Key] = feature.Value;
                 }
 
-                if (_instanceFeaturesSupportedByThisHost != null)
-                {
-                    foreach (var feature in _instanceFeaturesSupportedByThisHost)
-                    {
-                        features[feature.Key] = feature.Value;
-                    }
-                }
-
                 return features;
             }
         }
@@ -57,8 +49,9 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var stub = new StubFeatures();
             var features = new FeatureCollection();
-            features[typeof(IHttpRequestFeature)] = stub;
-            features[typeof(IHttpResponseFeature)] = stub;
+            features.Set<IHttpRequestFeature>(stub);
+            features.Set<IHttpResponseFeature>(stub);
+            features.Set<IServerAddressesFeature>(new ServerAddressesFeature());
             return features;
         }
 
@@ -66,7 +59,7 @@ namespace Microsoft.AspNetCore.Hosting
         public void WebHostThrowsWithNoServer()
         {
             var ex = Assert.Throws<InvalidOperationException>(() => CreateBuilder().Build().Start());
-            Assert.Equal("No service for type 'Microsoft.AspNetCore.Hosting.Server.IServerFactory' has been registered.", ex.Message);
+            Assert.Equal("No service for type 'Microsoft.AspNetCore.Hosting.Server.IServer' has been registered.", ex.Message);
         }
 
         [Fact]
@@ -138,7 +131,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             host.Dispose();
 
-            Assert.Equal(1, _startInstances[0].DisposeCalls);
+            Assert.Equal(2, _startInstances[0].DisposeCalls); // Once as the server, once from the DI Container
         }
 
         [Fact]
@@ -166,7 +159,7 @@ namespace Microsoft.AspNetCore.Hosting
             // Wait on the host to shutdown
             lifetime.ApplicationStopped.WaitHandle.WaitOne();
 
-            Assert.Equal(1, _startInstances[0].DisposeCalls);
+            Assert.Equal(2, _startInstances[0].DisposeCalls); // Once as the server, once from the DI Container
         }
 
         [Fact]
@@ -493,13 +486,6 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
-        public IServer CreateServer(IConfiguration configuration)
-        {
-            _instanceFeaturesSupportedByThisHost = new FeatureCollection();
-            _instanceFeaturesSupportedByThisHost.Set<IServerAddressesFeature>(new ServerAddressesFeature());
-            return new FakeServer(this);
-        }
-
         private class StartInstance : IDisposable
         {
             public int DisposeCalls { get; set; }
@@ -564,11 +550,6 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 yield break;
             }
-        }
-
-        private class ServerAddressesFeature : IServerAddressesFeature
-        {
-            public ICollection<string> Addresses { get; } = new List<string>();
         }
 
         private class AllMessagesAreNeeded : ILoggerProvider, ILogger
@@ -670,25 +651,6 @@ namespace Microsoft.AspNetCore.Hosting
         private class StubHttpRequestIdentifierFeature : IHttpRequestIdentifierFeature
         {
             public string TraceIdentifier { get; set; }
-        }
-
-        private class FakeServer : IServer
-        {
-            private readonly WebHostTests _webHostTests;
-
-            public FakeServer(WebHostTests webHostTests)
-            {
-                _webHostTests = webHostTests;
-            }
-
-            public IFeatureCollection Features => _webHostTests.Features;
-
-            public void Dispose() => _webHostTests.Dispose();
-
-            public void Start<TContext>(IHttpApplication<TContext> application)
-            {
-                _webHostTests.Start<TContext>(application);
-            }
         }
     }
 }

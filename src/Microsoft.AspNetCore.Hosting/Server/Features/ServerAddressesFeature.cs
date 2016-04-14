@@ -3,10 +3,10 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Server.Features
+namespace Microsoft.AspNetCore.Hosting.Server.Features
 {
-    public interface IServerAddressesFeature
+    public class ServerAddressesFeature : IServerAddressesFeature
     {
-        ICollection<string> Addresses { get; }
+        public ICollection<string> Addresses { get; } = new List<string>();
     }
 }

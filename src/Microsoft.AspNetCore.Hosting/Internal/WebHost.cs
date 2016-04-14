@@ -8,10 +8,10 @@ using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Hosting.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Hosting.Startup;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -38,8 +38,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         internal string StartupAssemblyName { get; set; }
         internal StartupMethods Startup { get; set; }
         internal Type StartupType { get; set; }
-
-        private IServerFactory ServerFactory { get; set; }
 
         private IServer Server { get; set; }
 
@@ -209,14 +207,25 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             if (Server == null)
             {
-                ServerFactory = _applicationServices.GetRequiredService<IServerFactory>();
-                Server = ServerFactory.CreateServer(_config);
+                Server = _applicationServices.GetRequiredService<IServer>();
 
                 var addresses = Server.Features?.Get<IServerAddressesFeature>()?.Addresses;
                 if (addresses != null && !addresses.IsReadOnly && addresses.Count == 0)
                 {
-                    // Provide a default address if there aren't any configured.
-                    addresses.Add("http://localhost:5000");
+                    var urls = _config[WebHostDefaults.ServerUrlsKey];
+                    if (!string.IsNullOrEmpty(urls))
+                    {
+                        foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            addresses.Add(value);
+                        }
+                    }
+
+                    if (addresses.Count == 0)
+                    {
+                        // Provide a default address if there aren't any configured.
+                        addresses.Add("http://localhost:5000");
+                    }
                 }
             }
         }

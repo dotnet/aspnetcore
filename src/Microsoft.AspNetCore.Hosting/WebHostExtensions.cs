@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading;
-using Microsoft.AspNetCore.Server.Features;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting
