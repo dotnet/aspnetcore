@@ -7,9 +7,9 @@ namespace MusicStore
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                // We set the server before default args so that command line arguments can override it.
+                // We set the server by name before default args so that command line arguments can override it.
                 // This is used to allow deployers to choose the server for testing.
-                .UseKestrel()
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .UseDefaultHostingConfiguration(args)
                 .UseIISIntegration()
                 .UseStartup("MusicStore")
