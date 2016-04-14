@@ -4,12 +4,15 @@
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel.Https": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "xunit": "2.1.0"
   },
   "frameworks": {
-    "netstandardapp1.5": {
+    "netcoreapp1.0": {
       "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        },
         "System.Diagnostics.TraceSource": "4.0.0-*",
         "System.Globalization.Extensions": "4.0.1-*",
         "System.IO": "4.1.0-*",
