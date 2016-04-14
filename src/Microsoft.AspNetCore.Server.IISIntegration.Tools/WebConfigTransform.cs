@@ -57,8 +57,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
 
         private static void TransformAspNetCore(XElement aspNetCoreElement, string appName, bool configureForAzure)
         {
-            var appPath = Path.Combine(configureForAzure ? @"%home%\site" : ".", appName);
-            var logPath = Path.Combine(configureForAzure ? @"\\?\%home%\LogFiles" : @".\logs", "stdout.log");
+            // Forward slashes currently work neither in AspNetCoreModule nor in dotnet so they need to be
+            // replaced with backwards slashes when the application is published on a non-Windows machine
+            var appPath = Path.Combine(configureForAzure ? @"%home%\site" : ".", appName).Replace("/", "\\");
+            var logPath = Path.Combine(configureForAzure ? @"\\?\%home%\LogFiles" : @".\logs", "stdout").Replace("/", "\\");
 
             aspNetCoreElement.SetAttributeValue("processPath", appPath);
             SetAttributeValueIfEmpty(aspNetCoreElement, "stdoutLogEnabled", "false");

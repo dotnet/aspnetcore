@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
     <handlers>
       <add name=""aspNetCore"" path=""*"" verb=""*"" modules=""AspNetCoreModule"" resourceType=""Unspecified""/>
     </handlers>
-    <aspNetCore processPath="".\test.exe"" stdoutLogEnabled=""false"" stdoutLogFile="".\logs\stdout.log"" startupTimeLimit=""3600""/>
+    <aspNetCore processPath="".\test.exe"" stdoutLogEnabled=""false"" stdoutLogFile="".\logs\stdout"" startupTimeLimit=""3600""/>
   </system.webServer>
 </configuration>");
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
         [InlineData("aspNetCore", "stdoutLogEnabled", "true")]
         [InlineData("aspNetCore", "startupTimeLimit", "1200")]
         [InlineData("aspNetCore", "arguments", "arg1")]
-        [InlineData("aspNetCore", "stdoutLogFile", "logfile.log")]
+        [InlineData("aspNetCore", "stdoutLogFile", "logfile")]
         public void WebConfigTransform_wont_override_custom_values(string elementName, string attributeName, string attributeValue)
         {
             var input = WebConfigTemplate;
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
             }
 
             Assert.Equal(
-                @".\logs\stdout.log",
+                @".\logs\stdout",
                 (string)WebConfigTransform.Transform(input, "test.exe", configureForAzure: false)
                     .Descendants().Attributes("stdoutLogFile").Single());
         }
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
 
             Assert.True(XNode.DeepEquals(
                 XDocument.Parse(@"<aspNetCore processPath=""%home%\site\test.exe"" stdoutLogEnabled=""false""
-                    stdoutLogFile=""\\?\%home%\LogFiles\stdout.log"" startupTimeLimit=""3600""/>").Root,
+                    stdoutLogFile=""\\?\%home%\LogFiles\stdout"" startupTimeLimit=""3600""/>").Root,
                 aspNetCoreElement));
         }
 
