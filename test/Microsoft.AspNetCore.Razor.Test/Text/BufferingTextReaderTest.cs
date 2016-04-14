@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Text
             RunDisposeTest(r => r.Dispose());
         }
 
-#if !NETSTANDARDAPP1_5
+#if !NETCOREAPP1_0
         [Fact]
         public void CloseDisposesSourceReader()
         {
