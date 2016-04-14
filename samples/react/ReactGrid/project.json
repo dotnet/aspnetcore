@@ -14,7 +14,7 @@
     "Microsoft.AspNet.Tooling.Razor": "1.0.0-rc1-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-rc1-*",
     "Microsoft.Extensions.Logging.Debug": "1.0.0-rc1-*",
-    "Microsoft.AspNet.ReactServices": "1.0.0-alpha7"
+    "Microsoft.AspNet.ReactServices": "1.0.0-*"
   },
   "commands": {
     "web": "Microsoft.AspNet.Server.Kestrel"

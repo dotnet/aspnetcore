@@ -20,7 +20,7 @@
     "Microsoft.Extensions.Logging": "1.0.0-rc1-final",
     "Microsoft.Extensions.Logging.Console": "1.0.0-rc1-final",
     "Microsoft.Extensions.Logging.Debug": "1.0.0-rc1-final",
-    "Microsoft.AspNet.ReactServices": "1.0.0-alpha7"
+    "Microsoft.AspNet.ReactServices": "1.0.0-*"
   },
 
   "commands": {
@@ -34,7 +34,7 @@
 
   "exclude": [
     "wwwroot",
-    "node_modules",
+    "node_modules"
   ],
   "publishExclude": [
     "node_modules",

@@ -16,7 +16,7 @@
     "Microsoft.Extensions.Logging.Debug": "1.0.0-rc1-*",
     "EntityFramework.SQLite": "7.0.0-rc1-*",
     "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-rc1-*",
-    "Microsoft.AspNet.AngularServices": "1.0.0-alpha7",
+    "Microsoft.AspNet.AngularServices": "1.0.0-*",
     "AutoMapper": "4.1.1"
   },
   "commands": {

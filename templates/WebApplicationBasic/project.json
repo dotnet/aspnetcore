@@ -33,7 +33,7 @@
 
   "exclude": [
     "wwwroot",
-    "node_modules",
+    "node_modules"
   ],
   "publishExclude": [
     "node_modules",
