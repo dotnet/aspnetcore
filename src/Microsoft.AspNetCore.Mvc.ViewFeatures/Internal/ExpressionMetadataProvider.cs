@@ -50,6 +50,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                     // Property/field access is always legal
                     var memberExpression = (MemberExpression)expression.Body;
                     propertyName = memberExpression.Member is PropertyInfo ? memberExpression.Member.Name : null;
+                    if (string.Equals(propertyName, "Model", StringComparison.Ordinal) &&
+                        memberExpression.Type == typeof(TModel) &&
+                        memberExpression.Expression.NodeType == ExpressionType.Constant)
+                    {
+                        // Special case the Model property in RazorPage<TModel>. (m => Model) should behave identically
+                        // to (m => m). But do the more complicated thing for (m => m.Model) since that is a slightly
+                        // different beast.)
+                        return FromModel(viewData, metadataProvider);
+                    }
+
                     containerType = memberExpression.Expression.Type;
                     legalExpression = true;
                     break;
