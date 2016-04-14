@@ -101,7 +101,6 @@ namespace MusicStore.Models
                 .CartItems
                 .Where(cart => cart.CartId == _shoppingCartId)
                 .Select(c => c.Album.Title)
-                .Distinct()
                 .OrderBy(n => n)
                 .ToListAsync();
         }

@@ -23,7 +23,7 @@ namespace MusicStore.Components
             var cartItems = await cart.GetCartAlbumTitles();
 
             ViewBag.CartCount = cartItems.Count;
-            ViewBag.CartSummary = string.Join("\n", cartItems);
+            ViewBag.CartSummary = string.Join("\n", cartItems.Distinct());
 
             return View();
         }
