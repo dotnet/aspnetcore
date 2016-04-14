@@ -20,7 +20,8 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Authentication": "1.0.0-*",
-    "Newtonsoft.Json": "8.0.3"
+    "Newtonsoft.Json": "8.0.3",
+    "System.Runtime.Serialization.Primitives": "4.1.1-*"
   },
   "frameworks": {
     "net451": {},
