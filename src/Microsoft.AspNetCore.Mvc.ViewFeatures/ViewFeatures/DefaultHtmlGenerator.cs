@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             {
                 defaultMethod = true;
             }
-            else if (string.Equals(method, FormMethod.Post.ToString(), StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(method, "post", StringComparison.OrdinalIgnoreCase))
             {
                 defaultMethod = true;
             }
@@ -1104,7 +1104,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             if (string.IsNullOrEmpty(method))
             {
                 // Occurs only when called from a tag helper.
-                method = FormMethod.Post.ToString().ToLowerInvariant();
+                method = "post";
             }
 
             // For tag helpers, htmlAttributes will be null; replaceExisting value does not matter.

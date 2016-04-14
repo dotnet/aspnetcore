@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     output.PostContent.AppendHtml(tagBuilder.InnerHtml);
                 }
 
-                if (string.Equals(Method, FormMethod.Get.ToString(), StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(Method, "get", StringComparison.OrdinalIgnoreCase))
                 {
                     antiforgeryDefault = false;
                 }
