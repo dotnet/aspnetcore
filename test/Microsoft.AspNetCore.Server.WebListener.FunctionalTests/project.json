@@ -6,13 +6,16 @@
     "xunit": "2.1.0"
   },
   "frameworks": {
-    "netstandardapp1.5": {
+    "netcoreapp1.0": {
       "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        },
         "System.Net.Http.WinHttpHandler": "4.0.0-*",
         "System.Net.Requests": "4.0.11-*",
         "System.Net.WebHeaderCollection": "4.0.1-*",
         "dotnet-test-xunit": "1.0.0-dev-*",
-        "NETStandard.Library": "1.5.0-*",
         "System.Diagnostics.Process": "4.1.0-*"
       },
       "imports": [

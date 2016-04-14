@@ -123,7 +123,7 @@ namespace Microsoft.Net.Http.Server
                 context.Abort();
                 Assert.True(canceled.WaitOne(interval), "Aborted");
                 Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
-#if !NETSTANDARDAPP1_5
+#if !NETCOREAPP1_0
                 // HttpClient re-tries the request because it doesn't know if the request was received.
                 context = await server.GetContextAsync();
                 context.Abort();
