@@ -51,10 +51,6 @@ namespace SocialSample
         {
             loggerfactory.AddConsole(LogLevel.Information);
 
-            //Configure SSL
-            var serverCertificate = LoadCertificate();
-            app.UseKestrelHttps(serverCertificate);
-
             // Simple error page to avoid a repo dependency.
             app.Use(async (context, next) =>
             {
@@ -337,7 +333,12 @@ namespace SocialSample
         {
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
-                .UseKestrel()
+                .UseKestrel(options =>
+                {
+                    //Configure SSL
+                    var serverCertificate = LoadCertificate();
+                    options.UseHttps(serverCertificate);
+                })
                 .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
@@ -345,9 +346,9 @@ namespace SocialSample
             host.Run();
         }
 
-        private X509Certificate2 LoadCertificate()
+        private static X509Certificate2 LoadCertificate()
         {
-            var socialSampleAssembly = GetType().GetTypeInfo().Assembly;
+            var socialSampleAssembly = typeof(Startup).GetTypeInfo().Assembly;
             var embeddedFileProvider = new EmbeddedFileProvider(socialSampleAssembly, "SocialSample");
             var certificateFileInfo = embeddedFileProvider.GetFileInfo("compiler/resources/cert.pfx");
             using (var certificateStream = certificateFileInfo.CreateReadStream())
