@@ -44,13 +44,13 @@ namespace MusicStore.Controllers
         public async Task<IActionResult> AddToCart(int id, CancellationToken requestAborted)
         {
             // Retrieve the album from the database
-            var addedAlbum = DbContext.Albums
-                .Single(album => album.AlbumId == id);
+            var addedAlbum = await DbContext.Albums
+                .SingleAsync(album => album.AlbumId == id);
 
             // Add it to the shopping cart
             var cart = ShoppingCart.GetCart(DbContext, HttpContext);
 
-            cart.AddToCart(addedAlbum);
+            await cart.AddToCart(addedAlbum);
 
             await DbContext.SaveChangesAsync(requestAborted);
             _logger.LogInformation("Album {albumId} was added to the cart.", addedAlbum.AlbumId);
