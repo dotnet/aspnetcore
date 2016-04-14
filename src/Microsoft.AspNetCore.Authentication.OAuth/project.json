@@ -20,12 +20,14 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Authentication": "1.0.0-*",
-    "Newtonsoft.Json": "8.0.3",
-    "System.Runtime.Serialization.Primitives": "4.1.1-*"
+    "Newtonsoft.Json": "8.0.3"
   },
   "frameworks": {
     "net451": {},
     "netstandard1.3": {
+      "dependencies": {
+        "System.Runtime.Serialization.Primitives": "4.1.1-*"
+      },
       "imports": [
         "portable-net451+win8"
       ]
