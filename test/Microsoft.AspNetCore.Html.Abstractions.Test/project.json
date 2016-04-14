@@ -11,10 +11,13 @@
   },
   "testRunner": "xunit",
   "frameworks": {
-    "netstandardapp1.5": {
+    "netcoreapp1.0": {
       "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        },
         "dotnet-test-xunit": "1.0.0-dev-*",
-        "NETStandard.Library": "1.5.0-*",
         "System.Diagnostics.Process": "4.1.0-*"
       },
       "imports": [
@@ -24,8 +27,12 @@
     },
     "net451": {
       "frameworkAssemblies": {
-        "System.IO": { "type": "build" },
-        "System.Runtime": { "type": "build" }
+        "System.IO": {
+          "type": "build"
+        },
+        "System.Runtime": {
+          "type": "build"
+        }
       }
     }
   }
