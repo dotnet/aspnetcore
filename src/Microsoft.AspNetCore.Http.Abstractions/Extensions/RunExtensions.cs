@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Builder
     public static class RunExtensions
     {
         /// <summary>
-        /// Adds a terminal middleware delagate to the application's request pipeline.
+        /// Adds a terminal middleware delegate to the application's request pipeline.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> instance.</param>
         /// <param name="handler">A delegate that handles the request.</param>
