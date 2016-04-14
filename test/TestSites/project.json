@@ -23,7 +23,6 @@
       ],
       "dependencies": {
         "System.Net.Primitives": "4.0.11-*",
-        "dotnet-test-xunit": "1.0.0-dev-*",
         "NETStandard.Library": "1.5.0-*",
         "System.Diagnostics.Process": "4.1.0-*"
       }
