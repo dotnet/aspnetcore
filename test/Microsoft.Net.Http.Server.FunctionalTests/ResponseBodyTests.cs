@@ -153,7 +153,7 @@ namespace Microsoft.Net.Http.Server
                 var context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Dispose();
-#if !NETSTANDARDAPP1_5
+#if !NETCOREAPP1_0
                 // HttpClient retries the request because it didn't get a response.
                 context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = " 20 ";
@@ -175,7 +175,7 @@ namespace Microsoft.Net.Http.Server
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Response.Body.Write(new byte[5], 0, 5);
                 context.Dispose();
-#if !NETSTANDARDAPP1_5
+#if !NETCOREAPP1_0
                 // HttpClient retries the request because it didn't get a response.
                 context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = " 20 ";
@@ -199,7 +199,7 @@ namespace Microsoft.Net.Http.Server
                 context.Response.Body.Write(new byte[5], 0, 5);
                 Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(new byte[6], 0, 6));
                 context.Dispose();
-#if !NETSTANDARDAPP1_5
+#if !NETCOREAPP1_0
                 // HttpClient retries the request because it didn't get a response.
                 context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = " 10 ";

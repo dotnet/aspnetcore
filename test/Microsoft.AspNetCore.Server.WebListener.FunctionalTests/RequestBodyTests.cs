@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 Assert.Equal("Hello World", response);
             }
         }
-#if !NETSTANDARDAPP1_5
+#if !NETCOREAPP1_0
         [Fact]
         public async Task RequestBody_ReadBeginEnd_Success()
         {
