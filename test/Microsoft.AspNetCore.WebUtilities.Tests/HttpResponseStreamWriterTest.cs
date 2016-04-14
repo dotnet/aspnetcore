@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 
         [Theory]
         [InlineData("你好世界", "utf-16")]
-#if !NETSTANDARDAPP1_5
+#if !NETCOREAPP1_0
         // CoreCLR does not like shift_jis as an encoding.
         [InlineData("こんにちは世界", "shift_jis")]
 #endif
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         [InlineData('你', 1023, "utf-16")]
         [InlineData('你', 1024, "utf-16")]
         [InlineData('你', 1050, "utf-16")]
-#if !NETSTANDARDAPP1_5
+#if !NETCOREAPP1_0
         // CoreCLR does not like shift_jis as an encoding.
         [InlineData('こ', 1023, "shift_jis")]
         [InlineData('こ', 1024, "shift_jis")]
