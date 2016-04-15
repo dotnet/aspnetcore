@@ -2,20 +2,22 @@
   "dependencies": {
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*"
   },
   "compilationOptions": {
     "emitEntryPoint": true
   },
   "frameworks": {
     "net451": {},
-    "netstandardapp1.5": {
+    "netcoreapp1.0": {
       "imports": [
         "dnxcore50"
       ],
       "dependencies": {
-          "NETStandard.Library": "1.5.0-*"
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        }
       }
     }
   },
