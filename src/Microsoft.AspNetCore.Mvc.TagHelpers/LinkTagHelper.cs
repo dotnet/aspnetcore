@@ -256,7 +256,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 }
             }
 
-            var builder = new DefaultTagHelperContent();
+            var builder = output.PostElement;
+            builder.Clear();
+
             if (mode == Mode.GlobbedHref || mode == Mode.Fallback && !string.IsNullOrEmpty(HrefInclude))
             {
                 BuildGlobbedLinkTags(output.Attributes, builder);
@@ -278,8 +280,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
                 BuildFallbackBlock(builder);
             }
-
-            output.PostElement.SetHtmlContent(builder);
         }
 
         private void BuildGlobbedLinkTags(TagHelperAttributeList attributes, TagHelperContent builder)

@@ -239,7 +239,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 }
             }
 
-            var builder = new DefaultTagHelperContent();
+            var builder = output.PostElement;
+            builder.Clear();
 
             if (mode == Mode.GlobbedSrc || mode == Mode.Fallback && !string.IsNullOrEmpty(SrcInclude))
             {
@@ -262,8 +263,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
                 BuildFallbackBlock(output.Attributes, builder);
             }
-
-            output.PostElement.SetHtmlContent(builder);
         }
 
         private void BuildGlobbedScriptTags(
@@ -289,7 +288,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
         }
 
-        private void BuildFallbackBlock(TagHelperAttributeList attributes, DefaultTagHelperContent builder)
+        private void BuildFallbackBlock(TagHelperAttributeList attributes, TagHelperContent builder)
         {
             EnsureGlobbingUrlBuilder();
 
