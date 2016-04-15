@@ -51,6 +51,7 @@ namespace PushCoherence
                 packagesDir,
                 Path.Combine(artifactsDir, "coherence", "noship"),
                 Path.Combine(artifactsDir, "coherence", "ext"),
+                Path.Combine(artifactsDir, "coherence", "ship-ext"),
             }.SelectMany(d => Directory.EnumerateFiles(d, "*.nupkg"));
             Console.WriteLine("Pushing packages from {0} to feed {1}", packagesDir, nugetFeed);
 
