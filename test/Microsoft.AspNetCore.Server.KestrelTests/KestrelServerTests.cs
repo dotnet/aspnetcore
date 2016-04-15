@@ -3,11 +3,13 @@
 
 using System;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -29,9 +31,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void StartWithInvalidAddressThrows()
         {
-            var addressesFeature = new ServerAddressesFeature();
-            addressesFeature.Addresses.Add("http:/asdf");
-            var server = CreateServer(new KestrelServerOptions(), addressesFeature);
+            var server = CreateServer(new KestrelServerOptions());
+            server.Features.Get<IServerAddressesFeature>().Addresses.Add("http:/asdf");
 
             var exception = Assert.Throws<FormatException>(() => StartDummyApplication(server));
 
@@ -41,25 +42,19 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void StartWithEmptyAddressesThrows()
         {
-            var server = CreateServer(new KestrelServerOptions(), new ServerAddressesFeature());
+            var server = CreateServer(new KestrelServerOptions());
 
             var exception = Assert.Throws<InvalidOperationException>(() => StartDummyApplication(server));
 
             Assert.Equal("No recognized listening addresses were configured.", exception.Message);
         }
 
-        private static KestrelServer CreateServer(KestrelServerOptions options, IServerAddressesFeature addressesFeature = null)
+        private static KestrelServer CreateServer(KestrelServerOptions options)
         {
-            var features = new FeatureCollection();
-            if (addressesFeature != null)
-            {
-                features.Set(addressesFeature);
-            }
-
             var lifetime = new LifetimeNotImplemented();
-            var logger = new TestApplicationErrorLogger();
+            var logger = new LoggerFactory();
 
-            return new KestrelServer(features, options, lifetime, logger);
+            return new KestrelServer(Options.Create(options), lifetime, logger);
         }
 
         private static void StartDummyApplication(IServer server)

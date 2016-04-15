@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// </returns>
         public static IWebHostBuilder UseKestrel(this IWebHostBuilder hostBuilder)
         {
-            return hostBuilder.ConfigureServices(services => services.AddSingleton<IServerFactory, ServerFactory>());
+            return hostBuilder.ConfigureServices(services => services.AddSingleton<IServer, KestrelServer>());
         }
 
         /// <summary>
