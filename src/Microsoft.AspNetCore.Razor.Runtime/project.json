@@ -50,14 +50,6 @@
         "System.Xml.Linq": "4.0.0.0"
       }
     },
-    "dnx451": {
-      "frameworkAssemblies": {
-        "System.Runtime": "",
-        "System.IO": "",
-        "System.Xml": "4.0.0.0",
-        "System.Xml.Linq": "4.0.0.0"
-      }
-    },
     "netstandard1.5": {
       "dependencies": {
         "System.Collections.Concurrent": "4.0.12-*",
