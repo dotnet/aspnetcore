@@ -21,14 +21,15 @@ using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Features;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Server;
 
 namespace Microsoft.AspNetCore.Server.WebListener
 {
-    internal class MessagePump : IServer
+    public class MessagePump : IServer
     {
         private static readonly int DefaultMaxAccepts = 5 * Environment.ProcessorCount;
 
@@ -44,25 +45,32 @@ namespace Microsoft.AspNetCore.Server.WebListener
         private bool _stopping;
         private int _outstandingRequests;
         private ManualResetEvent _shutdownSignal;
-        
-        internal MessagePump(Microsoft.Net.Http.Server.WebListener listener, ILoggerFactory loggerFactory, IFeatureCollection features)
+
+        private readonly ServerAddressesFeature _serverAddresses;
+
+        public MessagePump(IOptions<WebListenerOptions> options, ILoggerFactory loggerFactory)
         {
-            if (features == null)
+            if (options == null)
             {
-                throw new ArgumentNullException(nameof(features));
+                throw new ArgumentNullException(nameof(options));
+            }
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            Contract.Assert(listener != null);
-            _listener = listener;
+            _listener = options.Value?.Listener ?? new Microsoft.Net.Http.Server.WebListener(loggerFactory);
             _logger = LogHelper.CreateLogger(loggerFactory, typeof(MessagePump));
-            Features = features;
+            Features = new FeatureCollection();
+            _serverAddresses = new ServerAddressesFeature();
+            Features.Set<IServerAddressesFeature>(_serverAddresses);
 
             _processRequest = new Action<object>(ProcessRequestAsync);
             _maxAccepts = DefaultMaxAccepts;
             _shutdownSignal = new ManualResetEvent(false);
         }
 
-        internal Microsoft.Net.Http.Server.WebListener Listener
+        public Microsoft.Net.Http.Server.WebListener Listener
         {
             get { return _listener; }
         }
@@ -94,13 +102,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 throw new ArgumentNullException(nameof(application));
             }
 
-            var addressesFeature = Features.Get<IServerAddressesFeature>();
-            if (addressesFeature == null)
-            {
-                throw new InvalidOperationException($"{nameof(IServerAddressesFeature)} is missing.");
-            }
-
-            ParseAddresses(addressesFeature.Addresses, Listener);
+            ParseAddresses(_serverAddresses.Addresses, Listener);
 
             // Can't call Start twice
             Contract.Assert(_application == null);

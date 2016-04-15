@@ -26,6 +26,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Server;
 using Xunit;
 
@@ -253,11 +255,9 @@ namespace Microsoft.AspNetCore.Server.WebListener
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext => Task.FromResult(0))) { }
 
-            var factory = new ServerFactory(loggerFactory: null);
-            var server = factory.CreateServer(configuration: null);
-            var listener = server.Features.Get<Microsoft.Net.Http.Server.WebListener>();
-            listener.UrlPrefixes.Add(UrlPrefix.Create(address));
-            listener.SetRequestQueueLimit(1001);
+            var server = new MessagePump(Options.Create(new WebListenerOptions()), new LoggerFactory());
+            server.Listener.UrlPrefixes.Add(UrlPrefix.Create(address));
+            server.Listener.SetRequestQueueLimit(1001);
 
             using (server)
             {

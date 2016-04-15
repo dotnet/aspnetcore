@@ -15,9 +15,6 @@ namespace SelfHostServer
     {
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
-            var listener = app.ServerFeatures.Get<WebListener>();
-            listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.AllowAnonymous;
-
             loggerfactory.AddConsole(LogLevel.Debug);
 
             app.Run(async context =>
@@ -43,7 +40,10 @@ namespace SelfHostServer
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
                 .UseStartup<Startup>()
-                .UseServer("Microsoft.AspNetCore.Server.WebListener")
+                .UseWebListener(options =>
+                {
+                    options.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.AllowAnonymous;
+                })
                 .Build();
 
             host.Run();
