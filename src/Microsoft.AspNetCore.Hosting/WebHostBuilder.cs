@@ -222,11 +222,11 @@ namespace Microsoft.AspNetCore.Hosting
             services.AddSingleton(defaultPlatformServices.Application);
             services.AddSingleton(defaultPlatformServices.Runtime);
 
-            if (!string.IsNullOrEmpty(_options.ServerFactoryAssembly))
+            if (!string.IsNullOrEmpty(_options.ServerAssembly))
             {
-                // Add the server factory
-                var serverFactoryType = ServerLoader.ResolveServerFactoryType(_options.ServerFactoryAssembly);
-                services.AddSingleton(typeof(IServerFactory), serverFactoryType);
+                // Add the server
+                var serverType = ServerLoader.ResolveServerType(_options.ServerAssembly);
+                services.AddSingleton(typeof(IServer), serverType);
             }
 
             foreach (var configureServices in _configureServicesDelegates)

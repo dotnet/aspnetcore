@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 {
     internal static class ServerLoader
     {
-        internal static Type ResolveServerFactoryType(string assemblyName)
+        internal static Type ResolveServerType(string assemblyName)
         {
             var assembly = Assembly.Load(new AssemblyName(assemblyName));
             if (assembly == null)
@@ -16,12 +16,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
 
             var serverTypeInfo = assembly.DefinedTypes.Where(
-                t => t.ImplementedInterfaces.FirstOrDefault(interf => interf.Equals(typeof(IServerFactory))) != null)
+                t => t.ImplementedInterfaces.FirstOrDefault(interf => interf.Equals(typeof(IServer))) != null)
                 .FirstOrDefault();
 
             if (serverTypeInfo == null)
             {
-                throw new InvalidOperationException($"No server type found that implements IServerFactory in assembly: {assemblyName}.");
+                throw new InvalidOperationException($"No server type found that implements IServer in assembly: {assemblyName}.");
             }
 
             return serverTypeInfo.AsType();

@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
 
             Assert.Equal("wwwroot", config.WebRoot);
-            Assert.Equal("Microsoft.AspNetCore.Server.Kestrel", config.ServerFactoryAssembly);
+            Assert.Equal("Microsoft.AspNetCore.Server.Kestrel", config.ServerAssembly);
             Assert.Equal("MyProjectReference", config.Application);
             Assert.Equal("Development", config.Environment);
             Assert.True(config.CaptureStartupErrors);

@@ -108,27 +108,6 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Specify the <see cref="IServerFactory"/> to be used by the web host.
-        /// </summary>
-        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
-        /// <param name="factory">The <see cref="IServerFactory"/> to be used.</param>
-        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public static IWebHostBuilder UseServer(this IWebHostBuilder hostBuilder, IServerFactory factory)
-        {
-            if (factory == null)
-            {
-                throw new ArgumentNullException(nameof(factory));
-            }
-
-            return hostBuilder.ConfigureServices(services =>
-            {
-                // It would be nicer if this was transient but we need to pass in the
-                // factory instance directly
-                services.AddSingleton(factory);
-            });
-        }
-
-        /// <summary>
         /// Specify the server to be used by the web host.
         /// </summary>
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
@@ -141,9 +120,12 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(server));
             }
 
-            // It would be nicer if this was transient but we need to pass in the
-            // server instance directly
-            return hostBuilder.UseServer(new ServerFactory(server));
+            return hostBuilder.ConfigureServices(services =>
+            {
+                // It would be nicer if this was transient but we need to pass in the
+                // factory instance directly
+                services.AddSingleton(server);
+            });
         }
 
         /// <summary>
@@ -221,18 +203,6 @@ namespace Microsoft.AspNetCore.Hosting
             var host = hostBuilder.UseUrls(urls).Build();
             host.Start();
             return host;
-        }
-
-        private class ServerFactory : IServerFactory
-        {
-            private readonly IServer _server;
-
-            public ServerFactory(IServer server)
-            {
-                _server = server;
-            }
-
-            public IServer CreateServer(IConfiguration configuration) => _server;
         }
     }
 }
