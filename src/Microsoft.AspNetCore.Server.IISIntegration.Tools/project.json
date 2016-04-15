@@ -14,17 +14,15 @@
     "Microsoft.DotNet.ProjectModel": "1.0.0-*",
     "System.Diagnostics.Process": "4.1.0-*"
   },
-
   "frameworks": {
     "netcoreapp1.0": {
       "imports": [
-        "portable-net451+win8",
-        "dnxcore50"
+        "portable-dnxcore50+net45+win8+wp8+wpa81"
       ],
       "dependencies": {
         "Microsoft.NETCore.App": {
           "type": "platform",
-          "version": "1.0.0-rc2-23931"
+          "version": "1.0.0-*"
         }
       }
     }
