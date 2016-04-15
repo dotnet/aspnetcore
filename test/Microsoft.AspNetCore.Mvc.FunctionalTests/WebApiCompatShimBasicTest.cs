@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             {
                 typeof(JsonMediaTypeFormatter).FullName,
                 typeof(XmlMediaTypeFormatter).FullName,
-#if !NETSTANDARDAPP1_5
+#if !NETCOREAPP1_0
                 typeof(FormUrlEncodedMediaTypeFormatter).FullName,
 #endif
             };

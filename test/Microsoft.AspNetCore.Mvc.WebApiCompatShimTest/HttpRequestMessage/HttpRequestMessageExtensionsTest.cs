@@ -281,7 +281,7 @@ namespace System.Net.Http
             Assert.Equal("bin/baz", response.Content.Headers.ContentType.MediaType);
         }
 
-#if !NETSTANDARDAPP1_5
+#if !NETCOREAPP1_0
         // API doesn't exist in CoreCLR.
         [Fact]
         public void CreateErrorResponseRangeNotSatisfiable_SetsCorrectStatusCodeAndContentRangeHeader()

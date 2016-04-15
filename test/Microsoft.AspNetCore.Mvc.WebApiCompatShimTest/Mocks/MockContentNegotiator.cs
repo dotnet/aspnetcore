@@ -34,7 +34,7 @@ namespace System.Net.Http.Formatting.Mocks
             return base.SelectResponseCharacterEncoding(request, formatter);
         }
 
-#if !NETSTANDARDAPP1_5
+#if !NETCOREAPP1_0
 
         public new MediaTypeFormatterMatch MatchMediaTypeMapping(HttpRequestMessage request, MediaTypeFormatter formatter)
         {

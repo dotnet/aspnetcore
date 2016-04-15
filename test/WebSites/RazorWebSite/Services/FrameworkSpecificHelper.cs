@@ -9,8 +9,8 @@ namespace RazorWebSite
         {
 #if NET451 || DNX451
             return "This method is running from NET451";
-#elif NETSTANDARDAPP1_5
-            return "This method is running from NETSTANDARDAPP1_5";
+#elif NETCOREAPP1_0
+            return "This method is running from NETCOREAPP1_0";
 #endif
         }
 
@@ -21,10 +21,10 @@ namespace RazorWebSite
         }
 #endif
 
-#if NETSTANDARDAPP1_5_CUSTOM_DEFINE
-        public string ExecuteNetStandardApp1_5Operation()
+#if NETCOREAPP1_0_CUSTOM_DEFINE
+        public string ExecuteNetCoreApp1_0Operation()
         {
-            return "This method is only defined in NETSTANDARDAPP1_5";
+            return "This method is only defined in NETCOREAPP1_0";
         }
 #endif
     }

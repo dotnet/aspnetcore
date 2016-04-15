@@ -218,14 +218,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     { "This is a test 激光這兩個字是甚麼意思 string written using utf-8", "utf-8", true },
                     { "This is a test 激光這兩個字是甚麼意思 string written using utf-16", "utf-16", true },
                     { "This is a test 激光這兩個字是甚麼意思 string written using utf-32", "utf-32", false },
-#if !NETSTANDARDAPP1_5
+#if !NETCOREAPP1_0
                     // CoreCLR does not like shift_jis as an encoding.
                     { "This is a test 激光這兩個字是甚麼意思 string written using shift_jis", "shift_jis", false },
 #endif
                     { "This is a test æøå string written using iso-8859-1", "iso-8859-1", false },
                 };
 
-#if !NETSTANDARDAPP1_5
+#if !NETCOREAPP1_0
                 // CoreCLR does not like iso-2022-kr as an encoding.
                 if (!TestPlatformHelper.IsMono)
                 {

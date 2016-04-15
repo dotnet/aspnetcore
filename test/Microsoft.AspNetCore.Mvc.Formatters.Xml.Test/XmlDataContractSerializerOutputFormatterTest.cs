@@ -426,7 +426,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             }
         }
 
-#if !NETSTANDARDAPP1_5
+#if !NETCOREAPP1_0
         // DataContractSerializer in CoreCLR does not throw if the declared type is different from the type being
         // serialized.
         [ConditionalFact]
