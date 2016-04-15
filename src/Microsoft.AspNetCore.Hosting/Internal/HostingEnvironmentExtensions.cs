@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
             if (!Directory.Exists(contentRootPath))
             {
-                throw new ArgumentException("The provided content root does not exist.", nameof(contentRootPath));
+                throw new ArgumentException($"The content root '{contentRootPath}' does not exist.", nameof(contentRootPath));
             }
 
             hostingEnvironment.ApplicationName = applicationName;
