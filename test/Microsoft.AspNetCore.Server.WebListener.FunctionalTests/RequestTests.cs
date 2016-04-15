@@ -24,6 +24,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Server;
 using Xunit;
 
@@ -187,13 +189,11 @@ namespace Microsoft.AspNetCore.Server.WebListener
             var dynamicServer = Utilities.CreateHttpServerReturnRoot("/", out root, app);
             dynamicServer.Dispose();
             var rootUri = new Uri(root);
-            var factory = new ServerFactory(loggerFactory: null);
-            var server = factory.CreateServer(configuration: null);
-            var listener = server.Features.Get<Microsoft.Net.Http.Server.WebListener>();
+            var server = new MessagePump(Options.Create(new WebListenerOptions()), new LoggerFactory());
 
             foreach (string path in new[] { "/", "/11", "/2/3", "/2", "/11/2" })
             {
-                listener.UrlPrefixes.Add(UrlPrefix.Create(rootUri.Scheme, rootUri.Host, rootUri.Port, path));
+                server.Listener.UrlPrefixes.Add(UrlPrefix.Create(rootUri.Scheme, rootUri.Host, rootUri.Port, path));
             }
 
             server.Start(new DummyApplication(app));

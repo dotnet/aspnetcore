@@ -17,8 +17,10 @@
 
 using System;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Features;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Server;
 
 namespace Microsoft.AspNetCore.Server.WebListener
@@ -53,7 +55,6 @@ namespace Microsoft.AspNetCore.Server.WebListener
 
         internal static IServer CreateDynamicHttpServer(string basePath, AuthenticationSchemes authType, out string root, out string baseAddress, RequestDelegate app)
         {
-            var factory = new ServerFactory(loggerFactory: null);
             lock (PortLock)
             {
                 while (NextPort < MaxPort)
@@ -64,10 +65,9 @@ namespace Microsoft.AspNetCore.Server.WebListener
                     root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
                     baseAddress = prefix.ToString();
 
-                    var server = factory.CreateServer(configuration: null);
-                    var listener = server.Features.Get<Microsoft.Net.Http.Server.WebListener>();
-                    listener.UrlPrefixes.Add(prefix);
-                    listener.AuthenticationManager.AuthenticationSchemes = authType;
+                    var server = new MessagePump(Options.Create(new WebListenerOptions()), new LoggerFactory());
+                    server.Features.Get<IServerAddressesFeature>().Addresses.Add(baseAddress);
+                    server.Listener.AuthenticationManager.AuthenticationSchemes = authType;
                     try
                     {
                         server.Start(new DummyApplication(app));
@@ -89,8 +89,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
 
         internal static IServer CreateServer(string scheme, string host, int port, string path, RequestDelegate app)
         {
-            var factory = new ServerFactory(loggerFactory: null);
-            var server = factory.CreateServer(configuration: null);
+            var server = new MessagePump(Options.Create(new WebListenerOptions()), new LoggerFactory());
             server.Features.Get<IServerAddressesFeature>().Addresses.Add(UrlPrefix.Create(scheme, host, port, path).ToString());
             server.Start(new DummyApplication(app));
             return server;

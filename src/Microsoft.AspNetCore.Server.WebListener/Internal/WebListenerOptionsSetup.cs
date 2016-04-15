@@ -15,13 +15,24 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Server.Features;
+using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener.Internal
 {
-    internal class ServerAddressesFeature : IServerAddressesFeature
+    public class WebListenerOptionsSetup : IConfigureOptions<WebListenerOptions>
     {
-        public ICollection<string> Addresses { get; } = new List<string>();
+        private ILoggerFactory _loggerFactory;
+
+        public WebListenerOptionsSetup(ILoggerFactory loggerFactory)
+        {
+            _loggerFactory = loggerFactory;
+        }
+
+        public void Configure(WebListenerOptions options)
+        {
+            options.Listener = new Microsoft.Net.Http.Server.WebListener(_loggerFactory);
+        }
     }
 }

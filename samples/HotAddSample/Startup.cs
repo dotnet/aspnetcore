@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Features;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Server;
 
@@ -94,7 +94,7 @@ namespace HotAddSample
             var host = new WebHostBuilder()
                 .UseDefaultHostingConfiguration(args)
                 .UseStartup<Startup>()
-                .UseServer("Microsoft.AspNetCore.Server.WebListener")
+                .UseWebListener()
                 .Build();
 
             host.Run();
