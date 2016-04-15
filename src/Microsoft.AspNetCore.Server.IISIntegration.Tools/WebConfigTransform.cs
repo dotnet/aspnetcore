@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
 {
     public static class WebConfigTransform
     {
-        public static XDocument Transform(XDocument webConfig, string appName, bool configureForAzure)
+        public static XDocument Transform(XDocument webConfig, string appName, bool configureForAzure, bool isPortable)
         {
             const string HandlersElementName = "handlers";
             const string aspNetCoreElementName = "aspNetCore";
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
             var webServerSection = GetOrCreateChild(webConfig.Root, "system.webServer");
 
             TransformHandlers(GetOrCreateChild(webServerSection, HandlersElementName));
-            TransformAspNetCore(GetOrCreateChild(webServerSection, aspNetCoreElementName), appName, configureForAzure);
+            TransformAspNetCore(GetOrCreateChild(webServerSection, aspNetCoreElementName), appName, configureForAzure, isPortable);
 
             // make sure that the aspNetCore element is after handlers element
             var aspNetCoreElement = webServerSection.Element(HandlersElementName)
@@ -55,14 +55,32 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
             SetAttributeValueIfEmpty(aspNetCoreElement, "resourceType", "Unspecified");
         }
 
-        private static void TransformAspNetCore(XElement aspNetCoreElement, string appName, bool configureForAzure)
+        private static void TransformAspNetCore(XElement aspNetCoreElement, string appName, bool configureForAzure, bool isPortable)
         {
             // Forward slashes currently work neither in AspNetCoreModule nor in dotnet so they need to be
             // replaced with backwards slashes when the application is published on a non-Windows machine
             var appPath = Path.Combine(configureForAzure ? @"%home%\site" : ".", appName).Replace("/", "\\");
             var logPath = Path.Combine(configureForAzure ? @"\\?\%home%\LogFiles" : @".\logs", "stdout").Replace("/", "\\");
 
-            aspNetCoreElement.SetAttributeValue("processPath", appPath);
+            if (!isPortable)
+            {
+                aspNetCoreElement.SetAttributeValue("processPath", appPath);
+            }
+            else
+            {
+                aspNetCoreElement.SetAttributeValue("processPath", "dotnet");
+
+                // In Xml the order of attributes does not matter but it is nice to have
+                // the `arguments` attribute next to the `processPath` attribute
+                aspNetCoreElement.Attribute("arguments")?.Remove();
+                var attributes = aspNetCoreElement.Attributes().ToList();
+                var processPathIndex = attributes.FindIndex(a => a.Name.LocalName == "processPath");
+                attributes.Insert(processPathIndex + 1, new XAttribute("arguments", appPath));
+
+                aspNetCoreElement.Attributes().Remove();
+                aspNetCoreElement.Add(attributes);
+            }
+
             SetAttributeValueIfEmpty(aspNetCoreElement, "stdoutLogEnabled", "false");
             SetAttributeValueIfEmpty(aspNetCoreElement, "stdoutLogFile", logPath);
             SetAttributeValueIfEmpty(aspNetCoreElement, "startupTimeLimit", "3600");

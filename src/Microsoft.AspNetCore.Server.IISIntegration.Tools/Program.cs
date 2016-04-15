@@ -20,13 +20,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
             app.HelpOption("-h|--help");
 
             var publishFolderOption = app.Option("--publish-folder|-p", "The path to the publish output folder", CommandOptionType.SingleValue);
+            var frameworkOption = app.Option("-f|--framework <FRAMEWORK>", "Target framework of application being published", CommandOptionType.SingleValue);
             var projectPath = app.Argument("<PROJECT>", "The path to the project (project folder or project.json) being published. If empty the current directory is used.");
 
             app.OnExecute(() =>
             {
                 var publishFolder = publishFolderOption.Value();
+                var framework = frameworkOption.Value();
 
-                if (publishFolder == null)
+                if (publishFolder == null || framework == null)
                 {
                     app.ShowHelp();
                     return 2;
@@ -34,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
 
                 Reporter.Output.WriteLine($"Configuring the following project for use with IIS: '{publishFolder}'");
 
-                var exitCode = new PublishIISCommand(publishFolder, projectPath.Value).Run();
+                var exitCode = new PublishIISCommand(publishFolder, framework, projectPath.Value).Run();
 
                 Reporter.Output.WriteLine("Configuring project completed successfully");
 

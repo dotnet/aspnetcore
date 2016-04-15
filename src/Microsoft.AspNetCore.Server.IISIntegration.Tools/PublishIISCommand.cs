@@ -3,10 +3,12 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.DotNet.ProjectModel;
 using Microsoft.Extensions.Cli.Utils;
+using NuGet.Frameworks;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
 {
@@ -14,11 +16,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
     {
         private readonly string _publishFolder;
         private readonly string _projectPath;
+        private readonly string _framework;
 
-        public PublishIISCommand(string publishFolder, string projectPath)
+        public PublishIISCommand(string publishFolder, string framework, string projectPath)
         {
             _publishFolder = publishFolder;
             _projectPath = projectPath;
+            _framework = framework;
         }
 
         public int Run()
@@ -42,8 +46,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
                 Reporter.Output.WriteLine($"No web.config found. Creating '{webConfigPath}'");
             }
 
-            var applicationName = GetApplicationName(applicationBasePath) + ".exe";
-            var transformedConfig = WebConfigTransform.Transform(webConfigXml, applicationName, ConfigureForAzure());
+            var projectContext = GetProjectContext(applicationBasePath, _framework);
+            var isPortable = !projectContext.TargetFramework.IsDesktop() && projectContext.IsPortable;
+            var applicationName = projectContext.ProjectFile.Name + (isPortable ? ".dll" : ".exe");
+            var transformedConfig = WebConfigTransform.Transform(webConfigXml, applicationName, ConfigureForAzure(), isPortable);
 
             using (var f = new FileStream(webConfigPath, FileMode.Create))
             {
@@ -67,9 +73,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
             return Directory.GetCurrentDirectory();
         }
 
-        private string GetApplicationName(string applicationBasePath)
+        private static ProjectContext GetProjectContext(string applicationBasePath, string framework)
         {
-            return ProjectReader.GetProject(Path.Combine(applicationBasePath, "project.json")).Name;
+            var project = ProjectReader.GetProject(Path.Combine(applicationBasePath, "project.json"));
+
+            return new ProjectContextBuilder()
+                .WithProject(project)
+                .WithTargetFramework(framework)
+                .Build();
         }
 
         private static bool ConfigureForAzure()
