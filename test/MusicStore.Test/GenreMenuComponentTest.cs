@@ -41,7 +41,7 @@ namespace MusicStore.Components
             Assert.NotNull(result);
             var viewResult = Assert.IsType<ViewViewComponentResult>(result);
             Assert.Null(viewResult.ViewName);
-            var genreResult = Assert.IsType<List<Genre>>(viewResult.ViewData.Model);
+            var genreResult = Assert.IsType<List<string>>(viewResult.ViewData.Model);
             Assert.Equal(9, genreResult.Count);
         }
 
