@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public string GetFormat(ActionContext context)
+        public virtual string GetFormat(ActionContext context)
         {
             object obj;
             if (context.RouteData.Values.TryGetValue("format", out obj))
