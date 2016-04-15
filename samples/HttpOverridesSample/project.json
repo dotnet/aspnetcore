@@ -5,18 +5,23 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.HttpOverrides": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*"
   },
   "commands": {
     "web": "HttpOverridesSample"
   },
   "frameworks": {
-    "dnx451": {},
-    "netstandardapp1.5": {
+    "net451": {},
+    "netcoreapp1.0": {
       "imports": [
         "dnxcore50"
-      ]
+      ],
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        }
+      }
     }
   },
   "exclude": [

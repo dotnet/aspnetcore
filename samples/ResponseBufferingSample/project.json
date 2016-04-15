@@ -2,8 +2,7 @@
   "version": "1.0.0-*",
   "dependencies": {
     "Microsoft.AspNetCore.Buffering": "0.1.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*"
   },
   "compilationOptions": {
     "emitEntryPoint": true
@@ -12,11 +11,17 @@
     "web": "ResponseBufferingSample"
   },
   "frameworks": {
-    "dnx451": {},
-    "netstandardapp1.5": {
+    "net451": {},
+    "netcoreapp1.0": {
       "imports": [
         "dnxcore50"
-      ]
+      ],
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        }
+      }
     }
   },
   "publishExclude": [
