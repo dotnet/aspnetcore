@@ -20,14 +20,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
         public void WebConfigTransform_creates_new_config_if_one_does_not_exist()
         {
             Assert.True(XNode.DeepEquals(WebConfigTemplate,
-                    WebConfigTransform.Transform(null, "test.exe", configureForAzure: false)));
+                    WebConfigTransform.Transform(null, "test.exe", configureForAzure: false, isPortable: false)));
         }
 
         [Fact]
         public void WebConfigTransform_creates_new_config_if_one_has_unexpected_format()
         {
             Assert.True(XNode.DeepEquals(WebConfigTemplate,
-                WebConfigTransform.Transform(XDocument.Parse("<unexpected />"), "test.exe", configureForAzure: false)));
+                WebConfigTransform.Transform(XDocument.Parse("<unexpected />"), "test.exe", configureForAzure: false, isPortable: false)));
         }
 
         [Theory]
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
             }
 
             Assert.True(XNode.DeepEquals(WebConfigTemplate,
-                WebConfigTransform.Transform(input, "test.exe", configureForAzure: false)));
+                WebConfigTransform.Transform(input, "test.exe", configureForAzure: false, isPortable: false)));
         }
 
         [Theory]
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
             var input = WebConfigTemplate;
             input.Descendants(elementName).Single().SetAttributeValue(attributeName, attributeValue);
 
-            var output = WebConfigTransform.Transform(input, "test.exe", configureForAzure: false);
+            var output = WebConfigTransform.Transform(input, "test.exe", configureForAzure: false, isPortable: false);
             Assert.Equal(attributeValue, (string)output.Descendants(elementName).Single().Attribute(attributeName));
         }
 
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
         public void WebConfigTransform_overwrites_processPath()
         {
             var newProcessPath =
-                (string)WebConfigTransform.Transform(WebConfigTemplate, "app.exe", configureForAzure: false)
+                (string)WebConfigTransform.Transform(WebConfigTemplate, "app.exe", configureForAzure: false, isPortable: false)
                     .Descendants("aspNetCore").Single().Attribute("processPath");
 
             Assert.Equal(@".\app.exe", newProcessPath);
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
             input.Descendants("add").Single().SetAttributeValue("name", "aspnetcore");
 
             Assert.True(XNode.DeepEquals(WebConfigTemplate,
-                WebConfigTransform.Transform(input, "test.exe", configureForAzure: false)));
+                WebConfigTransform.Transform(input, "test.exe", configureForAzure: false, isPortable: false)));
         }
 
         [Fact]
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
             input.Descendants("aspNetCore").Single().Add(envVarElement);
 
             Assert.True(XNode.DeepEquals(envVarElement,
-                WebConfigTransform.Transform(input, "app.exe", configureForAzure: false)
+                WebConfigTransform.Transform(input, "app.exe", configureForAzure: false, isPortable: false)
                     .Descendants("environmentVariable").SingleOrDefault(e => (string)e.Attribute("name") == "ENVVAR")));
         }
 
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
 
             Assert.Equal(
                 "false",
-                (string)WebConfigTransform.Transform(input, "test.exe", configureForAzure: false)
+                (string)WebConfigTransform.Transform(input, "test.exe", configureForAzure: false, isPortable: false)
                     .Descendants().Attributes("stdoutLogEnabled").Single());
         }
 
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
 
             Assert.Equal(
                 @".\logs\stdout",
-                (string)WebConfigTransform.Transform(input, "test.exe", configureForAzure: false)
+                (string)WebConfigTransform.Transform(input, "test.exe", configureForAzure: false, isPortable: false)
                     .Descendants().Attributes("stdoutLogFile").Single());
         }
 
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
 
             Assert.Equal(
                 "mylog.txt",
-                (string)WebConfigTransform.Transform(input, "test.exe", configureForAzure: false)
+                (string)WebConfigTransform.Transform(input, "test.exe", configureForAzure: false, isPortable: false)
                     .Descendants().Attributes("stdoutLogFile").Single());
         }
 
@@ -163,13 +163,42 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
             var input = WebConfigTemplate;
             input.Descendants("aspNetCore").Attributes().Remove();
 
-            var aspNetCoreElement = WebConfigTransform.Transform(input, "test.exe", configureForAzure: true)
+            var aspNetCoreElement = WebConfigTransform.Transform(input, "test.exe", configureForAzure: true, isPortable: false)
                 .Descendants("aspNetCore").Single();
             aspNetCoreElement.Elements().Remove();
 
             Assert.True(XNode.DeepEquals(
                 XDocument.Parse(@"<aspNetCore processPath=""%home%\site\test.exe"" stdoutLogEnabled=""false""
                     stdoutLogFile=""\\?\%home%\LogFiles\stdout"" startupTimeLimit=""3600""/>").Root,
+                aspNetCoreElement));
+        }
+
+        [Fact]
+        public void WebConfigTransform_configures_portable_apps_correctly()
+        {
+            var aspNetCoreElement =
+                WebConfigTransform.Transform(WebConfigTemplate, "test.exe", configureForAzure: false, isPortable: true)
+                    .Descendants("aspNetCore").Single();
+
+            Assert.True(XNode.DeepEquals(
+                XDocument.Parse(@"<aspNetCore processPath=""dotnet"" arguments="".\test.exe"" stdoutLogEnabled=""false""
+                     stdoutLogFile="".\logs\stdout"" startupTimeLimit=""3600""/>").Root,
+                aspNetCoreElement));
+        }
+
+        [Fact]
+        public void WebConfigTransform_overwrites_existing_arguments_attribute_for_portable_apps()
+        {
+            var input = WebConfigTemplate;
+            input.Descendants("aspNetCore").Single().SetAttributeValue("arguments", "42");
+
+            var aspNetCoreElement =
+                WebConfigTransform.Transform(input, "test.exe", configureForAzure: false, isPortable: true)
+                    .Descendants("aspNetCore").Single();
+
+            Assert.True(XNode.DeepEquals(
+                XDocument.Parse(@"<aspNetCore processPath=""dotnet"" arguments="".\test.exe"" stdoutLogEnabled=""false""
+                     stdoutLogFile="".\logs\stdout"" startupTimeLimit=""3600""/>").Root,
                 aspNetCoreElement));
         }
 
@@ -182,7 +211,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
             }
 
             return XNode.DeepEquals(WebConfigTemplate,
-                WebConfigTransform.Transform(input, "test.exe", configureForAzure: false));
+                WebConfigTransform.Transform(input, "test.exe", configureForAzure: false, isPortable: false));
         }
     }
 }
