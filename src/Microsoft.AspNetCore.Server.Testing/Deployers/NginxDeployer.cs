@@ -30,6 +30,11 @@ namespace Microsoft.AspNetCore.Server.Testing
 
             var redirectUri = $"http://localhost:{TestUriHelper.FindFreePort()}";
 
+            if (DeploymentParameters.PublishApplicationBeforeDeployment)
+            {
+                DotnetPublish();
+            }
+
             var exitToken = StartSelfHost(new Uri(redirectUri));
 
             SetupNginx(redirectUri, uri);
