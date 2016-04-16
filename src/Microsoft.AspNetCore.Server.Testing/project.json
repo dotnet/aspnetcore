@@ -13,9 +13,15 @@
     "type": "git",
     "url": "git://github.com/aspnet/hosting"
   },
+  "resource": [
+    "Deployers/RemoteWindowsDeployer/RemotePSSessionHelper.ps1",
+    "Deployers/RemoteWindowsDeployer/StartServer.ps1",
+    "Deployers/RemoteWindowsDeployer/StopServer.ps1"
+  ],
   "dependencies": {
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "Microsoft.Extensions.Process.Sources": {
       "type": "build",
