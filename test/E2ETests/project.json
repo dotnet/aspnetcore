@@ -11,7 +11,9 @@
     "Microsoft.AspNetCore.Identity": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Testing": "1.0.0-*",
     "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.Binder": "1.0.0-*",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.Extensions.Logging": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "xunit": "2.1.0"

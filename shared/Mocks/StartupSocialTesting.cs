@@ -25,7 +25,7 @@ namespace MusicStore
 {
     public class StartupSocialTesting
     {
-        private readonly IRuntimeEnvironment _runtimeEnvironment;
+        private readonly Platform _platform;
 
         public StartupSocialTesting(IApplicationEnvironment appEnvironment, IRuntimeEnvironment runtimeEnvironment)
         {
@@ -38,7 +38,7 @@ namespace MusicStore
                 .AddJsonFile("configoverride.json", optional: true); // Used to override some configuration parameters that cannot be overridden by environment.
 
             Configuration = builder.Build();
-            _runtimeEnvironment = runtimeEnvironment;
+            _platform = new Platform(runtimeEnvironment);
         }
 
         public IConfiguration Configuration { get; private set; }
@@ -48,7 +48,9 @@ namespace MusicStore
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
             //Sql client not available on mono
-            var useInMemoryStore = !_runtimeEnvironment.OperatingSystem.Equals("Windows", StringComparison.OrdinalIgnoreCase);
+            var useInMemoryStore = !_platform.IsRunningOnWindows
+                || _platform.IsRunningOnMono
+                || _platform.IsRunningOnNanoServer;
 
             // Add EF services to the services container
             if (useInMemoryStore)
