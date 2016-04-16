@@ -8,11 +8,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -20,6 +21,37 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class RazorPageCreateModelExpressionTest
     {
+        public static TheoryData IdentityExpressions
+        {
+            get
+            {
+                return new TheoryData<Func<IdentityRazorPage, ModelExpression>, string>
+                {
+                    // m => m
+                    { page => page.CreateModelExpression1(), string.Empty },
+                    // m => Model
+                    { page => page.CreateModelExpression2(), string.Empty },
+                };
+            }
+        }
+
+        public static TheoryData NotQuiteIdentityExpressions
+        {
+            get
+            {
+                return new TheoryData<Func<NotQuiteIdentityRazorPage, ModelExpression>, string, Type>
+                {
+                    // m => m.Model
+                    { page => page.CreateModelExpression1(), "Model", typeof(RecursiveModel) },
+                    // m => ViewData.Model
+                    { page => page.CreateModelExpression2(), "ViewData.Model", typeof(RecursiveModel) },
+                    // m => ViewContext.ViewData.Model
+                    // This property has type object because ViewData is not exposed as ViewDataDictionary<TModel>.
+                    { page => page.CreateModelExpression3(), "ViewContext.ViewData.Model", typeof(object) },
+                };
+            }
+        }
+
         public static TheoryData<Expression<Func<RazorPageCreateModelExpressionModel, int>>, string> IntExpressions
         {
             get
@@ -51,13 +83,68 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         [Theory]
+        [MemberData(nameof(IdentityExpressions))]
+        public void CreateModelExpression_ReturnsExpectedMetadata_IdentityExpressions(
+            Func<IdentityRazorPage, ModelExpression> createModelExpression,
+            string expectedName)
+        {
+            // Arrange
+            var viewContext = CreateViewContext();
+            var modelExplorer = viewContext.ViewData.ModelExplorer.GetExplorerForProperty(
+                nameof(RazorPageCreateModelExpressionModel.Name));
+            var viewData = new ViewDataDictionary<string>(viewContext.ViewData)
+            {
+                ModelExplorer = modelExplorer,
+            };
+            viewContext.ViewData = viewData;
+
+            var page = CreateIdentityPage(viewContext);
+
+            // Act
+            var modelExpression = createModelExpression(page);
+
+            // Assert
+            Assert.NotNull(modelExpression);
+            Assert.Equal(expectedName, modelExpression.Name);
+            Assert.Same(modelExplorer, modelExpression.ModelExplorer);
+        }
+
+        [Theory]
+        [MemberData(nameof(NotQuiteIdentityExpressions))]
+        public void CreateModelExpression_ReturnsExpectedMetadata_NotQuiteIdentityExpressions(
+            Func<NotQuiteIdentityRazorPage, ModelExpression> createModelExpression,
+            string expectedName,
+            Type expectedType)
+        {
+            // Arrange
+            var viewContext = CreateViewContext();
+            var viewData = new ViewDataDictionary<RecursiveModel>(viewContext.ViewData);
+            viewContext.ViewData = viewData;
+            var modelExplorer = viewData.ModelExplorer;
+
+            var page = CreateNotQuiteIdentityPage(viewContext);
+
+            // Act
+            var modelExpression = createModelExpression(page);
+
+            // Assert
+            Assert.NotNull(modelExpression);
+            Assert.Equal(expectedName, modelExpression.Name);
+            Assert.NotNull(modelExpression.ModelExplorer);
+            Assert.NotSame(modelExplorer, modelExpression.ModelExplorer);
+            Assert.NotNull(modelExpression.Metadata);
+            Assert.Equal(ModelMetadataKind.Property, modelExpression.Metadata.MetadataKind);
+            Assert.Equal(expectedType, modelExpression.Metadata.ModelType);
+        }
+
+        [Theory]
         [MemberData(nameof(IntExpressions))]
         public void CreateModelExpression_ReturnsExpectedMetadata_IntExpressions(
             Expression<Func<RazorPageCreateModelExpressionModel, int>> expression,
             string expectedName)
         {
             // Arrange
-            var viewContext = CreateViewContext(model: null);
+            var viewContext = CreateViewContext();
             var page = CreatePage(viewContext);
 
             // Act
@@ -77,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             string expectedName)
         {
             // Arrange
-            var viewContext = CreateViewContext(model: null);
+            var viewContext = CreateViewContext();
             var page = CreatePage(viewContext);
 
             // Act
@@ -90,6 +177,24 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             Assert.Equal(expectedName, result.Name);
         }
 
+        private static IdentityRazorPage CreateIdentityPage(ViewContext viewContext)
+        {
+            return new IdentityRazorPage
+            {
+                ViewContext = viewContext,
+                ViewData = (ViewDataDictionary<string>)viewContext.ViewData,
+            };
+        }
+
+        public static NotQuiteIdentityRazorPage CreateNotQuiteIdentityPage(ViewContext viewContext)
+        {
+            return new NotQuiteIdentityRazorPage
+            {
+                ViewContext = viewContext,
+                ViewData = (ViewDataDictionary<RecursiveModel>)viewContext.ViewData,
+            };
+        }
+
         private static TestRazorPage CreatePage(ViewContext viewContext)
         {
             return new TestRazorPage
@@ -99,42 +204,68 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             };
         }
 
-        private static ViewContext CreateViewContext(RazorPageCreateModelExpressionModel model)
+        private static ViewContext CreateViewContext()
         {
-            return CreateViewContext(model, new TestModelMetadataProvider());
-        }
+            var provider = new TestModelMetadataProvider();
+            var viewData = new ViewDataDictionary<RazorPageCreateModelExpressionModel>(provider);
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IModelMetadataProvider>(provider);
+            serviceCollection.AddSingleton<ExpressionTextCache, ExpressionTextCache>();
 
-        private static ViewContext CreateViewContext(
-            RazorPageCreateModelExpressionModel model,
-            IModelMetadataProvider provider)
-        {
-            var viewData = new ViewDataDictionary<RazorPageCreateModelExpressionModel>(provider)
+            var httpContext = new DefaultHttpContext
             {
-                Model = model,
+                RequestServices = serviceCollection.BuildServiceProvider(),
             };
-
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider
-                .Setup(real => real.GetService(typeof(IModelMetadataProvider)))
-                .Returns(provider);
-            serviceProvider
-                .Setup(real => real.GetService(typeof(ExpressionTextCache)))
-                .Returns(new ExpressionTextCache());
-
-            var httpContext = new Mock<HttpContext>();
-            httpContext
-                .SetupGet(real => real.RequestServices)
-                .Returns(serviceProvider.Object);
-
-            var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             return new ViewContext(
                 actionContext,
-                view: Mock.Of<IView>(),
-                viewData: viewData,
-                tempData: Mock.Of<ITempDataDictionary>(),
-                writer: new StringWriter(),
-                htmlHelperOptions: new HtmlHelperOptions());
+                NullView.Instance,
+                viewData,
+                Mock.Of<ITempDataDictionary>(),
+                new StringWriter(),
+                new HtmlHelperOptions());
+        }
+
+        public class IdentityRazorPage : RazorPage<string>
+        {
+            public ModelExpression CreateModelExpression1()
+            {
+                return CreateModelExpression(m => m);
+            }
+
+            public ModelExpression CreateModelExpression2()
+            {
+                return CreateModelExpression(m => Model);
+            }
+
+            public override Task ExecuteAsync()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class NotQuiteIdentityRazorPage : RazorPage<RecursiveModel>
+        {
+            public ModelExpression CreateModelExpression1()
+            {
+                return CreateModelExpression(m => m.Model);
+            }
+
+            public ModelExpression CreateModelExpression2()
+            {
+                return CreateModelExpression(m => ViewData.Model);
+            }
+
+            public ModelExpression CreateModelExpression3()
+            {
+                return CreateModelExpression(m => ViewContext.ViewData.Model);
+            }
+
+            public override Task ExecuteAsync()
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class TestRazorPage : RazorPage<RazorPageCreateModelExpressionModel>
@@ -143,6 +274,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 throw new NotImplementedException();
             }
+        }
+
+        public class RecursiveModel
+        {
+            public RecursiveModel Model { get; set; }
         }
 
         public class RazorPageCreateModelExpressionModel
