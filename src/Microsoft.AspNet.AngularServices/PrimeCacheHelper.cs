@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.AngularServices {
             // HTTP requests made during server-side rendering, without risking unnecessary duplicate requests.
 
             if (string.IsNullOrEmpty(url)) {
-                throw new ArgumentException("Value cannot be null or empty", "url");
+                throw new ArgumentException("Value cannot be null or empty", nameof(url));
             }
 
             try {
