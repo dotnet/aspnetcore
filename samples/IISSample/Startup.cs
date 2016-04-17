@@ -12,7 +12,7 @@ namespace IISSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            // These two middleware are registered via an IStartupFilter in UseIIS but you can configure them here.
+            // These two middleware are registered via an IStartupFilter in UseIISIntegration but you can configure them here.
             services.Configure<IISOptions>(options =>
             {
             });
