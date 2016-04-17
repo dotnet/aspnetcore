@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -27,25 +25,11 @@ namespace Microsoft.AspNetCore.Hosting
         IWebHostBuilder UseLoggerFactory(ILoggerFactory loggerFactory);
 
         /// <summary>
-        /// Specify the startup type to be used by the web host. 
-        /// </summary>
-        /// <param name="startupType">The <see cref="Type"/> to be used.</param>
-        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        IWebHostBuilder UseStartup(Type startupType);
-
-        /// <summary>
         /// Specify the delegate that is used to configure the services of the web application.
         /// </summary>
         /// <param name="configureServices">The delegate that configures the <see cref="IServiceCollection"/>.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         IWebHostBuilder ConfigureServices(Action<IServiceCollection> configureServices);
-
-        /// <summary>
-        /// Specify the startup method to be used to configure the web application. 
-        /// </summary>
-        /// <param name="configureApplication">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
-        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        IWebHostBuilder Configure(Action<IApplicationBuilder> configureApplication);
 
         /// <summary>
         /// Adds a delegate for configuring the provided <see cref="ILoggerFactory"/>. This may be called multiple times.

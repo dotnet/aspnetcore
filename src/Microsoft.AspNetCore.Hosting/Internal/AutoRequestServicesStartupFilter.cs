@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting.Startup;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
 {

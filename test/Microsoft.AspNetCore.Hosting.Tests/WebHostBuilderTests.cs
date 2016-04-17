@@ -28,7 +28,8 @@ namespace Microsoft.AspNetCore.Hosting
 
             var host = (WebHost)builder.UseStartup("MyStartupAssembly").Build();
 
-            Assert.Equal("MyStartupAssembly", host.StartupAssemblyName);
+            Assert.Equal("MyStartupAssembly", host.Options.ApplicationName);
+            Assert.Equal("MyStartupAssembly", host.Options.StartupAssembly);
         }
 
         [Fact]
@@ -454,7 +455,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build();
 
             var hostingEnv = host.Services.GetService<IHostingEnvironment>();
-            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
+            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests.NonExistent", hostingEnv.ApplicationName);
             var appEnv = host.Services.GetService<IApplicationEnvironment>();
             Assert.Equal(PlatformServices.Default.Application.ApplicationName, appEnv.ApplicationName);
             Assert.Equal(PlatformServices.Default.Application.ApplicationBasePath, appEnv.ApplicationBasePath);
@@ -471,7 +472,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build();
 
             var hostingEnv = host.Services.GetService<IHostingEnvironment>();
-            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
+            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests.NonExistent", hostingEnv.ApplicationName);
             var appEnv = host.Services.GetService<IApplicationEnvironment>();
             Assert.Equal(PlatformServices.Default.Application.ApplicationName, appEnv.ApplicationName);
             Assert.Equal(PlatformServices.Default.Application.ApplicationBasePath, appEnv.ApplicationBasePath);

@@ -2,45 +2,31 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Hosting.Startup
+namespace Microsoft.AspNetCore.Hosting.Internal
 {
-    public class StartupLoader : IStartupLoader
+    public class StartupLoader
     {
-        private readonly IServiceProvider _services;
-        private readonly IHostingEnvironment _hostingEnv;
-
-        public StartupLoader(IServiceProvider services, IHostingEnvironment hostingEnv)
+        public static StartupMethods LoadMethods(IServiceProvider services, Type startupType, string environmentName)
         {
-            _services = services;
-            _hostingEnv = hostingEnv;
-        }
-
-        public StartupMethods LoadMethods(
-            Type startupType,
-            IList<string> diagnosticMessages)
-        {
-            var environmentName = _hostingEnv.EnvironmentName;
             var configureMethod = FindConfigureDelegate(startupType, environmentName);
             var servicesMethod = FindConfigureServicesDelegate(startupType, environmentName);
 
             object instance = null;
             if (!configureMethod.MethodInfo.IsStatic || (servicesMethod != null && !servicesMethod.MethodInfo.IsStatic))
             {
-                instance = ActivatorUtilities.GetServiceOrCreateInstance(_services, startupType);
+                instance = ActivatorUtilities.GetServiceOrCreateInstance(services, startupType);
             }
 
             return new StartupMethods(configureMethod.Build(instance), servicesMethod?.Build(instance));
         }
 
-        public Type FindStartupType(string startupAssemblyName, IList<string> diagnosticMessages)
+        public static Type FindStartupType(string startupAssemblyName, string environmentName)
         {
-            var environmentName = _hostingEnv.EnvironmentName;
             if (string.IsNullOrEmpty(startupAssemblyName))
             {
                 throw new ArgumentException(

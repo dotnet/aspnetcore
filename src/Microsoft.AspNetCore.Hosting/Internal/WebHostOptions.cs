@@ -19,7 +19,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            Application = configuration[WebHostDefaults.ApplicationKey];
+            ApplicationName = configuration[WebHostDefaults.ApplicationKey];
+            StartupAssembly = configuration[WebHostDefaults.StartupAssemblyKey];
             DetailedErrors = ParseBool(configuration, WebHostDefaults.DetailedErrorsKey);
             CaptureStartupErrors = ParseBool(configuration, WebHostDefaults.CaptureStartupErrorsKey);
             Environment = configuration[WebHostDefaults.EnvironmentKey];
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             ContentRootPath = configuration[WebHostDefaults.ContentRootKey];
         }
 
-        public string Application { get; set; }
+        public string ApplicationName { get; set; }
 
         public bool DetailedErrors { get; set; }
 
@@ -37,6 +38,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public string Environment { get; set; }
 
         public string ServerAssembly { get; set; }
+        
+        public string StartupAssembly { get; set; }
 
         public string WebRoot { get; set; }
 

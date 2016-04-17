@@ -5,10 +5,11 @@ using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Internal;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Hosting.Startup.Tests 
+namespace Microsoft.AspNetCore.Hosting.Tests 
 {
     public class ConfigureBuilderTests
     {

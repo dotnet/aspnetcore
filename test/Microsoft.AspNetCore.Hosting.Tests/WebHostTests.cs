@@ -10,10 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Fakes;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Hosting.Startup;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
@@ -228,7 +226,7 @@ namespace Microsoft.AspNetCore.Hosting
             var builder = CreateBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddTransient<IStartupLoader, TestLoader>();
+                    services.AddTransient<IStartup, TestStartup>();
                 })
                 .UseServer(this)
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests");
@@ -496,14 +494,14 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
-        private class TestLoader : IStartupLoader
+        private class TestStartup : IStartup
         {
-            public Type FindStartupType(string startupAssemblyName, IList<string> diagnosticMessages)
+            public void Configure(IApplicationBuilder app)
             {
                 throw new NotImplementedException();
             }
 
-            public StartupMethods LoadMethods(Type startupType, IList<string> diagnosticMessages)
+            public IServiceProvider ConfigureServices(IServiceCollection services)
             {
                 throw new NotImplementedException();
             }

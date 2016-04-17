@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Builder;
 
 namespace Microsoft.AspNetCore.Hosting.Fakes
 {
-    public class StartupNoServices
+    public class StartupNoServices : Hosting.StartupBase
     {
         public StartupNoServices()
         {
         }
 
-        public void Configure(IApplicationBuilder builder)
+        public override void Configure(IApplicationBuilder builder)
         {
         }
     }

@@ -25,7 +25,8 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             {
                 { "webroot", "wwwroot"},
                 { "server", "Microsoft.AspNetCore.Server.Kestrel"},
-                { "application", "MyProjectReference"},
+                { "applicationName", "MyProjectReference"},
+                { "startupAssembly", "MyProjectReference" },
                 { "environment", "Development"},
                 { "detailederrors", "true"},
                 { "captureStartupErrors", "true" }
@@ -35,7 +36,8 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             Assert.Equal("wwwroot", config.WebRoot);
             Assert.Equal("Microsoft.AspNetCore.Server.Kestrel", config.ServerAssembly);
-            Assert.Equal("MyProjectReference", config.Application);
+            Assert.Equal("MyProjectReference", config.ApplicationName);
+            Assert.Equal("MyProjectReference", config.StartupAssembly);
             Assert.Equal("Development", config.Environment);
             Assert.True(config.CaptureStartupErrors);
             Assert.True(config.DetailedErrors);

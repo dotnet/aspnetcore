@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Hosting.Fakes;
 using Microsoft.AspNetCore.Hosting.Internal;
-using Microsoft.AspNetCore.Hosting.Startup;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -26,11 +25,8 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             serviceCollection.AddSingleton<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
 
-            var diagnosticMessages = new List<string>();
-            var hostingEnv = new HostingEnvironment { EnvironmentName = "WithServices" };
-            var loader = new StartupLoader(services, hostingEnv);
-            var type = loader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", diagnosticMessages);
-            var startup = loader.LoadMethods(type, diagnosticMessages);
+            var type = StartupLoader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", "WithServices");
+            var startup = StartupLoader.LoadMethods(services, type, "WithServices");
 
             var app = new ApplicationBuilder(services);
             app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
@@ -52,11 +48,8 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var services = new ServiceCollection().BuildServiceProvider();
 
-            var diagnosticMessages = new List<string>();
-            var hostingEnv = new HostingEnvironment { EnvironmentName = environment };
-            var loader = new StartupLoader(services, hostingEnv);
-            var type = loader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", diagnosticMessages);
-            var startup = loader.LoadMethods(type, diagnosticMessages);
+            var type = StartupLoader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", environment);
+            var startup = StartupLoader.LoadMethods(services, type, environment);
 
             var app = new ApplicationBuilder(services);
             app.ApplicationServices = startup.ConfigureServicesDelegate(new ServiceCollection());
@@ -74,13 +67,8 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
-
-            var diagnosticMessages = new List<string>();
-            var hostingEnv = new HostingEnvironment { EnvironmentName = "Boom" };
-            var loader = new StartupLoader(services, hostingEnv);
-            var type = loader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", diagnosticMessages);
-
-            var ex = Assert.Throws<InvalidOperationException>(() => loader.LoadMethods(type, diagnosticMessages));
+            var type = StartupLoader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", "Boom");
+            var ex = Assert.Throws<InvalidOperationException>(() => StartupLoader.LoadMethods(services, type, "Boom"));
             Assert.Equal("A public method named 'ConfigureBoom' or 'Configure' could not be found in the 'Microsoft.AspNetCore.Hosting.Fakes.StartupBoom' type.", ex.Message);
         }
 
@@ -91,12 +79,9 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             serviceCollection.AddSingleton<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
 
-            var diagnosticMessages = new List<string>();
-            var hostingEnv = new HostingEnvironment { EnvironmentName = "TwoConfigures" };
-            var loader = new StartupLoader(services, hostingEnv);
-            var type = loader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", diagnosticMessages);
+            var type = StartupLoader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", "TwoConfigures");
 
-            var ex = Assert.Throws<InvalidOperationException>(() => loader.LoadMethods(type, diagnosticMessages));
+            var ex = Assert.Throws<InvalidOperationException>(() => StartupLoader.LoadMethods(services, type, "TwoConfigures"));
             Assert.Equal("Having multiple overloads of method 'Configure' is not supported.", ex.Message);
         }
         
@@ -108,11 +93,9 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var services = serviceCollection.BuildServiceProvider();
 
             var diagnosticMessages = new List<string>();
-            var hostingEnv = new HostingEnvironment { EnvironmentName = "PrivateConfigure" };
-            var loader = new StartupLoader(services, hostingEnv);
-            var type = loader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", diagnosticMessages);
+            var type = StartupLoader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", "PrivateConfigure");
 
-            var ex = Assert.Throws<InvalidOperationException>(() => loader.LoadMethods(type, diagnosticMessages));
+            var ex = Assert.Throws<InvalidOperationException>(() => StartupLoader.LoadMethods(services, type, "PrivateConfigure"));
             Assert.Equal("A public method named 'ConfigurePrivateConfigure' or 'Configure' could not be found in the 'Microsoft.AspNetCore.Hosting.Fakes.StartupPrivateConfigure' type.", ex.Message);
         }
 
@@ -123,12 +106,9 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             serviceCollection.AddSingleton<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
 
-            var diagnosticMessages = new List<string>();
-            var hostingEnv = new HostingEnvironment { EnvironmentName = "TwoConfigureServices" };
-            var loader = new StartupLoader(services, hostingEnv);
-            var type = loader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", diagnosticMessages);
+            var type = StartupLoader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", "TwoConfigureServices");
 
-            var ex = Assert.Throws<InvalidOperationException>(() => loader.LoadMethods(type, diagnosticMessages));
+            var ex = Assert.Throws<InvalidOperationException>(() => StartupLoader.LoadMethods(services, type, "TwoConfigureServices"));
             Assert.Equal("Having multiple overloads of method 'ConfigureServices' is not supported.", ex.Message);
         }
 
@@ -138,11 +118,8 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var serviceCollection = new ServiceCollection();
             var services = serviceCollection.BuildServiceProvider();
 
-            var diagnosticMessages = new List<string>();
-            var hostingEnv = new HostingEnvironment { EnvironmentName = "WithNullConfigureServices" };
-            var loader = new StartupLoader(services, hostingEnv);
-            var type = loader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", diagnosticMessages);
-            var startup = loader.LoadMethods(type, diagnosticMessages);
+            var type = StartupLoader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", "WithNullConfigureServices");
+            var startup = StartupLoader.LoadMethods(services, type, "WithNullConfigureServices");
 
             var app = new ApplicationBuilder(services);
             app.ApplicationServices = startup.ConfigureServicesDelegate(new ServiceCollection());
@@ -157,11 +134,8 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var serviceCollection = new ServiceCollection();
             var services = serviceCollection.BuildServiceProvider();
 
-            var diagnosticMessages = new List<string>();
-            var hostingEnv = new HostingEnvironment { EnvironmentName = "WithConfigureServices" };
-            var loader = new StartupLoader(services, hostingEnv);
-            var type = loader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", diagnosticMessages);
-            var startup = loader.LoadMethods(type, diagnosticMessages);
+            var type = StartupLoader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", "WithConfigureServices");
+            var startup = StartupLoader.LoadMethods(services, type, "WithConfigureServices");
 
             var app = new ApplicationBuilder(services);
             app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
@@ -177,10 +151,8 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var serviceCollection = new ServiceCollection();
             var services = serviceCollection.BuildServiceProvider();
 
-            var diagnosticMessages = new List<string>();
             var hostingEnv = new HostingEnvironment();
-            var loader = new StartupLoader(services, hostingEnv);
-            var startup = loader.LoadMethods(typeof(TestStartup), diagnosticMessages);
+            var startup = StartupLoader.LoadMethods(services, typeof(TestStartup), hostingEnv.EnvironmentName);
 
             var app = new ApplicationBuilder(services);
             app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
@@ -196,10 +168,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var serviceCollection = new ServiceCollection();
             var services = serviceCollection.BuildServiceProvider();
 
-            var diagnosticMessages = new List<string>();
-            var hostingEnv = new HostingEnvironment { EnvironmentName = "No" };
-            var loader = new StartupLoader(services, hostingEnv);
-            var startup = loader.LoadMethods(typeof(TestStartup), diagnosticMessages);
+            var startup = StartupLoader.LoadMethods(services, typeof(TestStartup), "No");
 
             var app = new ApplicationBuilder(services);
             app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);

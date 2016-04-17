@@ -5,13 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Builder;
+using System.Runtime.ExceptionServices;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNetCore.Hosting.Builder;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Startup;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,10 +32,6 @@ namespace Microsoft.AspNetCore.Hosting
         private IConfiguration _config = new ConfigurationBuilder().AddInMemoryCollection().Build();
         private ILoggerFactory _loggerFactory;
         private WebHostOptions _options;
-
-        // Only one of these should be set
-        private StartupMethods _startup;
-        private Type _startupType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebHostBuilder"/> class.
@@ -87,22 +82,6 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Specify the startup type to be used by the web host.
-        /// </summary>
-        /// <param name="startupType">The <see cref="Type"/> to be used.</param>
-        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public IWebHostBuilder UseStartup(Type startupType)
-        {
-            if (startupType == null)
-            {
-                throw new ArgumentNullException(nameof(startupType));
-            }
-
-            _startupType = startupType;
-            return this;
-        }
-
-        /// <summary>
         /// Adds a delegate for configuring additional services for the host or web application. This may be called
         /// multiple times.
         /// </summary>
@@ -116,22 +95,6 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             _configureServicesDelegates.Add(configureServices);
-            return this;
-        }
-
-        /// <summary>
-        /// Specify the startup method to be used to configure the web application.
-        /// </summary>
-        /// <param name="configureApp">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
-        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public IWebHostBuilder Configure(Action<IApplicationBuilder> configureApp)
-        {
-            if (configureApp == null)
-            {
-                throw new ArgumentNullException(nameof(configureApp));
-            }
-
-            _startup = new StartupMethods(configureApp);
             return this;
         }
 
@@ -159,14 +122,7 @@ namespace Microsoft.AspNetCore.Hosting
             var hostingServices = BuildHostingServices();
             var hostingContainer = hostingServices.BuildServiceProvider();
 
-            var startupLoader = hostingContainer.GetRequiredService<IStartupLoader>();
-
-            var host = new WebHost(hostingServices, startupLoader, _options, _config);
-
-            // Only one of these should be set, but they are used in priority
-            host.Startup = _startup;
-            host.StartupType = _startupType;
-            host.StartupAssemblyName = _options.Application;
+            var host = new WebHost(hostingServices, hostingContainer, _options, _config);
 
             host.Initialize();
 
@@ -180,7 +136,7 @@ namespace Microsoft.AspNetCore.Hosting
             var defaultPlatformServices = PlatformServices.Default;
             var appEnvironment = defaultPlatformServices.Application;
             var contentRootPath = ResolveContentRootPath(_options.ContentRootPath, appEnvironment.ApplicationBasePath);
-            var applicationName = ResolveApplicationName() ?? appEnvironment.ApplicationName;
+            var applicationName = _options.ApplicationName ?? appEnvironment.ApplicationName;
 
             // Initialize the hosting environment
             _hostingEnvironment.Initialize(applicationName, contentRootPath, _options);
@@ -204,7 +160,6 @@ namespace Microsoft.AspNetCore.Hosting
             //This is required to add ILogger of T.
             services.AddLogging();
 
-            services.AddTransient<IStartupLoader, StartupLoader>();
             services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
             services.AddTransient<IHttpContextFactory, HttpContextFactory>();
             services.AddOptions();
@@ -225,8 +180,51 @@ namespace Microsoft.AspNetCore.Hosting
             if (!string.IsNullOrEmpty(_options.ServerAssembly))
             {
                 // Add the server
-                var serverType = ServerLoader.ResolveServerType(_options.ServerAssembly);
-                services.AddSingleton(typeof(IServer), serverType);
+                try
+                {
+                    var serverType = ServerLoader.ResolveServerType(_options.ServerAssembly);
+                    services.AddSingleton(typeof(IServer), serverType);
+                }
+                catch (Exception ex)
+                {
+                    var capture = ExceptionDispatchInfo.Capture(ex);
+                    services.AddSingleton<IServer>(_ =>
+                    {
+                        capture.Throw();
+                        return null;
+                    });
+                }
+            }
+
+            if (!string.IsNullOrEmpty(_options.StartupAssembly))
+            {
+                try
+                {
+                    var startupType = StartupLoader.FindStartupType(_options.StartupAssembly, _hostingEnvironment.EnvironmentName);
+                    
+                    if (typeof(IStartup).GetTypeInfo().IsAssignableFrom(startupType.GetTypeInfo()))
+                    {
+                        services.AddSingleton(typeof(IStartup), startupType);
+                    }
+                    else
+                    {
+                        services.AddSingleton(typeof(IStartup), sp =>
+                        {
+                            var hostingEnvironment = sp.GetRequiredService<IHostingEnvironment>();
+                            var methods = StartupLoader.LoadMethods(sp, startupType, hostingEnvironment.EnvironmentName);
+                            return new ConventionBasedStartup(methods);
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var capture = ExceptionDispatchInfo.Capture(ex);
+                    services.AddSingleton<IStartup>(_ =>
+                    {
+                        capture.Throw();
+                        return null;
+                    });
+                }
             }
 
             foreach (var configureServices in _configureServicesDelegates)
@@ -248,23 +246,6 @@ namespace Microsoft.AspNetCore.Hosting
                 return contentRootPath;
             }
             return Path.Combine(Path.GetFullPath(basePath), contentRootPath);
-        }
-
-        private string ResolveApplicationName()
-        {
-            if (_startup != null)
-            {
-                return _startup.ConfigureDelegate.Target.GetType().GetTypeInfo().Assembly.GetName().Name;
-            }
-            if (_startupType != null)
-            {
-                return _startupType.GetTypeInfo().Assembly.GetName().Name;
-            }
-            if (!string.IsNullOrEmpty(_options.Application))
-            {
-                return _options.Application;
-            }
-            return null;
         }
     }
 }

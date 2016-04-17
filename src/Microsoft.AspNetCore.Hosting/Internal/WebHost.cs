@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Hosting.Startup;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
@@ -22,7 +22,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
     public class WebHost : IWebHost
     {
         private readonly IServiceCollection _applicationServiceCollection;
-        private readonly IStartupLoader _startupLoader;
+        private IStartup _startup;
+
+        private readonly IServiceProvider _hostingServiceProvider;
         private readonly ApplicationLifetime _applicationLifetime;
         private readonly WebHostOptions _options;
         private readonly IConfiguration _config;
@@ -34,16 +36,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         // Used for testing only
         internal WebHostOptions Options => _options;
 
-        // Only one of these should be set
-        internal string StartupAssemblyName { get; set; }
-        internal StartupMethods Startup { get; set; }
-        internal Type StartupType { get; set; }
-
         private IServer Server { get; set; }
 
         public WebHost(
             IServiceCollection appServices,
-            IStartupLoader startupLoader,
+            IServiceProvider hostingServiceProvider,
             WebHostOptions options,
             IConfiguration config)
         {
@@ -52,9 +49,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 throw new ArgumentNullException(nameof(appServices));
             }
 
-            if (startupLoader == null)
+            if (hostingServiceProvider == null)
             {
-                throw new ArgumentNullException(nameof(startupLoader));
+                throw new ArgumentNullException(nameof(hostingServiceProvider));
             }
 
             if (config == null)
@@ -65,7 +62,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             _config = config;
             _options = options;
             _applicationServiceCollection = appServices;
-            _startupLoader = startupLoader;
+            _hostingServiceProvider = hostingServiceProvider;
             _applicationLifetime = new ApplicationLifetime();
             _applicationServiceCollection.AddSingleton<IApplicationLifetime>(_applicationLifetime);
         }
@@ -116,37 +113,18 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             if (_applicationServices == null)
             {
                 EnsureStartup();
-                _applicationServices = Startup.ConfigureServicesDelegate(_applicationServiceCollection);
+                _applicationServices = _startup.ConfigureServices(_applicationServiceCollection);
             }
         }
 
         private void EnsureStartup()
         {
-            if (Startup != null)
+            if (_startup != null)
             {
                 return;
             }
 
-            if (StartupType == null)
-            {
-                var diagnosticTypeMessages = new List<string>();
-                StartupType = _startupLoader.FindStartupType(StartupAssemblyName, diagnosticTypeMessages);
-                if (StartupType == null)
-                {
-                    throw new ArgumentException(
-                        diagnosticTypeMessages.Aggregate("Failed to find a startup type for the web application.", (a, b) => a + "\r\n" + b),
-                        StartupAssemblyName);
-                }
-            }
-
-            var diagnosticMessages = new List<string>();
-            Startup = _startupLoader.LoadMethods(StartupType, diagnosticMessages);
-            if (Startup == null)
-            {
-                throw new ArgumentException(
-                    diagnosticMessages.Aggregate("Failed to find a startup entry point for the web application.", (a, b) => a + "\r\n" + b),
-                    StartupAssemblyName);
-            }
+            _startup = _hostingServiceProvider.GetRequiredService<IStartup>();
         }
 
         private RequestDelegate BuildApplication()
@@ -161,7 +139,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 builder.ApplicationServices = _applicationServices;
 
                 var startupFilters = _applicationServices.GetService<IEnumerable<IStartupFilter>>();
-                var configure = Startup.ConfigureDelegate;
+                Action<IApplicationBuilder> configure = _startup.Configure;
                 foreach (var filter in startupFilters.Reverse())
                 {
                     configure = filter.Configure(configure);

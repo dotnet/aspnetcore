@@ -6,7 +6,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Hosting.Startup
+namespace Microsoft.AspNetCore.Hosting.Internal
 {
     public class ConfigureBuilder
     {
