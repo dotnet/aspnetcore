@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Buffers;
 using BasicWebSite.Formatters;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,20 @@ namespace BasicWebSite.Controllers.ContentNegotiation
 {
     public class NormalController : Controller
     {
+        private static readonly JsonSerializerSettings _indentedSettings;
+        private readonly JsonOutputFormatter _indentingFormatter;
+
+        static NormalController()
+        {
+            _indentedSettings = JsonSerializerSettingsProvider.CreateSerializerSettings();
+            _indentedSettings.Formatting = Formatting.Indented;
+        }
+
+        public NormalController(ArrayPool<char> charPool)
+        {
+            _indentingFormatter = new JsonOutputFormatter(_indentedSettings, charPool);
+        }
+
         public override void OnActionExecuted(ActionExecutedContext context)
         {
             var result = context.Result as ObjectResult;
@@ -19,10 +34,7 @@ namespace BasicWebSite.Controllers.ContentNegotiation
             {
                 result.Formatters.Add(new PlainTextFormatter());
                 result.Formatters.Add(new CustomFormatter("application/custom"));
-
-                var jsonFormatter = new JsonOutputFormatter();
-                jsonFormatter.SerializerSettings.Formatting = Formatting.Indented;
-                result.Formatters.Add(jsonFormatter);
+                result.Formatters.Add(_indentingFormatter);
             }
 
             base.OnActionExecuted(context);

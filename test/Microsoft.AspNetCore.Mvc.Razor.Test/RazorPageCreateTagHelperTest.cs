@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,7 +11,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
@@ -23,6 +24,7 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor
@@ -75,7 +77,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var activator = new RazorPageActivator(
                 modelMetadataProvider,
                 new UrlHelperFactory(),
-                new JsonHelper(new Formatters.JsonOutputFormatter()),
+                new JsonHelper(
+                    new JsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared),
+                    ArrayPool<char>.Shared),
                 new DiagnosticListener("Microsoft.AspNetCore"),
                 new HtmlTestEncoder(),
                 modelExpressionProvider);

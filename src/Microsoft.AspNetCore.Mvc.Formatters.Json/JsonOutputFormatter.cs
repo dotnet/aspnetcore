@@ -7,34 +7,30 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
-    /// An output formatter that specializes in writing JSON content.
+    /// A <see cref="TextOutputFormatter"/> for JSON content.
     /// </summary>
     public class JsonOutputFormatter : TextOutputFormatter
     {
         private readonly IArrayPool<char> _charPool;
 
-        private JsonSerializerSettings _serializerSettings;
-
         // Perf: JsonSerializers are relatively expensive to create, and are thread safe. We cache
         // the serializer and invalidate it when the settings change.
         private JsonSerializer _serializer;
 
-        public JsonOutputFormatter()
-            : this(SerializerSettingsProvider.CreateSerializerSettings(), ArrayPool<char>.Shared)
-        {
-        }
-
-        public JsonOutputFormatter(JsonSerializerSettings serializerSettings)
-            : this(serializerSettings, ArrayPool<char>.Shared)
-        {
-        }
-
+        /// <summary>
+        /// Initializes a new <see cref="JsonOutputFormatter"/> instance.
+        /// </summary>
+        /// <param name="serializerSettings">
+        /// The <see cref="JsonSerializerSettings"/>. Should be either the application-wide settings
+        /// (<see cref="MvcJsonOptions.SerializerSettings"/>) or an instance
+        /// <see cref="JsonSerializerSettingsProvider.CreateSerializerSettings"/> initially returned.
+        /// </param>
+        /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
         public JsonOutputFormatter(JsonSerializerSettings serializerSettings, ArrayPool<char> charPool)
         {
             if (serializerSettings == null)
@@ -47,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(charPool));
             }
 
-            _serializerSettings = serializerSettings;
+            SerializerSettings = serializerSettings;
             _charPool = new JsonArrayPool<char>(charPool);
 
             SupportedEncodings.Add(Encoding.UTF8);
@@ -57,31 +53,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="JsonSerializerSettings"/> used to configure the <see cref="JsonSerializer"/>.
+        /// Gets the <see cref="JsonSerializerSettings"/> used to configure the <see cref="JsonSerializer"/>.
         /// </summary>
         /// <remarks>
         /// Any modifications to the <see cref="JsonSerializerSettings"/> object after this
         /// <see cref="JsonOutputFormatter"/> has been used will have no effect.
         /// </remarks>
-        public JsonSerializerSettings SerializerSettings
-        {
-            get
-            {
-                return _serializerSettings;
-            }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _serializerSettings = value;
-
-                // If the settings change, then invalidate the cached serializer.
-                _serializer = null;
-            }
-        }
+        protected JsonSerializerSettings SerializerSettings { get; }
 
         /// <summary>
         /// Writes the given <paramref name="value"/> as JSON using the given
@@ -157,7 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 WriteObject(writer, context.Object);
 
                 // Perf: call FlushAsync to call WriteAsync on the stream with any content left in the TextWriter's
-                // buffers. This is better than just letting dispose handle it (which would result in a synchronous 
+                // buffers. This is better than just letting dispose handle it (which would result in a synchronous
                 // write).
                 await writer.FlushAsync();
             }

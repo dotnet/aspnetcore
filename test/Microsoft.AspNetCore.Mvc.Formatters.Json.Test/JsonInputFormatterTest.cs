@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.ObjectPool;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -20,6 +22,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     public class JsonInputFormatterTest
     {
+        private static readonly ObjectPoolProvider _objectPoolProvider = new DefaultObjectPoolProvider();
+        private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings();
+
         [Theory]
         [InlineData("application/json", true)]
         [InlineData("application/*", false)]
@@ -36,7 +41,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var loggerMock = GetLogger();
 
-            var formatter = new JsonInputFormatter(loggerMock);
+            var formatter =
+                new JsonInputFormatter(loggerMock, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
             var contentBytes = Encoding.UTF8.GetBytes("content");
 
             var httpContext = GetHttpContext(contentBytes, contentType: requestContentType);
@@ -61,7 +67,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             // Arrange
             var loggerMock = GetLogger();
-            var formatter = new JsonInputFormatter(loggerMock);
+            var formatter =
+                new JsonInputFormatter(loggerMock, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
 
             // Act
             var mediaType = formatter.SupportedMediaTypes[0];
@@ -87,7 +94,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             // Arrange
             var logger = GetLogger();
-            var formatter = new JsonInputFormatter(logger);
+            var formatter =
+                new JsonInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var httpContext = GetHttpContext(contentBytes);
@@ -114,7 +122,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var content = "{name: 'Person Name', Age: '30'}";
             var logger = GetLogger();
-            var formatter = new JsonInputFormatter(logger);
+            var formatter =
+                new JsonInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var httpContext = GetHttpContext(contentBytes);
@@ -143,7 +152,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var content = "[0, 23, 300]";
             var logger = GetLogger();
-            var formatter = new JsonInputFormatter(logger);
+            var formatter =
+                new JsonInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var modelState = new ModelStateDictionary();
@@ -176,7 +186,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var content = "[0, 23, 300]";
             var logger = GetLogger();
-            var formatter = new JsonInputFormatter(logger);
+            var formatter =
+                new JsonInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var modelState = new ModelStateDictionary();
@@ -205,7 +216,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var content = "{name: 'Person Name', Age: 'not-an-age'}";
             var logger = GetLogger();
-            var formatter = new JsonInputFormatter(logger);
+            var formatter =
+                new JsonInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var modelState = new ModelStateDictionary();
@@ -235,7 +247,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var content = "[0, 23, 300]";
             var logger = GetLogger();
-            var formatter = new JsonInputFormatter(logger);
+            var formatter =
+                new JsonInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var modelState = new ModelStateDictionary();
@@ -264,7 +277,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var content = "[{name: 'Name One', Age: 30}, {name: 'Name Two', Small: 300}]";
             var logger = GetLogger();
-            var formatter = new JsonInputFormatter(logger);
+            var formatter =
+                new JsonInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var modelState = new ModelStateDictionary();
@@ -294,7 +308,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var content = "{name: 'Person Name', Age: 'not-an-age'}";
             var logger = GetLogger();
-            var formatter = new JsonInputFormatter(logger);
+            var formatter =
+                new JsonInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var modelState = new ModelStateDictionary();
@@ -323,63 +338,16 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
-        public void Creates_SerializerSettings_ByDefault()
-        {
-            // Arrange
-            var logger = GetLogger();
-
-            // Act
-            var jsonFormatter = new JsonInputFormatter(logger);
-
-            // Assert
-            Assert.NotNull(jsonFormatter.SerializerSettings);
-        }
-
-        [Fact]
         public void Constructor_UsesSerializerSettings()
         {
             // Arrange
-            var logger = GetLogger();
+            var serializerSettings = new JsonSerializerSettings();
 
             // Act
-            var serializerSettings = new JsonSerializerSettings();
-            var jsonFormatter = new JsonInputFormatter(logger, serializerSettings);
+            var jsonFormatter = new TestableJsonInputFormatter(serializerSettings);
 
             // Assert
             Assert.Same(serializerSettings, jsonFormatter.SerializerSettings);
-        }
-
-        [Fact]
-        public async Task ChangesTo_DefaultSerializerSettings_TakesEffect()
-        {
-            // Arrange
-            // missing password property here
-            var contentBytes = Encoding.UTF8.GetBytes("{ \"UserName\" : \"John\"}");
-            var logger = GetLogger();
-            var jsonFormatter = new JsonInputFormatter(logger);
-            // by default we ignore missing members, so here explicitly changing it
-            jsonFormatter.SerializerSettings.MissingMemberHandling = MissingMemberHandling.Error;
-
-            var modelState = new ModelStateDictionary();
-            var httpContext = GetHttpContext(contentBytes, "application/json;charset=utf-8");
-            var provider = new EmptyModelMetadataProvider();
-            var metadata = provider.GetMetadataForType(typeof(UserLogin));
-            var inputFormatterContext = new InputFormatterContext(
-                httpContext,
-                modelName: string.Empty,
-                modelState: modelState,
-                metadata: metadata,
-                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
-
-            // Act
-            var result = await jsonFormatter.ReadAsync(inputFormatterContext);
-
-            // Assert
-            Assert.True(result.HasError);
-            Assert.False(modelState.IsValid);
-
-            var modelErrorMessage = modelState.Values.First().Errors[0].Exception.Message;
-            Assert.Contains("Required property 'Password' not found in JSON", modelErrorMessage);
         }
 
         [Fact]
@@ -389,12 +357,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // missing password property here
             var contentBytes = Encoding.UTF8.GetBytes("{ \"UserName\" : \"John\"}");
             var logger = GetLogger();
-            var jsonFormatter = new JsonInputFormatter(logger);
+
             // by default we ignore missing members, so here explicitly changing it
-            jsonFormatter.SerializerSettings = new JsonSerializerSettings()
-            {
-                MissingMemberHandling = MissingMemberHandling.Error
-            };
+            var serializerSettings = new JsonSerializerSettings { MissingMemberHandling = MissingMemberHandling.Error };
+            var jsonFormatter =
+                new JsonInputFormatter(logger, serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
 
             var modelState = new ModelStateDictionary();
             var httpContext = GetHttpContext(contentBytes, "application/json;charset=utf-8");
@@ -428,7 +395,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 MaxDepth = 2,
                 DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
             };
-            var formatter = new TestableJsonInputFormatter(GetLogger(), settings);
+            var formatter = new TestableJsonInputFormatter(settings);
 
             // Act
             var actual = formatter.CreateJsonSerializer();
@@ -441,10 +408,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         private class TestableJsonInputFormatter : JsonInputFormatter
         {
-            public TestableJsonInputFormatter(ILogger logger, JsonSerializerSettings settings)
-                : base(logger, settings)
+            public TestableJsonInputFormatter(JsonSerializerSettings settings)
+                : base(GetLogger(), settings, ArrayPool<char>.Shared, _objectPoolProvider)
             {
             }
+
+            public new JsonSerializerSettings SerializerSettings => base.SerializerSettings;
 
             public new JsonSerializer CreateJsonSerializer() => base.CreateJsonSerializer();
         }

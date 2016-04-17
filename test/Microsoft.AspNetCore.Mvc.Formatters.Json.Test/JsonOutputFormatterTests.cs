@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
@@ -28,9 +28,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         [Fact]
         public void Creates_SerializerSettings_ByDefault()
         {
-            // Arrange
-            // Act
-            var jsonFormatter = new JsonOutputFormatter();
+            // Arrange & Act
+            var jsonFormatter = new TestableJsonOutputFormatter(new JsonSerializerSettings());
 
             // Assert
             Assert.NotNull(jsonFormatter.SerializerSettings);
@@ -42,28 +41,26 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             // Act
             var serializerSettings = new JsonSerializerSettings();
-            var logger = GetLogger();
-            var jsonFormatter = new JsonInputFormatter(logger, serializerSettings);
+            var jsonFormatter = new TestableJsonOutputFormatter(serializerSettings);
 
             // Assert
             Assert.Same(serializerSettings, jsonFormatter.SerializerSettings);
         }
 
         [Fact]
-        public async Task ChangesTo_DefaultSerializerSettings_TakesEffect()
+        public async Task ChangesTo_SerializerSettings_AffectSerialization()
         {
             // Arrange
             var person = new User() { Name = "John", Age = 35 };
-            var expectedOutput = JsonConvert.SerializeObject(person, new JsonSerializerSettings()
+            var outputFormatterContext = GetOutputFormatterContext(person, typeof(User));
+
+            var settings = new JsonSerializerSettings
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                Formatting = Formatting.Indented
-            });
-
-            var jsonFormatter = new JsonOutputFormatter();
-            jsonFormatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-            jsonFormatter.SerializerSettings.Formatting = Formatting.Indented;
-            var outputFormatterContext = GetOutputFormatterContext(person, typeof(User));
+                Formatting = Formatting.Indented,
+            };
+            var expectedOutput = JsonConvert.SerializeObject(person, settings);
+            var jsonFormatter = new JsonOutputFormatter(settings, ArrayPool<char>.Shared);
 
             // Act
             await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);
@@ -79,15 +76,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
-        public async Task ChangesTo_DefaultSerializerSettings_AfterSerialization_NoEffect()
+        public async Task ChangesTo_SerializerSettings_AfterSerialization_DoNotAffectSerialization()
         {
             // Arrange
             var person = new User() { Name = "John", Age = 35 };
-            var expectedOutput = JsonConvert.SerializeObject(
-                person,
-                SerializerSettingsProvider.CreateSerializerSettings());
+            var expectedOutput = JsonConvert.SerializeObject(person, new JsonSerializerSettings());
 
-            var jsonFormatter = new JsonOutputFormatter();
+            var jsonFormatter = new TestableJsonOutputFormatter(new JsonSerializerSettings());
 
             // This will create a serializer - which gets cached.
             var outputFormatterContext1 = GetOutputFormatterContext(person, typeof(User));
@@ -113,83 +108,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
-        public async Task ReplaceSerializerSettings_AfterSerialization_TakesEffect()
-        {
-            // Arrange
-            var person = new User() { Name = "John", Age = 35 };
-            var expectedOutput = JsonConvert.SerializeObject(person, new JsonSerializerSettings()
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                Formatting = Formatting.Indented
-            });
-
-            var jsonFormatter = new JsonOutputFormatter();
-
-            // This will create a serializer - which gets cached.
-            var outputFormatterContext1 = GetOutputFormatterContext(person, typeof(User));
-            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext1, Encoding.UTF8);
-
-            // This results in a new serializer being created.
-            jsonFormatter.SerializerSettings = new JsonSerializerSettings()
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                Formatting = Formatting.Indented,
-            };
-
-            var outputFormatterContext2 = GetOutputFormatterContext(person, typeof(User));
-
-            // Act
-            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext2, Encoding.UTF8);
-
-            // Assert
-            var body = outputFormatterContext2.HttpContext.Response.Body;
-
-            Assert.NotNull(body);
-            body.Position = 0;
-
-            var content = new StreamReader(body, Encoding.UTF8).ReadToEnd();
-            Assert.Equal(expectedOutput, content);
-        }
-
-        [Fact]
-        public async Task CustomSerializerSettingsObject_TakesEffect()
-        {
-            // Arrange
-            var person = new User() { Name = "John", Age = 35 };
-            var expectedOutput = JsonConvert.SerializeObject(person, new JsonSerializerSettings()
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                Formatting = Formatting.Indented
-            });
-
-            var jsonFormatter = new JsonOutputFormatter();
-            jsonFormatter.SerializerSettings = new JsonSerializerSettings()
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                Formatting = Formatting.Indented
-            };
-
-            var outputFormatterContext = GetOutputFormatterContext(person, typeof(User));
-
-            // Act
-            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);
-
-            // Assert
-            var body = outputFormatterContext.HttpContext.Response.Body;
-
-            Assert.NotNull(body);
-            body.Position = 0;
-
-            var content = new StreamReader(body, Encoding.UTF8).ReadToEnd();
-            Assert.Equal(expectedOutput, content);
-        }
-
-        [Fact]
         public async Task WriteToStreamAsync_RoundTripsJToken()
         {
             // Arrange
             var beforeMessage = "Hello World";
-            var formatter = new JsonOutputFormatter();
+            var formatter = new JsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared);
             var before = new JValue(beforeMessage);
             var memStream = new MemoryStream();
             var outputFormatterContext = GetOutputFormatterContext(
@@ -246,7 +169,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             bool isDefaultEncoding)
         {
             // Arrange
-            var formatter = new JsonOutputFormatter();
+            var formatter = new JsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared);
             var formattedContent = "\"" + content + "\"";
             var mediaType = MediaTypeHeaderValue.Parse(string.Format("application/json; charset={0}", encodingAsString));
             var encoding = CreateOrGetSupportedEncoding(formatter, encodingAsString, isDefaultEncoding);
@@ -332,6 +255,16 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             httpContext.SetupGet(c => c.Request).Returns(request.Object);
             httpContext.SetupGet(c => c.Response).Returns(response.Object);
             return new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
+        }
+
+        private class TestableJsonOutputFormatter : JsonOutputFormatter
+        {
+            public TestableJsonOutputFormatter(JsonSerializerSettings serializerSettings)
+                : base(serializerSettings, ArrayPool<char>.Shared)
+            {
+            }
+
+            public new JsonSerializerSettings SerializerSettings => base.SerializerSettings;
         }
 
         private sealed class User

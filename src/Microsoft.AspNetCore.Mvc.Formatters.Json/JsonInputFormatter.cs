@@ -14,7 +14,7 @@ using Newtonsoft.Json;
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
-    /// An <see cref="TextInputFormatter"/> for JSON content.
+    /// A <see cref="TextInputFormatter"/> for JSON content.
     /// </summary>
     public class JsonInputFormatter : TextInputFormatter
     {
@@ -22,36 +22,16 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private readonly ILogger _logger;
         private readonly ObjectPoolProvider _objectPoolProvider;
         private ObjectPool<JsonSerializer> _jsonSerializerPool;
-        private JsonSerializerSettings _serializerSettings;
 
         /// <summary>
         /// Initializes a new instance of <see cref="JsonInputFormatter"/>.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
-        public JsonInputFormatter(ILogger logger)
-            : this(logger, SerializerSettingsProvider.CreateSerializerSettings())
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="JsonInputFormatter"/>.
-        /// </summary>
-        /// <param name="logger">The <see cref="ILogger"/>.</param>
-        /// <param name="serializerSettings">The <see cref="JsonSerializerSettings"/>.</param>
-        public JsonInputFormatter(ILogger logger, JsonSerializerSettings serializerSettings)
-            : this(
-                  logger,
-                  serializerSettings,
-                  ArrayPool<char>.Shared,
-                  new DefaultObjectPoolProvider())
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="JsonInputFormatter"/>.
-        /// </summary>
-        /// <param name="logger">The <see cref="ILogger"/>.</param>
-        /// <param name="serializerSettings">The <see cref="JsonSerializerSettings"/>.</param>
+        /// <param name="serializerSettings">
+        /// The <see cref="JsonSerializerSettings"/>. Should be either the application-wide settings
+        /// (<see cref="MvcJsonOptions.SerializerSettings"/>) or an instance
+        /// <see cref="JsonSerializerSettingsProvider.CreateSerializerSettings"/> initially returned.
+        /// </param>
         /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
         /// <param name="objectPoolProvider">The <see cref="ObjectPoolProvider"/>.</param>
         public JsonInputFormatter(
@@ -81,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
 
             _logger = logger;
-            _serializerSettings = serializerSettings;
+            SerializerSettings = serializerSettings;
             _charPool = new JsonArrayPool<char>(charPool);
             _objectPoolProvider = objectPoolProvider;
 
@@ -93,28 +73,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="JsonSerializerSettings"/> used to configure the <see cref="JsonSerializer"/>.
+        /// Gets the <see cref="JsonSerializerSettings"/> used to configure the <see cref="JsonSerializer"/>.
         /// </summary>
         /// <remarks>
         /// Any modifications to the <see cref="JsonSerializerSettings"/> object after this
         /// <see cref="JsonInputFormatter"/> has been used will have no effect.
         /// </remarks>
-        public JsonSerializerSettings SerializerSettings
-        {
-            get
-            {
-                return _serializerSettings;
-            }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _serializerSettings = value;
-            }
-        }
+        protected JsonSerializerSettings SerializerSettings { get; }
 
         /// <inheritdoc />
         public override Task<InputFormatterResult> ReadRequestBodyAsync(

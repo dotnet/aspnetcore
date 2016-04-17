@@ -7,12 +7,21 @@ using System.Net.Http;
 using System.Text;
 using System.Web.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Newtonsoft.Json;
 
 namespace WebApiCompatShimWebSite
 {
     public class ActionResultController : ApiController
     {
+        private static readonly JsonSerializerSettings _indentedSettings;
+
+        static ActionResultController()
+        {
+            _indentedSettings = JsonSerializerSettingsProvider.CreateSerializerSettings();
+            _indentedSettings.Formatting = Formatting.Indented;
+        }
+
         public IActionResult GetBadRequest()
         {
             return BadRequest();
@@ -82,15 +91,12 @@ namespace WebApiCompatShimWebSite
 
         public IActionResult GetJsonSettings()
         {
-            return Json(CreateUser(), new JsonSerializerSettings() { Formatting = Formatting.Indented });
+            return Json(CreateUser(), _indentedSettings);
         }
 
         public IActionResult GetJsonSettingsEncoding()
         {
-            return Json(
-                CreateUser(),
-                new JsonSerializerSettings() { Formatting = Formatting.Indented },
-                Encoding.UTF32);
+            return Json(CreateUser(), _indentedSettings, Encoding.UTF32);
         }
 
         public IActionResult GetNotFound()

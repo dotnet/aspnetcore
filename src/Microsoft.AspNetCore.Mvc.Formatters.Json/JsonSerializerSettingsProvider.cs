@@ -3,12 +3,12 @@
 
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
+namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
     /// Helper class which provides <see cref="JsonSerializerSettings"/>.
     /// </summary>
-    public static class SerializerSettingsProvider
+    public static class JsonSerializerSettingsProvider
     {
         private const int DefaultMaxDepth = 32;
 

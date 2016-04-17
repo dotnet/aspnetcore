@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Buffers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -442,7 +444,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // Set up default output formatters.
                 Options.OutputFormatters.Add(new HttpNoContentOutputFormatter());
                 Options.OutputFormatters.Add(new StringOutputFormatter());
-                Options.OutputFormatters.Add(new JsonOutputFormatter());
+                Options.OutputFormatters.Add(new JsonOutputFormatter(
+                    new JsonSerializerSettings(),
+                    ArrayPool<char>.Shared));
 
                 // Set up default mapping for json extensions to content type
                 Options.FormatterMappings.SetMediaTypeMappingForFormat(

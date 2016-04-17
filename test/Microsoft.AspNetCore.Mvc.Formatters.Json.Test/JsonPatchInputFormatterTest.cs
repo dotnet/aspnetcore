@@ -2,28 +2,34 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.ObjectPool;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     public class JsonPatchInputFormatterTest
     {
+        private static readonly ObjectPoolProvider _objectPoolProvider = new DefaultObjectPoolProvider();
+        private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings();
+
         [Fact]
         public async Task JsonPatchInputFormatter_ReadsOneOperation_Successfully()
         {
             // Arrange
             var logger = GetLogger();
-            var formatter = new JsonPatchInputFormatter(logger);
+            var formatter =
+                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
             var content = "[{\"op\":\"add\",\"path\":\"Customer/Name\",\"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
@@ -54,7 +60,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             // Arrange
             var logger = GetLogger();
-            var formatter = new JsonPatchInputFormatter(logger);
+            var formatter =
+                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
             var content = "[{\"op\": \"add\", \"path\" : \"Customer/Name\", \"value\":\"John\"}," +
                 "{\"op\": \"remove\", \"path\" : \"Customer/Name\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
@@ -92,7 +99,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             // Arrange
             var logger = GetLogger();
-            var formatter = new JsonPatchInputFormatter(logger);
+            var formatter =
+                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
             var content = "[{\"op\": \"add\", \"path\" : \"Customer/Name\", \"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
@@ -121,7 +129,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             // Arrange
             var logger = GetLogger();
-            var formatter = new JsonPatchInputFormatter(logger);
+            var formatter =
+                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
             var content = "[{\"op\": \"add\", \"path\" : \"Customer/Name\", \"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
@@ -151,7 +160,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 $"'{typeof(Customer).FullName}' because the type requires a JSON object ";
 
             var logger = GetLogger();
-            var formatter = new JsonPatchInputFormatter(logger);
+            var formatter =
+                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
             var content = "[{\"op\": \"add\", \"path\" : \"Customer/Name\", \"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 

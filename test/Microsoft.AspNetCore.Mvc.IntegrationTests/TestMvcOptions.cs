@@ -4,8 +4,8 @@
 using System.Buffers;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 collection.BuildServiceProvider());
 
             var loggerFactory = new LoggerFactory();
-            var serializerSettings = SerializerSettingsProvider.CreateSerializerSettings();
+            var serializerSettings = JsonSerializerSettingsProvider.CreateSerializerSettings();
 
             MvcJsonMvcOptionsSetup.ConfigureMvc(
                 Value,

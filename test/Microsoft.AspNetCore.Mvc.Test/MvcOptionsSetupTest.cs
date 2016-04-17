@@ -204,33 +204,6 @@ namespace Microsoft.AspNetCore.Mvc
                 });
         }
 
-        [Fact]
-        public void Setup_JsonFormattersUseSerializerSettings()
-        {
-            // Arrange
-            var services = GetServiceProvider(s =>
-            {
-                s.AddTransient<ILoggerFactory, LoggerFactory>();
-            });
-
-            // Act
-            var options = services.GetRequiredService<IOptions<MvcOptions>>().Value;
-            var jsonOptions = services.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
-
-            // Assert
-            var jsonInputFormatters = options.InputFormatters.OfType<JsonInputFormatter>();
-            foreach (var jsonInputFormatter in jsonInputFormatters)
-            {
-                Assert.Same(jsonOptions.SerializerSettings, jsonInputFormatter.SerializerSettings);
-            }
-
-            var jsonOuputFormatters = options.OutputFormatters.OfType<JsonOutputFormatter>();
-            foreach (var jsonOuputFormatter in jsonOuputFormatters)
-            {
-                Assert.Same(jsonOptions.SerializerSettings, jsonOuputFormatter.SerializerSettings);
-            }
-        }
-
         private static T GetOptions<T>(Action<IServiceCollection> action = null)
             where T : class, new()
         {

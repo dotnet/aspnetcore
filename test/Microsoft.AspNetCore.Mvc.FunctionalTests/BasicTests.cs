@@ -7,7 +7,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -248,11 +247,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task JsonHelperWithSettings_RendersJson()
         {
             // Arrange
-            var json = JsonConvert.SerializeObject(new BasicWebSite.Models.Person()
-            {
-                Id = 9000,
-                Name = "John <b>Smith</b>"
-            }, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+            var json = JsonConvert.SerializeObject(
+                new BasicWebSite.Models.Person()
+                {
+                    Id = 9000,
+                    Name = "John <b>Smith</b>"
+                },
+                new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
 
             var expectedBody = string.Format(
                 @"<script type=""text/javascript"">

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -10,7 +10,13 @@ namespace BasicWebSite.Controllers
 {
     public class JsonResultController : Controller
     {
-        private static JsonSerializerSettings _customSerializerSettings;
+        private static readonly JsonSerializerSettings _customSerializerSettings;
+
+        static JsonResultController()
+        {
+            _customSerializerSettings = JsonSerializerSettingsProvider.CreateSerializerSettings();
+            _customSerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+        }
 
         public JsonResult Plain()
         {
@@ -26,14 +32,6 @@ namespace BasicWebSite.Controllers
 
         public JsonResult CustomSerializerSettings()
         {
-            if (_customSerializerSettings == null)
-            {
-                _customSerializerSettings = new JsonSerializerSettings
-                {
-                    ContractResolver = new CamelCasePropertyNamesContractResolver()
-                };
-            }
-
             return Json(new { Message = "hello" }, _customSerializerSettings);
         }
 

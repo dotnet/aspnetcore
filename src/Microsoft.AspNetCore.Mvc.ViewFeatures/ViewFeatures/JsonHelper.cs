@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Globalization;
 using System.IO;
 using Microsoft.AspNetCore.Html;
@@ -17,19 +18,29 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     public class JsonHelper : IJsonHelper
     {
         private readonly JsonOutputFormatter _jsonOutputFormatter;
+        private readonly ArrayPool<char> _charPool;
 
         /// <summary>
         /// Initializes a new instance of <see cref="JsonHelper"/> that is backed by <paramref name="jsonOutputFormatter"/>.
         /// </summary>
         /// <param name="jsonOutputFormatter">The <see cref="JsonOutputFormatter"/> used to serialize JSON.</param>
-        public JsonHelper(JsonOutputFormatter jsonOutputFormatter)
+        /// <param name="charPool">
+        /// The <see cref="ArrayPool{Char}"/> for use with custom <see cref="JsonSerializerSettings"/> (see
+        /// <see cref="Serialize(object, JsonSerializerSettings)"/>).
+        /// </param>
+        public JsonHelper(JsonOutputFormatter jsonOutputFormatter, ArrayPool<char> charPool)
         {
             if (jsonOutputFormatter == null)
             {
                 throw new ArgumentNullException(nameof(jsonOutputFormatter));
             }
+            if (charPool == null)
+            {
+                throw new ArgumentNullException(nameof(charPool));
+            }
 
             _jsonOutputFormatter = jsonOutputFormatter;
+            _charPool = charPool;
         }
 
         /// <inheritdoc />
@@ -46,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(serializerSettings));
             }
 
-            var jsonOutputFormatter = new JsonOutputFormatter(serializerSettings);
+            var jsonOutputFormatter = new JsonOutputFormatter(serializerSettings, _charPool);
 
             return SerializeInternal(jsonOutputFormatter, value);
         }
