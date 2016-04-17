@@ -102,16 +102,6 @@ namespace MusicStore
             // request pipeline.
             // Note: Not recommended for production.
             app.UseDeveloperExceptionPage();
-
-            // Set up NTLM authentication for WebListener like below.
-            // For IIS and IISExpress: Use inetmgr to setup NTLM authentication on the application vDir or
-            // modify the applicationHost.config to enable NTLM.
-            var listener = app.ServerFeatures.Get<WebListener>();
-            if (listener != null)
-            {
-                listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.NTLM;
-            }
-
             app.UseDatabaseErrorPage();
 
             // Add the runtime information page that can be used by developers
