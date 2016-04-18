@@ -29,7 +29,23 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             });
 
             // Act
-            var host = hostBuilder.Build();
+            hostBuilder.Build();
+        }
+
+        [Fact]
+        public void ApplicationServicesNotNullDuringUseKestrelWithOptions()
+        {
+            // Arrange
+            var hostBuilder = new WebHostBuilder()
+                .UseKestrel(options =>
+                {
+                    // Assert
+                    Assert.NotNull(options.ApplicationServices);
+                })
+                .Configure(app => { });
+
+            // Act
+            hostBuilder.Build();
         }
     }
 }
