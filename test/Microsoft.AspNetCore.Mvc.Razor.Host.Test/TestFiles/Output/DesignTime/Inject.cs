@@ -30,6 +30,8 @@ using MyNamespace
 #line hidden
         { get; private set; }
         [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
+        public Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider ModelExpressionProvider { get; private set; }
+        [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public Microsoft.AspNetCore.Mvc.IUrlHelper Url { get; private set; }
         [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public Microsoft.AspNetCore.Mvc.IViewComponentHelper Component { get; private set; }

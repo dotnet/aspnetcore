@@ -6,6 +6,7 @@ namespace Asp
     using System.Collections.Generic;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
+    using Microsoft.AspNetCore.Mvc.ViewFeatures;
     using System.Threading.Tasks;
 
     public class TestFiles_Input_Basic_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
@@ -15,6 +16,8 @@ namespace Asp
         {
         }
         #line hidden
+        [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
+        public Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider ModelExpressionProvider { get; private set; }
         [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public Microsoft.AspNetCore.Mvc.IUrlHelper Url { get; private set; }
         [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]

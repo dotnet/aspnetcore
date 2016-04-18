@@ -874,6 +874,22 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return string.Format(CultureInfo.CurrentCulture, GetString("ValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated"), p0, p1);
         }
 
+        /// <summary>
+        /// The {0} was unable to provide metadata for expression '{1}'.
+        /// </summary>
+        internal static string CreateModelExpression_NullModelMetadata
+        {
+            get { return GetString("CreateModelExpression_NullModelMetadata"); }
+        }
+
+        /// <summary>
+        /// The {0} was unable to provide metadata for expression '{1}'.
+        /// </summary>
+        internal static string FormatCreateModelExpression_NullModelMetadata(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("CreateModelExpression_NullModelMetadata"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

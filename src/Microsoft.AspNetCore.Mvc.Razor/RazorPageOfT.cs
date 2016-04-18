@@ -18,8 +18,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     /// <typeparam name="TModel">The type of the view data model.</typeparam>
     public abstract class RazorPage<TModel> : RazorPage
     {
-        private IModelMetadataProvider _provider;
-
         /// <summary>
         /// Gets the Model property of the <see cref="ViewData"/> property.
         /// </summary>
@@ -37,43 +35,5 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         [RazorInject]
         public ViewDataDictionary<TModel> ViewData { get; set; }
 
-        /// <summary>
-        /// Gets or sets the expression text cache for model expressions.
-        /// </summary>
-        [RazorInject]
-        private ExpressionTextCache ExpressionTextCache { get; set; }
-
-        /// <summary>
-        /// Returns a <see cref="ModelExpression"/> instance describing the given <paramref name="expression"/>.
-        /// </summary>
-        /// <typeparam name="TValue">The type of the <paramref name="expression"/> result.</typeparam>
-        /// <param name="expression">An expression to be evaluated against the current model.</param>
-        /// <returns>A new <see cref="ModelExpression"/> instance describing the given <paramref name="expression"/>.
-        /// </returns>
-        /// <remarks>
-        /// Compiler normally infers <typeparamref name="TValue"/> from the given <paramref name="expression"/>.
-        /// </remarks>
-        public ModelExpression CreateModelExpression<TValue>(Expression<Func<TModel, TValue>> expression)
-        {
-            if (expression == null)
-            {
-                throw new ArgumentNullException(nameof(expression));
-            }
-
-            if (_provider == null)
-            {
-                _provider = Context.RequestServices.GetRequiredService<IModelMetadataProvider>();
-            }
-
-            var name = ExpressionHelper.GetExpressionText(expression, ExpressionTextCache);
-            var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, _provider);
-            if (modelExplorer == null)
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatRazorPage_NullModelMetadata(nameof(IModelMetadataProvider), name));
-            }
-
-            return new ModelExpression(name, modelExplorer);
-        }
     }
 }

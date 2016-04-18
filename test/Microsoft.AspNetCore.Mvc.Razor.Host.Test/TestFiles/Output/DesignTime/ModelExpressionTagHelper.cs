@@ -5,6 +5,7 @@ namespace Asp
     using System.Collections.Generic;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
+    using Microsoft.AspNetCore.Mvc.ViewFeatures;
     using System.Threading.Tasks;
 
     public class testfiles_input_modelexpressiontaghelper_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime>
@@ -30,6 +31,8 @@ var __modelHelper = default(DateTime);
         }
         #line hidden
         [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
+        public Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider ModelExpressionProvider { get; private set; }
+        [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public Microsoft.AspNetCore.Mvc.IUrlHelper Url { get; private set; }
         [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public Microsoft.AspNetCore.Mvc.IViewComponentHelper Component { get; private set; }
@@ -45,13 +48,13 @@ var __modelHelper = default(DateTime);
         {
             __Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.InputTestTagHelper>();
 #line 5 "testfiles/input/modelexpressiontaghelper.cshtml"
-__Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => __model.Now);
+__Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewData, __model => __model.Now);
 
 #line default
 #line hidden
             __Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.InputTestTagHelper>();
 #line 6 "testfiles/input/modelexpressiontaghelper.cshtml"
-__Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => Model);
+__Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewData, __model => Model);
 
 #line default
 #line hidden

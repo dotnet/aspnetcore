@@ -18,5 +18,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// Name the method to create <c>ModelExpression</c>s.
         /// </summary>
         public string CreateModelExpressionMethodName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the <c>IModelExpressionProvider</c>.
+        /// </summary>
+        public string ModelExpressionProviderPropertyName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the property name of the <c>ViewDataDictionary</c>.
+        /// </summary>
+        public string ViewDataPropertyName { get; set; }
     }
 }

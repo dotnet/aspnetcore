@@ -139,33 +139,33 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                         documentAbsoluteIndex: 33,
                         documentLineIndex: 2,
                         documentCharacterIndex: 14,
-                        generatedAbsoluteIndex: 597,
-                        generatedLineIndex: 16,
+                        generatedAbsoluteIndex: 647,
+                        generatedLineIndex: 17,
                         generatedCharacterIndex: 48,
                         contentLength: 91),
                     BuildLineMapping(
                         documentAbsoluteIndex: 7,
                         documentLineIndex: 0,
                         documentCharacterIndex: 7,
-                        generatedAbsoluteIndex: 779,
-                        generatedLineIndex: 18,
+                        generatedAbsoluteIndex: 829,
+                        generatedLineIndex: 19,
                         generatedCharacterIndex: 28,
                         contentLength: 8),
                     BuildLineMapping(
                         documentAbsoluteIndex: 145,
                         documentLineIndex: 4,
                         documentCharacterIndex: 17,
-                        generatedAbsoluteIndex: 2242,
-                        generatedLineIndex: 47,
-                        generatedCharacterIndex: 99,
+                        generatedAbsoluteIndex: 2523,
+                        generatedLineIndex: 50,
+                        generatedCharacterIndex: 133,
                         contentLength: 3),
                     BuildLineMapping(
                         documentAbsoluteIndex: 172,
                         documentLineIndex: 5,
                         documentCharacterIndex: 18,
-                        generatedAbsoluteIndex: 2575,
-                        generatedLineIndex: 53,
-                        generatedCharacterIndex: 91,
+                        generatedAbsoluteIndex: 2890,
+                        generatedLineIndex: 56,
+                        generatedCharacterIndex: 125,
                         contentLength: 5),
                 };
 
@@ -213,16 +213,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                         documentAbsoluteIndex: 13,
                         documentLineIndex: 0,
                         documentCharacterIndex: 13,
-                        generatedAbsoluteIndex: 1295,
-                        generatedLineIndex: 32,
+                        generatedAbsoluteIndex: 1492,
+                        generatedLineIndex: 34,
                         generatedCharacterIndex: 13,
                         contentLength: 4),
                     BuildLineMapping(
                         documentAbsoluteIndex: 43,
                         documentLineIndex: 2,
                         documentCharacterIndex: 5,
-                        generatedAbsoluteIndex: 1379,
-                        generatedLineIndex: 37,
+                        generatedAbsoluteIndex: 1576,
+                        generatedLineIndex: 39,
                         generatedCharacterIndex: 6,
                         contentLength: 21),
                 };
@@ -611,7 +611,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     new GeneratedTagHelperAttributeContext
                     {
                         ModelExpressionTypeName = ModelExpressionType,
-                        CreateModelExpressionMethodName = CreateModelExpressionMethod
+                        CreateModelExpressionMethodName = CreateModelExpressionMethod,
+                        ModelExpressionProviderPropertyName = ModelExpressionProvider,
+                        ViewDataPropertyName = ViewDataPropertyName
                     });
             }
 
@@ -664,7 +666,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     new GeneratedTagHelperAttributeContext
                     {
                         ModelExpressionTypeName = ModelExpressionType,
-                        CreateModelExpressionMethodName = CreateModelExpressionMethod
+                        CreateModelExpressionMethodName = CreateModelExpressionMethod,
+                        ModelExpressionProviderPropertyName = ModelExpressionProvider,
+                        ViewDataPropertyName = ViewDataPropertyName
                     });
             }
 

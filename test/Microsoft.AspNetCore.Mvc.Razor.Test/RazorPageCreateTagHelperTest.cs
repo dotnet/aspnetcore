@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.WebEncoders.Testing;
@@ -69,12 +70,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         private static TestRazorPage CreateTestRazorPage()
         {
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
+            var modelExpressionProvider = new ModelExpressionProvider(modelMetadataProvider, new ExpressionTextCache());
             var activator = new RazorPageActivator(
-                new EmptyModelMetadataProvider(),
+                modelMetadataProvider,
                 new UrlHelperFactory(),
                 new JsonHelper(new Formatters.JsonOutputFormatter()),
                 new DiagnosticListener("Microsoft.AspNetCore"),
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                modelExpressionProvider);
 
             var serviceProvider = new Mock<IServiceProvider>();
             var typeActivator = new TypeActivatorCache();

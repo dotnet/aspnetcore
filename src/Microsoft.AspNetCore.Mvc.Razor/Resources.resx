@@ -150,9 +150,6 @@
   <data name="RazorPage_CannotFlushWhileInAWritingScope" xml:space="preserve">
     <value>The {0} operation cannot be performed while inside a writing scope in '{1}'.</value>
   </data>
-  <data name="RazorPage_NullModelMetadata" xml:space="preserve">
-    <value>The {0} was unable to provide metadata for expression '{1}'.</value>
-  </data>
   <data name="RazorPage_MethodCannotBeCalled" xml:space="preserve">
     <value>{0} invocation in '{1}' is invalid. {0} can only be called from a layout page.</value>
   </data>

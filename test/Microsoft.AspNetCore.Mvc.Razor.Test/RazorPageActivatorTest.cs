@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public void Activate_ActivatesAndContextualizesPropertiesOnViews()
         {
             // Arrange
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
+            var modelExpressionProvider = new ModelExpressionProvider(modelMetadataProvider, new ExpressionTextCache());
             var urlHelperFactory = new UrlHelperFactory();
             var jsonHelper = new JsonHelper(new JsonOutputFormatter());
             var htmlEncoder = new HtmlTestEncoder();
@@ -38,7 +40,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 urlHelperFactory,
                 jsonHelper,
                 diagnosticSource,
-                htmlEncoder);
+                htmlEncoder,
+                modelExpressionProvider);
 
             var instance = new TestRazorPage();
 
@@ -84,12 +87,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public void Activate_ThrowsIfTheViewDoesNotDeriveFromRazorViewOfT()
         {
             // Arrange
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
+            var modelExpressionProvider = new ModelExpressionProvider(modelMetadataProvider, new ExpressionTextCache());
             var activator = new RazorPageActivator(
-                new EmptyModelMetadataProvider(),
+                modelMetadataProvider,
                 new UrlHelperFactory(),
                 new JsonHelper(new JsonOutputFormatter()),
                 new DiagnosticListener("Microsoft.AspNetCore"),
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                modelExpressionProvider);
 
             var instance = new DoesNotDeriveFromRazorPageOfT();
 
@@ -120,12 +126,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public void Activate_InstantiatesNewViewDataDictionaryType_IfTheTypeDoesNotMatch()
         {
             // Arrange
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
+            var modelExpressionProvider = new ModelExpressionProvider(modelMetadataProvider, new ExpressionTextCache());
             var activator = new RazorPageActivator(
-                new EmptyModelMetadataProvider(),
+                modelMetadataProvider,
                 new UrlHelperFactory(),
                 new JsonHelper(new JsonOutputFormatter()),
                 new DiagnosticListener("Microsoft.AspNetCore.Mvc"),
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                modelExpressionProvider);
+
             var instance = new TestRazorPage();
 
             var myService = new MyService();
@@ -164,12 +174,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public void Activate_UsesPassedInViewDataDictionaryInstance_IfPassedInTypeMatches()
         {
             // Arrange
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
+            var modelExpressionProvider = new ModelExpressionProvider(modelMetadataProvider, new ExpressionTextCache());
             var activator = new RazorPageActivator(
-                new EmptyModelMetadataProvider(),
+                modelMetadataProvider,
                 new UrlHelperFactory(),
                 new JsonHelper(new JsonOutputFormatter()),
                 new DiagnosticListener("Microsoft.AspNetCore.Mvc"),
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                modelExpressionProvider);
+
             var instance = new TestRazorPage();
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
@@ -207,12 +221,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public void Activate_DeterminesModelTypeFromProperty()
         {
             // Arrange
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
+            var modelExpressionProvider = new ModelExpressionProvider(modelMetadataProvider, new ExpressionTextCache());
             var activator = new RazorPageActivator(
-                new EmptyModelMetadataProvider(),
+                modelMetadataProvider,
                 new UrlHelperFactory(),
                 new JsonHelper(new JsonOutputFormatter()),
                 new DiagnosticListener("Microsoft.AspNetCore.Mvc"),
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                modelExpressionProvider);
+
             var instance = new DoesNotDeriveFromRazorPageOfTButHasModelProperty();
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
@@ -247,12 +265,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public void Activate_Throws_WhenViewDataPropertyHasIncorrectType()
         {
             // Arrange
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
+            var modelExpressionProvider = new ModelExpressionProvider(modelMetadataProvider, new ExpressionTextCache());
             var activator = new RazorPageActivator(
-                new EmptyModelMetadataProvider(),
+                modelMetadataProvider,
                 new UrlHelperFactory(),
                 new JsonHelper(new JsonOutputFormatter()),
                 new DiagnosticListener("Microsoft.AspNetCore.Mvc"),
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                modelExpressionProvider);
+
             var instance = new HasIncorrectViewDataPropertyType();
 
             var collection = new ServiceCollection();
@@ -279,12 +301,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public void Activate_CanGetUrlHelperFromDependencyInjection()
         {
             // Arrange
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
+            var modelExpressionProvider = new ModelExpressionProvider(modelMetadataProvider, new ExpressionTextCache());
             var activator = new RazorPageActivator(
-                new EmptyModelMetadataProvider(),
+                modelMetadataProvider,
                 new UrlHelperFactory(),
                 new JsonHelper(new JsonOutputFormatter()),
                 new DiagnosticListener("Microsoft.AspNetCore.Mvc"),
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                modelExpressionProvider);
+
             var instance = new HasUnusualIUrlHelperProperty();
 
             // IUrlHelperFactory should not be used. But set it up to match a real configuration.

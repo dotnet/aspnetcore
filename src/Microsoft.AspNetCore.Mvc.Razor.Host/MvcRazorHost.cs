@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     {
         private const string BaseType = "Microsoft.AspNetCore.Mvc.Razor.RazorPage";
         private const string HtmlHelperPropertyName = "Html";
+        private const string ModelExpressionProviderProperty = "ModelExpressionProvider";
+        private const string ViewDataProperty = "ViewData";
 
         private static readonly string[] _defaultNamespaces = new[]
         {
@@ -32,6 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             "System.Collections.Generic",
             "Microsoft.AspNetCore.Mvc",
             "Microsoft.AspNetCore.Mvc.Rendering",
+            "Microsoft.AspNetCore.Mvc.ViewFeatures",
         };
         private static readonly Chunk[] _defaultInheritedChunks = new Chunk[]
         {
@@ -39,6 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             new InjectChunk("Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper", "Json"),
             new InjectChunk("Microsoft.AspNetCore.Mvc.IViewComponentHelper", "Component"),
             new InjectChunk("Microsoft.AspNetCore.Mvc.IUrlHelper", "Url"),
+            new InjectChunk("Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider", ModelExpressionProviderProperty),
             new AddTagHelperChunk
             {
                 LookupText = "Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNetCore.Mvc.Razor"
@@ -206,7 +210,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </summary>
         public virtual string ModelExpressionType
         {
-            get { return "Microsoft.AspNetCore.Mvc.Rendering.ModelExpression"; }
+            get { return "Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpression"; }
         }
 
         /// <summary>
@@ -215,6 +219,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public virtual string CreateModelExpressionMethod
         {
             get { return "CreateModelExpression"; }
+        }
+
+        /// <summary>
+        /// Gets the property name for <c>IModelExpressionProvider</c>.
+        /// </summary>
+        public virtual string ModelExpressionProvider
+        {
+            get { return ModelExpressionProviderProperty; }
+        }
+
+        /// <summary>
+        /// Gets the property name for <c>ViewDataDictionary</c>.
+        /// </summary>
+        public virtual string ViewDataPropertyName
+        {
+            get { return ViewDataProperty; }
         }
 
         // Internal for testing
@@ -317,7 +337,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 new GeneratedTagHelperAttributeContext
                 {
                     ModelExpressionTypeName = ModelExpressionType,
-                    CreateModelExpressionMethodName = CreateModelExpressionMethod
+                    CreateModelExpressionMethodName = CreateModelExpressionMethod,
+                    ModelExpressionProviderPropertyName = ModelExpressionProviderProperty,
+                    ViewDataPropertyName = ViewDataProperty,
                 });
         }
 

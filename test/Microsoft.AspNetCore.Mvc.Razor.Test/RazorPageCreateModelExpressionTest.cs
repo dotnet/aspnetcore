@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var page = CreatePage(viewContext);
 
             // Act
-            var result = page.CreateModelExpression(expression);
+            var result = page.ModelExpressionProvider.CreateModelExpression(page.ViewData, expression);
 
             // Assert
             Assert.NotNull(result);
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var page = CreatePage(viewContext);
 
             // Act
-            var result = page.CreateModelExpression(expression);
+            var result = page.ModelExpressionProvider.CreateModelExpression(page.ViewData, expression);
 
             // Assert
             Assert.NotNull(result);
@@ -183,6 +183,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 ViewContext = viewContext,
                 ViewData = (ViewDataDictionary<string>)viewContext.ViewData,
+                ModelExpressionProvider = CreateModelExpressionProvider(),
             };
         }
 
@@ -192,6 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 ViewContext = viewContext,
                 ViewData = (ViewDataDictionary<RecursiveModel>)viewContext.ViewData,
+                ModelExpressionProvider = CreateModelExpressionProvider(),
             };
         }
 
@@ -201,7 +203,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 ViewContext = viewContext,
                 ViewData = (ViewDataDictionary<RazorPageCreateModelExpressionModel>)viewContext.ViewData,
+                ModelExpressionProvider = CreateModelExpressionProvider(),
             };
+        }
+
+        private static IModelExpressionProvider CreateModelExpressionProvider()
+        {
+            var provider = new TestModelMetadataProvider();
+            var modelExpressionProvider = new ModelExpressionProvider(
+                provider,
+                new ExpressionTextCache());
+
+            return modelExpressionProvider;
         }
 
         private static ViewContext CreateViewContext()
@@ -227,16 +240,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 new HtmlHelperOptions());
         }
 
-        public class IdentityRazorPage : RazorPage<string>
+        public class IdentityRazorPage : TestRazorPage<string>
         {
             public ModelExpression CreateModelExpression1()
             {
-                return CreateModelExpression(m => m);
+                return ModelExpressionProvider.CreateModelExpression(ViewData, m => m);
             }
 
             public ModelExpression CreateModelExpression2()
             {
-                return CreateModelExpression(m => Model);
+                return ModelExpressionProvider.CreateModelExpression(ViewData, m => Model);
             }
 
             public override Task ExecuteAsync()
@@ -245,21 +258,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
-        public class NotQuiteIdentityRazorPage : RazorPage<RecursiveModel>
+        public class NotQuiteIdentityRazorPage : TestRazorPage<RecursiveModel>
         {
             public ModelExpression CreateModelExpression1()
             {
-                return CreateModelExpression(m => m.Model);
+                return ModelExpressionProvider.CreateModelExpression(ViewData, m => m.Model);
             }
 
             public ModelExpression CreateModelExpression2()
             {
-                return CreateModelExpression(m => ViewData.Model);
+                return ModelExpressionProvider.CreateModelExpression(ViewData, m => ViewData.Model);
             }
 
             public ModelExpression CreateModelExpression3()
             {
-                return CreateModelExpression(m => ViewContext.ViewData.Model);
+                return ModelExpressionProvider.CreateModelExpression(ViewData, m => ViewContext.ViewData.Model);
             }
 
             public override Task ExecuteAsync()
@@ -268,8 +281,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
-        private class TestRazorPage : RazorPage<RazorPageCreateModelExpressionModel>
+        private class TestRazorPage : TestRazorPage<RazorPageCreateModelExpressionModel>
         {
+            public override Task ExecuteAsync()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class TestRazorPage<TModel> : RazorPage<TModel>
+        {
+            public IModelExpressionProvider ModelExpressionProvider { get; set; }
+
             public override Task ExecuteAsync()
             {
                 throw new NotImplementedException();

@@ -63,7 +63,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             if (attributeDescriptor.TypeName.Equals(_context.ModelExpressionTypeName, StringComparison.Ordinal))
             {
                 writer
-                    .WriteStartMethodInvocation(_context.CreateModelExpressionMethodName)
+                    .WriteStartInstanceMethodInvocation(_context.ModelExpressionProviderPropertyName, _context.CreateModelExpressionMethodName)
+                    .Write(_context.ViewDataPropertyName)
+                    .WriteParameterSeparator()
                     .Write(ModelLambdaVariableName)
                     .Write(" => ");
                 if (!complexValue)

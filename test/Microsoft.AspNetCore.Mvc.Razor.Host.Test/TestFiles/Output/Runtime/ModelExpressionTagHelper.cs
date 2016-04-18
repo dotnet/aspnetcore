@@ -6,6 +6,7 @@ namespace Asp
     using System.Collections.Generic;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
+    using Microsoft.AspNetCore.Mvc.ViewFeatures;
     using System.Threading.Tasks;
 
     public class TestFiles_Input_ModelExpressionTagHelper_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime>
@@ -23,6 +24,8 @@ namespace Asp
         {
         }
         #line hidden
+        [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
+        public Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider ModelExpressionProvider { get; private set; }
         [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public Microsoft.AspNetCore.Mvc.IUrlHelper Url { get; private set; }
         [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
@@ -48,7 +51,7 @@ namespace Asp
             __Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.InputTestTagHelper>();
             __tagHelperExecutionContext.Add(__Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper);
 #line 5 "TestFiles/Input/ModelExpressionTagHelper.cshtml"
-__Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => __model.Now);
+__Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewData, __model => __model.Now);
 
 #line default
 #line hidden
@@ -67,7 +70,7 @@ __Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(
             __Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.InputTestTagHelper>();
             __tagHelperExecutionContext.Add(__Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper);
 #line 6 "TestFiles/Input/ModelExpressionTagHelper.cshtml"
-__Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => Model);
+__Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewData, __model => Model);
 
 #line default
 #line hidden

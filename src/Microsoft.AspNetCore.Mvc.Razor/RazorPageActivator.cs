@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private Func<ViewContext, object> _jsonHelperAccessor;
         private Func<ViewContext, object> _diagnosticSourceAccessor;
         private Func<ViewContext, object> _htmlEncoderAccessor;
+        private Func<ViewContext, object> _modelExpressionProviderAccessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RazorPageActivator"/> class.
@@ -44,7 +45,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             IUrlHelperFactory urlHelperFactory,
             IJsonHelper jsonHelper,
             DiagnosticSource diagnosticSource,
-            HtmlEncoder htmlEncoder)
+            HtmlEncoder htmlEncoder,
+            IModelExpressionProvider modelExpressionProvider)
         {
             _activationInfo = new ConcurrentDictionary<Type, PageActivationInfo>();
             _metadataProvider = metadataProvider;
@@ -52,6 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             _jsonHelperAccessor = context => jsonHelper;
             _diagnosticSourceAccessor = context => diagnosticSource;
             _htmlEncoderAccessor = context => htmlEncoder;
+            _modelExpressionProviderAccessor = context => modelExpressionProvider;
         }
 
         /// <inheritdoc />
@@ -189,6 +192,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             else if (property.PropertyType == typeof(HtmlEncoder))
             {
                 valueAccessor = _htmlEncoderAccessor;
+            }
+            else if (property.PropertyType == typeof(IModelExpressionProvider))
+            {
+                valueAccessor = _modelExpressionProviderAccessor;
             }
             else
             {

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     public class MvcTagHelperAttributeValueCodeRendererTest
     {
         [Theory]
-        [InlineData("SomeType", "SomeType", "SomeMethod(__model => __model.MyValue)")]
+        [InlineData("SomeType", "SomeType", "Provider.SomeMethod(ViewData, __model => __model.MyValue)")]
         [InlineData("SomeType", "SomeType2", "MyValue")]
         public void RenderAttributeValue_RendersModelExpressionsCorrectly(
             string modelExpressionType,
@@ -24,7 +24,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 new GeneratedTagHelperAttributeContext
                 {
                     ModelExpressionTypeName = modelExpressionType,
-                    CreateModelExpressionMethodName = "SomeMethod"
+                    CreateModelExpressionMethodName = "SomeMethod",
+                    ModelExpressionProviderPropertyName = "Provider",
+                    ViewDataPropertyName = "ViewData"
                 });
             var attributeDescriptor = new TagHelperAttributeDescriptor
             {
