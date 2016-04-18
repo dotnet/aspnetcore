@@ -5,6 +5,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Razor.Runtime": "1.0.0-*",
     "Microsoft.AspNetCore.Razor.Test.Sources": {
       "version": "1.0.0-*",
