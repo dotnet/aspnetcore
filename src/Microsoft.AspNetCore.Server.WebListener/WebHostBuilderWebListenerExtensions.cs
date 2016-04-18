@@ -40,7 +40,10 @@ namespace Microsoft.AspNetCore.Hosting
         /// </returns>
         public static IWebHostBuilder UseWebListener(this IWebHostBuilder hostBuilder)
         {
-            return hostBuilder.ConfigureServices(services => services.AddSingleton<IServer, MessagePump>());
+            return hostBuilder.ConfigureServices(services => {
+                services.AddTransient<IConfigureOptions<WebListenerOptions>, WebListenerOptionsSetup>();
+                services.AddSingleton<IServer, MessagePump>();
+            });
         }
 
         /// <summary>
@@ -59,7 +62,6 @@ namespace Microsoft.AspNetCore.Hosting
         {
             hostBuilder.ConfigureServices(services =>
             {
-                services.AddTransient<IConfigureOptions<WebListenerOptions>, WebListenerOptionsSetup>();
                 services.Configure(options);
             });
 

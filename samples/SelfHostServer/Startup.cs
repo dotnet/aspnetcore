@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.WebListener;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Server;
 
@@ -13,6 +15,15 @@ namespace SelfHostServer
 {
     public class Startup
     {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // Server options can be configured here instead of in Main.
+            services.Configure<WebListenerOptions>(options =>
+            {
+                options.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.AllowAnonymous;
+            });
+        }
+
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
             loggerfactory.AddConsole(LogLevel.Debug);
