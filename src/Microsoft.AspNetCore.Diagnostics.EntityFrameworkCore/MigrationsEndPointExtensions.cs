@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseMiddleware<MigrationsEndPointMiddleware>();
+            return app.UseMigrationsEndPoint(new MigrationsEndPointOptions());
         }
 
         /// <summary>
