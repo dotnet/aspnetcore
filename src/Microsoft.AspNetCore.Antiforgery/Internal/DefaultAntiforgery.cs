@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -329,15 +328,20 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             try
             {
                 var serializedToken = _tokenStore.GetCookieToken(httpContext);
-                var token = _tokenSerializer.Deserialize(serializedToken);
 
-                return token;
+                if (serializedToken != null)
+                {
+                    var token = _tokenSerializer.Deserialize(serializedToken);
+                    return token;
+                }
             }
-            catch
+            catch (Exception ex)
             {
                 // ignore failures since we'll just generate a new token
-                return null;
+                _logger.TokenDeserializeException(ex);
             }
+
+            return null;
         }
 
         private IAntiforgeryFeature GetTokensInternal(HttpContext httpContext)

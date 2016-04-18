@@ -928,6 +928,43 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 Times.Never);
         }
 
+        [Fact]
+        public void SetCookieTokenAndHeader_NullCookieToken()
+        {
+            // Arrange
+            var antiforgeryFeature = new AntiforgeryFeature
+            {
+                HaveDeserializedCookieToken = false,
+                HaveGeneratedNewCookieToken = false,
+                HaveStoredNewCookieToken = true,
+                NewCookieToken = new AntiforgeryToken(),
+                NewCookieTokenString = "serialized-cookie-token-from-context",
+                NewRequestToken = new AntiforgeryToken(),
+                NewRequestTokenString = "serialized-form-token-from-context",
+            };
+            var context = CreateMockContext(
+                new AntiforgeryOptions(),
+                useOldCookie: false,
+                isOldCookieValid: false,
+                antiforgeryFeature: antiforgeryFeature);
+            var testTokenSet = new TestTokenSet
+            {
+                OldCookieTokenString = null
+            };
+
+            var nullTokenStore = GetTokenStore(context.HttpContext, testTokenSet, false);
+            var antiforgery = GetAntiforgery(
+                context.HttpContext,
+                tokenGenerator: context.TokenGenerator.Object,
+                tokenStore: nullTokenStore.Object);
+
+            // Act
+            antiforgery.SetCookieTokenAndHeader(context.HttpContext);
+
+            // Assert
+            context.TokenSerializer.Verify(s => s.Deserialize(null), Times.Never);
+        }
+
         private DefaultAntiforgery GetAntiforgery(
             HttpContext httpContext,
             AntiforgeryOptions options = null,
@@ -1053,7 +1090,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             mockGenerator
                 .Setup(o => o.GenerateCookieToken())
                 .Returns(useOldCookie ? testTokenSet.OldCookieToken : testTokenSet.NewCookieToken);
-
+            mockGenerator
+                .Setup(o => o.IsCookieTokenValid(null))
+                .Returns(false);
             mockGenerator
                 .Setup(o => o.IsCookieTokenValid(testTokenSet.OldCookieToken))
                 .Returns(isOldCookieValid);

@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         private static readonly Action<ILogger, string, string, Exception> _missingRequestToken;
         private static readonly Action<ILogger, Exception> _newCookieToken;
         private static readonly Action<ILogger, Exception> _reusedCookieToken;
+        private static readonly Action<ILogger, Exception> _tokenDeserializeException;
 
         static AntiforgeryLoggerExtensions()
         {
@@ -42,6 +43,10 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 LogLevel.Debug,
                 6,
                 "An antiforgery cookie token was reused.");
+            _tokenDeserializeException = LoggerMessage.Define(
+                LogLevel.Error,
+                7,
+                "An exception was thrown while deserializing the token.");
         }
 
         public static void ValidationFailed(this ILogger logger, string message)
@@ -72,6 +77,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public static void ReusedCookieToken(this ILogger logger)
         {
             _reusedCookieToken(logger, null);
+        }
+
+        public static void TokenDeserializeException(this ILogger logger, Exception exception)
+        {
+            _tokenDeserializeException(logger, exception);
         }
     }
 }
