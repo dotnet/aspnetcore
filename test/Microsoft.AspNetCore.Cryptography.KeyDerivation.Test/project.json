@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Cryptography.Internal": "1.0.0-*",
     "Microsoft.AspNetCore.Cryptography.KeyDerivation": "1.0.0-*",
     "Microsoft.AspNetCore.DataProtection.Test.Shared": "1.0.0-*",
