@@ -783,6 +783,31 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 Times.Never);
         }
 
+        [Fact]
+        public void SetCookieTokenAndHeader_PreserveXFrameOptionsHeader()
+        {
+            // Arrange
+            var options = new AntiforgeryOptions();
+            var antiforgeryFeature = new AntiforgeryFeature();
+            var expectedHeaderValue = "DIFFERENTORIGIN";
+
+            // Generate a new cookie.
+            var context = CreateMockContext(
+                options,
+                useOldCookie: false,
+                isOldCookieValid: false,
+                antiforgeryFeature: antiforgeryFeature);
+            var antiforgery = GetAntiforgery(context);
+            context.HttpContext.Response.Headers["X-Frame-Options"] = expectedHeaderValue;
+
+            // Act
+            antiforgery.SetCookieTokenAndHeader(context.HttpContext);
+
+            // Assert
+            var xFrameOptions = context.HttpContext.Response.Headers["X-Frame-Options"];
+            Assert.Equal(expectedHeaderValue, xFrameOptions);
+        }
+
         [Theory]
         [InlineData(false, "SAMEORIGIN")]
         [InlineData(true, null)]

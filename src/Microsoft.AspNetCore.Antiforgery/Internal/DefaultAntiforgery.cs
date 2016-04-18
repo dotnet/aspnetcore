@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 _tokenStore.SaveCookieToken(httpContext, cookieToken);
             }
 
-            if (!_options.SuppressXFrameOptionsHeader)
+            if (!_options.SuppressXFrameOptionsHeader && !httpContext.Response.Headers.ContainsKey("X-Frame-Options"))
             {
                 // Adding X-Frame-Options header to prevent ClickJacking. See
                 // http://tools.ietf.org/html/draft-ietf-websec-x-frame-options-10
