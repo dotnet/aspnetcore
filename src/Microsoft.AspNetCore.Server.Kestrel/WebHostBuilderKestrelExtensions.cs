@@ -44,12 +44,10 @@ namespace Microsoft.AspNetCore.Hosting
         /// </returns>
         public static IWebHostBuilder UseKestrel(this IWebHostBuilder hostBuilder, Action<KestrelServerOptions> options)
         {
-            hostBuilder.ConfigureServices(services =>
+            return hostBuilder.UseKestrel().ConfigureServices(services =>
             {
                 services.Configure(options);
             });
-
-            return hostBuilder.UseKestrel();
         }
     }
 }
