@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Microsoft.DotNet.Watcher.Core.Internal
@@ -39,6 +40,8 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
 
         private void AddDirectoryWatcher(string directory)
         {
+            directory = EnsureTrailingSlash(directory);
+
             var alreadyWatched = _watchers
                 .Where(d => directory.StartsWith(d.Key))
                 .Any();
@@ -98,6 +101,17 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
             {
                 throw new ObjectDisposedException(nameof(FileWatcher));
             }
+        }
+
+        private static string EnsureTrailingSlash(string path)
+        {
+            if (!string.IsNullOrEmpty(path) &&
+                path[path.Length - 1] != Path.DirectorySeparatorChar)
+            {
+                return path + Path.DirectorySeparatorChar;
+            }
+
+            return path;
         }
     }
 }
