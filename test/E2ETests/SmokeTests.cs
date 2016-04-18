@@ -91,7 +91,7 @@ namespace E2ETests
             await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationBaseUrl);
         }
 
-        [ConditionalTheory(Skip = "https://github.com/dotnet/corefx/issues/7440"), Trait("E2Etests", "Smoke")]
+        [ConditionalTheory, Trait("E2Etests", "Smoke")]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5014/")]
         public async Task NonWindowsOS(
