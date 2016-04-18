@@ -1,6 +1,7 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.Net.Http.Headers": "1.0.0-*",
     "xunit": "2.1.0"
   },
