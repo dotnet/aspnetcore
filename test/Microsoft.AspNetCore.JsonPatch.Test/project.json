@@ -3,18 +3,23 @@
     "warningsAsErrors": true
   },
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.JsonPatch": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
   },
   "testRunner": "xunit",
   "frameworks": {
-    "netstandardapp1.5": {
+    "netcoreapp1.0": {
       "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        },
         "moq.netcore": "4.4.0-beta8",
         "dotnet-test-xunit": "1.0.0-dev-*",
-        "NETStandard.Library": "1.5.0-*",
-        "System.Diagnostics.Process": "4.1.0-*"
+        "System.Diagnostics.Process": "4.1.0-*",
+        "System.Diagnostics.TraceSource": "4.0.0-*"
       },
       "imports": [
         "dnxcore50",
@@ -23,9 +28,15 @@
     },
     "net451": {
       "frameworkAssemblies": {
-        "System.Linq.Expressions": { "type": "build" },
-        "System.Runtime": { "type": "build" },
-        "System.Threading.Tasks": { "type": "build" }
+        "System.Linq.Expressions": {
+          "type": "build"
+        },
+        "System.Runtime": {
+          "type": "build"
+        },
+        "System.Threading.Tasks": {
+          "type": "build"
+        }
       },
       "dependencies": {
         "Moq": "4.2.1312.1622",
