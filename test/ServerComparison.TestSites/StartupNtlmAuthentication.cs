@@ -5,23 +5,9 @@ using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Server;
 
 namespace ServerComparison.TestSites
 {
-    /// <summary>
-    /// To make runtime to load an environment based startup class, specify the environment by the following ways: 
-    /// 1. Drop a Microsoft.AspNetCore.Hosting.ini file in the wwwroot folder
-    /// 2. Add a setting in the ini file named 'ASPNET_ENV' with value of the format 'Startup[EnvironmentName]'. For example: To load a Startup class named
-    /// 'StartupNtlmAuthentication' the value of the env should be 'NtlmAuthentication' (eg. ASPNET_ENV=NtlmAuthentication). Runtime adds a 'Startup' prefix to this and loads 'StartupNtlmAuthentication'. 
-    /// If no environment name is specified the default startup class loaded is 'Startup'. 
-    /// Alternative ways to specify environment are:
-    /// 1. Set the environment variable named SET ASPNET_ENV=NtlmAuthentication
-    /// 2. For selfhost based servers pass in a command line variable named --env with this value. Eg:
-    /// "commands": {
-    ///    "web": "Microsoft.AspNetCore.Hosting --server Microsoft.AspNetCore.Server.WebListener --server.urls http://localhost:5002 --ASPNET_ENV NtlmAuthentication",
-    ///  },
-    /// </summary>
     public class StartupNtlmAuthentication
     {
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
@@ -45,15 +31,6 @@ namespace ServerComparison.TestSites
                     await context.Response.WriteAsync(ex.ToString());
                 }
             });
-
-            // Set up NTLM authentication for WebListener like below.
-            // For IIS and IISExpress: Use inetmgr to setup NTLM authentication on the application vDir or modify the applicationHost.config to enable NTLM.
-            var listener = app.ServerFeatures.Get<WebListener>();
-            if (listener != null)
-            {
-                listener.AuthenticationManager.AuthenticationSchemes =
-                    AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | AuthenticationSchemes.AllowAnonymous;
-            }
 
             app.Use((context, next) => 
             {
