@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             builder.Entity<TUser>(b =>
             {
                 b.HasKey(u => u.Id);
-                b.HasIndex(u => u.NormalizedUserName).HasName("UserNameIndex");
+                b.HasIndex(u => u.NormalizedUserName).HasName("UserNameIndex").IsUnique();
                 b.HasIndex(u => u.NormalizedEmail).HasName("EmailIndex");
                 b.ToTable("AspNetUsers");
                 b.Property(u => u.ConcurrencyStamp).IsConcurrencyToken();

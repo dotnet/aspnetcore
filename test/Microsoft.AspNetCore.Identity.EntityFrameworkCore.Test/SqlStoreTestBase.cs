@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 Assert.True(VerifyColumns(db, "AspNetUserTokens", "UserId", "LoginProvider", "Name", "Value"));
 
                 VerifyIndex(db, "AspNetRoles", "RoleNameIndex");
-                VerifyIndex(db, "AspNetUsers", "UserNameIndex");
+                VerifyIndex(db, "AspNetUsers", "UserNameIndex", isUnique: true);
                 VerifyIndex(db, "AspNetUsers", "EmailIndex");
                 db.Close();
             }
@@ -146,15 +146,16 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             }
         }
 
-        internal static void VerifyIndex(SqlConnection conn, string table, string index)
+        internal static void VerifyIndex(SqlConnection conn, string table, string index, bool isUnique = false)
         {
             using (
                 var command =
                     new SqlCommand(
-                        "SELECT COUNT(*) FROM sys.indexes where NAME=@Index AND object_id = OBJECT_ID(@Table)", conn))
+                        "SELECT COUNT(*) FROM sys.indexes where NAME=@Index AND object_id = OBJECT_ID(@Table) AND is_unique = @Unique", conn))
             {
                 command.Parameters.Add(new SqlParameter("Index", index));
                 command.Parameters.Add(new SqlParameter("Table", table));
+                command.Parameters.Add(new SqlParameter("Unique", isUnique));
                 using (var reader = command.ExecuteReader())
                 {
                     Assert.True(reader.Read());
