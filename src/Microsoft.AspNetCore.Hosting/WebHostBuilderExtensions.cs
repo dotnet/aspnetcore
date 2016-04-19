@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(configureApp));
             }
             
-            var startupAssemblyName = configureApp.Target.GetType().GetTypeInfo().Assembly.GetName().Name;
+            var startupAssemblyName = configureApp.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name;
             
             return hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName)
                               .ConfigureServices(services =>
