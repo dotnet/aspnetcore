@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{66517987-2A5A-4330-B130-207039378FD4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "dotnet-watch", "src\dotnet-watch\dotnet-watch.xproj", "{8A8CEABC-AC47-43FF-A5DF-69224F7E1F46}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.DotNet.Watcher.Tools", "src\Microsoft.DotNet.Watcher.Tools\Microsoft.DotNet.Watcher.Tools.xproj", "{8A8CEABC-AC47-43FF-A5DF-69224F7E1F46}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.DotNet.Watcher.Core", "src\Microsoft.DotNet.Watcher.Core\Microsoft.DotNet.Watcher.Core.xproj", "{D3DA3BBB-E206-404F-AEE6-17FB9B6F1221}"
 EndProject
@@ -17,7 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F5B382BC-258F-46E1-AC3D-10E5CCD55134}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "dotnet-watch.FunctionalTests", "test\dotnet-watch.FunctionalTests\dotnet-watch.FunctionalTests.xproj", "{16BADE2F-1184-4518-8A70-B68A19D0805B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.DotNet.Watcher.Tools.FunctionalTests", "test\Microsoft.DotNet.Watcher.Tools.FunctionalTests\Microsoft.DotNet.Watcher.Tools.FunctionalTests.xproj", "{16BADE2F-1184-4518-8A70-B68A19D0805B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestApps", "TestApps", "{2876B12E-5841-4792-85A8-2929AEE11885}"
 EndProject
