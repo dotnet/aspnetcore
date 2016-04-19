@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             if (_startup != null)
             {
-                return _startup.ConfigureDelegate.Target.GetType().GetTypeInfo().Assembly.GetName().Name;
+                return _startup.ConfigureDelegate.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name;
             }
             if (_startupType != null)
             {
