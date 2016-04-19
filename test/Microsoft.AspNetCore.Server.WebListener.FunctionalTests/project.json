@@ -16,7 +16,7 @@
         "System.Net.Http.WinHttpHandler": "4.0.0-*",
         "System.Net.Requests": "4.0.11-*",
         "System.Net.WebHeaderCollection": "4.0.1-*",
-        "dotnet-test-xunit": "1.0.0-dev-*",
+        "dotnet-test-xunit": "1.0.0-*",
         "System.Diagnostics.Process": "4.1.0-*"
       },
       "imports": [
