@@ -1,0 +1,14 @@
+﻿<environment names="Development,NtlmAuthentication,OpenIdConnect,SocialTesting">
+    <script src="~/Scripts/jquery.validate.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.js"></script>
+</environment>
+<environment names="Staging,Production">
+    <script src="//ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.min.js"
+               asp-fallback-src="~/Scripts/jquery.validate.js"
+               asp-fallback-test="window.jquery && window.jquery.validator">
+    </script>
+    <script src="//ajax.aspnetcdn.com/ajax/mvc/5.2.3/jquery.validate.unobtrusive.min.js"
+               asp-fallback-src="~/Scripts/jquery.validate.unobtrusive.min.js"
+               asp-fallback-test="window.jquery && window.jquery.validator && window.jquery.validator.unobtrusive">
+    </script>
+</environment>

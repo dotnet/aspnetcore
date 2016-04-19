@@ -1,0 +1,15 @@
+﻿@model IEnumerable<Genre>
+@{
+    ViewBag.Title = "Store";
+}
+<h3>Browse Genres</h3>
+
+<p>
+    Select from @Model.Count() genres:
+</p>
+<ul class="list-group">
+    @foreach (var genre in Model)
+    {
+        <li class="list-group-item"><a asp-controller="Store" asp-action="Browse" asp-route-genre="@genre.Name">@genre.Name</a></li>
+    }
+</ul>
