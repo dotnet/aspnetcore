@@ -480,6 +480,18 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
+        public void Configure_SupportsNonStaticMethodDelegate()
+        {
+            var host = new WebHostBuilder()
+                .UseServer(new TestServer())
+                .Configure(app => { })
+                .Build();
+
+            var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
+        }
+        
+        [Fact]
         public void Configure_SupportsStaticMethodDelegate()
         {
             var host = new WebHostBuilder()
