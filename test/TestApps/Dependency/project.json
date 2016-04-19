@@ -6,7 +6,7 @@
   },
 
   "frameworks": {
-    "netstandardapp1.5": {
+    "netstandard1.5": {
       "imports": [
         "dnxcore50",
         "portable-net451+win8"

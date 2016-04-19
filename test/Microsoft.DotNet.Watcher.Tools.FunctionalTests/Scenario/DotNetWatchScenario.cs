@@ -7,11 +7,11 @@ using System.Diagnostics;
 using System.IO;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.DotNet.Watcher.FunctionalTests
+namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
     public class DotNetWatchScenario : IDisposable
     {
-        protected const string DotnetWatch = "dotnet-watch";
+        protected const string DotnetWatch = "Microsoft.DotNet.Watcher.Tools";
 
         protected static readonly string _repositoryRoot = FindRepoRoot();
         protected static readonly string _artifactsFolder = Path.Combine(_repositoryRoot, "artifacts", "build");
