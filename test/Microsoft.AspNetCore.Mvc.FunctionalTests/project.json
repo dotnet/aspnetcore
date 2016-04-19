@@ -10,6 +10,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "ActionConstraintSample.Web": "1.0.0",
     "ApiExplorerWebSite": "1.0.0",
     "ApplicationModelWebSite": "1.0.0",
@@ -53,12 +54,15 @@
   },
   "testRunner": "xunit",
   "frameworks": {
-    "netstandardapp1.5": {
+    "netcoreapp1.0": {
       "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        },
         "Microsoft.Dnx.Compilation.CSharp.Common": "1.0.0-*",
         "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*",
         "dotnet-test-xunit": "1.0.0-dev-*",
-        "NETStandard.Library": "1.5.0-*",
         "System.Diagnostics.Process": "4.1.0-*"
       },
       "imports": [

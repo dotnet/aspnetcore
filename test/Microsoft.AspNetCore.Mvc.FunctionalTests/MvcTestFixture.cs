@@ -23,7 +23,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         private readonly TestServer _server;
 
         public MvcTestFixture()
+#if NET451
             : this(Path.Combine("..", "..", "..", "..", "..", "WebSites"))
+#else
+            : this(Path.Combine("..", "..", "..", "..", "WebSites"))
+#endif
         {
         }
 

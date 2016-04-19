@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Encodings.Web;
-#if NETSTANDARDAPP1_5
+#if NETCOREAPP1_0
 using System.Reflection;
 #endif
 using System.Threading.Tasks;
