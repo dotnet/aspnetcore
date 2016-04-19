@@ -3,6 +3,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Routing.Abstractions": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
@@ -17,7 +18,7 @@
         "moq.netcore": "4.4.0-beta8",
         "dotnet-test-xunit": "1.0.0-dev-*",
         "System.Diagnostics.Process": "4.1.0-*",
-        "System.Diagnostics.TraceSource": "4.0.0-*",
+        "System.Diagnostics.TraceSource": "4.0.0-*"
       },
       "imports": [
         "dnxcore50",
