@@ -8,7 +8,7 @@
             "dotnet-ef": {},
             "dotnet-publish-iis": {},
             "dotnet-razor-tooling": {},
-            "dotnet-watch": {},
+            "Microsoft.DotNet.Watcher.Tools": {},
             "dnx-clr-win-x64": {
                 "SIGN_AUTHENTICODE": {
                     "bin/lib/Microsoft.Dnx.DesignTimeHost/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
@@ -52,7 +52,7 @@
                 }
             },
             "dotnet-sql-cache": {},
-            "dotnet-user-secrets": {},
+            "Microsoft.Extensions.SecretManager.Tools": {},
             "Microsoft.AspNet.FileProviders.Abstractions.VSRC1": {},
             "Microsoft.AspNet.FileProviders.Physical.VSRC1": {},
             "Microsoft.AspNet.Mvc.Razor.Host.VSRC1": {},
