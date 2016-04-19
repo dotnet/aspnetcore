@@ -60,12 +60,10 @@ namespace Microsoft.AspNetCore.Hosting
         /// </returns>
         public static IWebHostBuilder UseWebListener(this IWebHostBuilder hostBuilder, Action<WebListenerOptions> options)
         {
-            hostBuilder.ConfigureServices(services =>
+            return hostBuilder.UseWebListener().ConfigureServices(services =>
             {
                 services.Configure(options);
             });
-
-            return hostBuilder.UseWebListener();
         }
     }
 }
