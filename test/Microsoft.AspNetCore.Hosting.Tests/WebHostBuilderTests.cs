@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Fakes;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -477,6 +478,21 @@ namespace Microsoft.AspNetCore.Hosting
             Assert.Equal(PlatformServices.Default.Application.ApplicationName, appEnv.ApplicationName);
             Assert.Equal(PlatformServices.Default.Application.ApplicationBasePath, appEnv.ApplicationBasePath);
         }
+
+        [Fact]
+        public void Configure_SupportsStaticMethodDelegate()
+        {
+            var host = new WebHostBuilder()
+                .UseServer(new TestServer())
+                .Configure(StaticConfigureMethod) 
+                .Build();
+
+            var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
+        }
+
+        private static void StaticConfigureMethod(IApplicationBuilder app) 
+        { }
 
         private IWebHostBuilder CreateWebHostBuilder()
         {
