@@ -1,6 +1,7 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Server.WebListener": "0.1.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*"
   },

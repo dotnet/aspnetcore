@@ -1,6 +1,7 @@
 {
   "testRunner": "xunit",
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.Net.Http.Server": "0.1.0-*",
     "Microsoft.Net.WebSockets.Server": "0.1.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
