@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Session": "1.0.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
