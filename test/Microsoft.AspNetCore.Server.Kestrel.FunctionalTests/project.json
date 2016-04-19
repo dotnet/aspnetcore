@@ -14,7 +14,7 @@
           "version": "1.0.0-*",
           "type": "platform"
         },
-        "dotnet-test-xunit": "1.0.0-dev-*",
+        "dotnet-test-xunit": "1.0.0-*",
         "System.Net.Http": "4.0.1-*",
         "System.Runtime.Serialization.Primitives": "4.1.1-*"
       },
