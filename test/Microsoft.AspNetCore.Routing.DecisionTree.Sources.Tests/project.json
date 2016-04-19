@@ -3,6 +3,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Routing": "1.0.0-*",
     "Microsoft.AspNetCore.Routing.DecisionTree.Sources": {
       "type": "build",
