@@ -16,7 +16,7 @@
           "version": "1.0.0-*",
           "type": "platform"
         },
-        "dotnet-test-xunit": "1.0.0-dev-*"
+        "dotnet-test-xunit": "1.0.0-*"
       },
       "imports": [
         "dnxcore50",
