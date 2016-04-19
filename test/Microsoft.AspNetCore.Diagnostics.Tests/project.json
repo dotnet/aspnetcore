@@ -4,6 +4,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
     "Microsoft.AspNetCore.Diagnostics.Elm": "0.1.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",

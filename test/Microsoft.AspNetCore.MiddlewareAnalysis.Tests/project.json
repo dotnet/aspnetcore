@@ -3,6 +3,7 @@
     "warningsAsErrors": false
   },
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
     "Microsoft.AspNetCore.MiddlewareAnalysis": "1.0.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
