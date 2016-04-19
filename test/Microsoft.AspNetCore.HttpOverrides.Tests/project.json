@@ -4,6 +4,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.HttpOverrides": "1.0.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
