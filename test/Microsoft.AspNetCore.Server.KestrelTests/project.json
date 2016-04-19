@@ -21,7 +21,7 @@
         "System.Net.Http.WinHttpHandler": "4.0.0-*",
         "System.Net.Sockets": "4.1.0-*",
         "System.Runtime.Handles": "4.0.1-*",
-        "dotnet-test-xunit": "1.0.0-dev-*"
+        "dotnet-test-xunit": "1.0.0-*"
       },
       "imports": [
         "dnxcore50",
