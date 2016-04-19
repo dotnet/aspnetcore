@@ -11,7 +11,7 @@
         "netstandardapp1.5"
       ],
       "dependencies": {
-        "dotnet-test-xunit": "1.0.0-dev-*",
+        "dotnet-test-xunit": "1.0.0-*",
         "System.Diagnostics.Process": "4.1.0-*",
         "Microsoft.NETCore.App": {
           "type": "platform",
