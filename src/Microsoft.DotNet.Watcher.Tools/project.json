@@ -15,7 +15,7 @@
     "Microsoft.Extensions.Logging.Console": "1.0.0-*"
   },
   "frameworks": {
-    "netstandard1.5": {
+    "netcoreapp1.0": {
       "imports": [
         "portable-net451+win8",
         "dnxcore50"
