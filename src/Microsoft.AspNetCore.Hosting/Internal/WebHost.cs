@@ -212,7 +212,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             _logger?.Shutdown();
             _applicationLifetime.StopApplication();
-            Server?.Dispose();
             (_applicationServices as IDisposable)?.Dispose();
             _applicationLifetime.NotifyStopped();
         }
