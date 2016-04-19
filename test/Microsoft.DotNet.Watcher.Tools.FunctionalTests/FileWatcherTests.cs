@@ -9,7 +9,7 @@ using System.Threading;
 using Microsoft.DotNet.Watcher.Core.Internal;
 using Xunit;
 
-namespace Microsoft.DotNet.Watcher.FunctionalTests
+namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
     public class FileWatcherTests
     {

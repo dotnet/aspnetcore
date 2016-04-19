@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading;
 using Microsoft.DotNet.Watcher.Core.Internal;
 
-namespace Microsoft.DotNet.Watcher.FunctionalTests
+namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
     public class WaitForFileToChange : IDisposable
     {

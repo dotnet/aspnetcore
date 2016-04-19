@@ -10,7 +10,7 @@ using System.Threading;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.DotNet.Watcher.FunctionalTests
+namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
     public class ProjectToolScenario: IDisposable
     {

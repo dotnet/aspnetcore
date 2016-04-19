@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using Xunit;
 
-namespace Microsoft.DotNet.Watcher.FunctionalTests
+namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
     public class AppWithDepsTests
     {

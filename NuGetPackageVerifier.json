@@ -4,7 +4,7 @@
             "AdxVerificationCompositeRule"
         ],
         "packages": {
-            "dotnet-watch": { },
+            "Microsoft.DotNet.Watcher.Tools": { },
             "Microsoft.DotNet.Watcher.Core": { }
         }
     },

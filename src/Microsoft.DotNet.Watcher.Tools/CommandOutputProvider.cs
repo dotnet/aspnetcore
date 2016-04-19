@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.DotNet.Watcher
+namespace Microsoft.DotNet.Watcher.Tools
 {
     public class CommandOutputProvider : ILoggerProvider
     {

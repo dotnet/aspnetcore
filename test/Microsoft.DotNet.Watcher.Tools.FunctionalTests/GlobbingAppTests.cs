@@ -7,7 +7,7 @@ using System.IO;
 using System.Threading;
 using Xunit;
 
-namespace Microsoft.DotNet.Watcher.FunctionalTests
+namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
     public class GlobbingAppTests
     {

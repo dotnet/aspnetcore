@@ -1,6 +1,7 @@
 {
   "version": "1.0.0-*",
   "compilationOptions": {
+    "outputName": "dotnet-watch",
     "warningsAsErrors": true,
     "emitEntryPoint": true,
     "keyFile": "../../tools/Key.snk",
