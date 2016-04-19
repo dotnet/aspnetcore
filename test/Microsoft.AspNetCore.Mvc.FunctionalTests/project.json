@@ -62,7 +62,7 @@
         },
         "Microsoft.Dnx.Compilation.CSharp.Common": "1.0.0-*",
         "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*",
-        "dotnet-test-xunit": "1.0.0-dev-*",
+        "dotnet-test-xunit": "1.0.0-*",
         "System.Diagnostics.Process": "4.1.0-*"
       },
       "imports": [
