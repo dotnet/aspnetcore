@@ -4,12 +4,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Logging;
-using Microsoft.Extensions.Internal;
+using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing.Tree
 {
@@ -22,10 +23,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
         // group of action descriptors.
         public static readonly string RouteGroupKey = "!__route_group";
 
-        private readonly IRouter _next;
         private readonly LinkGenerationDecisionTree _linkGenerationTree;
         private readonly UrlMatchingTree[] _trees;
-        private readonly IDictionary<string, TreeRouteLinkGenerationEntry> _namedEntries;
+        private readonly IDictionary<string, OutboundMatch> _namedEntries;
 
         private readonly ILogger _logger;
         private readonly ILogger _constraintLogger;
@@ -33,26 +33,23 @@ namespace Microsoft.AspNetCore.Routing.Tree
         /// <summary>
         /// Creates a new <see cref="TreeRouter"/>.
         /// </summary>
-        /// <param name="next">The next router. Invoked when a route entry matches.</param>
         /// <param name="trees">The list of <see cref="UrlMatchingTree"/> that contains the route entries.</param>
-        /// <param name="linkGenerationEntries">The set of <see cref="TreeRouteLinkGenerationEntry"/>.</param>
+        /// <param name="linkGenerationEntries">The set of <see cref="OutboundRouteEntry"/>.</param>
+        /// <param name="urlEncoder">The <see cref="UrlEncoder"/>.</param>
+        /// <param name="objectPool">The <see cref="ObjectPool{T}"/>.</param>
         /// <param name="routeLogger">The <see cref="ILogger"/> instance.</param>
         /// <param name="constraintLogger">The <see cref="ILogger"/> instance used
         /// in <see cref="RouteConstraintMatcher"/>.</param>
         /// <param name="version">The version of this route.</param>
         public TreeRouter(
-            IRouter next,
             UrlMatchingTree[] trees,
-            IEnumerable<TreeRouteLinkGenerationEntry> linkGenerationEntries,
+            IEnumerable<OutboundRouteEntry> linkGenerationEntries,
+            UrlEncoder urlEncoder,
+            ObjectPool<UriBuildingContext> objectPool,
             ILogger routeLogger,
             ILogger constraintLogger,
             int version)
         {
-            if (next == null)
-            {
-                throw new ArgumentNullException(nameof(next));
-            }
-
             if (trees == null)
             {
                 throw new ArgumentNullException(nameof(trees));
@@ -61,6 +58,16 @@ namespace Microsoft.AspNetCore.Routing.Tree
             if (linkGenerationEntries == null)
             {
                 throw new ArgumentNullException(nameof(linkGenerationEntries));
+            }
+
+            if (urlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(urlEncoder));
+            }
+
+            if (objectPool == null)
+            {
+                throw new ArgumentNullException(nameof(objectPool));
             }
 
             if (routeLogger == null)
@@ -73,43 +80,49 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 throw new ArgumentNullException(nameof(constraintLogger));
             }
 
-            _next = next;
             _trees = trees;
             _logger = routeLogger;
             _constraintLogger = constraintLogger;
 
-            var namedEntries = new Dictionary<string, TreeRouteLinkGenerationEntry>(
-                StringComparer.OrdinalIgnoreCase);
+            _namedEntries = new Dictionary<string, OutboundMatch>(StringComparer.OrdinalIgnoreCase);
+
+            var outboundMatches = new List<OutboundMatch>();
 
             foreach (var entry in linkGenerationEntries)
             {
+
+                var binder = new TemplateBinder(urlEncoder, objectPool, entry.RouteTemplate, entry.Defaults);
+                var outboundMatch = new OutboundMatch() { Entry = entry, TemplateBinder = binder };
+                outboundMatches.Add(outboundMatch);
+
                 // Skip unnamed entries
-                if (entry.Name == null)
+                if (entry.RouteName == null)
                 {
                     continue;
                 }
 
-                // We only need to keep one AttributeRouteLinkGenerationEntry per route template
+                // We only need to keep one OutboundMatch per route template
                 // so in case two entries have the same name and the same template we only keep
                 // the first entry.
-                TreeRouteLinkGenerationEntry namedEntry = null;
-                if (namedEntries.TryGetValue(entry.Name, out namedEntry) &&
-                    !namedEntry.Template.TemplateText.Equals(entry.Template.TemplateText, StringComparison.OrdinalIgnoreCase))
+                OutboundMatch namedMatch;
+                if (_namedEntries.TryGetValue(entry.RouteName, out namedMatch) &&
+                    !string.Equals(
+                        namedMatch.Entry.RouteTemplate.TemplateText,
+                        entry.RouteTemplate.TemplateText, 
+                        StringComparison.OrdinalIgnoreCase))
                 {
                     throw new ArgumentException(
-                        Resources.FormatAttributeRoute_DifferentLinkGenerationEntries_SameName(entry.Name),
+                        Resources.FormatAttributeRoute_DifferentLinkGenerationEntries_SameName(entry.RouteName),
                         nameof(linkGenerationEntries));
                 }
-                else if (namedEntry == null)
+                else if (namedMatch == null)
                 {
-                    namedEntries.Add(entry.Name, entry);
+                    _namedEntries.Add(entry.RouteName, outboundMatch);
                 }
             }
 
-            _namedEntries = namedEntries;
-
             // The decision tree will take care of ordering for these entries.
-            _linkGenerationTree = new LinkGenerationDecisionTree(linkGenerationEntries.ToArray());
+            _linkGenerationTree = new LinkGenerationDecisionTree(outboundMatches.ToArray());
 
             Version = version;
         }
@@ -145,7 +158,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
             for (var i = 0; i < matches.Count; i++)
             {
-                var path = GenerateVirtualPath(context, matches[i].Entry);
+                var path = GenerateVirtualPath(context, matches[i].Match.Entry, matches[i].Match.TemplateBinder);
                 if (path != null)
                 {
                     return path;
@@ -175,7 +188,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
                     var node = treeEnumerator.Current;
                     foreach (var item in node.Matches)
                     {
-                        if (!item.TemplateMatcher.TryMatch(context.HttpContext.Request.Path, context.RouteData.Values))
+                        var entry = item.Entry;
+                        var matcher = item.TemplateMatcher;
+                        if (!matcher.TryMatch(context.HttpContext.Request.Path, context.RouteData.Values))
                         {
                             continue;
                         }
@@ -183,7 +198,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                         try
                         {
                             if (!RouteConstraintMatcher.Match(
-                                item.Constraints,
+                                entry.Constraints,
                                 context.RouteData.Values,
                                 context.HttpContext,
                                 this,
@@ -193,10 +208,10 @@ namespace Microsoft.AspNetCore.Routing.Tree
                                 continue;
                             }
 
-                            _logger.MatchedRoute(item.RouteName, item.RouteTemplate.TemplateText);
+                            _logger.MatchedRoute(entry.RouteName, entry.RouteTemplate.TemplateText);
+                            context.RouteData.Routers.Add(entry.Handler);
 
-                            context.RouteData.Routers.Add(item.Target);
-                            await item.Target.RouteAsync(context);
+                            await entry.Handler.RouteAsync(context);
                             if (context.Handler != null)
                             {
                                 return;
@@ -318,10 +333,10 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
         private VirtualPathData GetVirtualPathForNamedRoute(VirtualPathContext context)
         {
-            TreeRouteLinkGenerationEntry entry;
-            if (_namedEntries.TryGetValue(context.RouteName, out entry))
+            OutboundMatch match;
+            if (_namedEntries.TryGetValue(context.RouteName, out match))
             {
-                var path = GenerateVirtualPath(context, entry);
+                var path = GenerateVirtualPath(context, match.Entry, match.TemplateBinder);
                 if (path != null)
                 {
                     return path;
@@ -330,7 +345,10 @@ namespace Microsoft.AspNetCore.Routing.Tree
             return null;
         }
 
-        private VirtualPathData GenerateVirtualPath(VirtualPathContext context, TreeRouteLinkGenerationEntry entry)
+        private VirtualPathData GenerateVirtualPath(
+            VirtualPathContext context,
+            OutboundRouteEntry entry,
+            TemplateBinder binder)
         {
             // In attribute the context includes the values that are used to select this entry - typically
             // these will be the standard 'action', 'controller' and maybe 'area' tokens. However, we don't
@@ -349,7 +367,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             {
                 if (entry.RequiredLinkValues.ContainsKey(kvp.Key))
                 {
-                    var parameter = entry.Template.GetParameter(kvp.Key);
+                    var parameter = entry.RouteTemplate.GetParameter(kvp.Key);
 
                     if (parameter == null)
                     {
@@ -360,7 +378,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 inputValues.Add(kvp.Key, kvp.Value);
             }
 
-            var bindingResult = entry.Binder.GetValues(context.AmbientValues, inputValues);
+            var bindingResult = binder.GetValues(context.AmbientValues, inputValues);
             if (bindingResult == null)
             {
                 // A required parameter in the template didn't get a value.
@@ -381,7 +399,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 return null;
             }
 
-            var pathData = _next.GetVirtualPath(context);
+            var pathData = entry.Handler.GetVirtualPath(context);
             if (pathData != null)
             {
                 // If path is non-null then the target router short-circuited, we don't expect this
@@ -389,7 +407,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 return pathData;
             }
 
-            var path = entry.Binder.BindValues(bindingResult.AcceptedValues);
+            var path = binder.BindValues(bindingResult.AcceptedValues);
             if (path == null)
             {
                 return null;

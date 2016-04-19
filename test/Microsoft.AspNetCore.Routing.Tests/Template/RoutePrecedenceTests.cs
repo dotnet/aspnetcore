@@ -102,11 +102,11 @@ namespace Microsoft.AspNetCore.Routing.Template
 
         private static decimal ComputeMatched(string template)
         {
-            return Compute(template, RoutePrecedence.ComputeMatched);
+            return Compute(template, RoutePrecedence.ComputeInbound);
         }
         private static decimal ComputeGenerated(string template)
         {
-            return Compute(template, RoutePrecedence.ComputeGenerated);
+            return Compute(template, RoutePrecedence.ComputeOutbound);
         }
 
         private static decimal Compute(string template, Func<RouteTemplate, decimal> func)

@@ -11,23 +11,23 @@ namespace Microsoft.AspNetCore.Routing.Internal
     // A decision tree that matches link generation entries based on route data.
     public class LinkGenerationDecisionTree
     {
-        private readonly DecisionTreeNode<TreeRouteLinkGenerationEntry> _root;
+        private readonly DecisionTreeNode<OutboundMatch> _root;
 
-        public LinkGenerationDecisionTree(IReadOnlyList<TreeRouteLinkGenerationEntry> entries)
+        public LinkGenerationDecisionTree(IReadOnlyList<OutboundMatch> entries)
         {
-            _root = DecisionTreeBuilder<TreeRouteLinkGenerationEntry>.GenerateTree(
+            _root = DecisionTreeBuilder<OutboundMatch>.GenerateTree(
                 entries,
-                new AttributeRouteLinkGenerationEntryClassifier());
+                new OutboundMatchClassifier());
         }
 
-        public IList<LinkGenerationMatch> GetMatches(VirtualPathContext context)
+        public IList<OutboundMatchResult> GetMatches(VirtualPathContext context)
         {
             // Perf: Avoid allocation for List if there aren't any Matches or Criteria
             if (_root.Matches.Count > 0 || _root.Criteria.Count > 0)
             {
-                var results = new List<LinkGenerationMatch>();
+                var results = new List<OutboundMatchResult>();
                 Walk(results, context, _root, isFallbackPath: false);
-                results.Sort(LinkGenerationMatchComparer.Instance);
+                results.Sort(OutboundMatchResultComparer.Instance);
                 return results;
             }
 
@@ -60,16 +60,16 @@ namespace Microsoft.AspNetCore.Routing.Internal
         //
         // The decision tree uses a tree data structure to execute these rules across all candidates at once.
         private void Walk(
-            List<LinkGenerationMatch> results,
+            List<OutboundMatchResult> results,
             VirtualPathContext context,
-            DecisionTreeNode<TreeRouteLinkGenerationEntry> node,
+            DecisionTreeNode<OutboundMatch> node,
             bool isFallbackPath)
         {
             // Any entries in node.Matches have had all their required values satisfied, so add them
             // to the results.
             for (var i = 0; i < node.Matches.Count; i++)
             {
-                results.Add(new LinkGenerationMatch(node.Matches[i], isFallbackPath));
+                results.Add(new OutboundMatchResult(node.Matches[i], isFallbackPath));
             }
 
             for (var i = 0; i < node.Criteria.Count; i++)
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 object value;
                 if (context.Values.TryGetValue(key, out value))
                 {
-                    DecisionTreeNode<TreeRouteLinkGenerationEntry> branch;
+                    DecisionTreeNode<OutboundMatch> branch;
                     if (criterion.Branches.TryGetValue(value ?? string.Empty, out branch))
                     {
                         Walk(results, context, branch, isFallbackPath);
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     // If a value wasn't explicitly supplied, match BOTH the ambient value and the empty value
                     // if an ambient value was supplied. The path explored with the empty value is considered
                     // the fallback path.
-                    DecisionTreeNode<TreeRouteLinkGenerationEntry> branch;
+                    DecisionTreeNode<OutboundMatch> branch;
                     if (context.AmbientValues.TryGetValue(key, out value) &&
                         !criterion.Branches.Comparer.Equals(value, string.Empty))
                     {
@@ -109,19 +109,19 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
         }
 
-        private class AttributeRouteLinkGenerationEntryClassifier : IClassifier<TreeRouteLinkGenerationEntry>
+        private class OutboundMatchClassifier : IClassifier<OutboundMatch>
         {
-            public AttributeRouteLinkGenerationEntryClassifier()
+            public OutboundMatchClassifier()
             {
                 ValueComparer = new RouteValueEqualityComparer();
             }
 
             public IEqualityComparer<object> ValueComparer { get; private set; }
 
-            public IDictionary<string, DecisionCriterionValue> GetCriteria(TreeRouteLinkGenerationEntry item)
+            public IDictionary<string, DecisionCriterionValue> GetCriteria(OutboundMatch item)
             {
                 var results = new Dictionary<string, DecisionCriterionValue>(StringComparer.OrdinalIgnoreCase);
-                foreach (var kvp in item.RequiredLinkValues)
+                foreach (var kvp in item.Entry.RequiredLinkValues)
                 {
                     results.Add(kvp.Key, new DecisionCriterionValue(kvp.Value ?? string.Empty));
                 }
@@ -130,22 +130,22 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
         }
 
-        private class LinkGenerationMatchComparer : IComparer<LinkGenerationMatch>
+        private class OutboundMatchResultComparer : IComparer<OutboundMatchResult>
         {
-            public static readonly LinkGenerationMatchComparer Instance = new LinkGenerationMatchComparer();
+            public static readonly OutboundMatchResultComparer Instance = new OutboundMatchResultComparer();
 
-            public int Compare(LinkGenerationMatch x, LinkGenerationMatch y)
+            public int Compare(OutboundMatchResult x, OutboundMatchResult y)
             {
                 // For this comparison lower is better.
-                if (x.Entry.Order != y.Entry.Order)
+                if (x.Match.Entry.Order != y.Match.Entry.Order)
                 {
-                    return x.Entry.Order.CompareTo(y.Entry.Order);
+                    return x.Match.Entry.Order.CompareTo(y.Match.Entry.Order);
                 }
 
-                if (x.Entry.GenerationPrecedence != y.Entry.GenerationPrecedence)
+                if (x.Match.Entry.Precedence != y.Match.Entry.Precedence)
                 {
                     // Reversed because higher is better
-                    return y.Entry.GenerationPrecedence.CompareTo(x.Entry.GenerationPrecedence);
+                    return y.Match.Entry.Precedence.CompareTo(x.Match.Entry.Precedence);
                 }
 
                 if (x.IsFallbackMatch != y.IsFallbackMatch)
@@ -154,7 +154,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     return x.IsFallbackMatch.CompareTo(y.IsFallbackMatch);
                 }
 
-                return StringComparer.Ordinal.Compare(x.Entry.Template.TemplateText, y.Entry.Template.TemplateText);
+                return StringComparer.Ordinal.Compare(
+                    x.Match.Entry.RouteTemplate.TemplateText, 
+                    y.Match.Entry.RouteTemplate.TemplateText);
             }
         }
     }

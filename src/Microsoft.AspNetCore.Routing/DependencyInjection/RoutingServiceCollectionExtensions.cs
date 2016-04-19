@@ -5,6 +5,7 @@ using System;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.ObjectPool;
 
@@ -35,6 +36,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 var encoder = s.GetRequiredService<UrlEncoder>();
                 return provider.Create<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy(encoder));
             });
+
+            // The TreeRouteBuilder is a builder for creating routes, it should stay transient because it's
+            // stateful.
+            services.TryAddTransient<TreeRouteBuilder>();
 
             services.TryAddSingleton(typeof(RoutingMarkerService));
 

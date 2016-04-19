@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         {
             Length = length;
 
-            Matches = new List<TreeRouteMatchingEntry>();
+            Matches = new List<InboundMatch>();
             Literals = new Dictionary<string, UrlMatchingNode>(StringComparer.OrdinalIgnoreCase);
         }
 
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public bool IsCatchAll { get; set; }
 
         // These entries are sorted by precedence then template
-        public List<TreeRouteMatchingEntry> Matches { get; }
+        public List<InboundMatch> Matches { get; }
 
         public Dictionary<string, UrlMatchingNode> Literals { get; }
 

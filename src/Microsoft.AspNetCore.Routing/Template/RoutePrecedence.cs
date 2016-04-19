@@ -8,7 +8,7 @@ using System.Linq;
 namespace Microsoft.AspNetCore.Routing.Template
 {
     /// <summary>
-    /// Computes precedence for an attribute route template.
+    /// Computes precedence for a route template.
     /// </summary>
     public static class RoutePrecedence
     {
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         //       /api/template/{id} == 1.13
         //       /api/{id:int} == 1.2
         //       /api/template/{id:int} == 1.12
-        public static decimal ComputeMatched(RouteTemplate template)
+        public static decimal ComputeInbound(RouteTemplate template)
         {
             // Each precedence digit corresponds to one decimal place. For example, 3 segments with precedences 2, 1,
             // and 4 results in a combined precedence of 2.14 (decimal).
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             {
                 var segment = template.Segments[i];
 
-                var digit = ComputeMatchDigit(segment);
+                var digit = ComputeInboundPrecedenceDigit(segment);
                 Debug.Assert(digit >= 0 && digit < 10);
 
                 precedence += decimal.Divide(digit, (decimal)Math.Pow(10, i));
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         //       /api/template/{id}     == 5.53
         //       /api/{id:int}          == 5.4
         //       /api/template/{id:int} == 5.54
-        public static decimal ComputeGenerated(RouteTemplate template)
+        public static decimal ComputeOutbound(RouteTemplate template)
         {
             // Each precedence digit corresponds to one decimal place. For example, 3 segments with precedences 2, 1,
             // and 4 results in a combined precedence of 2.14 (decimal).
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             {
                 var segment = template.Segments[i];
 
-                var digit = ComputeGenerationDigit(segment);
+                var digit = ComputeOutboundPrecedenceDigit(segment);
                 Debug.Assert(digit >= 0 && digit < 10);
 
                 precedence += decimal.Divide(digit, (decimal)Math.Pow(10, i));
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         // 3 - Unconstrained parameter segements
         // 2 - Constrained wildcard parameter segments
         // 1 - Unconstrained wildcard parameter segments
-        private static int ComputeGenerationDigit(TemplateSegment segment)
+        private static int ComputeOutboundPrecedenceDigit(TemplateSegment segment)
         {
             if(segment.Parts.Count > 1)
             {
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         // 3 - Unconstrained parameter segments
         // 4 - Constrained wildcard parameter segments
         // 5 - Unconstrained wildcard parameter segments
-        private static int ComputeMatchDigit(TemplateSegment segment)
+        private static int ComputeInboundPrecedenceDigit(TemplateSegment segment)
         {
             if (segment.Parts.Count > 1)
             {

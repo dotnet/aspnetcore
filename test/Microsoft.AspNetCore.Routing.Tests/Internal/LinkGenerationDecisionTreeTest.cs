@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
         public void SelectSingleEntry_NoCriteria()
         {
             // Arrange
-            var entries = new List<TreeRouteLinkGenerationEntry>();
+            var entries = new List<OutboundMatch>();
 
-            var entry = CreateEntry(new { });
+            var entry = CreateMatch(new { });
             entries.Add(entry);
 
             var tree = new LinkGenerationDecisionTree(entries);
@@ -29,16 +29,16 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
             var matches = tree.GetMatches(context);
 
             // Assert
-            Assert.Same(entry, Assert.Single(matches).Entry);
+            Assert.Same(entry, Assert.Single(matches).Match);
         }
 
         [Fact]
         public void SelectSingleEntry_MultipleCriteria()
         {
             // Arrange
-            var entries = new List<TreeRouteLinkGenerationEntry>();
+            var entries = new List<OutboundMatch>();
 
-            var entry = CreateEntry(new { controller = "Store", action = "Buy" });
+            var entry = CreateMatch(new { controller = "Store", action = "Buy" });
             entries.Add(entry);
 
             var tree = new LinkGenerationDecisionTree(entries);
@@ -49,16 +49,16 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
             var matches = tree.GetMatches(context);
 
             // Assert
-            Assert.Same(entry, Assert.Single(matches).Entry);
+            Assert.Same(entry, Assert.Single(matches).Match);
         }
 
         [Fact]
         public void SelectSingleEntry_MultipleCriteria_AmbientValues()
         {
             // Arrange
-            var entries = new List<TreeRouteLinkGenerationEntry>();
+            var entries = new List<OutboundMatch>();
 
-            var entry = CreateEntry(new { controller = "Store", action = "Buy" });
+            var entry = CreateMatch(new { controller = "Store", action = "Buy" });
             entries.Add(entry);
 
             var tree = new LinkGenerationDecisionTree(entries);
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
 
             // Assert
             var match = Assert.Single(matches);
-            Assert.Same(entry, match.Entry);
+            Assert.Same(entry, match.Match);
             Assert.False(match.IsFallbackMatch);
         }
 
@@ -78,9 +78,9 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
         public void SelectSingleEntry_MultipleCriteria_Replaced()
         {
             // Arrange
-            var entries = new List<TreeRouteLinkGenerationEntry>();
+            var entries = new List<OutboundMatch>();
 
-            var entry = CreateEntry(new { controller = "Store", action = "Buy" });
+            var entry = CreateMatch(new { controller = "Store", action = "Buy" });
             entries.Add(entry);
 
             var tree = new LinkGenerationDecisionTree(entries);
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
 
             // Assert
             var match = Assert.Single(matches);
-            Assert.Same(entry, match.Entry);
+            Assert.Same(entry, match.Match);
             Assert.False(match.IsFallbackMatch);
         }
 
@@ -102,9 +102,9 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
         public void SelectSingleEntry_MultipleCriteria_AmbientValue_Ignored()
         {
             // Arrange
-            var entries = new List<TreeRouteLinkGenerationEntry>();
+            var entries = new List<OutboundMatch>();
 
-            var entry = CreateEntry(new { controller = "Store", action = (string)null });
+            var entry = CreateMatch(new { controller = "Store", action = (string)null });
             entries.Add(entry);
 
             var tree = new LinkGenerationDecisionTree(entries);
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
 
             // Assert
             var match = Assert.Single(matches);
-            Assert.Same(entry, match.Entry);
+            Assert.Same(entry, match.Match);
             Assert.True(match.IsFallbackMatch);
         }
 
@@ -126,9 +126,9 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
         public void SelectSingleEntry_MultipleCriteria_NoMatch()
         {
             // Arrange
-            var entries = new List<TreeRouteLinkGenerationEntry>();
+            var entries = new List<OutboundMatch>();
 
-            var entry = CreateEntry(new { controller = "Store", action = "Buy" });
+            var entry = CreateMatch(new { controller = "Store", action = "Buy" });
             entries.Add(entry);
 
             var tree = new LinkGenerationDecisionTree(entries);
@@ -146,9 +146,9 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
         public void SelectSingleEntry_MultipleCriteria_AmbientValue_NoMatch()
         {
             // Arrange
-            var entries = new List<TreeRouteLinkGenerationEntry>();
+            var entries = new List<OutboundMatch>();
 
-            var entry = CreateEntry(new { controller = "Store", action = "Buy" });
+            var entry = CreateMatch(new { controller = "Store", action = "Buy" });
             entries.Add(entry);
 
             var tree = new LinkGenerationDecisionTree(entries);
@@ -168,12 +168,12 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
         public void SelectMultipleEntries_OneDoesntMatch()
         {
             // Arrange
-            var entries = new List<TreeRouteLinkGenerationEntry>();
+            var entries = new List<OutboundMatch>();
 
-            var entry1 = CreateEntry(new { controller = "Store", action = "Buy" });
+            var entry1 = CreateMatch(new { controller = "Store", action = "Buy" });
             entries.Add(entry1);
 
-            var entry2 = CreateEntry(new { controller = "Store", action = "Cart" });
+            var entry2 = CreateMatch(new { controller = "Store", action = "Cart" });
             entries.Add(entry2);
 
             var tree = new LinkGenerationDecisionTree(entries);
@@ -186,20 +186,20 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
             var matches = tree.GetMatches(context);
 
             // Assert
-            Assert.Same(entry1, Assert.Single(matches).Entry);
+            Assert.Same(entry1, Assert.Single(matches).Match);
         }
 
         [Fact]
         public void SelectMultipleEntries_BothMatch_CriteriaSubset()
         {
             // Arrange
-            var entries = new List<TreeRouteLinkGenerationEntry>();
+            var entries = new List<OutboundMatch>();
 
-            var entry1 = CreateEntry(new { controller = "Store", action = "Buy" });
+            var entry1 = CreateMatch(new { controller = "Store", action = "Buy" });
             entries.Add(entry1);
 
-            var entry2 = CreateEntry(new { controller = "Store" });
-            entry2.Order = 1;
+            var entry2 = CreateMatch(new { controller = "Store" });
+            entry2.Entry.Order = 1;
             entries.Add(entry2);
 
             var tree = new LinkGenerationDecisionTree(entries);
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
                 ambientValues: new { controller = "Store", action = "Buy" });
 
             // Act
-            var matches = tree.GetMatches(context).Select(m => m.Entry).ToList();
+            var matches = tree.GetMatches(context).Select(m => m.Match).ToList();
 
             // Assert
             Assert.Equal(entries, matches);
@@ -219,13 +219,13 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
         public void SelectMultipleEntries_BothMatch_NonOverlappingCriteria()
         {
             // Arrange
-            var entries = new List<TreeRouteLinkGenerationEntry>();
+            var entries = new List<OutboundMatch>();
 
-            var entry1 = CreateEntry(new { controller = "Store", action = "Buy" });
+            var entry1 = CreateMatch(new { controller = "Store", action = "Buy" });
             entries.Add(entry1);
 
-            var entry2 = CreateEntry(new { slug = "1234" });
-            entry2.Order = 1;
+            var entry2 = CreateMatch(new { slug = "1234" });
+            entry2.Entry.Order = 1;
             entries.Add(entry2);
 
             var tree = new LinkGenerationDecisionTree(entries);
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
             var context = CreateContext(new { controller = "Store", action = "Buy", slug = "1234" });
 
             // Act
-            var matches = tree.GetMatches(context).Select(m => m.Entry).ToList();
+            var matches = tree.GetMatches(context).Select(m => m.Match).ToList();
 
             // Assert
             Assert.Equal(entries, matches);
@@ -244,15 +244,15 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
         public void SelectMultipleEntries_BothMatch_OrderedByOrder()
         {
             // Arrange
-            var entries = new List<TreeRouteLinkGenerationEntry>();
+            var entries = new List<OutboundMatch>();
 
-            var entry1 = CreateEntry(new { controller = "Store", action = "Buy" });
-            entry1.GenerationPrecedence = 0;
+            var entry1 = CreateMatch(new { controller = "Store", action = "Buy" });
+            entry1.Entry.Precedence = 0;
             entries.Add(entry1);
 
-            var entry2 = CreateEntry(new { controller = "Store", action = "Buy" });
-            entry2.Order = 1;
-            entry2.GenerationPrecedence = 1;
+            var entry2 = CreateMatch(new { controller = "Store", action = "Buy" });
+            entry2.Entry.Order = 1;
+            entry2.Entry.Precedence = 1;
             entries.Add(entry2);
 
             var tree = new LinkGenerationDecisionTree(entries);
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
             var context = CreateContext(new { controller = "Store", action = "Buy" });
 
             // Act
-            var matches = tree.GetMatches(context).Select(m => m.Entry).ToList();
+            var matches = tree.GetMatches(context).Select(m => m.Match).ToList();
 
             // Assert
             Assert.Equal(entries, matches);
@@ -271,14 +271,14 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
         public void SelectMultipleEntries_BothMatch_OrderedByPrecedence()
         {
             // Arrange
-            var entries = new List<TreeRouteLinkGenerationEntry>();
+            var entries = new List<OutboundMatch>();
 
-            var entry1 = CreateEntry(new { controller = "Store", action = "Buy" });
-            entry1.GenerationPrecedence = 1;
+            var entry1 = CreateMatch(new { controller = "Store", action = "Buy" });
+            entry1.Entry.Precedence = 1;
             entries.Add(entry1);
 
-            var entry2 = CreateEntry(new { controller = "Store", action = "Buy" });
-            entry2.GenerationPrecedence = 0;
+            var entry2 = CreateMatch(new { controller = "Store", action = "Buy" });
+            entry2.Entry.Precedence = 0;
             entries.Add(entry2);
 
             var tree = new LinkGenerationDecisionTree(entries);
@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
             var context = CreateContext(new { controller = "Store", action = "Buy" });
 
             // Act
-            var matches = tree.GetMatches(context).Select(m => m.Entry).ToList();
+            var matches = tree.GetMatches(context).Select(m => m.Match).ToList();
 
             // Assert
             Assert.Equal(entries, matches);
@@ -297,14 +297,14 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
         public void SelectMultipleEntries_BothMatch_OrderedByTemplate()
         {
             // Arrange
-            var entries = new List<TreeRouteLinkGenerationEntry>();
+            var entries = new List<OutboundMatch>();
 
-            var entry1 = CreateEntry(new { controller = "Store", action = "Buy" });
-            entry1.Template = TemplateParser.Parse("a");
+            var entry1 = CreateMatch(new { controller = "Store", action = "Buy" });
+            entry1.Entry.RouteTemplate = TemplateParser.Parse("a");
             entries.Add(entry1);
 
-            var entry2 = CreateEntry(new { controller = "Store", action = "Buy" });
-            entry2.Template = TemplateParser.Parse("b");
+            var entry2 = CreateMatch(new { controller = "Store", action = "Buy" });
+            entry2.Entry.RouteTemplate = TemplateParser.Parse("b");
             entries.Add(entry2);
 
             var tree = new LinkGenerationDecisionTree(entries);
@@ -312,17 +312,18 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
             var context = CreateContext(new { controller = "Store", action = "Buy" });
 
             // Act
-            var matches = tree.GetMatches(context).Select(m => m.Entry).ToList();
+            var matches = tree.GetMatches(context).Select(m => m.Match).ToList();
 
             // Assert
             Assert.Equal(entries, matches);
         }
 
-        private TreeRouteLinkGenerationEntry CreateEntry(object requiredValues)
+        private OutboundMatch CreateMatch(object requiredValues)
         {
-            var entry = new TreeRouteLinkGenerationEntry();
-            entry.RequiredLinkValues = new RouteValueDictionary(requiredValues);
-            return entry;
+            var match = new OutboundMatch();
+            match.Entry = new OutboundRouteEntry();
+            match.Entry.RequiredLinkValues = new RouteValueDictionary(requiredValues);
+            return match;
         }
 
         private VirtualPathContext CreateContext(object values, object ambientValues = null)

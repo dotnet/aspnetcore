@@ -1,47 +1,195 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing.Tree
 {
     public class TreeRouteBuilder
     {
-        private readonly IRouter _target;
-        private readonly List<TreeRouteLinkGenerationEntry> _generatingEntries;
-        private readonly List<TreeRouteMatchingEntry> _matchingEntries;
-
         private readonly ILogger _logger;
         private readonly ILogger _constraintLogger;
+        private readonly UrlEncoder _urlEncoder;
+        private readonly ObjectPool<UriBuildingContext> _objectPool;
+        private readonly IInlineConstraintResolver _constraintResolver;
 
-        public TreeRouteBuilder(IRouter target, ILoggerFactory loggerFactory)
+        public TreeRouteBuilder(
+            ILoggerFactory loggerFactory,
+            UrlEncoder urlEncoder,
+            ObjectPool<UriBuildingContext> objectPool,
+            IInlineConstraintResolver constraintResolver)
         {
-            _target = target;
-            _generatingEntries = new List<TreeRouteLinkGenerationEntry>();
-            _matchingEntries = new List<TreeRouteMatchingEntry>();
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            if (urlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(urlEncoder));
+            }
+
+            if (objectPool == null)
+            {
+                throw new ArgumentNullException(nameof(objectPool));
+            }
+
+            if (constraintResolver == null)
+            {
+                throw new ArgumentNullException(nameof(constraintResolver));
+            }
+
+            _urlEncoder = urlEncoder;
+            _objectPool = objectPool;
+            _constraintResolver = constraintResolver;
 
             _logger = loggerFactory.CreateLogger<TreeRouter>();
             _constraintLogger = loggerFactory.CreateLogger(typeof(RouteConstraintMatcher).FullName);
         }
 
-        public void Add(TreeRouteLinkGenerationEntry entry)
+        public InboundRouteEntry MapInbound(
+            IRouter handler,
+            RouteTemplate routeTemplate,
+            string routeName,
+            int order)
         {
-            _generatingEntries.Add(entry);
+            if (handler == null)
+            {
+                throw new ArgumentNullException(nameof(handler));
+            }
+
+            if (routeTemplate == null)
+            {
+                throw new ArgumentNullException(nameof(routeTemplate));
+            }
+
+            var entry = new InboundRouteEntry()
+            {
+                Handler = handler,
+                Order = order,
+                Precedence = RoutePrecedence.ComputeInbound(routeTemplate),
+                RouteName = routeName,
+                RouteTemplate = routeTemplate,
+            };
+
+            var constraintBuilder = new RouteConstraintBuilder(_constraintResolver, routeTemplate.TemplateText);
+            foreach (var parameter in routeTemplate.Parameters)
+            {
+                if (parameter.InlineConstraints != null)
+                {
+                    if (parameter.IsOptional)
+                    {
+                        constraintBuilder.SetOptional(parameter.Name);
+                    }
+
+                    foreach (var constraint in parameter.InlineConstraints)
+                    {
+                        constraintBuilder.AddResolvedConstraint(parameter.Name, constraint.Constraint);
+                    }
+                }
+            }
+
+            entry.Constraints = constraintBuilder.Build();
+
+            entry.Defaults = new RouteValueDictionary();
+            foreach (var parameter in entry.RouteTemplate.Parameters)
+            {
+                if (parameter.DefaultValue != null)
+                {
+                    entry.Defaults.Add(parameter.Name, parameter.DefaultValue);
+                }
+            }
+
+            InboundEntries.Add(entry);
+            return entry;
         }
 
-        public void Add(TreeRouteMatchingEntry entry)
+        public OutboundRouteEntry MapOutbound(
+            IRouter handler,
+            RouteTemplate routeTemplate,
+            RouteValueDictionary requiredLinkValues,
+            string routeName,
+            int order)
         {
-            _matchingEntries.Add(entry);
+            if (handler == null)
+            {
+                throw new ArgumentNullException(nameof(handler));
+            }
+
+            if (routeTemplate == null)
+            {
+                throw new ArgumentNullException(nameof(routeTemplate));
+            }
+
+            if (requiredLinkValues == null)
+            {
+                throw new ArgumentNullException(nameof(requiredLinkValues));
+            }
+
+            var entry = new OutboundRouteEntry()
+            {
+                Handler = handler,
+                Order = order,
+                Precedence = RoutePrecedence.ComputeOutbound(routeTemplate),
+                RequiredLinkValues = requiredLinkValues,
+                RouteName = routeName,
+                RouteTemplate = routeTemplate,
+            };
+
+            var constraintBuilder = new RouteConstraintBuilder(_constraintResolver, routeTemplate.TemplateText);
+            foreach (var parameter in routeTemplate.Parameters)
+            {
+                if (parameter.InlineConstraints != null)
+                {
+                    if (parameter.IsOptional)
+                    {
+                        constraintBuilder.SetOptional(parameter.Name);
+                    }
+
+                    foreach (var constraint in parameter.InlineConstraints)
+                    {
+                        constraintBuilder.AddResolvedConstraint(parameter.Name, constraint.Constraint);
+                    }
+                }
+            }
+
+            entry.Constraints = constraintBuilder.Build();
+
+            entry.Defaults = new RouteValueDictionary();
+            foreach (var parameter in entry.RouteTemplate.Parameters)
+            {
+                if (parameter.DefaultValue != null)
+                {
+                    entry.Defaults.Add(parameter.Name, parameter.DefaultValue);
+                }
+            }
+
+            OutboundEntries.Add(entry);
+            return entry;
+        }
+
+        public IList<InboundRouteEntry> InboundEntries { get; } = new List<InboundRouteEntry>();
+
+        public IList<OutboundRouteEntry> OutboundEntries { get; } = new List<OutboundRouteEntry>();
+
+        public TreeRouter Build()
+        {
+            return Build(version: 0);
         }
 
         public TreeRouter Build(int version)
         {
             var trees = new Dictionary<int, UrlMatchingTree>();
 
-            foreach (var entry in _matchingEntries)
+            foreach (var entry in InboundEntries)
             {
                 UrlMatchingTree tree;
                 if (!trees.TryGetValue(entry.Order, out tree))
@@ -54,9 +202,10 @@ namespace Microsoft.AspNetCore.Routing.Tree
             }
 
             return new TreeRouter(
-                _target,
                 trees.Values.OrderBy(tree => tree.Order).ToArray(),
-                _generatingEntries,
+                OutboundEntries,
+                _urlEncoder,
+                _objectPool,
                 _logger,
                 _constraintLogger,
                 version);
@@ -64,13 +213,15 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
         public void Clear()
         {
-            _generatingEntries.Clear();
-            _matchingEntries.Clear();
+            InboundEntries.Clear();
+            OutboundEntries.Clear();
         }
 
-        private void AddEntryToTree(UrlMatchingTree tree, TreeRouteMatchingEntry entry)
+        private void AddEntryToTree(UrlMatchingTree tree, InboundRouteEntry entry)
         {
             var current = tree.Root;
+
+            var matcher = new TemplateMatcher(entry.RouteTemplate, entry.Defaults);
 
             for (var i = 0; i < entry.RouteTemplate.Segments.Count; i++)
             {
@@ -104,7 +255,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
                 if (part.IsParameter && (part.IsOptional || part.IsCatchAll))
                 {
-                    current.Matches.Add(entry);
+                    current.Matches.Add(new InboundMatch() { Entry = entry, TemplateMatcher = matcher });
                 }
 
                 if (part.IsParameter && part.InlineConstraints.Any() && !part.IsCatchAll)
@@ -154,11 +305,11 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 Debug.Fail("We shouldn't get here.");
             }
 
-            current.Matches.Add(entry);
+            current.Matches.Add(new InboundMatch() { Entry = entry, TemplateMatcher = matcher });
             current.Matches.Sort((x, y) =>
             {
-                var result = x.Precedence.CompareTo(y.Precedence);
-                return result == 0 ? x.RouteTemplate.TemplateText.CompareTo(y.RouteTemplate.TemplateText) : result;
+                var result = x.Entry.Precedence.CompareTo(y.Entry.Precedence);
+                return result == 0 ? x.Entry.RouteTemplate.TemplateText.CompareTo(y.Entry.RouteTemplate.TemplateText) : result;
             });
         }
     }

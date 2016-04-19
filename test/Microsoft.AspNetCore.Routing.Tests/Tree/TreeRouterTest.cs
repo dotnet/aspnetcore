@@ -44,25 +44,16 @@ namespace Microsoft.AspNetCore.Routing.Tree
             string secondTemplate)
         {
             // Arrange
-            var expectedRouteGroup = string.Format("{0}&&{1}", 0, firstTemplate);
+            var expectedRouteGroup = CreateRouteGroup(0, firstTemplate);
 
-            var next = new Mock<IRouter>();
-            next
-                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(c => c.Handler = NullHandler)
-                .Returns(Task.FromResult(true))
-                .Verifiable();
-
-            var firstRoute = CreateMatchingEntry(next.Object, firstTemplate, order: 0);
-            var secondRoute = CreateMatchingEntry(next.Object, secondTemplate, order: 0);
+            var builder = CreateBuilder();
 
             // We setup the route entries in reverse order of precedence to ensure that when we
             // try to route the request, the route with a higher precedence gets tried first.
-            var matchingRoutes = new[] { secondRoute, firstRoute };
+            MapInboundEntry(builder, secondTemplate);
+            MapInboundEntry(builder, firstTemplate);
 
-            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
-
-            var route = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
+            var route = builder.Build();
 
             var context = CreateRouteContext("/template/5");
 
@@ -89,26 +80,17 @@ namespace Microsoft.AspNetCore.Routing.Tree
             string secondTemplate)
         {
             // Arrange
-            var expectedRouteGroup = string.Format("{0}&&{1}", 0, secondTemplate);
+            var expectedRouteGroup = CreateRouteGroup(0, secondTemplate);
 
-            var next = new Mock<IRouter>();
-            next
-                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(c => c.Handler = NullHandler)
-                .Returns(Task.FromResult(true))
-                .Verifiable();
-
-            var firstRoute = CreateMatchingEntry(next.Object, firstTemplate, order: 1);
-            var secondRoute = CreateMatchingEntry(next.Object, secondTemplate, order: 0);
+            var builder = CreateBuilder();
 
             // We setup the route entries with a lower relative order and higher relative precedence
             // first to ensure that when we try to route the request, the route with the higher
             // relative order gets tried first.
-            var matchingRoutes = new[] { firstRoute, secondRoute };
+            MapInboundEntry(builder, firstTemplate, order: 1);
+            MapInboundEntry(builder, secondTemplate, order: 0);
 
-            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
-
-            var route = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
+            var route = builder.Build();
 
             var context = CreateRouteContext("/template/5");
 
@@ -131,21 +113,14 @@ namespace Microsoft.AspNetCore.Routing.Tree
             string expectedResult)
         {
             // Arrange
-            var next = new Mock<IRouter>();
-            next
-                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(c => c.Handler = NullHandler)
-                .Returns(Task.FromResult(true))
-                .Verifiable();
+            var builder = CreateBuilder();
+            MapInboundEntry(builder, template);
+            var route = builder.Build();
 
-            var firstRoute = CreateMatchingEntry(next.Object, template, order: 0);
-            var matchingRoutes = new[] { firstRoute };
-            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
-            var attributeRoute = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
             var context = CreateRouteContext(requestPath);
 
             // Act
-            await attributeRoute.RouteAsync(context);
+            await route.RouteAsync(context);
 
             // Assert
             Assert.NotNull(context.Handler);
@@ -160,21 +135,14 @@ namespace Microsoft.AspNetCore.Routing.Tree
             string requestPath)
         {
             // Arrange
-            var next = new Mock<IRouter>();
-            next
-                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(c => c.Handler = NullHandler)
-                .Returns(Task.FromResult(true))
-                .Verifiable();
+            var builder = CreateBuilder();
+            MapInboundEntry(builder, template);
+            var route = builder.Build();
 
-            var firstRoute = CreateMatchingEntry(next.Object, template, order: 0);
-            var matchingRoutes = new[] { firstRoute };
-            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
-            var attributeRoute = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
             var context = CreateRouteContext(requestPath);
 
             // Act
-            await attributeRoute.RouteAsync(context);
+            await route.RouteAsync(context);
 
             // Assert
             Assert.NotNull(context.Handler);
@@ -189,23 +157,15 @@ namespace Microsoft.AspNetCore.Routing.Tree
             string requestPath)
         {
             // Arrange
-            var next = new Mock<IRouter>();
-            next
-                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(c => c.Handler = NullHandler)
-                .Returns(Task.FromResult(true))
-                .Verifiable();
-
-            var firstRoute = CreateMatchingEntry(next.Object, template, order: 0);
-            var matchingRoutes = new[] { firstRoute };
-            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
-            var attributeRoute = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
+            var builder = CreateBuilder();
+            MapInboundEntry(builder, template);
+            var route = builder.Build();
 
             var context = CreateRouteContext(requestPath);
             context.RouteData.Values["path"] = "existing-value";
 
             // Act
-            await attributeRoute.RouteAsync(context);
+            await route.RouteAsync(context);
 
             // Assert
             Assert.NotNull(context.Handler);
@@ -220,23 +180,15 @@ namespace Microsoft.AspNetCore.Routing.Tree
             string requestPath)
         {
             // Arrange
-            var next = new Mock<IRouter>();
-            next
-                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(c => c.Handler = NullHandler)
-                .Returns(Task.FromResult(true))
-                .Verifiable();
-
-            var firstRoute = CreateMatchingEntry(next.Object, template, order: 0);
-            var matchingRoutes = new[] { firstRoute };
-            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
-            var attributeRoute = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
+            var builder = CreateBuilder();
+            MapInboundEntry(builder, template);
+            var route = builder.Build();
 
             var context = CreateRouteContext(requestPath);
             context.RouteData.Values["path"] = "existing-value";
 
             // Act
-            await attributeRoute.RouteAsync(context);
+            await route.RouteAsync(context);
 
             // Assert
             Assert.NotNull(context.Handler);
@@ -252,25 +204,16 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public async Task TreeRouter_RouteAsync_RespectsOrder(string template)
         {
             // Arrange
-            var expectedRouteGroup = string.Format("{0}&&{1}", 0, template);
+            var expectedRouteGroup = CreateRouteGroup(0, template);
 
-            var next = new Mock<IRouter>();
-            next
-                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(c => c.Handler = NullHandler)
-                .Returns(Task.FromResult(true))
-                .Verifiable();
-
-            var firstRoute = CreateMatchingEntry(next.Object, template, order: 1);
-            var secondRoute = CreateMatchingEntry(next.Object, template, order: 0);
+            var builder = CreateBuilder();
 
             // We setup the route entries with a lower relative order first to ensure that when
             // we try to route the request, the route with the higher relative order gets tried first.
-            var matchingRoutes = new[] { firstRoute, secondRoute };
+            MapInboundEntry(builder, template, order: 1);
+            MapInboundEntry(builder, template, order: 0);
 
-            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
-
-            var route = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
+            var route = builder.Build();
 
             var context = CreateRouteContext("/template/5");
 
@@ -289,27 +232,16 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public async Task TreeRouter_RouteAsync_EnsuresStableOrdering(string first, string second)
         {
             // Arrange
-            var expectedRouteGroup = string.Format("{0}&&{1}", 0, first);
+            var expectedRouteGroup = CreateRouteGroup(0, first);
 
-            var next = new Mock<IRouter>();
-            next
-                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(c => c.Handler = NullHandler)
-                .Returns(Task.FromResult(true))
-                .Verifiable();
-
-            var secondRouter = new Mock<IRouter>(MockBehavior.Strict);
-
-            var firstRoute = CreateMatchingEntry(next.Object, first, order: 0);
-            var secondRoute = CreateMatchingEntry(next.Object, second, order: 0);
+            var builder = CreateBuilder();
 
             // We setup the route entries with a lower relative template order first to ensure that when
             // we try to route the request, the route with the higher template order gets tried first.
-            var matchingRoutes = new[] { secondRoute, firstRoute };
+            MapInboundEntry(builder, first);
+            MapInboundEntry(builder, second);
 
-            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
-
-            var route = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
+            var route = builder.Build();
 
             var context = CreateRouteContext("/template/5");
 
@@ -331,24 +263,11 @@ namespace Microsoft.AspNetCore.Routing.Tree
             bool expectedResult)
         {
             // Arrange
-            var expectedRouteGroup = string.Format("{0}&&{1}", 0, template);
+            var expectedRouteGroup = CreateRouteGroup(0, template);
 
-            var next = new Mock<IRouter>();
-            next
-                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(c => c.Handler = NullHandler)
-                .Returns(Task.FromResult(true))
-                .Verifiable();
-
-            var firstRoute = CreateMatchingEntry(next.Object, template, order: 0);
-
-            // We setup the route entries in reverse order of precedence to ensure that when we
-            // try to route the request, the route with a higher precedence gets tried first.
-            var matchingRoutes = new[] { firstRoute };
-
-            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
-
-            var route = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
+            var builder = CreateBuilder();
+            MapInboundEntry(builder, template);
+            var route = builder.Build();
 
             var context = CreateRouteContext(request);
 
@@ -394,22 +313,12 @@ namespace Microsoft.AspNetCore.Routing.Tree
             string p3)
         {
             // Arrange
-            var expectedRouteGroup = string.Format("{0}&&{1}", 0, template);
+            var expectedRouteGroup = CreateRouteGroup(0, template);
 
-            var next = new Mock<IRouter>();
-            next
-                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(c => c.Handler = NullHandler)
-                .Returns(Task.FromResult(true))
-                .Verifiable();
+            var builder = CreateBuilder();
+            MapInboundEntry(builder, template);
+            var route = builder.Build();
 
-            var firstRoute = CreateMatchingEntry(next.Object, template, order: 0);
-
-            // We setup the route entries in reverse order of precedence to ensure that when we
-            // try to route the request, the route with a higher precedence gets tried first.
-            var matchingEntries = new[] { firstRoute };
-            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
-            var route = CreateAttributeRoute(next.Object, matchingEntries, linkGenerationEntries);
             var context = CreateRouteContext(request);
 
             // Act
@@ -449,22 +358,11 @@ namespace Microsoft.AspNetCore.Routing.Tree
             string request)
         {
             // Arrange
-            var expectedRouteGroup = string.Format("{0}&&{1}", 0, template);
+            var expectedRouteGroup = CreateRouteGroup(0, template);
 
-            var next = new Mock<IRouter>();
-            next
-                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(c => c.Handler = NullHandler)
-                .Returns(Task.FromResult(true))
-                .Verifiable();
-
-            var firstRoute = CreateMatchingEntry(next.Object, template, order: 0);
-
-            // We setup the route entries in reverse order of precedence to ensure that when we
-            // try to route the request, the route with a higher precedence gets tried first.
-            var matchingEntries = new[] { firstRoute };
-            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
-            var route = CreateAttributeRoute(next.Object, matchingEntries, linkGenerationEntries);
+            var builder = CreateBuilder();
+            MapInboundEntry(builder, template);
+            var route = builder.Build();
 
             var context = CreateRouteContext(request);
 
@@ -495,7 +393,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 {"id", 5 }
             };
 
-            var route = CreateAttributeRoute(firstTemplate, secondTemplate);
+            var route = CreateTreeRouter(firstTemplate, secondTemplate);
             var context = CreateVirtualPathContext(
                 values: values,
                 ambientValues: null);
@@ -517,7 +415,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             var firstTemplate = "template";
             var secondTemplate = "template/{parameter:int=1003}";
 
-            var route = CreateAttributeRoute(firstTemplate, secondTemplate);
+            var route = CreateTreeRouter(firstTemplate, secondTemplate);
             var context = CreateVirtualPathContext(
                 values: null,
                 ambientValues: null);
@@ -543,7 +441,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             string expectedPath)
         {
             // Arrange
-            var route = CreateAttributeRoute(firstTemplate, secondTemplate);
+            var route = CreateTreeRouter(firstTemplate, secondTemplate);
             var parameter = 5;
             var id = 1234;
             var values = new Dictionary<string, object>
@@ -575,7 +473,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             string expectedPath)
         {
             // Arrange
-            var route = CreateAttributeRoute(firstTemplate, secondTemplate);
+            var route = CreateTreeRouter(firstTemplate, secondTemplate);
             var parameter = 5;
             var id = 1234;
             var values = new Dictionary<string, object>
@@ -611,16 +509,14 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_RespectsPrecedence(string firstTemplate, string secondTemplate)
         {
             // Arrange
-            var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
-
-            var firstEntry = CreateGenerationEntry(firstTemplate, requiredValues: null);
-            var secondEntry = CreateGenerationEntry(secondTemplate, requiredValues: null, order: 0);
+            var builder = CreateBuilder();
 
             // We setup the route entries in reverse order of precedence to ensure that when we
             // try to generate a link, the route with a higher precedence gets tried first.
-            var linkGenerationEntries = new[] { secondEntry, firstEntry };
+            MapOutboundEntry(builder, secondTemplate);
+            MapOutboundEntry(builder, firstTemplate);
 
-            var route = CreateAttributeRoute(matchingRoutes, linkGenerationEntries);
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(values: null, ambientValues: new { parameter = 5 });
 
@@ -650,13 +546,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
             object parameter)
         {
             // Arrange
-            var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
-
-            var entry = CreateGenerationEntry(template, requiredValues: null);
-
-            var linkGenerationEntries = new[] { entry };
-
-            var route = CreateAttributeRoute(matchingRoutes, linkGenerationEntries);
+            var builder = CreateBuilder();
+            MapOutboundEntry(builder, template);
+            var route = builder.Build();
 
             VirtualPathContext context;
             if (parameter != null)
@@ -699,17 +591,15 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_RespectsOrderOverPrecedence(string firstTemplate, string secondTemplate)
         {
             // Arrange
-            var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
-
-            var firstRoute = CreateGenerationEntry(firstTemplate, requiredValues: null, order: 1);
-            var secondRoute = CreateGenerationEntry(secondTemplate, requiredValues: null, order: 0);
+            var builder = CreateBuilder();
 
             // We setup the route entries with a lower relative order and higher relative precedence
             // first to ensure that when we try to generate a link, the route with the higher
             // relative order gets tried first.
-            var linkGenerationEntries = new[] { firstRoute, secondRoute };
+            MapOutboundEntry(builder, firstTemplate, order: 1);
+            MapOutboundEntry(builder, secondTemplate, order: 0);
 
-            var route = CreateAttributeRoute(matchingRoutes, linkGenerationEntries);
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(null, ambientValues: new { parameter = 5 });
 
@@ -732,16 +622,14 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_RespectsOrder(string firstTemplate, string secondTemplate)
         {
             // Arrange
-            var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
-
-            var firstRoute = CreateGenerationEntry(firstTemplate, requiredValues: null, order: 1);
-            var secondRoute = CreateGenerationEntry(secondTemplate, requiredValues: null, order: 0);
-
+            var builder = CreateBuilder();
+            
             // We setup the route entries with a lower relative order first to ensure that when
             // we try to generate a link, the route with the higher relative order gets tried first.
-            var linkGenerationEntries = new[] { firstRoute, secondRoute };
+            MapOutboundEntry(builder, firstTemplate, requiredValues: null, order: 1);
+            MapOutboundEntry(builder, secondTemplate, requiredValues: null, order: 0);
 
-            var route = CreateAttributeRoute(matchingRoutes, linkGenerationEntries);
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(values: null, ambientValues: new { first = 5, second = 5 });
 
@@ -764,16 +652,14 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_EnsuresStableOrder(string firstTemplate, string secondTemplate)
         {
             // Arrange
-            var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
-
-            var firstRoute = CreateGenerationEntry(firstTemplate, requiredValues: null, order: 0);
-            var secondRoute = CreateGenerationEntry(secondTemplate, requiredValues: null, order: 0);
-
+            var builder = CreateBuilder();
+            
             // We setup the route entries with a lower relative template order first to ensure that when
             // we try to generate a link, the route with the higher template order gets tried first.
-            var linkGenerationEntries = new[] { secondRoute, firstRoute };
+            MapOutboundEntry(builder, secondTemplate, requiredValues: null, order: 0);
+            MapOutboundEntry(builder, firstTemplate, requiredValues: null, order: 0);
 
-            var route = CreateAttributeRoute(matchingRoutes, linkGenerationEntries);
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(values: null, ambientValues: new { first = 5, second = 5 });
 
@@ -787,139 +673,31 @@ namespace Microsoft.AspNetCore.Routing.Tree
             Assert.Empty(result.DataTokens);
         }
 
-        public static IEnumerable<object[]> NamedEntriesWithDifferentTemplates
-        {
-            get
-            {
-                var data = new TheoryData<IEnumerable<TreeRouteLinkGenerationEntry>>();
-                data.Add(new[]
-                {
-                        CreateGenerationEntry("template", null, 0, "NamedEntry"),
-                        CreateGenerationEntry("otherTemplate", null, 0, "NamedEntry"),
-                        CreateGenerationEntry("anotherTemplate", null, 0, "NamedEntry")
-                });
-
-                // Default values for parameters are taken into account by comparing the templates.
-                data.Add(new[]
-                {
-                        CreateGenerationEntry("template/{parameter=0}", null, 0, "NamedEntry"),
-                        CreateGenerationEntry("template/{parameter=1}", null, 0, "NamedEntry"),
-                        CreateGenerationEntry("template/{parameter=2}", null, 0, "NamedEntry")
-                });
-
-                // Names for entries are compared ignoring casing.
-                data.Add(new[]
-                {
-                        CreateGenerationEntry("template/{*parameter:int=0}", null, 0, "NamedEntry"),
-                        CreateGenerationEntry("template/{*parameter:int=1}", null, 0, "NAMEDENTRY"),
-                        CreateGenerationEntry("template/{*parameter:int=2}", null, 0, "namedentry")
-                });
-                return data;
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(TreeRouterTest.NamedEntriesWithDifferentTemplates))]
-        public void TreeRouter_CreateTreeRouter_ThrowsIfDifferentEntriesHaveTheSameName(
-            IEnumerable<TreeRouteLinkGenerationEntry> namedEntries)
+        [Fact]
+        public void TreeRouter_GeneratesLink_ForMultipleNamedEntriesWithTheSameTemplate()
         {
             // Arrange
-            string expectedExceptionMessage = "Two or more routes named 'NamedEntry' have different templates." +
-                Environment.NewLine +
-                "Parameter name: linkGenerationEntries";
+            var builder = CreateBuilder();
 
-            var next = new Mock<IRouter>().Object;
+            MapOutboundEntry(builder, "Template", name: "NamedEntry", order: 1);
+            MapOutboundEntry(builder, "TEMPLATE", name: "NamedEntry", order: 2);
 
-            // Act
-            var builder = new TreeRouteBuilder(next, NullLoggerFactory.Instance);
-            var exception = Assert.Throws<ArgumentException>(
-                "linkGenerationEntries",
-                () =>
-                {
-                    foreach (var entry in namedEntries)
-                    {
-                        builder.Add(entry);
-                    }
-
-                    return builder.Build(version: 1);
-                });
-
-            Assert.Equal(expectedExceptionMessage, exception.Message, StringComparer.OrdinalIgnoreCase);
-        }
-
-        public static IEnumerable<object[]> NamedEntriesWithTheSameTemplate
-        {
-            get
-            {
-                var data = new TheoryData<IEnumerable<TreeRouteLinkGenerationEntry>>();
-
-                data.Add(new[]
-                {
-                        CreateGenerationEntry("template", null, 0, "NamedEntry"),
-                        CreateGenerationEntry("template", null, 1, "NamedEntry"),
-                        CreateGenerationEntry("template", null, 2, "NamedEntry")
-                });
-
-                // Templates are compared ignoring casing.
-                data.Add(new[]
-                {
-                        CreateGenerationEntry("template", null, 0, "NamedEntry"),
-                        CreateGenerationEntry("Template", null, 1, "NamedEntry"),
-                        CreateGenerationEntry("TEMPLATE", null, 2, "NamedEntry")
-                });
-
-                data.Add(new[]
-                {
-                        CreateGenerationEntry("template/{parameter=0}", null, 0, "NamedEntry"),
-                        CreateGenerationEntry("template/{parameter=0}", null, 1, "NamedEntry"),
-                        CreateGenerationEntry("template/{parameter=0}", null, 2, "NamedEntry")
-                });
-
-                return data;
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(TreeRouterTest.NamedEntriesWithTheSameTemplate))]
-        public void TreeRouter_GeneratesLink_ForMultipleNamedEntriesWithTheSameTemplate(
-            IEnumerable<TreeRouteLinkGenerationEntry> namedEntries)
-        {
-            // Arrange
-            var expectedLink =
-                namedEntries.First().Template.Parameters.Any() ? "/template/5" : "/template";
-
-            var matchingEntries = Enumerable.Empty<TreeRouteMatchingEntry>();
-
-            var route = CreateAttributeRoute(matchingEntries, namedEntries);
-
-            var ambientValues = namedEntries.First().Template.Parameters.Any() ? new { parameter = 5 } : null;
-
-            var context = CreateVirtualPathContext(values: null, ambientValues: ambientValues, name: "NamedEntry");
-
-            // Act
-            var result = route.GetVirtualPath(context);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(expectedLink, result.VirtualPath);
-            Assert.Same(route, result.Router);
-            Assert.Empty(result.DataTokens);
+            // Act & Assert (does not throw)
+            builder.Build();
         }
 
         [Fact]
         public void TreeRouter_GenerateLink_WithName()
         {
             // Arrange
-            var namedEntry = CreateGenerationEntry("named", requiredValues: null, order: 1, name: "NamedRoute");
-            var unnamedEntry = CreateGenerationEntry("unnamed", requiredValues: null, order: 0);
+            var builder = CreateBuilder();
 
             // The named route has a lower order which will ensure that we aren't trying the route as
             // if it were an unnamed route.
-            var linkGenerationEntries = new[] { namedEntry, unnamedEntry };
+            MapOutboundEntry(builder, "named", requiredValues: null, order: 1, name: "NamedRoute");
+            MapOutboundEntry(builder, "unnamed", requiredValues: null, order: 0);
 
-            var matchingEntries = Enumerable.Empty<TreeRouteMatchingEntry>();
-
-            var route = CreateAttributeRoute(matchingEntries, linkGenerationEntries);
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(values: null, ambientValues: null, name: "NamedRoute");
 
@@ -937,18 +715,16 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_DoesNotGenerateLink_IfThereIsNoRouteForAGivenName()
         {
             // Arrange
-            var namedEntry = CreateGenerationEntry("named", requiredValues: null, order: 1, name: "NamedRoute");
-
-            // Add an unnamed entry to ensure we don't fall back to generating a link for an unnamed route.
-            var unnamedEntry = CreateGenerationEntry("unnamed", requiredValues: null, order: 0);
-
+            var builder = CreateBuilder();
+            
             // The named route has a lower order which will ensure that we aren't trying the route as
             // if it were an unnamed route.
-            var linkGenerationEntries = new[] { namedEntry, unnamedEntry };
+            MapOutboundEntry(builder, "named", requiredValues: null, order: 1, name: "NamedRoute");
 
-            var matchingEntries = Enumerable.Empty<TreeRouteMatchingEntry>();
+            // Add an unnamed entry to ensure we don't fall back to generating a link for an unnamed route.
+            MapOutboundEntry(builder, "unnamed", requiredValues: null, order: 0);
 
-            var route = CreateAttributeRoute(matchingEntries, linkGenerationEntries);
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(values: null, ambientValues: null, name: "NonExistingNamedRoute");
 
@@ -968,21 +744,18 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_DoesNotGenerateLink_IfValuesDoNotMatchNamedEntry(string template, string value)
         {
             // Arrange
-            var namedEntry = CreateGenerationEntry(template, requiredValues: null, order: 1, name: "NamedRoute");
-
-            // Add an unnamed entry to ensure we don't fall back to generating a link for an unnamed route.
-            var unnamedEntry = CreateGenerationEntry("unnamed", requiredValues: null, order: 0);
+            var builder = CreateBuilder();
 
             // The named route has a lower order which will ensure that we aren't trying the route as
             // if it were an unnamed route.
-            var linkGenerationEntries = new[] { namedEntry, unnamedEntry };
+            MapOutboundEntry(builder, template, requiredValues: null, order: 1, name: "NamedRoute");
 
-            var matchingEntries = Enumerable.Empty<TreeRouteMatchingEntry>();
+            // Add an unnamed entry to ensure we don't fall back to generating a link for an unnamed route.
+            MapOutboundEntry(builder, "unnamed", requiredValues: null, order: 0);
 
-            var route = CreateAttributeRoute(matchingEntries, linkGenerationEntries);
+            var route = builder.Build();
 
             var ambientValues = value == null ? null : new { parameter = value };
-
             var context = CreateVirtualPathContext(values: null, ambientValues: ambientValues, name: "NamedRoute");
 
             // Act
@@ -1000,26 +773,18 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GeneratesLink_IfValuesMatchNamedEntry(string template, string value)
         {
             // Arrange
-            var next = new Mock<IRouter>();
-            next
-                .Setup(s => s.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Returns((VirtualPathData)null);
-
-            var namedEntry = CreateGenerationEntry(template, requiredValues: null, order: 1, name: "NamedRoute");
-
-            // Add an unnamed entry to ensure we don't fall back to generating a link for an unnamed route.
-            var unnamedEntry = CreateGenerationEntry("unnamed", requiredValues: null, order: 0);
-
+            var builder = CreateBuilder();
+            
             // The named route has a lower order which will ensure that we aren't trying the route as
             // if it were an unnamed route.
-            var linkGenerationEntries = new[] { namedEntry, unnamedEntry };
+            MapOutboundEntry(builder, template, requiredValues: null, order: 1, name: "NamedRoute");
 
-            var matchingEntries = Enumerable.Empty<TreeRouteMatchingEntry>();
+            // Add an unnamed entry to ensure we don't fall back to generating a link for an unnamed route.
+            MapOutboundEntry(builder, "unnamed", requiredValues: null, order: 0);
 
-            var route = CreateAttributeRoute(next.Object, matchingEntries, linkGenerationEntries);
+            var route = builder.Build();
 
             var ambientValues = value == null ? null : new { parameter = value };
-
             var context = CreateVirtualPathContext(values: null, ambientValues: ambientValues, name: "NamedRoute");
 
             // Act
@@ -1036,8 +801,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_NoRequiredValues()
         {
             // Arrange
-            var entry = CreateGenerationEntry("api/Store", new { });
-            var route = CreateAttributeRoute(entry);
+            var builder = CreateBuilder();
+            MapOutboundEntry(builder, "api/Store", new { });
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(new { });
 
@@ -1055,8 +821,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_Match()
         {
             // Arrange
-            var entry = CreateGenerationEntry("api/Store", new { action = "Index", controller = "Store" });
-            var route = CreateAttributeRoute(entry);
+            var builder = CreateBuilder();
+            MapOutboundEntry(builder, "api/Store", new { action = "Index", controller = "Store" });
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(new { action = "Index", controller = "Store" });
 
@@ -1074,8 +841,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_NoMatch()
         {
             // Arrange
-            var entry = CreateGenerationEntry("api/Store", new { action = "Details", controller = "Store" });
-            var route = CreateAttributeRoute(entry);
+            var builder = CreateBuilder();
+            MapOutboundEntry(builder, "api/Store", new { action = "Details", controller = "Store" });
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(new { action = "Index", controller = "Store" });
 
@@ -1090,8 +858,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_Match_WithAmbientValues()
         {
             // Arrange
-            var entry = CreateGenerationEntry("api/Store", new { action = "Index", controller = "Store" });
-            var route = CreateAttributeRoute(entry);
+            var builder = CreateBuilder();
+            MapOutboundEntry(builder, "api/Store", new { action = "Index", controller = "Store" });
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(new { }, new { action = "Index", controller = "Store" });
 
@@ -1109,8 +878,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_Match_WithParameters()
         {
             // Arrange
-            var entry = CreateGenerationEntry("api/Store/{action}", new { action = "Index", controller = "Store" });
-            var route = CreateAttributeRoute(entry);
+            var builder = CreateBuilder();
+            MapOutboundEntry(builder, "api/Store/{action}", new { action = "Index", controller = "Store" });
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(new { action = "Index", controller = "Store" });
 
@@ -1128,12 +898,12 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_Match_WithMoreParameters()
         {
             // Arrange
-            var entry = CreateGenerationEntry(
+            var builder = CreateBuilder();
+            MapOutboundEntry(builder, 
                 "api/{area}/dosomething/{controller}/{action}",
                 new { action = "Index", controller = "Store", area = "AwesomeCo" });
 
-            var next = new StubRouter();
-            var route = CreateAttributeRoute(next, entry);
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(
                 new { action = "Index", controller = "Store" },
@@ -1153,8 +923,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_Match_WithDefault()
         {
             // Arrange
-            var entry = CreateGenerationEntry("api/Store/{action=Index}", new { action = "Index", controller = "Store" });
-            var route = CreateAttributeRoute(entry);
+            var builder = CreateBuilder();
+            MapOutboundEntry(builder, "api/Store/{action=Index}", new { action = "Index", controller = "Store" });
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(new { action = "Index", controller = "Store" });
 
@@ -1172,10 +943,10 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_Match_WithConstraint()
         {
             // Arrange
-            var entry = CreateGenerationEntry("api/Store/{action}/{id:int}", new { action = "Index", controller = "Store" });
+            var builder = CreateBuilder();
+            MapOutboundEntry(builder, "api/Store/{action}/{id:int}", new { action = "Index", controller = "Store" });
 
-            var next = new StubRouter();
-            var route = CreateAttributeRoute(next, entry);
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(new { action = "Index", controller = "Store", id = 5 });
 
@@ -1193,8 +964,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_NoMatch_WithConstraint()
         {
             // Arrange
-            var entry = CreateGenerationEntry("api/Store/{action}/{id:int}", new { action = "Index", controller = "Store" });
-            var route = CreateAttributeRoute(entry);
+            var builder = CreateBuilder();
+            MapOutboundEntry(builder, "api/Store/{action}/{id:int}", new { action = "Index", controller = "Store" });
+            var route = builder.Build();
 
             var next = new StubRouter();
             var context = CreateVirtualPathContext(new { action = "Index", controller = "Store", id = "heyyyy" });
@@ -1210,8 +982,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_Match_WithMixedAmbientValues()
         {
             // Arrange
-            var entry = CreateGenerationEntry("api/Store", new { action = "Index", controller = "Store" });
-            var route = CreateAttributeRoute(entry);
+            var builder = CreateBuilder();
+            MapOutboundEntry(builder, "api/Store", new { action = "Index", controller = "Store" });
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(new { action = "Index" }, new { controller = "Store" });
 
@@ -1229,8 +1002,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_Match_WithQueryString()
         {
             // Arrange
-            var entry = CreateGenerationEntry("api/Store", new { action = "Index", controller = "Store" });
-            var route = CreateAttributeRoute(entry);
+            var builder = CreateBuilder();
+            MapOutboundEntry(builder, "api/Store", new { action = "Index", controller = "Store" });
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(new { action = "Index", id = 5 }, new { controller = "Store" });
 
@@ -1248,10 +1022,11 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_RejectedByFirstRoute()
         {
             // Arrange
-            var entry1 = CreateGenerationEntry("api/Store", new { action = "Index", controller = "Store" });
-            var entry2 = CreateGenerationEntry("api2/{controller}", new { action = "Index", controller = "Blog" });
+            var builder = CreateBuilder();
+            MapOutboundEntry(builder, "api/Store", new { action = "Index", controller = "Store" });
+            MapOutboundEntry(builder, "api2/{controller}", new { action = "Index", controller = "Blog" });
 
-            var route = CreateAttributeRoute(entry1, entry2);
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(new { action = "Index", controller = "Blog" });
 
@@ -1269,15 +1044,14 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_ToArea()
         {
             // Arrange
-            var entry1 = CreateGenerationEntry("Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
-            entry1.GenerationPrecedence = 2;
+            var builder = CreateBuilder();
+            var entry1 = MapOutboundEntry(builder, "Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
+            entry1.Precedence = 2;
 
-            var entry2 = CreateGenerationEntry("Store", new { area = (string)null, action = "Edit", controller = "Store" });
-            entry2.GenerationPrecedence = 1;
+            var entry2 = MapOutboundEntry(builder, "Store", new { area = (string)null, action = "Edit", controller = "Store" });
+            entry2.Precedence = 1;
 
-            var next = new StubRouter();
-
-            var route = CreateAttributeRoute(next, entry1, entry2);
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(new { area = "Help", action = "Edit", controller = "Store" });
 
@@ -1295,15 +1069,14 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_ToArea_PredecedenceReversed()
         {
             // Arrange
-            var entry1 = CreateGenerationEntry("Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
-            entry1.GenerationPrecedence = 1;
+            var builder = CreateBuilder();
+            var entry1 = MapOutboundEntry(builder, "Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
+            entry1.Precedence = 1;
 
-            var entry2 = CreateGenerationEntry("Store", new { area = (string)null, action = "Edit", controller = "Store" });
-            entry2.GenerationPrecedence = 2;
+            var entry2 = MapOutboundEntry(builder, "Store", new { area = (string)null, action = "Edit", controller = "Store" });
+            entry2.Precedence = 2;
 
-            var next = new StubRouter();
-
-            var route = CreateAttributeRoute(next, entry1, entry2);
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(new { area = "Help", action = "Edit", controller = "Store" });
 
@@ -1321,15 +1094,14 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_ToArea_WithAmbientValues()
         {
             // Arrange
-            var entry1 = CreateGenerationEntry("Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
-            entry1.GenerationPrecedence = 2;
+            var builder = CreateBuilder();
+            var entry1 = MapOutboundEntry(builder, "Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
+            entry1.Precedence = 2;
 
-            var entry2 = CreateGenerationEntry("Store", new { area = (string)null, action = "Edit", controller = "Store" });
-            entry2.GenerationPrecedence = 1;
+            var entry2 = MapOutboundEntry(builder, "Store", new { area = (string)null, action = "Edit", controller = "Store" });
+            entry2.Precedence = 1;
 
-            var next = new StubRouter();
-
-            var route = CreateAttributeRoute(next, entry1, entry2);
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(
                 values: new { action = "Edit", controller = "Store" },
@@ -1349,15 +1121,14 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public void TreeRouter_GenerateLink_OutOfArea_IgnoresAmbientValue()
         {
             // Arrange
-            var entry1 = CreateGenerationEntry("Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
-            entry1.GenerationPrecedence = 2;
+            var builder = CreateBuilder();
+            var entry1 = MapOutboundEntry(builder, "Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
+            entry1.Precedence = 2;
 
-            var entry2 = CreateGenerationEntry("Store", new { area = (string)null, action = "Edit", controller = "Store" });
-            entry2.GenerationPrecedence = 1;
+            var entry2 = MapOutboundEntry(builder, "Store", new { area = (string)null, action = "Edit", controller = "Store" });
+            entry2.Precedence = 1;
 
-            var next = new StubRouter();
-
-            var route = CreateAttributeRoute(next, entry1, entry2);
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(
                 values: new { action = "Edit", controller = "Store" },
@@ -1451,8 +1222,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
             string expected)
         {
             // Arrange
-            var entry = CreateGenerationEntry(template, null);
-            var route = CreateAttributeRoute(entry);
+            var builder = CreateBuilder();
+            MapOutboundEntry(builder, template);
+            var route = builder.Build();
 
             var context = CreateVirtualPathContext(values, ambientValues);
 
@@ -1467,53 +1239,12 @@ namespace Microsoft.AspNetCore.Routing.Tree
         }
 
         [Fact]
-        public async Task TreeRouter_SnapshotsRouteData()
-        {
-            // Arrange
-            RouteValueDictionary nestedValues = null;
-
-            var next = new Mock<IRouter>();
-            next
-                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(c =>
-                {
-                    nestedValues = new RouteValueDictionary(c.RouteData.Values);
-                    c.Handler = null; // Not a match
-                })
-                .Returns(Task.FromResult(true))
-                .Verifiable();
-
-            var entry = CreateMatchingEntry(next.Object, "api/Store", order: 0);
-            var route = CreateAttributeRoute(next.Object, entry);
-
-            var context = CreateRouteContext("/api/Store");
-
-            var routeData = context.RouteData;
-            routeData.Values.Add("action", "Index");
-
-            var originalValues = new RouteValueDictionary(context.RouteData.Values);
-
-            // Act
-            await route.RouteAsync(context);
-
-            // Assert
-            Assert.Equal(originalValues, context.RouteData.Values);
-            Assert.NotEqual(nestedValues, context.RouteData.Values);
-        }
-
-        [Fact]
         public async Task TreeRouter_ReplacesExistingRouteValues_IfNotNull()
         {
             // Arrange
-            var router = new Mock<IRouter>();
-            router
-                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(c => c.Handler = NullHandler)
-                .Returns(Task.FromResult(true))
-                .Verifiable();
-
-            var entry = CreateMatchingEntry(router.Object, "Foo/{*path}", order: 0);
-            var route = CreateAttributeRoute(router.Object, entry);
+            var builder = CreateBuilder();
+            MapInboundEntry(builder, "Foo/{*path}");
+            var route = builder.Build();
 
             var context = CreateRouteContext("/Foo/Bar");
 
@@ -1531,15 +1262,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
         public async Task TreeRouter_DoesNotReplaceExistingRouteValues_IfNull()
         {
             // Arrange
-            var router = new Mock<IRouter>();
-            router
-                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(c => c.Handler = NullHandler)
-                .Returns(Task.FromResult(true))
-                .Verifiable();
-
-            var entry = CreateMatchingEntry(router.Object, "Foo/{*path}", order: 0);
-            var route = CreateAttributeRoute(router.Object, entry);
+            var builder = CreateBuilder();
+            MapInboundEntry(builder, "Foo/{*path}");
+            var route = builder.Build();
 
             var context = CreateRouteContext("/Foo/");
 
@@ -1551,6 +1276,43 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
             // Assert
             Assert.Equal("default", context.RouteData.Values["path"]);
+        }
+
+        [Fact]
+        public async Task TreeRouter_SnapshotsRouteData()
+        {
+            // Arrange
+            RouteValueDictionary nestedValues = null;
+            List<IRouter> nestedRouters = null;
+
+            var next = new Mock<IRouter>();
+            next
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(c =>
+                {
+                    nestedValues = new RouteValueDictionary(c.RouteData.Values);
+                    nestedRouters = new List<IRouter>(c.RouteData.Routers);
+                    c.Handler = null; // Not a match
+                })
+                .Returns(TaskCache.CompletedTask);
+
+            var builder = CreateBuilder();
+            MapInboundEntry(builder, "api/Store", handler: next.Object);
+            var route = builder.Build();
+
+            var context = CreateRouteContext("/api/Store");
+
+            var routeData = context.RouteData;
+            routeData.Values.Add("action", "Index");
+
+            var originalValues = new RouteValueDictionary(context.RouteData.Values);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Equal(originalValues, context.RouteData.Values);
+            Assert.NotEqual(nestedValues, context.RouteData.Values);
         }
 
         [Fact]
@@ -1567,12 +1329,13 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 {
                     nestedValues = new RouteValueDictionary(c.RouteData.Values);
                     nestedRouters = new List<IRouter>(c.RouteData.Routers);
+                    c.Handler = null; // Not a match
                 })
-                .Returns(Task.FromResult(true))
-                .Verifiable();
+                .Returns(TaskCache.CompletedTask);
 
-            var entry = CreateMatchingEntry(next.Object, "api/Store", order: 0);
-            var route = CreateAttributeRoute(next.Object, entry);
+            var builder = CreateBuilder();
+            MapInboundEntry(builder, "api/Store", handler: next.Object);
+            var route = builder.Build();
 
             var context = CreateRouteContext("/api/Store");
 
@@ -1597,11 +1360,12 @@ namespace Microsoft.AspNetCore.Routing.Tree
         }
 
         [Fact]
-        public async Task TreeRouter_CreatesNewRouteData_ResetsWhenThrows()
+        public async Task TreeRouter_SnapshotsRouteData_ResetsWhenThrows()
         {
             // Arrange
             RouteValueDictionary nestedValues = null;
             List<IRouter> nestedRouters = null;
+
             var next = new Mock<IRouter>();
             next
                 .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
@@ -1609,11 +1373,13 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 {
                     nestedValues = new RouteValueDictionary(c.RouteData.Values);
                     nestedRouters = new List<IRouter>(c.RouteData.Routers);
+                    throw new Exception();
                 })
-                .Throws(new Exception());
+                .Returns(TaskCache.CompletedTask);
 
-            var entry = CreateMatchingEntry(next.Object, "api/Store", order: 0);
-            var route = CreateAttributeRoute(next.Object, entry);
+            var builder = CreateBuilder();
+            MapInboundEntry(builder, "api/Store", handler: next.Object);
+            var route = builder.Build();
 
             var context = CreateRouteContext("/api/Store");
             context.RouteData.Values.Add("action", "Index");
@@ -1665,104 +1431,45 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 name);
         }
 
-        private static TreeRouteMatchingEntry CreateMatchingEntry(IRouter router, string template, int order)
-        {
-            var routeGroup = string.Format("{0}&&{1}", order, template);
-            var entry = new TreeRouteMatchingEntry();
-            entry.Target = router;
-            entry.RouteTemplate = TemplateParser.Parse(template);
-            var parsedRouteTemplate = TemplateParser.Parse(template);
-
-            var defaults = new RouteValueDictionary();
-            foreach (var parameter in parsedRouteTemplate.Parameters)
-            {
-                if (parameter.DefaultValue != null)
-                {
-                    defaults.Add(parameter.Name, parameter.DefaultValue);
-                }
-            }
-
-            defaults["test_route_group"] = routeGroup;
-
-            entry.TemplateMatcher = new TemplateMatcher(parsedRouteTemplate, defaults);
-            entry.Precedence = RoutePrecedence.ComputeMatched(parsedRouteTemplate);
-            entry.Order = order;
-            entry.Constraints = GetRouteConstriants(CreateConstraintResolver(), template, parsedRouteTemplate);
-            return entry;
-        }
-
-        private static TreeRouteLinkGenerationEntry CreateGenerationEntry(
+        private static InboundRouteEntry MapInboundEntry(
+            TreeRouteBuilder builder,
             string template,
-            object requiredValues,
             int order = 0,
-            string name = null)
+            IRouter handler = null)
         {
-            var constraintResolver = CreateConstraintResolver();
+            var entry = builder.MapInbound(
+                handler ?? new StubRouter(), 
+                TemplateParser.Parse(template), 
+                routeName: null, 
+                order: order);
 
-            var entry = new TreeRouteLinkGenerationEntry();
-            entry.Template = TemplateParser.Parse(template);
+            // Add a generated 'route group' so we can identify later which entry matched.
+            entry.Defaults["test_route_group"] = CreateRouteGroup(order, template);
 
-            var defaults = new RouteValueDictionary();
-            foreach (var parameter in entry.Template.Parameters)
-            {
-                if (parameter.DefaultValue != null)
-                {
-                    defaults.Add(parameter.Name, parameter.DefaultValue);
-                }
-            }
-
-            var constraintBuilder = new RouteConstraintBuilder(CreateConstraintResolver(), template);
-            foreach (var parameter in entry.Template.Parameters)
-            {
-                if (parameter.InlineConstraints != null)
-                {
-                    if (parameter.IsOptional)
-                    {
-                        constraintBuilder.SetOptional(parameter.Name);
-                    }
-
-                    foreach (var constraint in parameter.InlineConstraints)
-                    {
-                        constraintBuilder.AddResolvedConstraint(parameter.Name, constraint.Constraint);
-                    }
-                }
-            }
-
-            var constraints = constraintBuilder.Build();
-
-            entry.Constraints = constraints;
-            entry.Defaults = defaults;
-            entry.Binder = new TemplateBinder(Encoder, Pool, entry.Template, defaults);
-            entry.Order = order;
-            entry.GenerationPrecedence = RoutePrecedence.ComputeGenerated(entry.Template);
-            entry.RequiredLinkValues = new RouteValueDictionary(requiredValues);
-            entry.RouteGroup = CreateRouteGroup(order, template);
-            entry.Name = name;
             return entry;
         }
 
-        private TreeRouteMatchingEntry CreateMatchingEntry(string template)
+        private static OutboundRouteEntry MapOutboundEntry(
+            TreeRouteBuilder builder,
+            string template,
+            object requiredValues = null,
+            int order = 0,
+            string name = null,
+            IRouter handler = null)
         {
-            var mockConstraint = new Mock<IRouteConstraint>();
-            mockConstraint.Setup(c => c.Match(
-                It.IsAny<HttpContext>(),
-                It.IsAny<IRouter>(),
-                It.IsAny<string>(),
-                It.IsAny<RouteValueDictionary>(),
-                It.IsAny<RouteDirection>()))
-            .Returns(true);
+            var entry = builder.MapOutbound(
+                handler ?? new StubRouter(),
+                TemplateParser.Parse(template),
+                requiredLinkValues: new RouteValueDictionary(requiredValues),
+                routeName: name,
+                order: order);
 
-            var mockConstraintResolver = new Mock<IInlineConstraintResolver>();
-            mockConstraintResolver.Setup(r => r.ResolveConstraint(
-                It.IsAny<string>()))
-            .Returns(mockConstraint.Object);
-
-            var entry = new TreeRouteMatchingEntry();
-            entry.Target = new StubRouter();
-            entry.RouteTemplate = TemplateParser.Parse(template);
+            // Add a generated 'route group' so we can identify later which entry matched.
+            entry.Defaults["test_route_group"] = CreateRouteGroup(order, template);
 
             return entry;
         }
+
 
         private static string CreateRouteGroup(int order, string template)
         {
@@ -1778,123 +1485,31 @@ namespace Microsoft.AspNetCore.Routing.Tree
             return new DefaultInlineConstraintResolver(optionsMock.Object);
         }
 
-        private static TreeRouter CreateAttributeRoute(TreeRouteLinkGenerationEntry entry)
+        private static TreeRouteBuilder CreateBuilder()
         {
-            return CreateAttributeRoute(new StubRouter(), entry);
+            var objectPoolProvider = new DefaultObjectPoolProvider();
+            var objectPolicy = new UriBuilderContextPooledObjectPolicy(UrlEncoder.Default);
+            var objectPool = objectPoolProvider.Create<UriBuildingContext>(objectPolicy);
+
+            var constraintResolver = CreateConstraintResolver();
+            var builder = new TreeRouteBuilder(
+                NullLoggerFactory.Instance,
+                UrlEncoder.Default,
+                objectPool,
+                constraintResolver);
+            return builder;
         }
 
-        private static TreeRouter CreateAttributeRoute(IRouter next, TreeRouteLinkGenerationEntry entry)
-        {
-            return CreateAttributeRoute(next, new[] { entry });
-        }
-
-        private static TreeRouter CreateAttributeRoute(params TreeRouteLinkGenerationEntry[] entries)
-        {
-            return CreateAttributeRoute(new StubRouter(), entries);
-        }
-
-        private static TreeRouter CreateAttributeRoute(IRouter next, params TreeRouteLinkGenerationEntry[] entries)
-        {
-            return CreateAttributeRoute(
-                next,
-                Enumerable.Empty<TreeRouteMatchingEntry>(),
-                entries);
-        }
-
-        private static TreeRouter CreateAttributeRoute(IRouter next, params TreeRouteMatchingEntry[] entries)
-        {
-            return CreateAttributeRoute(
-                next,
-                entries,
-                Enumerable.Empty<TreeRouteLinkGenerationEntry>());
-        }
-
-        private static TreeRouter CreateAttributeRoute(
-            IEnumerable<TreeRouteMatchingEntry> matchingEntries,
-            IEnumerable<TreeRouteLinkGenerationEntry> generationEntries)
-        {
-            return CreateAttributeRoute(new StubRouter(), matchingEntries, generationEntries);
-        }
-
-        private static TreeRouter CreateAttributeRoute(
-            IRouter next,
-            IEnumerable<TreeRouteMatchingEntry> matchingEntries,
-            IEnumerable<TreeRouteLinkGenerationEntry> generationEntries)
-        {
-            var builder = new TreeRouteBuilder(next, NullLoggerFactory.Instance);
-
-            foreach (var entry in matchingEntries)
-            {
-                builder.Add(entry);
-            }
-
-            foreach (var entry in generationEntries)
-            {
-                builder.Add(entry);
-            }
-
-            return builder.Build(version: 1);
-        }
-
-        private static TreeRouter CreateAttributeRoute(
+        private static TreeRouter CreateTreeRouter(
             string firstTemplate,
             string secondTemplate)
         {
-            var next = new Mock<IRouter>();
-            next
-                .Setup(n => n.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Returns((VirtualPathData)null);
-
-            var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
-            var firstEntry = CreateGenerationEntry(firstTemplate, requiredValues: null);
-            var secondEntry = CreateGenerationEntry(secondTemplate, requiredValues: null);
-
-            return CreateAttributeRoute(
-                next.Object,
-                matchingRoutes,
-                new[] { secondEntry, firstEntry });
+            var builder = CreateBuilder();
+            MapOutboundEntry(builder, firstTemplate);
+            MapOutboundEntry(builder, secondTemplate);
+            return builder.Build();
         }
 
-        private static TreeRouter CreateRoutingAttributeRoute(
-            ILoggerFactory loggerFactory = null,
-            params TreeRouteMatchingEntry[] entries)
-        {
-            loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-
-            var builder = new TreeRouteBuilder(new StubRouter(), loggerFactory);
-
-            foreach (var entry in entries)
-            {
-                builder.Add(entry);
-            }
-
-            return builder.Build(version: 1);
-        }
-
-        private static IDictionary<string, IRouteConstraint> GetRouteConstriants(
-            IInlineConstraintResolver inlineConstraintResolver,
-            string template,
-            RouteTemplate parsedRouteTemplate)
-        {
-            var constraintBuilder = new RouteConstraintBuilder(inlineConstraintResolver, template);
-            foreach (var parameter in parsedRouteTemplate.Parameters)
-            {
-                if (parameter.InlineConstraints != null)
-                {
-                    if (parameter.IsOptional)
-                    {
-                        constraintBuilder.SetOptional(parameter.Name);
-                    }
-
-                    foreach (var constraint in parameter.InlineConstraints)
-                    {
-                        constraintBuilder.AddResolvedConstraint(parameter.Name, constraint.Constraint);
-                    }
-                }
-            }
-
-            return constraintBuilder.Build();
-        }
         private class StubRouter : IRouter
         {
             public VirtualPathContext GenerationContext { get; set; }
