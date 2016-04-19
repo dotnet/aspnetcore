@@ -4,6 +4,7 @@
     "emitEntryPoint": true
   },
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Http.Features": "1.0.0-*",
     "Microsoft.AspNetCore.Hosting": "1.0.0-*"
   },
