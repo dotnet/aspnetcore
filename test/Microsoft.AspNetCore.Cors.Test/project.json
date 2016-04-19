@@ -1,6 +1,7 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "CorsMiddlewareWebSite": "1.0.0-*",
     "Microsoft.AspNetCore.Cors": "1.0.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
