@@ -213,12 +213,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public static void ExecutedAction(this ILogger logger, ActionDescriptor action, long startTimestamp)
         {
             // Don't log if logging wasn't enabled at start of request as time will be wildly wrong.
-            if (startTimestamp != 0)
+            if (logger.IsEnabled(LogLevel.Information))
             {
-                var currentTimestamp = Stopwatch.GetTimestamp();
-                var elapsed = new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp)));
+                if (startTimestamp != 0)
+                {
+                    var currentTimestamp = Stopwatch.GetTimestamp();
+                    var elapsed = new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp)));
 
-                _actionExecuted(logger, action.DisplayName, elapsed.TotalMilliseconds, null);
+                    _actionExecuted(logger, action.DisplayName, elapsed.TotalMilliseconds, null);
+                }
             }
         }
 
@@ -229,7 +232,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void ChallengeResultExecuting(this ILogger logger, IList<string> schemes)
         {
-            _challengeResultExecuting(logger, schemes.ToArray(), null);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                _challengeResultExecuting(logger, schemes.ToArray(), null);
+            }
         }
 
         public static void ContentResultExecuting(this ILogger logger, string contentType)
@@ -265,8 +271,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void ActionMethodExecuted(this ILogger logger, ActionExecutingContext context, IActionResult result)
         {
-            var actionName = context.ActionDescriptor.DisplayName;
-            _actionMethodExecuted(logger, actionName, Convert.ToString(result), null);
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                var actionName = context.ActionDescriptor.DisplayName;
+                _actionMethodExecuted(logger, actionName, Convert.ToString(result), null);
+            }
         }
 
         public static void AmbiguousActions(this ILogger logger, string actionNames)
@@ -318,7 +327,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void ForbidResultExecuting(this ILogger logger, IList<string> authenticationSchemes)
         {
-            _forbidResultExecuting(logger, authenticationSchemes.ToArray(), null);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                _forbidResultExecuting(logger, authenticationSchemes.ToArray(), null);
+            }
         }
 
         public static void SignInResultExecuting(this ILogger logger, string authenticationScheme, ClaimsPrincipal principal)
@@ -328,7 +340,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void SignOutResultExecuting(this ILogger logger, IList<string> authenticationSchemes)
         {
-            _signOutResultExecuting(logger, authenticationSchemes.ToArray(), null);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                _signOutResultExecuting(logger, authenticationSchemes.ToArray(), null);
+            }
         }
 
         public static void HttpStatusCodeResultExecuting(this ILogger logger, int statusCode)
@@ -343,14 +358,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void ObjectResultExecuting(this ILogger logger, object value)
         {
-            _objectResultExecuting(logger, Convert.ToString(value), null);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                _objectResultExecuting(logger, Convert.ToString(value), null);
+            }
         }
 
         public static void NoFormatter(
             this ILogger logger,
             OutputFormatterWriteContext formatterContext)
         {
-            _noFormatter(logger, Convert.ToString(formatterContext.ContentType), null);
+            if (logger.IsEnabled(LogLevel.Warning))
+            {
+                _noFormatter(logger, Convert.ToString(formatterContext.ContentType), null);
+            }
         }
 
         public static void FormatterSelected(
@@ -358,8 +379,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             IOutputFormatter outputFormatter,
             OutputFormatterWriteContext context)
         {
-            var contentType = Convert.ToString(context.ContentType);
-            _formatterSelected(logger, outputFormatter, contentType, null);
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                var contentType = Convert.ToString(context.ContentType);
+                _formatterSelected(logger, outputFormatter, contentType, null);
+            }
         }
 
         public static void SkippedContentNegotiation(this ILogger logger, string contentType)
