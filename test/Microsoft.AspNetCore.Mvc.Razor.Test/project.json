@@ -11,6 +11,7 @@
     "../Microsoft.AspNetCore.Mvc.ViewFeatures.Test/Internal/TestViewBufferScope.cs"
   ],
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Http": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.0.0-*",

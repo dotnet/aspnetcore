@@ -10,6 +10,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "ActionConstraintSample.Web": "1.0.0",
     "ApiExplorerWebSite": "1.0.0",
     "ApplicationModelWebSite": "1.0.0",
