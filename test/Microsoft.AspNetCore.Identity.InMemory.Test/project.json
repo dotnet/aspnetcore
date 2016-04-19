@@ -4,6 +4,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Authentication": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
     "Microsoft.AspNetCore.Hosting": "1.0.0-*",
