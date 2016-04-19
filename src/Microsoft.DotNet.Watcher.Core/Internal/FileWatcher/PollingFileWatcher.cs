@@ -150,7 +150,8 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
 
         private void RecordChange(FileSystemInfo fileInfo)
         {
-            if (_changes.Contains(fileInfo.FullName) ||
+            if (fileInfo == null ||
+                _changes.Contains(fileInfo.FullName) ||
                 fileInfo.FullName.Equals(_watchedDirectory.FullName, StringComparison.Ordinal))
             {
                 return;
