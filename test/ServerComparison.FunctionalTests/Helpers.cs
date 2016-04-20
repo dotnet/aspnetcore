@@ -8,9 +8,10 @@ namespace ServerComparison.FunctionalTests
 {
     public class Helpers
     {
-        public static string GetApplicationPath()
+        public static string GetApplicationPath(ApplicationType applicationType)
         {
-            return Path.GetFullPath(Path.Combine("..", "..", "..", "..", "..", "ServerComparison.TestSites"));
+            return Path.GetFullPath(Path.Combine("..", "..", "..", "..", "..", 
+                    applicationType == ApplicationType.Standalone? "ServerComparison.TestSites.Standalone" : "ServerComparison.TestSites"));
         }
 
         public static string GetConfigContent(ServerType serverType, string iisConfig, string nginxConfig)
