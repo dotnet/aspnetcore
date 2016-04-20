@@ -138,6 +138,68 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
+        public async Task ReadAsync_ReadsValidArray()
+        {
+            // Arrange
+            var content = "[0, 23, 300]";
+            var logger = GetLogger();
+            var formatter = new JsonInputFormatter(logger);
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(contentBytes);
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(int[]));
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
+
+            // Act
+            var result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.False(result.HasError);
+            var integers = Assert.IsType<int[]>(result.Model);
+            Assert.Equal(new int[] { 0, 23, 300 }, integers);
+        }
+
+        [Theory]
+        [InlineData(typeof(ICollection<int>))]
+        [InlineData(typeof(IEnumerable<int>))]
+        [InlineData(typeof(IList<int>))]
+        [InlineData(typeof(List<int>))]
+        public async Task ReadAsync_ReadsValidArray_AsList(Type requestedType)
+        {
+            // Arrange
+            var content = "[0, 23, 300]";
+            var logger = GetLogger();
+            var formatter = new JsonInputFormatter(logger);
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(contentBytes);
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(requestedType);
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
+
+            // Act
+            var result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.False(result.HasError);
+            var integers = Assert.IsType<List<int>>(result.Model);
+            Assert.Equal(new int[] { 0, 23, 300 }, integers);
+        }
+
+        [Fact]
         public async Task ReadAsync_AddsModelValidationErrorsToModelState()
         {
             // Arrange

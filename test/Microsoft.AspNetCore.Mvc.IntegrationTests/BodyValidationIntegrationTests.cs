@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task ModelMetaDataTypeAttribute_ValidBaseClass_NoModelStateErrors()
+        public async Task ModelMetadataTypeAttribute_ValidBaseClass_NoModelStateErrors()
         {
             // Arrange
             var input = "{ \"Name\": \"MVC\", \"Contact\":\"4258959019\", \"Category\":\"Technology\"," +
@@ -65,7 +65,47 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task ModelMetaDataTypeAttribute_InvalidPropertiesAndSubPropertiesOnBaseClass_HasModelStateErrors()
+        public async Task ModelMetadataType_ValidArray_NoModelStateErrors()
+        {
+            // Arrange
+            var input = "[" +
+                "{ \"Name\": \"MVC\", \"Contact\":\"4258959019\", \"Category\":\"Technology\"," +
+                "\"CompanyName\":\"Microsoft\", \"Country\":\"USA\",\"Price\": 21, " +
+                "\"ProductDetails\": {\"Detail1\": \"d1\", \"Detail2\": \"d2\", \"Detail3\": \"d3\"}}," +
+                "{ \"Name\": \"MVC too\", \"Contact\":\"4258959020\", \"Category\":\"Technology\"," +
+                "\"CompanyName\":\"Microsoft\", \"Country\":\"USA\",\"Price\": 22, " +
+                "\"ProductDetails\": {\"Detail1\": \"d2\", \"Detail2\": \"d3\", \"Detail3\": \"d4\"}}" +
+                "]";
+            var argumentBinding = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor
+            {
+                Name = "Parameter1",
+                ParameterType = typeof(IEnumerable<ProductViewModel>),
+                BindingInfo = new BindingInfo
+                {
+                    BindingSource = BindingSource.Body,
+                },
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
+                request.ContentType = "application/json;charset=utf-8";
+            });
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // Act
+            var result = await argumentBinding.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
+
+            // Assert
+            Assert.True(modelState.IsValid);
+            Assert.True(result.IsModelSet);
+            var products = Assert.IsAssignableFrom<IEnumerable<ProductViewModel>>(result.Model);
+            Assert.Equal(2, products.Count());
+        }
+
+        [Fact]
+        public async Task ModelMetadataTypeAttribute_InvalidPropertiesAndSubPropertiesOnBaseClass_HasModelStateErrors()
         {
             // Arrange
             var input = "{ \"Price\": 2, \"ProductDetails\": {\"Detail1\": \"d1\"}}";
@@ -116,7 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task ModelMetaDataTypeAttribute_InvalidComplexTypePropertyOnBaseClass_HasModelStateErrors()
+        public async Task ModelMetadataTypeAttribute_InvalidComplexTypePropertyOnBaseClass_HasModelStateErrors()
         {
             // Arrange
             var input = "{ \"Contact\":\"4255678765\", \"Category\":\"Technology\"," +
@@ -156,7 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task ModelMetaDataTypeAttribute_InvalidClassAttributeOnBaseClass_HasModelStateErrors()
+        public async Task ModelMetadataTypeAttribute_InvalidClassAttributeOnBaseClass_HasModelStateErrors()
         {
             // Arrange
             var input = "{ \"Contact\":\"4258959019\", \"Category\":\"Technology\"," +
@@ -196,7 +236,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task ModelMetaDataTypeAttribute_ValidDerivedClass_NoModelStateErrors()
+        public async Task ModelMetadataTypeAttribute_ValidDerivedClass_NoModelStateErrors()
         {
             // Arrange
             var input = "{ \"Name\": \"MVC\", \"Contact\":\"4258959019\", \"Category\":\"Technology\"," +
@@ -233,7 +273,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task ModelMetaDataTypeAttribute_InvalidPropertiesOnDerivedClass_HasModelStateErrors()
+        public async Task ModelMetadataTypeAttribute_InvalidPropertiesOnDerivedClass_HasModelStateErrors()
         {
             // Arrange
             var input = "{ \"Name\": \"MVC\", \"Contact\":\"425-895-9019\", \"Category\":\"Technology\"," +
@@ -275,7 +315,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task ModelMetaDataTypeAttribute_InvalidClassAttributeOnBaseClassProduct_HasModelStateErrors()
+        public async Task ModelMetadataTypeAttribute_InvalidClassAttributeOnBaseClassProduct_HasModelStateErrors()
         {
             // Arrange
             var input = "{ \"Contact\":\"4258959019\", \"Category\":\"Technology\"," +
