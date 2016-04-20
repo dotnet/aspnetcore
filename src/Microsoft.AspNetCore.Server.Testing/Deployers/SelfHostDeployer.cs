@@ -52,12 +52,19 @@ namespace Microsoft.AspNetCore.Server.Testing
             string executableArgs = string.Empty;
             if (DeploymentParameters.PublishApplicationBeforeDeployment)
             {
-                var executableExtension = DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? ".exe" : "";
+                var executableExtension =
+                    DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? ".exe" :
+                    DeploymentParameters.ApplicationType == ApplicationType.Portable ? ".dll" : "";
                 var executable = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, new DirectoryInfo(DeploymentParameters.ApplicationPath).Name + executableExtension);
                 
                 if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr && PlatformServices.Default.Runtime.OperatingSystemPlatform != Platform.Windows)
                 {
                     executableName = "mono";
+                    executableArgs = executable;
+                }
+                else if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr && DeploymentParameters.ApplicationType == ApplicationType.Portable)
+                {
+                    executableName = "dotnet";
                     executableArgs = executable;
                 }
                 else
