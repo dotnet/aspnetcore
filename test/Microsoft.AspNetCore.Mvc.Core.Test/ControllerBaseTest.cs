@@ -450,32 +450,6 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         }
 
         [Fact]
-        public void Created_IDisposableObject_RegistersForDispose()
-        {
-            // Arrange
-            var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
-            var uri = new Uri("/test/url", UriKind.Relative);
-
-            var controller = new TestableController();
-            controller.ControllerContext.HttpContext = mockHttpContext.Object;
-
-            var input = new DisposableObject();
-
-            // Act
-            var result = controller.Created(uri, input);
-
-            // Assert
-            Assert.IsType<CreatedResult>(result);
-            Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
-            Assert.Equal(uri.OriginalString, result.Location);
-            Assert.Same(input, result.Value);
-            mockHttpContext.Verify(
-                x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()),
-                Times.Once());
-        }
-
-        [Fact]
         public void CreatedAtAction_WithParameterActionName_SetsResultActionName()
         {
             // Arrange
@@ -536,31 +510,6 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         }
 
         [Fact]
-        public void CreatedAtAction_IDisposableObject_RegistersForDispose()
-        {
-            // Arrange
-            var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
-
-            var controller = new TestableController();
-            controller.ControllerContext.HttpContext = mockHttpContext.Object;
-
-            var input = new DisposableObject();
-
-            // Act
-            var result = controller.CreatedAtAction("SampleAction", input);
-
-            // Assert
-            Assert.IsType<CreatedAtActionResult>(result);
-            Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
-            Assert.Equal("SampleAction", result.ActionName);
-            Assert.Same(input, result.Value);
-            mockHttpContext.Verify(
-                x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()),
-                Times.Once());
-        }
-
-        [Fact]
         public void CreatedAtRoute_WithParameterRouteName_SetsResultSameRouteName()
         {
             // Arrange
@@ -615,31 +564,6 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
             Assert.Same(routeName, result.RouteName);
             Assert.Equal(expected, result.RouteValues);
-        }
-
-        [Fact]
-        public void CreatedAtRoute_IDisposableObject_RegistersForDispose()
-        {
-            // Arrange
-            var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
-
-            var controller = new TestableController();
-            controller.ControllerContext.HttpContext = mockHttpContext.Object;
-
-            var input = new DisposableObject();
-
-            // Act
-            var result = controller.CreatedAtRoute("SampleRoute", input);
-
-            // Assert
-            Assert.IsType<CreatedAtRouteResult>(result);
-            Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
-            Assert.Equal("SampleRoute", result.RouteName);
-            Assert.Same(input, result.Value);
-            mockHttpContext.Verify(
-                x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()),
-                Times.Once());
         }
 
         [Fact]
@@ -737,7 +661,6 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         {
             // Arrange
             var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestableController();
             controller.ControllerContext.HttpContext = mockHttpContext.Object;
@@ -752,9 +675,6 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Same(fileStream, result.FileStream);
             Assert.Equal("application/pdf", result.ContentType.ToString());
             Assert.Equal("someDownloadName", result.FileDownloadName);
-            mockHttpContext.Verify(
-                x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()),
-                Times.Once());
         }
 
         [Fact]
@@ -801,30 +721,6 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         }
 
         [Fact]
-        public void HttpNotFound_IDisposableObject_RegistersForDispose()
-        {
-            // Arrange
-            var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
-
-            var controller = new TestableController();
-            controller.ControllerContext.HttpContext = mockHttpContext.Object;
-
-            var input = new DisposableObject();
-
-            // Act
-            var result = controller.NotFound(input);
-
-            // Assert
-            Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
-            Assert.Same(input, result.Value);
-            mockHttpContext.Verify(
-                x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()),
-                Times.Once());
-        }
-
-        [Fact]
         public void Ok_SetsStatusCode()
         {
             // Arrange
@@ -836,30 +732,6 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Assert
             Assert.IsType<OkResult>(result);
             Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
-        }
-
-        [Fact]
-        public void Ok_WithIDisposableObject_RegistersForDispose()
-        {
-            // Arrange
-            var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
-
-            var controller = new TestableController();
-            controller.ControllerContext.HttpContext = mockHttpContext.Object;
-
-            var input = new DisposableObject();
-
-            // Act
-            var result = controller.Ok(input);
-
-            // Assert
-            Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
-            Assert.Same(input, result.Value);
-            mockHttpContext.Verify(
-                x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()),
-                Times.Once());
         }
 
         [Fact]
@@ -890,30 +762,6 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
             Assert.Equal(obj, result.Value);
-        }
-
-        [Fact]
-        public void BadRequest_IDisposableObject_RegistersForDispose()
-        {
-            // Arrange
-            var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
-
-            var controller = new TestableController();
-            controller.ControllerContext.HttpContext = mockHttpContext.Object;
-
-            var input = new DisposableObject();
-
-            // Act
-            var result = controller.BadRequest(input);
-
-            // Assert
-            Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
-            Assert.Same(input, result.Value);
-            mockHttpContext.Verify(
-                x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()),
-                Times.Once());
         }
 
         [Fact]
