@@ -30,6 +30,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private Frame _frame;
         private ConnectionFilterContext _filterContext;
         private LibuvStream _libuvStream;
+        private FilteredStreamAdapter _filteredStreamAdapter;
+        private Task _readInputContinuation;
 
         private readonly SocketInput _rawSocketInput;
         private readonly SocketOutput _rawSocketOutput;
@@ -175,13 +177,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         // Called on Libuv thread
         public virtual void OnSocketClosed()
         {
-            _rawSocketInput.Dispose();
-
-            // If a connection filter was applied there will be two SocketInputs.
-            // If a connection filter failed, SocketInput will be null.
-            if (SocketInput != null && SocketInput != _rawSocketInput)
+            if (_filteredStreamAdapter != null)
             {
-                SocketInput.Dispose();
+                _filteredStreamAdapter.Abort();
+                _rawSocketInput.IncomingFin();
+                _readInputContinuation.ContinueWith((task, state) =>
+                {
+                    ((Connection)state)._filterContext.Connection.Dispose();
+                    ((Connection)state)._filteredStreamAdapter.Dispose();
+                    ((Connection)state)._rawSocketInput.Dispose();
+                }, this);
+            }
+            else
+            {
+                _rawSocketInput.Dispose();
             }
 
             lock (_stateLock)
@@ -207,12 +216,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                     if (_filterContext.Connection != _libuvStream)
                     {
-                        var filteredStreamAdapter = new FilteredStreamAdapter(_filterContext.Connection, Memory, Log, ThreadPool);
+                        _filteredStreamAdapter = new FilteredStreamAdapter(ConnectionId, _filterContext.Connection, Memory, Log, ThreadPool);
 
-                        SocketInput = filteredStreamAdapter.SocketInput;
-                        SocketOutput = filteredStreamAdapter.SocketOutput;
+                        SocketInput = _filteredStreamAdapter.SocketInput;
+                        SocketOutput = _filteredStreamAdapter.SocketOutput;
 
-                        filteredStreamAdapter.ReadInput();
+                        _readInputContinuation = _filteredStreamAdapter.ReadInputAsync();
                     }
                     else
                     {

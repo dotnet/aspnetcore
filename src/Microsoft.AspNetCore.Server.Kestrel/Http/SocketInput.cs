@@ -140,6 +140,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
         }
 
+        public void IncomingFin()
+        {
+            // Force a FIN
+            IncomingData(null, 0, 0);
+        }
+
         private void Complete()
         {
             var awaitableState = Interlocked.Exchange(

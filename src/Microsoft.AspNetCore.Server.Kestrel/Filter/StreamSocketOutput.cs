@@ -16,33 +16,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
         private static readonly byte[] _endChunkBytes = Encoding.ASCII.GetBytes("\r\n");
         private static readonly byte[] _nullBuffer = new byte[0];
 
+        private readonly string _connectionId;
         private readonly Stream _outputStream;
         private readonly MemoryPool _memory;
+        private readonly IKestrelTrace _logger;
         private MemoryPoolBlock _producingBlock;
+
+        private bool _canWrite = true;
 
         private object _writeLock = new object();
 
-        public StreamSocketOutput(Stream outputStream, MemoryPool memory)
+        public StreamSocketOutput(string connectionId, Stream outputStream, MemoryPool memory, IKestrelTrace logger)
         {
+            _connectionId = connectionId;
             _outputStream = outputStream;
             _memory = memory;
+            _logger = logger;
         }
 
         public void Write(ArraySegment<byte> buffer, bool chunk)
         {
             lock (_writeLock)
             {
-                if (chunk && buffer.Array != null)
+                if (buffer.Count == 0 )
                 {
-                    var beginChunkBytes = ChunkWriter.BeginChunkBytes(buffer.Count);
-                    _outputStream.Write(beginChunkBytes.Array, beginChunkBytes.Offset, beginChunkBytes.Count);
+                    return;
                 }
 
-                _outputStream.Write(buffer.Array ?? _nullBuffer, buffer.Offset, buffer.Count);
-
-                if (chunk && buffer.Array != null)
+                try
                 {
-                    _outputStream.Write(_endChunkBytes, 0, _endChunkBytes.Length);
+                    if (!_canWrite)
+                    {
+                        return;
+                    }
+
+                    if (chunk && buffer.Array != null)
+                    {
+                        var beginChunkBytes = ChunkWriter.BeginChunkBytes(buffer.Count);
+                        _outputStream.Write(beginChunkBytes.Array, beginChunkBytes.Offset, beginChunkBytes.Count);
+                    }
+
+                    _outputStream.Write(buffer.Array ?? _nullBuffer, buffer.Offset, buffer.Count);
+
+                    if (chunk && buffer.Array != null)
+                    {
+                        _outputStream.Write(_endChunkBytes, 0, _endChunkBytes.Length);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _canWrite = false;
+                    _logger.ConnectionError(_connectionId, ex);
                 }
             }
         }
@@ -65,14 +89,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
             var block = _producingBlock;
             while (block != end.Block)
             {
-                _outputStream.Write(block.Data.Array, block.Data.Offset, block.Data.Count);
+                // If we don't handle an exception from _outputStream.Write() here, we'll leak memory blocks.
+                if (_canWrite)
+                {
+                    try
+                    {
+                         _outputStream.Write(block.Data.Array, block.Data.Offset, block.Data.Count);
+                    }
+                    catch (Exception ex)
+                    {
+                        _canWrite = false;
+                        _logger.ConnectionError(_connectionId, ex);
+                    }
+                }
 
                 var returnBlock = block;
                 block = block.Next;
                 returnBlock.Pool.Return(returnBlock);
             }
+            
+            if (_canWrite)
+            {
+                try
+                {
+                    _outputStream.Write(end.Block.Array, end.Block.Data.Offset, end.Index - end.Block.Data.Offset);
+                }
+                catch (Exception ex)
+                {
+                    _canWrite = false;
+                    _logger.ConnectionError(_connectionId, ex);
+                }
+            }
 
-            _outputStream.Write(end.Block.Array, end.Block.Data.Offset, end.Index - end.Block.Data.Offset);
             end.Block.Pool.Return(end.Block);
         }
     }

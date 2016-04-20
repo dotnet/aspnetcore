@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             // As it calls ProduceStart with write immediate == true
             // This happens in WebSocket Upgrade over SSL
 
-            ISocketOutput socketOutput = new StreamSocketOutput(new ThrowsOnNullWriteStream(), null);
+            ISocketOutput socketOutput = new StreamSocketOutput("id", new ThrowsOnNullWriteStream(), null, new TestKestrelTrace());
 
             // Should not throw
             socketOutput.Write(default(ArraySegment<byte>), true);
