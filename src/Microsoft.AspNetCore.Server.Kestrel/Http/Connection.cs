@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private ConnectionFilterContext _filterContext;
         private LibuvStream _libuvStream;
         private FilteredStreamAdapter _filteredStreamAdapter;
-        private Task _readInputContinuation;
+        private Task _readInputTask;
 
         private readonly SocketInput _rawSocketInput;
         private readonly SocketOutput _rawSocketOutput;
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 _filteredStreamAdapter.Abort();
                 _rawSocketInput.IncomingFin();
-                _readInputContinuation.ContinueWith((task, state) =>
+                _readInputTask.ContinueWith((task, state) =>
                 {
                     ((Connection)state)._filterContext.Connection.Dispose();
                     ((Connection)state)._filteredStreamAdapter.Dispose();
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         SocketInput = _filteredStreamAdapter.SocketInput;
                         SocketOutput = _filteredStreamAdapter.SocketOutput;
 
-                        _readInputContinuation = _filteredStreamAdapter.ReadInputAsync();
+                        _readInputTask = _filteredStreamAdapter.ReadInputAsync();
                     }
                     else
                     {

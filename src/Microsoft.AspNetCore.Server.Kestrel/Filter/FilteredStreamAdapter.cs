@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
     {
         private readonly string _connectionId;
         private readonly Stream _filteredStream;
-        private readonly Stream _socketInputStream;
         private readonly IKestrelTrace _log;
         private readonly MemoryPool _memory;
         private MemoryPoolBlock _block;
@@ -33,7 +32,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
             _connectionId = connectionId;
             _log = logger;
             _filteredStream = filteredStream;
-            _socketInputStream = new SocketInputStream(SocketInput);
             _memory = memory;
         }
 
@@ -45,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
         {
             _block = _memory.Lease();
             // Use pooled block for copy
-            return _filteredStream.CopyToAsync(_socketInputStream, _block).ContinueWith((task, state) =>
+            return FilterInputAsync(_block).ContinueWith((task, state) =>
             {
                 ((FilteredStreamAdapter)state).OnStreamClose(task);
             }, this);
@@ -59,6 +57,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
         public void Dispose()
         {
             SocketInput.Dispose();
+        }
+        
+        private async Task FilterInputAsync(MemoryPoolBlock block)
+        {
+            int bytesRead;
+            while ((bytesRead = await _filteredStream.ReadAsync(block.Array, block.Data.Offset, block.Data.Count)) != 0)
+            {
+                SocketInput.IncomingData(block.Array, block.Data.Offset, bytesRead);
+            }
         }
 
         private void OnStreamClose(Task copyAsyncTask)
@@ -82,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
 
             try
             {
-                _socketInputStream.Dispose();
+                SocketInput.IncomingFin();
             }
             catch (Exception ex)
             {
