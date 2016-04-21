@@ -42,9 +42,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     {
                         Template = "api/Blog/{id}"
                     },
-                    RouteConstraints = new List<RouteDataActionConstraint>()
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
-                        new RouteDataActionConstraint(TreeRouter.RouteGroupKey, "1"),
+                        { TreeRouter.RouteGroupKey, "1" }
                     },
                 },
                 new ActionDescriptor()
@@ -53,9 +53,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     {
                         Template = "api/Store/Buy/{id}"
                     },
-                    RouteConstraints = new List<RouteDataActionConstraint>()
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
-                        new RouteDataActionConstraint(TreeRouter.RouteGroupKey, "2"),
+                        { TreeRouter.RouteGroupKey, "2" }
                     },
                 },
             };
@@ -116,9 +116,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Name = "BLOG_INDEX",
                         Order = 17,
                     },
-                    RouteConstraints = new List<RouteDataActionConstraint>()
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
-                        new RouteDataActionConstraint(TreeRouter.RouteGroupKey, "1"),
+                        { TreeRouter.RouteGroupKey, "1" }
                     },
                     RouteValueDefaults = new Dictionary<string, object>()
                     {
@@ -164,9 +164,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Name = "BLOG_INDEX",
                         Order = 17,
                     },
-                    RouteConstraints = new List<RouteDataActionConstraint>()
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
-                        new RouteDataActionConstraint(TreeRouter.RouteGroupKey, "1"),
+                        { TreeRouter.RouteGroupKey, "1" }
                     },
                     RouteValueDefaults = new Dictionary<string, object>()
                     {
@@ -212,9 +212,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Name = "BLOG_INDEX",
                         Order = 17,
                     },
-                    RouteConstraints = new List<RouteDataActionConstraint>()
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
-                        new RouteDataActionConstraint(TreeRouter.RouteGroupKey, "1"),
+                        { TreeRouter.RouteGroupKey, "1" }
                     },
                     RouteValueDefaults = new Dictionary<string, object>()
                     {
@@ -263,9 +263,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Name = "BLOG_INDEX",
                         Order = 17,
                     },
-                    RouteConstraints = new List<RouteDataActionConstraint>()
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
-                        new RouteDataActionConstraint(TreeRouter.RouteGroupKey, "1"),
+                        { TreeRouter.RouteGroupKey, "1" }
                     },
                     RouteValueDefaults = new Dictionary<string, object>()
                     {
@@ -281,9 +281,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Name = "BLOG_INDEX",
                         Order = 17,
                     },
-                    RouteConstraints = new List<RouteDataActionConstraint>()
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
-                        new RouteDataActionConstraint(TreeRouter.RouteGroupKey, "1"),
+                        { TreeRouter.RouteGroupKey, "1" }
                     },
                     RouteValueDefaults = new Dictionary<string, object>()
                     {
@@ -339,9 +339,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Name = "BLOG_INDEX",
                         Order = 17,
                     },
-                    RouteConstraints = new List<RouteDataActionConstraint>()
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
-                        new RouteDataActionConstraint(TreeRouter.RouteGroupKey, "1"),
+                        { TreeRouter.RouteGroupKey, "1" }
                     },
                     RouteValueDefaults = new Dictionary<string, object>()
                     {
@@ -388,9 +388,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Name = "BLOG_INDEX",
                         Order = 17,
                     },
-                    RouteConstraints = new List<RouteDataActionConstraint>()
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
-                        new RouteDataActionConstraint(TreeRouter.RouteGroupKey, "1"),
+                        { TreeRouter.RouteGroupKey, "1" }
                     },
                     RouteValueDefaults = new Dictionary<string, object>()
                     {
@@ -437,9 +437,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Name = "BLOG_INDEX",
                         Order = 17,
                     },
-                    RouteConstraints = new List<RouteDataActionConstraint>()
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
-                        new RouteDataActionConstraint(TreeRouter.RouteGroupKey, "1"),
+                        { TreeRouter.RouteGroupKey, "1" }
                     },
                     RouteValueDefaults = new Dictionary<string, object>()
                     {
@@ -490,9 +490,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Name = "BLOG_INDEX",
                         Order = 17,
                     },
-                    RouteConstraints = new List<RouteDataActionConstraint>()
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
-                        new RouteDataActionConstraint(TreeRouter.RouteGroupKey, "1"),
+                        { TreeRouter.RouteGroupKey, "1" }
                     },
                     RouteValueDefaults = new Dictionary<string, object>()
                     {
@@ -508,9 +508,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Name = "BLOG_INDEX",
                         Order = 17,
                     },
-                    RouteConstraints = new List<RouteDataActionConstraint>()
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
-                        new RouteDataActionConstraint(TreeRouter.RouteGroupKey, "1"),
+                        { TreeRouter.RouteGroupKey, "1" }
                     },
                     RouteValueDefaults = new Dictionary<string, object>()
                     {

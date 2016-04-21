@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Mvc.Routing;
 namespace MvcSubAreaSample.Web
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class SubAreaAttribute : RouteConstraintAttribute
+    public class SubAreaAttribute : RouteValueAttribute
     {
         public SubAreaAttribute(string name)
-            : base("subarea", name, blockNonAttributedActions: true)
+            : base("subarea", name)
         {
             if (string.IsNullOrEmpty(name))
             {

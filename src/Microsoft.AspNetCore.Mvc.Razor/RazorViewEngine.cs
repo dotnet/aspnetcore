@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// The casing of a route value in <see cref="ActionContext.RouteData"/> is determined by the client.
         /// This making constructing paths for view locations in a case sensitive file system unreliable. Using the
         /// <see cref="Abstractions.ActionDescriptor.RouteValueDefaults"/> for attribute routes and
-        /// <see cref="Abstractions.ActionDescriptor.RouteConstraints"/> for traditional routes to get route values
+        /// <see cref="Abstractions.ActionDescriptor.RouteValues"/> for traditional routes to get route values
         /// produces consistently cased results.
         /// </remarks>
         public static string GetNormalizedRouteValue(ActionContext context, string key)
@@ -149,24 +149,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
             else
             {
-                // Perf: Avoid allocations
-                for (var i = 0; i < actionDescriptor.RouteConstraints.Count; i++)
+                string value;
+                if (actionDescriptor.RouteValues.TryGetValue(key, out value) &&
+                    !string.IsNullOrEmpty(value))
                 {
-                    var constraint = actionDescriptor.RouteConstraints[i];
-                    if (string.Equals(constraint.RouteKey, key, StringComparison.Ordinal))
-                    {
-                        if (constraint.KeyHandling == RouteKeyHandling.DenyKey)
-                        {
-                            return null;
-                        }
-                        else
-                        {
-                            normalizedValue = constraint.RouteValue;
-                        }
-
-                        // Duplicate keys in RouteConstraints are not allowed.
-                        break;
-                    }
+                    normalizedValue = value;
                 }
             }
 

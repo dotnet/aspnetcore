@@ -1152,7 +1152,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
         [Theory]
         // Looks in RouteValueDefaults
         [InlineData(true)]
-        // Looks in RouteConstraints
+        // Looks in RouteValues
         [InlineData(false)]
         public void FindPage_SelectsActionCaseInsensitively(bool isAttributeRouted)
         {
@@ -1194,7 +1194,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
         [Theory]
         // Looks in RouteValueDefaults
         [InlineData(true)]
-        // Looks in RouteConstraints
+        // Looks in RouteValues
         [InlineData(false)]
         public void FindPage_LooksForPages_UsingActionDescriptor_Controller(bool isAttributeRouted)
         {
@@ -1232,7 +1232,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
         [Theory]
         // Looks in RouteValueDefaults
         [InlineData(true)]
-        // Looks in RouteConstraints
+        // Looks in RouteValues
         [InlineData(false)]
         public void FindPage_LooksForPages_UsingActionDescriptor_Areas(bool isAttributeRouted)
         {
@@ -1495,17 +1495,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
         }
 
         [Fact]
-        public void GetNormalizedRouteValue_ReturnsValueFromRouteConstraints_IfKeyHandlingIsRequired()
+        public void GetNormalizedRouteValue_ReturnsValueFromRouteValues_IfKeyHandlingIsRequired()
         {
             // Arrange
             var key = "some-key";
-            var actionDescriptor = new ActionDescriptor
-            {
-                RouteConstraints = new[]
-                {
-                    new RouteDataActionConstraint(key, "Route-Value")
-                }
-            };
+            var actionDescriptor = new ActionDescriptor();
+            actionDescriptor.RouteValues.Add(key, "Route-Value");
 
             var actionContext = new ActionContext
             {
@@ -1523,17 +1518,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
         }
 
         [Fact]
-        public void GetNormalizedRouteValue_ReturnsRouteValue_IfValueDoesNotMatchRouteConstraint()
+        public void GetNormalizedRouteValue_ReturnsRouteValue_IfValueDoesNotMatch()
         {
             // Arrange
             var key = "some-key";
-            var actionDescriptor = new ActionDescriptor
-            {
-                RouteConstraints = new[]
-                {
-                    new RouteDataActionConstraint(key, "different-value")
-                }
-            };
+            var actionDescriptor = new ActionDescriptor();
+            actionDescriptor.RouteValues.Add(key, "different-value");
 
             var actionContext = new ActionContext
             {
@@ -1551,17 +1541,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
         }
 
         [Fact]
-        public void GetNormalizedRouteValue_ReturnsNull_IfRouteConstraintKeyHandlingIsDeny()
+        public void GetNormalizedRouteValue_ReturnsNonNormalizedValue_IfActionRouteValueIsNull()
         {
             // Arrange
             var key = "some-key";
-            var actionDescriptor = new ActionDescriptor
-            {
-                RouteConstraints = new[]
-                {
-                    new RouteDataActionConstraint(key, routeValue: string.Empty)
-                }
-            };
+            var actionDescriptor = new ActionDescriptor();
+            actionDescriptor.RouteValues.Add(key, null);
 
             var actionContext = new ActionContext
             {
@@ -1575,7 +1560,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
             var result = RazorViewEngine.GetNormalizedRouteValue(actionContext, key);
 
             // Assert
-            Assert.Null(result);
+            Assert.Equal("route-value", result);
         }
 
         [Fact]
@@ -1762,13 +1747,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
             }
 
             var actionDesciptor = new ActionDescriptor();
-            actionDesciptor.RouteConstraints = new List<RouteDataActionConstraint>();
             return new ActionContext(httpContext, routeData, actionDesciptor);
         }
 
         private static ActionContext GetActionContextWithActionDescriptor(
             IDictionary<string, object> routeValues,
-            IDictionary<string, string> routesInActionDescriptor,
+            IDictionary<string, string> actionRouteValues,
             bool isAttributeRouted)
         {
             var httpContext = new DefaultHttpContext();
@@ -1782,17 +1766,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
             if (isAttributeRouted)
             {
                 actionDescriptor.AttributeRouteInfo = new AttributeRouteInfo();
-                foreach (var kvp in routesInActionDescriptor)
+                foreach (var kvp in actionRouteValues)
                 {
                     actionDescriptor.RouteValueDefaults.Add(kvp.Key, kvp.Value);
                 }
             }
             else
             {
-                actionDescriptor.RouteConstraints = new List<RouteDataActionConstraint>();
-                foreach (var kvp in routesInActionDescriptor)
+                foreach (var kvp in actionRouteValues)
                 {
-                    actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(kvp.Key, kvp.Value));
+                    actionDescriptor.RouteValues.Add(kvp.Key, kvp.Value);
                 }
             }
 

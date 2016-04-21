@@ -48,14 +48,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             var tree = _decisionTreeProvider.DecisionTree;
-            var matchingRouteConstraints = tree.Select(context.RouteData.Values);
+            var matchingRouteValues = tree.Select(context.RouteData.Values);
 
             var candidates = new List<ActionSelectorCandidate>();
 
             // Perf: Avoid allocations
-            for (var i = 0; i < matchingRouteConstraints.Count; i++)
+            for (var i = 0; i < matchingRouteValues.Count; i++)
             {
-                var action = matchingRouteConstraints[i];
+                var action = matchingRouteValues[i];
                 var constraints = _actionConstraintCache.GetActionConstraints(context.HttpContext, action);
                 candidates.Add(new ActionSelectorCandidate(action, constraints));
             }

@@ -13,9 +13,10 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
     {
         public ActionDescriptor()
         {
-            Properties = new Dictionary<object, object>();
-            RouteValueDefaults = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             Id = Guid.NewGuid().ToString();
+            Properties = new Dictionary<object, object>();
+            RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            RouteValueDefaults = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -25,7 +26,11 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
 
         public virtual string Name { get; set; }
 
-        public IList<RouteDataActionConstraint> RouteConstraints { get; set; }
+        /// <summary>
+        /// Gets or sets the collection of route values that must be provided by routing
+        /// for the action to be selected.
+        /// </summary>
+        public IDictionary<string, string> RouteValues { get; set; }
 
         public AttributeRouteInfo AttributeRouteInfo { get; set; }
 

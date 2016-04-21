@@ -83,36 +83,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 var results = new Dictionary<string, DecisionCriterionValue>(StringComparer.OrdinalIgnoreCase);
 
-                if (item.RouteConstraints != null)
+                if (item.RouteValues != null)
                 {
-                    foreach (var constraint in item.RouteConstraints)
+                    foreach (var kvp in item.RouteValues)
                     {
-                        DecisionCriterionValue value;
-                        if (constraint.KeyHandling == RouteKeyHandling.DenyKey)
-                        {
-                            // null and string.Empty are equivalent for route values, so just treat nulls as
-                            // string.Empty.
-                            value = new DecisionCriterionValue(value: string.Empty);
-                        }
-                        else if (constraint.KeyHandling == RouteKeyHandling.RequireKey)
-                        {
-                            value = new DecisionCriterionValue(value: constraint.RouteValue);
-                        }
-                        else
-                        {
-                            // We'd already have failed before getting here. The RouteDataActionConstraint constructor
-                            // would throw.
-#if NET451
-                            throw new InvalidEnumArgumentException(
-                                nameof(item),
-                                (int)constraint.KeyHandling,
-                                typeof(RouteKeyHandling));
-#else
-                            throw new ArgumentOutOfRangeException(nameof(item));
-#endif
-                        }
-
-                        results.Add(constraint.RouteKey, value);
+                        // null and string.Empty are equivalent for route values, so just treat nulls as
+                        // string.Empty.
+                        results.Add(kvp.Key, new DecisionCriterionValue(kvp.Value ?? string.Empty));
                     }
                 }
 

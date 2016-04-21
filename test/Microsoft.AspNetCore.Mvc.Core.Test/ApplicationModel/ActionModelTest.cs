@@ -64,10 +64,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             action.Selectors.Add(selectorModel);
             action.ActionName = "Edit";
 
-            action.Controller = new ControllerModel(typeof(TestController).GetTypeInfo(),
-                                                    new List<object>());
+            action.Controller = new ControllerModel
+                (typeof(TestController).GetTypeInfo(),
+                new List<object>());
             action.Filters.Add(new MyFilterAttribute());
-            action.RouteConstraints.Add(new MyRouteConstraintAttribute());
+            action.RouteValues.Add("key", "value");
             action.Properties.Add(new KeyValuePair<object, object>("test key", "test value"));
 
             // Act
@@ -94,6 +95,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
                     // Ensure non-default value
                     Assert.NotEmpty((IEnumerable<object>)value1);
+                }
+                else if (typeof(IDictionary<string, string>).IsAssignableFrom(property.PropertyType))
+                {
+                    Assert.Equal(value1, value2);
+
+                    // Ensure non-default value
+                    Assert.NotEmpty((IDictionary<string, string>)value1);
                 }
                 else if (typeof(IDictionary<object, object>).IsAssignableFrom(property.PropertyType))
                 {
@@ -131,13 +139,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
         }
 
-        private class MyRouteConstraintAttribute : Attribute, IRouteConstraintProvider
+        private class MyRouteValueAttribute : Attribute, IRouteValueProvider
         {
-            public bool BlockNonAttributedActions { get { return true; } }
-
             public string RouteKey { get; set; }
-
-            public RouteKeyHandling RouteKeyHandling { get { return RouteKeyHandling.RequireKey; } }
 
             public string RouteValue { get; set; }
         }

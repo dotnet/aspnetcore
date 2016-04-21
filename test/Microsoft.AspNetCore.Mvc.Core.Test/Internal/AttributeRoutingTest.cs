@@ -131,9 +131,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var action = new ControllerActionDescriptor();
             action.DisplayName = "Microsoft.AspNetCore.Mvc.Routing.AttributeRoutingTest+HomeController.Index";
             action.MethodInfo = actionMethod;
-            action.RouteConstraints = new List<RouteDataActionConstraint>()
+            action.RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                new RouteDataActionConstraint(TreeRouter.RouteGroupKey, "group"),
+                { TreeRouter.RouteGroupKey, "group" }
             };
             action.AttributeRouteInfo = new AttributeRouteInfo();
             action.AttributeRouteInfo.Template = "{controller}/{action}";
@@ -167,9 +167,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return new DisplayNameActionDescriptor()
             {
                 DisplayName = displayName,
-                RouteConstraints = new List<RouteDataActionConstraint>()
+                RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    new RouteDataActionConstraint(TreeRouter.RouteGroupKey, "whatever"),
+                    { TreeRouter.RouteGroupKey, "whatever" }
                 },
                 AttributeRouteInfo = new AttributeRouteInfo { Template = template },
             };

@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace CustomRouteSample.Web
 {
-    public class LocaleAttribute : RouteConstraintAttribute
+    public class LocaleAttribute : RouteValueAttribute
     {
         public LocaleAttribute(string locale)
-            : base("locale", routeValue: locale, blockNonAttributedActions: true)
+            : base("locale", routeValue: locale)
         {
         }
     }

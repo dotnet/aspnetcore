@@ -3,15 +3,14 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
-using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace ActionConstraintSample.Web
 {
-    public class CountrySpecificAttribute : RouteConstraintAttribute, IActionConstraint
+    public class CountrySpecificAttribute : Attribute, IActionConstraint
     {
         private readonly string _countryCode;
+
         public CountrySpecificAttribute(string countryCode)
-            : base("country", countryCode, blockNonAttributedActions: false)
         {
             _countryCode = countryCode;
         }

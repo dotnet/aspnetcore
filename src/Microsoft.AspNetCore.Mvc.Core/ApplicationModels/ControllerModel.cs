@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             ControllerProperties = new List<PropertyModel>();
             Filters = new List<IFilterMetadata>();
             Properties = new Dictionary<object, object>();
-            RouteConstraints = new List<IRouteConstraintProvider>();
+            RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             Selectors = new List<SelectorModel>();
         }
 
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // These are just metadata, safe to create new collections
             Attributes = new List<object>(other.Attributes);
             Filters = new List<IFilterMetadata>(other.Filters);
-            RouteConstraints = new List<IRouteConstraintProvider>(other.RouteConstraints);
+            RouteValues = new Dictionary<string, string>(other.RouteValues, StringComparer.OrdinalIgnoreCase);
             Properties = new Dictionary<object, object>(other.Properties);
 
             // Make a deep copy of other 'model' types.
@@ -97,7 +98,15 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         public IList<IFilterMetadata> Filters { get; }
 
-        public IList<IRouteConstraintProvider> RouteConstraints { get; }
+        /// <summary>
+        /// Gets a collection of route values that must be present in the 
+        /// <see cref="RouteData.Values"/> for the corresponding action to be selected.
+        /// </summary>
+        /// <remarks>
+        /// Entries in <see cref="RouteValues"/> can be overridden by entries in
+        /// <see cref="ActionModel.RouteValues"/>.
+        /// </remarks>
+        public IDictionary<string, string> RouteValues { get; }
 
         /// <summary>
         /// Gets a set of properties associated with the controller.

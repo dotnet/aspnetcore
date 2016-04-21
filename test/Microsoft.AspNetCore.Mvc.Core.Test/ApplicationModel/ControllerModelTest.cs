@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Assert.NotSame(controller.Actions, controller2.Actions);
             Assert.NotSame(controller.Attributes, controller2.Attributes);
             Assert.NotSame(controller.Filters, controller2.Filters);
-            Assert.NotSame(controller.RouteConstraints, controller2.RouteConstraints);
+            Assert.NotSame(controller.RouteValues, controller2.RouteValues);
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             controller.Application = new ApplicationModel();
             controller.ControllerName = "cool";
             controller.Filters.Add(new MyFilterAttribute());
-            controller.RouteConstraints.Add(new MyRouteConstraintAttribute());
+            controller.RouteValues.Add("key", "value");
             controller.Properties.Add(new KeyValuePair<object, object>("test key", "test value"));
             controller.ControllerProperties.Add(
                 new PropertyModel(typeof(TestController).GetProperty("TestProperty"), new List<object>()));
@@ -98,6 +98,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
                     // Ensure non-default value
                     Assert.NotEmpty((IEnumerable<object>)value1);
+                }
+                else if (typeof(IDictionary<string, string>).IsAssignableFrom(property.PropertyType))
+                {
+                    Assert.Equal(value1, value2);
+
+                    // Ensure non-default value
+                    Assert.NotEmpty((IDictionary<string, string>)value1);
                 }
                 else if (typeof(IDictionary<object, object>).IsAssignableFrom(property.PropertyType))
                 {
@@ -137,13 +144,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
         }
 
-        private class MyRouteConstraintAttribute : Attribute, IRouteConstraintProvider
+        private class MyRouteValueAttribute : Attribute, IRouteValueProvider
         {
-            public bool BlockNonAttributedActions { get { return true; } }
-
             public string RouteKey { get; set; }
-
-            public RouteKeyHandling RouteKeyHandling { get { return RouteKeyHandling.RequireKey; } }
 
             public string RouteValue { get; set; }
         }

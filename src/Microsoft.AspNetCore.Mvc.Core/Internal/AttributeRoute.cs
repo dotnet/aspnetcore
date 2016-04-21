@@ -179,11 +179,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Dictionary<string, RouteTemplate> templateCache,
             ActionDescriptor action)
         {
-            var constraint = action.RouteConstraints
-                .FirstOrDefault(c => c.RouteKey == TreeRouter.RouteGroupKey);
-            if (constraint == null ||
-                constraint.KeyHandling != RouteKeyHandling.RequireKey ||
-                constraint.RouteValue == null)
+            string value;
+            action.RouteValues.TryGetValue(TreeRouter.RouteGroupKey, out value);
+
+            if (string.IsNullOrEmpty(value))
             {
                 // This can happen if an ActionDescriptor has a route template, but doesn't have one of our
                 // special route group constraints. This is a good indication that the user is using a 3rd party
@@ -196,7 +195,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var routeInfo = new RouteInfo()
             {
                 ActionDescriptor = action,
-                RouteGroup = constraint.RouteValue,
+                RouteGroup = value,
             };
 
             try

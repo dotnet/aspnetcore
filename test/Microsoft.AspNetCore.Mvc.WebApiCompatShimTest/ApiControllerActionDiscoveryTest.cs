@@ -84,14 +84,14 @@ namespace System.Web.Http
 
             var action = Assert.Single(
                 actions,
-                a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == "GetAll"));
+                a => a.RouteValues.Any(rc => rc.Key == "action" && rc.Value == "GetAll"));
             Assert.Equal(
                 new string[] { "GET" },
                 Assert.Single(action.ActionConstraints.OfType<HttpMethodActionConstraint>()).HttpMethods);
 
             action = Assert.Single(
                 actions,
-                a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == ""));
+                a => a.RouteValues.Any(rc => rc.Key == "action" && string.IsNullOrEmpty(rc.Value)));
             Assert.Equal(
                 new string[] { "GET" },
                 Assert.Single(action.ActionConstraints.OfType<HttpMethodActionConstraint>()).HttpMethods);
@@ -120,14 +120,14 @@ namespace System.Web.Http
 
             var action = Assert.Single(
                 actions,
-                a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == "Edit"));
+                a => a.RouteValues.Any(rc => rc.Key == "action" && rc.Value == "Edit"));
             Assert.Equal(
                 new string[] { "POST" },
                 Assert.Single(action.ActionConstraints.OfType<HttpMethodActionConstraint>()).HttpMethods);
 
             action = Assert.Single(
                 actions,
-                a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == ""));
+                a => a.RouteValues.Any(rc => rc.Key == "action" && string.IsNullOrEmpty(rc.Value)));
             Assert.Equal(
                 new string[] { "POST" },
                 Assert.Single(action.ActionConstraints.OfType<HttpMethodActionConstraint>()).HttpMethods);
@@ -156,14 +156,14 @@ namespace System.Web.Http
 
             var action = Assert.Single(
                 actions,
-                a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == "Delete"));
+                a => a.RouteValues.Any(rc => rc.Key == "action" && rc.Value == "Delete"));
             Assert.Equal(
                 new string[] { "PUT" },
                 Assert.Single(action.ActionConstraints.OfType<HttpMethodActionConstraint>()).HttpMethods);
 
             action = Assert.Single(
                 actions,
-                a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == ""));
+                a => a.RouteValues.Any(rc => rc.Key == "action" && string.IsNullOrEmpty(rc.Value)));
             Assert.Equal(
                 new string[] { "PUT" },
                 Assert.Single(action.ActionConstraints.OfType<HttpMethodActionConstraint>()).HttpMethods);
@@ -193,14 +193,14 @@ namespace System.Web.Http
 
             var action = Assert.Single(
                 actions,
-                a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == "GetOptions"));
+                a => a.RouteValues.Any(rc => rc.Key == "action" && rc.Value == "GetOptions"));
             Assert.Equal(
                 new string[] { "OPTIONS" },
                 Assert.Single(action.ActionConstraints.OfType<HttpMethodActionConstraint>()).HttpMethods);
 
             action = Assert.Single(
                 actions,
-                a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == ""));
+                a => a.RouteValues.Any(rc => rc.Key == "action" && string.IsNullOrEmpty(rc.Value)));
             Assert.Equal(
                 new string[] { "OPTIONS" },
                 Assert.Single(action.ActionConstraints.OfType<HttpMethodActionConstraint>()).HttpMethods);
@@ -252,7 +252,7 @@ namespace System.Web.Http
             Assert.NotEmpty(actions);
             foreach (var action in actions)
             {
-                Assert.Single(action.RouteConstraints, c => c.RouteKey == "area" && c.RouteValue == "api");
+                Assert.Single(action.RouteValues, c => c.Key == "area" && c.Value== "api");
             }
         }
 

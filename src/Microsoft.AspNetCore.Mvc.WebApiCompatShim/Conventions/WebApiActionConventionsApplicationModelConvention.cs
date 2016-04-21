@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
                         var namedAction = action;
 
                         var unnamedAction = new ActionModel(namedAction);
-                        unnamedAction.RouteConstraints.Add(new UnnamedActionRouteConstraint());
+                        unnamedAction.RouteValues.Add("action", null);
                         newActions.Add(unnamedAction);
                     }
                 }
@@ -113,24 +113,6 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
             {
                 actionSelectorModel.ActionConstraints.Add(new HttpMethodActionConstraint(new[] { "POST" }));
             }
-        }
-
-        private class UnnamedActionRouteConstraint : IRouteConstraintProvider
-        {
-            public UnnamedActionRouteConstraint()
-            {
-                RouteKey = "action";
-                RouteKeyHandling = RouteKeyHandling.DenyKey;
-                RouteValue = null;
-            }
-
-            public string RouteKey { get; }
-
-            public RouteKeyHandling RouteKeyHandling { get; }
-
-            public string RouteValue { get; }
-
-            public bool BlockNonAttributedActions { get; }
         }
     }
 }

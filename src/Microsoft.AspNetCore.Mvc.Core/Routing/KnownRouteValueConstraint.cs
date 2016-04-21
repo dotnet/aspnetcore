@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -71,18 +72,20 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             if (valuesCollection == null ||
                 version != valuesCollection.Version)
             {
-                var routeValueCollection =
-                    actionDescriptors
-                        .Items
-                        .Select(ad => ad.RouteConstraints.FirstOrDefault(
-                            c => c.RouteKey == routeKey &&
-                            c.KeyHandling == RouteKeyHandling.RequireKey))
-                        .Where(rc => rc != null)
-                        .Select(rc => rc.RouteValue)
-                        .Distinct()
-                        .ToArray();
+                var values = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                for (var i = 0; i < actionDescriptors.Items.Count; i++)
+                {
+                    var action = actionDescriptors.Items[i];
 
-                valuesCollection = new RouteValuesCollection(version, routeValueCollection);
+                    string value;
+                    if (action.RouteValues.TryGetValue(routeKey, out value) &&
+                        !string.IsNullOrEmpty(value))
+                    {
+                        values.Add(value);
+                    }
+                }
+
+                valuesCollection = new RouteValuesCollection(version, values.ToArray());
                 _cachedValuesCollection = valuesCollection;
             }
 

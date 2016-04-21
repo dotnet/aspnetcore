@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Mvc.Routing;
 namespace Microsoft.AspNetCore.Mvc
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class AreaAttribute : RouteConstraintAttribute
+    public class AreaAttribute : RouteValueAttribute
     {
         public AreaAttribute(string areaName)
-            : base("area", areaName, blockNonAttributedActions: true)
+            : base("area", areaName)
         {
             if (string.IsNullOrEmpty(areaName))
             {

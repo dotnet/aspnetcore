@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 
             if (IsConventionApplicable(controller))
             {
-                controller.RouteConstraints.Add(new AreaAttribute(_area));
+                controller.RouteValues.Add("area", _area);
             }
         }
 

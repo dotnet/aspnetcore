@@ -6,8 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Attributes = new List<object>(attributes);
             Filters = new List<IFilterMetadata>();
             Parameters = new List<ParameterModel>();
-            RouteConstraints = new List<IRouteConstraintProvider>();
+            RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             Properties = new Dictionary<object, object>();
             Selectors = new List<SelectorModel>();
         }
@@ -56,11 +57,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Attributes = new List<object>(other.Attributes);
             Filters = new List<IFilterMetadata>(other.Filters);
             Properties = new Dictionary<object, object>(other.Properties);
+            RouteValues = new Dictionary<string, string>(other.RouteValues, StringComparer.OrdinalIgnoreCase);
 
             // Make a deep copy of other 'model' types.
             ApiExplorer = new ApiExplorerModel(other.ApiExplorer);
             Parameters = new List<ParameterModel>(other.Parameters.Select(p => new ParameterModel(p)));
-            RouteConstraints = new List<IRouteConstraintProvider>(other.RouteConstraints);
             Selectors = new List<SelectorModel>(other.Selectors.Select(s => new SelectorModel(s)));
         }
 
@@ -88,7 +89,24 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         public IList<ParameterModel> Parameters { get; }
 
-        public IList<IRouteConstraintProvider> RouteConstraints { get; }
+        /// <summary>
+        /// Gets a collection of route values that must be present in the 
+        /// <see cref="RouteData.Values"/> for the corresponding action to be selected.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The value of <see cref="ActionName"/> is considered an implicit route value corresponding
+        /// to the key <c>action</c> and the value of <see cref="ControllerModel.ControllerName"/> is
+        /// considered an implicit route value corresponding to the key <c>controller</c>. These entries
+        /// will be added to <see cref="ActionDescriptor.RouteValues"/>, but will not be visible in
+        /// <see cref="RouteValues"/>.
+        /// </para>
+        /// <para>
+        /// Entries in <see cref="RouteValues"/> can override entries in
+        /// <see cref="ControllerModel.RouteValues"/>.
+        /// </para>
+        /// </remarks>
+        public IDictionary<string, string> RouteValues { get; }
 
         /// <summary>
         /// Gets a set of properties associated with the action.

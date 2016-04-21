@@ -170,7 +170,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     typeInfo.Name;
 
             AddRange(controllerModel.Filters, attributes.OfType<IFilterMetadata>());
-            AddRange(controllerModel.RouteConstraints, attributes.OfType<IRouteConstraintProvider>());
+
+            foreach (var routeValueProvider in attributes.OfType<IRouteValueProvider>())
+            {
+                controllerModel.RouteValues.Add(routeValueProvider.RouteKey, routeValueProvider.RouteValue);
+            }
 
             var apiVisibility = attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
             if (apiVisibility != null)
@@ -285,8 +289,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 actionModel.ApiExplorer.GroupName = apiGroupName.GroupName;
             }
 
-            AddRange(actionModel.RouteConstraints, attributes.OfType<IRouteConstraintProvider>());
-
+            foreach (var routeValueProvider in attributes.OfType<IRouteValueProvider>())
+            {
+                actionModel.RouteValues.Add(routeValueProvider.RouteKey, routeValueProvider.RouteValue);
+            }
+            
             //TODO: modify comment
             // Now we need to determine the action selection info (cross-section of routes and constraints)
             //

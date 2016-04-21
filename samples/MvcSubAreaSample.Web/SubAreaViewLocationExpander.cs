@@ -29,12 +29,11 @@ namespace MvcSubAreaSample.Web
 
         public void PopulateValues(ViewLocationExpanderContext context)
         {
-            var subArea = context.ActionContext.ActionDescriptor.RouteConstraints.FirstOrDefault(
-                s => s.RouteKey == "subarea" && !string.IsNullOrEmpty(s.RouteValue));
-
-            if (subArea != null)
+            string subArea;
+            if (context.ActionContext.ActionDescriptor.RouteValues.TryGetValue(_subAreaKey, out subArea) &&
+                !string.IsNullOrEmpty(subArea))
             {
-                context.Values[_subAreaKey] = subArea.RouteValue;
+                context.Values[_subAreaKey] = subArea;
             }
         }
     }

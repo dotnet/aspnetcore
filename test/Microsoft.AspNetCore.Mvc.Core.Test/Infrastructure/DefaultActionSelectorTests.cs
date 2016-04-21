@@ -600,9 +600,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             return
                 actions
-                .Where(a => a.RouteConstraints.Any(c => c.RouteKey == "area" && comparer.Equals(c.RouteValue, area)))
-                .Where(a => a.RouteConstraints.Any(c => c.RouteKey == "controller" && comparer.Equals(c.RouteValue, controller)))
-                .Where(a => a.RouteConstraints.Any(c => c.RouteKey == "action" && comparer.Equals(c.RouteValue, action)));
+                .Where(a => a.RouteValues.Any(kvp => kvp.Key == "area" && comparer.Equals(kvp.Value, area)))
+                .Where(a => a.RouteValues.Any(kvp => kvp.Key == "controller" && comparer.Equals(kvp.Value, controller)))
+                .Where(a => a.RouteValues.Any(kvp => kvp.Key == "action" && comparer.Equals(kvp.Value, action)));
         }
 
         private static ActionSelector CreateSelector(IReadOnlyList<ActionDescriptor> actions, ILoggerFactory loggerFactory = null)
@@ -667,24 +667,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var actionDescriptor = new ActionDescriptor()
             {
                 Name = string.Format("Area: {0}, Controller: {1}, Action: {2}", area, controller, action),
-                RouteConstraints = new List<RouteDataActionConstraint>(),
                 Parameters = new List<ParameterDescriptor>(),
             };
 
-            actionDescriptor.RouteConstraints.Add(
-                area == null ?
-                new RouteDataActionConstraint("area", null) :
-                new RouteDataActionConstraint("area", area));
-
-            actionDescriptor.RouteConstraints.Add(
-                controller == null ?
-                new RouteDataActionConstraint("controller", null) :
-                new RouteDataActionConstraint("controller", controller));
-
-            actionDescriptor.RouteConstraints.Add(
-                action == null ?
-                new RouteDataActionConstraint("action", null) :
-                new RouteDataActionConstraint("action", action));
+            actionDescriptor.RouteValues.Add("area", area);
+            actionDescriptor.RouteValues.Add("controller", controller);
+            actionDescriptor.RouteValues.Add("action", action);
 
             return actionDescriptor;
         }
