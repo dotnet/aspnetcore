@@ -1,7 +1,6 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24709.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.Kestrel", "src\Microsoft.AspNetCore.Server.Kestrel\Microsoft.AspNetCore.Server.Kestrel.xproj", "{F510611A-3BEE-4B88-A613-5F4A74ED82A1}"
 EndProject
@@ -34,6 +33,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.Kestrel.Https", "src\Microsoft.AspNetCore.Server.Kestrel.Https\Microsoft.AspNetCore.Server.Kestrel.Https.xproj", "{5F64B3C3-0C2E-431A-B820-A81BBFC863DA}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.Kestrel.FunctionalTests", "test\Microsoft.AspNetCore.Server.Kestrel.FunctionalTests\Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.xproj", "{9559A5F1-080C-4909-B6CF-7E4B3DC55748}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.Kestrel.TestCommon", "test\Microsoft.AspNetCore.Server.Kestrel.TestCommon\Microsoft.AspNetCore.Server.Kestrel.TestCommon.xproj", "{A485B4F9-0392-478C-B19A-F4DE6B17F491}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,6 +74,10 @@ Global
 		{9559A5F1-080C-4909-B6CF-7E4B3DC55748}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9559A5F1-080C-4909-B6CF-7E4B3DC55748}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9559A5F1-080C-4909-B6CF-7E4B3DC55748}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A485B4F9-0392-478C-B19A-F4DE6B17F491}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A485B4F9-0392-478C-B19A-F4DE6B17F491}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A485B4F9-0392-478C-B19A-F4DE6B17F491}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A485B4F9-0392-478C-B19A-F4DE6B17F491}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -86,5 +91,6 @@ Global
 		{8CBA6FE3-3CC9-4420-8AA3-123E983734C2} = {327F7880-D9AF-46BD-B45C-3B7E34A01DFD}
 		{5F64B3C3-0C2E-431A-B820-A81BBFC863DA} = {2D5D5227-4DBD-499A-96B1-76A36B03B750}
 		{9559A5F1-080C-4909-B6CF-7E4B3DC55748} = {D3273454-EA07-41D2-BF0B-FCC3675C2483}
+		{A485B4F9-0392-478C-B19A-F4DE6B17F491} = {D3273454-EA07-41D2-BF0B-FCC3675C2483}
 	EndGlobalSection
 EndGlobal
