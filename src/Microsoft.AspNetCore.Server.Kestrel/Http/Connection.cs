@@ -40,6 +40,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private ConnectionState _connectionState;
         private TaskCompletionSource<object> _socketClosedTcs;
 
+        bool _eConnResetChecked = false;
+
         public Connection(ListenerContext context, UvStreamHandle socket) : base(context)
         {
             _socket = socket;
@@ -270,6 +272,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 // We need to clean up whatever was allocated by OnAlloc.
                 _rawSocketInput.IncomingDeferred();
                 return;
+            }
+
+            if (!_eConnResetChecked && !Constants.ECONNRESET.HasValue)
+            {
+                Log.LogWarning("Unable to determine ECONNRESET value on this platform.");
+                _eConnResetChecked = true;
             }
 
             var normalRead = status > 0;
