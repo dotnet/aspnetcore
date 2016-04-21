@@ -8,8 +8,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class AttributeRouteEntries
     {
-        public List<TreeRouteLinkGenerationEntry> LinkGenerationEntries { get; } = new List<TreeRouteLinkGenerationEntry>();
+        public List<InboundRouteEntry> InboundEntries { get; } = new List<InboundRouteEntry>();
 
-        public List<TreeRouteMatchingEntry> MatchingEntries { get; } = new List<TreeRouteMatchingEntry>();
+        public List<OutboundRouteEntry> OutboundEntries { get; } = new List<OutboundRouteEntry>();
     }
 }

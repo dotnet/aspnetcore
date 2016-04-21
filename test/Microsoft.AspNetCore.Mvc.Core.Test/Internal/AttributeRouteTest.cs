@@ -10,14 +10,12 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -105,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void AttributeRoute_GetEntries_CreatesLinkGenerationEntry()
+        public void AttributeRoute_GetEntries_CreatesOutboundEntry()
         {
             // Arrange
             var actions = new List<ActionDescriptor>()
@@ -130,32 +128,30 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 },
             };
 
+            var builder = CreateBuilder();
             var actionDescriptorProvider = CreateActionDescriptorProvider(actions);
-
             var route = CreateRoute(CreateHandler().Object, actionDescriptorProvider.Object);
 
             // Act
-            var entries = route.GetEntries(actionDescriptorProvider.Object.ActionDescriptors);
+            route.AddEntries(builder, actionDescriptorProvider.Object.ActionDescriptors);
 
             // Assert
             Assert.Collection(
-                entries.LinkGenerationEntries,
+                builder.OutboundEntries,
                 e =>
                 {
-                    Assert.NotNull(e.Binder);
                     Assert.Empty(e.Constraints);
                     Assert.Empty(e.Defaults);
-                    Assert.Equal(RoutePrecedence.ComputeGenerated(e.Template), e.GenerationPrecedence);
-                    Assert.Equal("BLOG_INDEX", e.Name);
+                    Assert.Equal(RoutePrecedence.ComputeOutbound(e.RouteTemplate), e.Precedence);
+                    Assert.Equal("BLOG_INDEX", e.RouteName);
                     Assert.Equal(17, e.Order);
-                    Assert.Equal(actions[0].RouteValueDefaults, e.RequiredLinkValues);
-                    Assert.Equal("1", e.RouteGroup);
-                    Assert.Equal("api/Blog/{id}", e.Template.TemplateText);
+                    Assert.Equal(actions[0].RouteValueDefaults.ToArray(), e.RequiredLinkValues.ToArray());
+                    Assert.Equal("api/Blog/{id}", e.RouteTemplate.TemplateText);
                 });
         }
 
         [Fact]
-        public void AttributeRoute_GetEntries_CreatesLinkGenerationEntry_WithConstraint()
+        public void AttributeRoute_GetEntries_CreatesOutboundEntry_WithConstraint()
         {
             // Arrange
             var actions = new List<ActionDescriptor>()
@@ -180,32 +176,30 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 },
             };
 
+            var builder = CreateBuilder();
             var actionDescriptorProvider = CreateActionDescriptorProvider(actions);
-
             var route = CreateRoute(CreateHandler().Object, actionDescriptorProvider.Object);
 
             // Act
-            var entries = route.GetEntries(actionDescriptorProvider.Object.ActionDescriptors);
+            route.AddEntries(builder, actionDescriptorProvider.Object.ActionDescriptors);
 
             // Assert
             Assert.Collection(
-                entries.LinkGenerationEntries,
+                builder.OutboundEntries,
                 e =>
                 {
-                    Assert.NotNull(e.Binder);
                     Assert.Single(e.Constraints, kvp => kvp.Key == "id");
                     Assert.Empty(e.Defaults);
-                    Assert.Equal(RoutePrecedence.ComputeGenerated(e.Template), e.GenerationPrecedence);
-                    Assert.Equal("BLOG_INDEX", e.Name);
+                    Assert.Equal(RoutePrecedence.ComputeOutbound(e.RouteTemplate), e.Precedence);
+                    Assert.Equal("BLOG_INDEX", e.RouteName);
                     Assert.Equal(17, e.Order);
-                    Assert.Equal(actions[0].RouteValueDefaults, e.RequiredLinkValues);
-                    Assert.Equal("1", e.RouteGroup);
-                    Assert.Equal("api/Blog/{id:int}", e.Template.TemplateText);
+                    Assert.Equal(actions[0].RouteValueDefaults.ToArray(), e.RequiredLinkValues.ToArray());
+                    Assert.Equal("api/Blog/{id:int}", e.RouteTemplate.TemplateText);
                 });
         }
 
         [Fact]
-        public void AttributeRoute_GetEntries_CreatesLinkGenerationEntry_WithDefault()
+        public void AttributeRoute_GetEntries_CreatesOutboundEntry_WithDefault()
         {
             // Arrange
             var actions = new List<ActionDescriptor>()
@@ -230,27 +224,25 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 },
             };
 
+            var builder = CreateBuilder();
             var actionDescriptorProvider = CreateActionDescriptorProvider(actions);
-
             var route = CreateRoute(CreateHandler().Object, actionDescriptorProvider.Object);
 
             // Act
-            var entries = route.GetEntries(actionDescriptorProvider.Object.ActionDescriptors);
+            route.AddEntries(builder, actionDescriptorProvider.Object.ActionDescriptors);
 
             // Assert
             Assert.Collection(
-                entries.LinkGenerationEntries,
+                builder.OutboundEntries,
                 e =>
                 {
-                    Assert.NotNull(e.Binder);
                     Assert.Empty(e.Constraints);
                     Assert.Equal(new RouteValueDictionary(new { slug = "hello" }), e.Defaults);
-                    Assert.Equal(RoutePrecedence.ComputeGenerated(e.Template), e.GenerationPrecedence);
-                    Assert.Equal("BLOG_INDEX", e.Name);
+                    Assert.Equal(RoutePrecedence.ComputeOutbound(e.RouteTemplate), e.Precedence);
+                    Assert.Equal("BLOG_INDEX", e.RouteName);
                     Assert.Equal(17, e.Order);
-                    Assert.Equal(actions[0].RouteValueDefaults, e.RequiredLinkValues);
-                    Assert.Equal("1", e.RouteGroup);
-                    Assert.Equal("api/Blog/{*slug=hello}", e.Template.TemplateText);
+                    Assert.Equal(actions[0].RouteValueDefaults.ToArray(), e.RequiredLinkValues.ToArray());
+                    Assert.Equal("api/Blog/{*slug=hello}", e.RouteTemplate.TemplateText);
                 });
         }
 
@@ -258,7 +250,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // actions define the same route info. Link generation happens based on the action name + controller
         // name.
         [Fact]
-        public void AttributeRoute_GetEntries_CreatesLinkGenerationEntry_ForEachAction()
+        public void AttributeRoute_GetEntries_CreatesOutboundEntry_ForEachAction()
         {
             // Arrange
             var actions = new List<ActionDescriptor>()
@@ -301,44 +293,40 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 },
             };
 
+            var builder = CreateBuilder();
             var actionDescriptorProvider = CreateActionDescriptorProvider(actions);
-
             var route = CreateRoute(CreateHandler().Object, actionDescriptorProvider.Object);
 
             // Act
-            var entries = route.GetEntries(actionDescriptorProvider.Object.ActionDescriptors);
+            route.AddEntries(builder, actionDescriptorProvider.Object.ActionDescriptors);
 
             // Assert
             Assert.Collection(
-                entries.LinkGenerationEntries,
+                builder.OutboundEntries,
                 e =>
                 {
-                    Assert.NotNull(e.Binder);
                     Assert.Empty(e.Constraints);
                     Assert.Empty(e.Defaults);
-                    Assert.Equal(RoutePrecedence.ComputeGenerated(e.Template), e.GenerationPrecedence);
-                    Assert.Equal("BLOG_INDEX", e.Name);
+                    Assert.Equal(RoutePrecedence.ComputeOutbound(e.RouteTemplate), e.Precedence);
+                    Assert.Equal("BLOG_INDEX", e.RouteName);
                     Assert.Equal(17, e.Order);
-                    Assert.Equal(actions[0].RouteValueDefaults, e.RequiredLinkValues);
-                    Assert.Equal("1", e.RouteGroup);
-                    Assert.Equal("api/Blog/{id}", e.Template.TemplateText);
+                    Assert.Equal(actions[0].RouteValueDefaults.ToArray(), e.RequiredLinkValues.ToArray());
+                    Assert.Equal("api/Blog/{id}", e.RouteTemplate.TemplateText);
                 },
                 e =>
                 {
-                    Assert.NotNull(e.Binder);
                     Assert.Empty(e.Constraints);
                     Assert.Empty(e.Defaults);
-                    Assert.Equal(RoutePrecedence.ComputeGenerated(e.Template), e.GenerationPrecedence);
-                    Assert.Equal("BLOG_INDEX", e.Name);
+                    Assert.Equal(RoutePrecedence.ComputeOutbound(e.RouteTemplate), e.Precedence);
+                    Assert.Equal("BLOG_INDEX", e.RouteName);
                     Assert.Equal(17, e.Order);
-                    Assert.Equal(actions[1].RouteValueDefaults, e.RequiredLinkValues);
-                    Assert.Equal("1", e.RouteGroup);
-                    Assert.Equal("api/Blog/{id}", e.Template.TemplateText);
+                    Assert.Equal(actions[1].RouteValueDefaults.ToArray(), e.RequiredLinkValues.ToArray());
+                    Assert.Equal("api/Blog/{id}", e.RouteTemplate.TemplateText);
                 });
         }
 
         [Fact]
-        public void AttributeRoute_GetEntries_CreatesMatchingEntry()
+        public void AttributeRoute_GetEntries_CreatesInboundEntry()
         {
             // Arrange
             var actions = new List<ActionDescriptor>()
@@ -363,34 +351,31 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 },
             };
 
+            var builder = CreateBuilder();
             var actionDescriptorProvider = CreateActionDescriptorProvider(actions);
-
-            var handler = CreateHandler().Object;
-            var route = CreateRoute(handler, actionDescriptorProvider.Object);
+            var route = CreateRoute(CreateHandler().Object, actionDescriptorProvider.Object);
 
             // Act
-            var entries = route.GetEntries(actionDescriptorProvider.Object.ActionDescriptors);
+            route.AddEntries(builder, actionDescriptorProvider.Object.ActionDescriptors);
 
             // Assert
             Assert.Collection(
-                entries.MatchingEntries,
+                builder.InboundEntries,
                 e =>
                 {
                     Assert.Empty(e.Constraints);
                     Assert.Equal(17, e.Order);
-                    Assert.Equal(RoutePrecedence.ComputeMatched(e.RouteTemplate), e.Precedence);
+                    Assert.Equal(RoutePrecedence.ComputeInbound(e.RouteTemplate), e.Precedence);
                     Assert.Equal("BLOG_INDEX", e.RouteName);
                     Assert.Equal("api/Blog/{id}", e.RouteTemplate.TemplateText);
-                    Assert.Same(handler, e.Target);
                     Assert.Collection(
-                        e.TemplateMatcher.Defaults.OrderBy(kvp => kvp.Key),
+                        e.Defaults.OrderBy(kvp => kvp.Key),
                         kvp => Assert.Equal(new KeyValuePair<string, object>(TreeRouter.RouteGroupKey, "1"), kvp));
-                    Assert.Same(e.RouteTemplate, e.TemplateMatcher.Template);
                 });
         }
 
         [Fact]
-        public void AttributeRoute_GetEntries_CreatesMatchingEntry_WithConstraint()
+        public void AttributeRoute_GetEntries_CreatesInboundEntry_WithConstraint()
         {
             // Arrange
             var actions = new List<ActionDescriptor>()
@@ -415,34 +400,31 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 },
             };
 
+            var builder = CreateBuilder();
             var actionDescriptorProvider = CreateActionDescriptorProvider(actions);
-
-            var handler = CreateHandler().Object;
-            var route = CreateRoute(handler, actionDescriptorProvider.Object);
+            var route = CreateRoute(CreateHandler().Object, actionDescriptorProvider.Object);
 
             // Act
-            var entries = route.GetEntries(actionDescriptorProvider.Object.ActionDescriptors);
+            route.AddEntries(builder, actionDescriptorProvider.Object.ActionDescriptors);
 
             // Assert
             Assert.Collection(
-                entries.MatchingEntries,
+                builder.InboundEntries,
                 e =>
                 {
                     Assert.Single(e.Constraints, kvp => kvp.Key == "id");
                     Assert.Equal(17, e.Order);
-                    Assert.Equal(RoutePrecedence.ComputeMatched(e.RouteTemplate), e.Precedence);
+                    Assert.Equal(RoutePrecedence.ComputeInbound(e.RouteTemplate), e.Precedence);
                     Assert.Equal("BLOG_INDEX", e.RouteName);
                     Assert.Equal("api/Blog/{id:int}", e.RouteTemplate.TemplateText);
-                    Assert.Same(handler, e.Target);
                     Assert.Collection(
-                        e.TemplateMatcher.Defaults.OrderBy(kvp => kvp.Key),
+                        e.Defaults.OrderBy(kvp => kvp.Key),
                         kvp => Assert.Equal(new KeyValuePair<string, object>(TreeRouter.RouteGroupKey, "1"), kvp));
-                    Assert.Same(e.RouteTemplate, e.TemplateMatcher.Template);
                 });
         }
 
         [Fact]
-        public void AttributeRoute_GetEntries_CreatesMatchingEntry_WithDefault()
+        public void AttributeRoute_GetEntries_CreatesInboundEntry_WithDefault()
         {
             // Arrange
             var actions = new List<ActionDescriptor>()
@@ -467,30 +449,27 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 },
             };
 
+            var builder = CreateBuilder();
             var actionDescriptorProvider = CreateActionDescriptorProvider(actions);
-
-            var handler = CreateHandler().Object;
-            var route = CreateRoute(handler, actionDescriptorProvider.Object);
+            var route = CreateRoute(CreateHandler().Object, actionDescriptorProvider.Object);
 
             // Act
-            var entries = route.GetEntries(actionDescriptorProvider.Object.ActionDescriptors);
+            route.AddEntries(builder, actionDescriptorProvider.Object.ActionDescriptors);
 
             // Assert
             Assert.Collection(
-                entries.MatchingEntries,
+                builder.InboundEntries,
                 e =>
                 {
                     Assert.Empty(e.Constraints);
                     Assert.Equal(17, e.Order);
-                    Assert.Equal(RoutePrecedence.ComputeMatched(e.RouteTemplate), e.Precedence);
+                    Assert.Equal(RoutePrecedence.ComputeInbound(e.RouteTemplate), e.Precedence);
                     Assert.Equal("BLOG_INDEX", e.RouteName);
                     Assert.Equal("api/Blog/{*slug=hello}", e.RouteTemplate.TemplateText);
-                    Assert.Same(handler, e.Target);
                     Assert.Collection(
-                        e.TemplateMatcher.Defaults.OrderBy(kvp => kvp.Key),
+                        e.Defaults.OrderBy(kvp => kvp.Key),
                         kvp => Assert.Equal(new KeyValuePair<string, object>(TreeRouter.RouteGroupKey, "1"), kvp),
                         kvp => Assert.Equal(new KeyValuePair<string, object>("slug", "hello"), kvp));
-                    Assert.Same(e.RouteTemplate, e.TemplateMatcher.Template);
                 });
         }
 
@@ -498,7 +477,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // actions define the same route info. Link generation happens based on the action name + controller
         // name.
         [Fact]
-        public void AttributeRoute_GetEntries_CreatesMatchingEntry_CombinesLikeActions()
+        public void AttributeRoute_GetEntries_CreatesInboundEntry_CombinesLikeActions()
         {
             // Arrange
             var actions = new List<ActionDescriptor>()
@@ -541,30 +520,39 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 },
             };
 
+            var builder = CreateBuilder();
             var actionDescriptorProvider = CreateActionDescriptorProvider(actions);
-
-            var handler = CreateHandler().Object;
-            var route = CreateRoute(handler, actionDescriptorProvider.Object);
+            var route = CreateRoute(CreateHandler().Object, actionDescriptorProvider.Object);
 
             // Act
-            var entries = route.GetEntries(actionDescriptorProvider.Object.ActionDescriptors);
+            route.AddEntries(builder, actionDescriptorProvider.Object.ActionDescriptors);
 
             // Assert
             Assert.Collection(
-                entries.MatchingEntries,
+                builder.InboundEntries,
                 e =>
                 {
                     Assert.Empty(e.Constraints);
                     Assert.Equal(17, e.Order);
-                    Assert.Equal(RoutePrecedence.ComputeMatched(e.RouteTemplate), e.Precedence);
+                    Assert.Equal(RoutePrecedence.ComputeInbound(e.RouteTemplate), e.Precedence);
                     Assert.Equal("BLOG_INDEX", e.RouteName);
                     Assert.Equal("api/Blog/{id}", e.RouteTemplate.TemplateText);
-                    Assert.Same(handler, e.Target);
                     Assert.Collection(
-                        e.TemplateMatcher.Defaults.OrderBy(kvp => kvp.Key),
+                        e.Defaults.OrderBy(kvp => kvp.Key),
                         kvp => Assert.Equal(new KeyValuePair<string, object>(TreeRouter.RouteGroupKey, "1"), kvp));
-                    Assert.Same(e.RouteTemplate, e.TemplateMatcher.Template);
                 });
+        }
+
+        private static TreeRouteBuilder CreateBuilder()
+        {
+            var services = new ServiceCollection()
+                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
+                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
+                .AddLogging()
+                .AddRouting()
+                .AddOptions()
+                .BuildServiceProvider();
+            return services.GetRequiredService<TreeRouteBuilder>();
         }
 
         private static Mock<IRouter> CreateHandler()
@@ -593,23 +581,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             IRouter handler, 
             IActionDescriptorCollectionProvider actionDescriptorProvider)
         {
-            var constraintResolver = new Mock<IInlineConstraintResolver>();
-            constraintResolver
-                .Setup(c => c.ResolveConstraint("int"))
-                .Returns(new IntRouteConstraint());
-
-            var policy = new UriBuilderContextPooledObjectPolicy(new UrlTestEncoder());
-            var pool = new DefaultObjectPool<UriBuildingContext>(policy);
-
-            var route = new AttributeRoute(
-                handler,
-                actionDescriptorProvider,
-                constraintResolver.Object,
-                pool,
-                new UrlTestEncoder(),
-                NullLoggerFactory.Instance);
-
-            return route;
+            var services = new ServiceCollection()
+                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
+                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
+                .AddLogging()
+                .AddRouting()
+                .AddOptions()
+                .BuildServiceProvider();
+            return new AttributeRoute(handler, actionDescriptorProvider, services);
         }
     }
 }

@@ -199,7 +199,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddSingleton<UrlEncoder>(new UrlTestEncoder());
 
+            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.AddRouting();
+            services.AddOptions();
+            services.AddLogging();
 
             return services.AddSingleton(actionDescriptorProvider.Object)
                 .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
