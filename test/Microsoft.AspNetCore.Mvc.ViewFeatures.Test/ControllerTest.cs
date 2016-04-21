@@ -183,53 +183,6 @@ namespace Microsoft.AspNetCore.Mvc.Test
             Assert.Same(data, actualJsonResult.Value);
         }
 
-        [Fact]
-        public void Controller_Json_IDisposableObject_RegistersForDispose()
-        {
-            // Arrange
-            var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
-
-            var controller = new TestableController();
-            controller.ControllerContext.HttpContext = mockHttpContext.Object;
-
-            var input = new DisposableObject();
-
-            // Act
-            var result = controller.Json(input);
-
-            // Assert
-            Assert.IsType<JsonResult>(result);
-            Assert.Same(input, result.Value);
-            mockHttpContext.Verify(
-                x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()),
-                Times.Once());
-        }
-
-        [Fact]
-        public void Controller_JsonWithParameterValueAndSerializerSettings_IDisposableObject_RegistersForDispose()
-        {
-            // Arrange
-            var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
-
-            var controller = new TestableController();
-            controller.ControllerContext.HttpContext = mockHttpContext.Object;
-
-            var input = new DisposableObject();
-            var serializerSettings = new JsonSerializerSettings();
-
-            // Act
-            var result = controller.Json(input, serializerSettings);
-
-            // Assert
-            Assert.IsType<JsonResult>(result);
-            Assert.Same(input, result.Value);
-            mockHttpContext.Verify(
-                x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()),
-                Times.Once());
-        }
-
         // These tests share code with the ActionFilterAttribute tests because the various filter
         // implementations need to behave the same way.
         [Fact]

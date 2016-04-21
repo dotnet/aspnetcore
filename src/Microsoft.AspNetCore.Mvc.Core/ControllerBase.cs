@@ -347,12 +347,6 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual OkObjectResult Ok(object value)
         {
-            var disposableValue = value as IDisposable;
-            if (disposableValue != null)
-            {
-                Response.RegisterForDispose(disposableValue);
-            }
-
             return new OkObjectResult(value);
         }
 
@@ -674,11 +668,6 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, string fileDownloadName)
         {
-            if (fileStream != null)
-            {
-                Response.RegisterForDispose(fileStream);
-            }
-
             return new FileStreamResult(fileStream, contentType) { FileDownloadName = fileDownloadName };
         }
 
@@ -768,12 +757,6 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual NotFoundObjectResult NotFound(object value)
         {
-            var disposableValue = value as IDisposable;
-            if (disposableValue != null)
-            {
-                Response.RegisterForDispose(disposableValue);
-            }
-
             return new NotFoundObjectResult(value);
         }
 
@@ -794,12 +777,6 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual BadRequestObjectResult BadRequest(object error)
         {
-            var disposableValue = error as IDisposable;
-            if (disposableValue != null)
-            {
-                Response.RegisterForDispose(disposableValue);
-            }
-
             return new BadRequestObjectResult(error);
         }
 
@@ -832,12 +809,6 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            var disposableValue = value as IDisposable;
-            if (disposableValue != null)
-            {
-                Response.RegisterForDispose(disposableValue);
-            }
-
             return new CreatedResult(uri, value);
         }
 
@@ -853,12 +824,6 @@ namespace Microsoft.AspNetCore.Mvc
             if (uri == null)
             {
                 throw new ArgumentNullException(nameof(uri));
-            }
-
-            var disposableValue = value as IDisposable;
-            if (disposableValue != null)
-            {
-                Response.RegisterForDispose(disposableValue);
             }
 
             return new CreatedResult(uri, value);
@@ -904,12 +869,6 @@ namespace Microsoft.AspNetCore.Mvc
             object routeValues,
             object value)
         {
-            var disposableValue = value as IDisposable;
-            if (disposableValue != null)
-            {
-                Response.RegisterForDispose(disposableValue);
-            }
-
             return new CreatedAtActionResult(actionName, controllerName, routeValues, value);
         }
 
@@ -947,12 +906,6 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual CreatedAtRouteResult CreatedAtRoute(string routeName, object routeValues, object value)
         {
-            var disposableValue = value as IDisposable;
-            if (disposableValue != null)
-            {
-                Response.RegisterForDispose(disposableValue);
-            }
-
             return new CreatedAtRouteResult(routeName, routeValues, value);
         }
 

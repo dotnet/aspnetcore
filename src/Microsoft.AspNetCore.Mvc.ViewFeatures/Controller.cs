@@ -293,12 +293,6 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual JsonResult Json(object data)
         {
-            var disposableValue = data as IDisposable;
-            if (disposableValue != null)
-            {
-                Response.RegisterForDispose(disposableValue);
-            }
-
             return new JsonResult(data);
         }
 
@@ -319,12 +313,6 @@ namespace Microsoft.AspNetCore.Mvc
             if (serializerSettings == null)
             {
                 throw new ArgumentNullException(nameof(serializerSettings));
-            }
-
-            var disposableValue = data as IDisposable;
-            if (disposableValue != null)
-            {
-                Response.RegisterForDispose(disposableValue);
             }
 
             return new JsonResult(data, serializerSettings);
