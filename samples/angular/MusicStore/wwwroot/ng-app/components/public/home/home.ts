@@ -12,11 +12,7 @@ export class Home {
     public mostPopular: models.Album[];
 
     constructor(http: Http) {
-        // Workaround for RC1 bug. This can be removed with ASP.NET Core 1.0 RC2.
-        let isServerSide = typeof window === 'undefined';
-        let options: any = isServerSide ? { headers: { Connection: 'keep-alive' } } : null;
-
-        http.get('/api/albums/mostPopular', options).subscribe(result => {
+        http.get('/api/albums/mostPopular').subscribe(result => {
             this.mostPopular = result.json();
         });
     }

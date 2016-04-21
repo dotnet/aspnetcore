@@ -45,12 +45,8 @@ export class AlbumsList {
     }
 
     refreshData() {
-        // Workaround for RC1 bug. This can be removed with ASP.NET Core 1.0 RC2.
-        let isServerSide = typeof window === 'undefined';
-        let options: any = isServerSide ? { headers: { Connection: 'keep-alive' } } : null;
-        
         var sortBy = this._sortBy + (this._sortByDesc ? ' DESC' : '');
-        this._http.get(`/api/albums?page=${ this._pageIndex }&pageSize=50&sortBy=${ sortBy }`, options).subscribe(result => {
+        this._http.get(`/api/albums?page=${ this._pageIndex }&pageSize=50&sortBy=${ sortBy }`).subscribe(result => {
             var json = result.json();
             this.rows = json.Data;
 

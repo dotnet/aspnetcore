@@ -9,11 +9,7 @@ export class FetchData {
     public forecasts: WeatherForecast[];
 
     constructor(http: Http) {
-        // Workaround for RC1 bug. This can be removed with ASP.NET Core 1.0 RC2.
-        let isServerSide = typeof window === 'undefined';
-        let options: any = isServerSide ? { headers: { Connection: 'keep-alive' } } : null;
-
-        http.get('/api/SampleData/WeatherForecasts', options).subscribe(result => {
+        http.get('/api/SampleData/WeatherForecasts').subscribe(result => {
             this.forecasts = result.json();
         });
     }
