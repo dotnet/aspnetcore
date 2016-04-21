@@ -226,121 +226,87 @@
         <RemoveDir Directories="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\_rels')" />
         <Delete Files="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\[Content_Types].xml')" />
 
-        <!-- These are terms that originate in resource strings from some DLLs, as well as common terminology in the sources. -->
+        <!-- These are terms that appear frequently but are not used offensively e.g. red is a color constant name. -->
         <PropertyGroup>
-            <Exclusions>
-                component;components;countries;country;dans;execute;execution;foo;hang;hanging;invalid;patch;race
-            </Exclusions>
+            <Exclusions>countries;country;foo;red</Exclusions>
         </PropertyGroup>
 
         <ItemGroup>
-            <!-- List is sorted OridnalIgnoreCase -->
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Net.Http.Server\WebListener.cs;
+            <!-- List is sorted OrdinalIgnoreCase -->
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\MonsterContext`.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\RequestProcessing\HttpReasonPhrase.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\MonsterContext`.cs">
+                                    $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\WebListener.cs">
                 <term>420</term>
                 <Justification>HTTP response code</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Extensions.WebEncoders\UnicodeEncoderBase.cs">
-                <term>a hole</term>
-                <Justification>valid context</Justification>
-            </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Extensions.WebEncoders.Core\UnicodeRanges.generated.cs;
-								    $(PoliCheckPath)**\Microsoft.Extensions.WebEncoders.Core.dll;
-									$(PoliCheckPath)**\Microsoft.Extensions.WebEncoders.Core.xml">
-                <term>Bengali</term>
-                <Justification>Font reference</Justification>
-            </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Localization\Internal\CultureInfoList.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Extensions.Globalization.CultureInfoCache\CultureInfoList.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs">
                 <term>BS</term>
                 <Justification>Culture info</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\WelcomePage.cs">
                 <term>butt</term>
-                <Justification>not our code, jquery scripts embedded in .cs file</Justification>
+                <Justification>Text appears in base64 encoded string of an image.</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
-                <term>capital</term>
-                <Justification>Data from Northwind database</Justification>
-            </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
-                <term>cracker</term>
-                <Justification>Data from Northwind database</Justification>
-            </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Authentication.Cookies\ICookieManager.cs;
+            <SrcExclusions Include="$(PoliCheckPath)**\net451\Microsoft.AspNetCore.Authentication.Cookies.xml;
+                                    $(PoliCheckPath)**\netstandard1.3\Microsoft.AspNetCore.Authentication.Cookies.xml;
+                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.Authentication.Cookies\ICookieManager.cs;
                                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.Proxy\ProxyMiddleware.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.WebUtilities\HttpResponseStreamWriter.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\RequestProcessing\BoundaryType.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\RequestProcessing\Response.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.Mvc.Core\HttpResponseStreamWriter.cs;
-                                    $(PoliCheckPath)**\Microsoft.AspNetCore.Authentication.Cookies.dll;
-                                    $(PoliCheckPath)**\Microsoft.AspNetCore.Authentication.Cookies.xml">
+                                    $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\RequestProcessing\Response.cs">
                 <term>chunking</term>
                 <Justification>Used to describe network chunks</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\dnx451\Microsoft.Dnx.Tooling.dll;
+                                    $(PoliCheckPath)**\dnxcore50\Microsoft.Dnx.Tooling.dll">
+                <term>dans</term>
+                <Justification>French translation in resources.</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Identity\Rfc6238AuthenticationService.cs">
                 <term>DT</term>
                 <Justification>abbreviation for DateTime</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
-                <term>DMZ</term>
-                <Justification>base64 string</Justification>
-            </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\WelcomePage.cs">
                 <term>FE</term>
-                <Justification>not our code, jquery scripts embedded in .cs file</Justification>
+                <Justification>Text appears in base64 encoded string of an image.</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\WelcomePage.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\WelcomePage.cs">
                 <term>FU</term>
-                <Justification>not our code, jquery scripts embedded in .cs file; Base64 encoded strings</Justification>
+                <Justification>Text appears in base64 encoded string of an image.</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\QueryTestBase.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\QueryTestBase.cs">
                 <term>fubar</term>
                 <Justification>Temporary exclusion to pass the build.</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Localization\Internal\CultureInfoList.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Extensions.Globalization.CultureInfoCache\CultureInfoList.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs">
                 <term>FY</term>
                 <Justification>Culture info</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\NuGet.Packaging\PackageExtraction\PackagePathHelper.cs">
-                <term>hack</term>
-                <Justification>Temporary to unblock build.</Justification>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.SignalR.Server\Transports\LongPollingTransport.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.TestHost\ResponseStream.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\NuGet\Core\Configuration\Settings.cs">
+                <term>hang</term>
+                <Justification>Refers to a stuck process/thread.</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Mvc.DataAnnotations\Internal\DataAnnotationsMetadataProvider.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.SignalR.Messaging\MessageBus.cs">
+                <term>hanging</term>
+                <Justification>Refers to a stuck process/thread.</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs">
                 <term>ho</term>
                 <Justification>Part of a name</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Security.Windows\Legacy\GlobalLog.cs">
-                <term>hung</term>
-                <Justification>refers to a stuck process/thread</Justification>
-            </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
-                <term>lez</term>
-                <Justification>part of a name, false positive</Justification>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.SqlServer\Storage\Internal\SqlServerTypeMapper.cs;">
+                <term>national</term>
+                <Justification>Refers to SQL Server datatype</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Authentication.OpenIdConnect\OpenIdConnectHandler.cs">
                 <term>nuts</term>
                 <Justification>Temporary exclusion, will be removed.</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Extensions.WebEncoders.Core\UnicodeRanges.generated.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Extensions.WebEncoders\CodePointFilters.cs;
-                                    $(PoliCheckPath)**\Microsoft.Extensions.WebEncoders.Core.dll;
-                                    $(PoliCheckPath)**\Microsoft.Extensions.WebEncoders.Core.xml">
-                <term>Oriya</term>
-                <Justification>Font reference</Justification>
-            </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
-                <term>pedro</term>
-                <Justification>Data from Northwind database</Justification>
-            </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\MonsterFixupTestBase.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\MonsterContext`.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\MonsterFixupTestBase.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\MonsterContext`.cs">
                 <term>pig</term>
                 <Justification>Acceptable within context</Justification>
             </SrcExclusions>
@@ -348,90 +314,49 @@
                 <term>pot</term>
                 <Justification>file extension - powerpoint</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
-                <term>queen</term>
-                <Justification>Northwind database sample values</Justification>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Mvc.Core\Internal\AttributeRoute.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.TestHost\ResponseStream.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Extensions.Caching.Memory.VSRC1\CacheEntry.cs">
+                <term>race</term>
+                <Justification>Refers to race condition.</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Net.WebSockets\WebSocketBuffer.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Net.WebSockets.Server\WebSocketBuffer.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.Mvc.Razor\Compilation\CompilerCache.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\ConcurrencyModel\Driver.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\ConcurrencyModel\Team.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\OptimisticConcurrencyTestBase.cs;
-                                    $(PoliCheckPath)**\Microsoft.EntityFrameworkCore.FunctionalTests.dll;
-                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.Razor.Runtime.Precompilation\CodeAnalysisSymbolLookupCache.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Extensions.PropertyHelper.Sources\PropertyHelper.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Mvc.Razor.Host.VSRC1\PropertyHelper.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.Mvc.Razor\Internal\CompilerCache.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\Driver.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\Team.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\OptimisticConcurrencyTestBase.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Net.WebSockets.Server\WebSocketBuffer.cs">
                 <term>races</term>
-                <Justification>refers to race condition; property name</Justification>
+                <Justification>Refers to race conditions; property name.</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\WelcomePage.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Colors.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Program.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Building\BuildContext.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Building\BuildManager.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\ConsoleCommands\ListConsoleCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Commands\AddCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Commands\InstallCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Commands\WrapCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Install\InstallBuilder.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Install\InstallGlobalCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Install\UninstallCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\List\LibraryDependencyFlatRenderer.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Publish\PublishManager.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Restore\RestoreCommand.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Restore\NuGet\KpmPackageFolder.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Restore\NuGet\NuGetv2Feed.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Restore\NuGet\NuGetv3Feed.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Restore\NuGet\PackageFeed.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Restore\NuGet\PackageUtilities.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Shims\ConsoleColor.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\SourceControl\SourceBuilder.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Reports.cs;
-                                    $(PoliCheckPath)**\Microsoft.Dnx.Tooling.dll">
-                <term>Red</term>
-                <Justification>Color constant name</Justification>
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\AsyncQueryTestBase.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\QueryTestBase.cs">
+                <term>UK</term>
+                <Justification>Text appears in base64 encoded string of an image; Culture info.</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\SourceControl\GitSourceControlProvider.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\SourceControl\SourceControlProviderFactory.cs">
-                <term>git</term>
-                <Justification>Refers to the source control product</Justification>
-            </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Dnx.Runtime\DependencyManagement\ProjectReferenceDependencyProvider.cs">
-                <term>sucks</term>
-                <Justification>expression of sadness</Justification>
-            </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Extensions.WebEncoders.Core\UnicodeRanges.generated.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Extensions.WebEncoders\CodePointFilters.cs;
-                                    $(PoliCheckPath)**\Microsoft.Extensions.WebEncoders.Core.dll;
-                                    $(PoliCheckPath)**\Microsoft.Extensions.WebEncoders.Core.xml">
-                <term>Tibetan</term>
-                <Justification>Font reference</Justification>
-            </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\ConcurrencyModel\Team.cs;
-                                    $(PoliCheckPath)**\Microsoft.EntityFrameworkCore.FunctionalTests.dll">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\Team.cs">
                 <term>virgin</term>
                 <Justification>Test data</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\AsyncQueryTestBase.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\QueryTestBase.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\Northwind\NorthwindData.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\WelcomePage.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.Localization\Internal\CultureInfoList.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Extensions.Globalization.CultureInfoCache\CultureInfoList.cs">
-                <term>UK</term>
-                <Justification>text appears in base64 encoded string of an image; Culture info;Northwind Database</Justification>
-            </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.FunctionalTests\TestModels\Northwind\NorthwindData.cs">
-                <term>wang</term>
-                <Justification>Data from Northwind database</Justification>
-            </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.SqlServer\Storage\Internal\SqlServerTypeMapper.cs;">
-                <term>national</term>
-                <Justification>Refers to SQL Server datatype</Justification>
-            </SrcExclusions>
+        </ItemGroup>
+
+        <ItemGroup>
+            <FileExclusions Include="$(PoliCheckPath)**\net451\Microsoft.EntityFrameworkCore.Specification.Tests.dll;
+                                     $(PoliCheckPath)**\netstandard1.3\Microsoft.EntityFrameworkCore.Specification.Tests.dll;
+                                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\Northwind\NorthwindData.cs">
+                <Justification>Northwind database contains too many violations to track them individually.</Justification>
+            </FileExclusions>
+            <FileExclusions Include="$(PoliCheckPath)**\Content\bootstrap.css;
+                                     $(PoliCheckPath)**\Content\bootstrap.min.css;
+                                     $(PoliCheckPath)**\Scripts\bootstrap.js;
+                                     $(PoliCheckPath)**\Scripts\jquery-*.js;
+                                     $(PoliCheckPath)**\Scripts\modernizr-*.js">
+              <Justification>External files shipped in our templates are not under our control.</Justification>
+            </FileExclusions>
         </ItemGroup>
 
         <PoliCheck
@@ -439,7 +364,7 @@
             Severity="2"
             FailSeverity="2"
             ExcludeTerms="$(Exclusions)"
-            ExcludeFiles=""
+            ExcludeFiles="@(FileExclusions)"
             DetailedExclusions="@(SrcExclusions)" />
     </Target>
 
