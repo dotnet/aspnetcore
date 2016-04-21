@@ -49,7 +49,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private ViewDataDictionary GetViewDataDictionary(ControllerContext context)
         {
-            var serviceProvider = context.HttpContext.RequestServices;
             return new ViewDataDictionary(
                 _modelMetadataProvider,
                 context.ModelState);

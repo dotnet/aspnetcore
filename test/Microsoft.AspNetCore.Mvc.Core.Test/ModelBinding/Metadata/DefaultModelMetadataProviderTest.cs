@@ -45,6 +45,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         [Fact]
+        public void GetMetadataForObjectType_Cached()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            // Act
+            var metadata1 = provider.GetMetadataForType(typeof(object));
+            var metadata2 = provider.GetMetadataForType(typeof(object));
+
+            // Assert
+            Assert.Same(metadata1, metadata2);
+        }
+
+        [Fact]
         public void GetMetadataForProperties_IncludesAllProperties()
         {
             // Arrange

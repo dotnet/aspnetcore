@@ -1074,9 +1074,14 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             protected override DefaultMetadataDetails CreateTypeDetails(ModelMetadataIdentity key)
             {
                 var entry = base.CreateTypeDetails(key);
-                return new DefaultMetadataDetails(
-                    key,
-                    new ModelAttributes(_attributes.Concat(entry.ModelAttributes.TypeAttributes).ToArray()));
+                if (_attributes?.Length > 0)
+                {
+                    return new DefaultMetadataDetails(
+                        key,
+                        new ModelAttributes(_attributes.Concat(entry.ModelAttributes.TypeAttributes).ToArray()));
+                }
+
+                return entry;
             }
 
             protected override DefaultMetadataDetails[] CreatePropertyDetails(ModelMetadataIdentity key)
