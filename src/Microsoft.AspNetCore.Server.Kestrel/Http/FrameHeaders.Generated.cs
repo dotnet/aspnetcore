@@ -2038,6 +2038,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         }
         protected override void SetValueFast(string key, StringValues value)
         {
+            
             switch (key.Length)
             {
                 case 13:
@@ -2424,10 +2425,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     }
                     break;
 }
+            
             Unknown[key] = value;
         }
         protected override void AddValueFast(string key, StringValues value)
         {
+            
             switch (key.Length)
             {
                 case 13:
@@ -2990,6 +2993,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     }
                     break;
             }
+            
             Unknown.Add(key, value);
         }
         protected override bool RemoveFast(string key)
@@ -7181,6 +7185,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         }
         protected override void SetValueFast(string key, StringValues value)
         {
+            ValidateHeaderCharacters(value);
             switch (key.Length)
             {
                 case 13:
@@ -7512,10 +7517,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     }
                     break;
 }
+            ValidateHeaderCharacters(key);
             Unknown[key] = value;
         }
         protected override void AddValueFast(string key, StringValues value)
         {
+            ValidateHeaderCharacters(value);
             switch (key.Length)
             {
                 case 13:
@@ -7991,6 +7998,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     }
                     break;
             }
+            ValidateHeaderCharacters(key);
             Unknown.Add(key, value);
         }
         protected override bool RemoveFast(string key)

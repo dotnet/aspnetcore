@@ -39,21 +39,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             get
             {
+                // Unlike the IHeaderDictionary version, this getter will throw a KeyNotFoundException.
                 return GetValueFast(key);
             }
             set
             {
-                if (_isReadOnly)
-                {
-                    ThrowReadOnlyException();
-                }
-                SetValueFast(key, value);
+                ((IHeaderDictionary)this)[key] = value;
             }
         }
 
         protected void ThrowReadOnlyException()
         {
-            throw new InvalidOperationException("Headers are readonly, reponse has already started.");
+            throw new InvalidOperationException("Headers are read-only, response has already started.");
         }
 
         protected void ThrowArgumentException()
@@ -140,11 +137,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         void ICollection<KeyValuePair<string, StringValues>>.Add(KeyValuePair<string, StringValues> item)
         {
-            if (_isReadOnly)
-            {
-                ThrowReadOnlyException();
-            }
-            AddValueFast(item.Key, item.Value);
+            ((IDictionary<string, StringValues>)this).Add(item.Key, item.Value);
         }
 
         void IDictionary<string, StringValues>.Add(string key, StringValues value)
@@ -215,6 +208,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         bool IDictionary<string, StringValues>.TryGetValue(string key, out StringValues value)
         {
             return TryGetValueFast(key, out value);
+        }
+
+        public static void ValidateHeaderCharacters(StringValues headerValues)
+        {
+            foreach (var value in headerValues)
+            {
+                ValidateHeaderCharacters(value);
+            }
+        }
+
+        public static void ValidateHeaderCharacters(string headerCharacters)
+        {
+            if (headerCharacters != null)
+            {
+                foreach (var ch in headerCharacters)
+                {
+                    if (ch < 0x20)
+                    {
+                        throw new InvalidOperationException(string.Format("Invalid control character in header: 0x{0:X2}", (byte)ch));
+                    }
+                }
+            }
         }
     }
 }
