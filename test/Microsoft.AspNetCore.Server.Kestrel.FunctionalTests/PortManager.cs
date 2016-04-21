@@ -7,11 +7,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public static class PortManager
     {
-        private static int _nextPort = 8001;
-
         public static int GetPort()
         {
-            return Interlocked.Increment(ref _nextPort);
+            return TestCommon.PortManager.GetNextPort();
         }
     }
 }
