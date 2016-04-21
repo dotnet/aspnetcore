@@ -6,6 +6,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Http;
+using Microsoft.AspNetCore.Server.Kestrel.TestCommon;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
@@ -14,8 +15,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
     /// </summary>
     public class TestServer : IDisposable
     {
-        private static int _nextPort = 9001;
-
         private KestrelEngine _engine;
         private IDisposable _server;
         ServerAddress _address;
@@ -62,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         public static int GetNextPort()
         {
-            return Interlocked.Increment(ref _nextPort);
+            return PortManager.GetNextPort();
         }
     }
 }

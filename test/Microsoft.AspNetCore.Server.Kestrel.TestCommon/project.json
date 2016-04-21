@@ -1,0 +1,18 @@
+{
+  "version": "1.0.0-*",
+  "frameworks": {
+    "net451": { },
+    "netstandard1.3": {
+      "dependencies": {
+        "System.Threading": "4.0.11-*",
+        "System.Net.Sockets": "4.1.0-*"
+      },
+      "imports": [
+        "portable-net45+win8"
+      ]
+    }
+  },
+  "compilationOptions": {
+    "keyFile": "../../tools/Key.snk"
+  }
+}
