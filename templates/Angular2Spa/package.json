@@ -18,9 +18,9 @@
     "webpack-hot-middleware": "^2.10.0"
   },
   "dependencies": {
-    "angular2": "2.0.0-beta.13",
-    "angular2-universal": "0.90.1",
-    "aspnet-prerendering": "^1.0.0",
+    "angular2": "2.0.0-beta.15",
+    "angular2-universal": "0.98.1",
+    "aspnet-prerendering": "^1.0.1",
     "aspnet-webpack": "^1.0.1",
     "css": "^2.2.1",
     "isomorphic-fetch": "^2.2.1",

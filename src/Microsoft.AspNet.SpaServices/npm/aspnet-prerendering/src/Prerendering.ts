@@ -19,9 +19,10 @@ export interface BootFunc {
 }
 
 export interface BootFuncParams {
-    location: url.Url;
-    url: string;
-    absoluteUrl: string;
+    location: url.Url;          // e.g., Location object containing information '/some/path'
+    origin: string;             // e.g., 'https://example.com:1234'
+    url: string;                // e.g., '/some/path'
+    absoluteUrl: string;        // e.g., 'https://example.com:1234/some/path'
     domainTasks: Promise<any>;
 }
 
@@ -44,8 +45,10 @@ export function renderToString(callback: RenderToStringCallback, applicationBase
         const domainTaskCompletionPromise = new Promise((resolve, reject) => {
             domainTaskCompletionPromiseResolve = resolve;
         });
+        const parsedAbsoluteRequestUrl = url.parse(absoluteRequestUrl);
         const params: BootFuncParams = {
             location: url.parse(requestPathAndQuery),
+            origin: parsedAbsoluteRequestUrl.protocol + '//' + parsedAbsoluteRequestUrl.host,
             url: requestPathAndQuery,
             absoluteUrl: absoluteRequestUrl,
             domainTasks: domainTaskCompletionPromise
