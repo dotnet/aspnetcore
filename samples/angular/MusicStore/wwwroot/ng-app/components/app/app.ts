@@ -25,7 +25,11 @@ export class App {
     public genres: models.Genre[];
 
     constructor(http: Http) {
-        http.get('/api/genres/menu').subscribe(result => {
+        // Workaround for RC1 bug. This can be removed with ASP.NET Core 1.0 RC2.
+        let isServerSide = typeof window === 'undefined';
+        let options: any = isServerSide ? { headers: { Connection: 'keep-alive' } } : null;
+        
+        http.get('/api/genres/menu', options).subscribe(result => {
             this.genres = result.json();
         });
     }

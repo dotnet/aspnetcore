@@ -24,10 +24,14 @@ export class AlbumEdit {
     private _http: Http;
 
     constructor(fb: FormBuilder, http: Http, routeParam: router.RouteParams) {
+        // Workaround for RC1 bug. This can be removed with ASP.NET Core 1.0 RC2.
+        let isServerSide = typeof window === 'undefined';
+        let options: any = isServerSide ? { headers: { Connection: 'keep-alive' } } : null;
+
         this._http = http;
 
         var albumId = parseInt(routeParam.params['albumId']);
-        http.get('/api/albums/' + albumId).subscribe(result => {
+        http.get('/api/albums/' + albumId, options).subscribe(result => {
             var json = result.json();
             this.originalAlbum = json;
             (<Control>this.form.controls['Title']).updateValue(json.Title);
@@ -37,11 +41,11 @@ export class AlbumEdit {
             (<Control>this.form.controls['AlbumArtUrl']).updateValue(json.AlbumArtUrl);
         });
 
-        http.get('/api/artists/lookup').subscribe(result => {
+        http.get('/api/artists/lookup', options).subscribe(result => {
             this.artists = result.json();
         });
 
-        http.get('/api/genres/genre-lookup').subscribe(result => {
+        http.get('/api/genres/genre-lookup', options).subscribe(result => {
             this.genres = result.json();
         });
 

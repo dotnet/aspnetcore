@@ -1,6 +1,6 @@
 {
   "name": "angular2-aspnet",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Helpers for Angular 2 apps built on ASP.NET",
   "main": "./dist/Exports",
   "scripts": {
@@ -15,7 +15,7 @@
   "author": "Microsoft",
   "license": "Apache-2.0",
   "dependencies": {
-    "angular2": "2.0.0-beta.13",
+    "angular2": "^2.0.0-beta.13",
     "rxjs": "5.0.0-beta.2"
   },
   "devDependencies": {
