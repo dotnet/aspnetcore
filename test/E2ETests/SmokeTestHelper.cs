@@ -32,89 +32,88 @@ namespace E2ETests
 
                 var validator = new Validator(httpClient, httpClientHandler, logger, deploymentResult);
 
+                Console.WriteLine("Verifying home page");
                 await validator.VerifyHomePage(response);
 
-                // Verify the static file middleware can serve static content.
+                Console.WriteLine("Verifying static files are served from static file middleware");
                 await validator.VerifyStaticContentServed();
 
-                // Making a request to a protected resource should automatically redirect to login page.
+                Console.WriteLine("Verifying access to a protected resource should automatically redirect to login page.");
                 await validator.AccessStoreWithoutPermissions();
 
-                // Register a user - Negative scenario where the Password & ConfirmPassword do not match.
+                Console.WriteLine("Verifying mismatched passwords trigger validaton errors during user registration");
                 await validator.RegisterUserWithNonMatchingPasswords();
 
-                // Register a valid user.
+                Console.WriteLine("Verifying valid user registration");
                 var generatedEmail = await validator.RegisterValidUser();
 
-                await validator.SignInWithUser(generatedEmail, "Password~1");
-
-                // Register a user - Negative scenario : Trying to register a user name that's already registered.
+                Console.WriteLine("Verifying duplicate user email registration");
                 await validator.RegisterExistingUser(generatedEmail);
 
-                // Logout from this user session - This should take back to the home page
+                Console.WriteLine("Verifying user logout");
                 await validator.SignOutUser(generatedEmail);
 
-                // Sign in scenarios: Invalid password - Expected an invalid user name password error.
+                Console.WriteLine("Verifying incorrect password login");
                 await validator.SignInWithInvalidPassword(generatedEmail, "InvalidPassword~1");
 
-                // Sign in scenarios: Valid user name & password.
+                Console.WriteLine("Verifying valid user log in");
                 await validator.SignInWithUser(generatedEmail, "Password~1");
 
-                // Change password scenario
+                Console.WriteLine("Verifying change password");
                 await validator.ChangePassword(generatedEmail);
 
-                // SignIn with old password and verify old password is not allowed and new password is allowed
+                Console.WriteLine("Verifying old password is not valid anymore");
                 await validator.SignOutUser(generatedEmail);
                 await validator.SignInWithInvalidPassword(generatedEmail, "Password~1");
                 await validator.SignInWithUser(generatedEmail, "Password~2");
 
-                // Making a request to a protected resource that this user does not have access to - should
-                // automatically redirect to the configured access denied page
+                Console.WriteLine("Verifying authenticated user trying to access unauthorized resource");
                 await validator.AccessStoreWithoutPermissions(generatedEmail);
 
-                // Logout from this user session - This should take back to the home page
+                Console.WriteLine("Verifying user log out");
                 await validator.SignOutUser(generatedEmail);
 
-                // Login as an admin user
+                Console.WriteLine("Verifying admin user login");
                 await validator.SignInWithUser("Administrator@test.com", "YouShouldChangeThisPassword1!");
 
-                // Now navigating to the store manager should work fine as this user has
-                // the necessary permission to administer the store.
+                Console.WriteLine("Verifying admin user's access to store manager page");
                 await validator.AccessStoreWithPermissions();
 
-                // Create an album
+                Console.WriteLine("Verifying creating a new album");
                 var albumName = await validator.CreateAlbum();
                 var albumId = await validator.FetchAlbumIdFromName(albumName);
 
-                // Get details of the album
+                Console.WriteLine("Verifying retrieved album details");
                 await validator.VerifyAlbumDetails(albumId, albumName);
 
-                // Verify status code pages acts on non-existing items.
+                Console.WriteLine("Verifying status code pages for non-existing items");
                 await validator.VerifyStatusCodePages();
 
-                // Get the non-admin view of the album.
+                Console.WriteLine("Verying non-admin view of an album");
                 await validator.GetAlbumDetailsFromStore(albumId, albumName);
 
-                // Add an album to cart and checkout the same
+                Console.WriteLine("Verifying adding album to a cart");
                 await validator.AddAlbumToCart(albumId, albumName);
+
+                Console.WriteLine("Verifying cart checkout");
                 await validator.CheckOutCartItems();
 
-                // Delete the album from store
+                Console.WriteLine("Verifying deletion of album from a cart");
                 await validator.DeleteAlbum(albumId, albumName);
 
-                // Logout from this user session - This should take back to the home page
+                Console.WriteLine("Verifying administrator log out");
                 await validator.SignOutUser("Administrator");
 
-                // Google login
+                Console.WriteLine("Verifying Google login scenarios");
                 await validator.LoginWithGoogle();
 
-                // Facebook login
+                Console.WriteLine("Verifying Facebook login scenarios");
                 await validator.LoginWithFacebook();
 
-                // Twitter login
+                Console.WriteLine("Verifying Twitter login scenarios");
                 await validator.LoginWithTwitter();
 
-                // MicrosoftAccountLogin
+                Console.WriteLine("Verifying Microsft login scenarios");
                 await validator.LoginWithMicrosoftAccount();
 
                 logger.LogInformation("Variation completed successfully.");

@@ -94,9 +94,11 @@ namespace E2ETests
                         "connect to the server after multiple retries");
 
                     var validator = new Validator(httpClient, httpClientHandler, _logger, deploymentResult);
+
+                    Console.WriteLine("Verifying home page");
                     await validator.VerifyHomePage(response);
 
-                    // OpenIdConnect login.
+                    Console.WriteLine("Verifying login by OpenIdConnect");
                     await validator.LoginWithOpenIdConnect();
 
                     _logger.LogInformation("Variation completed successfully.");

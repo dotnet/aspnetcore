@@ -168,9 +168,11 @@ namespace E2ETests
                         "connect to the server after multiple retries");
 
                     var validator = new Validator(httpClient, httpClientHandler, _logger, deploymentResult);
+
+                    Console.WriteLine("Verifying home page");
                     await validator.VerifyHomePage(response);
 
-                    // Static files are served?
+                    Console.WriteLine("Verifying static files are served from static file middleware");
                     await validator.VerifyStaticContentServed();
 
                     if (serverType != ServerType.IISExpress)

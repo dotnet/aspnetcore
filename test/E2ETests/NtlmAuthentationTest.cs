@@ -69,9 +69,11 @@ namespace E2ETests
                         "connect to the server after multiple retries");
 
                     var validator = new Validator(httpClient, httpClientHandler, _logger, deploymentResult);
+
+                    Console.WriteLine("Verifying home page");
                     await validator.VerifyNtlmHomePage(response);
 
-                    //Should be able to access the store as the Startup adds necessary permissions for the current user
+                    Console.WriteLine("Verifying access to store with permissions");
                     await validator.AccessStoreWithPermissions();
 
                     _logger.LogInformation("Variation completed successfully.");

@@ -174,6 +174,8 @@ namespace E2ETests
             return url.Replace("//", "/").Replace("%2F%2F", "%2F").Replace("%2F/", "%2F");
         }
 
+        // Making a request to a protected resource that this user does not have access to - should
+        // automatically redirect to the configured access denied page
         public async Task AccessStoreWithoutPermissions(string email = null)
         {
             _logger.LogInformation("Trying to access StoreManager that needs ManageStore claim with the current user : {email}", email ?? "Anonymous");
