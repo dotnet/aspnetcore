@@ -47,7 +47,7 @@ namespace ServerComparison.FunctionalTests
         }
 
         [ConditionalTheory]
-        [SkipIfIISVariationsNotEnabled]
+        [SkipIfEnvironmentVariableNotEnabled("IIS_VARIATIONS_ENABLED")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [SkipIfCurrentRuntimeIsCoreClr]
