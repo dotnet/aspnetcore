@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Gets or sets the 'response_type'.
         /// </summary>
-        public string ResponseType { get; set; } = OpenIdConnectResponseTypes.CodeIdToken;
+        public string ResponseType { get; set; } = OpenIdConnectResponseTypes.IdToken;
 
         /// <summary>
         /// Gets the list of permissions to request.
