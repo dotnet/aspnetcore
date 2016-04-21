@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
     <handlers>
       <add name=""aspNetCore"" path=""*"" verb=""*"" modules=""AspNetCoreModule"" resourceType=""Unspecified""/>
     </handlers>
-    <aspNetCore processPath="".\test.exe"" stdoutLogEnabled=""false"" stdoutLogFile="".\logs\stdout"" startupTimeLimit=""3600""/>
+    <aspNetCore processPath="".\test.exe"" stdoutLogEnabled=""false"" stdoutLogFile="".\logs\stdout"" />
   </system.webServer>
 </configuration>");
 
@@ -168,8 +168,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
             aspNetCoreElement.Elements().Remove();
 
             Assert.True(XNode.DeepEquals(
-                XDocument.Parse(@"<aspNetCore processPath=""%home%\site\test.exe"" stdoutLogEnabled=""false""
-                    stdoutLogFile=""\\?\%home%\LogFiles\stdout"" startupTimeLimit=""3600""/>").Root,
+                XDocument.Parse(@"<aspNetCore processPath="".\test.exe"" stdoutLogEnabled=""false""
+                    stdoutLogFile=""\\?\%home%\LogFiles\stdout"" />").Root,
                 aspNetCoreElement));
         }
 
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
 
             Assert.True(XNode.DeepEquals(
                 XDocument.Parse(@"<aspNetCore processPath=""dotnet"" arguments="".\test.exe"" stdoutLogEnabled=""false""
-                     stdoutLogFile="".\logs\stdout"" startupTimeLimit=""3600""/>").Root,
+                     stdoutLogFile="".\logs\stdout"" />").Root,
                 aspNetCoreElement));
         }
 
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
 
             Assert.True(XNode.DeepEquals(
                 XDocument.Parse(@"<aspNetCore processPath=""dotnet"" arguments="".\test.exe"" stdoutLogEnabled=""false""
-                     stdoutLogFile="".\logs\stdout"" startupTimeLimit=""3600""/>").Root,
+                     stdoutLogFile="".\logs\stdout"" />").Root,
                 aspNetCoreElement));
         }
 
