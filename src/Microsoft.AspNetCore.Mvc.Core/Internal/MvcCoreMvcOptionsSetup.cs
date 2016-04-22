@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Options;
 
@@ -73,6 +74,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             options.ValueProviderFactories.Add(new JQueryFormValueProviderFactory());
 
             // Set up metadata providers
+
+            // Don't bind the Type class by default as it's expensive. A user can override this behavior
+            // by altering the collection of providers.
+            options.ModelMetadataDetailsProviders.Add(new ExcludeBindingMetadataProvider(typeof(Type)));
+
             options.ModelMetadataDetailsProviders.Add(new DefaultBindingMetadataProvider(messageProvider));
             options.ModelMetadataDetailsProviders.Add(new DefaultValidationMetadataProvider());
 
