@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -38,12 +39,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             var req = new HttpRequestMessage(HttpMethod.Get, "");
             req.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
-            await server.CreateClient().SendAsync(req);
+            var response = await server.CreateClient().SendAsync(req);
             Assert.True(assertsExecuted);
+            response.EnsureSuccessStatusCode();
         }
 
         [Fact]
-        public async Task MiddlewareSkippedIfTokenHeaderIsMissing()
+        public async Task MiddlewareRejectsRequestIfTokenHeaderIsMissing()
         {
             var assertsExecuted = false;
 
@@ -65,8 +67,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             var server = new TestServer(builder);
 
             var req = new HttpRequestMessage(HttpMethod.Get, "");
-            await server.CreateClient().SendAsync(req);
-            Assert.True(assertsExecuted);
+            var response = await server.CreateClient().SendAsync(req);
+            Assert.False(assertsExecuted);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
         [Fact]
