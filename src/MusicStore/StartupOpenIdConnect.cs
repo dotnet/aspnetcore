@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using MusicStore.Components;
 using MusicStore.Models;
 
@@ -133,7 +134,8 @@ namespace MusicStore
             app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions
             {
                 Authority = "https://login.windows.net/[tenantName].onmicrosoft.com",
-                ClientId = "[ClientId]"
+                ClientId = "[ClientId]",
+                ResponseType = OpenIdConnectResponseTypes.CodeIdToken,
             });
 
             // Add MVC to the request pipeline

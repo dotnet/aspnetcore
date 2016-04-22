@@ -11,6 +11,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using MusicStore.Components;
 using MusicStore.Mocks.Common;
 using MusicStore.Mocks.OpenIdConnect;
@@ -124,6 +125,7 @@ namespace MusicStore
                 BackchannelHttpHandler = new OpenIdConnectBackChannelHttpHandler(),
                 StringDataFormat = new CustomStringDataFormat(),
                 StateDataFormat = new CustomStateDataFormat(),
+                ResponseType = OpenIdConnectResponseTypes.CodeIdToken,
                 UseTokenLifetime = false,
 
                 Events = new OpenIdConnectEvents
