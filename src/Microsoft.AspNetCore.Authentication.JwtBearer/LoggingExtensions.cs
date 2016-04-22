@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Logging
     internal static class LoggingExtensions
     {
         private static Action<ILogger, string, Exception> _tokenValidationFailed;
-        private static Action<ILogger, string, Exception> _tokenValidationSucceeded;
+        private static Action<ILogger, Exception> _tokenValidationSucceeded;
         private static Action<ILogger, Exception> _errorProcessingMessage;
 
         static LoggingExtensions()
@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Logging
                 eventId: 1,
                 logLevel: LogLevel.Information,
                 formatString: "Failed to validate the token {Token}.");
-            _tokenValidationSucceeded = LoggerMessage.Define<string>(
+            _tokenValidationSucceeded = LoggerMessage.Define(
                 eventId: 2,
                 logLevel: LogLevel.Information,
                 formatString: "Successfully validated the token.");
@@ -34,7 +34,7 @@ namespace Microsoft.Extensions.Logging
 
         public static void TokenValidationSucceeded(this ILogger logger)
         {
-            _tokenValidationSucceeded(logger, null, null);
+            _tokenValidationSucceeded(logger, null);
         }
 
         public static void ErrorProcessingMessage(this ILogger logger, Exception ex)
