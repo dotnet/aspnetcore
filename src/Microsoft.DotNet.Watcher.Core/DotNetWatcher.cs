@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Watcher.Core.Internal;
@@ -58,29 +57,24 @@ namespace Microsoft.DotNet.Watcher.Core
                 throw new ArgumentNullException(nameof(cancellationToken));
             }
 
-            if (dotnetArguments.Length > 0)
-            {
-                dotnetArguments = new string[] { command, "--" }
-                    .Concat(dotnetArguments)
-                    .ToArray();
-            }
-            else
-            {
-                dotnetArguments = new string[] { command };
-            }
+            var fullDotnetArgs = new string[dotnetArguments.Length + 1];
+            fullDotnetArgs[0] = command;
 
-            dotnetArguments = dotnetArguments
-                .Select(arg =>
+            for (var i = 0; i < dotnetArguments.Length; i++)
+            {
+                var arg = dotnetArguments[i];
+                foreach (char c in arg)
                 {
-                    // If the argument has spaces, make sure we quote it
-                    if (arg.Contains(" ") || arg.Contains("\t"))
+                    if (c == ' ' ||
+                        c == '\t')
                     {
-                        return $"\"{arg}\"";
+                        arg = $"\"{arg}\"";
+                        break;
                     }
-
-                    return arg;
-                })
-                .ToArray();
+                }
+                fullDotnetArgs[i + 1] = arg;
+            }
+            dotnetArguments = fullDotnetArgs;
 
             var dotnetArgumentsAsString = string.Join(" ", dotnetArguments);
 
