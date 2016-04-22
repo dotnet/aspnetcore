@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
         {
             // Forward slashes currently work neither in AspNetCoreModule nor in dotnet so they need to be
             // replaced with backwards slashes when the application is published on a non-Windows machine
-            var appPath = Path.Combine(configureForAzure ? @"%home%\site" : ".", appName).Replace("/", "\\");
+            var appPath = Path.Combine(".", appName).Replace("/", "\\");
             var logPath = Path.Combine(configureForAzure ? @"\\?\%home%\LogFiles" : @".\logs", "stdout").Replace("/", "\\");
 
             if (!isPortable)
@@ -83,7 +83,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
 
             SetAttributeValueIfEmpty(aspNetCoreElement, "stdoutLogEnabled", "false");
             SetAttributeValueIfEmpty(aspNetCoreElement, "stdoutLogFile", logPath);
-            SetAttributeValueIfEmpty(aspNetCoreElement, "startupTimeLimit", "3600");
         }
 
         private static XElement GetOrCreateChild(XElement parent, string childName)
