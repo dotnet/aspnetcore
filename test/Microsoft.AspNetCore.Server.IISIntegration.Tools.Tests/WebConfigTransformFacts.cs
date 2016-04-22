@@ -202,6 +202,28 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
                 aspNetCoreElement));
         }
 
+        [Theory]
+        [InlineData("%LAUNCHER_ARGS%", "")]
+        [InlineData(" %launcher_ARGS%", "")]
+        [InlineData("%LAUNCHER_args% ", "")]
+        [InlineData("%LAUNCHER_ARGS% %launcher_args%", "")]
+        [InlineData(" %LAUNCHER_ARGS% %launcher_args% ", "")]
+        [InlineData(" %launcher_args% -my-switch", "-my-switch")]
+        [InlineData("-my-switch %LaUnChEr_ArGs%", "-my-switch")]
+        [InlineData("-switch-1 %LAUNCHER_ARGS% -switch-2", "-switch-1  -switch-2")]
+        [InlineData("%LAUNCHER_ARGS% -switch %launcher_args%", "-switch")]
+        public void WebConfigTransform_removes_LAUNCHER_ARGS_from_arguments_for_standalone_apps(string inputArguments, string outputArguments)
+        {
+            var input = WebConfigTemplate;
+            input.Descendants("aspNetCore").Single().SetAttributeValue("arguments", inputArguments);
+
+            var aspNetCoreElement =
+                WebConfigTransform.Transform(input, "test.exe", configureForAzure: false, isPortable: false)
+                    .Descendants("aspNetCore").Single();
+
+            Assert.Equal(outputArguments, (string)aspNetCoreElement.Attribute("arguments"));
+        }
+
         private bool VerifyMissingElementCreated(params string[] elementNames)
         {
             var input = WebConfigTemplate;
