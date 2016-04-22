@@ -56,8 +56,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             if (!string.Equals(_pairingToken, httpContext.Request.Headers[MSAspNetCoreToken], StringComparison.Ordinal))
             {
-                _logger.LogTrace($"'{MSAspNetCoreToken}' does not match the expected pairing token '{_pairingToken}', skipping {nameof(IISMiddleware)}.");
-                await _next(httpContext);
+                _logger.LogError($"'{MSAspNetCoreToken}' does not match the expected pairing token '{_pairingToken}', request rejected.");
+                httpContext.Response.StatusCode = 400;
                 return;
             }
 
