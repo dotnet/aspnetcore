@@ -73,6 +73,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         private IModelBinder CreateBinderCore(DefaultModelBinderProviderContext providerContext, object token)
         {
+            if (!providerContext.Metadata.IsBindingAllowed)
+            {
+                return NoOpBinder.Instance;
+            }
+
             // A non-null token will usually be passed in at the the top level (ParameterDescriptor likely).
             // This prevents us from treating a parameter the same as a collection-element - which could
             // happen looking at just model metadata.
@@ -185,17 +190,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 var nestedContext = new DefaultModelBinderProviderContext(this, metadata);
                 return _factory.CreateBinderCore(nestedContext, token: null);
-            }
-        }
-
-        private class NoOpBinder : IModelBinder
-        {
-            public static readonly IModelBinder Instance = new NoOpBinder();
-
-            public Task BindModelAsync(ModelBindingContext bindingContext)
-            {
-                bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
-                return TaskCache.CompletedTask;
             }
         }
 
