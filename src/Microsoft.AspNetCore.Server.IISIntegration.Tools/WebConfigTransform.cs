@@ -65,6 +65,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
             if (!isPortable)
             {
                 aspNetCoreElement.SetAttributeValue("processPath", appPath);
+                var arguments = (string)aspNetCoreElement.Attribute("arguments");
+
+                if (arguments != null)
+                {
+                    const string launcherArgs = "%LAUNCHER_ARGS%";
+                    var position = 0;
+                    while ((position = arguments.IndexOf(launcherArgs, position, StringComparison.OrdinalIgnoreCase)) >= 0)
+                    {
+                        arguments = arguments.Remove(position, launcherArgs.Length);
+                    }
+
+                    aspNetCoreElement.SetAttributeValue("arguments", arguments.Trim());
+                }
             }
             else
             {
