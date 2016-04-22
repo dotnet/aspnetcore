@@ -40,9 +40,6 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Threading.Tasks": {
-          "type": "build"
-        }
       }
     },
     "netstandard1.5": {
@@ -51,7 +48,6 @@
       ],
       "dependencies": {
         "System.Text.Encoding": "4.0.11-*",
-        "System.Threading.Tasks.Parallel": "4.0.1-*",
         "System.Runtime.Loader": "4.0.0-*"
       }
     }

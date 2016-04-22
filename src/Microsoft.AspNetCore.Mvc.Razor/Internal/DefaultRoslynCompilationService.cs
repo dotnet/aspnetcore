@@ -2,17 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.PortableExecutable;
-#if NETSTANDARD1_5
-using System.Runtime.Loader;
-#endif
 using System.Text;
+using System.Threading;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
@@ -32,19 +29,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     /// </summary>
     public class DefaultRoslynCompilationService : ICompilationService
     {
-        private readonly ConcurrentDictionary<string, AssemblyMetadata> _metadataFileCache =
-            new ConcurrentDictionary<string, AssemblyMetadata>(StringComparer.OrdinalIgnoreCase);
         private readonly IFileProvider _fileProvider;
-        private readonly Lazy<List<MetadataReference>> _applicationReferences;
         private readonly Action<RoslynCompilationContext> _compilationCallback;
         private readonly CSharpParseOptions _parseOptions;
         private readonly CSharpCompilationOptions _compilationOptions;
         private readonly ILogger _logger;
         private readonly DependencyContext _dependencyContext;
-
-#if NETSTANDARD1_5
-        private readonly RazorLoadContext _razorLoadContext;
-#endif
+        private object _applicationReferencesLock = new object();
+        private bool _applicationReferencesInitialized;
+        private List<MetadataReference> _applicationReferences;
 
         /// <summary>
         /// Initalizes a new instance of the <see cref="DefaultRoslynCompilationService"/> class.
@@ -74,16 +67,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             ILoggerFactory loggerFactory)
         {
             _dependencyContext = dependencyContext;
-            _applicationReferences = new Lazy<List<MetadataReference>>(GetApplicationReferences);
             _fileProvider = fileProviderAccessor.FileProvider;
             _compilationCallback = viewEngineOptions.CompilationCallback;
             _parseOptions = viewEngineOptions.ParseOptions;
             _compilationOptions = viewEngineOptions.CompilationOptions;
             _logger = loggerFactory.CreateLogger<DefaultRoslynCompilationService>();
+        }
 
-#if NETSTANDARD1_5
-            _razorLoadContext = new RazorLoadContext();
-#endif
+        private List<MetadataReference> ApplicationReferences
+        {
+            get
+            {
+                return LazyInitializer.EnsureInitialized(
+                    ref _applicationReferences,
+                    ref _applicationReferencesInitialized,
+                    ref _applicationReferencesLock,
+                    GetApplicationReferences);
+            }
         }
 
         /// <inheritdoc />
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 assemblyName,
                 options: _compilationOptions,
                 syntaxTrees: new[] { syntaxTree },
-                references: _applicationReferences.Value);
+                references: ApplicationReferences);
 
             compilation = Rewrite(compilation);
 
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
                     if (!result.Success)
                     {
-                        if (!compilation.References.Any() && !_applicationReferences.Value.Any())
+                        if (!compilation.References.Any() && !ApplicationReferences.Any())
                         {
                             // DependencyModel had no references specified and the user did not use the
                             // CompilationCallback to add extra references. It is likely that the user did not specify
@@ -165,12 +165,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             }
         }
 
-        private Assembly LoadStream(MemoryStream ms, MemoryStream assemblySymbols)
+        private Assembly LoadStream(MemoryStream assemblyStream, MemoryStream pdbStream)
         {
 #if NET451
-            return Assembly.Load(ms.ToArray(), assemblySymbols.ToArray());
+            return Assembly.Load(assemblyStream.ToArray(), pdbStream.ToArray());
 #else
-            return _razorLoadContext.Load(ms, assemblySymbols);
+            return System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromStream(assemblyStream, pdbStream);
 #endif
         }
 
@@ -247,6 +247,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 return metadataReferences;
             }
 
+            var libraryPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             for (var i = 0; i < _dependencyContext.CompileLibraries.Count; i++)
             {
                 var library = _dependencyContext.CompileLibraries[i];
@@ -260,7 +261,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     continue;
                 }
 
-                metadataReferences.AddRange(referencePaths.Select(CreateMetadataFileReference));
+                foreach (var path in referencePaths)
+                {
+                    if (libraryPaths.Add(path))
+                    {
+                        metadataReferences.Add(CreateMetadataFileReference(path));
+                    }
+                }
             }
 
             return metadataReferences;
@@ -268,16 +275,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         private MetadataReference CreateMetadataFileReference(string path)
         {
-            var metadata = _metadataFileCache.GetOrAdd(path, _ =>
+            using (var stream = File.OpenRead(path))
             {
-                using (var stream = File.OpenRead(path))
-                {
-                    var moduleMetadata = ModuleMetadata.CreateFromStream(stream, PEStreamOptions.PrefetchMetadata);
-                    return AssemblyMetadata.Create(moduleMetadata);
-                }
-            });
+                var moduleMetadata = ModuleMetadata.CreateFromStream(stream, PEStreamOptions.PrefetchMetadata);
+                var assemblyMetadata = AssemblyMetadata.Create(moduleMetadata);
 
-            return metadata.GetReference(filePath: path);
+                return assemblyMetadata.GetReference(filePath: path);
+            }
         }
 
         private static bool IsError(Diagnostic diagnostic)
@@ -329,20 +333,5 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             return null;
         }
-
-#if NETSTANDARD1_5
-        private class RazorLoadContext : AssemblyLoadContext
-        {
-            protected override Assembly Load(AssemblyName assemblyName)
-            {
-                return Default.LoadFromAssemblyName(assemblyName);
-            }
-
-            public Assembly Load(Stream assembly, Stream assemblySymbols)
-            {
-                return LoadFromStream(assembly, assemblySymbols);
-            }
-        }
-#endif
     }
 }
