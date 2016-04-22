@@ -19,13 +19,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        //[InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5061/", ServerType.Kestrel)]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5062/", ServerType.Kestrel)]
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5063/", ServerType.Kestrel)]
-        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5064/", ServerType.Kestrel)]
-        public Task HelloWorld_IISExpress(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ServerType delegateServer)
+        //[InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5061/", ServerType.Kestrel, ApplicationType.Standalone)]
+        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5062/", ServerType.Kestrel, ApplicationType.Standalone)]
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5063/", ServerType.Kestrel, ApplicationType.Standalone)]
+        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5064/", ServerType.Kestrel, ApplicationType.Standalone)]
+        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5065/", ServerType.Kestrel, ApplicationType.Portable)]
+        public Task HelloWorld_IISExpress(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ServerType delegateServer, ApplicationType applicationType)
         {
-            return HelloWorld(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, delegateServer);
+            return HelloWorld(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, delegateServer, applicationType);
         }
 
         [ConditionalTheory]
@@ -33,14 +34,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [SkipIfCurrentRuntimeIsCoreClr]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5069/", ServerType.Kestrel)]
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5070/", ServerType.Kestrel)]
-        public Task HelloWorld_IIS(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ServerType delegateServer)
+        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5069/", ServerType.Kestrel, ApplicationType.Standalone)]
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5070/", ServerType.Kestrel, ApplicationType.Standalone)]
+        public Task HelloWorld_IIS(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ServerType delegateServer, ApplicationType applicationType)
         {
-            return HelloWorld(ServerType.IIS, runtimeFlavor, architecture, applicationBaseUrl, delegateServer);
+            return HelloWorld(ServerType.IIS, runtimeFlavor, architecture, applicationBaseUrl, delegateServer, applicationType);
         }
 
-        public async Task HelloWorld(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ServerType delegateServer)
+        public async Task HelloWorld(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ServerType delegateServer, ApplicationType applicationType)
         {
             var logger = new LoggerFactory()
                             .AddConsole()
@@ -48,13 +49,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             using (logger.BeginScope("HelloWorldTest"))
             {
-                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(applicationType), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
                     SiteName = "HttpTestSite", // This is configured in the Http.config
-                    PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netstandardapp1.5"
+                    PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.0",
+                    ApplicationType = applicationType
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))

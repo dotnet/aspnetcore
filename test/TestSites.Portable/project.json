@@ -1,8 +1,11 @@
-{
+﻿{
   "version": "1.0.0-*",
   "compilationOptions": {
     "emitEntryPoint": true
   },
+  "compile": [
+    "../TestSites/Startup*.cs"
+  ],
   "content": [
     "web.config"
   ],
@@ -22,11 +25,13 @@
         "dnxcore50"
       ],
       "dependencies": {
-        "Microsoft.NETCore.App": "1.0.0-*",
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        },
         "System.Net.Primitives": "4.0.11-*",
         "System.Diagnostics.Process": "4.1.0-*"
       }
-    },
-    "net451": { }
+    }
   }
 }
