@@ -50,7 +50,7 @@
                     "bin/lib/Microsoft.Dnx.Tooling/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
                 }
             },
-            "dotnet-sql-cache": {},
+            "Microsoft.Extensions.Caching.SqlConfig.Tools": {},
             "Microsoft.Extensions.SecretManager.Tools": {},
             "Microsoft.AspNet.FileProviders.Abstractions.VSRC1": {},
             "Microsoft.AspNet.FileProviders.Physical.VSRC1": {},
