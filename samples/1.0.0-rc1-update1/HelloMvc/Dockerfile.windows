@@ -1,0 +1,11 @@
+FROM microsoft/aspnet:1.0.0-rc1-update1-coreclr
+
+COPY project.json /app/project.json
+COPY NuGet.config /app/NuGet.config
+WORKDIR /app
+RUN dnu restore
+
+COPY . /app/
+
+EXPOSE 5004
+ENTRYPOINT dnx.exe -p project.json web
