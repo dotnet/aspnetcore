@@ -23,7 +23,7 @@ namespace MusicStore.Mocks.Twitter
 
             if (request.RequestUri.AbsoluteUri.StartsWith("https://api.twitter.com/oauth/access_token"))
             {
-                var formData = new FormCollection(await FormReader.ReadFormAsync(await request.Content.ReadAsStreamAsync()));
+                var formData = new FormCollection(await new FormReader(await request.Content.ReadAsStreamAsync()).ReadFormAsync());
                 if (formData["oauth_verifier"] == "valid_oauth_verifier")
                 {
                     if (_requestTokenEndpointInvoked)
