@@ -73,9 +73,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
 
         public Task WriteAsync(ArraySegment<byte> buffer, bool chunk, CancellationToken cancellationToken)
         {
-            // TODO: Use _outputStream.WriteAsync
+#if NET451
             Write(buffer, chunk);
             return TaskUtilities.CompletedTask;
+#else
+            if (chunk && buffer.Array != null)
+            {
+                return WriteAsyncChunked(buffer, cancellationToken);
+            }
+
+            return _outputStream.WriteAsync(buffer.Array ?? _nullBuffer, buffer.Offset, buffer.Count, cancellationToken);
+#endif
+        }
+
+        private async Task WriteAsyncChunked(ArraySegment<byte> buffer, CancellationToken cancellationToken)
+        {
+            var beginChunkBytes = ChunkWriter.BeginChunkBytes(buffer.Count);
+
+            await _outputStream.WriteAsync(beginChunkBytes.Array, beginChunkBytes.Offset, beginChunkBytes.Count, cancellationToken);
+            await _outputStream.WriteAsync(buffer.Array ?? _nullBuffer, buffer.Offset, buffer.Count, cancellationToken);
+            await _outputStream.WriteAsync(_endChunkBytes, 0, _endChunkBytes.Length, cancellationToken);
         }
 
         public MemoryPoolIterator ProducingStart()
