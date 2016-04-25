@@ -17,6 +17,10 @@ namespace Microsoft.AspNetCore.WebUtilities
     /// </summary>
     public class FormReader : IDisposable
     {
+        public const int DefaultKeyCountLimit = 1024;
+        public const int DefaultKeyLengthLimit = 1024 * 2;
+        public const int DefaultValueLengthLimit = 1024 * 1024 * 4;
+
         private const int _rentedCharPoolLength = 8192;
         private readonly TextReader _reader;
         private readonly char[] _buffer;
@@ -43,6 +47,11 @@ namespace Microsoft.AspNetCore.WebUtilities
             _reader = new StringReader(data);
         }
 
+        public FormReader(Stream stream)
+            : this(stream, Encoding.UTF8, ArrayPool<char>.Shared)
+        {
+        }
+
         public FormReader(Stream stream, Encoding encoding)
             : this(stream, encoding, ArrayPool<char>.Shared)
         {
@@ -65,6 +74,21 @@ namespace Microsoft.AspNetCore.WebUtilities
             _reader = new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true, bufferSize: 1024 * 2, leaveOpen: true);
         }
 
+        /// <summary>
+        /// The limit on the number of form keys to allow in ReadForm or ReadFormAsync.
+        /// </summary>
+        public int KeyCountLimit { get; set; } = DefaultKeyCountLimit;
+
+        /// <summary>
+        /// The limit on the length of form keys.
+        /// </summary>
+        public int KeyLengthLimit { get; set; } = DefaultKeyLengthLimit;
+
+        /// <summary>
+        /// The limit on the length of form values.
+        /// </summary>
+        public int ValueLengthLimit { get; set; } = DefaultValueLengthLimit;
+
         // Format: key1=value1&key2=value2
         /// <summary>
         /// Reads the next key value pair from the form.
@@ -73,12 +97,12 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <returns>The next key value pair, or null when the end of the form is reached.</returns>
         public KeyValuePair<string, string>? ReadNextPair()
         {
-            var key = ReadWord('=');
+            var key = ReadWord('=', KeyLengthLimit);
             if (string.IsNullOrEmpty(key) && _bufferCount == 0)
             {
                 return null;
             }
-            var value = ReadWord('&');
+            var value = ReadWord('&', ValueLengthLimit);
             return new KeyValuePair<string, string>(key, value);
         }
 
@@ -88,20 +112,19 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns>The next key value pair, or null when the end of the form is reached.</returns>
-        public async Task<KeyValuePair<string, string>?> ReadNextPairAsync(CancellationToken cancellationToken)
+        public async Task<KeyValuePair<string, string>?> ReadNextPairAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            var key = await ReadWordAsync('=', cancellationToken);
+            var key = await ReadWordAsync('=', KeyLengthLimit, cancellationToken);
             if (string.IsNullOrEmpty(key) && _bufferCount == 0)
             {
                 return null;
             }
-            var value = await ReadWordAsync('&', cancellationToken);
+            var value = await ReadWordAsync('&', ValueLengthLimit, cancellationToken);
             return new KeyValuePair<string, string>(key, value);
         }
 
-        private string ReadWord(char seperator)
+        private string ReadWord(char seperator, int limit)
         {
-            // TODO: Configurable value size limit
             while (true)
             {
                 // Empty
@@ -110,26 +133,16 @@ namespace Microsoft.AspNetCore.WebUtilities
                     Buffer();
                 }
 
-                // End
-                if (_bufferCount == 0)
+                string word;
+                if (ReadChar(seperator, limit, out word))
                 {
-                    return BuildWord();
+                    return word;
                 }
-
-                var c = _buffer[_bufferOffset++];
-                _bufferCount--;
-
-                if (c == seperator)
-                {
-                    return BuildWord();
-                }
-                _builder.Append(c);
             }
         }
 
-        private async Task<string> ReadWordAsync(char seperator, CancellationToken cancellationToken)
+        private async Task<string> ReadWordAsync(char seperator, int limit, CancellationToken cancellationToken)
         {
-            // TODO: Configurable value size limit
             while (true)
             {
                 // Empty
@@ -138,21 +151,38 @@ namespace Microsoft.AspNetCore.WebUtilities
                     await BufferAsync(cancellationToken);
                 }
 
-                // End
-                if (_bufferCount == 0)
+                string word;
+                if (ReadChar(seperator, limit, out word))
                 {
-                    return BuildWord();
+                    return word;
                 }
-
-                var c = _buffer[_bufferOffset++];
-                _bufferCount--;
-
-                if (c == seperator)
-                {
-                    return BuildWord();
-                }
-                _builder.Append(c);
             }
+        }
+
+        private bool ReadChar(char seperator, int limit, out string word)
+        {
+            // End
+            if (_bufferCount == 0)
+            {
+                word = BuildWord();
+                return true;
+            }
+
+            var c = _buffer[_bufferOffset++];
+            _bufferCount--;
+
+            if (c == seperator)
+            {
+                word = BuildWord();
+                return true;
+            }
+            if (_builder.Length >= limit)
+            {
+                throw new InvalidDataException($"Form key or value length limit {limit} exceeded.");
+            }
+            _builder.Append(c);
+            word = null;
+            return false;
         }
 
         // '+' un-escapes to ' ', %HH un-escapes as ASCII (or utf-8?)
@@ -181,56 +211,44 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <summary>
         /// Parses text from an HTTP form body.
         /// </summary>
-        /// <param name="text">The HTTP form body to parse.</param>
         /// <returns>The collection containing the parsed HTTP form body.</returns>
-        public static Dictionary<string, StringValues> ReadForm(string text)
+        public Dictionary<string, StringValues> ReadForm()
         {
-            using (var reader = new FormReader(text))
+            var accumulator = new KeyValueAccumulator();
+            var pair = ReadNextPair();
+            while (pair.HasValue)
             {
-                var accumulator = new KeyValueAccumulator();
-                var pair = reader.ReadNextPair();
-                while (pair.HasValue)
+                accumulator.Append(pair.Value.Key, pair.Value.Value);
+                if (accumulator.Count > KeyCountLimit)
                 {
-                    accumulator.Append(pair.Value.Key, pair.Value.Value);
-                    pair = reader.ReadNextPair();
+                    throw new InvalidDataException($"Form key count limit {KeyCountLimit} exceeded.");
                 }
-
-                return accumulator.GetResults();
+                pair = ReadNextPair();
             }
+
+            return accumulator.GetResults();
         }
 
         /// <summary>
         /// Parses an HTTP form body.
         /// </summary>
-        /// <param name="stream">The HTTP form body to parse.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns>The collection containing the parsed HTTP form body.</returns>
-        public static Task<Dictionary<string, StringValues>> ReadFormAsync(Stream stream, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<Dictionary<string, StringValues>> ReadFormAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            return ReadFormAsync(stream, Encoding.UTF8, cancellationToken);
-        }
-
-        /// <summary>
-        /// Parses an HTTP form body.
-        /// </summary>
-        /// <param name="stream">The HTTP form body to parse.</param>
-        /// <param name="encoding">The character encoding to use.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-        /// <returns>The collection containing the parsed HTTP form body.</returns>
-        public static async Task<Dictionary<string, StringValues>> ReadFormAsync(Stream stream, Encoding encoding, CancellationToken cancellationToken = new CancellationToken())
-        {
-            using (var reader = new FormReader(stream, encoding))
+            var accumulator = new KeyValueAccumulator();
+            var pair = await ReadNextPairAsync(cancellationToken);
+            while (pair.HasValue)
             {
-                var accumulator = new KeyValueAccumulator();
-                var pair = await reader.ReadNextPairAsync(cancellationToken);
-                while (pair.HasValue)
+                accumulator.Append(pair.Value.Key, pair.Value.Value);
+                if (accumulator.Count > KeyCountLimit)
                 {
-                    accumulator.Append(pair.Value.Key, pair.Value.Value);
-                    pair = await reader.ReadNextPairAsync(cancellationToken);
+                    throw new InvalidDataException($"Form key count limit {KeyCountLimit} exceeded.");
                 }
-
-                return accumulator.GetResults();
+                pair = await ReadNextPairAsync(cancellationToken);
             }
+
+            return accumulator.GetResults();
         }
 
         public void Dispose()

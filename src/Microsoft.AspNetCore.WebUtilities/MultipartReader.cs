@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.WebUtilities
     // https://www.ietf.org/rfc/rfc2046.txt
     public class MultipartReader
     {
+        public const int DefaultHeadersCountLimit = 16;
+        public const int DefaultHeadersLengthLimit = 1024 * 16;
         private const int DefaultBufferSize = 1024 * 4;
 
         private readonly BufferedReadStream _stream;
@@ -44,18 +46,24 @@ namespace Microsoft.AspNetCore.WebUtilities
             _stream = new BufferedReadStream(stream, bufferSize);
             _boundary = new MultipartBoundary(boundary, false);
             // This stream will drain any preamble data and remove the first boundary marker.
-            _currentStream = new MultipartReaderStream(_stream, _boundary);
+            // TODO: HeadersLengthLimit can't be modified until after the constructor.
+            _currentStream = new MultipartReaderStream(_stream, _boundary) { LengthLimit = HeadersLengthLimit };
         }
 
         /// <summary>
-        /// The limit for individual header lines inside a multipart section.
+        /// The limit for the number of headers to read.
         /// </summary>
-        public int HeaderLengthLimit { get; set; } = 1024 * 4;
+        public int HeadersCountLimit { get; set; } = DefaultHeadersCountLimit;
 
         /// <summary>
         /// The combined size limit for headers per multipart section.
         /// </summary>
-        public int TotalHeaderSizeLimit { get; set; } = 1024 * 16;
+        public int HeadersLengthLimit { get; set; } = DefaultHeadersLengthLimit;
+
+        /// <summary>
+        /// The optional limit for the total response body length.
+        /// </summary>
+        public long? BodyLengthLimit { get; set; }
 
         public async Task<MultipartSection> ReadNextSectionAsync(CancellationToken cancellationToken = new CancellationToken())
         {
@@ -65,12 +73,12 @@ namespace Microsoft.AspNetCore.WebUtilities
             if (_currentStream.FinalBoundaryFound)
             {
                 // There may be trailer data after the last boundary.
-                await _stream.DrainAsync(cancellationToken);
+                await _stream.DrainAsync(HeadersLengthLimit, cancellationToken);
                 return null;
             }
             var headers = await ReadHeadersAsync(cancellationToken);
             _boundary.ExpectLeadingCrlf = true;
-            _currentStream = new MultipartReaderStream(_stream, _boundary);
+            _currentStream = new MultipartReaderStream(_stream, _boundary) { LengthLimit = BodyLengthLimit };
             long? baseStreamOffset = _stream.CanSeek ? (long?)_stream.Position : null;
             return new MultipartSection() { Headers = headers, Body = _currentStream, BaseStreamOffset = baseStreamOffset };
         }
@@ -79,23 +87,29 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             int totalSize = 0;
             var accumulator = new KeyValueAccumulator();
-            var line = await _stream.ReadLineAsync(HeaderLengthLimit, cancellationToken);
+            var line = await _stream.ReadLineAsync(HeadersLengthLimit - totalSize, cancellationToken);
             while (!string.IsNullOrEmpty(line))
             {
+                if (HeadersLengthLimit - totalSize < line.Length)
+                {
+                    throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
+                }
                 totalSize += line.Length;
-                if (totalSize > TotalHeaderSizeLimit)
-                {
-                    throw new InvalidOperationException("Total header size limit exceeded: " + TotalHeaderSizeLimit.ToString());
-                }
                 int splitIndex = line.IndexOf(':');
-                Debug.Assert(splitIndex > 0, $"Invalid header line: {line}");
-                if (splitIndex >= 0)
+                if (splitIndex <= 0)
                 {
-                    var name = line.Substring(0, splitIndex);
-                    var value = line.Substring(splitIndex + 1, line.Length - splitIndex - 1).Trim();
-                    accumulator.Append(name, value);
+                    throw new InvalidDataException($"Invalid header line: {line}");
                 }
-                line = await _stream.ReadLineAsync(HeaderLengthLimit, cancellationToken);
+
+                var name = line.Substring(0, splitIndex);
+                var value = line.Substring(splitIndex + 1, line.Length - splitIndex - 1).Trim();
+                accumulator.Append(name, value);
+                if (accumulator.Count > HeadersCountLimit)
+                {
+                    throw new InvalidDataException($"Multipart headers count limit {HeadersCountLimit} exceeded.");
+                }
+
+                line = await _stream.ReadLineAsync(HeadersLengthLimit - totalSize, cancellationToken);
             }
 
             return accumulator.GetResults();

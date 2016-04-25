@@ -21,8 +21,10 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly Stream _inner;
         private readonly ArrayPool<byte> _bytePool;
         private readonly int _memoryThreshold;
+        private readonly long? _bufferLimit;
         private string _tempFileDirectory;
         private readonly Func<string> _tempFileDirectoryAccessor;
+        private string _tempFileName;
 
         private Stream _buffer;
         private byte[] _rentedBuffer;
@@ -31,18 +33,19 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         private bool _disposed;
 
-        // TODO: allow for an optional buffer size limit to prevent filling hard disks. 1gb?
         public FileBufferingReadStream(
             Stream inner,
             int memoryThreshold,
+            long? bufferLimit,
             Func<string> tempFileDirectoryAccessor)
-            : this(inner, memoryThreshold, tempFileDirectoryAccessor, ArrayPool<byte>.Shared)
+            : this(inner, memoryThreshold, bufferLimit, tempFileDirectoryAccessor, ArrayPool<byte>.Shared)
         {
         }
 
         public FileBufferingReadStream(
             Stream inner,
             int memoryThreshold,
+            long? bufferLimit,
             Func<string> tempFileDirectoryAccessor,
             ArrayPool<byte> bytePool)
         {
@@ -70,18 +73,23 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             _inner = inner;
             _memoryThreshold = memoryThreshold;
+            _bufferLimit = bufferLimit;
             _tempFileDirectoryAccessor = tempFileDirectoryAccessor;
         }
 
-        // TODO: allow for an optional buffer size limit to prevent filling hard disks. 1gb?
-        public FileBufferingReadStream(Stream inner, int memoryThreshold, string tempFileDirectory)
-            : this(inner, memoryThreshold, tempFileDirectory, ArrayPool<byte>.Shared)
+        public FileBufferingReadStream(
+            Stream inner,
+            int memoryThreshold,
+            long? bufferLimit,
+            string tempFileDirectory)
+            : this(inner, memoryThreshold, bufferLimit, tempFileDirectory, ArrayPool<byte>.Shared)
         {
         }
 
         public FileBufferingReadStream(
             Stream inner,
             int memoryThreshold,
+            long? bufferLimit,
             string tempFileDirectory,
             ArrayPool<byte> bytePool)
         {
@@ -109,7 +117,18 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             _inner = inner;
             _memoryThreshold = memoryThreshold;
+            _bufferLimit = bufferLimit;
             _tempFileDirectory = tempFileDirectory;
+        }
+
+        public bool InMemory
+        {
+            get { return _inMemory; }
+        }
+
+        public string TempFileName
+        {
+            get { return _tempFileName; }
         }
 
         public override bool CanRead
@@ -173,8 +192,8 @@ namespace Microsoft.AspNetCore.WebUtilities
                 Debug.Assert(_tempFileDirectory != null);
             }
 
-            var fileName = Path.Combine(_tempFileDirectory, "ASPNET_" + Guid.NewGuid().ToString() + ".tmp");
-            return new FileStream(fileName, FileMode.Create, FileAccess.ReadWrite, FileShare.Delete, 1024 * 16,
+            _tempFileName = Path.Combine(_tempFileDirectory, "ASPNETCORE_" + Guid.NewGuid().ToString() + ".tmp");
+            return new FileStream(_tempFileName, FileMode.Create, FileAccess.ReadWrite, FileShare.Delete, 1024 * 16,
                 FileOptions.Asynchronous | FileOptions.DeleteOnClose | FileOptions.SequentialScan);
         }
 
@@ -188,6 +207,12 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             int read = _inner.Read(buffer, offset, count);
+
+            if (_bufferLimit.HasValue && _bufferLimit - read < _buffer.Length)
+            {
+                Dispose();
+                throw new IOException("Buffer limit exceeded.");
+            }
 
             if (_inMemory && _buffer.Length + read > _memoryThreshold)
             {
@@ -284,6 +309,12 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             int read = await _inner.ReadAsync(buffer, offset, count, cancellationToken);
+
+            if (_bufferLimit.HasValue && _bufferLimit - read < _buffer.Length)
+            {
+                Dispose();
+                throw new IOException("Buffer limit exceeded.");
+            }
 
             if (_inMemory && _buffer.Length + read > _memoryThreshold)
             {

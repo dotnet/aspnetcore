@@ -14,7 +14,10 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     public class FormFeature : IFormFeature
     {
+        private static readonly FormOptions DefaultFormOptions = new FormOptions();
+
         private readonly HttpRequest _request;
+        private readonly FormOptions _options;
         private Task<IFormCollection> _parsedFormTask;
         private IFormCollection _form;
 
@@ -27,15 +30,24 @@ namespace Microsoft.AspNetCore.Http.Features
 
             Form = form;
         }
-
         public FormFeature(HttpRequest request)
+            : this(request, DefaultFormOptions)
+        {
+        }
+
+        public FormFeature(HttpRequest request, FormOptions options)
         {
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
 
             _request = request;
+            _options = options;
         }
 
         private MediaTypeHeaderValue ContentType
@@ -118,6 +130,11 @@ namespace Microsoft.AspNetCore.Http.Features
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            if (_options.BufferBody)
+            {
+                _request.EnableRewind(_options.MemoryBufferThreshold, _options.BufferBodyLengthLimit);
+            }
+
             FormCollection formFields = null;
             FormFileCollection files = null;
 
@@ -129,14 +146,27 @@ namespace Microsoft.AspNetCore.Http.Features
                 if (HasApplicationFormContentType(contentType))
                 {
                     var encoding = FilterEncoding(contentType.Encoding);
-                    formFields = new FormCollection(await FormReader.ReadFormAsync(_request.Body, encoding, cancellationToken));
+                    using (var formReader = new FormReader(_request.Body, encoding)
+                    {
+                        KeyCountLimit = _options.KeyCountLimit,
+                        KeyLengthLimit = _options.KeyLengthLimit,
+                        ValueLengthLimit = _options.ValueLengthLimit,
+                    })
+                    {
+                        formFields = new FormCollection(await formReader.ReadFormAsync(cancellationToken));
+                    }
                 }
                 else if (HasMultipartFormContentType(contentType))
                 {
                     var formAccumulator = new KeyValueAccumulator();
 
-                    var boundary = GetBoundary(contentType);
-                    var multipartReader = new MultipartReader(boundary, _request.Body);
+                    var boundary = GetBoundary(contentType, _options.MultipartBoundaryLengthLimit);
+                    var multipartReader = new MultipartReader(boundary, _request.Body)
+                    {
+                        HeadersCountLimit = _options.MultipartHeadersCountLimit,
+                        HeadersLengthLimit = _options.MultipartHeadersLengthLimit,
+                        BodyLengthLimit = _options.MultipartBodyLengthLimit,
+                    };
                     var section = await multipartReader.ReadNextSectionAsync(cancellationToken);
                     while (section != null)
                     {
@@ -145,7 +175,8 @@ namespace Microsoft.AspNetCore.Http.Features
                         if (HasFileContentDisposition(contentDisposition))
                         {
                             // Enable buffering for the file if not already done for the full body
-                            section.EnableRewind(_request.HttpContext.Response.RegisterForDispose);
+                            section.EnableRewind(_request.HttpContext.Response.RegisterForDispose,
+                                _options.MemoryBufferThreshold, _options.MultipartBodyLengthLimit);
                             // Find the end
                             await section.Body.DrainAsync(cancellationToken);
 
@@ -169,6 +200,10 @@ namespace Microsoft.AspNetCore.Http.Features
                             {
                                 files = new FormFileCollection();
                             }
+                            if (files.Count >= _options.KeyCountLimit)
+                            {
+                                throw new InvalidDataException($"Form key count limit {_options.KeyCountLimit} exceeded.");
+                            }
                             files.Add(file);
                         }
                         else if (HasFormDataContentDisposition(contentDisposition))
@@ -177,14 +212,20 @@ namespace Microsoft.AspNetCore.Http.Features
                             //
                             // value
 
+                            // Do not limit the key name length here because the mulipart headers length limit is already in effect.
                             var key = HeaderUtilities.RemoveQuotes(contentDisposition.Name);
                             MediaTypeHeaderValue mediaType;
                             MediaTypeHeaderValue.TryParse(section.ContentType, out mediaType);
                             var encoding = FilterEncoding(mediaType?.Encoding);
                             using (var reader = new StreamReader(section.Body, encoding, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true))
                             {
+                                // The value length limit is enforced by MultipartBodyLengthLimit
                                 var value = await reader.ReadToEndAsync();
                                 formAccumulator.Append(key, value);
+                                if (formAccumulator.Count > _options.KeyCountLimit)
+                                {
+                                    throw new InvalidDataException($"Form key count limit {_options.KeyCountLimit} exceeded.");
+                                }
                             }
                         }
                         else
@@ -261,13 +302,17 @@ namespace Microsoft.AspNetCore.Http.Features
         }
 
         // Content-Type: multipart/form-data; boundary="----WebKitFormBoundarymx2fSWqWSd0OxQqq"
-        // TODO: Limit the length of boundary we accept. The spec says ~70 chars.
-        private static string GetBoundary(MediaTypeHeaderValue contentType)
+        // The spec says 70 characters is a reasonable limit.
+        private static string GetBoundary(MediaTypeHeaderValue contentType, int lengthLimit)
         {
             var boundary = HeaderUtilities.RemoveQuotes(contentType.Boundary);
             if (string.IsNullOrWhiteSpace(boundary))
             {
-                throw new InvalidOperationException("Missing content-type boundary.");
+                throw new InvalidDataException("Missing content-type boundary.");
+            }
+            if (boundary.Length > lengthLimit)
+            {
+                throw new InvalidDataException($"Multipart boundary length limit {lengthLimit} exceeded.");
             }
             return boundary;
         }
