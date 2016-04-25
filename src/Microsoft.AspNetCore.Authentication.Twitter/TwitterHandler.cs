@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             response.EnsureSuccessStatusCode();
             string responseText = await response.Content.ReadAsStringAsync();
 
-            var responseParameters = new FormCollection(FormReader.ReadForm(responseText));
+            var responseParameters = new FormCollection(new FormReader(responseText).ReadForm());
             if (!string.Equals(responseParameters["oauth_callback_confirmed"], "true", StringComparison.Ordinal))
             {
                 throw new Exception("Twitter oauth_callback_confirmed is not true.");
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             }
 
             var responseText = await response.Content.ReadAsStringAsync();
-            var responseParameters = new FormCollection(FormReader.ReadForm(responseText));
+            var responseParameters = new FormCollection(new FormReader(responseText).ReadForm());
 
             return new AccessToken
             {
