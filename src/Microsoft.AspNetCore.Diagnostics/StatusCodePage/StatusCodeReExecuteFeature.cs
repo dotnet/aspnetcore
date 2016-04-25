@@ -8,5 +8,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         public string OriginalPath { get; set; }
 
         public string OriginalPathBase { get; set; }
+
+        public string OriginalQueryString { get; set; }
     }
 }
