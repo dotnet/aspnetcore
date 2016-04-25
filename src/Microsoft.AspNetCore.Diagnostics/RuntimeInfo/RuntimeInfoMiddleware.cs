@@ -18,18 +18,15 @@ namespace Microsoft.AspNetCore.Diagnostics
     {
         private readonly RequestDelegate _next;
         private readonly RuntimeInfoPageOptions _options;
-        private readonly IRuntimeEnvironment _runtimeEnvironment;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RuntimeInfoMiddleware"/> class
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>
-        /// <param name="runtimeEnvironment"></param>
         public RuntimeInfoMiddleware(
             RequestDelegate next,
-            IOptions<RuntimeInfoPageOptions> options,
-            IRuntimeEnvironment runtimeEnvironment)
+            IOptions<RuntimeInfoPageOptions> options)
         {
             if (next == null)
             {
@@ -41,14 +38,8 @@ namespace Microsoft.AspNetCore.Diagnostics
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (runtimeEnvironment == null)
-            {
-                throw new ArgumentNullException(nameof(runtimeEnvironment));
-            }
-
             _next = next;
             _options = options.Value;
-            _runtimeEnvironment = runtimeEnvironment;
         }
 
         /// <summary>
@@ -69,13 +60,14 @@ namespace Microsoft.AspNetCore.Diagnostics
             return _next(context);
         }
 
-        internal RuntimeInfoPageModel CreateRuntimeInfoModel()
+        private static RuntimeInfoPageModel CreateRuntimeInfoModel()
         {
             var model = new RuntimeInfoPageModel();
-            model.Version = _runtimeEnvironment.RuntimeVersion;
-            model.OperatingSystem = _runtimeEnvironment.OperatingSystem;
-            model.RuntimeType = _runtimeEnvironment.RuntimeType;
-            model.RuntimeArchitecture = _runtimeEnvironment.RuntimeArchitecture;
+            var runtimeEnvironment = PlatformServices.Default.Runtime;
+            model.Version = runtimeEnvironment.RuntimeVersion;
+            model.OperatingSystem = runtimeEnvironment.OperatingSystem;
+            model.RuntimeType = runtimeEnvironment.RuntimeType;
+            model.RuntimeArchitecture = runtimeEnvironment.RuntimeArchitecture;
             return model;
         }
     }

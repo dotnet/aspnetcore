@@ -28,41 +28,9 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
         }
 
         [Fact]
-        public void CreateRuntimeInfoModel_GetsTheVersionAndAllPackages()
-        {
-            // Arrage
-            var runtimeEnvironmentMock = new Mock<IRuntimeEnvironment>(MockBehavior.Strict);
-            runtimeEnvironmentMock.Setup(r => r.OperatingSystem).Returns("Windows");
-            runtimeEnvironmentMock.Setup(r => r.RuntimeArchitecture).Returns("x64");
-            runtimeEnvironmentMock.Setup(r => r.RuntimeType).Returns("clr");
-            runtimeEnvironmentMock.Setup(r => r.RuntimeVersion).Returns("1.0.0");
-
-            RequestDelegate next = _ =>
-            {
-                return Task.FromResult<object>(null);
-            };
-
-            var middleware = new RuntimeInfoMiddleware(
-                next,
-                Options.Create(new RuntimeInfoPageOptions()),
-                runtimeEnvironmentMock.Object);
-
-            // Act
-            var model = middleware.CreateRuntimeInfoModel();
-
-            // Assert
-            Assert.Equal("1.0.0", model.Version);
-            Assert.Equal("Windows", model.OperatingSystem);
-            Assert.Equal("clr", model.RuntimeType);
-            Assert.Equal("x64", model.RuntimeArchitecture);
-        }
-
-        [Fact]
         public async void Invoke_WithNonMatchingPath_IgnoresRequest()
         {
             // Arrange
-            var runtimeEnvironmentMock = new Mock<IRuntimeEnvironment>(MockBehavior.Strict);
-
             RequestDelegate next = _ =>
             {
                 return Task.FromResult<object>(null);
@@ -70,8 +38,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
 
             var middleware = new RuntimeInfoMiddleware(
                next,
-               Options.Create(new RuntimeInfoPageOptions()),
-               runtimeEnvironmentMock.Object);
+               Options.Create(new RuntimeInfoPageOptions()));
 
             var contextMock = new Mock<HttpContext>(MockBehavior.Strict);
             contextMock
@@ -89,21 +56,15 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
         public async void Invoke_WithMatchingPath_ReturnsInfoPage()
         {
             // Arrange
-            var runtimeEnvironmentMock = new Mock<IRuntimeEnvironment>(MockBehavior.Strict);
-            runtimeEnvironmentMock.Setup(r => r.OperatingSystem).Returns("Windows");
-            runtimeEnvironmentMock.Setup(r => r.RuntimeArchitecture).Returns("x64");
-            runtimeEnvironmentMock.Setup(r => r.RuntimeType).Returns("clr");
-            runtimeEnvironmentMock.Setup(r => r.RuntimeVersion).Returns("1.0.0");
-
             RequestDelegate next = _ =>
             {
                 return Task.FromResult<object>(null);
             };
+            var runtimeEnvironment = PlatformServices.Default.Runtime;
 
             var middleware = new RuntimeInfoMiddleware(
                 next,
-                Options.Create(new RuntimeInfoPageOptions()),
-                runtimeEnvironmentMock.Object);
+                Options.Create(new RuntimeInfoPageOptions()));
 
             var buffer = new byte[4096];
             using (var responseStream = new MemoryStream(buffer))
@@ -123,12 +84,12 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
                 await middleware.Invoke(contextMock.Object);
 
                 // Assert
-                string response = Encoding.UTF8.GetString(buffer);
+                var response = Encoding.UTF8.GetString(buffer);
 
-                Assert.Contains("<p>Runtime Version: 1.0.0</p>", response);
-                Assert.Contains("<p>Operating System: Windows</p>", response);
-                Assert.Contains("<p>Runtime Architecture: x64</p>", response);
-                Assert.Contains("<p>Runtime Type: clr</p>", response);
+                Assert.Contains($"<p>Runtime Version: {runtimeEnvironment.RuntimeVersion}</p>", response);
+                Assert.Contains($"<p>Operating System: {runtimeEnvironment.OperatingSystem}</p>", response);
+                Assert.Contains($"<p>Runtime Architecture: {runtimeEnvironment.RuntimeArchitecture}</p>", response);
+                Assert.Contains($"<p>Runtime Type: {runtimeEnvironment.RuntimeType}</p>", response);
             }
         }
     }

@@ -5,7 +5,6 @@ using System;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -47,8 +46,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var runtimeEnvironment = app.ApplicationServices.GetService(typeof(IRuntimeEnvironment)) as IRuntimeEnvironment;
-            return app.UseMiddleware<RuntimeInfoMiddleware>(Options.Create(options), runtimeEnvironment);
+            return app.UseMiddleware<RuntimeInfoMiddleware>(Options.Create(options));
         }
     }
 }

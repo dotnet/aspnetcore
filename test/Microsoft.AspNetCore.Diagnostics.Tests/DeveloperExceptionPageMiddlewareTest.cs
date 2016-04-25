@@ -23,6 +23,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 using StackFrame = Microsoft.AspNetCore.Diagnostics.Views.StackFrame;
+using Moq;
 
 namespace Microsoft.AspNetCore.Diagnostics
 {
@@ -309,71 +310,10 @@ namespace Microsoft.AspNetCore.Diagnostics
                 (httpContext) => { return Task.FromResult(0); },
                 Options.Create(options),
                 new LoggerFactory(),
-                new TestApplicationEnvironment(),
+                Mock.Of<IHostingEnvironment>(),
                 new DiagnosticListener("Microsoft.Aspnet"));
 
             return middleware;
-        }
-
-        private class TestApplicationEnvironment : IApplicationEnvironment
-        {
-            public string ApplicationBasePath
-            {
-                get
-                {
-                    return Directory.GetCurrentDirectory();
-                }
-            }
-
-            public string ApplicationName
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public string ApplicationVersion
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public string Configuration
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public FrameworkName RuntimeFramework
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public string Version
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public object GetData(string name)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SetData(string name, object value)
-            {
-                throw new NotImplementedException();
-            }
         }
 
         private class TestFileProvider : IFileProvider

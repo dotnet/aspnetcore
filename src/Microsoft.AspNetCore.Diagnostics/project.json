@@ -23,6 +23,7 @@
       "type": "build",
       "version": "1.0.0-*"
     },
+    "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*",
     "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
     "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
     "Microsoft.Extensions.FileProviders.Physical": "1.0.0-*",
