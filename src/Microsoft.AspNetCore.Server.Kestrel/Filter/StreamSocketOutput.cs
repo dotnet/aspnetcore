@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
             var beginChunkBytes = ChunkWriter.BeginChunkBytes(buffer.Count);
 
             await _outputStream.WriteAsync(beginChunkBytes.Array, beginChunkBytes.Offset, beginChunkBytes.Count, cancellationToken);
-            await _outputStream.WriteAsync(buffer.Array ?? _nullBuffer, buffer.Offset, buffer.Count, cancellationToken);
+            await _outputStream.WriteAsync(buffer.Array, buffer.Offset, buffer.Count, cancellationToken);
             await _outputStream.WriteAsync(_endChunkBytes, 0, _endChunkBytes.Length, cancellationToken);
         }
 
