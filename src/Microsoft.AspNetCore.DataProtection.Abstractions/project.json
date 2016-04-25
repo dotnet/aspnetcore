@@ -13,15 +13,16 @@
     "Microsoft.AspNetCore.DataProtection.Sources": {
       "type": "build",
       "version": "1.0.0-*"
-    },
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
+    }
   },
   "frameworks": {
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
         "System.ComponentModel": "4.0.1-*",
-        "System.Diagnostics.Debug": "4.0.11-*"
+        "System.Diagnostics.Debug": "4.0.11-*",
+        "System.Resources.ResourceManager": "4.0.1-*",
+        "System.Runtime.Extensions": "4.1.0-*"
       }
     }
   },

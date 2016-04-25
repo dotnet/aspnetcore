@@ -3,11 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using Microsoft.AspNetCore.DataProtection.Infrastructure;
 using Microsoft.AspNetCore.DataProtection.Abstractions;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
@@ -96,39 +93,6 @@ namespace Microsoft.AspNetCore.DataProtection
                 protector = protector?.CreateProtector((IEnumerable<string>)subPurposes);
             }
             return protector ?? CryptoUtil.Fail<IDataProtector>("CreateProtector returned null.");
-        }
-
-        /// <summary>
-        /// Returns a unique identifier for this application.
-        /// </summary>
-        /// <param name="services">The application-level <see cref="IServiceProvider"/>.</param>
-        /// <returns>A unique application identifier, or null if <paramref name="services"/> is null
-        /// or cannot provide a unique application identifier.</returns>
-        /// <remarks>
-        /// <para>
-        /// The returned identifier should be stable for repeated runs of this same application on
-        /// this machine. Additionally, the identifier is only unique within the scope of a single
-        /// machine, e.g., two different applications on two different machines may return the same
-        /// value.
-        /// </para>
-        /// <para>
-        /// This identifier may contain security-sensitive information such as physical file paths,
-        /// configuration settings, or other machine-specific information. Callers should take
-        /// special care not to disclose this information to untrusted entities.
-        /// </para>
-        /// </remarks>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public static string GetApplicationUniqueIdentifier(this IServiceProvider services)
-        {
-            string discriminator = (services?.GetService(typeof(IApplicationDiscriminator)) as IApplicationDiscriminator)?.Discriminator;
-            if (discriminator == null)
-            {
-                discriminator = (services?.GetService(typeof(IApplicationEnvironment)) as IApplicationEnvironment)?.ApplicationBasePath;
-            }
-
-            // Remove whitespace and homogenize empty -> null
-            discriminator = discriminator?.Trim();
-            return (String.IsNullOrEmpty(discriminator)) ? null : discriminator;
         }
 
         /// <summary>
