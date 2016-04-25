@@ -35,20 +35,22 @@ namespace E2ETests
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [SkipIfEnvironmentVariableNotEnabled("RUN_TESTS_ON_NANO")]
-        [InlineData(ServerType.Kestrel, 5000)]
-        [InlineData(ServerType.WebListener, 5000)]
-        public async Task Test(ServerType serverType, int portToListen)
+        [InlineData(ServerType.Kestrel, 5000, ApplicationType.Portable)]
+        [InlineData(ServerType.Kestrel, 5000, ApplicationType.Standalone)]
+        [InlineData(ServerType.WebListener, 5000, ApplicationType.Portable)]
+        [InlineData(ServerType.WebListener, 5000, ApplicationType.Standalone)]
+        public async Task Test(ServerType serverType, int portToListen, ApplicationType applicationType)
         {
             var applicationBaseUrl = $"http://{_remoteDeploymentConfig.ServerName}:{portToListen}/";
-            await RunTestsAsync(serverType, applicationBaseUrl);
+            await RunTestsAsync(serverType, applicationBaseUrl, applicationType);
         }
 
-        private async Task RunTestsAsync(ServerType serverType, string applicationBaseUrl)
+        private async Task RunTestsAsync(ServerType serverType, string applicationBaseUrl, ApplicationType applicationType)
         {
             using (_logger.BeginScope("SmokeTestSuite"))
             {
                 var deploymentParameters = new RemoteWindowsDeploymentParameters(
-                    Helpers.GetApplicationPath(),
+                    Helpers.GetApplicationPath(applicationType),
                     serverType,
                     RuntimeFlavor.CoreClr,
                     RuntimeArchitecture.x64,
@@ -58,7 +60,7 @@ namespace E2ETests
                     _remoteDeploymentConfig.AccountPassword,
                     _remoteDeploymentConfig.ExecutableRelativePath)
                 {
-                    PublishTargetFramework = "netstandardapp1.5",
+                    PublishTargetFramework = "netcoreapp1.0",
                     ApplicationBaseUriHint = applicationBaseUrl
                 };
                 deploymentParameters.EnvironmentVariables.Add(

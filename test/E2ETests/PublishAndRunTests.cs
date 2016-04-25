@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using E2ETests.Common;
 using Microsoft.AspNetCore.Server.Testing;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -26,35 +25,40 @@ namespace E2ETests
         [ConditionalTheory, Trait("E2Etests", "PublishAndRun")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        //[InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5025/", false)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5026/", false)]
-        //[InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5027/", false)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5028/", false)]
+        //[InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable, "http://localhost:5025/", false)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable, "http://localhost:5026/", false)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, "http://localhost:5027/", false)]
+        //[InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable, "http://localhost:5028/", false)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable, "http://localhost:5029/", false)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, "http://localhost:5030/", false)]
         public async Task WindowsOS(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
+            ApplicationType applicationType,
             string applicationBaseUrl,
             bool noSource)
         {
             var testRunner = new PublishAndRunTests(_logger);
             await testRunner.Publish_And_Run_Tests(
-                serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
+                serverType, runtimeFlavor, architecture, applicationType, applicationBaseUrl, noSource);
         }
 
         [ConditionalTheory, Trait("E2Etests", "PublishAndRun")]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5030/", false)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable, "http://localhost:5031/", false)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, "http://localhost:5032/", false)]
         public async Task NonWindowsOS(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
+            ApplicationType applicationType,
             string applicationBaseUrl,
             bool noSource)
         {
             var testRunner = new PublishAndRunTests(_logger);
             await testRunner.Publish_And_Run_Tests(
-                serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
+                serverType, runtimeFlavor, architecture, applicationType, applicationBaseUrl, noSource);
         }
 
         public void Dispose()
@@ -77,35 +81,39 @@ namespace E2ETests
         [ConditionalTheory, Trait("E2Etests", "PublishAndRun")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5031/", false)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5032/", false)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5033/", false)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5034/", false)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, ApplicationType.Portable, "http://localhost:5034/", false)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Portable, "http://localhost:5035/", false)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Standalone, "http://localhost:5036/", false)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x86, ApplicationType.Portable, "http://localhost:5037/", false)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Portable, "http://localhost:5038/", false)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Standalone, "http://localhost:5039/", false)]
         public async Task WindowsOS(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
+            ApplicationType applicationType,
             string applicationBaseUrl,
             bool noSource)
         {
             var testRunner = new PublishAndRunTests(_logger);
             await testRunner.Publish_And_Run_Tests(
-                serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
+                serverType, runtimeFlavor, architecture, applicationType, applicationBaseUrl, noSource);
         }
 
         [ConditionalTheory, Trait("E2Etests", "PublishAndRun")]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5035/", false)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x86, ApplicationType.Portable, "http://localhost:5040/", false)]
         public async Task NonWindowsOS(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
+            ApplicationType applicationType,
             string applicationBaseUrl,
             bool noSource)
         {
             var testRunner = new PublishAndRunTests(_logger);
             await testRunner.Publish_And_Run_Tests(
-                serverType, runtimeFlavor, architecture, applicationBaseUrl, noSource);
+                serverType, runtimeFlavor, architecture, applicationType, applicationBaseUrl, noSource);
         }
 
         public void Dispose()
@@ -127,6 +135,7 @@ namespace E2ETests
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
+            ApplicationType applicationType,
             string applicationBaseUrl,
             bool noSource)
         {
@@ -135,11 +144,12 @@ namespace E2ETests
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
                 var deploymentParameters = new DeploymentParameters(
-                    Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
+                    Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     PublishApplicationBeforeDeployment = true,
-                    PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netstandardapp1.5",
+                    PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.0",
+                    ApplicationType = runtimeFlavor == RuntimeFlavor.Clr ? ApplicationType.Standalone : ApplicationType.Portable,
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, _logger);
