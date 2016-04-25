@@ -22,7 +22,7 @@ namespace MusicStore.Mocks.Facebook
 
             if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.facebook.com/v2.5/oauth/access_token"))
             {
-                var formData = new FormCollection(await FormReader.ReadFormAsync(await request.Content.ReadAsStreamAsync()));
+                var formData = new FormCollection(await new FormReader(await request.Content.ReadAsStreamAsync()).ReadFormAsync());
                 if (formData["grant_type"] == "authorization_code")
                 {
                     if (formData["code"] == "ValidCode")
