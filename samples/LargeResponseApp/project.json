@@ -17,7 +17,7 @@
         }
       },
       "imports": [
-        "dnxcore50"
+        "portable-dnxcore50+net45+win8+wp8+wpa81"
       ]
     }
   },
