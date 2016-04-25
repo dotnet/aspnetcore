@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers
         {
             TagName = source.TagName;
             Descriptors = source.Descriptors;
-            Attributes = new List<KeyValuePair<string, SyntaxTreeNode>>(source.Attributes);
+            Attributes = new List<TagHelperAttributeNode>(source.Attributes);
             _start = source.Start;
             TagMode = source.TagMode;
             SourceStartTag = source.SourceStartTag;
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers
         /// <summary>
         /// The HTML attributes.
         /// </summary>
-        public IList<KeyValuePair<string, SyntaxTreeNode>> Attributes { get; }
+        public IList<TagHelperAttributeNode> Attributes { get; }
 
         /// <inheritdoc />
         public override SourceLocation Start

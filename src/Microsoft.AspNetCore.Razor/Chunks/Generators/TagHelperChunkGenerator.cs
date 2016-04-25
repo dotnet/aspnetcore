@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Chunks.Generators
                 tagHelperBlock != null,
                 $"A {nameof(TagHelperChunkGenerator)} must only be used with {nameof(TagHelperBlock)}s.");
 
-            var attributes = new List<KeyValuePair<string, Chunk>>();
+            var attributes = new List<TagHelperAttributeTracker>();
 
             // We need to create a chunk generator to create chunks for each of the attributes.
             var chunkGenerator = context.Host.CreateChunkGenerator(
@@ -72,7 +72,12 @@ namespace Microsoft.AspNetCore.Razor.Chunks.Generators
                     };
                 }
 
-                attributes.Add(new KeyValuePair<string, Chunk>(attribute.Key, attributeChunkValue));
+                var attributeChunk = new TagHelperAttributeTracker(
+                    attribute.Name,
+                    attributeChunkValue,
+                    attribute.ValueStyle);
+
+                attributes.Add(attributeChunk);
 
                 // Reset the chunk tree builder so we can build a new one for the next attribute
                 chunkGenerator.Context.ChunkTreeBuilder = new ChunkTreeBuilder();

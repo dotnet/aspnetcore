@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
@@ -107,16 +109,18 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
             {
                 var attribute = chunk.Attributes[i];
                 var hasAssociatedDescriptors = chunk.Descriptors.Any(descriptor =>
-                    descriptor.Attributes.Any(attributeDescriptor => attributeDescriptor.IsNameMatch(attribute.Key)));
+                    descriptor.Attributes.Any(attributeDescriptor => attributeDescriptor.IsNameMatch(attribute.Name)));
 
                 // If there's no descriptors associated or we're hitting a bound attribute a second time.
-                if (!hasAssociatedDescriptors || !boundAttributes.Add(attribute.Key))
+                if (!hasAssociatedDescriptors || !boundAttributes.Add(attribute.Name))
                 {
                     string preAllocatedAttributeVariableName = null;
 
-                    if (attribute.Value == null)
+                    if (attribute.ValueStyle == HtmlAttributeValueStyle.Minimized)
                     {
-                        var preAllocatedAttributeKey = new TagHelperAttributeKey(attribute.Key, value: null);
+                        Debug.Assert(attribute.Value == null);
+
+                        var preAllocatedAttributeKey = new TagHelperAttributeKey(attribute.Name, value: null, valueStyle: attribute.ValueStyle);
                         if (TryCachePreallocatedVariableName(preAllocatedAttributeKey, out preAllocatedAttributeVariableName))
                         {
                             Writer
@@ -126,16 +130,18 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
                                 .Write(preAllocatedAttributeVariableName)
                                 .Write(" = ")
                                 .WriteStartNewObject("global::" + _tagHelperContext.TagHelperAttributeTypeName)
-                                .WriteStringLiteral(attribute.Key)
+                                .WriteStringLiteral(attribute.Name)
                                 .WriteEndMethodInvocation();
                         }
                     }
                     else
                     {
+                        Debug.Assert(attribute.Value != null);
+
                         string plainText;
                         if (CSharpTagHelperCodeRenderer.TryGetPlainTextValue(attribute.Value, out plainText))
                         {
-                            var preAllocatedAttributeKey = new TagHelperAttributeKey(attribute.Key, plainText);
+                            var preAllocatedAttributeKey = new TagHelperAttributeKey(attribute.Name, plainText, attribute.ValueStyle);
                             if (TryCachePreallocatedVariableName(preAllocatedAttributeKey, out preAllocatedAttributeVariableName))
                             {
                                 Writer
@@ -145,11 +151,13 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
                                     .Write(preAllocatedAttributeVariableName)
                                     .Write(" = ")
                                     .WriteStartNewObject("global::" + _tagHelperContext.TagHelperAttributeTypeName)
-                                    .WriteStringLiteral(attribute.Key)
+                                    .WriteStringLiteral(attribute.Name)
                                     .WriteParameterSeparator()
                                     .WriteStartNewObject("global::" + _tagHelperContext.EncodedHtmlStringTypeName)
                                     .WriteStringLiteral(plainText)
                                     .WriteEndMethodInvocation(endLine: false)
+                                    .WriteParameterSeparator()
+                                    .Write($"global::{typeof(HtmlAttributeValueStyle).FullName}.{attribute.ValueStyle}")
                                     .WriteEndMethodInvocation();
                             }
                         }
@@ -157,12 +165,13 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
 
                     if (preAllocatedAttributeVariableName != null)
                     {
-                        chunk.Attributes[i] = new KeyValuePair<string, Chunk>(
-                            attribute.Key,
+                        chunk.Attributes[i] = new TagHelperAttributeTracker(
+                            attribute.Name,
                             new PreallocatedTagHelperAttributeChunk
                             {
                                 AttributeVariableAccessor = preAllocatedAttributeVariableName
-                            });
+                            },
+                            attribute.ValueStyle);
                     }
                 }
             }
@@ -215,21 +224,25 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
 
         private struct TagHelperAttributeKey : IEquatable<TagHelperAttributeKey>
         {
-            public TagHelperAttributeKey(string name, string value)
+            public TagHelperAttributeKey(string name, string value, HtmlAttributeValueStyle valueStyle)
             {
                 Name = name;
                 Value = value;
+                ValueStyle = valueStyle;
             }
 
             public string Name { get; }
 
             public string Value { get; }
 
+            public HtmlAttributeValueStyle ValueStyle { get; }
+
             public override int GetHashCode()
             {
                 var hashCodeCombiner = HashCodeCombiner.Start();
                 hashCodeCombiner.Add(Name, StringComparer.Ordinal);
                 hashCodeCombiner.Add(Value, StringComparer.Ordinal);
+                hashCodeCombiner.Add(ValueStyle);
 
                 return hashCodeCombiner.CombinedHash;
             }
@@ -249,7 +262,8 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
             public bool Equals(TagHelperAttributeKey other)
             {
                 return string.Equals(Name, other.Name, StringComparison.Ordinal) &&
-                    string.Equals(Value, other.Value, StringComparison.Ordinal);
+                    string.Equals(Value, other.Value, StringComparison.Ordinal) &&
+                    ValueStyle == other.ValueStyle;
             }
         }
     }

@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             var tagHelper = new TagHelperContextTouchingTagHelper();
 
             executionContext.Add(tagHelper);
-            executionContext.AddTagHelperAttribute("foo", true);
+            executionContext.AddTagHelperAttribute("foo", true, HtmlAttributeValueStyle.DoubleQuotes);
 
             // Act
             await runner.RunAsync(executionContext);
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 
             // Act
             executionContext.Add(executableTagHelper);
-            executionContext.AddHtmlAttribute("class", "btn");
+            executionContext.AddHtmlAttribute("class", "btn", HtmlAttributeValueStyle.DoubleQuotes);
             await runner.RunAsync(executionContext);
 
             // Assert
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 
             // Act
             executionContext.Add(tagHelper);
-            executionContext.AddTagHelperAttribute("foo", true);
+            executionContext.AddTagHelperAttribute("foo", true, HtmlAttributeValueStyle.DoubleQuotes);
             await runner.RunAsync(executionContext);
 
             // Assert

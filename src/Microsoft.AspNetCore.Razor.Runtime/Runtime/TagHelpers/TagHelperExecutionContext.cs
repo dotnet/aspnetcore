@@ -139,33 +139,19 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         }
 
         /// <summary>
-        /// Tracks the minimized HTML attribute.
-        /// </summary>
-        /// <param name="name">The minimized HTML attribute name.</param>
-        public void AddMinimizedHtmlAttribute(string name)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            var attribute = new TagHelperAttribute(name);
-            AddHtmlAttribute(attribute);
-        }
-
-        /// <summary>
         /// Tracks the HTML attribute.
         /// </summary>
         /// <param name="name">The HTML attribute name.</param>
         /// <param name="value">The HTML attribute value.</param>
-        public void AddHtmlAttribute(string name, object value)
+        /// <param name="valueStyle">The value style of the attribute.</param>
+        public void AddHtmlAttribute(string name, object value, HtmlAttributeValueStyle valueStyle)
         {
             if (name == null)
             {
                 throw new ArgumentNullException(nameof(name));
             }
 
-            var attribute = new TagHelperAttribute(name, value);
+            var attribute = new TagHelperAttribute(name, value, valueStyle);
             AddHtmlAttribute(attribute);
         }
 
@@ -189,15 +175,16 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         /// </summary>
         /// <param name="name">The bound attribute name.</param>
         /// <param name="value">The attribute value.</param>
-        public void AddTagHelperAttribute(string name, object value)
+        /// <param name="valueStyle">The value style of the attribute.</param>
+        public void AddTagHelperAttribute(string name, object value, HtmlAttributeValueStyle valueStyle)
         {
             if (name == null)
             {
                 throw new ArgumentNullException(nameof(name));
             }
 
-
-            _allAttributes.Add(name, value);
+            var attribute = new TagHelperAttribute(name, value, valueStyle);
+            _allAttributes.Add(attribute);
         }
 
         /// <summary>

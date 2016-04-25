@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                 foreach (var chunkAttribute in chunk.Attributes)
                 {
                     var associatedAttributeDescriptor = tagHelperDescriptor.Attributes.FirstOrDefault(
-                        attributeDescriptor => attributeDescriptor.IsNameMatch(chunkAttribute.Key));
+                        attributeDescriptor => attributeDescriptor.IsNameMatch(chunkAttribute.Name));
 
                     if (associatedAttributeDescriptor != null &&
                         associatedAttributeDescriptor.IsIndexer &&
@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                                 .Write("throw ")
                                 .WriteStartNewObject(nameof(InvalidOperationException))
                                 .WriteStartMethodInvocation(_tagHelperContext.FormatInvalidIndexerAssignmentMethodName)
-                                .WriteStringLiteral(chunkAttribute.Key)
+                                .WriteStringLiteral(chunkAttribute.Name)
                                 .WriteParameterSeparator()
                                 .WriteStringLiteral(tagHelperDescriptor.TypeName)
                                 .WriteParameterSeparator()
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
         }
 
         private void RenderAttributes(
-            IList<KeyValuePair<string, Chunk>> chunkAttributes,
+            IList<TagHelperAttributeTracker> chunkAttributes,
             IEnumerable<TagHelperDescriptor> tagHelperDescriptors)
         {
             var renderedBoundAttributeNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -271,14 +271,13 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
             // TagHelperExecutionContext.HtmlAttributes' as we go.
             foreach (var attribute in chunkAttributes)
             {
-                var attributeName = attribute.Key;
                 var attributeValueChunk = attribute.Value;
                 var associatedDescriptors = tagHelperDescriptors.Where(descriptor =>
-                    descriptor.Attributes.Any(attributeDescriptor => attributeDescriptor.IsNameMatch(attributeName)));
+                    descriptor.Attributes.Any(attributeDescriptor => attributeDescriptor.IsNameMatch(attribute.Name)));
 
                 // Bound attributes have associated descriptors. First attribute value wins if there are duplicates;
                 // later values of duplicate bound attributes are treated as if they were unbound.
-                if (associatedDescriptors.Any() && renderedBoundAttributeNames.Add(attributeName))
+                if (associatedDescriptors.Any() && renderedBoundAttributeNames.Add(attribute.Name))
                 {
                     if (attributeValueChunk == null)
                     {
@@ -294,12 +293,11 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                     foreach (var associatedDescriptor in associatedDescriptors)
                     {
                         var associatedAttributeDescriptor = associatedDescriptor.Attributes.First(
-                            attributeDescriptor => attributeDescriptor.IsNameMatch(attributeName));
+                            attributeDescriptor => attributeDescriptor.IsNameMatch(attribute.Name));
                         var tagHelperVariableName = GetVariableName(associatedDescriptor);
 
                         valueAccessor = RenderBoundAttribute(
-                            attributeName,
-                            attributeValueChunk,
+                            attribute,
                             tagHelperVariableName,
                             valueAccessor,
                             associatedAttributeDescriptor);
@@ -307,14 +305,13 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                 }
                 else
                 {
-                    RenderUnboundAttribute(attributeName, attributeValueChunk);
+                    RenderUnboundAttribute(attribute);
                 }
             }
         }
 
         private string RenderBoundAttribute(
-            string attributeName,
-            Chunk attributeValueChunk,
+            TagHelperAttributeTracker attribute,
             string tagHelperVariableName,
             string previousValueAccessor,
             TagHelperAttributeDescriptor attributeDescriptor)
@@ -327,7 +324,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
 
             if (attributeDescriptor.IsIndexer)
             {
-                var dictionaryKey = attributeName.Substring(attributeDescriptor.Name.Length);
+                var dictionaryKey = attribute.Name.Substring(attributeDescriptor.Name.Length);
                 currentValueAccessor += $"[\"{dictionaryKey}\"]";
             }
 
@@ -342,7 +339,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                 RenderNewAttributeValueAssignment(
                     attributeDescriptor,
                     bufferableAttribute,
-                    attributeValueChunk,
+                    attribute.Value,
                     currentValueAccessor);
 
                 if (_designTimeMode)
@@ -356,9 +353,11 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                     .WriteStartInstanceMethodInvocation(
                         ExecutionContextVariableName,
                         _tagHelperContext.ExecutionContextAddTagHelperAttributeMethodName)
-                    .WriteStringLiteral(attributeName)
+                    .WriteStringLiteral(attribute.Name)
                     .WriteParameterSeparator()
                     .Write(currentValueAccessor)
+                    .WriteParameterSeparator()
+                    .Write($"global::{typeof(HtmlAttributeValueStyle).FullName}.{attribute.ValueStyle}")
                     .WriteEndMethodInvocation();
 
                 return currentValueAccessor;
@@ -450,112 +449,93 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
             }
         }
 
-        private void RenderUnboundAttribute(string attributeName, Chunk attributeValueChunk)
+        private void RenderUnboundAttribute(TagHelperAttributeTracker attribute)
         {
             // Render children to provide IntelliSense at design time. No need for the execution context logic, it's
             // a runtime feature.
             if (_designTimeMode)
             {
-                if (attributeValueChunk != null)
+                if (attribute.Value != null)
                 {
-                    _bodyVisitor.Accept(attributeValueChunk);
+                    _bodyVisitor.Accept(attribute.Value);
                 }
 
                 return;
             }
 
-            // If we have a minimized attribute there is no value
-            if (attributeValueChunk == null)
-            {
-                _writer
-                    .WriteStartInstanceMethodInvocation(
-                        ExecutionContextVariableName,
-                        _tagHelperContext.ExecutionContextAddMinimizedHtmlAttributeMethodName)
-                    .WriteStringLiteral(attributeName)
-                    .WriteEndMethodInvocation();
-            }
-            else if (attributeValueChunk is PreallocatedTagHelperAttributeChunk)
+            Debug.Assert(attribute.Value != null);
+
+            var attributeValueStyleParameter = $"global::{typeof(HtmlAttributeValueStyle).FullName}.{attribute.ValueStyle}";
+
+            // All simple text and minimized attributes will be pre-allocated.
+            var preallocatedValue = attribute.Value as PreallocatedTagHelperAttributeChunk;
+            if (preallocatedValue != null)
             {
                 _writer
                     .WriteStartInstanceMethodInvocation(
                         ExecutionContextVariableName,
                         _tagHelperContext.ExecutionContextAddHtmlAttributeMethodName)
-                    .Write(((PreallocatedTagHelperAttributeChunk)attributeValueChunk).AttributeVariableAccessor)
+                    .Write(preallocatedValue.AttributeVariableAccessor)
                     .WriteEndMethodInvocation();
+            }
+            else if (IsDynamicAttributeValue(attribute.Value))
+            {
+                // Dynamic attribute value should be run through the conditional attribute removal system. It's
+                // unbound and contains C#.
+
+                // TagHelper attribute rendering is buffered by default. We do not want to write to the current
+                // writer.
+                var currentTargetWriter = _context.TargetWriterName;
+                var currentWriteAttributeMethodName = _context.Host.GeneratedClassContext.WriteAttributeValueMethodName;
+                _context.TargetWriterName = null;
+
+                Debug.Assert(attribute.Value is ParentChunk);
+                var children = ((ParentChunk)attribute.Value).Children;
+                var attributeCount = children.Count(c => c is DynamicCodeAttributeChunk || c is LiteralCodeAttributeChunk);
+
+                _writer
+                    .WriteStartMethodInvocation(_tagHelperContext.BeginAddHtmlAttributeValuesMethodName)
+                    .Write(ExecutionContextVariableName)
+                    .WriteParameterSeparator()
+                    .WriteStringLiteral(attribute.Name)
+                    .WriteParameterSeparator()
+                    .Write(attributeCount.ToString(CultureInfo.InvariantCulture))
+                    .WriteParameterSeparator()
+                    .Write(attributeValueStyleParameter)
+                    .WriteEndMethodInvocation();
+
+                _attributeCodeVisitor.Accept(attribute.Value);
+
+                _writer.WriteMethodInvocation(
+                    _tagHelperContext.EndAddHtmlAttributeValuesMethodName,
+                    ExecutionContextVariableName);
+
+                _context.TargetWriterName = currentTargetWriter;
             }
             else
             {
-                string textValue = null;
-                var isPlainTextValue = TryGetPlainTextValue(attributeValueChunk, out textValue);
+                // This is a data-* attribute which includes C#. Do not perform the conditional attribute removal or
+                // other special cases used when IsDynamicAttributeValue(). But the attribute must still be buffered to
+                // determine its final value.
 
-                if (isPlainTextValue)
-                {
-                    // If it's a plain text value then we need to surround the value with quotes.
-                    _writer
-                        .WriteStartInstanceMethodInvocation(
-                            ExecutionContextVariableName,
-                            _tagHelperContext.ExecutionContextAddHtmlAttributeMethodName)
-                        .WriteStringLiteral(attributeName)
-                        .WriteParameterSeparator()
-                        .WriteStartMethodInvocation(_tagHelperContext.MarkAsHtmlEncodedMethodName)
-                        .WriteStringLiteral(textValue)
-                        .WriteEndMethodInvocation(endLine: false)
-                        .WriteEndMethodInvocation();
-                }
-                else if (IsDynamicAttributeValue(attributeValueChunk))
-                {
-                    // Dynamic attribute value should be run through the conditional attribute removal system. It's
-                    // unbound and contains C#.
+                // Attribute value is not plain text, must be buffered to determine its final value.
+                BuildBufferedWritingScope(attribute.Value, htmlEncodeValues: true);
 
-                    // TagHelper attribute rendering is buffered by default. We do not want to write to the current
-                    // writer.
-                    var currentTargetWriter = _context.TargetWriterName;
-                    var currentWriteAttributeMethodName = _context.Host.GeneratedClassContext.WriteAttributeValueMethodName;
-                    _context.TargetWriterName = null;
+                _writer
+                    .WriteStartInstanceMethodInvocation(
+                        ExecutionContextVariableName,
+                        _tagHelperContext.ExecutionContextAddHtmlAttributeMethodName)
+                    .WriteStringLiteral(attribute.Name)
+                    .WriteParameterSeparator()
+                    .WriteStartMethodInvocation(_tagHelperContext.MarkAsHtmlEncodedMethodName);
 
-                    Debug.Assert(attributeValueChunk is ParentChunk);
-                    var children = ((ParentChunk)attributeValueChunk).Children;
-                    var attributeCount = children.Count(c => c is DynamicCodeAttributeChunk || c is LiteralCodeAttributeChunk);
+                RenderBufferedAttributeValueAccessor(_writer);
 
-                    _writer
-                        .WriteStartMethodInvocation(_tagHelperContext.BeginAddHtmlAttributeValuesMethodName)
-                        .Write(ExecutionContextVariableName)
-                        .WriteParameterSeparator()
-                        .WriteStringLiteral(attributeName)
-                        .WriteParameterSeparator()
-                        .Write(attributeCount.ToString(CultureInfo.InvariantCulture))
-                        .WriteEndMethodInvocation();
-
-                    _attributeCodeVisitor.Accept(attributeValueChunk);
-
-                    _writer.WriteMethodInvocation(
-                        _tagHelperContext.EndAddHtmlAttributeValuesMethodName,
-                        ExecutionContextVariableName);
-
-                    _context.TargetWriterName = currentTargetWriter;
-                }
-                else
-                {
-                    // HTML attributes are always strings. This attribute contains C# but is not dynamic. This occurs
-                    // when the attribute is a data-* attribute.
-
-                    // Attribute value is not plain text, must be buffered to determine its final value.
-                    BuildBufferedWritingScope(attributeValueChunk, htmlEncodeValues: true);
-
-                    _writer
-                        .WriteStartInstanceMethodInvocation(
-                            ExecutionContextVariableName,
-                            _tagHelperContext.ExecutionContextAddHtmlAttributeMethodName)
-                        .WriteStringLiteral(attributeName)
-                        .WriteParameterSeparator()
-                        .WriteStartMethodInvocation(_tagHelperContext.MarkAsHtmlEncodedMethodName);
-
-                    RenderBufferedAttributeValueAccessor(_writer);
-
-                    _writer
-                        .WriteEndMethodInvocation(endLine: false)
-                        .WriteEndMethodInvocation();
-                }
+                _writer
+                    .WriteEndMethodInvocation(endLine: false)
+                    .WriteParameterSeparator()
+                    .Write(attributeValueStyleParameter)
+                    .WriteEndMethodInvocation();
             }
         }
 

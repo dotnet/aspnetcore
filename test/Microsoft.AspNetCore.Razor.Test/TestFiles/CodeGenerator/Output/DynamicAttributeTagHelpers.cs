@@ -32,7 +32,7 @@ namespace TestOutput
             );
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
-            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 2);
+            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 2, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             AddHtmlAttributeValue("", 49, "prefix", 49, 6, true);
 #line 3 "DynamicAttributeTagHelpers.cshtml"
 AddHtmlAttributeValue(" ", 55, DateTime.Now, 56, 14, false);
@@ -53,7 +53,7 @@ AddHtmlAttributeValue(" ", 55, DateTime.Now, 56, 14, false);
             );
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
-            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 2);
+            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 2, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             AddHtmlAttributeValue("", 93, new Template(async(__razor_attribute_value_writer) => {
 #line 5 "DynamicAttributeTagHelpers.cshtml"
                  if (true) { 
@@ -114,8 +114,8 @@ WriteTo(__razor_attribute_value_writer, string.Empty);
             WriteLiteral(" suffix");
             __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
             __TestNamespace_InputTagHelper.Bound = __tagHelperStringValueBuffer;
-            __tagHelperExecutionContext.AddTagHelperAttribute("bound", __TestNamespace_InputTagHelper.Bound);
-            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 3);
+            __tagHelperExecutionContext.AddTagHelperAttribute("bound", __TestNamespace_InputTagHelper.Bound, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
+            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 3, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             AddHtmlAttributeValue("", 204, "prefix", 204, 6, true);
 #line 7 "DynamicAttributeTagHelpers.cshtml"
 AddHtmlAttributeValue(" ", 210, DateTime.Now, 211, 14, false);
@@ -180,8 +180,8 @@ AddHtmlAttributeValue(" ", 210, DateTime.Now, 211, 14, false);
 #line hidden
             __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
             __TestNamespace_InputTagHelper.Bound = __tagHelperStringValueBuffer;
-            __tagHelperExecutionContext.AddTagHelperAttribute("bound", __TestNamespace_InputTagHelper.Bound);
-            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 3);
+            __tagHelperExecutionContext.AddTagHelperAttribute("bound", __TestNamespace_InputTagHelper.Bound, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
+            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 3, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
 #line 10 "DynamicAttributeTagHelpers.cshtml"
 AddHtmlAttributeValue("", 345, long.MinValue, 345, 14, false);
 
@@ -241,7 +241,7 @@ AddHtmlAttributeValue(" ", 404, int.MaxValue, 405, 14, false);
             );
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
-            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 5);
+            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 5, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
 #line 12 "DynamicAttributeTagHelpers.cshtml"
 AddHtmlAttributeValue("", 442, long.MinValue, 442, 14, false);
 
@@ -273,7 +273,7 @@ AddHtmlAttributeValue(" ", 488, int.MaxValue, 489, 14, false);
             );
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
-            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 1);
+            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 1, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             AddHtmlAttributeValue("", 526, new Template(async(__razor_attribute_value_writer) => {
 #line 14 "DynamicAttributeTagHelpers.cshtml"
                  if (true) { 

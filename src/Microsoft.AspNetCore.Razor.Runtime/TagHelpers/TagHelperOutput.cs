@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -305,7 +306,13 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 destination.AppendHtml("<");
                 destination.AppendHtml(TagName);
 
-                CopyAttributesTo(destination);
+                // Perf: Avoid allocating enumerator
+                for (var i = 0; i < Attributes.Count; i++)
+                {
+                    var attribute = Attributes[i];
+                    destination.AppendHtml(" ");
+                    attribute.CopyTo(destination);
+                }
 
                 if (TagMode == TagMode.SelfClosing)
                 {
@@ -350,7 +357,13 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 destination.AppendHtml("<");
                 destination.AppendHtml(TagName);
 
-                CopyAttributesTo(destination);
+                // Perf: Avoid allocating enumerator
+                for (var i = 0; i < Attributes.Count; i++)
+                {
+                    var attribute = Attributes[i];
+                    destination.AppendHtml(" ");
+                    attribute.MoveTo(destination);
+                }
 
                 if (TagMode == TagMode.SelfClosing)
                 {
@@ -405,49 +418,11 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 writer.Write(TagName);
 
                 // Perf: Avoid allocating enumerator
-                for (var i = 0; i < (Attributes.Count); i++)
+                for (var i = 0; i < Attributes.Count; i++)
                 {
                     var attribute = Attributes[i];
                     writer.Write(" ");
-                    writer.Write(attribute.Name);
-
-                    if (attribute.Minimized)
-                    {
-                        continue;
-                    }
-
-                    writer.Write("=\"");
-                    var value = attribute.Value;
-                    var htmlContent = value as IHtmlContent;
-                    if (htmlContent != null)
-                    {
-                        // Perf: static text in a bound attribute go down this path. Avoid allocating if possible (common case).
-                        var htmlString = value as HtmlString;
-                        if (htmlString != null && !htmlString.Value.Contains("\""))
-                        {
-                            writer.Write(htmlString.Value);
-                        }
-                        else
-                        {
-                            // There's no way of tracking the attribute value quotations in the Razor source. Therefore, we
-                            // must escape any IHtmlContent double quote values in the case that a user wrote:
-                            // <p name='A " is valid in single quotes'></p>
-                            using (var stringWriter = new StringWriter())
-                            {
-                                htmlContent.WriteTo(stringWriter, encoder);
-                                stringWriter.GetStringBuilder().Replace("\"", "&quot;");
-
-                                var stringValue = stringWriter.ToString();
-                                writer.Write(stringValue);
-                            }
-                        }
-                    }
-                    else if (value != null)
-                    {
-                        encoder.Encode(writer, value.ToString());
-                    }
-
-                    writer.Write("\"");
+                    attribute.WriteTo(writer, encoder);
                 }
 
                 if (TagMode == TagMode.SelfClosing)
@@ -475,77 +450,6 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             }
 
             _postElement?.WriteTo(writer, encoder);
-        }
-
-        private void CopyAttributesTo(IHtmlContentBuilder destination)
-        {
-            StringWriter stringWriter = null;
-
-            // Perf: Avoid allocating enumerator
-            for (var i = 0; i < (Attributes.Count); i++)
-            {
-                var attribute = Attributes[i];
-                destination.AppendHtml(" ");
-                destination.AppendHtml(attribute.Name);
-
-                if (attribute.Minimized)
-                {
-                    continue;
-                }
-
-                destination.AppendHtml("=\"");
-                var value = attribute.Value;
-                var htmlContent = value as IHtmlContent;
-                if (htmlContent != null)
-                {
-                    // Perf: static text in a bound attribute go down this path. Avoid allocating if possible (common case).
-                    var htmlString = value as HtmlString;
-                    if (htmlString != null && !htmlString.Value.Contains("\""))
-                    {
-                        destination.AppendHtml(htmlString);
-                    }
-                    else
-                    {
-                        // Perf: We'll share this writer implementation for all attributes since
-                        // they can't nest.
-                        stringWriter = stringWriter ?? new StringWriter();
-
-                        destination.AppendHtml(new AttributeContent(htmlContent, stringWriter));
-                    }
-                }
-                else if (value != null)
-                {
-                    destination.Append(value.ToString());
-                }
-
-                destination.AppendHtml("\"");
-            }
-        }
-
-        private class AttributeContent : IHtmlContent
-        {
-            private readonly IHtmlContent _inner;
-            private readonly StringWriter _stringWriter;
-
-            public AttributeContent(IHtmlContent inner, StringWriter stringWriter)
-            {
-                _inner = inner;
-                _stringWriter = stringWriter;
-            }
-
-            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
-            {
-                // There's no way of tracking the attribute value quotations in the Razor source. Therefore, we
-                // must escape any IHtmlContent double quote values in the case that a user wrote:
-                // <p name='A " is valid in single quotes'></p>
-                _inner.WriteTo(_stringWriter, encoder);
-                _stringWriter.GetStringBuilder().Replace("\"", "&quot;");
-
-                var stringValue = _stringWriter.ToString();
-                writer.Write(stringValue);
-
-                _stringWriter.GetStringBuilder().Clear();
-            }
         }
     }
 }

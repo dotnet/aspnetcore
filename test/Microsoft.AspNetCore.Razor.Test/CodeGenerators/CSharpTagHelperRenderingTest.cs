@@ -1308,11 +1308,19 @@ namespace Microsoft.AspNetCore.Razor.Test.Generator
                                 generatedCharacterOffsetIndex: 42,
                                 contentLength: 4),
                             BuildLineMapping(
+                                documentAbsoluteIndex: 220,
+                                documentLineIndex: 5,
+                                documentCharacterOffsetIndex: 34,
+                                generatedAbsoluteIndex: 2234,
+                                generatedLineIndex: 45,
+                                generatedCharacterOffsetIndex: 42,
+                                contentLength: 4),
+                            BuildLineMapping(
                                 documentAbsoluteIndex: 41,
                                 documentLineIndex: 2,
                                 documentCharacterOffsetIndex: 8,
-                                generatedAbsoluteIndex: 1962,
-                                generatedLineIndex: 42,
+                                generatedAbsoluteIndex: 2447,
+                                generatedLineIndex: 51,
                                 generatedCharacterOffsetIndex: 33,
                                 contentLength: 1),
                         }

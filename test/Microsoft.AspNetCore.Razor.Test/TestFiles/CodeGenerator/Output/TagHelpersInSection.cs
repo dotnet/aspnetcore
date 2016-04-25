@@ -86,8 +86,8 @@ namespace TestOutput
 #line hidden
                 __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
                 __TestNamespace_MyTagHelper.BoundProperty = __tagHelperStringValueBuffer;
-                __tagHelperExecutionContext.AddTagHelperAttribute("boundproperty", __TestNamespace_MyTagHelper.BoundProperty);
-                BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unboundproperty", 3);
+                __tagHelperExecutionContext.AddTagHelperAttribute("boundproperty", __TestNamespace_MyTagHelper.BoundProperty, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
+                BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unboundproperty", 3, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
                 AddHtmlAttributeValue("", 186, "Current", 186, 7, true);
                 AddHtmlAttributeValue(" ", 193, "Time:", 194, 6, true);
 #line 9 "TagHelpersInSection.cshtml"

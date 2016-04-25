@@ -241,14 +241,14 @@ namespace Microsoft.AspNetCore.Razor.Test.Generator
             return new TagHelperChunk(
                 tagName,
                 tagMode: TagMode.StartTagAndEndTag,
-                attributes: new List<KeyValuePair<string, Chunk>>(),
+                attributes: new List<TagHelperAttributeTracker>(),
                 descriptors: tagHelperDescriptors)
             {
                 Association = new TagHelperBlock(
                     new TagHelperBlockBuilder(
                         tagName,
                         tagMode: TagMode.StartTagAndEndTag,
-                        attributes: new List<KeyValuePair<string, SyntaxTreeNode>>(),
+                        attributes: new List<TagHelperAttributeNode>(),
                         children: Enumerable.Empty<SyntaxTreeNode>())),
                 Children = new List<Chunk>(),
             };

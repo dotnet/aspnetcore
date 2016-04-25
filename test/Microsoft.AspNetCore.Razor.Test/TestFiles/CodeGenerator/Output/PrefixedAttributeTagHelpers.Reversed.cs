@@ -15,10 +15,10 @@ namespace TestOutput
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager __tagHelperScopeManager = null;
         private global::TestNamespace.InputTagHelper2 __TestNamespace_InputTagHelper2 = null;
         private global::TestNamespace.InputTagHelper1 __TestNamespace_InputTagHelper1 = null;
-        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", new global::Microsoft.AspNetCore.Html.HtmlString("checkbox"));
-        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", new global::Microsoft.AspNetCore.Html.HtmlString("password"));
-        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_2 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", new global::Microsoft.AspNetCore.Html.HtmlString("radio"));
-        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_3 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("int-prefix-salt", new global::Microsoft.AspNetCore.Html.HtmlString("8"));
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", new global::Microsoft.AspNetCore.Html.HtmlString("checkbox"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", new global::Microsoft.AspNetCore.Html.HtmlString("password"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_2 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", new global::Microsoft.AspNetCore.Html.HtmlString("radio"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_3 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("int-prefix-salt", new global::Microsoft.AspNetCore.Html.HtmlString("8"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
         #line hidden
         public PrefixedAttributeTagHelpers()
         {
@@ -63,14 +63,14 @@ __TestNamespace_InputTagHelper2.IntDictionaryProperty = intDictionary;
 
 #line default
 #line hidden
-            __tagHelperExecutionContext.AddTagHelperAttribute("int-dictionary", __TestNamespace_InputTagHelper2.IntDictionaryProperty);
+            __tagHelperExecutionContext.AddTagHelperAttribute("int-dictionary", __TestNamespace_InputTagHelper2.IntDictionaryProperty, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             __TestNamespace_InputTagHelper1.IntDictionaryProperty = __TestNamespace_InputTagHelper2.IntDictionaryProperty;
 #line 16 "PrefixedAttributeTagHelpers.cshtml"
                   __TestNamespace_InputTagHelper2.StringDictionaryProperty = stringDictionary;
 
 #line default
 #line hidden
-            __tagHelperExecutionContext.AddTagHelperAttribute("string-dictionary", __TestNamespace_InputTagHelper2.StringDictionaryProperty);
+            __tagHelperExecutionContext.AddTagHelperAttribute("string-dictionary", __TestNamespace_InputTagHelper2.StringDictionaryProperty, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             __TestNamespace_InputTagHelper1.StringDictionaryProperty = __TestNamespace_InputTagHelper2.StringDictionaryProperty;
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(329, 92, false);
@@ -101,21 +101,21 @@ __TestNamespace_InputTagHelper2.IntDictionaryProperty = intDictionary;
 
 #line default
 #line hidden
-            __tagHelperExecutionContext.AddTagHelperAttribute("int-dictionary", __TestNamespace_InputTagHelper2.IntDictionaryProperty);
+            __tagHelperExecutionContext.AddTagHelperAttribute("int-dictionary", __TestNamespace_InputTagHelper2.IntDictionaryProperty, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             __TestNamespace_InputTagHelper1.IntDictionaryProperty = __TestNamespace_InputTagHelper2.IntDictionaryProperty;
 #line 17 "PrefixedAttributeTagHelpers.cshtml"
            __TestNamespace_InputTagHelper2.IntDictionaryProperty["garlic"] = 37;
 
 #line default
 #line hidden
-            __tagHelperExecutionContext.AddTagHelperAttribute("int-prefix-garlic", __TestNamespace_InputTagHelper2.IntDictionaryProperty["garlic"]);
+            __tagHelperExecutionContext.AddTagHelperAttribute("int-prefix-garlic", __TestNamespace_InputTagHelper2.IntDictionaryProperty["garlic"], global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             __TestNamespace_InputTagHelper1.IntDictionaryProperty["garlic"] = __TestNamespace_InputTagHelper2.IntDictionaryProperty["garlic"];
 #line 17 "PrefixedAttributeTagHelpers.cshtml"
                                   __TestNamespace_InputTagHelper2.IntDictionaryProperty["grabber"] = 42;
 
 #line default
 #line hidden
-            __tagHelperExecutionContext.AddTagHelperAttribute("int-prefix-grabber", __TestNamespace_InputTagHelper2.IntDictionaryProperty["grabber"]);
+            __tagHelperExecutionContext.AddTagHelperAttribute("int-prefix-grabber", __TestNamespace_InputTagHelper2.IntDictionaryProperty["grabber"], global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             __TestNamespace_InputTagHelper1.IntProperty = __TestNamespace_InputTagHelper2.IntDictionaryProperty["grabber"];
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(427, 103, false);
@@ -154,28 +154,28 @@ __TestNamespace_InputTagHelper2.IntDictionaryProperty["grabber"] = 42;
 
 #line default
 #line hidden
-            __tagHelperExecutionContext.AddTagHelperAttribute("int-prefix-grabber", __TestNamespace_InputTagHelper2.IntDictionaryProperty["grabber"]);
+            __tagHelperExecutionContext.AddTagHelperAttribute("int-prefix-grabber", __TestNamespace_InputTagHelper2.IntDictionaryProperty["grabber"], global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             __TestNamespace_InputTagHelper1.IntProperty = __TestNamespace_InputTagHelper2.IntDictionaryProperty["grabber"];
 #line 19 "PrefixedAttributeTagHelpers.cshtml"
 __TestNamespace_InputTagHelper2.IntDictionaryProperty["salt"] = 37;
 
 #line default
 #line hidden
-            __tagHelperExecutionContext.AddTagHelperAttribute("int-prefix-salt", __TestNamespace_InputTagHelper2.IntDictionaryProperty["salt"]);
+            __tagHelperExecutionContext.AddTagHelperAttribute("int-prefix-salt", __TestNamespace_InputTagHelper2.IntDictionaryProperty["salt"], global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             __TestNamespace_InputTagHelper1.IntDictionaryProperty["salt"] = __TestNamespace_InputTagHelper2.IntDictionaryProperty["salt"];
 #line 19 "PrefixedAttributeTagHelpers.cshtml"
          __TestNamespace_InputTagHelper2.IntDictionaryProperty["pepper"] = 98;
 
 #line default
 #line hidden
-            __tagHelperExecutionContext.AddTagHelperAttribute("int-prefix-pepper", __TestNamespace_InputTagHelper2.IntDictionaryProperty["pepper"]);
+            __tagHelperExecutionContext.AddTagHelperAttribute("int-prefix-pepper", __TestNamespace_InputTagHelper2.IntDictionaryProperty["pepper"], global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             __TestNamespace_InputTagHelper1.IntDictionaryProperty["pepper"] = __TestNamespace_InputTagHelper2.IntDictionaryProperty["pepper"];
             __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_3);
             __TestNamespace_InputTagHelper2.StringDictionaryProperty["grabber"] = "string";
-            __tagHelperExecutionContext.AddTagHelperAttribute("string-prefix-grabber", __TestNamespace_InputTagHelper2.StringDictionaryProperty["grabber"]);
+            __tagHelperExecutionContext.AddTagHelperAttribute("string-prefix-grabber", __TestNamespace_InputTagHelper2.StringDictionaryProperty["grabber"], global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             __TestNamespace_InputTagHelper1.StringProperty = __TestNamespace_InputTagHelper2.StringDictionaryProperty["grabber"];
             __TestNamespace_InputTagHelper2.StringDictionaryProperty["paprika"] = "another string";
-            __tagHelperExecutionContext.AddTagHelperAttribute("string-prefix-paprika", __TestNamespace_InputTagHelper2.StringDictionaryProperty["paprika"]);
+            __tagHelperExecutionContext.AddTagHelperAttribute("string-prefix-paprika", __TestNamespace_InputTagHelper2.StringDictionaryProperty["paprika"], global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             __TestNamespace_InputTagHelper1.StringDictionaryProperty["paprika"] = __TestNamespace_InputTagHelper2.StringDictionaryProperty["paprika"];
             BeginWriteTagHelperAttribute();
             WriteLiteral("literate ");
@@ -187,7 +187,7 @@ __TestNamespace_InputTagHelper2.IntDictionaryProperty["salt"] = 37;
             WriteLiteral("?");
             __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
             __TestNamespace_InputTagHelper2.StringDictionaryProperty["cumin"] = __tagHelperStringValueBuffer;
-            __tagHelperExecutionContext.AddTagHelperAttribute("string-prefix-cumin", __TestNamespace_InputTagHelper2.StringDictionaryProperty["cumin"]);
+            __tagHelperExecutionContext.AddTagHelperAttribute("string-prefix-cumin", __TestNamespace_InputTagHelper2.StringDictionaryProperty["cumin"], global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             __TestNamespace_InputTagHelper1.StringDictionaryProperty["cumin"] = __TestNamespace_InputTagHelper2.StringDictionaryProperty["cumin"];
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(536, 257, false);
@@ -225,10 +225,10 @@ __TestNamespace_InputTagHelper2.IntDictionaryProperty["value"] = 37;
 
 #line default
 #line hidden
-            __tagHelperExecutionContext.AddTagHelperAttribute("int-prefix-value", __TestNamespace_InputTagHelper2.IntDictionaryProperty["value"]);
+            __tagHelperExecutionContext.AddTagHelperAttribute("int-prefix-value", __TestNamespace_InputTagHelper2.IntDictionaryProperty["value"], global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             __TestNamespace_InputTagHelper1.IntDictionaryProperty["value"] = __TestNamespace_InputTagHelper2.IntDictionaryProperty["value"];
             __TestNamespace_InputTagHelper2.StringDictionaryProperty["thyme"] = "string";
-            __tagHelperExecutionContext.AddTagHelperAttribute("string-prefix-thyme", __TestNamespace_InputTagHelper2.StringDictionaryProperty["thyme"]);
+            __tagHelperExecutionContext.AddTagHelperAttribute("string-prefix-thyme", __TestNamespace_InputTagHelper2.StringDictionaryProperty["thyme"], global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             __TestNamespace_InputTagHelper1.StringDictionaryProperty["thyme"] = __TestNamespace_InputTagHelper2.StringDictionaryProperty["thyme"];
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(799, 60, false);

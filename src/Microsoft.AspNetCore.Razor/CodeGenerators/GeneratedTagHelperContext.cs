@@ -22,7 +22,6 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
             ScopeManagerEndMethodName = "End";
             ExecutionContextAddMethodName = "Add";
             ExecutionContextAddTagHelperAttributeMethodName = "AddTagHelperAttribute";
-            ExecutionContextAddMinimizedHtmlAttributeMethodName = "AddMinimizedHtmlAttribute";
             ExecutionContextAddHtmlAttributeMethodName = "AddHtmlAttribute";
             ExecutionContextOutputPropertyName = "Output";
             FormatInvalidIndexerAssignmentMethodName = "FormatInvalidIndexerAssignment";
@@ -112,11 +111,6 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
         /// The name of the <see cref="ExecutionContextTypeName"/> method used to add tag helper attributes.
         /// </summary>
         public string ExecutionContextAddTagHelperAttributeMethodName { get; set; }
-
-        /// <summary>
-        /// The name of the <see cref="ExecutionContextTypeName"/> method used to add minimized HTML attributes.
-        /// </summary>
-        public string ExecutionContextAddMinimizedHtmlAttributeMethodName { get; set; }
 
         /// <summary>
         /// The name of the <see cref="ExecutionContextTypeName"/> method used to add HTML attributes.

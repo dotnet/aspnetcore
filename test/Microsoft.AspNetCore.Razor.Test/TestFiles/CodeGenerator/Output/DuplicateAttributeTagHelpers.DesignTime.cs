@@ -38,6 +38,15 @@ __TestNamespace_InputTagHelper2.Checked = true;
 
 #line default
 #line hidden
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+            __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
+            __TestNamespace_InputTagHelper.Type = "button";
+            __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
+#line 6 "DuplicateAttributeTagHelpers.cshtml"
+__TestNamespace_InputTagHelper2.Checked = true;
+
+#line default
+#line hidden
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #line 3 "DuplicateAttributeTagHelpers.cshtml"
 __TestNamespace_PTagHelper.Age = 3;

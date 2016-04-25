@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.TagHelpers
 {
@@ -25,13 +26,17 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             // Normal comparer (TagHelperAttribute.Equals()) doesn't care about the Name case, in tests we do.
             return attributeX != null &&
                 string.Equals(attributeX.Name, attributeY.Name, StringComparison.Ordinal) &&
-                attributeX.Minimized == attributeY.Minimized &&
-                (attributeX.Minimized || Equals(attributeX.Value, attributeY.Value));
+                attributeX.ValueStyle == attributeY.ValueStyle &&
+                (attributeX.ValueStyle == HtmlAttributeValueStyle.Minimized || Equals(attributeX.Value, attributeY.Value));
         }
 
         public int GetHashCode(TagHelperAttribute attribute)
         {
-            return attribute.GetHashCode();
+            var combiner = HashCodeCombiner.Start();
+            combiner.Add(attribute.Name, StringComparer.Ordinal);
+            combiner.Add(attribute.GetHashCode());
+
+            return combiner.CombinedHash;
         }
     }
 }

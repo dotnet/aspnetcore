@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers
         {
             TagName = original.TagName;
             Descriptors = original.Descriptors;
-            Attributes = new List<KeyValuePair<string, SyntaxTreeNode>>(original.Attributes);
+            Attributes = new List<TagHelperAttributeNode>(original.Attributes);
         }
 
         /// <summary>
@@ -41,14 +41,14 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers
             string tagName,
             TagMode tagMode,
             SourceLocation start,
-            IList<KeyValuePair<string, SyntaxTreeNode>> attributes,
+            IList<TagHelperAttributeNode> attributes,
             IEnumerable<TagHelperDescriptor> descriptors)
         {
             TagName = tagName;
             TagMode = tagMode;
             Start = start;
             Descriptors = descriptors;
-            Attributes = new List<KeyValuePair<string, SyntaxTreeNode>>(attributes);
+            Attributes = new List<TagHelperAttributeNode>(attributes);
             Type = BlockType.Tag;
             ChunkGenerator = new TagHelperChunkGenerator(descriptors);
         }
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers
         internal TagHelperBlockBuilder(
             string tagName,
             TagMode tagMode,
-            IList<KeyValuePair<string, SyntaxTreeNode>> attributes,
+            IList<TagHelperAttributeNode> attributes,
             IEnumerable<SyntaxTreeNode> children)
         {
             TagName = tagName;
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers
         /// <summary>
         /// The HTML attributes.
         /// </summary>
-        public IList<KeyValuePair<string, SyntaxTreeNode>> Attributes { get; }
+        public IList<TagHelperAttributeNode> Attributes { get; }
 
         /// <summary>
         /// The HTML tag name.

@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Framework
             var builder = new TagHelperBlockBuilder(
                 tagName,
                 tagMode,
-                attributes: new List<KeyValuePair<string, SyntaxTreeNode>>(),
+                attributes: new List<TagHelperAttributeNode>(),
                 children: children)
             {
                 Start = start,

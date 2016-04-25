@@ -15,11 +15,11 @@ namespace TestOutput
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager __tagHelperScopeManager = null;
         private global::TestNamespace.CatchAllTagHelper __TestNamespace_CatchAllTagHelper = null;
         private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("catchall-unbound-required");
-        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("class", new global::Microsoft.AspNetCore.Html.HtmlString("btn"));
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("class", new global::Microsoft.AspNetCore.Html.HtmlString("btn"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
         private global::TestNamespace.InputTagHelper __TestNamespace_InputTagHelper = null;
         private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_2 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("input-unbound-required");
-        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_3 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("catchall-unbound-required", new global::Microsoft.AspNetCore.Html.HtmlString("hello"));
-        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_4 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("input-unbound-required", new global::Microsoft.AspNetCore.Html.HtmlString("hello2"));
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_3 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("catchall-unbound-required", new global::Microsoft.AspNetCore.Html.HtmlString("hello"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_4 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("input-unbound-required", new global::Microsoft.AspNetCore.Html.HtmlString("hello2"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
         #line hidden
         public MinimizedTagHelpers()
         {
@@ -63,7 +63,7 @@ namespace TestOutput
                 __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
                 __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_2);
                 __TestNamespace_InputTagHelper.BoundRequiredString = "hello";
-                __tagHelperExecutionContext.AddTagHelperAttribute("input-bound-required-string", __TestNamespace_InputTagHelper.BoundRequiredString);
+                __tagHelperExecutionContext.AddTagHelperAttribute("input-bound-required-string", __TestNamespace_InputTagHelper.BoundRequiredString, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 Instrumentation.BeginContext(161, 119, false);
                 Write(__tagHelperExecutionContext.Output);
@@ -83,9 +83,9 @@ namespace TestOutput
                 __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
                 __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_2);
                 __TestNamespace_CatchAllTagHelper.BoundRequiredString = "world";
-                __tagHelperExecutionContext.AddTagHelperAttribute("catchall-bound-string", __TestNamespace_CatchAllTagHelper.BoundRequiredString);
+                __tagHelperExecutionContext.AddTagHelperAttribute("catchall-bound-string", __TestNamespace_CatchAllTagHelper.BoundRequiredString, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
                 __TestNamespace_InputTagHelper.BoundRequiredString = "hello2";
-                __tagHelperExecutionContext.AddTagHelperAttribute("input-bound-required-string", __TestNamespace_InputTagHelper.BoundRequiredString);
+                __tagHelperExecutionContext.AddTagHelperAttribute("input-bound-required-string", __TestNamespace_InputTagHelper.BoundRequiredString, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 Instrumentation.BeginContext(286, 176, false);
                 Write(__tagHelperExecutionContext.Output);
@@ -106,7 +106,7 @@ namespace TestOutput
                 __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_4);
                 __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
                 __TestNamespace_InputTagHelper.BoundRequiredString = "world";
-                __tagHelperExecutionContext.AddTagHelperAttribute("input-bound-required-string", __TestNamespace_InputTagHelper.BoundRequiredString);
+                __tagHelperExecutionContext.AddTagHelperAttribute("input-bound-required-string", __TestNamespace_InputTagHelper.BoundRequiredString, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 Instrumentation.BeginContext(468, 206, false);
                 Write(__tagHelperExecutionContext.Output);

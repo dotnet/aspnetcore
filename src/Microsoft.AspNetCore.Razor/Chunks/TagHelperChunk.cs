@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Chunks
         public TagHelperChunk(
             string tagName,
             TagMode tagMode,
-            IList<KeyValuePair<string, Chunk>> attributes,
+            IList<TagHelperAttributeTracker> attributes,
             IEnumerable<TagHelperDescriptor> descriptors)
         {
             TagName = tagName;
@@ -36,11 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Chunks
         /// <summary>
         /// The HTML attributes.
         /// </summary>
-        /// <remarks>
-        /// These attributes are <see cref="string"/> => <see cref="Chunk"/> so attribute values can consist
-        /// of all sorts of Razor specific pieces.
-        /// </remarks>
-        public IList<KeyValuePair<string, Chunk>> Attributes { get; set; }
+        public IList<TagHelperAttributeTracker> Attributes { get; set; }
 
         /// <summary>
         /// The <see cref="TagHelperDescriptor"/>s that are associated with the tag helpers HTML element.

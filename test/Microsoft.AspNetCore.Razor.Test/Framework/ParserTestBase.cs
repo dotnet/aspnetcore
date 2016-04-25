@@ -324,24 +324,30 @@ namespace Microsoft.AspNetCore.Razor.Test.Framework
             }
         }
 
-        private static void EvaluateTagHelperAttribute(ErrorCollector collector,
-                                                       KeyValuePair<string, SyntaxTreeNode> actual,
-                                                       KeyValuePair<string, SyntaxTreeNode> expected)
+        private static void EvaluateTagHelperAttribute(
+            ErrorCollector collector,
+            TagHelperAttributeNode actual,
+            TagHelperAttributeNode expected)
         {
-            if (actual.Key != expected.Key)
+            if (actual.Name != expected.Name)
             {
-                collector.AddError("{0} - FAILED :: Attribute names do not match", expected.Key);
+                collector.AddError("{0} - FAILED :: Attribute names do not match", expected.Name);
             }
             else
             {
-                collector.AddMessage("{0} - PASSED :: Attribute names match", expected.Key);
+                collector.AddMessage("{0} - PASSED :: Attribute names match", expected.Name);
             }
 
-            if (actual.Value == null && expected.Value == null)
+            if (actual.ValueStyle != expected.ValueStyle)
             {
-                collector.AddMessage("{0} - PASSED :: Minimized attribute values match", expected.Key);
+                collector.AddError("{0} - FAILED :: Attribute value styles do not match", expected.ValueStyle.ToString());
             }
             else
+            {
+                collector.AddMessage("{0} - PASSED :: Attribute value style match", expected.ValueStyle);
+            }
+
+            if (actual.ValueStyle != HtmlAttributeValueStyle.Minimized)
             {
                 EvaluateSyntaxTreeNode(collector, actual.Value, expected.Value);
             }
@@ -435,7 +441,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Framework
                 }
                 while (actualAttributes.MoveNext())
                 {
-                    collector.AddError("End of Attributes - FAILED :: Found Attribute: {0}", actualAttributes.Current.Key);
+                    collector.AddError("End of Attributes - FAILED :: Found Attribute: {0}", actualAttributes.Current.Name);
                 }
             }
         }

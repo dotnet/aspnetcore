@@ -483,6 +483,22 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                             tagName:     "p",
                             attributes:  new TagHelperAttributeList()
                             {
+                                { new TagHelperAttribute("test", "testVal", HtmlAttributeValueStyle.NoQuotes) },
+                                { new TagHelperAttribute("something", "  spaced  ", HtmlAttributeValueStyle.SingleQuotes) },
+                            },
+                            tagMode: TagMode.StartTagAndEndTag,
+                            preElement:  null,
+                            preContent:  null,
+                            content:     "Hello World!",
+                            postContent: null,
+                            postElement: null),
+                        "<p test=HtmlEncode[[testVal]] something='HtmlEncode[[  spaced  ]]'>Hello World!</p>"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     "p",
+                            attributes:  new TagHelperAttributeList()
+                            {
                                 new TagHelperAttribute("test"),
                             },
                             tagMode: TagMode.StartTagAndEndTag,
@@ -531,7 +547,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                             attributes:  new TagHelperAttributeList()
                             {
                                 new TagHelperAttribute("test"),
-                                new TagHelperAttribute("last", "unminimized"),
+                                new TagHelperAttribute("last", "unminimized", HtmlAttributeValueStyle.NoQuotes),
                             },
                             tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
@@ -539,7 +555,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                             content:     "Hello World!",
                             postContent: null,
                             postElement: null),
-                        "<p test last=\"HtmlEncode[[unminimized]]\">Hello World!</p>"
+                        "<p test last=HtmlEncode[[unminimized]]>Hello World!</p>"
                     },
                     {
                         GetTagHelperOutput(
@@ -572,14 +588,17 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                     {
                         GetTagHelperOutput(
                             tagName:     "p",
-                            attributes:  new TagHelperAttributeList() { { "test", "testVal" } },
+                            attributes:  new TagHelperAttributeList()
+                            {
+                                { new TagHelperAttribute("test", "testVal", HtmlAttributeValueStyle.SingleQuotes) }
+                            },
                             tagMode: TagMode.StartTagOnly,
                             preElement:  null,
                             preContent:  null,
                             content:     "Hello World!",
                             postContent: null,
                             postElement: null),
-                        "<p test=\"HtmlEncode[[testVal]]\">"
+                        "<p test='HtmlEncode[[testVal]]'>"
                     },
                     {
                         GetTagHelperOutput(
@@ -769,6 +788,21 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                         GetTagHelperOutput(
                             tagName:     string.Empty,
                             attributes:  new TagHelperAttributeList { { "test", "testVal" } },
+                            tagMode: TagMode.StartTagOnly,
+                            preElement:  "Before",
+                            preContent:  null,
+                            content:     null,
+                            postContent: null,
+                            postElement: null),
+                        "Before"
+                    },
+                    {
+                        GetTagHelperOutput(
+                            tagName:     string.Empty,
+                            attributes:  new TagHelperAttributeList
+                            {
+                                { new TagHelperAttribute("test", "testVal", HtmlAttributeValueStyle.SingleQuotes) }
+                            },
                             tagMode: TagMode.StartTagOnly,
                             preElement:  "Before",
                             preContent:  null,

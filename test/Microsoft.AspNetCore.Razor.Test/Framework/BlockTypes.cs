@@ -132,18 +132,18 @@ namespace Microsoft.AspNetCore.Razor.Test.Framework
     public class MarkupTagHelperBlock : TagHelperBlock
     {
         public MarkupTagHelperBlock(string tagName)
-            : this(tagName, tagMode: TagMode.StartTagAndEndTag, attributes: new List<KeyValuePair<string, SyntaxTreeNode>>())
+            : this(tagName, tagMode: TagMode.StartTagAndEndTag, attributes: new List<TagHelperAttributeNode>())
         {
         }
 
         public MarkupTagHelperBlock(string tagName, TagMode tagMode)
-            : this(tagName, tagMode, new List<KeyValuePair<string, SyntaxTreeNode>>())
+            : this(tagName, tagMode, new List<TagHelperAttributeNode>())
         {
         }
 
         public MarkupTagHelperBlock(
             string tagName,
-            IList<KeyValuePair<string, SyntaxTreeNode>> attributes)
+            IList<TagHelperAttributeNode> attributes)
             : this(tagName, TagMode.StartTagAndEndTag, attributes, children: new SyntaxTreeNode[0])
         {
         }
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Framework
         public MarkupTagHelperBlock(
             string tagName,
             TagMode tagMode,
-            IList<KeyValuePair<string, SyntaxTreeNode>> attributes)
+            IList<TagHelperAttributeNode> attributes)
             : this(tagName, tagMode, attributes, new SyntaxTreeNode[0])
         {
         }
@@ -160,19 +160,19 @@ namespace Microsoft.AspNetCore.Razor.Test.Framework
             : this(
                   tagName,
                   TagMode.StartTagAndEndTag,
-                  attributes: new List<KeyValuePair<string, SyntaxTreeNode>>(),
+                  attributes: new List<TagHelperAttributeNode>(),
                   children: children)
         {
         }
 
         public MarkupTagHelperBlock(string tagName, TagMode tagMode, params SyntaxTreeNode[] children)
-            : this(tagName, tagMode, new List<KeyValuePair<string, SyntaxTreeNode>>(), children)
+            : this(tagName, tagMode, new List<TagHelperAttributeNode>(), children)
         {
         }
 
         public MarkupTagHelperBlock(
             string tagName,
-            IList<KeyValuePair<string, SyntaxTreeNode>> attributes,
+            IList<TagHelperAttributeNode> attributes,
             params SyntaxTreeNode[] children)
             : base(new TagHelperBlockBuilder(
                 tagName,
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Framework
         public MarkupTagHelperBlock(
             string tagName,
             TagMode tagMode,
-            IList<KeyValuePair<string, SyntaxTreeNode>> attributes,
+            IList<TagHelperAttributeNode> attributes,
             params SyntaxTreeNode[] children)
             : base(new TagHelperBlockBuilder(tagName, tagMode, attributes, children))
         {

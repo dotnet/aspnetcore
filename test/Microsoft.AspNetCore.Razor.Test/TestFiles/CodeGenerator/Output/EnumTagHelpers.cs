@@ -50,7 +50,7 @@ __TestNamespace_InputTagHelper.Value = MyEnum.MyValue;
 
 #line default
 #line hidden
-            __tagHelperExecutionContext.AddTagHelperAttribute("value", __TestNamespace_InputTagHelper.Value);
+            __tagHelperExecutionContext.AddTagHelperAttribute("value", __TestNamespace_InputTagHelper.Value, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(79, 33, false);
             Write(__tagHelperExecutionContext.Output);
@@ -66,7 +66,7 @@ __TestNamespace_InputTagHelper.Value = MyEnum.MyValue;
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
-            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 1);
+            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 1, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
 #line 8 "EnumTagHelpers.cshtml"
 AddHtmlAttributeValue("", 128, MyEnum.MySecondValue, 128, 21, false);
 
@@ -93,7 +93,7 @@ __TestNamespace_InputTagHelper.Value = global::Microsoft.AspNetCore.Razor.Test.G
 
 #line default
 #line hidden
-            __tagHelperExecutionContext.AddTagHelperAttribute("value", __TestNamespace_InputTagHelper.Value);
+            __tagHelperExecutionContext.AddTagHelperAttribute("value", __TestNamespace_InputTagHelper.Value, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(155, 25, false);
             Write(__tagHelperExecutionContext.Output);
@@ -114,13 +114,13 @@ __TestNamespace_InputTagHelper.Value = global::Microsoft.AspNetCore.Razor.Test.G
 
 #line default
 #line hidden
-            __tagHelperExecutionContext.AddTagHelperAttribute("value", __TestNamespace_InputTagHelper.Value);
+            __tagHelperExecutionContext.AddTagHelperAttribute("value", __TestNamespace_InputTagHelper.Value, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
 #line 10 "EnumTagHelpers.cshtml"
 __TestNamespace_CatchAllTagHelper.CatchAll = global::Microsoft.AspNetCore.Razor.Test.Generator.MyEnum.MyValue;
 
 #line default
 #line hidden
-            __tagHelperExecutionContext.AddTagHelperAttribute("catch-all", __TestNamespace_CatchAllTagHelper.CatchAll);
+            __tagHelperExecutionContext.AddTagHelperAttribute("catch-all", __TestNamespace_CatchAllTagHelper.CatchAll, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(182, 50, false);
             Write(__tagHelperExecutionContext.Output);
@@ -141,13 +141,13 @@ __TestNamespace_InputTagHelper.Value = enumValue;
 
 #line default
 #line hidden
-            __tagHelperExecutionContext.AddTagHelperAttribute("value", __TestNamespace_InputTagHelper.Value);
+            __tagHelperExecutionContext.AddTagHelperAttribute("value", __TestNamespace_InputTagHelper.Value, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
 #line 11 "EnumTagHelpers.cshtml"
 __TestNamespace_CatchAllTagHelper.CatchAll = enumValue;
 
 #line default
 #line hidden
-            __tagHelperExecutionContext.AddTagHelperAttribute("catch-all", __TestNamespace_CatchAllTagHelper.CatchAll);
+            __tagHelperExecutionContext.AddTagHelperAttribute("catch-all", __TestNamespace_CatchAllTagHelper.CatchAll, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(234, 51, false);
             Write(__tagHelperExecutionContext.Output);
