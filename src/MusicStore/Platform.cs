@@ -17,16 +17,9 @@ namespace MusicStore
               int dwSpMinorVersion,
               out int pdwReturnedProductType);
 
-        private readonly IRuntimeEnvironment _runtimeEnvironment;
-
         private bool? _isNano;
         private bool? _isMono;
         private bool? _isWindows;
-
-        public Platform(IRuntimeEnvironment runtimeEnvironment)
-        {
-            _runtimeEnvironment = runtimeEnvironment;
-        }
 
         public bool IsRunningOnWindows
         {
@@ -34,7 +27,7 @@ namespace MusicStore
             {
                 if (_isWindows == null)
                 {
-                    _isWindows = _runtimeEnvironment.OperatingSystem.Equals(
+                    _isWindows = PlatformServices.Default.Runtime.OperatingSystem.Equals(
                         "Windows", StringComparison.OrdinalIgnoreCase);
                 }
 
@@ -48,7 +41,10 @@ namespace MusicStore
             {
                 if (_isMono == null)
                 {
-                    _isMono = _runtimeEnvironment.RuntimeType.Equals("Mono", StringComparison.OrdinalIgnoreCase);
+                    _isMono = string.Equals(
+                        PlatformServices.Default.Runtime.RuntimeType,
+                        "Mono",
+                        StringComparison.OrdinalIgnoreCase);
                 }
 
                 return _isMono.Value;
@@ -61,7 +57,7 @@ namespace MusicStore
             {
                 if (_isNano == null)
                 {
-                    var osVersion = new Version(_runtimeEnvironment.OperatingSystemVersion ?? "");
+                    var osVersion = new Version(PlatformServices.Default.Runtime.OperatingSystemVersion ?? "");
 
                     try
                     {
@@ -86,6 +82,5 @@ namespace MusicStore
                 return _isNano.Value;
             }
         }
-
     }
 }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -14,19 +15,19 @@ namespace MusicStore
     {
         private readonly Platform _platform;
 
-        public Startup(IApplicationEnvironment applicationEnvironment, IRuntimeEnvironment runtimeEnvironment)
+        public Startup(IHostingEnvironment hostingEnvironment)
         {
             // Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1'
             // is found in both the registered sources, then the later source will win. By this way a Local config
             // can be overridden by a different setting while deployed remotely.
             var builder = new ConfigurationBuilder()
-                .SetBasePath(applicationEnvironment.ApplicationBasePath)
+                .SetBasePath(hostingEnvironment.ContentRootPath)
                 .AddJsonFile("config.json")
                 //All environment variables in the process's context flow in as configuration values.
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();
-            _platform = new Platform(runtimeEnvironment);
+            _platform = new Platform();
         }
 
         public IConfiguration Configuration { get; private set; }

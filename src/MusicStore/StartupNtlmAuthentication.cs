@@ -1,13 +1,12 @@
 using System;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.PlatformAbstractions;
-using Microsoft.Net.Http.Server;
 using MusicStore.Components;
 using MusicStore.Models;
 
@@ -32,13 +31,13 @@ namespace MusicStore
     /// </summary>
     public class StartupNtlmAuthentication
     {
-        public StartupNtlmAuthentication(IApplicationEnvironment applicationEnvironment)
+        public StartupNtlmAuthentication(IHostingEnvironment hostingEnvironment)
         {
             // Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1'
             // is found in both the registered sources, then the later source will win. By this way a Local config
             // can be overridden by a different setting while deployed remotely.
             var builder = new ConfigurationBuilder()
-                .SetBasePath(applicationEnvironment.ApplicationBasePath)
+                .SetBasePath(hostingEnvironment.ContentRootPath)
                 .AddJsonFile("config.json")
                 //All environment variables in the process's context flow in as configuration values.
                 .AddEnvironmentVariables();
