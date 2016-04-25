@@ -39,7 +39,7 @@ namespace E2ETests
                 {
                     PublishApplicationBeforeDeployment = true,
                     PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.0",
-                    ApplicationType = runtimeFlavor == RuntimeFlavor.Clr ? ApplicationType.Standalone : ApplicationType.Portable,
+                    ApplicationType = applicationType,
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "NtlmAuthentication", //Will pick the Start class named 'StartupNtlmAuthentication'
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("NtlmAuthentation.config") : null,

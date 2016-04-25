@@ -185,7 +185,7 @@ namespace E2ETests
                     SiteName = "MusicStoreTestSite",
                     PublishApplicationBeforeDeployment = true,
                     PublishTargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.0",
-                    ApplicationType = runtimeFlavor == RuntimeFlavor.Clr ? ApplicationType.Standalone : ApplicationType.Portable,
+                    ApplicationType = applicationType,
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, _logger);
