@@ -356,7 +356,7 @@ namespace Microsoft.AspNetCore.Identity
         /// Removes a claim from a role.
         /// </summary>
         /// <param name="role">The role to remove the claim from.</param>
-        /// <param name="claim">The claim to add.</param>
+        /// <param name="claim">The claim to remove.</param>
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
         /// of the operation.
