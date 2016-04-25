@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Testing.xunit;
 namespace Microsoft.AspNetCore.Server.Testing
 {
     /// <summary>
-    /// Skips a test if the DNX used to run the test is CoreClr.
+    /// Skips a test if the runtime used to run the test is CoreClr.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class SkipIfCurrentRuntimeIsCoreClrAttribute : Attribute, ITestCondition
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Testing
         {
             get
             {
-                return "Cannot run these test variations using CoreCLR DNX as helpers are not available on CoreCLR.";
+                return "Cannot run these test variations using CoreCLR runtime as helpers are not available on CoreCLR.";
             }
         }
     }
