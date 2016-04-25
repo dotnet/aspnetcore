@@ -1,0 +1,924 @@
+[2168:0C20][2016-04-25T10:30:20]i001: Burn v3.10.1.2213, Windows v6.1 (Build 7601: Service Pack 1), path: C:\Users\guli
+
+\Desktop\temp\AspNet5.ENU.RC1_Update1_KB3137909.exe
+[2168:0C20][2016-04-25T10:30:20]i000: Initializing numeric variable 'OPT_DNVM' to value '1'
+[2168:0C20][2016-04-25T10:30:20]i000: Initializing numeric variable 'OPT_DNXCORE_WIN' to value '1'
+[2168:0C20][2016-04-25T10:30:20]i000: Initializing numeric variable 'OPT_DNXCORE_DARWIN' to value '0'
+[2168:0C20][2016-04-25T10:30:20]i000: Initializing numeric variable 'OPT_DNXCORE_LINUX' to value '0'
+[2168:0C20][2016-04-25T10:30:20]i000: Initializing numeric variable 'OPT_DNX_WIN' to value '1'
+[2168:0C20][2016-04-25T10:30:20]i000: Initializing numeric variable 'OPT_DNX_MONO' to value '0'
+[2168:0C20][2016-04-25T10:30:20]i000: Initializing numeric variable 'OPT_WTE' to value '1'
+[2168:0C20][2016-04-25T10:30:20]i000: Initializing numeric variable 'CHECK_SETUP_BLOCKED' to value '1'
+[2168:0C20][2016-04-25T10:30:20]i000: Initializing numeric variable 'SKIP_VSU_CHECK' to value '0'
+[2168:0C20][2016-04-25T10:30:20]i000: Initializing numeric variable 'SKIP_PREPARATION' to value '0'
+[2168:0C20][2016-04-25T10:30:20]i009: Command Line: ''
+[2168:0C20][2016-04-25T10:30:20]i000: Setting string variable 'WixBundleLog' to value 'C:\Users\guli\AppData\Local\Temp
+
+\dd_ASPNET5__20160425103020.log'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting string variable 'WixBundleOriginalSource' to value 'C:\Users\guli\Desktop
+
+\temp\AspNet5.ENU.RC1_Update1_KB3137909.exe'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting string variable 'WixBundleOriginalSourceFolder' to value 'C:\Users\guli
+
+\Desktop\temp\'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting string variable 'WixBundleName' to value 'Microsoft ASP.NET 5 RC1 Update 1'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting string variable 'WixBundleManufacturer' to value 'Microsoft Corporation'
+[2168:1D64][2016-04-25T10:30:20]i000: Setting numeric variable 'WixStdBALanguageId' to value 1033
+[2168:1D64][2016-04-25T10:30:20]i000: Setting version variable 'WixBundleFileVersion' to value '1.0.20204.0'
+[2168:0C20][2016-04-25T10:30:20]i100: Detect begin, 72 packages
+[2168:0C20][2016-04-25T10:30:20]i000: Setting string variable 'NetFx45Release' to value '394271'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015CommunityExists' to value 1
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\community\1028'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015CommunityExists_1028' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\community\1029'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015CommunityExists_1029' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\community\1031'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015CommunityExists_1031' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\community\1036'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015CommunityExists_1036' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\community\1040'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015CommunityExists_1040' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\community\1041'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015CommunityExists_1041' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\community\1042'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015CommunityExists_1042' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\community\1045'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015CommunityExists_1045' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\community\1046'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015CommunityExists_1046' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\community\1049'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015CommunityExists_1049' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\community\1055'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015CommunityExists_1055' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\community\2052'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015CommunityExists_2052' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\community\3082'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015CommunityExists_3082' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Setting string variable 'VS2015CommunityUpdateVersion' to value '14.0.25126'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting string variable 'VS2015CommunityVersion' to value '14.0.23107'
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\enterprise'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015EnterpriseExists' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\enterprise\1028'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015EnterpriseExists_1028' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\enterprise\1029'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015EnterpriseExists_1029' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\enterprise\1031'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015EnterpriseExists_1031' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\enterprise\1036'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015EnterpriseExists_1036' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\enterprise\1040'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015EnterpriseExists_1040' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\enterprise\1041'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015EnterpriseExists_1041' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\enterprise\1042'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015EnterpriseExists_1042' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\enterprise\1045'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015EnterpriseExists_1045' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\enterprise\1046'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015EnterpriseExists_1046' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\enterprise\1049'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015EnterpriseExists_1049' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\enterprise\1055'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015EnterpriseExists_1055' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\enterprise\2052'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015EnterpriseExists_2052' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\enterprise\3082'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015EnterpriseExists_3082' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\enterprise'
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\enterprise'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015ProfessionalExists' to value 1
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\professional\1028'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015ProfessionalExists_1028' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\professional\1029'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015ProfessionalExists_1029' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\professional\1031'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015ProfessionalExists_1031' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\professional\1036'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015ProfessionalExists_1036' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\professional\1040'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015ProfessionalExists_1040' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\professional\1041'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015ProfessionalExists_1041' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\professional\1042'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015ProfessionalExists_1042' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\professional\1045'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015ProfessionalExists_1045' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\professional\1046'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015ProfessionalExists_1046' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\professional\1049'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015ProfessionalExists_1049' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\professional\1055'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015ProfessionalExists_1055' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\professional\2052'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015ProfessionalExists_2052' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vs\Servicing
+
+\14.0\professional\3082'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015ProfessionalExists_3082' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Setting string variable 'VS2015ProfessionalUpdateVersion' to value '14.0.25123'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting string variable 'VS2015ProfessionalVersion' to value '14.0.23107'
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vns\Servicing\14.0\xcor'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015WebExpressExists' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vns\Servicing\14.0\xcor
+
+\1028'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015WebExpressExists_1028' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vns\Servicing\14.0\xcor
+
+\1029'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015WebExpressExists_1029' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vns\Servicing\14.0\xcor
+
+\1031'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015WebExpressExists_1031' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vns\Servicing\14.0\xcor
+
+\1036'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015WebExpressExists_1036' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vns\Servicing\14.0\xcor
+
+\1040'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015WebExpressExists_1040' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vns\Servicing\14.0\xcor
+
+\1041'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015WebExpressExists_1041' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vns\Servicing\14.0\xcor
+
+\1042'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015WebExpressExists_1042' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vns\Servicing\14.0\xcor
+
+\1045'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015WebExpressExists_1045' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vns\Servicing\14.0\xcor
+
+\1046'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015WebExpressExists_1046' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vns\Servicing\14.0\xcor
+
+\1049'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015WebExpressExists_1049' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vns\Servicing\14.0\xcor
+
+\1055'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015WebExpressExists_1055' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vns\Servicing\14.0\xcor
+
+\2052'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015WebExpressExists_2052' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vns\Servicing\14.0\xcor
+
+\3082'
+[2168:0C20][2016-04-25T10:30:20]i000: Setting numeric variable 'VS2015WebExpressExists_3082' to value 0
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vns\Servicing\14.0\xcor'
+[2168:0C20][2016-04-25T10:30:20]i000: Registry key not found. Key = 'Software\Microsoft\DevDiv\vns\Servicing\14.0\xcor'
+[2168:0C20][2016-04-25T10:30:20]i052: Condition '(NOT(RelationType = "Patch") AND NOT (WixBundleAction >= 4))' evaluates 
+
+to false.
+[2168:0C20][2016-04-25T10:30:20]w120: Detected partially cached package: DotNetVersionManager_x64, invalid payload: 
+
+DotNetVersionManager_x64, reason: 0x80070002
+[2168:0C20][2016-04-25T10:30:20]i103: Detected related package: {C5A4ABA3-1ABA-3EF8-B2D5-C3FA37F59738}, scope: PerMachine, 
+
+version: 1.0.10609.0, language: 0 operation: MajorUpgrade
+[2168:0C20][2016-04-25T10:30:20]w120: Detected partially cached package: WebToolsExtensionsVS14, invalid payload: 
+
+WebToolsExtensionsVS14, reason: 0x80070002
+[2168:0C20][2016-04-25T10:30:20]i103: Detected related package: {F7BBF232-D4A1-3C5C-B131-69933F5F2D6B}, scope: PerMachine, 
+
+version: 14.1.11106.0, language: 0 operation: MajorUpgrade
+[2168:0C20][2016-04-25T10:30:20]i103: Detected related package: {F7BBF232-D4A1-3C5C-B131-69933F5F2D6B}, scope: PerMachine, 
+
+version: 14.1.11106.0, language: 0 operation: MajorUpgrade
+[2168:0C20][2016-04-25T10:30:20]i103: Detected related package: {F7BBF232-D4A1-3C5C-B131-69933F5F2D6B}, scope: PerMachine, 
+
+version: 14.1.11106.0, language: 0 operation: MajorUpgrade
+[2168:0C20][2016-04-25T10:30:20]i103: Detected related package: {F7BBF232-D4A1-3C5C-B131-69933F5F2D6B}, scope: PerMachine, 
+
+version: 14.1.11106.0, language: 0 operation: MajorUpgrade
+[2168:0C20][2016-04-25T10:30:20]i103: Detected related package: {F7BBF232-D4A1-3C5C-B131-69933F5F2D6B}, scope: PerMachine, 
+
+version: 14.1.11106.0, language: 0 operation: MajorUpgrade
+[2168:0C20][2016-04-25T10:30:20]i103: Detected related package: {F7BBF232-D4A1-3C5C-B131-69933F5F2D6B}, scope: PerMachine, 
+
+version: 14.1.11106.0, language: 0 operation: MajorUpgrade
+[2168:0C20][2016-04-25T10:30:20]i103: Detected related package: {F7BBF232-D4A1-3C5C-B131-69933F5F2D6B}, scope: PerMachine, 
+
+version: 14.1.11106.0, language: 0 operation: MajorUpgrade
+[2168:0C20][2016-04-25T10:30:20]i103: Detected related package: {F7BBF232-D4A1-3C5C-B131-69933F5F2D6B}, scope: PerMachine, 
+
+version: 14.1.11106.0, language: 0 operation: MajorUpgrade
+[2168:0C20][2016-04-25T10:30:20]i103: Detected related package: {F7BBF232-D4A1-3C5C-B131-69933F5F2D6B}, scope: PerMachine, 
+
+version: 14.1.11106.0, language: 0 operation: MajorUpgrade
+[2168:0C20][2016-04-25T10:30:20]i103: Detected related package: {F7BBF232-D4A1-3C5C-B131-69933F5F2D6B}, scope: PerMachine, 
+
+version: 14.1.11106.0, language: 0 operation: MajorUpgrade
+[2168:0C20][2016-04-25T10:30:20]i103: Detected related package: {F7BBF232-D4A1-3C5C-B131-69933F5F2D6B}, scope: PerMachine, 
+
+version: 14.1.11106.0, language: 0 operation: MajorUpgrade
+[2168:0C20][2016-04-25T10:30:20]i103: Detected related package: {F7BBF232-D4A1-3C5C-B131-69933F5F2D6B}, scope: PerMachine, 
+
+version: 14.1.11106.0, language: 0 operation: MajorUpgrade
+[2168:0C20][2016-04-25T10:30:20]i103: Detected related package: {F7BBF232-D4A1-3C5C-B131-69933F5F2D6B}, scope: PerMachine, 
+
+version: 14.1.11106.0, language: 0 operation: MajorUpgrade
+[2168:0C20][2016-04-25T10:30:20]i103: Detected related package: {F7BBF232-D4A1-3C5C-B131-69933F5F2D6B}, scope: PerMachine, 
+
+version: 14.1.11106.0, language: 0 operation: MajorUpgrade
+[2168:0C20][2016-04-25T10:30:20]i052: Condition '(WixBundleAction >= 3)' evaluates to true.
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: SetupBlocked_Install, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: Preparation_Uninstall_ASPNET, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: DotNetVersionManager_x86, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: DotNetVersionManager_x64, state: Absent, cached: Partial
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: DnxNetFx_x86, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: DnxNetFx_x64, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: DnxNetFxMono_x86, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: DnxNetFxMono_x64, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: DnxNetCore_x86, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: DnxNetCore_x64, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: DnxNetCoreDarwin_x86, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: DnxNetCoreDarwin_x64, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: DnxNetCoreLinux_x86, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: DnxNetCoreLinux_x64, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVS14, state: Absent, cached: Partial
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVWD14, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVS14, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVWD14, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVS14_chs, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVWD14_chs, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVS14_chs, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVWD14_chs, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVS14_cht, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVWD14_cht, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVS14_cht, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVWD14_cht, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVS14_csy, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVWD14_csy, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVS14_csy, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVWD14_csy, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVS14_deu, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVWD14_deu, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVS14_deu, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVWD14_deu, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVS14_esn, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVWD14_esn, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVS14_esn, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVWD14_esn, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVS14_fra, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVWD14_fra, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVS14_fra, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVWD14_fra, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVS14_ita, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVWD14_ita, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVS14_ita, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVWD14_ita, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVS14_jpn, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVWD14_jpn, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVS14_jpn, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVWD14_jpn, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVS14_kor, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVWD14_kor, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVS14_kor, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVWD14_kor, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVS14_plk, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVWD14_plk, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVS14_plk, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVWD14_plk, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVS14_ptb, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVWD14_ptb, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVS14_ptb, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVWD14_ptb, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVS14_rus, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVWD14_rus, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVS14_rus, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVWD14_rus, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVS14_trk, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsExtensionsVWD14_trk, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVS14_trk, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: WebToolsAzureVWD14_trk, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: Preparation_ASPNET, state: Absent, cached: None
+[2168:0C20][2016-04-25T10:30:20]i101: Detected package: SetupBlocked_Uninstall, state: Present, cached: None
+[2168:0C20][2016-04-25T10:30:20]i052: Condition 'WixBundleInstalled OR NOT((OPT_DNXNETCORE=1 OR OPT_DNXNETFX=1) AND 
+
+(NetFx45Release < 378675))' evaluates to true.
+[2168:0C20][2016-04-25T10:30:20]i199: Detect complete, result: 0x0
+[2168:1D64][2016-04-25T10:30:22]i000: Setting numeric variable 'EulaAcceptCheckbox' to value 1
+[2168:0C20][2016-04-25T10:30:22]i200: Plan begin, 72 packages, action: Install
+[2168:0C20][2016-04-25T10:30:22]i052: Condition 'CHECK_SETUP_BLOCKED' evaluates to true.
+[2168:0C20][2016-04-25T10:30:22]w321: Skipping dependency registration on package with no dependency providers: 
+
+SetupBlocked_Install
+[2168:0C20][2016-04-25T10:30:22]i000: Setting string variable 'WixBundleLog_SetupBlocked_Install' to value 'C:\Users\guli
+
+\AppData\Local\Temp\dd_ASPNET5__20160425103020_000_SetupBlocked_Install.log'
+[2168:0C20][2016-04-25T10:30:22]i000: Setting string variable 'WixBundleRollbackLog_SetupBlocked_Install' to value 'C:
+
+\Users\guli\AppData\Local\Temp\dd_ASPNET5__20160425103020_000_SetupBlocked_Install_rollback.log'
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(((VS2015CommunityVersion >= v14.0.23107) OR (VS2015ProfessionalVersion 
+
+>= v14.0.23107) OR (VS2015EnterpriseVersion >= v14.0.23107)) OR (VS2015WebExpressVersion >= v14.0.23107))' evaluates to 
+
+true.
+[2168:0C20][2016-04-25T10:30:22]w321: Skipping dependency registration on package with no dependency providers: 
+
+Preparation_Uninstall_ASPNET
+[2168:0C20][2016-04-25T10:30:22]i000: Setting string variable 'WixBundleLog_Preparation_Uninstall_ASPNET' to value 'C:
+
+\Users\guli\AppData\Local\Temp\dd_ASPNET5__20160425103020_001_Preparation_Uninstall_ASPNET.log'
+[2168:0C20][2016-04-25T10:30:22]i000: Setting string variable 'WixBundleRollbackLog_Preparation_Uninstall_ASPNET' to value 
+
+'C:\Users\guli\AppData\Local\Temp\dd_ASPNET5__20160425103020_001_Preparation_Uninstall_ASPNET_rollback.log'
+[2168:0C20][2016-04-25T10:30:22]i052: Condition 'NOT VersionNT64 AND (OPT_DNVM = 1)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition 'VersionNT64 AND (OPT_DNVM = 1)' evaluates to true.
+[2168:0C20][2016-04-25T10:30:22]i000: Setting string variable 'WixBundleRollbackLog_DotNetVersionManager_x64' to value 
+
+'C:\Users\guli\AppData\Local\Temp\dd_ASPNET5__20160425103020_002_DotNetVersionManager_x64_rollback.log'
+[2168:0C20][2016-04-25T10:30:22]i000: Setting string variable 'WixBundleLog_DotNetVersionManager_x64' to value 'C:\Users
+
+\guli\AppData\Local\Temp\dd_ASPNET5__20160425103020_002_DotNetVersionManager_x64.log'
+[2168:0C20][2016-04-25T10:30:22]i052: Condition 'NOT VersionNT64 AND (OPT_DNX_WIN = 1)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition 'VersionNT64 AND (OPT_DNX_WIN = 1)' evaluates to true.
+[2168:0C20][2016-04-25T10:30:22]i000: Setting string variable 'WixBundleRollbackLog_DnxNetFx_x64' to value 'C:\Users\guli
+
+\AppData\Local\Temp\dd_ASPNET5__20160425103020_003_DnxNetFx_x64_rollback.log'
+[2168:0C20][2016-04-25T10:30:22]i000: Setting string variable 'WixBundleLog_DnxNetFx_x64' to value 'C:\Users\guli\AppData
+
+\Local\Temp\dd_ASPNET5__20160425103020_003_DnxNetFx_x64.log'
+[2168:0C20][2016-04-25T10:30:22]i052: Condition 'NOT VersionNT64 AND (OPT_DNX_MONO = 1)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition 'VersionNT64 AND (OPT_DNX_MONO = 1)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition 'NOT VersionNT64 AND (OPT_DNX_MONO = 1)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition 'VersionNT64 AND (OPT_DNXCORE_WIN = 1)' evaluates to true.
+[2168:0C20][2016-04-25T10:30:22]i000: Setting string variable 'WixBundleRollbackLog_DnxNetCore_x64' to value 'C:\Users
+
+\guli\AppData\Local\Temp\dd_ASPNET5__20160425103020_004_DnxNetCore_x64_rollback.log'
+[2168:0C20][2016-04-25T10:30:22]i000: Setting string variable 'WixBundleLog_DnxNetCore_x64' to value 'C:\Users\guli
+
+\AppData\Local\Temp\dd_ASPNET5__20160425103020_004_DnxNetCore_x64.log'
+[2168:0C20][2016-04-25T10:30:22]i052: Condition 'NOT VersionNT64 AND (OPT_DNXCORE_DARWIN = 1)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition 'VersionNT64 AND (OPT_DNXCORE_DARWIN = 1)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition 'NOT VersionNT64 AND (OPT_DNXCORE_LINUX = 1)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition 'VersionNT64 AND (OPT_DNXCORE_LINUX = 1)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND ((VS2015CommunityVersion >= v14.0.23107) OR 
+
+(VS2015ProfessionalVersion >= v14.0.23107) OR (VS2015EnterpriseVersion >= v14.0.23107)) AND (OPT_DNVM=1) AND 
+
+(OPT_DNX_WIN=1) AND (OPT_DNXCORE_WIN=1)' evaluates to true.
+[2168:0C20][2016-04-25T10:30:22]i000: Setting string variable 'WixBundleRollbackLog_WebToolsExtensionsVS14' to value 'C:
+
+\Users\guli\AppData\Local\Temp\dd_ASPNET5__20160425103020_005_WebToolsExtensionsVS14_rollback.log'
+[2168:0C20][2016-04-25T10:30:22]i000: Setting string variable 'WixBundleLog_WebToolsExtensionsVS14' to value 'C:\Users
+
+\guli\AppData\Local\Temp\dd_ASPNET5__20160425103020_005_WebToolsExtensionsVS14.log'
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015WebExpressVersion >= v14.0.23107) AND 
+
+(OPT_DNVM=1) AND (OPT_DNX_WIN=1) AND (OPT_DNXCORE_WIN=1)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND ((VS2015CommunityVersion >= v14.0.23107) OR 
+
+(VS2015ProfessionalVersion >= v14.0.23107) OR (VS2015EnterpriseVersion >= v14.0.23107)) AND (OPT_DNVM=1) AND 
+
+(OPT_DNX_WIN=1) AND (OPT_DNXCORE_WIN=1)' evaluates to true.
+[2168:0C20][2016-04-25T10:30:22]i000: Setting string variable 'WixBundleRollbackLog_WebToolsAzureVS14' to value 'C:\Users
+
+\guli\AppData\Local\Temp\dd_ASPNET5__20160425103020_006_WebToolsAzureVS14_rollback.log'
+[2168:0C20][2016-04-25T10:30:22]i000: Setting string variable 'WixBundleLog_WebToolsAzureVS14' to value 'C:\Users\guli
+
+\AppData\Local\Temp\dd_ASPNET5__20160425103020_006_WebToolsAzureVS14.log'
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015WebExpressVersion >= v14.0.23107) AND 
+
+(OPT_DNVM=1) AND (OPT_DNX_WIN=1) AND (OPT_DNXCORE_WIN=1)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_2052 OR 
+
+VS2015ProfessionalExists_2052 OR VS2015EnterpriseExists_2052)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_2052' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_2052 OR 
+
+VS2015ProfessionalExists_2052 OR VS2015EnterpriseExists_2052)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_2052' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1028 OR 
+
+VS2015ProfessionalExists_1028 OR VS2015EnterpriseExists_1028)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1028' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1028 OR 
+
+VS2015ProfessionalExists_1028 OR VS2015EnterpriseExists_1028)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1028' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1029 OR 
+
+VS2015ProfessionalExists_1029 OR VS2015EnterpriseExists_1029)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1029' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1029 OR 
+
+VS2015ProfessionalExists_1029 OR VS2015EnterpriseExists_1029)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1029' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1031 OR 
+
+VS2015ProfessionalExists_1031 OR VS2015EnterpriseExists_1031)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1031' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1031 OR 
+
+VS2015ProfessionalExists_1031 OR VS2015EnterpriseExists_1031)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1031' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_3082 OR 
+
+VS2015ProfessionalExists_3082 OR VS2015EnterpriseExists_3082)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_3082' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_3082 OR 
+
+VS2015ProfessionalExists_3082 OR VS2015EnterpriseExists_3082)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_3082' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1036 OR 
+
+VS2015ProfessionalExists_1036 OR VS2015EnterpriseExists_1036)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1036' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1036 OR 
+
+VS2015ProfessionalExists_1036 OR VS2015EnterpriseExists_1036)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1036' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1040 OR 
+
+VS2015ProfessionalExists_1040 OR VS2015EnterpriseExists_1040)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1040' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1040 OR 
+
+VS2015ProfessionalExists_1040 OR VS2015EnterpriseExists_1040)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1040' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1041 OR 
+
+VS2015ProfessionalExists_1041 OR VS2015EnterpriseExists_1041)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1041' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1041 OR 
+
+VS2015ProfessionalExists_1041 OR VS2015EnterpriseExists_1041)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1041' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1042 OR 
+
+VS2015ProfessionalExists_1042 OR VS2015EnterpriseExists_1042)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1042' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1042 OR 
+
+VS2015ProfessionalExists_1042 OR VS2015EnterpriseExists_1042)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1042' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1045 OR 
+
+VS2015ProfessionalExists_1045 OR VS2015EnterpriseExists_1045)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1045' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1045 OR 
+
+VS2015ProfessionalExists_1045 OR VS2015EnterpriseExists_1045)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1045' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1046 OR 
+
+VS2015ProfessionalExists_1046 OR VS2015EnterpriseExists_1046)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1046' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1046 OR 
+
+VS2015ProfessionalExists_1046 OR VS2015EnterpriseExists_1046)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1046' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1049 OR 
+
+VS2015ProfessionalExists_1049 OR VS2015EnterpriseExists_1049)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1049' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1049 OR 
+
+VS2015ProfessionalExists_1049 OR VS2015EnterpriseExists_1049)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1049' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1055 OR 
+
+VS2015ProfessionalExists_1055 OR VS2015EnterpriseExists_1055)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1055' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND (VS2015CommunityExists_1055 OR 
+
+VS2015ProfessionalExists_1055 OR VS2015EnterpriseExists_1055)' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition '(OPT_WTE = 1) AND VS2015WebExpressExists_1055' evaluates to false.
+[2168:0C20][2016-04-25T10:30:22]i052: Condition 'NOT UpdateInModify AND (((VS2015CommunityVersion >= v14.0.23107) OR 
+
+(VS2015ProfessionalVersion >= v14.0.23107) OR (VS2015EnterpriseVersion >= v14.0.23107)) OR (VS2015WebExpressVersion >= 
+
+v14.0.23107)) AND (NOT SKIP_PREPARATION)' evaluates to true.
+[2168:0C20][2016-04-25T10:30:22]w321: Skipping dependency registration on package with no dependency providers: 
+
+Preparation_ASPNET
+[2168:0C20][2016-04-25T10:30:22]i000: Setting string variable 'WixBundleLog_Preparation_ASPNET' to value 'C:\Users\guli
+
+\AppData\Local\Temp\dd_ASPNET5__20160425103020_007_Preparation_ASPNET.log'
+[2168:0C20][2016-04-25T10:30:22]i000: Setting string variable 'WixBundleRollbackLog_Preparation_ASPNET' to value 'C:
+
+\Users\guli\AppData\Local\Temp\dd_ASPNET5__20160425103020_007_Preparation_ASPNET_rollback.log'
+[2168:0C20][2016-04-25T10:30:22]i052: Condition 'CHECK_SETUP_BLOCKED' evaluates to true.
+[2168:0C20][2016-04-25T10:30:22]w321: Skipping dependency registration on package with no dependency providers: 
+
+SetupBlocked_Uninstall
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: SetupBlocked_Install, state: Absent, default requested: Present, ba 
+
+requested: Present, execute: Install, rollback: Uninstall, cache: Yes, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: Preparation_Uninstall_ASPNET, state: Absent, default requested: 
+
+Present, ba requested: Present, execute: Install, rollback: Uninstall, cache: Yes, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: DotNetVersionManager_x86, state: Absent, default requested: Absent, 
+
+ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: DotNetVersionManager_x64, state: Absent, default requested: 
+
+Present, ba requested: Present, execute: Install, rollback: Uninstall, cache: Yes, uncache: No, dependency: Register
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: DnxNetFx_x86, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: DnxNetFx_x64, state: Absent, default requested: Present, ba 
+
+requested: Present, execute: Install, rollback: Uninstall, cache: Yes, uncache: No, dependency: Register
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: DnxNetFxMono_x86, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: DnxNetFxMono_x64, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: DnxNetCore_x86, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: DnxNetCore_x64, state: Absent, default requested: Present, ba 
+
+requested: Present, execute: Install, rollback: Uninstall, cache: Yes, uncache: No, dependency: Register
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: DnxNetCoreDarwin_x86, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: DnxNetCoreDarwin_x64, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: DnxNetCoreLinux_x86, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: DnxNetCoreLinux_x64, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVS14, state: Absent, default requested: Present, 
+
+ba requested: Present, execute: Install, rollback: Uninstall, cache: Yes, uncache: No, dependency: Register
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVWD14, state: Absent, default requested: Absent, 
+
+ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVS14, state: Absent, default requested: Present, ba 
+
+requested: Present, execute: Install, rollback: Uninstall, cache: Yes, uncache: No, dependency: Register
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVWD14, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVS14_chs, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVWD14_chs, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVS14_chs, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVWD14_chs, state: Absent, default requested: Absent, 
+
+ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVS14_cht, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVWD14_cht, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVS14_cht, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVWD14_cht, state: Absent, default requested: Absent, 
+
+ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVS14_csy, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVWD14_csy, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVS14_csy, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVWD14_csy, state: Absent, default requested: Absent, 
+
+ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVS14_deu, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVWD14_deu, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVS14_deu, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVWD14_deu, state: Absent, default requested: Absent, 
+
+ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVS14_esn, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVWD14_esn, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVS14_esn, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVWD14_esn, state: Absent, default requested: Absent, 
+
+ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVS14_fra, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVWD14_fra, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVS14_fra, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVWD14_fra, state: Absent, default requested: Absent, 
+
+ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVS14_ita, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVWD14_ita, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVS14_ita, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVWD14_ita, state: Absent, default requested: Absent, 
+
+ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVS14_jpn, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVWD14_jpn, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVS14_jpn, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVWD14_jpn, state: Absent, default requested: Absent, 
+
+ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVS14_kor, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVWD14_kor, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVS14_kor, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVWD14_kor, state: Absent, default requested: Absent, 
+
+ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVS14_plk, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVWD14_plk, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVS14_plk, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVWD14_plk, state: Absent, default requested: Absent, 
+
+ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVS14_ptb, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVWD14_ptb, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVS14_ptb, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVWD14_ptb, state: Absent, default requested: Absent, 
+
+ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVS14_rus, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVWD14_rus, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVS14_rus, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVWD14_rus, state: Absent, default requested: Absent, 
+
+ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVS14_trk, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsExtensionsVWD14_trk, state: Absent, default requested: 
+
+Absent, ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVS14_trk, state: Absent, default requested: Absent, ba 
+
+requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: WebToolsAzureVWD14_trk, state: Absent, default requested: Absent, 
+
+ba requested: Absent, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: Preparation_ASPNET, state: Absent, default requested: Present, ba 
+
+requested: Present, execute: Install, rollback: Uninstall, cache: Yes, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i201: Planned package: SetupBlocked_Uninstall, state: Present, default requested: Present, 
+
+ba requested: Present, execute: None, rollback: None, cache: No, uncache: No, dependency: None
+[2168:0C20][2016-04-25T10:30:22]i299: Plan complete, result: 0x0
+[2168:0C20][2016-04-25T10:30:22]i300: Apply begin
+[2168:0C20][2016-04-25T10:30:22]i010: Launching elevated engine process.
+[2168:0C20][2016-04-25T10:30:23]i011: Launched elevated engine process.
+[2168:0C20][2016-04-25T10:30:24]i012: Connected to elevated engine.
+[20EC:1E2C][2016-04-25T10:30:24]i358: Pausing automatic updates.
+[20EC:1E2C][2016-04-25T10:30:24]i359: Paused automatic updates.
+[20EC:1E2C][2016-04-25T10:30:24]i360: Creating a system restore point.
+[20EC:1E2C][2016-04-25T10:30:33]i361: Created a system restore point.
+[20EC:1E2C][2016-04-25T10:30:33]i370: Session begin, registration key: SOFTWARE\Microsoft\Windows\CurrentVersion
+
+\Uninstall\{ce3f8ea8-1d35-48c9-a8c2-dd3011cd434b}, options: 0x7, disable resume: No
+[20EC:1E2C][2016-04-25T10:30:33]i000: Caching bundle from: 'C:\Users\guli\AppData\Local\Temp\{ce3f8ea8-1d35-48c9-a8c2-
+
+dd3011cd434b}\.be\AspNet5.ENU.RC1_Update1_KB3137909.exe' to: 'C:\ProgramData\Package Cache\{ce3f8ea8-1d35-48c9-a8c2-
+
+dd3011cd434b}\AspNet5.ENU.RC1_Update1_KB3137909.exe'
+[20EC:1E2C][2016-04-25T10:30:33]i320: Registering bundle dependency provider: {6f87c276-35ab-4e52-acd7-0198970e9d8e}, 
+
+version: 1.0.20204.0
+[20EC:1E2C][2016-04-25T10:30:33]i371: Updating session, registration key: SOFTWARE\Microsoft\Windows\CurrentVersion
+
+\Uninstall\{ce3f8ea8-1d35-48c9-a8c2-dd3011cd434b}, resume: Active, restart initiated: No, disable resume: No
+[20EC:1C78][2016-04-25T10:30:33]i305: Verified acquired payload: SetupBlocked_Install at path: C:\ProgramData\Package 
+
+Cache\.unverified\SetupBlocked_Install, moving to: C:\ProgramData\Package Cache\aaf6a4f0-adde-3e1c-83aa-
+
+8e3772843c50\SetupBlocked_rc1.exe.
+[20EC:1C78][2016-04-25T10:30:33]i305: Verified acquired payload: Preparation_Uninstall_ASPNET at path: C:\ProgramData
+
+\Package Cache\.unverified\Preparation_Uninstall_ASPNET, moving to: C:\ProgramData\Package Cache\b5a923d4-a497-3a7b-b4a7-
+
+1cafadd39c95\Preparation_rc1.exe.
+[2168:1C9C][2016-04-25T10:30:33]w343: Prompt for source of package: DotNetVersionManager_x64, payload: 
+
+DotNetVersionManager_x64, path: C:\Users\guli\Desktop\temp\DotNetVersionManager-x64_rc1.msi
+[2168:1C9C][2016-04-25T10:30:33]i338: Acquiring package: DotNetVersionManager_x64, payload: DotNetVersionManager_x64, 
+
+download from: https://go.microsoft.com/fwlink/?LinkId=708515
+[20EC:1C78][2016-04-25T10:30:34]e000: Error 0x80091007: Hash mismatch for path: C:\ProgramData\Package Cache\.unverified
+
+\DotNetVersionManager_x64, expected: 7D5ED0F9A713E9684475D43394F6082C328FE879, actual: 
+
+DA39A3EE5E6B4B0D3255BFEF95601890AFD80709
+[20EC:1C78][2016-04-25T10:30:34]e000: Error 0x80091007: Failed to verify hash of payload: DotNetVersionManager_x64
+[20EC:1C78][2016-04-25T10:30:34]e310: Failed to verify payload: DotNetVersionManager_x64 at path: C:\ProgramData\Package 
+
+Cache\.unverified\DotNetVersionManager_x64, error: 0x80091007. Deleting file.
+[20EC:1C78][2016-04-25T10:30:34]e000: Error 0x80091007: Failed to cache payload: DotNetVersionManager_x64
+[2168:1C9C][2016-04-25T10:30:34]e314: Failed to cache payload: DotNetVersionManager_x64 from working path: C:\Users\guli
+
+\AppData\Local\Temp\{ce3f8ea8-1d35-48c9-a8c2-dd3011cd434b}\DotNetVersionManager_x64, error: 0x80091007.
+[2168:1C9C][2016-04-25T10:30:34]e349: Application requested retry of payload: DotNetVersionManager_x64, encountered error: 
+
+0x80091007. Retrying...
+[2168:1C9C][2016-04-25T10:30:34]w343: Prompt for source of package: DotNetVersionManager_x64, payload: 
+
+DotNetVersionManager_x64, path: C:\Users\guli\Desktop\temp\DotNetVersionManager-x64_rc1.msi
+[2168:1C9C][2016-04-25T10:30:37]i338: Acquiring package: DotNetVersionManager_x64, payload: DotNetVersionManager_x64, 
+
+download from: https://go.microsoft.com/fwlink/?LinkId=708515
+[20EC:1C78][2016-04-25T10:30:37]e000: Error 0x80091007: Hash mismatch for path: C:\ProgramData\Package Cache\.unverified
+
+\DotNetVersionManager_x64, expected: 7D5ED0F9A713E9684475D43394F6082C328FE879, actual: 
+
+DA39A3EE5E6B4B0D3255BFEF95601890AFD80709
+[20EC:1C78][2016-04-25T10:30:37]e000: Error 0x80091007: Failed to verify hash of payload: DotNetVersionManager_x64
+[20EC:1C78][2016-04-25T10:30:37]e310: Failed to verify payload: DotNetVersionManager_x64 at path: C:\ProgramData\Package 
+
+Cache\.unverified\DotNetVersionManager_x64, error: 0x80091007. Deleting file.
+[20EC:1C78][2016-04-25T10:30:37]e000: Error 0x80091007: Failed to cache payload: DotNetVersionManager_x64
+[2168:1C9C][2016-04-25T10:30:37]e314: Failed to cache payload: DotNetVersionManager_x64 from working path: C:\Users\guli
+
+\AppData\Local\Temp\{ce3f8ea8-1d35-48c9-a8c2-dd3011cd434b}\DotNetVersionManager_x64, error: 0x80091007.
+[2168:1C9C][2016-04-25T10:30:37]e349: Application requested retry of payload: DotNetVersionManager_x64, encountered error: 
+
+0x80091007. Retrying...
+[2168:1C9C][2016-04-25T10:30:37]w343: Prompt for source of package: DotNetVersionManager_x64, payload: 
+
+DotNetVersionManager_x64, path: C:\Users\guli\Desktop\temp\DotNetVersionManager-x64_rc1.msi
+[2168:1C9C][2016-04-25T10:30:40]i338: Acquiring package: DotNetVersionManager_x64, payload: DotNetVersionManager_x64, 
+
+download from: https://go.microsoft.com/fwlink/?LinkId=708515
+[20EC:1C78][2016-04-25T10:30:40]e000: Error 0x80091007: Hash mismatch for path: C:\ProgramData\Package Cache\.unverified
+
+\DotNetVersionManager_x64, expected: 7D5ED0F9A713E9684475D43394F6082C328FE879, actual: 
+
+DA39A3EE5E6B4B0D3255BFEF95601890AFD80709
+[20EC:1C78][2016-04-25T10:30:40]e000: Error 0x80091007: Failed to verify hash of payload: DotNetVersionManager_x64
+[20EC:1C78][2016-04-25T10:30:40]e310: Failed to verify payload: DotNetVersionManager_x64 at path: C:\ProgramData\Package 
+
+Cache\.unverified\DotNetVersionManager_x64, error: 0x80091007. Deleting file.
+[20EC:1C78][2016-04-25T10:30:40]e000: Error 0x80091007: Failed to cache payload: DotNetVersionManager_x64
+[2168:1C9C][2016-04-25T10:30:40]e314: Failed to cache payload: DotNetVersionManager_x64 from working path: C:\Users\guli
+
+\AppData\Local\Temp\{ce3f8ea8-1d35-48c9-a8c2-dd3011cd434b}\DotNetVersionManager_x64, error: 0x80091007.
+[20EC:1C78][2016-04-25T10:30:40]i351: Removing cached package: Preparation_Uninstall_ASPNET, from path: C:\ProgramData
+
+\Package Cache\b5a923d4-a497-3a7b-b4a7-1cafadd39c95\
+[20EC:1C78][2016-04-25T10:30:40]i351: Removing cached package: SetupBlocked_Install, from path: C:\ProgramData\Package 
+
+Cache\aaf6a4f0-adde-3e1c-83aa-8e3772843c50\
+[2168:0C20][2016-04-25T10:30:40]e000: Error 0x80091007: Failed while caching, aborting execution.
+[20EC:1E2C][2016-04-25T10:30:40]i372: Session end, registration key: SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall
+
+\{ce3f8ea8-1d35-48c9-a8c2-dd3011cd434b}, resume: None, restart: None, disable resume: No
+[20EC:1E2C][2016-04-25T10:30:40]i330: Removed bundle dependency provider: {6f87c276-35ab-4e52-acd7-0198970e9d8e}
+[20EC:1E2C][2016-04-25T10:30:40]i352: Removing cached bundle: {ce3f8ea8-1d35-48c9-a8c2-dd3011cd434b}, from path: C:
+
+\ProgramData\Package Cache\{ce3f8ea8-1d35-48c9-a8c2-dd3011cd434b}\
+[20EC:1E2C][2016-04-25T10:30:40]i371: Updating session, registration key: SOFTWARE\Microsoft\Windows\CurrentVersion
+
+\Uninstall\{ce3f8ea8-1d35-48c9-a8c2-dd3011cd434b}, resume: None, restart initiated: No, disable resume: No
+[2168:0C20][2016-04-25T10:30:40]i399: Apply complete, result: 0x80091007, restart: None, ba requested restart:  No
