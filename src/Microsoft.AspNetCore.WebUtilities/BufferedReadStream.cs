@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     if (builder.Length > lengthLimit)
                     {
-                        throw new InvalidOperationException("Line length limit exceeded: " + lengthLimit.ToString());
+                        throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
                     }
                     ProcessLineChar(builder, ref foundCR, ref foundCRLF);
                 }
@@ -372,7 +372,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     if (builder.Length > lengthLimit)
                     {
-                        throw new InvalidOperationException("Line length limit exceeded: " + lengthLimit.ToString());
+                        throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
                     }
 
                     ProcessLineChar(builder, ref foundCR, ref foundCRLF);

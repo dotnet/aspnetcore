@@ -57,6 +57,8 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public bool FinalBoundaryFound { get; private set; }
 
+        public long? LengthLimit { get; set; }
+
         public override bool CanRead
         {
             get { return true; }
@@ -159,6 +161,10 @@ namespace Microsoft.AspNetCore.WebUtilities
             if (_observedLength < _position)
             {
                 _observedLength = _position;
+                if (LengthLimit.HasValue && _observedLength > LengthLimit.Value)
+                {
+                    throw new InvalidDataException($"Multipart body length limit {LengthLimit.Value} exceeded.");
+                }
             }
             return read;
         }

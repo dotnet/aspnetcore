@@ -19,6 +19,13 @@ namespace Microsoft.AspNetCore.WebUtilities
 "\r\n" +
 "text default\r\n" +
 "--9051914041544843365972754266--\r\n";
+        private const string OnePartBodyTwoHeaders =
+"--9051914041544843365972754266\r\n" +
+"Content-Disposition: form-data; name=\"text\"\r\n" +
+"Custom-header: custom-value\r\n" +
+"\r\n" +
+"text default\r\n" +
+"--9051914041544843365972754266--\r\n";
         private const string OnePartBodyWithTrailingWhitespace =
 "--9051914041544843365972754266             \r\n" +
 "Content-Disposition: form-data; name=\"text\"\r\n" +
@@ -113,6 +120,32 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.Equal("text default", Encoding.ASCII.GetString(buffer.ToArray()));
 
             Assert.Null(await reader.ReadNextSectionAsync());
+        }
+
+        [Fact]
+        public async Task MutipartReader_HeaderCountExceeded_Throws()
+        {
+            var stream = MakeStream(OnePartBodyTwoHeaders);
+            var reader = new MultipartReader(Boundary, stream)
+            {
+                HeadersCountLimit = 1,
+            };
+
+            var exception = await Assert.ThrowsAsync<InvalidDataException>(() => reader.ReadNextSectionAsync());
+            Assert.Equal("Multipart headers count limit 1 exceeded.", exception.Message);
+        }
+
+        [Fact]
+        public async Task MutipartReader_HeadersLengthExceeded_Throws()
+        {
+            var stream = MakeStream(OnePartBodyTwoHeaders);
+            var reader = new MultipartReader(Boundary, stream)
+            {
+                HeadersLengthLimit = 60,
+            };
+
+            var exception = await Assert.ThrowsAsync<InvalidDataException>(() => reader.ReadNextSectionAsync());
+            Assert.Equal("Line length limit 17 exceeded.", exception.Message);
         }
 
         [Fact]

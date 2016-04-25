@@ -5,6 +5,7 @@ using System;
 using System.Text;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.ObjectPool;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -12,20 +13,26 @@ namespace Microsoft.AspNetCore.Http
     {
         private readonly ObjectPool<StringBuilder> _builderPool;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly FormOptions _formOptions;
 
-        public HttpContextFactory(ObjectPoolProvider poolProvider)
-            : this(poolProvider, httpContextAccessor: null)
+        public HttpContextFactory(ObjectPoolProvider poolProvider, IOptions<FormOptions> formOptions)
+            : this(poolProvider, formOptions, httpContextAccessor: null)
         {
         }
 
-        public HttpContextFactory(ObjectPoolProvider poolProvider, IHttpContextAccessor httpContextAccessor)
+        public HttpContextFactory(ObjectPoolProvider poolProvider, IOptions<FormOptions> formOptions, IHttpContextAccessor httpContextAccessor)
         {
             if (poolProvider == null)
             {
                 throw new ArgumentNullException(nameof(poolProvider));
             }
+            if (formOptions == null)
+            {
+                throw new ArgumentNullException(nameof(formOptions));
+            }
 
             _builderPool = poolProvider.CreateStringBuilderPool();
+            _formOptions = formOptions.Value;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -44,6 +51,9 @@ namespace Microsoft.AspNetCore.Http
             {
                 _httpContextAccessor.HttpContext = httpContext;
             }
+
+            var formFeature = new FormFeature(httpContext.Request, _formOptions);
+            featureCollection.Set<IFormFeature>(formFeature);
 
             return httpContext;
         }

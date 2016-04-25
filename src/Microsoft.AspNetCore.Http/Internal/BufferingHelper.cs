@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             }
         }
 
-        public static HttpRequest EnableRewind(this HttpRequest request, int bufferThreshold = DefaultBufferThreshold)
+        public static HttpRequest EnableRewind(this HttpRequest request, int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null)
         {
             if (request == null)
             {
@@ -48,14 +48,15 @@ namespace Microsoft.AspNetCore.Http.Internal
             var body = request.Body;
             if (!body.CanSeek)
             {
-                var fileStream = new FileBufferingReadStream(body, bufferThreshold, _getTempDirectory);
+                var fileStream = new FileBufferingReadStream(body, bufferThreshold, bufferLimit, _getTempDirectory);
                 request.Body = fileStream;
                 request.HttpContext.Response.RegisterForDispose(fileStream);
             }
             return request;
         }
 
-        public static MultipartSection EnableRewind(this MultipartSection section, Action<IDisposable> registerForDispose, int bufferThreshold = DefaultBufferThreshold)
+        public static MultipartSection EnableRewind(this MultipartSection section, Action<IDisposable> registerForDispose,
+            int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null)
         {
             if (section == null)
             {
@@ -69,7 +70,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             var body = section.Body;
             if (!body.CanSeek)
             {
-                var fileStream = new FileBufferingReadStream(body, bufferThreshold, _getTempDirectory);
+                var fileStream = new FileBufferingReadStream(body, bufferThreshold, bufferLimit, _getTempDirectory);
                 section.Body = fileStream;
                 registerForDispose(fileStream);
             }

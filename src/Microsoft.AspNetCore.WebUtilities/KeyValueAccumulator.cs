@@ -63,6 +63,8 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public bool HasValues => _accumulator != null;
 
+        public int Count => _accumulator?.Count ?? 0;
+
         public Dictionary<string, StringValues> GetResults()
         {
             if (_expandingAccumulator != null)
