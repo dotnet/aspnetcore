@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,19 +21,19 @@ namespace MusicStore
 {
     public class StartupOpenIdConnectTesting
     {
-        private readonly IRuntimeEnvironment _runtimeEnvironment;
+        private readonly Platform _platform;
 
-        public StartupOpenIdConnectTesting(IApplicationEnvironment env, IRuntimeEnvironment runtimeEnvironment)
+        public StartupOpenIdConnectTesting(IHostingEnvironment env)
         {
             //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources,
             //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
             var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ApplicationBasePath)
+                .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("config.json")
                 .AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
 
             Configuration = builder.Build();
-            _runtimeEnvironment = runtimeEnvironment;
+            _platform = new Platform();
         }
 
         public IConfiguration Configuration { get; private set; }
@@ -43,7 +43,7 @@ namespace MusicStore
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
             //Sql client not available on mono
-            var useInMemoryStore = !_runtimeEnvironment.OperatingSystem.Equals("Windows", StringComparison.OrdinalIgnoreCase);
+            var useInMemoryStore = _platform.IsRunningOnMono;
 
             // Add EF services to the services container
             if (useInMemoryStore)
