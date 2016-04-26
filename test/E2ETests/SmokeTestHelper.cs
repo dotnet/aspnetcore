@@ -50,9 +50,6 @@ namespace E2ETests
                 Console.WriteLine("Verifying duplicate user email registration");
                 await validator.RegisterExistingUser(generatedEmail);
 
-                Console.WriteLine("Verifying user logout");
-                await validator.SignOutUser(generatedEmail);
-
                 Console.WriteLine("Verifying incorrect password login");
                 await validator.SignInWithInvalidPassword(generatedEmail, "InvalidPassword~1");
 
@@ -89,7 +86,7 @@ namespace E2ETests
                 Console.WriteLine("Verifying status code pages for non-existing items");
                 await validator.VerifyStatusCodePages();
 
-                Console.WriteLine("Verying non-admin view of an album");
+                Console.WriteLine("Verifying non-admin view of an album");
                 await validator.GetAlbumDetailsFromStore(albumId, albumName);
 
                 Console.WriteLine("Verifying adding album to a cart");
