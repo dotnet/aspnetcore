@@ -26,12 +26,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 #endif
         }
 
-        public static Task<int> GetCancelledZeroTask()
+        public static Task<int> GetCancelledZeroTask(CancellationToken cancellationToken = default(CancellationToken))
         {
-            // Task<int>.FromCanceled doesn't return Task<int>
+#if NETSTANDARD1_3
+            return Task.FromCanceled<int>(cancellationToken);
+#else
             var tcs = new TaskCompletionSource<int>();
             tcs.TrySetCanceled();
             return tcs.Task;
+#endif
         }
     }
 }

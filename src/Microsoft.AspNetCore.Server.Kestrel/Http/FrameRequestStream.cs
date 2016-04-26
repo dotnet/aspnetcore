@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 case FrameStreamState.Open:
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        return TaskUtilities.GetCancelledZeroTask();
+                        return TaskUtilities.GetCancelledZeroTask(cancellationToken);
                     }
                     break;
                 case FrameStreamState.Closed:
