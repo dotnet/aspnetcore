@@ -29,12 +29,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     /// </summary>
     public class DefaultRoslynCompilationService : ICompilationService
     {
+        private readonly IHostingEnvironment _hostingEnvironment;
         private readonly IFileProvider _fileProvider;
         private readonly Action<RoslynCompilationContext> _compilationCallback;
         private readonly CSharpParseOptions _parseOptions;
         private readonly CSharpCompilationOptions _compilationOptions;
         private readonly ILogger _logger;
-        private readonly DependencyContext _dependencyContext;
         private object _applicationReferencesLock = new object();
         private bool _applicationReferencesInitialized;
         private List<MetadataReference> _applicationReferences;
@@ -51,26 +51,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             IOptions<RazorViewEngineOptions> optionsAccessor,
             IRazorViewEngineFileProviderAccessor fileProviderAccessor,
             ILoggerFactory loggerFactory)
-            : this(
-                  GetDependencyContext(environment),
-                  optionsAccessor.Value,
-                  fileProviderAccessor,
-                  loggerFactory)
         {
-        }
-
-        // Internal for unit testing
-        internal DefaultRoslynCompilationService(
-            DependencyContext dependencyContext,
-            RazorViewEngineOptions viewEngineOptions,
-            IRazorViewEngineFileProviderAccessor fileProviderAccessor,
-            ILoggerFactory loggerFactory)
-        {
-            _dependencyContext = dependencyContext;
+            _hostingEnvironment = environment;
             _fileProvider = fileProviderAccessor.FileProvider;
-            _compilationCallback = viewEngineOptions.CompilationCallback;
-            _parseOptions = viewEngineOptions.ParseOptions;
-            _compilationOptions = viewEngineOptions.CompilationOptions;
+            _compilationCallback = optionsAccessor.Value.CompilationCallback;
+            _parseOptions = optionsAccessor.Value.ParseOptions;
+            _compilationOptions = optionsAccessor.Value.CompilationOptions;
             _logger = loggerFactory.CreateLogger<DefaultRoslynCompilationService>();
         }
 
@@ -165,6 +151,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             }
         }
 
+        /// <summary>
+        /// Gets the <see cref="DependencyContext"/>.
+        /// </summary>
+        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
+        /// <returns>The <see cref="DependencyContext"/>.</returns>
+        protected virtual DependencyContext GetDependencyContext(IHostingEnvironment hostingEnvironment)
+        {
+            if (hostingEnvironment.ApplicationName != null)
+            {
+                var applicationAssembly = Assembly.Load(new AssemblyName(hostingEnvironment.ApplicationName));
+                return DependencyContext.Load(applicationAssembly);
+            }
+
+            return null;
+        }
+
         private Assembly LoadStream(MemoryStream assemblyStream, MemoryStream pdbStream)
         {
 #if NET451
@@ -241,16 +243,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private List<MetadataReference> GetApplicationReferences()
         {
             var metadataReferences = new List<MetadataReference>();
-            if (_dependencyContext == null)
+            var dependencyContext = GetDependencyContext(_hostingEnvironment);
+            if (dependencyContext == null)
             {
                 // Avoid null ref if the entry point does not have DependencyContext specified.
                 return metadataReferences;
             }
 
             var libraryPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            for (var i = 0; i < _dependencyContext.CompileLibraries.Count; i++)
+            for (var i = 0; i < dependencyContext.CompileLibraries.Count; i++)
             {
-                var library = _dependencyContext.CompileLibraries[i];
+                var library = dependencyContext.CompileLibraries[i];
                 IEnumerable<string> referencePaths;
                 try
                 {
@@ -321,17 +324,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 mappedLineSpan.StartLinePosition.Character + 1,
                 mappedLineSpan.EndLinePosition.Line + 1,
                 mappedLineSpan.EndLinePosition.Character + 1);
-        }
-
-        private static DependencyContext GetDependencyContext(IHostingEnvironment environment)
-        {
-            if (environment.ApplicationName != null)
-            {
-                var applicationAssembly = Assembly.Load(new AssemblyName(environment.ApplicationName));
-                return DependencyContext.Load(applicationAssembly);
-            }
-
-            return null;
         }
     }
 }

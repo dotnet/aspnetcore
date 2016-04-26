@@ -4,12 +4,14 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -24,11 +26,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var content = @"
 public class MyTestType  {}";
 
-            var compilationService = new DefaultRoslynCompilationService(
+            var compilationService = new TestableRoslynCompilationService(
                 GetDependencyContext(),
                 GetOptions(),
-                GetFileProviderAccessor(),
-                NullLoggerFactory.Instance);
+                GetFileProviderAccessor());
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
                 "some-relative-path");
@@ -52,11 +53,10 @@ this should fail";
             var fileProvider = new TestFileProvider();
             var fileInfo = fileProvider.AddFile(viewPath, fileContent);
 
-            var compilationService = new DefaultRoslynCompilationService(
+            var compilationService = new TestableRoslynCompilationService(
                 GetDependencyContext(),
                 GetOptions(),
-                GetFileProviderAccessor(fileProvider),
-                NullLoggerFactory.Instance);
+                GetFileProviderAccessor(fileProvider));
             var relativeFileInfo = new RelativeFileInfo(fileInfo, "some-relative-path");
 
             // Act
@@ -77,11 +77,10 @@ this should fail";
             var fileContent = "file content";
             var content = @"this should fail";
 
-            var compilationService = new DefaultRoslynCompilationService(
+            var compilationService = new TestableRoslynCompilationService(
                 GetDependencyContext(),
                 GetOptions(),
-                GetFileProviderAccessor(),
-                NullLoggerFactory.Instance);
+                GetFileProviderAccessor());
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { Content = fileContent },
                 "some-relative-path");
@@ -113,11 +112,10 @@ this should fail";
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(path, mockFileInfo.Object);
 
-            var compilationService = new DefaultRoslynCompilationService(
+            var compilationService = new TestableRoslynCompilationService(
                 GetDependencyContext(),
                 GetOptions(),
-                GetFileProviderAccessor(),
-                NullLoggerFactory.Instance);
+                GetFileProviderAccessor());
             var relativeFileInfo = new RelativeFileInfo(mockFileInfo.Object, path);
 
             // Act
@@ -146,11 +144,10 @@ public class MyNonCustomDefinedClass {}
             var options = GetOptions();
             options.ParseOptions = options.ParseOptions.WithPreprocessorSymbols("MY_CUSTOM_DEFINE");
 
-            var compilationService = new DefaultRoslynCompilationService(
+            var compilationService = new TestableRoslynCompilationService(
                  GetDependencyContext(),
                  options,
-                 GetFileProviderAccessor(),
-                 NullLoggerFactory.Instance);
+                 GetFileProviderAccessor());
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
                 "some-relative-path");
@@ -174,11 +171,10 @@ public class MyNonCustomDefinedClass {}
             var options = new RazorViewEngineOptions();
             options.FileProviders.Add(fileProvider);
 
-            var compilationService = new DefaultRoslynCompilationService(
+            var compilationService = new TestableRoslynCompilationService(
                  GetDependencyContext(),
                  options,
-                 GetFileProviderAccessor(fileProvider),
-                 NullLoggerFactory.Instance);
+                 GetFileProviderAccessor(fileProvider));
 
             var assemblyName = "random-assembly-name";
 
@@ -261,11 +257,10 @@ public class MyNonCustomDefinedClass {}
             var content = "public class MyTestType  {}";
             RoslynCompilationContext usedCompilation = null;
 
-            var compilationService = new DefaultRoslynCompilationService(
+            var compilationService = new TestableRoslynCompilationService(
                  GetDependencyContext(),
                  GetOptions(callback: c => usedCompilation = c),
-                 GetFileProviderAccessor(),
-                 NullLoggerFactory.Instance);
+                 GetFileProviderAccessor());
 
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
@@ -283,11 +278,10 @@ public class MyNonCustomDefinedClass {}
         {
             // Arrange
             var content = "public class MyTestType  {}";
-            var compilationService = new DefaultRoslynCompilationService(
+            var compilationService = new TestableRoslynCompilationService(
                 dependencyContext: null,
                 viewEngineOptions: GetOptions(),
-                fileProviderAccessor: GetFileProviderAccessor(),
-                loggerFactory: NullLoggerFactory.Instance);
+                fileProviderAccessor: GetFileProviderAccessor());
 
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
@@ -313,11 +307,10 @@ public class MyNonCustomDefinedClass {}
                 new CompilationLibrary[0],
                 new RuntimeLibrary[0],
                 Enumerable.Empty<RuntimeFallbacks>());
-            var compilationService = new DefaultRoslynCompilationService(
+            var compilationService = new TestableRoslynCompilationService(
                 dependencyContext: dependencyContext,
                 viewEngineOptions: GetOptions(),
-                fileProviderAccessor: GetFileProviderAccessor(),
-                loggerFactory: NullLoggerFactory.Instance);
+                fileProviderAccessor: GetFileProviderAccessor());
 
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
@@ -341,11 +334,10 @@ public class MyNonCustomDefinedClass {}
                 context.Compilation = context.Compilation.RemoveAllReferences();
             });
             var content = "public class MyTestType  {}";
-            var compilationService = new DefaultRoslynCompilationService(
+            var compilationService = new TestableRoslynCompilationService(
                 dependencyContext: GetDependencyContext(),
                 viewEngineOptions: options,
-                fileProviderAccessor: GetFileProviderAccessor(),
-                loggerFactory: NullLoggerFactory.Instance);
+                fileProviderAccessor: GetFileProviderAccessor());
 
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
@@ -371,11 +363,10 @@ public class MyNonCustomDefinedClass {}
                     .AddReferences(MetadataReference.CreateFromFile(assemblyLocation));
             });
             var content = "public class MyTestType  {}";
-            var compilationService = new DefaultRoslynCompilationService(
+            var compilationService = new TestableRoslynCompilationService(
                 dependencyContext: null,
                 viewEngineOptions: options,
-                fileProviderAccessor: GetFileProviderAccessor(),
-                loggerFactory: NullLoggerFactory.Instance);
+                fileProviderAccessor: GetFileProviderAccessor());
 
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
@@ -421,6 +412,34 @@ public class MyNonCustomDefinedClass {}
         {
             var assembly = typeof(DefaultRoslynCompilationServiceTest).GetTypeInfo().Assembly;
             return DependencyContext.Load(assembly);
+        }
+
+        private class TestableRoslynCompilationService : DefaultRoslynCompilationService
+        {
+            private readonly DependencyContext _dependencyContext;
+
+            public TestableRoslynCompilationService(
+                DependencyContext dependencyContext,
+                RazorViewEngineOptions viewEngineOptions,
+                IRazorViewEngineFileProviderAccessor fileProviderAccessor)
+                : base(
+                      Mock.Of<IHostingEnvironment>(),
+                      GetAccessor(viewEngineOptions),
+                      fileProviderAccessor,
+                      NullLoggerFactory.Instance)
+            {
+                _dependencyContext = dependencyContext;
+            }
+
+            private static IOptions<RazorViewEngineOptions> GetAccessor(RazorViewEngineOptions options)
+            {
+                var optionsAccessor = new Mock<IOptions<RazorViewEngineOptions>>();
+                optionsAccessor.SetupGet(a => a.Value).Returns(options);
+                return optionsAccessor.Object;
+            }
+
+            protected override DependencyContext GetDependencyContext(IHostingEnvironment hostingEnvironment)
+                => _dependencyContext;
         }
     }
 }
