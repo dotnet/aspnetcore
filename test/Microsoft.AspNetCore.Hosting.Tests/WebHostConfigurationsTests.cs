@@ -11,14 +11,6 @@ namespace Microsoft.AspNetCore.Hosting.Tests
     public class WebHostConfigurationTests
     {
         [Fact]
-        public void DefaultDoesNotCaptureStartupErrors()
-        {
-            var config = new WebHostOptions(WebHostConfiguration.GetDefault());
-
-            Assert.False(config.CaptureStartupErrors);
-        }
-
-        [Fact]
         public void ReadsParametersCorrectly()
         {
             var parameters = new Dictionary<string, string>()

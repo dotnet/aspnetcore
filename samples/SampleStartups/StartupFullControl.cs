@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -13,7 +14,14 @@ namespace SampleStartups
     {
         public static void Main(string[] args)
         {
+            var config = new ConfigurationBuilder()
+                .AddCommandLine(args)
+                .AddEnvironmentVariables(prefix: "ASPNETCORE_")
+                .AddJsonFile("hosting.json", optional: true)
+                .Build();
+
             var host = new WebHostBuilder()
+                .UseConfiguration(config) // Default set of configurations to use, may be subsequently overridden 
                 .UseServer("Microsoft.AspNetCore.Server.Kestrel") // Set the server manually
                 .UseContentRoot(Directory.GetCurrentDirectory()) // Override the content root with the current directory
                 .UseUrls("http://*:1000", "https://*:902")

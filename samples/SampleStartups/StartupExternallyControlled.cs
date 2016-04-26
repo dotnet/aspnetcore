@@ -36,8 +36,9 @@ namespace SampleStartups
         public void Start()
         {
             _host = new WebHostBuilder()
-                    .UseStartup<StartupExternallyControlled>()
-                    .Start(_urls.ToArray());
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseStartup<StartupExternallyControlled>()
+                .Start(_urls.ToArray());
         }
 
         public void Stop()

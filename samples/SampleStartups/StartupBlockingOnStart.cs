@@ -2,6 +2,7 @@ using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 // Note that this sample will not run. It is only here to illustrate usage patterns.
@@ -28,8 +29,10 @@ namespace SampleStartups
         // Entry point for the application.
         public static void Main(string[] args)
         {
+            var config = new ConfigurationBuilder().AddCommandLine(args).Build();
+
             var host = new WebHostBuilder()
-                .UseDefaultHostingConfiguration(args)
+                .UseConfiguration(config)
                 .UseStartup<StartupBlockingOnStart>()
                 .Build();
 

@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,27 +13,6 @@ namespace Microsoft.AspNetCore.Hosting
     public static class WebHostBuilderExtensions
     {
         private static readonly string ServerUrlsSeparator = ";";
-
-        /// <summary>
-        /// Use the default hosting configuration settings on the web host.
-        /// </summary>
-        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
-        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public static IWebHostBuilder UseDefaultHostingConfiguration(this IWebHostBuilder hostBuilder)
-        {
-            return hostBuilder.UseDefaultHostingConfiguration(args: null);
-        }
-
-        /// <summary>
-        /// Use the default hosting configuration settings on the web host and allow for override by command line arguments.
-        /// </summary>
-        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
-        /// <param name="args">The command line arguments used to override default settings.</param>
-        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public static IWebHostBuilder UseDefaultHostingConfiguration(this IWebHostBuilder hostBuilder, string[] args)
-        {
-            return hostBuilder.UseConfiguration(WebHostConfiguration.GetDefault(args));
-        }
 
         /// <summary>
         /// Use the given configuration settings on the web host.
