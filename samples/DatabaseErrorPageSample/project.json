@@ -6,7 +6,10 @@
     "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-*",
-    "Microsoft.EntityFrameworkCore.Commands": "1.0.0-*"
+    "Microsoft.EntityFrameworkCore.Tools": {
+      "version": "1.0.0-*",
+      "type": "build"
+    }
   },
   "compilationOptions": {
     "emitEntryPoint": true
@@ -33,6 +36,10 @@
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": {
       "version": "1.0.0-*",
       "imports": "portable-net45+wp80+win8+wpa81+dnxcore50"
+    },
+    "Microsoft.EntityFrameworkCore.Tools": {
+      "version": "1.0.0-*",
+      "imports": "portable-net451+win8"
     }
   },
   "scripts": {
