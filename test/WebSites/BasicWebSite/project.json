@@ -36,7 +36,8 @@
     "include": [
       "Areas/Area1/Views",
       "Views",
-      "web.config"
+      "web.config",
+      "wwwroot"
     ]
   },
   "tools": {

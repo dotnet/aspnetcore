@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("", "\"/RemoteAttribute_Verify/IsIdAvailable rejects Joe1.\"")]
+        [InlineData("", "\"/RemoteAttribute_Verify/IsIdAvailable rejects UserId1: 'Joe1'.\"")]
         [InlineData("/Area1", "false")]
         [InlineData("/Area2",
             "\"/Area2/RemoteAttribute_Verify/IsIdAvailable rejects 'Joe4' with 'Joe1', 'Joe2', and 'Joe3'.\"")]
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("", "\"/RemoteAttribute_Verify/IsIdAvailable rejects Jane1.\"")]
+        [InlineData("", "\"/RemoteAttribute_Verify/IsIdAvailable rejects UserId1: 'Jane1'.\"")]
         [InlineData("/Area1", "false")]
         public async Task RemoteAttribute_VerificationAction_PostReturnsExpectedJson(
             string pathSegment,

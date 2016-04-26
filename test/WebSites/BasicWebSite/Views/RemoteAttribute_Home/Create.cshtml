@@ -56,6 +56,14 @@
         </div>
 
         <div class="form-group">
+            @Html.LabelFor(model => model.UserId5, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.UserId5, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.UserId5, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
                 <input type="submit" value="Create" class="btn btn-default" />
             </div>
@@ -68,8 +76,6 @@
 </div>
 
 @section Scripts {
-    @* Until script helpers are available, add script references manually. *@
-    @* @Scripts.Render("~/bundles/jqueryval") *@
-    <script src="@Url.Content("~/lib/jquery-validation/jquery.validate.js")"></script>
-    <script src="@Url.Content("~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js")"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.14.0/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 }

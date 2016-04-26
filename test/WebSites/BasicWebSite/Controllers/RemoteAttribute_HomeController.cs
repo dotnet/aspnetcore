@@ -20,7 +20,6 @@ namespace BasicWebSite.Controllers
         [HttpPost]
         public IActionResult Create(RemoteAttributeUser user)
         {
-            ModelState.Remove("id");
             if (!ModelState.IsValid)
             {
                 return View(user);
