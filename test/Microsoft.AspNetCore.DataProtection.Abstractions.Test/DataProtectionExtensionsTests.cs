@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.AspNetCore.DataProtection.Infrastructure;
 using Microsoft.AspNetCore.DataProtection.Abstractions;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
 using Xunit;
 
@@ -106,36 +104,6 @@ namespace Microsoft.AspNetCore.DataProtection
 
             // Assert
             Assert.Same(finalExpectedProtector, retVal);
-        }
-
-        [Theory]
-        [InlineData(" discriminator", "app-path ", "discriminator")] // normalized trim
-        [InlineData("", "app-path", null)] // app discriminator not null -> overrides app base path
-        [InlineData(null, "app-path ", "app-path")] // normalized trim
-        [InlineData(null, "  ", null)] // normalized whitespace -> null
-        [InlineData(null, null, null)] // nothing provided at all
-        public void GetApplicationUniqueIdentifier(string appDiscriminator, string appBasePath, string expected)
-        {
-            // Arrange
-            var mockAppDiscriminator = new Mock<IApplicationDiscriminator>();
-            mockAppDiscriminator.Setup(o => o.Discriminator).Returns(appDiscriminator);
-            var mockAppEnvironment = new Mock<IApplicationEnvironment>();
-            mockAppEnvironment.Setup(o => o.ApplicationBasePath).Returns(appBasePath);
-            var mockServiceProvider = new Mock<IServiceProvider>();
-            mockServiceProvider.Setup(o => o.GetService(typeof(IApplicationDiscriminator))).Returns(mockAppDiscriminator.Object);
-            mockServiceProvider.Setup(o => o.GetService(typeof(IApplicationEnvironment))).Returns(mockAppEnvironment.Object);
-
-            // Act
-            string actual = mockServiceProvider.Object.GetApplicationUniqueIdentifier();
-
-            // Assert
-            Assert.Equal(expected, actual);
-        }
-
-        [Fact]
-        public void GetApplicationUniqueIdentifier_NoServiceProvider_ReturnsNull()
-        {
-            Assert.Null(((IServiceProvider)null).GetApplicationUniqueIdentifier());
         }
 
         [Fact]
