@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         protected abstract Task<IActionResult> InvokeActionAsync(ActionExecutingContext actionExecutingContext);
 
-        protected abstract Task<IDictionary<string, object>> BindActionArgumentsAsync();
+        protected abstract Task BindActionArgumentsAsync(IDictionary<string, object> arguments);
 
         public virtual async Task InvokeAsync()
         {
@@ -456,13 +456,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             Instance = CreateInstance();
 
-            var arguments = await BindActionArgumentsAsync();
-
-            _actionExecutingContext = new ActionExecutingContext(
-                Context,
-                _filters,
-                arguments,
-                Instance);
+            var arguments = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            await BindActionArgumentsAsync(arguments);
+            _actionExecutingContext = new ActionExecutingContext(Context, _filters, arguments, Instance);
 
             await InvokeActionFilterAsync();
         }

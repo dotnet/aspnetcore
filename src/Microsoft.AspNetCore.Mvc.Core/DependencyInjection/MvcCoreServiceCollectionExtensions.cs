@@ -172,7 +172,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Transient<IActionInvokerProvider, ControllerActionInvokerProvider>());
 
             // These are stateless
-            services.TryAddSingleton<IControllerActionArgumentBinder, ControllerArgumentBinder>();
+            services.TryAddSingleton<IControllerArgumentBinder, ControllerArgumentBinder>();
             services.TryAddSingleton<ControllerActionInvokerCache>();
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IFilterProvider, DefaultFilterProvider>());

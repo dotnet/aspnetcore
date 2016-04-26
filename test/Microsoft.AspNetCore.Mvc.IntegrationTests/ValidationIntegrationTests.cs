@@ -99,10 +99,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 },
                 actionDescriptor: actionDescriptor);
 
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
             var modelState = testContext.ModelState;
 
             // Act
-            var arguments = await argumentBinder.BindActionArgumentsAsync(testContext, new TestController());
+            await argumentBinder.BindArgumentsAsync(testContext, new TestController(), arguments);
 
             // Assert
             Assert.False(modelState.IsValid);
@@ -138,10 +139,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 },
                 actionDescriptor: actionDescriptor);
 
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
             var modelState = testContext.ModelState;
 
             // Act
-            var arguments = await argumentBinder.BindActionArgumentsAsync(testContext, new TestController());
+            await argumentBinder.BindArgumentsAsync(testContext, new TestController(), arguments);
 
             // Assert
             Assert.True(modelState.IsValid);

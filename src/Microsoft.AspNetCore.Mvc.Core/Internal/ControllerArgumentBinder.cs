@@ -15,10 +15,10 @@ using Microsoft.Extensions.Internal;
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
     /// <summary>
-    /// Provides a default implementation of <see cref="IControllerActionArgumentBinder"/>.
+    /// Provides a default implementation of <see cref="IControllerArgumentBinder"/>.
     /// Uses ModelBinding to populate action parameters.
     /// </summary>
-    public class ControllerArgumentBinder : IControllerActionArgumentBinder
+    public class ControllerArgumentBinder : IControllerArgumentBinder
     {
         private static readonly MethodInfo CallPropertyAddRangeOpenGenericMethod =
             typeof(ControllerArgumentBinder).GetTypeInfo().GetDeclaredMethod(
@@ -38,9 +38,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _validator = validator;
         }
 
-        public Task<IDictionary<string, object>> BindActionArgumentsAsync(
+        public Task BindArgumentsAsync(
             ControllerContext controllerContext,
-            object controller)
+            object controller,
+            IDictionary<string, object> arguments)
         {
             if (controllerContext == null)
             {
@@ -65,53 +66,54 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (actionDescriptor.BoundProperties.Count == 0 &&
                 actionDescriptor.Parameters.Count == 0)
             {
-                return Task.FromResult<IDictionary<string, object>>(
-                    new Dictionary<string, object>(StringComparer.Ordinal));
+                return TaskCache.CompletedTask;
             }
-            else if (actionDescriptor.BoundProperties.Count == 0)
-            {
-                return BindActionArgumentsCoreAsync(controllerContext, actionDescriptor);
-            }
-            else
-            {
-                return BindActionArgumentsAndPropertiesCoreAsync(
-                    controllerContext,
-                    controller,
-                    actionDescriptor);
-            }
+
+            return BindArgumentsCoreAsync(controllerContext, controller, arguments);
         }
 
-        private async Task<IDictionary<string, object>> BindActionArgumentsCoreAsync(
-            ControllerContext controllerContext,
-            ControllerActionDescriptor actionDescriptor)
-        {
-            var valueProvider = await CompositeValueProvider.CreateAsync(controllerContext);
-
-            var actionArguments = await PopulateArgumentsAsync(
-                controllerContext,
-                actionDescriptor.Parameters,
-                valueProvider);
-            return actionArguments;
-        }
-
-        private async Task<IDictionary<string, object>> BindActionArgumentsAndPropertiesCoreAsync(
+        private async Task BindArgumentsCoreAsync(
             ControllerContext controllerContext,
             object controller,
-            ControllerActionDescriptor actionDescriptor)
+            IDictionary<string, object> arguments)
         {
             var valueProvider = await CompositeValueProvider.CreateAsync(controllerContext);
 
-            var controllerProperties = await PopulateArgumentsAsync(
-                controllerContext,
-                actionDescriptor.BoundProperties,
-                valueProvider);
-            ActivateProperties(actionDescriptor, controller, controllerProperties);
+            var parameters = controllerContext.ActionDescriptor.Parameters;
+            for (var i = 0; i < parameters.Count; i++)
+            {
+                var parameter = parameters[i];
 
-            var actionArguments = await PopulateArgumentsAsync(
-                controllerContext,
-                actionDescriptor.Parameters,
-                valueProvider);
-            return actionArguments;
+                var result = await BindModelAsync(parameter, controllerContext, valueProvider);
+                if (result != null && result.Value.IsModelSet)
+                {
+                    arguments[parameter.Name] = result.Value.Model;
+                }
+            }
+
+            var properties = controllerContext.ActionDescriptor.BoundProperties;
+            if (properties.Count == 0)
+            {
+                // Perf: Early exit to avoid PropertyHelper lookup in the (common) case where we have no
+                // bound properties.
+                return;
+            }
+
+            var propertyHelpers = PropertyHelper.GetProperties(controller);
+            for (var i = 0; i < properties.Count; i++)
+            {
+                var property = properties[i];
+
+                var result = await BindModelAsync(property, controllerContext, valueProvider);
+                if (result != null && result.Value.IsModelSet)
+                {
+                    var propertyHelper = FindPropertyHelper(propertyHelpers, property);
+                    if (propertyHelper != null)
+                    {
+                        ActivateProperty(property, propertyHelper, controller, result.Value.Model);
+                    }
+                }
+            }
         }
 
         public async Task<ModelBindingResult?> BindModelAsync(
@@ -199,6 +201,52 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return modelBindingResult;
         }
 
+        private void ActivateProperty(
+            ParameterDescriptor property,
+            PropertyHelper propertyHelper,
+            object controller,
+            object value)
+        {
+            var propertyType = propertyHelper.Property.PropertyType;
+            var metadata = _modelMetadataProvider.GetMetadataForType(propertyType);
+
+            if (propertyHelper.Property.CanWrite && propertyHelper.Property.SetMethod?.IsPublic == true)
+            {
+                // Handle settable property. Do not set the property to null if the type is a non-nullable type.
+                if (value != null || metadata.IsReferenceOrNullableType)
+                {
+                    propertyHelper.SetValue(controller, value);
+                }
+
+                return;
+            }
+
+            if (propertyType.IsArray)
+            {
+                // Do not attempt to copy values into an array because an array's length is immutable. This choice
+                // is also consistent with MutableObjectModelBinder's handling of a read-only array property.
+                return;
+            }
+
+            var target = propertyHelper.GetValue(controller);
+            if (value == null || target == null)
+            {
+                // Nothing to do when source or target is null.
+                return;
+            }
+
+            if (!metadata.IsCollectionType)
+            {
+                // Not a collection model.
+                return;
+            }
+
+            // Handle a read-only collection property.
+            var propertyAddRange = CallPropertyAddRangeOpenGenericMethod.MakeGenericMethod(
+                metadata.ElementMetadata.ModelType);
+            propertyAddRange.Invoke(obj: null, parameters: new[] { target, value });
+        }
+
         // Called via reflection.
         private static void CallPropertyAddRange<TElement>(object target, object source)
         {
@@ -214,92 +262,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private void ActivateProperties(
-            ControllerActionDescriptor actionDescriptor,
-            object controller,
-            IDictionary<string, object> properties)
+        private static PropertyHelper FindPropertyHelper(PropertyHelper[] propertyHelpers, ParameterDescriptor property)
         {
-            var propertyHelpers = PropertyHelper.GetProperties(controller);
-            for (var i = 0; i < actionDescriptor.BoundProperties.Count; i++)
+            for (var i = 0; i < propertyHelpers.Length; i++)
             {
-                var property = actionDescriptor.BoundProperties[i];
-
-                PropertyHelper propertyHelper = null;
-                for (var j = 0; j < propertyHelpers.Length; j++)
+                var propertyHelper = propertyHelpers[i];
+                if (string.Equals(propertyHelper.Name, property.Name, StringComparison.Ordinal))
                 {
-                    if (string.Equals(propertyHelpers[j].Name, property.Name, StringComparison.Ordinal))
-                    {
-                        propertyHelper = propertyHelpers[j];
-                        break;
-                    }
-                }
-
-                object value;
-                if (propertyHelper == null || !properties.TryGetValue(property.Name, out value))
-                {
-                    continue;
-                }
-
-                var propertyType = propertyHelper.Property.PropertyType;
-                var metadata = _modelMetadataProvider.GetMetadataForType(propertyType);
-
-                if (propertyHelper.Property.CanWrite && propertyHelper.Property.SetMethod?.IsPublic == true)
-                {
-                    // Handle settable property. Do not set the property to null if the type is a non-nullable type.
-                    if (value != null || metadata.IsReferenceOrNullableType)
-                    {
-                        propertyHelper.SetValue(controller, value);
-                    }
-
-                    continue;
-                }
-
-                if (propertyType.IsArray)
-                {
-                    // Do not attempt to copy values into an array because an array's length is immutable. This choice
-                    // is also consistent with MutableObjectModelBinder's handling of a read-only array property.
-                    continue;
-                }
-
-                var target = propertyHelper.GetValue(controller);
-                if (value == null || target == null)
-                {
-                    // Nothing to do when source or target is null.
-                    continue;
-                }
-
-                if (!metadata.IsCollectionType)
-                {
-                    // Not a collection model.
-                    continue;
-                }
-
-                // Handle a read-only collection property.
-                var propertyAddRange = CallPropertyAddRangeOpenGenericMethod.MakeGenericMethod(
-                    metadata.ElementMetadata.ModelType);
-                propertyAddRange.Invoke(obj: null, parameters: new[] { target, value });
-            }
-        }
-
-        private async Task<IDictionary<string, object>> PopulateArgumentsAsync(
-            ControllerContext controllerContext,
-            IList<ParameterDescriptor> parameters,
-            IValueProvider valueProvider)
-        {
-            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
-
-            // Perf: Avoid allocations
-            for (var i = 0; i < parameters.Count; i++)
-            {
-                var parameter = parameters[i];
-                var modelBindingResult = await BindModelAsync(parameter, controllerContext, valueProvider);
-                if (modelBindingResult != null && modelBindingResult.Value.IsModelSet)
-                {
-                    arguments[parameter.Name] = modelBindingResult.Value.Model;
+                    return propertyHelper;
                 }
             }
 
-            return arguments;
+            return null;
         }
     }
 }

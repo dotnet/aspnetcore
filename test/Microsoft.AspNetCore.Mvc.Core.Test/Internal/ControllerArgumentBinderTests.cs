@@ -39,12 +39,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var argumentBinder = GetArgumentBinder(factory);
 
             var controllerContext = GetControllerContext(actionDescriptor);
+            var controller = new TestController();
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, new TestController());
+            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
 
             // Assert
-            Assert.Empty(result);
+            Assert.Empty(arguments);
         }
 
         [Fact]
@@ -68,12 +70,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var argumentBinder = GetArgumentBinder(factory);
 
             var controllerContext = GetControllerContext(actionDescriptor);
+            var controller = new TestController();
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, new TestController());
+            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
 
             // Assert
-            Assert.Empty(result);
+            Assert.Empty(arguments);
         }
 
         [Fact]
@@ -106,13 +110,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var argumentBinder = GetArgumentBinder(factory);
 
             var controllerContext = GetControllerContext(actionDescriptor);
+            var controller = new TestController();
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, new TestController());
+            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
 
             // Assert
-            Assert.Equal(1, result.Count);
-            Assert.Equal(value, result["foo"]);
+            Assert.Equal(1, arguments.Count);
+            Assert.Equal(value, arguments["foo"]);
         }
 
         [Fact]
@@ -140,9 +146,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     It.IsAny<object>()));
 
             var argumentBinder = GetArgumentBinder(factory, mockValidator.Object);
+            var controller = new TestController();
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, new TestController());
+            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
 
             // Assert
             mockValidator
@@ -169,6 +177,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 });
 
             var controllerContext = GetControllerContext(actionDescriptor);
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             var binder = new Mock<IModelBinder>();
             binder
@@ -184,10 +193,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     It.IsAny<object>()));
 
             var factory = GetModelBinderFactory(binder.Object);
+            var controller = new TestController();
             var argumentBinder = GetArgumentBinder(factory, mockValidator.Object);
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, new TestController());
+            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
 
             // Assert
             mockValidator
@@ -212,6 +222,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 });
 
             var controllerContext = GetControllerContext(actionDescriptor);
+            var controller = new TestController();
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
             mockValidator
@@ -225,7 +237,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var argumentBinder = GetArgumentBinder(factory, mockValidator.Object);
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, new TestController());
+            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
 
             // Assert
             mockValidator
@@ -251,6 +263,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 });
 
             var controllerContext = GetControllerContext(actionDescriptor);
+            var controller = new TestController();
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             var binder = new Mock<IModelBinder>();
             binder
@@ -269,7 +283,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var argumentBinder = GetArgumentBinder(factory, mockValidator.Object);
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, new TestController());
+            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
 
             // Assert
             mockValidator
@@ -295,14 +309,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 });
 
             var controllerContext = GetControllerContext(actionDescriptor);
+            var controller = new TestController();
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             var factory = GetModelBinderFactory("Hello");
             var argumentBinder = GetArgumentBinder(factory);
 
-            var controller = new TestController();
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, controller);
+            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
 
             // Assert
             Assert.Equal("Hello", controller.StringProperty);
@@ -324,15 +339,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 });
 
             var controllerContext = GetControllerContext(actionDescriptor);
+            var controller = new TestController();
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             var expected = new List<string> { "Hello", "World", "!!" };
             var factory = GetModelBinderFactory(expected);
             var argumentBinder = GetArgumentBinder(factory);
 
-            var controller = new TestController();
-
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, controller);
+            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
 
             // Assert
             Assert.Equal(expected, controller.CollectionProperty);
@@ -356,18 +371,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 });
 
             var controllerContext = GetControllerContext(actionDescriptor);
+            var controller = new TestController();
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             var binder = new StubModelBinder(ModelBindingResult.Success(string.Empty, model: null));
             var factory = GetModelBinderFactory(binder);
             var argumentBinder = GetArgumentBinder(factory);
 
-            var controller = new TestController();
 
             // Some non default value.
             controller.NonNullableProperty = -1;
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, controller);
+            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
 
             // Assert
             Assert.Equal(-1, controller.NonNullableProperty);
@@ -387,18 +403,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 });
 
             var controllerContext = GetControllerContext(actionDescriptor);
+            var controller = new TestController();
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             var binder = new StubModelBinder(ModelBindingResult.Success(key: string.Empty, model: null));
             var factory = GetModelBinderFactory(binder);
             var argumentBinder = GetArgumentBinder(factory);
 
-            var controller = new TestController();
 
             // Some non default value.
             controller.NullableProperty = -1;
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, controller);
+            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
 
             // Assert
             Assert.Null(controller.NullableProperty);
@@ -463,14 +480,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 });
 
             var controllerContext = GetControllerContext(actionDescriptor);
+            var controller = new TestController();
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             var factory = GetModelBinderFactory(inputValue);
             var argumentBinder = GetArgumentBinder(factory);
 
-            var controller = new TestController();
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, controller);
+            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
 
             // Assert
             Assert.Equal(expectedValue, propertyAccessor(controller));
@@ -520,6 +538,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             var controllerContext = GetControllerContext(actionDescriptor);
+            var controller = new TestController();
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             var binder = new StubModelBinder(bindingContext =>
             {
@@ -540,10 +560,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             controllerContext.ValueProviderFactories.Add(new SimpleValueProviderFactory());
 
             var argumentBinder = GetArgumentBinder(factory);
-            var controller = new TestController();
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, controller);
+            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
 
             // Assert
             Assert.Equal(new string[] { "goodbye" }, controller.ArrayProperty);                 // Skipped

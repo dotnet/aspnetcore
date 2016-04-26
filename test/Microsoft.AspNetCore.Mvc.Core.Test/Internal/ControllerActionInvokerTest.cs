@@ -2037,10 +2037,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .Setup(fp => fp.OnProvidersExecuted(It.IsAny<FilterProviderContext>()))
                 .Verifiable();
 
-            var actionArgumentsBinder = new Mock<IControllerActionArgumentBinder>();
-            actionArgumentsBinder.Setup(
-                    b => b.BindActionArgumentsAsync(It.IsAny<ControllerContext>(), It.IsAny<object>()))
-                .Returns(Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>()));
+            var argumentBinder = new Mock<IControllerArgumentBinder>();
+            argumentBinder
+                .Setup(b => b.BindArgumentsAsync(
+                    It.IsAny<ControllerContext>(),
+                    It.IsAny<object>(),
+                    It.IsAny<IDictionary<string, object>>()))
+                .Returns(TaskCache.CompletedTask);
 
             filterProvider
                 .SetupGet(fp => fp.Order)
@@ -2051,7 +2054,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new[] { filterProvider.Object },
                 new MockControllerFactory(this),
                 actionDescriptor,
-                actionArgumentsBinder.Object,
+                argumentBinder.Object,
                 new IValueProviderFactory[0],
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
                 new DiagnosticListener("Microsoft.AspNetCore"),
@@ -2227,7 +2230,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 IFilterProvider[] filterProviders,
                 MockControllerFactory controllerFactory,
                 ControllerActionDescriptor descriptor,
-                IControllerActionArgumentBinder controllerActionArgumentBinder,
+                IControllerArgumentBinder argumentBinder,
                 IReadOnlyList<IValueProviderFactory> valueProviderFactories,
                 ILogger logger,
                 DiagnosticSource diagnosticSource,
@@ -2237,7 +2240,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                       CreateFilterCache(filterProviders),
                       controllerFactory,
                       descriptor,
-                      controllerActionArgumentBinder,
+                      argumentBinder,
                       valueProviderFactories,
                       logger,
                       diagnosticSource,
