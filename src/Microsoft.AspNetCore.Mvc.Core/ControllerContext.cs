@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class ControllerContext : ActionContext
     {
-        private IList<IValueProvider> _valueProviders;
+        private IList<IValueProviderFactory> _valueProviderFactories;
 
         /// <summary>
         /// Creates a new <see cref="ControllerContext"/>.
@@ -52,18 +52,18 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Gets or sets the list of <see cref="IValueProvider"/> instances for the current request.
+        /// Gets or sets the list of <see cref="IValueProviderFactory"/> instances for the current request.
         /// </summary>
-        public virtual IList<IValueProvider> ValueProviders
+        public virtual IList<IValueProviderFactory> ValueProviderFactories
         {
             get
             {
-                if (_valueProviders == null)
+                if (_valueProviderFactories == null)
                 {
-                    _valueProviders = new List<IValueProvider>();
+                    _valueProviderFactories = new List<IValueProviderFactory>();
                 }
 
-                return _valueProviders;
+                return _valueProviderFactories;
             }
             set
             {
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc
                     throw new ArgumentNullException(nameof(value));
                 }
 
-                _valueProviders = value;
+                _valueProviderFactories = value;
             }
         }
     }

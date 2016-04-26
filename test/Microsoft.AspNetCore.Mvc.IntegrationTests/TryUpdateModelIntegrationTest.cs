@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var oldModel = model;
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, testContext);
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = new Address();
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, testContext);
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, testContext);
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var oldModel = model;
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, testContext);
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = new Person2();
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, testContext);
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var collection = model.Address;
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, testContext);
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, testContext);
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = new Person6();
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, testContext);
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = new Person4();
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, testContext);
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -453,7 +453,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var collection = model.Address;
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, testContext);
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -495,7 +495,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = new Person5();
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, testContext);
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
 
             // Assert
             Assert.True(result);
@@ -530,7 +530,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var oldModel = model;
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", testContext);
+            var result = await TryUpdateModelAsync(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -565,7 +565,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = new Address();
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", testContext);
+            var result = await TryUpdateModelAsync(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -616,7 +616,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", testContext);
+            var result = await TryUpdateModelAsync(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -666,7 +666,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var oldModel = model;
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", testContext);
+            var result = await TryUpdateModelAsync(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -702,7 +702,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = new Person2();
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", testContext);
+            var result = await TryUpdateModelAsync(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -742,7 +742,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var collection = model.Address;
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", testContext);
+            var result = await TryUpdateModelAsync(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -794,7 +794,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", testContext);
+            var result = await TryUpdateModelAsync(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -829,7 +829,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = new Person6();
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", testContext);
+            var result = await TryUpdateModelAsync(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -863,7 +863,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = new Person4();
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", testContext);
+            var result = await TryUpdateModelAsync(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -910,7 +910,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var collection = model.Address;
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", testContext);
+            var result = await TryUpdateModelAsync(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -947,7 +947,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = new Person5();
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", testContext);
+            var result = await TryUpdateModelAsync(model, "prefix", testContext);
 
             // Assert
             Assert.True(result);
@@ -979,7 +979,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             // Act
-            var result = await TryUpdateModel(model, prefix: "files", testContext: testContext);
+            var result = await TryUpdateModelAsync(model, prefix: "files", testContext: testContext);
 
             // Assert
             Assert.True(result);
@@ -1085,19 +1085,20 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             }
         }
 
-        private Task<bool> TryUpdateModel(
+        private async Task<bool> TryUpdateModelAsync(
             object model,
             string prefix,
             ModelBindingTestContext testContext)
         {
-            return ModelBindingHelper.TryUpdateModelAsync(
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 model.GetType(),
                 prefix,
                 testContext,
                 testContext.MetadataProvider,
                 TestModelBinderFactory.CreateDefault(),
-                new CompositeValueProvider(testContext.ValueProviders),
+                valueProvider,
                 ModelBindingTestHelper.GetObjectValidator(testContext.MetadataProvider));
         }
     }

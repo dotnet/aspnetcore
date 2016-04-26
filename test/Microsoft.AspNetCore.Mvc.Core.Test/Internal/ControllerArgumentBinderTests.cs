@@ -537,7 +537,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             });
 
             var factory = GetModelBinderFactory(binder);
-            controllerContext.ValueProviders.Add(new SimpleValueProvider());
+            controllerContext.ValueProviderFactories.Add(new SimpleValueProviderFactory());
 
             var argumentBinder = GetArgumentBinder(factory);
             var controller = new TestController();
@@ -563,7 +563,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 RouteData = new RouteData(),
             };
 
-            context.ValueProviders.Add(new SimpleValueProvider());
+            context.ValueProviderFactories.Add(new SimpleValueProviderFactory());
             return context;
         }
 

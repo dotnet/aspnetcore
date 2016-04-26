@@ -1488,10 +1488,11 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                     stringLocalizerFactory: null),
             };
 
+            valueProvider = valueProvider ?? new SimpleValueProvider();
             var controllerContext = new ControllerContext()
             {
                 HttpContext = httpContext,
-                ValueProviders = new[] { valueProvider, },
+                ValueProviderFactories = new[] { new SimpleValueProviderFactory(valueProvider), },
             };
 
             var binderFactory = new Mock<IModelBinderFactory>();

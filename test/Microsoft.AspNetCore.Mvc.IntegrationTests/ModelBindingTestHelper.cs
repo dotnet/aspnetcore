@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         {
             var httpContext = GetHttpContext(updateRequest, updateOptions);
             var services = httpContext.RequestServices;
+            var options = services.GetRequiredService<IOptions<MvcOptions>>();
 
             var context = new ModelBindingTestContext()
             {
@@ -33,16 +34,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 HttpContext = httpContext,
                 MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                 RouteData = new RouteData(),
+                ValueProviderFactories = new List<IValueProviderFactory>(options.Value.ValueProviderFactories),
             };
-
-            var options = services.GetRequiredService<IOptions<MvcOptions>>();
-            var valueProviderFactoryContext = new ValueProviderFactoryContext(context);
-            foreach (var factory in options.Value.ValueProviderFactories)
-            {
-                factory.CreateValueProviderAsync(valueProviderFactoryContext).GetAwaiter().GetResult();
-            }
-
-            context.ValueProviders = valueProviderFactoryContext.ValueProviders;
 
             return context;
         }
@@ -128,20 +121,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             }
 
             return serviceCollection.BuildServiceProvider();
-        }
-
-        private static ControllerContext GetControllerContext(MvcOptions options, ActionContext context)
-        {
-            var valueProviderFactoryContext = new ValueProviderFactoryContext(context);
-            foreach (var factory in options.ValueProviderFactories)
-            {
-                factory.CreateValueProviderAsync(valueProviderFactoryContext).GetAwaiter().GetResult();
-            }
-
-            return new ControllerContext(context)
-            {
-                ValueProviders = valueProviderFactoryContext.ValueProviders
-            };
         }
     }
 }

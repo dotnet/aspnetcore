@@ -1064,7 +1064,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
-        public virtual Task<bool> TryUpdateModelAsync<TModel>(
+        public virtual async Task<bool> TryUpdateModelAsync<TModel>(
             TModel model,
             string prefix)
             where TModel : class
@@ -1079,7 +1079,8 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(prefix));
             }
 
-            return TryUpdateModelAsync(model, prefix, new CompositeValueProvider(ControllerContext.ValueProviders));
+            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            return await TryUpdateModelAsync(model, prefix, valueProvider);
         }
 
         /// <summary>
@@ -1136,7 +1137,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// which need to be included for the current model.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
-        public Task<bool> TryUpdateModelAsync<TModel>(
+        public async Task<bool> TryUpdateModelAsync<TModel>(
             TModel model,
             string prefix,
             params Expression<Func<TModel, object>>[] includeExpressions)
@@ -1152,13 +1153,14 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(includeExpressions));
             }
 
-            return ModelBindingHelper.TryUpdateModelAsync(
+            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 prefix,
                 ControllerContext,
                 MetadataProvider,
                 ModelBinderFactory,
-                new CompositeValueProvider(ControllerContext.ValueProviders),
+                valueProvider,
                 ObjectValidator,
                 includeExpressions);
         }
@@ -1174,7 +1176,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="propertyFilter">A predicate which can be used to filter properties at runtime.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
-        public Task<bool> TryUpdateModelAsync<TModel>(
+        public async Task<bool> TryUpdateModelAsync<TModel>(
             TModel model,
             string prefix,
             Func<ModelMetadata, bool> propertyFilter)
@@ -1190,13 +1192,14 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(propertyFilter));
             }
 
-            return ModelBindingHelper.TryUpdateModelAsync(
+            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 prefix,
                 ControllerContext,
                 MetadataProvider,
                 ModelBinderFactory,
-                new CompositeValueProvider(ControllerContext.ValueProviders),
+                valueProvider,
                 ObjectValidator,
                 propertyFilter);
         }
@@ -1302,7 +1305,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         [NonAction]
-        public virtual Task<bool> TryUpdateModelAsync(
+        public virtual async Task<bool> TryUpdateModelAsync(
             object model,
             Type modelType,
             string prefix)
@@ -1317,14 +1320,15 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(modelType));
             }
 
-            return ModelBindingHelper.TryUpdateModelAsync(
+            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 modelType,
                 prefix,
                 ControllerContext,
                 MetadataProvider,
                 ModelBinderFactory,
-                new CompositeValueProvider(ControllerContext.ValueProviders),
+                valueProvider,
                 ObjectValidator);
         }
 

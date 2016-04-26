@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -32,6 +33,33 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public CompositeValueProvider(IList<IValueProvider> valueProviders)
             : base(valueProviders)
         {
+        }
+
+        /// <summary>
+        /// Asynchronously creates a <see cref="CompositeValueProvider"/> using the provided
+        /// <paramref name="controllerContext"/>.
+        /// </summary>
+        /// <param name="controllerContext">The <see cref="ControllerContext"/> associated with the current request.</param>
+        /// <returns>
+        /// A <see cref="Task{TResult}"/> which, when completed, asynchronously returns a
+        /// <see cref="CompositeValueProvider"/>.
+        /// </returns>
+        public static async Task<CompositeValueProvider> CreateAsync(ControllerContext controllerContext)
+        {
+            if (controllerContext == null)
+            {
+                throw new ArgumentNullException(nameof(controllerContext));
+            }
+
+            var factories = controllerContext.ValueProviderFactories;
+            var valueProviderFactoryContext = new ValueProviderFactoryContext(controllerContext);
+            for (var i = 0; i < factories.Count; i++)
+            {
+                var factory = factories[i];
+                await factory.CreateValueProviderAsync(valueProviderFactoryContext);
+            }
+
+            return new CompositeValueProvider(valueProviderFactoryContext.ValueProviders);
         }
 
         /// <inheritdoc />

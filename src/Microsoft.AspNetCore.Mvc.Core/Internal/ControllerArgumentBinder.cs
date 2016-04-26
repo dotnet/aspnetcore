@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
             else if (actionDescriptor.BoundProperties.Count == 0)
             {
-                return PopulateArgumentsAsync(controllerContext, actionDescriptor.Parameters);
+                return BindActionArgumentsCoreAsync(controllerContext, actionDescriptor);
             }
             else
             {
@@ -81,19 +81,36 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
+        private async Task<IDictionary<string, object>> BindActionArgumentsCoreAsync(
+            ControllerContext controllerContext,
+            ControllerActionDescriptor actionDescriptor)
+        {
+            var valueProvider = await CompositeValueProvider.CreateAsync(controllerContext);
+
+            var actionArguments = await PopulateArgumentsAsync(
+                controllerContext,
+                actionDescriptor.Parameters,
+                valueProvider);
+            return actionArguments;
+        }
+
         private async Task<IDictionary<string, object>> BindActionArgumentsAndPropertiesCoreAsync(
             ControllerContext controllerContext,
             object controller,
             ControllerActionDescriptor actionDescriptor)
         {
+            var valueProvider = await CompositeValueProvider.CreateAsync(controllerContext);
+
             var controllerProperties = await PopulateArgumentsAsync(
                 controllerContext,
-                actionDescriptor.BoundProperties);
+                actionDescriptor.BoundProperties,
+                valueProvider);
             ActivateProperties(actionDescriptor, controller, controllerProperties);
 
             var actionArguments = await PopulateArgumentsAsync(
                 controllerContext,
-                actionDescriptor.Parameters);
+                actionDescriptor.Parameters,
+                valueProvider);
             return actionArguments;
         }
 
@@ -111,10 +128,35 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(controllerContext));
             }
 
+            var valueProvider = await CompositeValueProvider.CreateAsync(controllerContext);
+
+            return await BindModelAsync(parameter, controllerContext, valueProvider);
+        }
+
+        public async Task<ModelBindingResult?> BindModelAsync(
+            ParameterDescriptor parameter,
+            ControllerContext controllerContext,
+            IValueProvider valueProvider)
+        {
+            if (parameter == null)
+            {
+                throw new ArgumentNullException(nameof(parameter));
+            }
+
+            if (controllerContext == null)
+            {
+                throw new ArgumentNullException(nameof(controllerContext));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
             var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterType);
             var modelBindingContext = DefaultModelBindingContext.CreateBindingContext(
                 controllerContext,
-                new CompositeValueProvider(controllerContext.ValueProviders),
+                valueProvider,
                 metadata,
                 parameter.BindingInfo,
                 parameter.Name);
@@ -241,7 +283,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private async Task<IDictionary<string, object>> PopulateArgumentsAsync(
             ControllerContext controllerContext,
-            IList<ParameterDescriptor> parameters)
+            IList<ParameterDescriptor> parameters,
+            IValueProvider valueProvider)
         {
             var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
@@ -249,7 +292,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             for (var i = 0; i < parameters.Count; i++)
             {
                 var parameter = parameters[i];
-                var modelBindingResult = await BindModelAsync(parameter, controllerContext);
+                var modelBindingResult = await BindModelAsync(parameter, controllerContext, valueProvider);
                 if (modelBindingResult != null && modelBindingResult.Value.IsModelSet)
                 {
                     arguments[parameter.Name] = modelBindingResult.Value.Model;
