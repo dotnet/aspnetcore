@@ -228,7 +228,7 @@
 
         <!-- These are terms that appear frequently but are not used offensively e.g. red is a color constant name. -->
         <PropertyGroup>
-            <Exclusions>countries;country;foo;red</Exclusions>
+            <Exclusions>countries;country;foo;red;region;patch</Exclusions>
         </PropertyGroup>
 
         <ItemGroup>
@@ -257,6 +257,10 @@
                 <term>chunking</term>
                 <Justification>Used to describe network chunks</Justification>
             </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Extensions.CodeGenerators.Mvc\Controller\CommandLineGeneratorModel.cs">
+                <term>crud</term>
+                <Justification>Acronym for Create, Read, Update, and Delete</Justification>
+            </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\dnx451\Microsoft.Dnx.Tooling.dll;
                                     $(PoliCheckPath)**\dnxcore50\Microsoft.Dnx.Tooling.dll">
                 <term>dans</term>
@@ -269,6 +273,15 @@
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\WelcomePage.cs">
                 <term>FE</term>
                 <Justification>Text appears in base64 encoded string of an image.</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Routing\Template\TemplateMatcher.cs">
+                <term>foo/bar</term>
+                <Justification>Sample data</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\NuGet\Authoring\PathResolver.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Publish\PublishManager.cs">
+                <term>foo\bar</term>
+                <Justification>Sample data</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\WelcomePage.cs">
                 <term>FU</term>
@@ -296,6 +309,10 @@
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs">
                 <term>ho</term>
                 <Justification>Part of a name</Justification>
+            </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs">
+                <term>ku</term>
+                <Justification>CultureInfo term</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.SqlServer\Storage\Internal\SqlServerTypeMapper.cs;">
                 <term>national</term>
