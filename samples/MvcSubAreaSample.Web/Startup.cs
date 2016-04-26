@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -39,6 +40,7 @@ namespace MvcSubAreaSample.Web
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseDefaultHostingConfiguration(args)
                 .UseIISIntegration()
                 .UseKestrel()

@@ -28,12 +28,19 @@
   },
   "content": [
     "Views",
+    "Areas",
     "web.config"
   ],
   "tools": {
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": {
       "version": "1.0.0-*",
       "imports": "portable-net45+wp80+win8+wpa81+dnxcore50"
+    },
+    "dotnet-razor-tooling": {
+      "version": "1.0.0-*",
+      "imports": [
+        "net45"
+      ]
     }
   },
   "scripts": {

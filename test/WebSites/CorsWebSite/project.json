@@ -3,6 +3,9 @@
     "emitEntryPoint": true,
     "preserveCompilationContext": true
   },
+  "content": [
+    "web.config"
+  ],
   "dependencies": {
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
@@ -14,7 +17,7 @@
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netcoreapp1.0": {
       "imports": [
         "dnxcore50",
@@ -28,9 +31,6 @@
       }
     }
   },
-  "content": [
-    "web.config"
-  ],
   "tools": {
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": {
       "version": "1.0.0-*",

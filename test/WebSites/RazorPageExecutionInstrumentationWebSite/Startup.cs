@@ -47,6 +47,7 @@ namespace RazorPageExecutionInstrumentationWebSite
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseDefaultHostingConfiguration(args)
                 .UseStartup<Startup>()
                 .UseKestrel()
