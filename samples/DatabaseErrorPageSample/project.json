@@ -39,7 +39,7 @@
     },
     "Microsoft.EntityFrameworkCore.Tools": {
       "version": "1.0.0-*",
-      "imports": "portable-net452+win81"
+      "imports": "portable-net451+win8"
     }
   },
   "scripts": {
