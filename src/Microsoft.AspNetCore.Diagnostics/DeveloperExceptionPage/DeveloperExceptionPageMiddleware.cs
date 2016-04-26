@@ -11,11 +11,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.Views;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.PlatformAbstractions;
 using StackFrame = Microsoft.AspNetCore.Diagnostics.Views.StackFrame;
 
 namespace Microsoft.AspNetCore.Diagnostics
@@ -38,13 +38,13 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// <param name="next"></param>
         /// <param name="options"></param>
         /// <param name="loggerFactory"></param>
-        /// <param name="appEnvironment"></param>
+        /// <param name="hostingEnvironment"></param>
         /// <param name="diagnosticSource"></param>
         public DeveloperExceptionPageMiddleware(
             RequestDelegate next,
             IOptions<DeveloperExceptionPageOptions> options,
             ILoggerFactory loggerFactory,
-            IApplicationEnvironment appEnvironment,
+            IHostingEnvironment hostingEnvironment,
             DiagnosticSource diagnosticSource)
         {
             if (next == null)
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             _next = next;
             _options = options.Value;
             _logger = loggerFactory.CreateLogger<DeveloperExceptionPageMiddleware>();
-            _fileProvider = _options.FileProvider ?? new PhysicalFileProvider(appEnvironment.ApplicationBasePath);
+            _fileProvider = _options.FileProvider ?? hostingEnvironment.ContentRootFileProvider;
             _diagnosticSource = diagnosticSource;
         }
 
