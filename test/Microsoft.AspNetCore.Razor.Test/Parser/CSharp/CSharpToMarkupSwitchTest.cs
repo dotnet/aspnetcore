@@ -685,10 +685,8 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser.CSharp
                                        Factory.Code("p").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharacters.NonWhiteSpace)
                                        ),
                                    new MarkupTagBlock(
-                                        Factory.MarkupTransition("</text>").Accepts(AcceptedCharacters.None)),
-                                   Factory.Markup(Environment.NewLine).Accepts(AcceptedCharacters.None)
-                                   ),
-                               Factory.Code($"    }}{Environment.NewLine}    if(!false) {{{Environment.NewLine}").AsStatement(),
+                                        Factory.MarkupTransition("</text>").Accepts(AcceptedCharacters.None))),
+                               Factory.Code($"{Environment.NewLine}    }}{Environment.NewLine}    if(!false) {{{Environment.NewLine}").AsStatement(),
                                new MarkupBlock(
                                    Factory.Markup("        "),
                                    new MarkupTagBlock(

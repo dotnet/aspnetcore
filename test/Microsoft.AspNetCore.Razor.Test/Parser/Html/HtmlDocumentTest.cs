@@ -321,6 +321,26 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser.Html
         }
 
         [Fact]
+        public void ParseDocumentDoesNotRenderExtraNewlineAtTheEndTextTagInVerbatimBlock()
+        {
+            ParseDocumentTest("@{<text>Blah</text>\r\n\r\n}<html>",
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new StatementBlock(
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                Factory.MarkupTransition("<text>")),
+                            Factory.Markup("Blah").Accepts(AcceptedCharacters.None),
+                            new MarkupTagBlock(
+                                Factory.MarkupTransition("</text>"))),
+                        Factory.Code("\r\n\r\n").AsStatement(),
+                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                    BlockFactory.MarkupTagBlock("<html>")));
+        }
+
+        [Fact]
         public void ParseDocumentDoesNotIgnoreNewLineAtTheEndOfMarkupBlock()
         {
             ParseDocumentTest("@{\r\n}\r\n<html>\r\n",

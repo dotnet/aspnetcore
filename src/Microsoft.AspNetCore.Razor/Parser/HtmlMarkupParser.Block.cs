@@ -1118,7 +1118,9 @@ namespace Microsoft.AspNetCore.Razor.Parser
                     }
                 }
 
-                if (!EndOfFile && CurrentSymbol.Type == HtmlSymbolType.NewLine)
+                if (!EndOfFile &&
+                    At(HtmlSymbolType.NewLine) &&
+                    Context.LastSpan.Kind != SpanKind.Transition)
                 {
                     AcceptAndMoveNext();
                 }
