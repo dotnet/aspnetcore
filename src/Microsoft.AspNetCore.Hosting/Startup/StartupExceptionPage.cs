@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Hosting
         private static readonly string _errorExceptionFormatString = GetResourceString("GenericError_Exception.html");
         private static readonly string _errorFooterFormatString = GetResourceString("GenericError_Footer.html");
 
-        public static byte[] GenerateErrorHtml(bool showDetails, IRuntimeEnvironment runtimeEnvironment, Exception exception)
+        public static byte[] GenerateErrorHtml(bool showDetails, Exception exception)
         {
             // Build the message for each error
             var builder = new StringBuilder();
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             // Generate the footer
-            var footer = showDetails ? GenerateFooterEncoded(runtimeEnvironment) : null;
+            var footer = showDetails ? GenerateFooterEncoded() : null;
 
             // And generate the full markup
             return Encoding.UTF8.GetBytes(string.Format(CultureInfo.InvariantCulture, _errorPageFormatString, builder, rawExceptionDetails, footer));
@@ -230,8 +230,9 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
-        private static string GenerateFooterEncoded(IRuntimeEnvironment environment)
+        private static string GenerateFooterEncoded()
         {
+            var environment = PlatformServices.Default.Runtime;
             var runtimeType = HtmlEncodeAndReplaceLineBreaks(environment.RuntimeType);
 #if NETCOREAPP1_0 || NETSTANDARD1_3
             var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;

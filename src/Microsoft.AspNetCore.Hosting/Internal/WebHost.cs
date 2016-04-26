@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
 {
@@ -165,10 +164,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 logger.ApplicationError(ex);
 
                 // Generate an HTML error page.
-                var runtimeEnv = _applicationServices.GetRequiredService<IRuntimeEnvironment>();
                 var hostingEnv = _applicationServices.GetRequiredService<IHostingEnvironment>();
                 var showDetailedErrors = hostingEnv.IsDevelopment() || _options.DetailedErrors;
-                var errorBytes = StartupExceptionPage.GenerateErrorHtml(showDetailedErrors, runtimeEnv, ex);
+                var errorBytes = StartupExceptionPage.GenerateErrorHtml(showDetailedErrors, ex);
 
                 return context =>
                 {
