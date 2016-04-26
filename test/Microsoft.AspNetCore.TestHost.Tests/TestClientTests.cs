@@ -125,6 +125,49 @@ namespace Microsoft.AspNetCore.TestHost
             Assert.Equal("Hello world POST Response", await response.Content.ReadAsStringAsync());
         }
 
+        [Fact]
+        public async Task LargePayload_DisposesRequest_AfterResponseIsCompleted()
+        {
+            // Arrange
+            var data = new byte[2048];
+            var character = Encoding.ASCII.GetBytes("a");
+
+            for (var i = 0; i < data.Length; i++)
+            {
+                data[i] = character[0];
+            }
+
+            var builder = new WebHostBuilder();
+            RequestDelegate app = (ctx) =>
+            {
+                var disposable = new TestDisposable();
+                ctx.Response.RegisterForDispose(disposable);
+                ctx.Response.Body.Write(data, 0, 1024);
+
+                Assert.False(disposable.IsDisposed);
+
+                ctx.Response.Body.Write(data, 1024, 1024);
+                return Task.FromResult(0);
+            };
+
+            builder.Configure(appBuilder => appBuilder.Run(app));
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            // Act & Assert
+            var response = await client.GetAsync("http://localhost:12345");
+        }
+
+        private class TestDisposable : IDisposable
+        {
+            public bool IsDisposed { get; private set; }
+
+            public void Dispose()
+            {
+                IsDisposed = true;
+            }
+        }
+
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task WebSocketWorks()

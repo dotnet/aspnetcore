@@ -192,6 +192,7 @@ namespace Microsoft.AspNetCore.TestHost
                 _pipelineFinished = true;
                 ReturnResponseMessage();
                 _responseStream.Complete();
+                _responseFeature.FireOnResponseCompleted();
             }
 
             internal void ReturnResponseMessage()
@@ -199,7 +200,6 @@ namespace Microsoft.AspNetCore.TestHost
                 if (!_responseTcs.Task.IsCompleted)
                 {
                     var response = GenerateResponse();
-                    _responseFeature.FireOnResponseCompleted();
                     // Dispatch, as TrySetResult will synchronously execute the waiters callback and block our Write.
                     Task.Factory.StartNew(() => _responseTcs.TrySetResult(response));
                 }
