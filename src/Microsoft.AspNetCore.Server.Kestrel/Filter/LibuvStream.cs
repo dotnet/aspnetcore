@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Filter
 {
@@ -119,6 +120,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
         public override void Flush()
         {
             // No-op since writes are immediate.
+        }
+
+        public override Task FlushAsync(CancellationToken cancellationToken)
+        {
+            // No-op since writes are immediate.
+            return TaskUtilities.CompletedTask;
         }
 
         private ValueTask<int> ReadAsync(ArraySegment<byte> buffer)
