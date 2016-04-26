@@ -5,7 +5,6 @@
         ],
         "packages": {
             "dotnet-aspnet-codegenerator": {},
-            "dotnet-ef": {},
             "dotnet-razor-tooling": {},
             "Microsoft.DotNet.Watcher.Tools": {},
             "dnx-clr-win-x64": {
@@ -140,7 +139,6 @@
             "Microsoft.AspNetCore.WebUtilities": {},
             "Microsoft.Dnx.Compilation.CSharp.Abstractions": {},
             "Microsoft.Dnx.Compilation.CSharp.Common": {},
-            "Microsoft.EntityFrameworkCore.Commands": {},
             "Microsoft.EntityFrameworkCore": {},
             "Microsoft.EntityFrameworkCore.InMemory": {},
             "Microsoft.EntityFrameworkCore.SqlServer": {},
@@ -152,6 +150,9 @@
             "Microsoft.EntityFrameworkCore.Specification.Tests": {},
             "Microsoft.EntityFrameworkCore.Sqlite": {},
             "Microsoft.EntityFrameworkCore.Sqlite.Design": {},
+            "Microsoft.EntityFrameworkCore.Tools": {},
+            "Microsoft.EntityFrameworkCore.Tools.Cli": {},
+            "Microsoft.EntityFrameworkCore.Tools.Core": {},
             "Microsoft.Extensions.Caching.Abstractions": {},
             "Microsoft.Extensions.Caching.Memory": {},
             "Microsoft.Extensions.Caching.Redis": {},
