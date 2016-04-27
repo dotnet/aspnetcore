@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.PlatformAbstractions;
@@ -154,9 +155,11 @@ $@"<!doctype html>
 
         public static void Main(string[] args)
         {
+            var config = new ConfigurationBuilder().AddCommandLine(args).Build();
+
             var host = new WebHostBuilder()
-                .UseDefaultHostingConfiguration(args)
                 .UseKestrel()
+                .UseConfiguration(config)
                 .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
