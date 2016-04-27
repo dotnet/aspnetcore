@@ -23,14 +23,15 @@
         "portable-net45+win8"
       ],
       "dependencies": {
-        "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
-          "type": "platform"
-        },
+        "Microsoft.NETCore.App": "1.0.0-*",
         "System.Net.Primitives": "4.0.11-*",
         "System.Diagnostics.Process": "4.1.0-*"
       }
     },
     "net451": { }
+  },
+  "runtimes": {
+    "win7-x86": { },
+    "win7-x64": { }
   }
 }
