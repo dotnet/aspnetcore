@@ -556,13 +556,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             modelExplorer = modelExplorer ??
                 ExpressionMetadataProvider.FromStringExpression(expression, viewContext.ViewData, _metadataProvider);
-            if (currentValues != null)
-            {
-                selectList = UpdateSelectListItemsWithDefaultValue(modelExplorer, selectList, currentValues);
-            }
 
             // Convert each ListItem to an <option> tag and wrap them with <optgroup> if requested.
-            var listItemBuilder = GenerateGroupsAndOptions(optionLabel, selectList);
+            var listItemBuilder = GenerateGroupsAndOptions(optionLabel, selectList, currentValues);
 
             var tagBuilder = new TagBuilder("select");
             tagBuilder.InnerHtml.SetHtmlContent(listItemBuilder);
@@ -1033,6 +1029,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </remarks>
         internal static TagBuilder GenerateOption(SelectListItem item, string text)
         {
+            return GenerateOption(item, text, item.Selected);
+        }
+
+        internal static TagBuilder GenerateOption(SelectListItem item, string text, bool selected)
+        {
             var tagBuilder = new TagBuilder("option");
             tagBuilder.InnerHtml.SetContent(text);
 
@@ -1041,7 +1042,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 tagBuilder.Attributes["value"] = item.Value;
             }
 
-            if (item.Selected)
+            if (selected)
             {
                 tagBuilder.Attributes["selected"] = "selected";
             }
@@ -1433,82 +1434,81 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return selectList;
         }
 
-        private static IEnumerable<SelectListItem> UpdateSelectListItemsWithDefaultValue(
-            ModelExplorer modelExplorer,
-            IEnumerable<SelectListItem> selectList,
-            ICollection<string> currentValues)
-        {
-            // Perform deep copy of selectList to avoid changing user's Selected property values.
-            var newSelectList = new List<SelectListItem>();
-            foreach (SelectListItem item in selectList)
-            {
-                var value = item.Value ?? item.Text;
-                var selected = currentValues.Contains(value);
-                var copy = new SelectListItem
-                {
-                    Disabled = item.Disabled,
-                    Group = item.Group,
-                    Selected = selected,
-                    Text = item.Text,
-                    Value = item.Value,
-                };
-
-                newSelectList.Add(copy);
-            }
-
-            return newSelectList;
-        }
-
         /// <inheritdoc />
         public IHtmlContent GenerateGroupsAndOptions(string optionLabel, IEnumerable<SelectListItem> selectList)
+        {
+            return GenerateGroupsAndOptions(optionLabel: optionLabel, selectList: selectList, currentValues: null);
+        }
+
+        private IHtmlContent GenerateGroupsAndOptions(
+            string optionLabel, 
+            IEnumerable<SelectListItem> selectList, 
+            ICollection<string> currentValues)
         {
             var listItemBuilder = new HtmlContentBuilder();
 
             // Make optionLabel the first item that gets rendered.
             if (optionLabel != null)
             {
-                listItemBuilder.AppendLine(GenerateOption(new SelectListItem()
-                {
-                    Text = optionLabel,
-                    Value = string.Empty,
-                    Selected = false,
-                }));
+                listItemBuilder.AppendLine(GenerateOption(
+                    new SelectListItem()
+                    {
+                        Text = optionLabel,
+                        Value = string.Empty,
+                        Selected = false,
+                    },
+                    currentValues: null));
+            }
+
+            var itemsList = selectList as IList<SelectListItem>;
+            if (itemsList == null)
+            {
+                itemsList = selectList.ToList();
             }
 
             // Group items in the SelectList if requested.
-            // Treat each item with Group == null as a member of a unique group
-            // so they are added according to the original order.
-            var groupedSelectList = selectList.GroupBy<SelectListItem, int>(
-                item => (item.Group == null) ? item.GetHashCode() : item.Group.GetHashCode());
-            foreach (var group in groupedSelectList)
+            // The worst case complexity of this algorithm is O(number of groups*n). 
+            // If there aren't any groups, it is O(n) where n is number of items in the list.
+            var optionGenerated = new bool[itemsList.Count];
+            for (var i = 0; i < itemsList.Count; i++)
             {
-                var optGroup = group.First().Group;
-                if (optGroup != null)
+                if (!optionGenerated[i])
                 {
-                    var groupBuilder = new TagBuilder("optgroup");
-                    if (optGroup.Name != null)
+                    var item = itemsList[i];
+                    var optGroup = item.Group;
+                    if (optGroup != null)
                     {
-                        groupBuilder.MergeAttribute("label", optGroup.Name);
-                    }
+                        var groupBuilder = new TagBuilder("optgroup");
+                        if (optGroup.Name != null)
+                        {
+                            groupBuilder.MergeAttribute("label", optGroup.Name);
+                        }
 
-                    if (optGroup.Disabled)
-                    {
-                        groupBuilder.MergeAttribute("disabled", "disabled");
-                    }
+                        if (optGroup.Disabled)
+                        {
+                            groupBuilder.MergeAttribute("disabled", "disabled");
+                        }
 
-                    groupBuilder.InnerHtml.AppendLine();
-                    foreach (var item in group)
-                    {
-                        groupBuilder.InnerHtml.AppendLine(GenerateOption(item));
-                    }
+                        groupBuilder.InnerHtml.AppendLine();
 
-                    listItemBuilder.AppendLine(groupBuilder);
-                }
-                else
-                {
-                    foreach (var item in group)
+                        for (var j = i; j < itemsList.Count; j++)
+                        {
+                            var groupItem = itemsList[j];
+
+                            if (!optionGenerated[j] &&
+                                object.ReferenceEquals(optGroup, groupItem.Group))
+                            {
+                                groupBuilder.InnerHtml.AppendLine(GenerateOption(groupItem, currentValues));
+                                optionGenerated[j] = true;
+                            }
+                        }
+
+                        listItemBuilder.AppendLine(groupBuilder);
+                    }
+                    else
                     {
-                        listItemBuilder.AppendLine(GenerateOption(item));
+                        listItemBuilder.AppendLine(GenerateOption(item, currentValues));
+                        optionGenerated[i] = true;
                     }
                 }
             }
@@ -1516,9 +1516,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return listItemBuilder;
         }
 
-        private IHtmlContent GenerateOption(SelectListItem item)
+        private IHtmlContent GenerateOption(SelectListItem item, ICollection<string> currentValues)
         {
-            var tagBuilder = GenerateOption(item, item.Text);
+            var selected = item.Selected;
+            if (currentValues != null)
+            {
+                var value = item.Value ?? item.Text;
+                selected = currentValues.Contains(value);
+            }
+
+            var tagBuilder = GenerateOption(item, item.Text, selected);
             return tagBuilder;
         }
     }

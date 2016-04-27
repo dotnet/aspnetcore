@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     public class MultiSelectList : IEnumerable<SelectListItem>
     {
         private IList<SelectListGroup> _groups;
+        private IList<SelectListItem> _selectListItems;
 
         public MultiSelectList(IEnumerable items)
             : this(items, selectedValues: null)
@@ -111,10 +112,15 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
         public virtual IEnumerator<SelectListItem> GetEnumerator()
         {
-            return GetListItems().GetEnumerator();
+            if (_selectListItems == null)
+            {
+                _selectListItems = GetListItems();
+            }
+
+            return _selectListItems.GetEnumerator();
         }
 
-        internal IList<SelectListItem> GetListItems()
+        private IList<SelectListItem> GetListItems()
         {
             return (!string.IsNullOrEmpty(DataValueField)) ?
                 GetListItemsWithValueField() :
@@ -126,20 +132,29 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             var selectedValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             if (SelectedValues != null)
             {
-                selectedValues.UnionWith(from object value in SelectedValues
-                                         select Convert.ToString(value, CultureInfo.CurrentCulture));
+                foreach (var value in SelectedValues)
+                {
+                    var stringValue = Convert.ToString(value, CultureInfo.CurrentCulture);
+                    selectedValues.Add(stringValue);
+                }
             }
 
-            var listItems = from object item in Items
-                            let value = Eval(item, DataValueField)
-                            select new SelectListItem
-                            {
-                                Group = GetGroup(item),
-                                Value = value,
-                                Text = Eval(item, DataTextField),
-                                Selected = selectedValues.Contains(value)
-                            };
-            return listItems.ToList();
+            var listItems = new List<SelectListItem>();
+            foreach (var item in Items)
+            {
+                var value = Eval(item, DataValueField);
+                var newListItem = new SelectListItem
+                {
+                    Group = GetGroup(item),
+                    Value = value,
+                    Text = Eval(item, DataTextField),
+                    Selected = selectedValues.Contains(value),
+                };
+
+                listItems.Add(newListItem);
+            }
+
+            return listItems;
         }
 
         private IList<SelectListItem> GetListItemsWithoutValueField()
@@ -150,14 +165,20 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 selectedValues.UnionWith(SelectedValues.Cast<object>());
             }
 
-            var listItems = from object item in Items
-                            select new SelectListItem
-                            {
-                                Group = GetGroup(item),
-                                Text = Eval(item, DataTextField),
-                                Selected = selectedValues.Contains(item)
-                            };
-            return listItems.ToList();
+            var listItems = new List<SelectListItem>();
+            foreach (var item in Items)
+            {
+                var newListItem = new SelectListItem
+                {
+                    Group = GetGroup(item),
+                    Text = Eval(item, DataTextField),
+                    Selected = selectedValues.Contains(item),
+                };
+
+                listItems.Add(newListItem);
+            }
+
+            return listItems;
         }
 
         private static string Eval(object container, string expression)
@@ -187,7 +208,16 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
             // We use StringComparison.CurrentCulture because the group name is used to display as the value of
             // optgroup HTML tag's label attribute.
-            var group = _groups.FirstOrDefault(g => string.Equals(g.Name, groupName, StringComparison.CurrentCulture));
+            SelectListGroup group = null;
+            for (var index = 0; index < _groups.Count; index++)
+            {
+                if (string.Equals(_groups[index].Name, groupName, StringComparison.CurrentCulture))
+                {
+                    group = _groups[index];
+                    break;
+                }
+            }
+
             if (group == null)
             {
                 group = new SelectListGroup() { Name = groupName };
