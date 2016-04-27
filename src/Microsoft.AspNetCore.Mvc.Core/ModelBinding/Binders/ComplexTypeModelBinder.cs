@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -15,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class ComplexTypeModelBinder : IModelBinder
     {
         private readonly IDictionary<ModelMetadata, IModelBinder> _propertyBinders;
+        private Func<object> _modelCreator;
 
         /// <summary>
         /// Creates a new <see cref="ComplexTypeModelBinder"/>.
@@ -316,9 +318,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(bindingContext));
             }
 
-            // If the Activator throws an exception, we want to propagate it back up the call stack, since the
+            // If model creator throws an exception, we want to propagate it back up the call stack, since the
             // application developer should know that this was an invalid type to try to bind to.
-            return Activator.CreateInstance(bindingContext.ModelType);
+            if (_modelCreator == null)
+            {
+                _modelCreator = Expression
+                    .Lambda<Func<object>>(Expression.New(bindingContext.ModelType))
+                    .Compile();
+            }
+
+            return _modelCreator();
+
         }
 
         /// <summary>

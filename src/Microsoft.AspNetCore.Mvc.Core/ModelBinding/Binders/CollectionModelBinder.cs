@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -20,6 +21,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// <typeparam name="TElement">Type of elements in the collection.</typeparam>
     public class CollectionModelBinder<TElement> : ICollectionModelBinder
     {
+        private Func<object> _modelCreator;
+
         /// <summary>
         /// Creates a new <see cref="CollectionModelBinder{TElement}"/>.
         /// </summary>
@@ -147,7 +150,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// <returns>An instance of <paramref name="targetType"/>.</returns>
         protected object CreateInstance(Type targetType)
         {
-            return Activator.CreateInstance(targetType);
+            if (_modelCreator == null)
+            {
+                _modelCreator = Expression
+                    .Lambda<Func<object>>(Expression.New(targetType))
+                    .Compile();
+            }
+
+            return _modelCreator();
+
         }
 
         // Used when the ValueProvider contains the collection to be bound as a single element, e.g. the raw value
