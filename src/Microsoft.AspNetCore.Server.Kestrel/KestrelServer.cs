@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
             Options = options.Value ?? new KestrelServerOptions();
             _applicationLifetime = applicationLifetime;
-            _logger = loggerFactory.CreateLogger(typeof(KestrelServer).GetTypeInfo().Assembly.FullName);
+            _logger = loggerFactory.CreateLogger(typeof(KestrelServer).GetTypeInfo().Namespace);
             Features = new FeatureCollection();
             var componentFactory = new HttpComponentFactory(Options);
             Features.Set<IHttpComponentFactory>(componentFactory);
