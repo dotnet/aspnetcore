@@ -332,7 +332,6 @@ namespace SocialSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseDefaultHostingConfiguration(args)
                 .UseKestrel(options =>
                 {
                     //Configure SSL
