@@ -154,7 +154,6 @@ namespace OpenIdConnect.AzureAdSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseDefaultHostingConfiguration(args)
                 .UseKestrel()
                 .UseIISIntegration()
                 .UseStartup<Startup>()
