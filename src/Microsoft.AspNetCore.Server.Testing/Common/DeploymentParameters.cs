@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Testing
         /// <param name="applicationPath">Source code location of the target location to be deployed.</param>
         /// <param name="serverType">Where to be deployed on.</param>
         /// <param name="runtimeFlavor">Flavor of the clr to run against.</param>
-        /// <param name="runtimeArchitecture">Architecture of the DNX to be used.</param>
+        /// <param name="runtimeArchitecture">Architecture of the runtime to be used.</param>
         public DeploymentParameters(
             string applicationPath,
             ServerType serverType,

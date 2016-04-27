@@ -234,6 +234,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var environment = PlatformServices.Default.Runtime;
             var runtimeType = HtmlEncodeAndReplaceLineBreaks(environment.RuntimeType);
+            var runtimeDisplayName = runtimeType == "CoreCLR" ? ".NET Core" : runtimeType == "CLR" ? ".NET Framework" : "Mono";
 #if NETCOREAPP1_0 || NETSTANDARD1_3
             var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;
             var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName).Version.ToString();
@@ -242,7 +243,6 @@ namespace Microsoft.AspNetCore.Hosting
             var clrVersion = HtmlEncodeAndReplaceLineBreaks(Environment.Version.ToString());
 #endif
             var runtimeArch = HtmlEncodeAndReplaceLineBreaks(environment.RuntimeArchitecture);
-            var dnxVersion = HtmlEncodeAndReplaceLineBreaks(environment.RuntimeVersion);
             var currentAssembly = typeof(StartupExceptionPage).GetTypeInfo().Assembly;
             var currentAssemblyVersion = currentAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
             currentAssemblyVersion = HtmlEncodeAndReplaceLineBreaks(currentAssemblyVersion);
@@ -250,8 +250,8 @@ namespace Microsoft.AspNetCore.Hosting
             var os = HtmlEncodeAndReplaceLineBreaks(environment.OperatingSystem);
             var osVersion = HtmlEncodeAndReplaceLineBreaks(environment.OperatingSystemVersion);
 
-            return string.Format(CultureInfo.InvariantCulture, _errorFooterFormatString, runtimeType, clrVersion,
-                runtimeArch, dnxVersion, currentAssemblyVersion, os, osVersion);
+            return string.Format(CultureInfo.InvariantCulture, _errorFooterFormatString, runtimeDisplayName, runtimeArch, clrVersion,
+                currentAssemblyVersion, os, osVersion);
         }
 
         private static string HtmlEncodeAndReplaceLineBreaks(string input)
