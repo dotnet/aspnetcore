@@ -29,9 +29,9 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(app));
             }
 
-            var port = app.GetSetting(ServerPort);
-            var path = app.GetSetting(ServerPath);
-            var pairingToken = app.GetSetting(PairingToken);
+            var port = app.GetSetting(ServerPort) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{ServerPort}");
+            var path = app.GetSetting(ServerPath) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{ServerPath}");
+            var pairingToken = app.GetSetting(PairingToken) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{PairingToken}");
 
             if (!string.IsNullOrEmpty(port) && !string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(pairingToken))
             {

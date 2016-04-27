@@ -10,7 +10,6 @@ namespace TestSites
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseDefaultHostingConfiguration(args)
                 .UseIISIntegration()
                 .UseStartup("TestSites")
                 .UseKestrel()
