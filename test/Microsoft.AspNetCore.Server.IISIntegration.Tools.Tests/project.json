@@ -6,9 +6,9 @@
   "frameworks": {
     "netcoreapp1.0": {
       "imports": [
-        "portable-net451+win8",
-        "dnxcore50",
-        "netstandardapp1.5"
+        "portable-dnxcore50+net45+win8+wp8+wpa81",
+        "dotnet",
+        "portable-net45+win8"
       ],
       "dependencies": {
         "dotnet-test-xunit": "1.0.0-*",
