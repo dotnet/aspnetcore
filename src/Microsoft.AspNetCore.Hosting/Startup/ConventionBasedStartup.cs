@@ -3,11 +3,10 @@
 
 using System;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Hosting
+namespace Microsoft.AspNetCore.Hosting
 {
     public class ConventionBasedStartup : IStartup
     {

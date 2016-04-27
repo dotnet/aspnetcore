@@ -60,9 +60,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 hostingEnvironment.WebRootFileProvider = new NullFileProvider();
             }
-
-            var environmentName = options.Environment;
-            hostingEnvironment.EnvironmentName = environmentName ?? hostingEnvironment.EnvironmentName;
+            
+            hostingEnvironment.EnvironmentName =
+                options.Environment ??
+                Environment.GetEnvironmentVariable($"ASPNETCORE_{WebHostDefaults.EnvironmentKey}") ??
+                hostingEnvironment.EnvironmentName;
         }
     }
 }

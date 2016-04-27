@@ -191,10 +191,9 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
-        public void DefaultHostingConfigurationDoesNotCaptureStartupErrors()
+        public void DoNotCaptureStartupErrorsByDefault()
         {
             var hostBuilder = new WebHostBuilder()
-                .UseDefaultHostingConfiguration()
                 .UseServer(new TestServer())
                 .UseStartup<StartupBoom>();
 

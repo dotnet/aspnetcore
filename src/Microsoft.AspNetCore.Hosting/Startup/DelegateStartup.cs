@@ -3,9 +3,8 @@
 
 using System;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 
-namespace Microsoft.AspNet.Hosting
+namespace Microsoft.AspNetCore.Hosting
 {
     public class DelegateStartup : StartupBase
     {
