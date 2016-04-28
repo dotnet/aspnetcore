@@ -33,7 +33,6 @@ namespace HttpOverridesSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseDefaultHostingConfiguration(args)
                 .UseKestrel()
                 // .UseIIS() // This repo can no longer reference IIS because IISIntegration depends on it.
                 .UseStartup<Startup>()
