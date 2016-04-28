@@ -30,22 +30,8 @@ namespace MusicStore
                 // modify the applicationHost.config to enable NTLM.
                 builder.UseWebListener(options =>
                 {
-                    // Set up NTLM authentication for WebListener as follows.
-                    // For IIS and IISExpress use inetmgr to setup NTLM authentication on the application or
-                    // modify the applicationHost.config to enable NTLM.
-                    builder.UseWebListener(options =>
-                    {
-                        options.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.NTLM;
-                    });
-                }
-                else
-                {
-                    builder.UseWebListener();
-                }
-            }
-            else
-            {
-                builder.UseKestrel();
+                    options.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.NTLM;
+                });
             }
 
             var host = builder.Build();
