@@ -7,7 +7,8 @@
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
-    "Microsoft.IdentityModel.Clients.ActiveDirectory": "2.22.302111727"
+    "Microsoft.IdentityModel.Clients.ActiveDirectory": "2.22.302111727",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*"
   },
   "frameworks": {
     "net451": {}
