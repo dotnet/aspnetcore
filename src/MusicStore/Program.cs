@@ -15,26 +15,33 @@ namespace MusicStore
                 .Build();
 
             var builder = new WebHostBuilder()
-                // We set the server by name before default args so that command line arguments can override it.
-                // This is used to allow deployers to choose the server for testing.
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .UseConfiguration(config)
                 .UseIISIntegration()
                 .UseStartup("MusicStore");
 
-            if (string.Equals(builder.GetSetting("server"), "Microsoft.AspNetCore.Server.WebListener", System.StringComparison.Ordinal) &&
-                (string.Equals(builder.GetSetting("environment") ??
-                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
-                "NtlmAuthentication",
-                System.StringComparison.Ordinal)))
+            if (string.Equals(builder.GetSetting("server"), "Microsoft.AspNetCore.Server.WebListener", System.StringComparison.Ordinal))
             {
-                // Set up NTLM authentication for WebListener like below.
-                // For IIS and IISExpress: Use inetmgr to setup NTLM authentication on the application vDir or
-                // modify the applicationHost.config to enable NTLM.
-                builder.UseWebListener(options =>
+                var environment = builder.GetSetting("environment") ??
+                    Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
+                if (string.Equals(environment, "NtlmAuthentication", System.StringComparison.Ordinal))
                 {
-                    options.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.NTLM;
-                });
+                    // Set up NTLM authentication for WebListener like below.
+                    // For IIS and IISExpress: Use inetmgr to setup NTLM authentication on the application vDir or
+                    // modify the applicationHost.config to enable NTLM.
+                    builder.UseWebListener(options =>
+                    {
+                        options.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.NTLM;
+                    });
+                }
+                else
+                {
+                    builder.UseWebListener();
+                }
+            }
+            else
+            {
+                builder.UseKestrel();
             }
 
             var host = builder.Build();
