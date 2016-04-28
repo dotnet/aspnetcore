@@ -4,13 +4,16 @@ dotnet-watch
 
 ### How To Install
 
-Add `dotnet-watch` to the `tools` section of your `project.json` file:
+Add `Microsoft.DotNet.Watcher.Tools` to the `tools` section of your `project.json` file:
 
 ```
 {
 ...
   "tools": {
-    "dotnet-watch": "1.0.0-*"
+    "Microsoft.DotNet.Watcher.Tools": {
+      "version": "1.0.0-*",
+      "imports": "portable-net451+win8"
+    }
   }
 ...
 }
