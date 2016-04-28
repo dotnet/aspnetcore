@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             foreach (var item in precompiledViews)
             {
-                var cacheEntry = new CompilerCacheResult(new CompilationResult(item.Value));
+                var cacheEntry = new CompilerCacheResult(item.Key, new CompilationResult(item.Value));
                 _cache.Set(GetNormalizedPath(item.Key), Task.FromResult(cacheEntry));
             }
         }
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 var normalizedPath = GetNormalizedPath(relativePath);
                 if (!_cache.TryGetValue(normalizedPath, out cacheEntry))
                 {
-                    cacheEntry = CreateCacheEntry(normalizedPath, compile);
+                    cacheEntry = CreateCacheEntry(relativePath, normalizedPath, compile);
                 }
             }
 
@@ -97,6 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         }
 
         private Task<CompilerCacheResult> CreateCacheEntry(
+            string relativePath,
             string normalizedPath,
             Func<RelativeFileInfo, CompilationResult> compile)
         {
@@ -148,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     var compilationResult = compile(relativeFileInfo);
                     compilationResult.EnsureSuccessful();
                     compilationTaskSource.SetResult(
-                        new CompilerCacheResult(compilationResult, cacheEntryOptions.ExpirationTokens));
+                        new CompilerCacheResult(relativePath, compilationResult, cacheEntryOptions.ExpirationTokens));
                 }
                 catch (Exception ex)
                 {

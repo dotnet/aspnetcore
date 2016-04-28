@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.Extensions.Primitives;
 
@@ -17,9 +19,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// Initializes a new instance of <see cref="CompilerCacheResult"/> with the specified
         /// <see cref="Compilation.CompilationResult"/>.
         /// </summary>
+        /// <param name="relativePath">Path of the view file relative to the application base.</param>
         /// <param name="compilationResult">The <see cref="Compilation.CompilationResult"/>.</param>
-        public CompilerCacheResult(CompilationResult compilationResult)
-            : this(compilationResult, new IChangeToken[0])
+        public CompilerCacheResult(string relativePath, CompilationResult compilationResult)
+            : this(relativePath, compilationResult, new IChangeToken[0])
         {
         }
 
@@ -27,19 +30,29 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// Initializes a new instance of <see cref="CompilerCacheResult"/> with the specified
         /// <see cref="Compilation.CompilationResult"/>.
         /// </summary>
+        /// <param name="relativePath">Path of the view file relative to the application base.</param>
         /// <param name="compilationResult">The <see cref="Compilation.CompilationResult"/>.</param>
         /// <param name="expirationTokens">One or more <see cref="IChangeToken"/> instances that indicate when
         /// this result has expired.</param>
-        public CompilerCacheResult(CompilationResult compilationResult, IList<IChangeToken> expirationTokens)
+        public CompilerCacheResult(string relativePath, CompilationResult compilationResult, IList<IChangeToken> expirationTokens)
         {
             if (expirationTokens == null)
             {
                 throw new ArgumentNullException(nameof(expirationTokens));
             }
 
-            CompilationResult = compilationResult;
-            Success = true;
             ExpirationTokens = expirationTokens;
+            var compiledType = compilationResult.CompiledType;
+
+            var newExpression = Expression.New(compiledType);
+
+            var pathProperty = compiledType.GetProperty(nameof(IRazorPage.Path));
+
+            var propertyBindExpression = Expression.Bind(pathProperty, Expression.Constant(relativePath));
+            var objectInitializeExpression = Expression.MemberInit(newExpression, propertyBindExpression);
+            PageFactory =  Expression
+                .Lambda<Func<IRazorPage>>(objectInitializeExpression)
+                .Compile();
         }
 
         /// <summary>
@@ -55,16 +68,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 throw new ArgumentNullException(nameof(expirationTokens));
             }
 
-            CompilationResult = default(CompilationResult);
-            Success = false;
             ExpirationTokens = expirationTokens;
+            PageFactory = null;
         }
-
-        /// <summary>
-        /// The <see cref="Compilation.CompilationResult"/>.
-        /// </summary>
-        /// <remarks>This property is not available when <see cref="Success"/> is <c>false</c>.</remarks>
-        public CompilationResult CompilationResult { get; }
 
         /// <summary>
         /// <see cref="IChangeToken"/> instances that indicate when this result has expired.
@@ -74,6 +80,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// <summary>
         /// Gets a value that determines if the view was successfully found and compiled.
         /// </summary>
-        public bool Success { get; }
+        public bool Success => PageFactory != null;
+
+        /// <summary>
+        /// Gets a delegate that creates an instance of the <see cref="IRazorPage"/>.
+        /// </summary>
+        public Func<IRazorPage> PageFactory { get; }
+
     }
 }
