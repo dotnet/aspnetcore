@@ -73,7 +73,6 @@ namespace AutobahnTestServer
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseDefaultHostingConfiguration(args)
                 .UseKestrel()
                 .UseStartup<Startup>()
                 .Build();
