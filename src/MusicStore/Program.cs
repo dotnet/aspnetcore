@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Net.Http.Server;
 
 namespace MusicStore
@@ -7,8 +8,13 @@ namespace MusicStore
     {
         public static void Main(string[] args)
         {
+            var config = new ConfigurationBuilder()
+                .AddCommandLine(args)
+                .AddEnvironmentVariables(prefix: "ASPNETCORE_")
+                .Build();
+
             var builder = new WebHostBuilder()
-                .UseDefaultHostingConfiguration(args)
+                .UseConfiguration(config)
                 .UseIISIntegration()
                 .UseStartup("MusicStore");
 
