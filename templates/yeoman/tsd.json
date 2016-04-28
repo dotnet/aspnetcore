@@ -9,7 +9,7 @@
       "commit": "544a35a10866b32afda9c7f029c0764558563f4f"
     },
     "node/node.d.ts": {
-      "commit": "544a35a10866b32afda9c7f029c0764558563f4f"
+      "commit": "08ed4e9f1869e37e29514d862e0158b40e550232"
     },
     "glob/glob.d.ts": {
       "commit": "544a35a10866b32afda9c7f029c0764558563f4f"
@@ -25,6 +25,15 @@
     },
     "rimraf/rimraf.d.ts": {
       "commit": "544a35a10866b32afda9c7f029c0764558563f4f"
+    },
+    "node-uuid/node-uuid.d.ts": {
+      "commit": "08ed4e9f1869e37e29514d862e0158b40e550232"
+    },
+    "node-uuid/node-uuid-base.d.ts": {
+      "commit": "08ed4e9f1869e37e29514d862e0158b40e550232"
+    },
+    "node-uuid/node-uuid-cjs.d.ts": {
+      "commit": "08ed4e9f1869e37e29514d862e0158b40e550232"
     }
   }
 }

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc && node ./built/CreateGenerator.js"
+    "build": "tsc && node ./tmp/build/build.js"
   },
   "author": "Microsoft",
   "license": "Apache-2.0",
