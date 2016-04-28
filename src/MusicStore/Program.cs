@@ -24,10 +24,9 @@ namespace MusicStore
             if (string.Equals(builder.GetSetting("server"), "Microsoft.AspNetCore.Server.WebListener", System.StringComparison.Ordinal)
                 && string.Equals(builder.GetSetting("environment"), "NtlmAuthentication", System.StringComparison.Ordinal))
             {
-                // Set up NTLM authentication for WebListener like below.
-                // For IIS and IISExpress: Use inetmgr to setup NTLM authentication on the application vDir or
-                // modify the applicationHost.config to enable NTLM.
-                builder.UseWebListener(options =>
+                if (string.Equals(builder.GetSetting("environment") ??
+                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
+                "NtlmAuthentication", System.StringComparison.Ordinal))
                 {
                     options.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.NTLM;
                 });
