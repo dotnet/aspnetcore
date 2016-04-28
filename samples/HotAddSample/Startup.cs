@@ -92,7 +92,6 @@ namespace HotAddSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseDefaultHostingConfiguration(args)
                 .UseStartup<Startup>()
                 .UseWebListener()
                 .Build();
