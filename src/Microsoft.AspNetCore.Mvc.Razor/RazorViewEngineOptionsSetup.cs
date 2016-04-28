@@ -50,6 +50,13 @@ namespace Microsoft.AspNetCore.Mvc
             var parseOptions = razorOptions.ParseOptions;
             razorOptions.ParseOptions = parseOptions.WithPreprocessorSymbols(
                 parseOptions.PreprocessorSymbolNames.Concat(new[] { configurationSymbol }));
+
+            razorOptions.ViewLocationFormats.Add("/Views/{1}/{0}" + RazorViewEngine.ViewExtension);
+            razorOptions.ViewLocationFormats.Add("/Views/Shared/{0}" + RazorViewEngine.ViewExtension);
+
+            razorOptions.AreaViewLocationFormats.Add("/Areas/{2}/Views/{1}/{0}" + RazorViewEngine.ViewExtension);
+            razorOptions.AreaViewLocationFormats.Add("/Areas/{2}/Views/Shared/{0}" + RazorViewEngine.ViewExtension);
+            razorOptions.AreaViewLocationFormats.Add("/Views/Shared/{0}" + RazorViewEngine.ViewExtension);
         }
     }
 }

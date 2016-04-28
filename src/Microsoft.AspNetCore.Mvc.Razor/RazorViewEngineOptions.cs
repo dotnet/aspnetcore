@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private Action<RoslynCompilationContext> _compilationCallback = c => { };
 
         /// <summary>
-        /// Get a <see cref="IList{IViewLocationExpander}"/> used by the <see cref="RazorViewEngine"/>.
+        /// Gets a <see cref="IList{IViewLocationExpander}"/> used by the <see cref="RazorViewEngine"/>.
         /// </summary>
         public IList<IViewLocationExpander> ViewLocationExpanders { get; }
             = new List<IViewLocationExpander>();
@@ -34,6 +34,61 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// rooted at the application root.
         /// </remarks>
         public IList<IFileProvider> FileProviders { get; } = new List<IFileProvider>();
+
+        /// <summary>
+        /// Gets the locations where <see cref="RazorViewEngine"/> will search for views.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The locations of the views returned from controllers that do not belong to an area.
+        /// Locations are composite format strings (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx),
+        /// which may contain the following format items:
+        /// </para>
+        /// <list type="bullet">
+        /// <item>
+        /// <description>{0} - Action Name</description>
+        /// </item>
+        /// <item>
+        /// <description>{1} - Controller Name</description>
+        /// </item>
+        /// </list>
+        /// <para>
+        /// The values for these locations are case-sensitive on case-sensitive file systems.
+        /// For example, the view for the <c>Test</c> action of <c>HomeController</c> should be located at
+        /// <c>/Views/Home/Test.cshtml</c>. Locations such as <c>/views/home/test.cshtml</c> would not be discovered.
+        /// </para>
+        /// </remarks>
+        public IList<string> ViewLocationFormats { get; } = new List<string>();
+
+        /// <summary>
+        /// Gets the locations where <see cref="RazorViewEngine"/> will search for views within an
+        /// area.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The locations of the views returned from controllers that belong to an area.
+        /// Locations are composite format strings (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx),
+        /// which may contain the following format items:
+        /// </para>
+        /// <list type="bullet">
+        /// <item>
+        /// <description>{0} - Action Name</description>
+        /// </item>
+        /// <item>
+        /// <description>{1} - Controller Name</description>
+        /// </item>
+        /// <item>
+        /// <description>{2} - Area Name</description>
+        /// </item>
+        /// </list>
+        /// <para>
+        /// The values for these locations are case-sensitive on case-sensitive file systems.
+        /// For example, the view for the <c>Test</c> action of <c>HomeController</c> under <c>Admin</c> area should
+        /// be located at <c>/Areas/Admin/Views/Home/Test.cshtml</c>.
+        /// Locations such as <c>/areas/admin/views/home/test.cshtml</c> would not be discovered.
+        /// </para>
+        /// </remarks>
+        public IList<string> AreaViewLocationFormats { get; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the callback that is used to customize Razor compilation

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -364,10 +365,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
                 .Verifiable();
             var viewEngine = new TestableRazorViewEngine(
                 pageFactory.Object,
-                GetOptionsAccessor());
-            viewEngine.SetLocationFormats(
-                new[] { "fake-path1/{1}/{0}.rzr" },
-                new[] { "fake-area-path/{2}/{1}/{0}.rzr" });
+                GetOptionsAccessor(
+                    viewLocationFormats: new[] { "fake-path1/{1}/{0}.rzr" },
+                    areaViewLocationFormats: new[] { "fake-area-path/{2}/{1}/{0}.rzr" }));
             var context = GetActionContext(_controllerTestContext);
 
             // Act
@@ -393,10 +393,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
                 .Verifiable();
             var viewEngine = new TestableRazorViewEngine(
                 pageFactory.Object,
-                GetOptionsAccessor());
-            viewEngine.SetLocationFormats(
-                new[] { "fake-path1/{1}/{0}.rzr" },
-                new[] { "fake-area-path/{2}/{1}/{0}.rzr" });
+                GetOptionsAccessor(
+                    viewLocationFormats: new[] { "fake-path1/{1}/{0}.rzr" },
+                    areaViewLocationFormats: new[] { "fake-area-path/{2}/{1}/{0}.rzr" }));
             var context = GetActionContext(_areaTestContext);
 
             // Act
@@ -1463,38 +1462,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
         }
 
         [Fact]
-        public void AreaViewLocationFormats_ContainsExpectedLocations()
-        {
-            // Arrange
-            var viewEngine = CreateViewEngine();
-            var areaViewLocations = new string[]
-            {
-                "/Areas/{2}/Views/{1}/{0}.cshtml",
-                "/Areas/{2}/Views/Shared/{0}.cshtml",
-                "/Views/Shared/{0}.cshtml"
-            };
-
-            // Act & Assert
-            Assert.Equal(areaViewLocations, viewEngine.AreaViewLocationFormats);
-        }
-
-        [Fact]
-        public void ViewLocationFormats_ContainsExpectedLocations()
-        {
-            // Arrange
-            var viewEngine = CreateViewEngine();
-
-            var viewLocations = new string[]
-            {
-                "/Views/{1}/{0}.cshtml",
-                "/Views/Shared/{0}.cshtml"
-            };
-
-            // Act & Assert
-            Assert.Equal(viewLocations, viewEngine.ViewLocationFormats);
-        }
-
-        [Fact]
         public void GetNormalizedRouteValue_ReturnsValueFromRouteValues_IfKeyHandlingIsRequired()
         {
             // Arrange
@@ -1713,20 +1680,44 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
             IEnumerable<IViewLocationExpander> expanders = null)
         {
             pageFactory = pageFactory ?? Mock.Of<IRazorPageFactoryProvider>();
-            return new TestableRazorViewEngine(
-                pageFactory,
-                GetOptionsAccessor(expanders));
+            return new TestableRazorViewEngine(pageFactory, GetOptionsAccessor(expanders));
         }
 
         private static IOptions<RazorViewEngineOptions> GetOptionsAccessor(
-            IEnumerable<IViewLocationExpander> expanders = null)
+            IEnumerable<IViewLocationExpander> expanders = null,
+            IEnumerable<string> viewLocationFormats = null,
+            IEnumerable<string> areaViewLocationFormats = null)
         {
+            var optionsSetup = new RazorViewEngineOptionsSetup(Mock.Of<IHostingEnvironment>());
+
             var options = new RazorViewEngineOptions();
+            optionsSetup.Configure(options);
+
             if (expanders != null)
             {
                 foreach (var expander in expanders)
                 {
                     options.ViewLocationExpanders.Add(expander);
+                }
+            }
+
+            if (viewLocationFormats != null)
+            {
+                options.ViewLocationFormats.Clear();
+
+                foreach (var location in viewLocationFormats)
+                {
+                    options.ViewLocationFormats.Add(location);
+                }
+            }
+
+            if (areaViewLocationFormats != null)
+            {
+                options.AreaViewLocationFormats.Clear();
+
+                foreach (var location in areaViewLocationFormats)
+                {
+                    options.AreaViewLocationFormats.Add(location);
                 }
             }
 
@@ -1784,29 +1775,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
 
         private class TestableRazorViewEngine : RazorViewEngine
         {
-            private IEnumerable<string> _viewLocationFormats;
-            private IEnumerable<string> _areaViewLocationFormats;
-
             public TestableRazorViewEngine(
                 IRazorPageFactoryProvider pageFactory,
                 IOptions<RazorViewEngineOptions> optionsAccessor)
                 : base(pageFactory, Mock.Of<IRazorPageActivator>(), new HtmlTestEncoder(), optionsAccessor, NullLoggerFactory.Instance)
             {
             }
-
-            public void SetLocationFormats(
-                IEnumerable<string> viewLocationFormats,
-                IEnumerable<string> areaViewLocationFormats)
-            {
-                _viewLocationFormats = viewLocationFormats;
-                _areaViewLocationFormats = areaViewLocationFormats;
-            }
-
-            public override IEnumerable<string> ViewLocationFormats =>
-                _viewLocationFormats != null ? _viewLocationFormats : base.ViewLocationFormats;
-
-            public override IEnumerable<string> AreaViewLocationFormats =>
-                _areaViewLocationFormats != null ? _areaViewLocationFormats : base.AreaViewLocationFormats;
 
             public IMemoryCache ViewLookupCachePublic => ViewLookupCache;
         }

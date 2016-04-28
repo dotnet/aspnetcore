@@ -462,6 +462,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return string.Format(CultureInfo.CurrentCulture, GetString("Compilation_DependencyContextIsNotSpecified"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// '{0}' cannot be empty. These locations are required to locate a view for rendering.
+        /// </summary>
+        internal static string ViewLocationFormatsIsRequired
+        {
+            get { return GetString("ViewLocationFormatsIsRequired"); }
+        }
+
+        /// <summary>
+        /// '{0}' cannot be empty. These locations are required to locate a view for rendering.
+        /// </summary>
+        internal static string FormatViewLocationFormatsIsRequired(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewLocationFormatsIsRequired"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
