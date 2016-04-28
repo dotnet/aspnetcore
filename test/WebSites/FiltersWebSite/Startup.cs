@@ -71,7 +71,6 @@ namespace FiltersWebSite
         {
             var host = new WebHostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseDefaultHostingConfiguration(args)
                 .UseStartup<Startup>()
                 .UseKestrel()
                 .UseIISIntegration()

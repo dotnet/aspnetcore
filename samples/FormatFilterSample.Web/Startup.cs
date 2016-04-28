@@ -42,7 +42,6 @@ namespace FormatFilterSample.Web
         {
             var host = new WebHostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseDefaultHostingConfiguration(args)
                 .UseIISIntegration()
                 .UseKestrel()
                 .UseStartup<Startup>()
