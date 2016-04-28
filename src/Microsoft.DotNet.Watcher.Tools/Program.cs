@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             _loggerFactory = new LoggerFactory();
 
-            var commandProvider = new CommandOutputProvider(PlatformServices.Default.Runtime);
+            var commandProvider = new CommandOutputProvider();
             _loggerFactory.AddProvider(commandProvider);
         }
 
