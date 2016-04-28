@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var executor = GetExecutorForMethod("ValueMethod");
             var result = executor.Execute(
                 _targetObject,
-                new object[] { 10 , 20 });
+                new object[] { 10, 20 });
             Assert.Equal(30, (int)result);
         }
 
@@ -169,6 +170,25 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal(expectedException, ex.Message);
         }
 
+        [Theory]
+        [InlineData("EchoWithDefaultAttributes", new object[] { "hello", true, 10 })]
+        [InlineData("EchoWithDefaultValues", new object[] { "hello", true, 20 })]
+        [InlineData("EchoWithDefaultValuesAndAttributes", new object[] { "hello", 20 })]
+        [InlineData("EchoWithNoDefaultAttributesAndValues", new object[] { null, 0, false, null })]
+        public void GetDefaultValueForParameters_ReturnsExpectedValues(string methodName, object[] expectedValues)
+        {
+            var executor = GetExecutorForMethod(methodName);
+            var defaultValues = new object[expectedValues.Length];
+
+            for (var index = 0; index < expectedValues.Length; index++)
+            {
+                defaultValues[index] = executor.GetDefaultValueForParameter(index);
+            }
+
+            Assert.Equal(expectedValues, defaultValues);
+
+        }
+
         private ObjectMethodExecutor GetExecutorForMethod(string methodName)
         {
             var method = typeof(TestObject).GetMethod(methodName);
@@ -237,6 +257,38 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             public TaskOfTDerivedType<int> TaskActionWithCustomTaskOfTReturnType(int i, string s)
             {
                 return new TaskOfTDerivedType<int>(1);
+            }
+
+            public string EchoWithDefaultAttributes(
+                [DefaultValue("hello")] string input1,
+                [DefaultValue(true)] bool input2,
+                [DefaultValue(10)] int input3)
+            {
+                return input1;
+            }
+
+            public string EchoWithDefaultValues(
+                string input1 = "hello",
+                bool input2 = true,
+                int input3 = 20)
+            {
+                return input1;
+            }
+
+            public string EchoWithDefaultValuesAndAttributes(
+                [DefaultValue("Hi")] string input1 = "hello",
+                [DefaultValue(10)] int input3 = 20)
+            {
+                return input1;
+            }
+
+            public string EchoWithNoDefaultAttributesAndValues(
+                string input1, 
+                int input2, 
+                bool input3,
+                TestObject input4)
+            {
+                return input1;
             }
 
             public class TaskDerivedType : Task

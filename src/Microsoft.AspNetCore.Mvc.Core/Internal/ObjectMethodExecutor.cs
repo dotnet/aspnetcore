@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -14,6 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class ObjectMethodExecutor
     {
+        private object[] _parameterDefaultValues;
         private ActionExecutorAsync _executorAsync;
         private ActionExecutor _executor;
 
@@ -31,7 +33,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private static readonly MethodInfo _coerceMethod = ((MethodCallExpression)_coerceTaskExpression.Body).Method;
 
-
         private ObjectMethodExecutor(MethodInfo methodInfo)
         {            
             if (methodInfo == null)
@@ -39,6 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(methodInfo));
             }
             MethodInfo = methodInfo;
+            ActionParameters = methodInfo.GetParameters();
         }
 
         private delegate Task<object> ActionExecutorAsync(object target, object[] parameters);
@@ -48,6 +50,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private delegate void VoidActionExecutor(object target, object[] parameters);
 
         public MethodInfo MethodInfo { get; }
+
+        public ParameterInfo[] ActionParameters { get; }
 
         public static ObjectMethodExecutor Create(MethodInfo methodInfo, TypeInfo targetTypeInfo)
         {
@@ -65,6 +69,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public object Execute(object target, object[] parameters)
         {
             return _executor(target, parameters);
+        }
+
+        public object GetDefaultValueForParameter(int index)
+        {
+            if (index < 0 || index > ActionParameters.Length - 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+
+            EnsureParameterDefaultValues();
+
+            return _parameterDefaultValues[index];
         }
 
         private static ActionExecutor GetExecutor(MethodInfo methodInfo, TypeInfo targetTypeInfo)
@@ -237,6 +253,44 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             var task = (Task<T>)taskAsObject;
             return CastToObject<T>(task);
+        }
+
+        private void EnsureParameterDefaultValues()
+        {
+            if (_parameterDefaultValues == null)
+            {
+                var count = ActionParameters.Length;
+                _parameterDefaultValues = new object[count];
+
+                for (var i = 0; i < count; i++)
+                {
+                    var parameterInfo = ActionParameters[i];
+                    object defaultValue;
+
+                    if (parameterInfo.HasDefaultValue)
+                    {
+                        defaultValue = parameterInfo.DefaultValue;
+                    }
+                    else
+                    {
+                        var defaultValueAttribute = parameterInfo
+                            .GetCustomAttribute<DefaultValueAttribute>(inherit: false);
+
+                        if (defaultValueAttribute?.Value == null)
+                        {
+                            defaultValue = parameterInfo.ParameterType.GetTypeInfo().IsValueType
+                                ? Activator.CreateInstance(parameterInfo.ParameterType)
+                                : null;
+                        }
+                        else
+                        {
+                            defaultValue = defaultValueAttribute.Value;
+                        }
+                    }
+
+                    _parameterDefaultValues[i] = defaultValue;
+                }
+            }
         }
     }
 }

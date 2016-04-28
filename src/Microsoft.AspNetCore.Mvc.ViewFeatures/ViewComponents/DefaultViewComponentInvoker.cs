@@ -102,9 +102,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             using (_logger.ViewComponentScope(context))
             {
                 var method = context.ViewComponentDescriptor.MethodInfo;
-                var arguments = ControllerActionExecutor.PrepareArguments(context.Arguments, method.GetParameters());
-
                 var methodExecutor = _viewComponentInvokerCache.GetViewComponentMethodExecutor(context);
+
+                var arguments = ControllerActionExecutor.PrepareArguments(context.Arguments, methodExecutor);
 
                 _diagnosticSource.BeforeViewComponent(context, component);
                 _logger.ViewComponentExecuting(context, arguments);
@@ -129,10 +129,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             using (_logger.ViewComponentScope(context))
             {
                 var method = context.ViewComponentDescriptor.MethodInfo;
+                var methodExecutor = _viewComponentInvokerCache.GetViewComponentMethodExecutor(context);
+
                 var arguments = ControllerActionExecutor.PrepareArguments(
                     context.Arguments,
-                    method.GetParameters());
-                var methodExecutor = _viewComponentInvokerCache.GetViewComponentMethodExecutor(context);
+                    methodExecutor);
 
                 _diagnosticSource.BeforeViewComponent(context, component);
                 _logger.ViewComponentExecuting(context, arguments);

@@ -569,7 +569,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                         var arguments = ControllerActionExecutor.PrepareArguments(
                             _actionExecutingContext.ActionArguments,
-                            actionMethodInfo.GetParameters());
+                            _executor);
 
                         _logger.ActionMethodExecuting(_actionExecutingContext, arguments);
 

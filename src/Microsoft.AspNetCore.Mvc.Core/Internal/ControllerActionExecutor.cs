@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             object instance,
             IDictionary<string, object> actionArguments)
         {
-            var orderedArguments = PrepareArguments(actionArguments, actionMethodExecutor.MethodInfo.GetParameters());
+            var orderedArguments = PrepareArguments(actionArguments, actionMethodExecutor);
             return ExecuteAsync(actionMethodExecutor, instance, orderedArguments);
         }
 
@@ -30,8 +30,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static object[] PrepareArguments(
             IDictionary<string, object> actionParameters,
-            ParameterInfo[] declaredParameterInfos)
+            ObjectMethodExecutor actionMethodExecutor)
         {
+            var declaredParameterInfos = actionMethodExecutor.ActionParameters;
             var count = declaredParameterInfos.Length;
             if (count == 0)
             {
@@ -46,26 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                 if (!actionParameters.TryGetValue(parameterInfo.Name, out value))
                 {
-                    if (parameterInfo.HasDefaultValue)
-                    {
-                        value = parameterInfo.DefaultValue;
-                    }
-                    else
-                    {
-                        var defaultValueAttribute = 
-                            parameterInfo.GetCustomAttribute<DefaultValueAttribute>(inherit: false);
-
-                        if (defaultValueAttribute?.Value == null)
-                        {
-                            value = parameterInfo.ParameterType.GetTypeInfo().IsValueType
-                                ? Activator.CreateInstance(parameterInfo.ParameterType)
-                                : null;
-                        }
-                        else
-                        {
-                            value = defaultValueAttribute.Value;
-                        }
-                    }
+                    value = actionMethodExecutor.GetDefaultValueForParameter(index);
                 }
 
                 arguments[index] = value;
