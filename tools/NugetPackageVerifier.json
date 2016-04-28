@@ -137,6 +137,15 @@
             "Microsoft.AspNetCore.WebSockets.Protocol": {},
             "Microsoft.AspNetCore.WebSockets.Server": {},
             "Microsoft.AspNetCore.WebUtilities": {},
+            "Microsoft.Data.Sqlite": {
+                "SIGN_AUTHENTICODE": {
+                    "runtimes/win7-x86/native/sqlite3.dll": "We don't sign 3rd party DLLs",
+                    "runtimes/win7-x64/native/sqlite3.dll": "We don't sign 3rd party DLLs",
+                    "build/netcore50/win10-arm/native/sqlite3.dll": "We don't sign 3rd party DLLs",
+                    "build/netcore50/win10-x86/native/sqlite3.dll": "We don't sign 3rd party DLLs",
+                    "build/netcore50/win10-x64/native/sqlite3.dll": "We don't sign 3rd party DLLs"
+                }
+            },
             "Microsoft.Dnx.Compilation.CSharp.Abstractions": {},
             "Microsoft.Dnx.Compilation.CSharp.Common": {},
             "Microsoft.EntityFrameworkCore": {},

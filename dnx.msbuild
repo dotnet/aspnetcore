@@ -59,6 +59,7 @@
                          $(UnsignedPackagesPath)**\*.psd1;
                          $(UnsignedPackagesPath)**\*.psm1;
                          $(UnsignedPackagesPath)**\*.ps1;"
+                Exclude="$(UnsignedPackagesPath)**\sqlite3.dll"
             />
 
             <UnsignedBinaries Include="@(_UnsignedBinaries)">
