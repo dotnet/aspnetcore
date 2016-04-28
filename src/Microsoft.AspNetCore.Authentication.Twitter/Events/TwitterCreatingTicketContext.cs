@@ -5,6 +5,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Authentication.Twitter
 {
@@ -22,40 +23,49 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         /// <param name="screenName">Twitter screen name</param>
         /// <param name="accessToken">Twitter access token</param>
         /// <param name="accessTokenSecret">Twitter access token secret</param>
+        /// <param name="user">User details</param>
         public TwitterCreatingTicketContext(
             HttpContext context,
             TwitterOptions options,
             string userId,
             string screenName,
             string accessToken,
-            string accessTokenSecret)
+            string accessTokenSecret,
+            JObject user)
             : base(context, options)
         {
             UserId = userId;
             ScreenName = screenName;
             AccessToken = accessToken;
             AccessTokenSecret = accessTokenSecret;
+            User = user ?? new JObject();
         }
 
         /// <summary>
         /// Gets the Twitter user ID
         /// </summary>
-        public string UserId { get; private set; }
+        public string UserId { get; }
 
         /// <summary>
         /// Gets the Twitter screen name
         /// </summary>
-        public string ScreenName { get; private set; }
+        public string ScreenName { get; }
 
         /// <summary>
         /// Gets the Twitter access token
         /// </summary>
-        public string AccessToken { get; private set; }
+        public string AccessToken { get; }
 
         /// <summary>
         /// Gets the Twitter access token secret
         /// </summary>
-        public string AccessTokenSecret { get; private set; }
+        public string AccessTokenSecret { get; }
+
+        /// <summary>
+        /// Gets the JSON-serialized user or an empty
+        /// <see cref="JObject"/> if it is not available.
+        /// </summary>
+        public JObject User { get; }
 
         /// <summary>
         /// Gets the <see cref="ClaimsPrincipal"/> representing the user

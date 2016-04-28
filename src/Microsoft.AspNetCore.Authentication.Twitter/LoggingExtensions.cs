@@ -9,6 +9,7 @@ namespace Microsoft.Extensions.Logging
     {
         private static Action<ILogger, Exception> _obtainRequestToken;
         private static Action<ILogger, Exception> _obtainAccessToken;
+        private static Action<ILogger, Exception> _retrieveUserDetails;
 
         static LoggingExtensions()
         {
@@ -20,6 +21,10 @@ namespace Microsoft.Extensions.Logging
                 eventId: 2,
                 logLevel: LogLevel.Debug,
                 formatString: "ObtainAccessToken");
+            _retrieveUserDetails = LoggerMessage.Define(
+                eventId: 3,
+                logLevel: LogLevel.Debug,
+                formatString: "RetrieveUserDetails");
 
         }
 
@@ -31,6 +36,11 @@ namespace Microsoft.Extensions.Logging
         public static void ObtainRequestToken(this ILogger logger)
         {
             _obtainRequestToken(logger, null);
+        }
+
+        public static void RetrieveUserDetails(this ILogger logger)
+        {
+            _retrieveUserDetails(logger, null);
         }
     }
 }
