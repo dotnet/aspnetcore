@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
@@ -17,29 +16,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
-        [Theory]
-        [InlineData("")]                        // Shared/MyView.cshtml
-        [InlineData("/")]                       // Shared/MyView.cshtml
-        [InlineData("/Home/Index")]             // Shared/MyView.cshtml
-        public async Task Home_Pages_ReturnSuccess(string path)
-        {
-            // Arrange & Act
-            var response = await Client.GetAsync("http://localhost" + path);
-
-            // Assert
-            Assert.NotNull(response);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        }
-
         [Fact]
-        public async Task Home_NotFoundAction_Returns404()
+        public async Task Home_Pages_ReturnSuccess()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/Home/NotFound");
+            var response = await Client.GetStringAsync("http://localhost");
 
             // Assert
-            Assert.NotNull(response);
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Contains("This sandbox should give you a quick view of a basic MVC application.", response);
         }
     }
 }

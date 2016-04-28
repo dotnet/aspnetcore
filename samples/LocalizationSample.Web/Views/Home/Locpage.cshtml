@@ -1,7 +1,0 @@
-﻿@{
-    Layout = "/Views/Shared/_LocalizationLayout.cshtml";
-    var date = new DateTime(2015,6,25);
-}
-@LocString["Hello there!!"]
-@ViewBag.Message
-@LocString.GetHtml("Hi", "John", @date , @date.DayOfWeek)

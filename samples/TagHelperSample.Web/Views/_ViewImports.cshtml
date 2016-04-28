@@ -1,1 +1,0 @@
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers

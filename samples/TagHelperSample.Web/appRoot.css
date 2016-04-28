@@ -1,8 +1,0 @@
-﻿body::after {
-    display: block;
-    background-color: #ff0000;
-    color: #fff;
-    font-size: 1.2em;
-    margin-top: 2.4em;
-    content: "ERROR: Stylesheet 'appRoot.css' was loaded from outside webroot!";
-}
