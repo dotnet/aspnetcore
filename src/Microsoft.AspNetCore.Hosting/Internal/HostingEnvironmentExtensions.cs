@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             
             hostingEnvironment.EnvironmentName =
                 options.Environment ??
-                Environment.GetEnvironmentVariable($"ASPNETCORE_{WebHostDefaults.EnvironmentKey}") ??
+                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ??
                 hostingEnvironment.EnvironmentName;
         }
     }
