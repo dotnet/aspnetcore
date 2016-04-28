@@ -41,7 +41,6 @@ namespace SampleApp
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseDefaultHostingConfiguration(args)
                 .UseKestrel(options =>
                 {
                     // options.ThreadCount = 4;
