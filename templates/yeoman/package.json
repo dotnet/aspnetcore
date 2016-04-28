@@ -1,0 +1,20 @@
+{
+  "name": "generator-aspnetspa-generator",
+  "version": "1.0.0",
+  "description": "Creates the Yeoman generator for ASP.NET Core SPA templates",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc && node ./built/CreateGenerator.js"
+  },
+  "author": "Microsoft",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "diff": "^2.2.2",
+    "gitignore-parser": "0.0.2",
+    "glob": "^7.0.3",
+    "lodash": "^4.11.1",
+    "mkdirp": "^0.5.1",
+    "rimraf": "^2.5.2"
+  }
+}

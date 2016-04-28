@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "target": "es5",
+    "outDir": "built",
+    "sourceMap": false
+  },
+  "exclude": [
+      "node_modules",
+      "generator-aspnet-spa"
+  ]
+}
