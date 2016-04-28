@@ -45,6 +45,9 @@ namespace Microsoft.AspNetCore.Hosting
             _hostingEnvironment = new HostingEnvironment();
             _configureServicesDelegates = new List<Action<IServiceCollection>>();
             _configureLoggingDelegates = new List<Action<ILoggerFactory>>();
+
+            // This may end up storing null, but that's indistinguishable from not adding it.
+            UseSetting(WebHostDefaults.EnvironmentKey, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
         }
 
         /// <summary>
