@@ -6,6 +6,7 @@
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel.TestCommon": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
+    "Newtonsoft.Json": "8.0.3",
     "xunit": "2.1.0"
   },
   "frameworks": {
@@ -20,8 +21,9 @@
         "System.Runtime.Serialization.Primitives": "4.1.1-*"
       },
       "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
+        "portable-dnxcore50+net45+win8+wp8+wpa81",
+        "dotnet",
+        "portable-net45+win8"
       ]
     },
     "net451": {
