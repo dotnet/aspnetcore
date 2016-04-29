@@ -8,7 +8,6 @@
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.Session": "1.0.0-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
-    "Microsoft.Extensions.Caching.Redis": "1.0.0-*",
     "Microsoft.Extensions.Caching.SqlServer": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*"
   },
@@ -18,7 +17,22 @@
     ]
   },
   "frameworks": {
-    "net451": {}
+    "net451": {
+      "dependencies": {
+        "Microsoft.Extensions.Caching.Redis": "1.0.0-*"
+      }
+    },
+    "netcoreapp1.0": {
+      "imports": [
+        "dnxcore50"
+      ],
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        }
+      }
+    }
   },
   "tools": {
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": {

@@ -27,11 +27,11 @@ namespace SessionSample
             //    o.SchemaName = "dbo";
             //    o.TableName = "Sessions";
             //});
-
+#if NET451
             // Uncomment the following line to use the Redis implementation of IDistributedCache.
             // This will override any previously registered IDistributedCache service.
             //services.AddSingleton<IDistributedCache, RedisCache>();
-
+#endif
             // Adds a default in-memory implementation of IDistributedCache
             services.AddMemoryCache();
             services.AddDistributedMemoryCache();

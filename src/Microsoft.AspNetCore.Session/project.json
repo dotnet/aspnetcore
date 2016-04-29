@@ -13,6 +13,7 @@
     ]
   },
   "dependencies": {
+    "Microsoft.AspNetCore.DataProtection": "1.0.0-*",
     "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Caching.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
