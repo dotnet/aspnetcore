@@ -15,8 +15,8 @@ namespace Microsoft.AspNetCore.Server.Testing
     public class RemoteWindowsDeployer : ApplicationDeployer
     {
         /// <summary>
-        /// Example: If the share path is '\\foo\bar', then this returns the full path to the
-        /// deployed folder. Example: '\\foo\bar\048f6c99-de3e-488a-8020-f9eb277818d9'
+        /// Example: If the share path is '\\dir1\dir2', then this returns the full path to the
+        /// deployed folder. Example: '\\dir1\dir2\048f6c99-de3e-488a-8020-f9eb277818d9'
         /// </summary>
         private string _deployedFolderPathInFileShare;
         private readonly RemoteWindowsDeploymentParameters _deploymentParameters;
