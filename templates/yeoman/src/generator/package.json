@@ -2,7 +2,9 @@
   "name": "generator-aspnet-spa",
   "version": "0.1.0",
   "description": "Single-Page App templates for ASP.NET Core",
-  "files": ["templates"],
+  "author": "Microsoft",
+  "license": "Apache-2.0",
+  "files": ["app"],
   "keywords": ["yeoman-generator"],
   "dependencies": {
     "yeoman-generator": "^0.20.2"
