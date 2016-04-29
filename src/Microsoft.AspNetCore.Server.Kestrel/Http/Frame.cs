@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private static readonly byte[] _bytesContentLengthZero = Encoding.ASCII.GetBytes("\r\nContent-Length: 0");
         private static readonly byte[] _bytesSpace = Encoding.ASCII.GetBytes(" ");
         private static readonly byte[] _bytesEndHeaders = Encoding.ASCII.GetBytes("\r\n\r\n");
+        private static readonly int _httpVersionLength = "HTTP/1.*".Length;
 
         private static Vector<byte> _vectorCRs = new Vector<byte>((byte)'\r');
         private static Vector<byte> _vectorColons = new Vector<byte>((byte)':');
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private readonly object _onStartingSync = new Object();
         private readonly object _onCompletedSync = new Object();
 
-        protected bool _corruptedRequest = false;
+        private bool _requestRejected;
         private Headers _frameHeaders;
         private Streams _frameStreams;
 
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         protected CancellationTokenSource _abortedCts;
         protected CancellationToken? _manuallySetRequestAbortToken;
 
-        protected bool _responseStarted;
+        protected RequestProcessingStatus _requestProcessingStatus;
         protected bool _keepAlive;
         private bool _autoChunk;
         protected Exception _applicationException;
@@ -96,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     return "HTTP/1.0";
                 }
-                return "";
+                return string.Empty;
             }
             set
             {
@@ -167,9 +168,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 return cts;
             }
         }
+
         public bool HasResponseStarted
         {
-            get { return _responseStarted; }
+            get { return _requestProcessingStatus == RequestProcessingStatus.ResponseStarted; }
         }
 
         protected FrameRequestHeaders FrameRequestHeaders => _frameHeaders.RequestHeaders;
@@ -216,7 +218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             _onStarting = null;
             _onCompleted = null;
 
-            _responseStarted = false;
+            _requestProcessingStatus = RequestProcessingStatus.RequestPending;
             _keepAlive = false;
             _autoChunk = false;
             _applicationException = null;
@@ -446,7 +448,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
-            if (!_responseStarted)
+            if (!HasResponseStarted)
             {
                 return WriteAsyncAwaited(data, cancellationToken);
             }
@@ -506,7 +508,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public void ProduceContinue()
         {
-            if (_responseStarted) return;
+            if (HasResponseStarted)
+            {
+                return;
+            }
 
             StringValues expect;
             if (_httpVersion == HttpVersionType.Http1_1 &&
@@ -519,7 +524,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public Task ProduceStartAndFireOnStarting()
         {
-            if (_responseStarted) return TaskUtilities.CompletedTask;
+            if (HasResponseStarted)
+            {
+                return TaskUtilities.CompletedTask;
+            }
 
             if (_onStarting != null)
             {
@@ -554,30 +562,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         private void ProduceStart(bool appCompleted)
         {
-            if (_responseStarted) return;
-            _responseStarted = true;
+            if (HasResponseStarted)
+            {
+                return;
+            }
+
+            _requestProcessingStatus = RequestProcessingStatus.ResponseStarted;
 
             var statusBytes = ReasonPhrases.ToStatusBytes(StatusCode, ReasonPhrase);
 
             CreateResponseHeader(statusBytes, appCompleted);
         }
 
+        protected Task TryProduceInvalidRequestResponse()
+        {
+            if (_requestProcessingStatus == RequestProcessingStatus.RequestStarted && _requestRejected)
+            {
+                if (_frameHeaders == null)
+                {
+                    InitializeHeaders();
+                }
+
+                return ProduceEnd();
+            }
+
+            return TaskUtilities.CompletedTask;
+        }
+
         protected Task ProduceEnd()
         {
-            if (_corruptedRequest || _applicationException != null)
+            if (_requestRejected || _applicationException != null)
             {
-                if (_corruptedRequest)
+                if (_requestRejected)
                 {
                     // 400 Bad Request
                     StatusCode = 400;
-                } 
+                }
                 else
                 {
                     // 500 Internal Server Error
                     StatusCode = 500;
                 }
 
-                if (_responseStarted)
+                if (HasResponseStarted)
                 {
                     // We can no longer respond with a 500, so we simply close the connection.
                     _requestProcessingStopping = true;
@@ -601,7 +628,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }
             }
 
-            if (!_responseStarted)
+            if (!HasResponseStarted)
             {
                 return ProduceEndAwaited();
             }
@@ -709,31 +736,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             SocketOutput.ProducingComplete(end);
         }
 
-        protected bool TakeStartLine(SocketInput input)
+        protected RequestLineStatus TakeStartLine(SocketInput input)
         {
             var scan = input.ConsumingStart();
             var consumed = scan;
+
             try
             {
+                // We may hit this when the client has stopped sending data but
+                // the connection hasn't closed yet, and therefore Frame.Stop()
+                // hasn't been called yet.
+                if (scan.Peek() == -1)
+                {
+                    return RequestLineStatus.Empty;
+                }
+
+                _requestProcessingStatus = RequestProcessingStatus.RequestStarted;
+
                 string method;
                 var begin = scan;
-                if (!begin.GetKnownMethod(ref scan, out method))
+                if (!begin.GetKnownMethod(out method))
                 {
                     if (scan.Seek(ref _vectorSpaces) == -1)
                     {
-                        return false;
+                        return RequestLineStatus.MethodIncomplete;
                     }
+
                     method = begin.GetAsciiString(scan);
-                    scan.Take();
+                    if (method == null)
+                    {
+                        RejectRequest("Missing method.");
+                    }
+                }
+                else
+                {
+                    scan.Skip(method.Length);
                 }
 
+                scan.Take();
                 begin = scan;
-
                 var needDecode = false;
                 var chFound = scan.Seek(ref _vectorSpaces, ref _vectorQuestionMarks, ref _vectorPercentages);
                 if (chFound == -1)
                 {
-                    return false;
+                    return RequestLineStatus.TargetIncomplete;
                 }
                 else if (chFound == '%')
                 {
@@ -741,7 +787,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     chFound = scan.Seek(ref _vectorSpaces, ref _vectorQuestionMarks);
                     if (chFound == -1)
                     {
-                        return false;
+                        return RequestLineStatus.TargetIncomplete;
                     }
                 }
 
@@ -752,35 +798,61 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 if (chFound == '?')
                 {
                     begin = scan;
-                    if (scan.Seek(ref _vectorSpaces) != ' ')
+                    if (scan.Seek(ref _vectorSpaces) == -1)
                     {
-                        return false;
+                        return RequestLineStatus.TargetIncomplete;
                     }
                     queryString = begin.GetAsciiString(scan);
                 }
 
+                if (pathBegin.Peek() == ' ')
+                {
+                    RejectRequest("Missing request target.");
+                }
+
                 scan.Take();
                 begin = scan;
+                if (scan.Seek(ref _vectorCRs) == -1)
+                {
+                    return RequestLineStatus.VersionIncomplete;
+                }
 
                 string httpVersion;
-                if (!begin.GetKnownVersion(ref scan, out httpVersion))
+                if (!begin.GetKnownVersion(out httpVersion))
                 {
-                    scan = begin;
-                    if (scan.Seek(ref _vectorCRs) == -1)
-                    {
-                        return false;
-                    }
+                    // A slower fallback is necessary since the iterator's PeekLong() method
+                    // used in GetKnownVersion() only examines two memory blocks at most.
+                    // Although unlikely, it is possible that the 8 bytes forming the version
+                    // could be spread out on more than two blocks, if the connection
+                    // happens to be unusually slow.
                     httpVersion = begin.GetAsciiString(scan);
 
-                    scan.Take();
-                }
-                if (scan.Take() != '\n')
-                {
-                    return false;
+                    if (httpVersion == null)
+                    {
+                        RejectRequest("Missing HTTP version.");
+                    }
+                    else if (httpVersion != "HTTP/1.0" && httpVersion != "HTTP/1.1")
+                    {
+                        RejectRequest("Malformed request.");
+                    }
                 }
 
-                // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11 
-                // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8; 
+                // HttpVersion must be set here to send correct response when request is rejected
+                HttpVersion = httpVersion;
+
+                scan.Take();
+                var next = scan.Take();
+                if (next == -1)
+                {
+                    return RequestLineStatus.Incomplete;
+                }
+                else if (next != '\n')
+                {
+                    RejectRequest("Missing LF in request line.");
+                }
+
+                // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
+                // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
                 // then encoded/escaped to ASCII  https://www.ietf.org/rfc/rfc3987.txt "Mapping of IRIs to URIs"
                 string requestUrlPath;
                 if (needDecode)
@@ -802,7 +874,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 Method = method;
                 RequestUri = requestUrlPath;
                 QueryString = queryString;
-                HttpVersion = httpVersion;
 
                 bool caseMatches;
 
@@ -818,7 +889,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     Path = requestUrlPath;
                 }
 
-                return true;
+                return RequestLineStatus.Done;
             }
             finally
             {
@@ -881,7 +952,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             return true;
                         }
 
-                        ReportCorruptedHttpRequest(new BadHttpRequestException("Headers corrupted, invalid header sequence."));
+                        RejectRequest("Headers corrupted, invalid header sequence.");
                         // Headers corrupted, parsing headers is complete
                         return true;
                     }
@@ -994,10 +1065,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                    statusCode != 304;
         }
 
-        public void ReportCorruptedHttpRequest(BadHttpRequestException ex)
+        public void RejectRequest(string message)
         {
-            _corruptedRequest = true;
+            _requestProcessingStopping = true;
+            _requestRejected = true;
+            var ex = new BadHttpRequestException(message);
             Log.ConnectionBadRequest(ConnectionId, ex);
+            throw ex;
         }
 
         protected void ReportApplicationError(Exception ex)
@@ -1023,6 +1097,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             Unknown = -1,
             Http1_0 = 0,
             Http1_1 = 1
+        }
+
+        protected enum RequestLineStatus
+        {
+            Empty,
+            MethodIncomplete,
+            TargetIncomplete,
+            VersionIncomplete,
+            Incomplete,
+            Done
+        }
+
+        protected enum RequestProcessingStatus
+        {
+            RequestPending,
+            RequestStarted,
+            ResponseStarted
         }
     }
 }

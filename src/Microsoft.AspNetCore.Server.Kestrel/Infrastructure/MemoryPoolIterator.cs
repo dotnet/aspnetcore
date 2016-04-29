@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             {
                 if (wasLastBlock)
                 {
-                    return;
+                    throw new InvalidOperationException("Attempted to skip more bytes than available.");
                 }
                 else
                 {
@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                 while (following > 0)
                 {
 // Need unit tests to test Vector path
-#if !DEBUG 
+#if !DEBUG
                     // Check will be Jitted away https://github.com/dotnet/coreclr/issues/1079
                     if (Vector.IsHardwareAccelerated)
                     {
@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                             return byte0;
                         }
 // Need unit tests to test Vector path
-#if !DEBUG 
+#if !DEBUG
                     }
 #endif
 
@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                 {
 
 // Need unit tests to test Vector path
-#if !DEBUG 
+#if !DEBUG
                     // Check will be Jitted away https://github.com/dotnet/coreclr/issues/1079
                     if (Vector.IsHardwareAccelerated)
                     {
@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                             return byte1;
                         }
 // Need unit tests to test Vector path
-#if !DEBUG 
+#if !DEBUG
                     }
 #endif
                     var pCurrent = (block.DataFixedPtr + index);
@@ -436,7 +436,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                 while (following > 0)
                 {
 // Need unit tests to test Vector path
-#if !DEBUG 
+#if !DEBUG
                     // Check will be Jitted away https://github.com/dotnet/coreclr/issues/1079
                     if (Vector.IsHardwareAccelerated)
                     {
@@ -502,7 +502,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                             return toReturn;
                         }
 // Need unit tests to test Vector path
-#if !DEBUG 
+#if !DEBUG
                     }
 #endif
                     var pCurrent = (block.DataFixedPtr + index);

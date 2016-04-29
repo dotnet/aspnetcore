@@ -728,18 +728,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     await connection.SendEnd(
                         "GET /");
-                    await connection.ReceiveEnd();
-                }
-
-                using (var connection = new TestConnection(server.Port))
-                {
-                    await connection.SendEnd(
-                        "GET / HTTP/1.1",
-                        "",
-                        "Post / HTTP/1.1");
-                    await connection.ReceiveEnd(
-                        "HTTP/1.1 200 OK",
+                    await connection.Receive(
+                        "HTTP/1.0 400 Bad Request",
+                        "");
+                    await connection.ReceiveStartsWith("Date:");
+                    await connection.ReceiveForcedEnd(
                         "Content-Length: 0",
+                        "Server: Kestrel",
                         "",
                         "");
                 }
@@ -749,11 +744,39 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
                         "",
-                        "Post / HTTP/1.1",
-                        "Content-Length: 7");
-                    await connection.ReceiveEnd(
+                        "POST / HTTP/1.1");
+                    await connection.Receive(
                         "HTTP/1.1 200 OK",
                         "Content-Length: 0",
+                        "",
+                        "HTTP/1.0 400 Bad Request",
+                        "");
+                    await connection.ReceiveStartsWith("Date:");
+                    await connection.ReceiveForcedEnd(
+                        "Content-Length: 0",
+                        "Server: Kestrel",
+                        "",
+                        "");
+                }
+
+                using (var connection = new TestConnection(server.Port))
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "",
+                        "POST / HTTP/1.1",
+                        "Content-Length: 7");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        "",
+                        "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
+                        "");
+                    await connection.ReceiveStartsWith("Date:");
+                    await connection.ReceiveForcedEnd(
+                        "Content-Length: 0",
+                        "Server: Kestrel",
                         "",
                         "");
                 }
@@ -1017,7 +1040,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 Assert.True(registrationWh.Wait(1000));
             }
         }
-        
+
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
         public async Task NoErrorsLoggedWhenServerEndsConnectionBeforeClient(ServiceContext testContext)
@@ -1048,6 +1071,31 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
 
             Assert.Equal(0, testLogger.TotalErrorsLogged);
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task NoResponseSentWhenConnectionIsClosedByServerBeforeClientFinishesSendingRequest(ServiceContext testContext)
+        {
+            var testLogger = new TestApplicationErrorLogger();
+            testContext.Log = new KestrelTrace(testLogger);
+
+            using (var server = new TestServer(httpContext =>
+            {
+                httpContext.Abort();
+                return Task.FromResult(0);
+            }, testContext))
+            {
+                using (var connection = new TestConnection(server.Port))
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.0",
+                        "Content-Length: 1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd();
+                }
+            }
         }
     }
 }

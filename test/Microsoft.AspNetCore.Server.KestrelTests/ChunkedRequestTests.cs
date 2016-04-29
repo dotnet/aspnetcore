@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     "POST / HTTP/1.1",
                     "Transfer-Encoding: chunked",
                     "",
-                    "C", 
+                    "C",
                     "HelloChunked",
                     "0",
                     ""};
@@ -364,10 +364,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 using (var connection = new TestConnection(server.Port))
                 {
                     await connection.Send(
-                    "POST / HTTP/1.1",
-                    "Transfer-Encoding: chunked",
-                    "",
-                    "Cii");
+                        "POST / HTTP/1.1",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "Cii");
 
                     await connection.Receive(
                         "HTTP/1.1 400 Bad Request",

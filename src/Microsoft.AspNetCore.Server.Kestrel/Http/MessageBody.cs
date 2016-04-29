@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     return ConsumeAwaited(result.AsTask(), cancellationToken);
                 }
                 // ValueTask uses .GetAwaiter().GetResult() if necessary
-                else if (result.Result == 0) 
+                else if (result.Result == 0)
                 {
                     // Completed Task, end of stream
                     return TaskUtilities.CompletedTask;
@@ -125,8 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 long contentLength;
                 if (!long.TryParse(unparsedContentLength, out contentLength) || contentLength < 0)
                 {
-                    context.ReportCorruptedHttpRequest(new BadHttpRequestException("Invalid content length."));
-                    return new ForContentLength(keepAlive, 0, context);
+                    context.RejectRequest($"Invalid content length: {unparsedContentLength}");
                 }
                 else
                 {
@@ -140,15 +139,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
 
             return new ForRemainingData(context);
-        }
-
-        private int ThrowBadRequestException(string message)
-        {
-            // returns int so can be used as item non-void function
-            var ex =  new BadHttpRequestException(message);
-            _context.ReportCorruptedHttpRequest(ex);
-
-            throw ex;
         }
 
         private class ForRemainingData : MessageBody
@@ -197,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     _inputLength -= actual;
                     if (actual == 0)
                     {
-                        ThrowBadRequestException("Unexpected end of request content");
+                        _context.RejectRequest("Unexpected end of request content");
                     }
                     return actual;
                 }
@@ -213,7 +203,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 _inputLength -= actual;
                 if (actual == 0)
                 {
-                    ThrowBadRequestException("Unexpected end of request content");
+                    _context.RejectRequest("Unexpected end of request content");
                 }
 
                 return actual;
@@ -514,7 +504,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     }
                     else
                     {
-                        ThrowBadRequestException("Bad chunk suffix");
+                        _context.RejectRequest("Bad chunk suffix");
                     }
                 }
                 finally
@@ -568,16 +558,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     {
                         return currentParsedSize * 0x10 + (extraHexDigit - ('a' - 10));
                     }
-                    else
-                    {
-                        return ThrowBadRequestException("Bad chunk size data");
-                    }
                 }
+
+                _context.RejectRequest("Bad chunk size data");
+                return -1; // can't happen, but compiler complains
             }
 
             private void ThrowChunkedRequestIncomplete()
             {
-                ThrowBadRequestException("Chunked request incomplete");
+                _context.RejectRequest("Chunked request incomplete");
             }
 
             private enum Mode

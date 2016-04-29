@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
         private readonly static long _http10VersionLong = GetAsciiStringAsLong("HTTP/1.0");
         private readonly static long _http11VersionLong = GetAsciiStringAsLong("HTTP/1.1");
- 
+
         private readonly static long _mask8Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff });
         private readonly static long _mask7Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00 });
         private readonly static long _mask6Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00 });
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                 return null;
             }
 
-            // Bytes out of the range of ascii are treated as "opaque data" 
+            // Bytes out of the range of ascii are treated as "opaque data"
             // and kept in string as a char value that casts to same input byte value
             // https://tools.ietf.org/html/rfc7230#section-3.2.4
 
@@ -283,16 +283,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         /// <remarks>
         /// A "known HTTP method" can be an HTTP method name defined in the HTTP/1.1 RFC.
         /// Since all of those fit in at most 8 bytes, they can be optimally looked up by reading those bytes as a long. Once
-        /// in that format, it can be checked against the known method. 
-        /// The Known Methods (CONNECT, DELETE, GET, HEAD, PATCH, POST, PUT, OPTIONS, TRACE) are all less than 8 bytes 
+        /// in that format, it can be checked against the known method.
+        /// The Known Methods (CONNECT, DELETE, GET, HEAD, PATCH, POST, PUT, OPTIONS, TRACE) are all less than 8 bytes
         /// and will be compared with the required space. A mask is used if the Known method is less than 8 bytes.
         /// To optimize performance the GET method will be checked first.
         /// </remarks>
         /// <param name="begin">The iterator from which to start the known string lookup.</param>
-        /// <param name="scan">If we found a valid method, then scan will be updated to new position</param>
         /// <param name="knownMethod">A reference to a pre-allocated known string, if the input matches any.</param>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
-        public static bool GetKnownMethod(this MemoryPoolIterator begin, ref MemoryPoolIterator scan, out string knownMethod)
+        public static bool GetKnownMethod(this MemoryPoolIterator begin, out string knownMethod)
         {
             knownMethod = null;
             var value = begin.PeekLong();
@@ -300,7 +299,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             if ((value & _mask4Chars) == _httpGetMethodLong)
             {
                 knownMethod = HttpGetMethod;
-                scan.Skip(4);
                 return true;
             }
             foreach (var x in _knownMethods)
@@ -308,7 +306,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                 if ((value & x.Item1) == x.Item2)
                 {
                     knownMethod = x.Item3;
-                    scan.Skip(knownMethod.Length + 1);
                     return true;
                 }
             }
@@ -327,10 +324,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         /// To optimize performance the HTTP/1.1 will be checked first.
         /// </remarks>
         /// <param name="begin">The iterator from which to start the known string lookup.</param>
-        /// <param name="scan">If we found a valid method, then scan will be updated to new position</param>
         /// <param name="knownVersion">A reference to a pre-allocated known string, if the input matches any.</param>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
-        public static bool GetKnownVersion(this MemoryPoolIterator begin, ref MemoryPoolIterator scan, out string knownVersion)
+        public static bool GetKnownVersion(this MemoryPoolIterator begin, out string knownVersion)
         {
             knownVersion = null;
             var value = begin.PeekLong();
@@ -338,24 +334,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             if (value == _http11VersionLong)
             {
                 knownVersion = Http11Version;
-                scan.Skip(8);
-                if (scan.Take() == '\r')
-                {
-                    return true;
-                }
             }
             else if (value == _http10VersionLong)
             {
                 knownVersion = Http10Version;
-                scan.Skip(8);
-                if (scan.Take() == '\r')
+            }
+
+            if (knownVersion != null)
+            {
+                begin.Skip(knownVersion.Length);
+
+                if (begin.Peek() != '\r')
                 {
-                    return true;
+                    knownVersion = null;
                 }
             }
 
-            knownVersion = null;
-            return false;
+            return knownVersion != null;
         }
     }
 }

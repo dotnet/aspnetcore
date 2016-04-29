@@ -5,7 +5,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Server.Kestrel.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Http
@@ -33,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 while (!_requestProcessingStopping)
                 {
-                    while (!_requestProcessingStopping && !TakeStartLine(SocketInput))
+                    while (!_requestProcessingStopping && TakeStartLine(SocketInput) != RequestLineStatus.Done)
                     {
                         if (SocketInput.RemoteIntakeFin)
                         {
@@ -41,12 +40,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             // SocketInput.RemoteIntakeFin is set to true to ensure we don't close a
                             // connection without giving the application a chance to respond to a request
                             // sent immediately before the a FIN from the client.
-                            if (TakeStartLine(SocketInput))
+                            var requestLineStatus = TakeStartLine(SocketInput);
+
+                            if (requestLineStatus == RequestLineStatus.Empty)
                             {
-                                break;
+                                return;
                             }
 
-                            return;
+                            if (requestLineStatus != RequestLineStatus.Done)
+                            {
+                                RejectRequest($"Malformed request: {requestLineStatus}");
+                            }
+
+                            break;
                         }
 
                         await SocketInput;
@@ -62,12 +68,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             // SocketInput.RemoteIntakeFin is set to true to ensure we don't close a
                             // connection without giving the application a chance to respond to a request
                             // sent immediately before the a FIN from the client.
-                            if (TakeMessageHeaders(SocketInput, FrameRequestHeaders))
+                            if (!TakeMessageHeaders(SocketInput, FrameRequestHeaders))
                             {
-                                break;
+                                RejectRequest($"Malformed request: invalid headers.");
                             }
 
-                            return;
+                            break;
                         }
 
                         await SocketInput;
@@ -83,66 +89,55 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         _abortedCts = null;
                         _manuallySetRequestAbortToken = null;
 
-                        if (!_corruptedRequest)
+                        var context = _application.CreateContext(this);
+                        try
                         {
-                            var context = _application.CreateContext(this);
-                            try
+                            await _application.ProcessRequestAsync(context).ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            ReportApplicationError(ex);
+                        }
+                        finally
+                        {
+                            // Trigger OnStarting if it hasn't been called yet and the app hasn't
+                            // already failed. If an OnStarting callback throws we can go through
+                            // our normal error handling in ProduceEnd.
+                            // https://github.com/aspnet/KestrelHttpServer/issues/43
+                            if (!HasResponseStarted && _applicationException == null && _onStarting != null)
                             {
-                                await _application.ProcessRequestAsync(context).ConfigureAwait(false);
-                            }
-                            catch (Exception ex)
-                            {
-                                ReportApplicationError(ex);
-                            }
-                            finally
-                            {
-                                // Trigger OnStarting if it hasn't been called yet and the app hasn't
-                                // already failed. If an OnStarting callback throws we can go through
-                                // our normal error handling in ProduceEnd.
-                                // https://github.com/aspnet/KestrelHttpServer/issues/43
-                                if (!_responseStarted && _applicationException == null && _onStarting != null)
-                                {
-                                    await FireOnStarting();
-                                }
-
-                                PauseStreams();
-
-                                if (_onCompleted != null)
-                                {
-                                    await FireOnCompleted();
-                                }
-
-                                _application.DisposeContext(context, _applicationException);
+                                await FireOnStarting();
                             }
 
-                            // If _requestAbort is set, the connection has already been closed.
-                            if (Volatile.Read(ref _requestAborted) == 0)
+                            PauseStreams();
+
+                            if (_onCompleted != null)
                             {
-                                ResumeStreams();
-
-                                if (_keepAlive && !_corruptedRequest)
-                                {
-                                    try
-                                    {
-                                        // Finish reading the request body in case the app did not.
-                                        await messageBody.Consume();
-                                    }
-                                    catch (BadHttpRequestException ex)
-                                    {
-                                        ReportCorruptedHttpRequest(ex);
-                                    }
-                                }
-
-                                await ProduceEnd();
+                                await FireOnCompleted();
                             }
 
-                            StopStreams();
+                            _application.DisposeContext(context, _applicationException);
                         }
 
-                        if (!_keepAlive || _corruptedRequest)
+                        // If _requestAbort is set, the connection has already been closed.
+                        if (Volatile.Read(ref _requestAborted) == 0)
                         {
-                            // End the connection for non keep alive and Bad Requests
-                            // as data incoming may have been thrown off
+                            ResumeStreams();
+
+                            if (_keepAlive)
+                            {
+                                // Finish reading the request body in case the app did not.
+                                await messageBody.Consume();
+                            }
+
+                            await ProduceEnd();
+                        }
+
+                        StopStreams();
+
+                        if (!_keepAlive)
+                        {
+                            // End the connection for non keep alive as data incoming may have been thrown off
                             return;
                         }
                     }
@@ -158,6 +153,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 try
                 {
+                    await TryProduceInvalidRequestResponse();
+
                     ResetComponents();
                     _abortedCts = null;
 

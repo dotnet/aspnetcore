@@ -285,6 +285,40 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             _pool.Return(nextBlock);
         }
 
+        [Fact]
+        public void SkipThrowsWhenSkippingMoreBytesThanAvailableInSingleBlock()
+        {
+            // Arrange
+            var block = _pool.Lease();
+            block.End += 5;
+
+            var scan = block.GetIterator();
+
+            // Act/Assert
+            Assert.ThrowsAny<InvalidOperationException>(() => scan.Skip(8));
+
+            _pool.Return(block);
+        }
+
+        [Fact]
+        public void SkipThrowsWhenSkippingMoreBytesThanAvailableInMultipleBlocks()
+        {
+            // Arrange
+            var block = _pool.Lease();
+            block.End += 3;
+
+            var nextBlock = _pool.Lease();
+            nextBlock.End += 2;
+            block.Next = nextBlock;
+
+            var scan = block.GetIterator();
+
+            // Act/Assert
+            Assert.ThrowsAny<InvalidOperationException>(() => scan.Skip(8));
+
+            _pool.Return(block);
+        }
+
         [Theory]
         [InlineData("CONNECT / HTTP/1.1", ' ', true, MemoryPoolIteratorExtensions.HttpConnectMethod)]
         [InlineData("DELETE / HTTP/1.1", ' ', true, MemoryPoolIteratorExtensions.HttpDeleteMethod)]
@@ -309,12 +343,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var chars = input.ToCharArray().Select(c => (byte)c).ToArray();
             Buffer.BlockCopy(chars, 0, block.Array, block.Start, chars.Length);
             block.End += chars.Length;
-            var scan = block.GetIterator();
-            var begin = scan;
+            var begin = block.GetIterator();
             string knownString;
 
             // Act
-            var result = begin.GetKnownMethod(ref scan, out knownString);
+            var result = begin.GetKnownMethod(out knownString);
 
             // Assert
             Assert.Equal(expectedResult, result);
@@ -337,12 +370,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var chars = input.ToCharArray().Select(c => (byte)c).ToArray();
             Buffer.BlockCopy(chars, 0, block.Array, block.Start, chars.Length);
             block.End += chars.Length;
-            var scan = block.GetIterator();
-            var begin = scan;
+            var begin = block.GetIterator();
             string knownString;
 
             // Act
-            var result = begin.GetKnownVersion(ref scan, out knownString);
+            var result = begin.GetKnownVersion(out knownString);
             // Assert
             Assert.Equal(expectedResult, result);
             Assert.Equal(expectedKnownString, knownString);
