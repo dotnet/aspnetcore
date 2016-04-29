@@ -622,10 +622,8 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser.CSharp
                                         Factory.MarkupTransition("<text>").Accepts(AcceptedCharacters.None)),
                                    Factory.Markup(";").Accepts(AcceptedCharacters.None),
                                    new MarkupTagBlock(
-                                        Factory.MarkupTransition("</text>").Accepts(AcceptedCharacters.None)),
-                                   Factory.CodeMarkup(" ").With(new StatementChunkGenerator()).Accepts(AcceptedCharacters.None)
-                                   ),
-                               Factory.Code("}").AsStatement()));
+                                        Factory.MarkupTransition("</text>").Accepts(AcceptedCharacters.None))),
+                               Factory.Code(" }").AsStatement()));
         }
 
         [Fact]
@@ -642,10 +640,8 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser.CSharp
                                         Factory.MarkupTransition("<text>").Accepts(AcceptedCharacters.None)),
                                    Factory.Markup(";").Accepts(AcceptedCharacters.None),
                                    new MarkupTagBlock(
-                                        Factory.MarkupTransition("</text>").Accepts(AcceptedCharacters.None)),
-                                   Factory.CodeMarkup(" ").With(new StatementChunkGenerator()).Accepts(AcceptedCharacters.None)
-                                   ),
-                               Factory.Code("} ").AsStatement(),
+                                        Factory.MarkupTransition("</text>").Accepts(AcceptedCharacters.None))),
+                               Factory.Code(" } ").AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharacters.None)));
         }
 

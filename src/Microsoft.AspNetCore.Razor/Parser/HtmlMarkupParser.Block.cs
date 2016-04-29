@@ -1100,29 +1100,31 @@ namespace Microsoft.AspNetCore.Razor.Parser
             tags.Clear();
             if (!Context.DesignTimeMode)
             {
-                if (At(HtmlSymbolType.WhiteSpace))
-                {
-                    if (Context.LastSpan.Kind == SpanKind.Transition)
-                    {
-                        // Output current span content as markup.
-                        Output(SpanKind.Markup);
+                var shouldAcceptWhitespaceAndNewLine = true;
 
-                        // Accept and mark the whitespace at the end of a <text> tag as code.
-                        AcceptWhile(HtmlSymbolType.WhiteSpace);
-                        Span.ChunkGenerator = new StatementChunkGenerator();
-                        Output(SpanKind.Code);
-                    }
-                    else
+                if (Context.LastSpan.Kind == SpanKind.Transition)
+                {
+                    var symbols = ReadWhile(
+                        f => (f.Type == HtmlSymbolType.WhiteSpace) || (f.Type == HtmlSymbolType.NewLine));
+
+                    // Make sure the current symbol is not markup, which can be html start tag or @:
+                    if (!(At(HtmlSymbolType.OpenAngle) ||
+                        (At(HtmlSymbolType.Transition) && Lookahead(count: 1).Content.StartsWith(":"))))
                     {
-                        AcceptWhile(HtmlSymbolType.WhiteSpace);
+                        // Don't accept whitespace as markup if the end text tag is followed by csharp.
+                        shouldAcceptWhitespaceAndNewLine = false;
                     }
+
+                    PutCurrentBack();
+                    PutBack(symbols);
+                    EnsureCurrent();
                 }
 
-                if (!EndOfFile &&
-                    At(HtmlSymbolType.NewLine) &&
-                    Context.LastSpan.Kind != SpanKind.Transition)
+                if (shouldAcceptWhitespaceAndNewLine)
                 {
-                    AcceptAndMoveNext();
+                    // Accept whitespace and a single newline if present
+                    AcceptWhile(HtmlSymbolType.WhiteSpace);
+                    Optional(HtmlSymbolType.NewLine);
                 }
             }
             else if (Span.EditHandler.AcceptedCharacters == AcceptedCharacters.Any)

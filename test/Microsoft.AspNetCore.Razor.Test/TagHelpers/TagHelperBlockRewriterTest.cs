@@ -1500,13 +1500,9 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                                         factory.MarkupTransition("<text>")),
                                     factory.Markup("Foo").Accepts(AcceptedCharacters.None),
                                     new MarkupTagBlock(
-                                        factory.MarkupTransition("</text>")),
-                                    factory
-                                        .CodeMarkup(" ")
-                                        .With(new StatementChunkGenerator())
-                                        .Accepts(AcceptedCharacters.None)),
+                                        factory.MarkupTransition("</text>"))),
                                 factory
-                                    .Code("foo++; } while (foo<bar>);")
+                                    .Code(" foo++; } while (foo<bar>);")
                                     .AsStatement()
                                     .Accepts(AcceptedCharacters.None)))));
 

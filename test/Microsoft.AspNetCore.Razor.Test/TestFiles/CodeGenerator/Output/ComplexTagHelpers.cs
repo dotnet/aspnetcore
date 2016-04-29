@@ -205,24 +205,12 @@ namespace TestOutput
 
                 WriteLiteral("checkbox");
 #line 18 "ComplexTagHelpers.cshtml"
-                                                              
-
-#line default
-#line hidden
-
-#line 18 "ComplexTagHelpers.cshtml"
                                                               } else {
 
 #line default
 #line hidden
 
                 WriteLiteral("anything");
-#line 18 "ComplexTagHelpers.cshtml"
-                                                                                            
-
-#line default
-#line hidden
-
 #line 18 "ComplexTagHelpers.cshtml"
                                                                                             }
 

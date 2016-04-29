@@ -3,11 +3,13 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.Chunks.Generators;
+using Microsoft.AspNetCore.Razor.Editor;
 using Microsoft.AspNetCore.Razor.Parser;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Test.Framework;
 using Microsoft.AspNetCore.Razor.Text;
 using Microsoft.AspNetCore.Razor.Tokenizer;
+using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Test.Parser.Html
@@ -321,7 +323,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser.Html
         }
 
         [Fact]
-        public void ParseDocumentDoesNotRenderExtraNewlineAtTheEndTextTagInVerbatimBlock()
+        public void ParseDocumentDoesNotRenderExtraNewlineAtTheEndTextTagInVerbatimBlockIfFollowedByCSharp()
         {
             ParseDocumentTest("@{<text>Blah</text>\r\n\r\n}<html>",
                 new MarkupBlock(
@@ -336,6 +338,58 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser.Html
                             new MarkupTagBlock(
                                 Factory.MarkupTransition("</text>"))),
                         Factory.Code("\r\n\r\n").AsStatement(),
+                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                    BlockFactory.MarkupTagBlock("<html>")));
+        }
+
+        [Fact]
+        public void ParseDocumentRendersExtraNewlineAtTheEndTextTagInVerbatimBlockIfFollowedByHtml()
+        {
+            ParseDocumentTest("@{<text>Blah</text>\r\n<input/>\r\n}<html>",
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new StatementBlock(
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                Factory.MarkupTransition("<text>")),
+                            Factory.Markup("Blah").Accepts(AcceptedCharacters.None),
+                            new MarkupTagBlock(
+                                Factory.MarkupTransition("</text>")),
+                            Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                Factory.Markup("<input/>").Accepts(AcceptedCharacters.None)),
+                            Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
+                        Factory.EmptyCSharp().AsStatement(),
+                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                    BlockFactory.MarkupTagBlock("<html>")));
+        }
+
+        [Fact]
+        public void ParseDocumentRendersExtraNewlineAtTheEndTextTagInVerbatimBlockIfFollowedByMarkupTransition()
+        {
+            ParseDocumentTest("@{<text>Blah</text>\r\n@: Bleh\r\n}<html>",
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new StatementBlock(
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                Factory.MarkupTransition("<text>")),
+                            Factory.Markup("Blah").Accepts(AcceptedCharacters.None),
+                            new MarkupTagBlock(
+                                Factory.MarkupTransition("</text>")),
+                            Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
+                        new MarkupBlock(
+                            Factory.MarkupTransition(),
+                            Factory.MetaMarkup(":", HtmlSymbolType.Colon),
+                            Factory.Markup(" Bleh\r\n")
+                                .With(new SingleLineMarkupEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString))
+                                .Accepts(AcceptedCharacters.None)),
+                        Factory.EmptyCSharp().AsStatement(),
                         Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
                     BlockFactory.MarkupTagBlock("<html>")));
         }

@@ -45,12 +45,6 @@ WriteTo(__razor_attribute_value_writer, link);
                 WriteLiteralTo(__razor_attribute_value_writer, "#");
                 Instrumentation.EndContext();
 #line 2 "InlineBlocks.cshtml"
-                                                              
-
-#line default
-#line hidden
-
-#line 2 "InlineBlocks.cshtml"
                                                               }
 
 #line default

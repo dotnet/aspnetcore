@@ -26,14 +26,6 @@ namespace TestOutput
             Instrumentation.EndContext();
 #line 2 "CodeBlockWithTextElement.cshtml"
                                		
-
-#line default
-#line hidden
-
-            Instrumentation.BeginContext(38, 2, true);
-            WriteLiteral("\r\n");
-            Instrumentation.EndContext();
-#line 3 "CodeBlockWithTextElement.cshtml"
     var b = 1;
 
 #line default
