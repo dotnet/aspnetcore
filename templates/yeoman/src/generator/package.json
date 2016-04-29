@@ -1,5 +1,5 @@
 {
-  "name": "generator-aspnet-spa",
+  "name": "generator-aspnetcore-spa",
   "version": "0.1.3",
   "description": "Single-Page App templates for ASP.NET Core",
   "author": "Microsoft",

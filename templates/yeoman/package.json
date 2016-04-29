@@ -1,5 +1,5 @@
 {
-  "name": "generator-aspnetspa-generator",
+  "name": "generator-aspnetcore-spa-generator",
   "version": "1.0.0",
   "description": "Creates the Yeoman generator for ASP.NET Core SPA templates",
   "main": "index.js",

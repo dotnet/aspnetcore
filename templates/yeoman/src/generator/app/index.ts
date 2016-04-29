@@ -56,20 +56,12 @@ class MyGenerator extends yeoman.Base {
     }
     
     installingDeps() {
-        // Strictly speaking, with DNX, the 'prepare' script runs 'npm install' anyway so we don't really need
-        // to run it from here. But it will be needed with RC2, and it doesn't make the setup take much longer
-        // because the second run is almost a no-op, so it's OK to leave it here for now.
         this.installDependencies({
             npm: true,
             bower: false,
             callback: () => {
-                this.spawnCommandSync('dnu', ['restore']);
-
-                // With DNX, the 'prepare' script builds the vendor files automatically so the following is not
-                // required. With RC2 and the 'dotnet' tooling, that won't happen automatically, so the following
-                // will be required:
-                // this.spawnCommandSync('./node_modules/.bin/webpack', ['--config', 'webpack.config.vendor.js']);
-
+                this.spawnCommandSync('dotnet', ['restore']);
+                this.spawnCommandSync('./node_modules/.bin/webpack', ['--config', 'webpack.config.vendor.js']);
                 this.spawnCommandSync('./node_modules/.bin/webpack');                
             }
         });
