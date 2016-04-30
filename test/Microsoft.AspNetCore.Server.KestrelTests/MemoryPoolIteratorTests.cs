@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("/localhost:5000/PATH/PATH2/ HTTP/1.1", " %?", ' ', 27)]
         public void MemorySeek(string raw, string search, char expectResult, int expectIndex)
         {
-            var block = _pool.Lease(256);
+            var block = _pool.Lease();
             var chars = raw.ToCharArray().Select(c => (byte)c).ToArray();
             Buffer.BlockCopy(chars, 0, block.Array, block.Start, chars.Length);
             block.End += chars.Length;
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var blocks = new MemoryPoolBlock[4];
             for (var i = 0; i < 4; ++i)
             {
-                blocks[i] = _pool.Lease(16);
+                blocks[i] = _pool.Lease();
                 blocks[i].End += 16;
 
                 for (var j = 0; j < blocks.Length; ++j)
