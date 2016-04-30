@@ -40,10 +40,16 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
         {
             try
             {
-                var errors = new List<DiagnosticMessage>();
-                if (!ProjectReader.TryGetProject(projectFile, out project, errors))
+                if (!ProjectReader.TryGetProject(projectFile, out project))
                 {
-                    errorMessage = string.Join(Environment.NewLine, errors.Select(e => e.ToString()));
+                    if (project?.Diagnostics != null && project.Diagnostics.Any())
+                    {
+                        errorMessage = string.Join(Environment.NewLine, project.Diagnostics.Select(e => e.ToString()));
+                    }
+                    else
+                    {
+                        errorMessage = "Failed to read project.json";
+                    }
                 }
                 else
                 {
