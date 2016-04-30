@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         /// </summary>
         public readonly IntPtr DataArrayPtr;
 
+        internal unsafe readonly byte* DataFixedPtr;
+
         /// <summary>
         /// The array segment describing the range of memory this block is tracking. The caller which has leased this block may only read and
         /// modify the memory in this range.
@@ -27,9 +29,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         /// <summary>
         /// This object cannot be instantiated outside of the static Create method
         /// </summary>
-        protected MemoryPoolBlock(IntPtr dataArrayPtr)
+        unsafe protected MemoryPoolBlock(IntPtr dataArrayPtr)
         {
             DataArrayPtr = dataArrayPtr;
+            DataFixedPtr = (byte*)dataArrayPtr.ToPointer();
         }
 
         /// <summary>

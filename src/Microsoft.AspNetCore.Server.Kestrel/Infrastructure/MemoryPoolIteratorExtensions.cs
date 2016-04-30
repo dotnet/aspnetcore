@@ -116,9 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
                     if (following > 0)
                     {
-                        fixed (byte* blockStart = block.Array)
-                        {
-                            var input = blockStart + inputOffset;
+                            var input = block.DataFixedPtr + inputOffset;
                             var i = 0;
                             while (i < following - 11)
                             {
@@ -167,9 +165,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                                 output++;
                                 input++;
                             }
-                        
+
                             remaining -= following;
-                        }
                     }
 
                     if (remaining == 0)

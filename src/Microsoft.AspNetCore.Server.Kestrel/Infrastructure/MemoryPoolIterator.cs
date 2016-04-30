@@ -175,10 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             }
             else if (_block.End - _index >= sizeof(long))
             {
-                fixed (byte* ptr = &_block.Array[_index])
-                {
-                    return *(long*)(ptr);
-                }
+                return *(long*)(_block.DataFixedPtr + _index);
             }
             else if (_block.Next == null)
             {
@@ -194,17 +191,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                     return -1;
                 }
 
-                long blockLong;
-                fixed (byte* ptr = &_block.Array[_block.End - sizeof(long)])
-                {
-                    blockLong = *(long*)(ptr);
-                }
+                var blockLong = *(long*)(_block.DataFixedPtr + _block.End - sizeof(long));
 
-                long nextLong;
-                fixed (byte* ptr = &_block.Next.Array[_block.Next.Start])
-                {
-                    nextLong = *(long*)(ptr);
-                }
+                var nextLong = *(long*)(_block.Next.DataFixedPtr + _block.Next.Start);
 
                 return (blockLong >> (sizeof(long) - blockBytes) * 8) | (nextLong << (sizeof(long) - nextBytes) * 8);
             }
@@ -266,22 +255,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 #if !DEBUG 
                     }
 #endif
-                    fixed (byte* ptr = &block.Array[index])
+
+                    var pCurrent = (block.DataFixedPtr + index);
+                    var pEnd = pCurrent + following;
+                    do
                     {
-                        var pCurrent = ptr;
-                        var pEnd = pCurrent + following;
-                        do
+                        if (*pCurrent == byte0)
                         {
-                            if (*pCurrent == byte0)
-                            {
-                                _block = block;
-                                _index = index;
-                                return byte0;
-                            }
-                            pCurrent++;
-                            index++;
-                        } while (pCurrent < pEnd);
-                    }
+                            _block = block;
+                            _index = index;
+                            return byte0;
+                        }
+                        pCurrent++;
+                        index++;
+                    } while (pCurrent < pEnd);
 
                     following = 0;
                     break;
@@ -367,28 +354,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 #if !DEBUG 
                     }
 #endif
-                    fixed (byte* ptr = &block.Array[index])
+                    var pCurrent = (block.DataFixedPtr + index);
+                    var pEnd = pCurrent + following;
+                    do
                     {
-                        var pCurrent = ptr;
-                        var pEnd = pCurrent + following;
-                        do
+                        if (*pCurrent == byte0)
                         {
-                            if (*pCurrent == byte0)
-                            {
-                                _block = block;
-                                _index = index;
-                                return byte0;
-                            }
-                            if (*pCurrent == byte1)
-                            {
-                                _block = block;
-                                _index = index;
-                                return byte1;
-                            }
-                            pCurrent++;
-                            index++;
-                        } while (pCurrent != pEnd);
-                    }
+                            _block = block;
+                            _index = index;
+                            return byte0;
+                        }
+                        if (*pCurrent == byte1)
+                        {
+                            _block = block;
+                            _index = index;
+                            return byte1;
+                        }
+                        pCurrent++;
+                        index++;
+                    } while (pCurrent != pEnd);
 
                     following = 0;
                     break;
@@ -502,34 +486,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 #if !DEBUG 
                     }
 #endif
-                    fixed (byte* ptr = &block.Array[index])
+                    var pCurrent = (block.DataFixedPtr + index);
+                    var pEnd = pCurrent + following;
+                    do
                     {
-                        var pCurrent = ptr;
-                        var pEnd = pCurrent + following;
-                        do
+                        if (*pCurrent == byte0)
                         {
-                            if (*pCurrent == byte0)
-                            {
-                                _block = block;
-                                _index = index;
-                                return byte0;
-                            }
-                            if (*pCurrent == byte1)
-                            {
-                                _block = block;
-                                _index = index;
-                                return byte1;
-                            }
-                            if (*pCurrent == byte2)
-                            {
-                                _block = block;
-                                _index = index;
-                                return byte2;
-                            }
-                            pCurrent++;
-                            index++;
-                        } while (pCurrent != pEnd);
-                    }
+                            _block = block;
+                            _index = index;
+                            return byte0;
+                        }
+                        if (*pCurrent == byte1)
+                        {
+                            _block = block;
+                            _index = index;
+                            return byte1;
+                        }
+                        if (*pCurrent == byte2)
+                        {
+                            _block = block;
+                            _index = index;
+                            return byte2;
+                        }
+                        pCurrent++;
+                        index++;
+                    } while (pCurrent != pEnd);
 
                     following = 0;
                     break;
@@ -808,30 +789,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                         bytesLeftInBlockMinusSpan = bytesLeftInBlock - 3;
                     }
 
-                    fixed (byte* pOutput = &block.Data.Array[block.End])
+                    var output = (block.DataFixedPtr + block.End);
+                    var copied = 0;
+                    for (; input < inputEndMinusSpan && copied < bytesLeftInBlockMinusSpan; copied += 4)
                     {
-                        //this line is needed to allow output be an register var 
-                        var output = pOutput;
-
-                        var copied = 0;
-                        for (; input < inputEndMinusSpan && copied < bytesLeftInBlockMinusSpan; copied += 4)
-                        {
-                            *(output) = (byte)*(input);
-                            *(output + 1) = (byte)*(input + 1);
-                            *(output + 2) = (byte)*(input + 2);
-                            *(output + 3) = (byte)*(input + 3);
-                            output += 4;
-                            input += 4;
-                        }
-                        for (; input < inputEnd && copied < bytesLeftInBlock; copied++)
-                        {
-                            *(output++) = (byte)*(input++);
-                        }
-
-                        blockIndex += copied;
-                        bytesLeftInBlockMinusSpan -= copied;
-                        bytesLeftInBlock -= copied;
+                        *(output) = (byte)*(input);
+                        *(output + 1) = (byte)*(input + 1);
+                        *(output + 2) = (byte)*(input + 2);
+                        *(output + 3) = (byte)*(input + 3);
+                        output += 4;
+                        input += 4;
                     }
+                    for (; input < inputEnd && copied < bytesLeftInBlock; copied++)
+                    {
+                        *(output++) = (byte)*(input++);
+                    }
+
+                    blockIndex += copied;
+                    bytesLeftInBlockMinusSpan -= copied;
+                    bytesLeftInBlock -= copied;
                 }
             }
 
