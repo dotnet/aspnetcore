@@ -10,6 +10,10 @@
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.TestConfiguration": "1.0.0",
+    "Microsoft.AspNetCore.Razor.Tools": {
+      "type": "build",
+      "version": "1.0.0-*"
+    },
     "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*"
@@ -38,10 +42,10 @@
       "version": "1.0.0-*",
       "imports": "portable-net45+wp80+win8+wpa81+dnxcore50"
     },
-    "dotnet-razor-tooling": {
+    "Microsoft.AspNetCore.Razor.Tools": {
       "version": "1.0.0-*",
       "imports": [
-        "net45"
+        "portable-net45+wp80+win8+wpa81+dnxcore50"
       ]
     }
   },
