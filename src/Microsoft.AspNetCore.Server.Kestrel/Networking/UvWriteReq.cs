@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
 
                     // create and pin each segment being written
                     pBuffers[index] = Libuv.buf_init(
-                        block.Pin() + blockStart,
+                        block.DataArrayPtr + blockStart,
                         blockEnd - blockStart);
 
                     block = block.Next;
@@ -89,7 +89,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
                 var block = start.Block;
                 for (var index = 0; index < nBuffers; index++)
                 {
-                    block.Unpin();
                     block = block.Next;
                 }
 
