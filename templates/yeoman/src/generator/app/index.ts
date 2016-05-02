@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as yeoman from 'yeoman-generator';
 import * as uuid from 'node-uuid';
 import * as glob from 'glob';
+const yosay = require('yosay');
 const toPascalCase = require('to-pascal-case');
 
 const templates = [
@@ -16,8 +17,9 @@ class MyGenerator extends yeoman.Base {
 
     constructor(args: string | string[], options: any) {
         super(args, options);
+        this.log(yosay('Welcome to the ASP.NET Core Single-Page App generator!'));
     }
-    
+
     prompting() {
         const done = this.async();
         
