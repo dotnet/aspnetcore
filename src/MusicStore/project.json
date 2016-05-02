@@ -4,7 +4,7 @@
   ],
   "description": "Music store application on ASP.NET 5",
   "version": "1.0.0-*",
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true,
     "warningsAsErrors": true,
     "define": [
@@ -19,13 +19,15 @@
   "compile": [
     "../../shared/**/*.cs"
   ],
-  "content": [
-    "Areas",
-    "Views",
-    "wwwroot",
-    "config.json",
-    "web.config"
-  ],
+  "publishOptions": {
+    "include": [
+      "Areas",
+      "Views",
+      "wwwroot",
+      "config.json",
+      "web.config"
+    ]
+  },
   "dependencies": {
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.Facebook": "1.0.0-*",
@@ -53,7 +55,7 @@
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
