@@ -1,12 +1,7 @@
 {
   "version": "1.0.0-*",
   "description": "ASP.NET Core support for JSON PATCH.",
-  "tags": [
-    "aspnetcore",
-    "json",
-    "jsonpatch"
-  ],
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -14,9 +9,16 @@
     ],
     "xmlDoc": true
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/jsonpatch"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/jsonpatch"
+    },
+    "tags": [
+      "aspnetcore",
+      "json",
+      "jsonpatch"
+    ]
   },
   "dependencies": {
     "Newtonsoft.Json": "8.0.3"
