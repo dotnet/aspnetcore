@@ -11,7 +11,7 @@
       "type": "build"
     }
   },
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true
   },
   "frameworks": {
@@ -29,9 +29,11 @@
       }
     }
   },
-  "content": [
-    "web.config"
-  ],
+  "publishOptions": {
+    "include": [
+      "web.config"
+    ]
+  },
   "tools": {
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": {
       "version": "1.0.0-*",

@@ -1,21 +1,30 @@
 {
   "version": "1.0.0-*",
   "description": "ASP.NET Core middleware for exception handling, exception display pages, and diagnostics information. Includes developer exception page middleware, exception handler middleware, runtime info middleware, status code page middleware, and welcome page middleware",
-  "tags": [
-    "aspnetcore",
-    "diagnostics"
-  ],
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
       "CS1591"
     ],
-    "xmlDoc": true
+    "xmlDoc": true,
+    "compile": {
+      "exclude": [
+        "DeveloperExceptionPage/Views/*.cshtml",
+        "RuntimeInfo/Views/*.cshtml",
+        "WelcomePage/Views/*.cshtml"
+      ]
+    }
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/diagnostics"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/diagnostics"
+    },
+    "tags": [
+      "aspnetcore",
+      "diagnostics"
+    ]
   },
   "dependencies": {
     "Microsoft.AspNetCore.Diagnostics.Abstractions": "1.0.0-*",
@@ -39,10 +48,5 @@
         "System.Reflection.Extensions": "4.0.1-*"
       }
     }
-  },
-  "compileExclude": [
-    "DeveloperExceptionPage/Views/*.cshtml",
-    "RuntimeInfo/Views/*.cshtml",
-    "WelcomePage/Views/*.cshtml"
-  ]
+  }
 }

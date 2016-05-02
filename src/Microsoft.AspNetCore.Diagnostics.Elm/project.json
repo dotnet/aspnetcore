@@ -1,11 +1,7 @@
 {
   "version": "0.1.0-*",
   "description": "ASP.NET Core Error Logging Middleware (ELM) to capture and display request logs.",
-  "tags": [
-    "aspnetcore",
-    "diagnostics"
-  ],
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -13,9 +9,15 @@
     ],
     "xmlDoc": true
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/diagnostics"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/diagnostics"
+    },
+    "tags": [
+      "aspnetcore",
+      "diagnostics"
+    ]
   },
   "dependencies": {
     "Microsoft.AspNetCore.DiagnosticsViewPage.Sources": {
