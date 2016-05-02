@@ -74,6 +74,7 @@ namespace Microsoft.AspNetCore.Http.Tests
                     { "key", "value", _builderPool, "key=value" },
                     { "key,", "!value", _builderPool, "key%2C=%21value" },
                     { "ke#y,", "val^ue", _builderPool, "ke%23y%2C=val%5Eue" },
+                    { "base64", "QUI+REU/Rw==", _builderPool, "base64=QUI%2BREU%2FRw%3D%3D" },
                 };
             }
         }
