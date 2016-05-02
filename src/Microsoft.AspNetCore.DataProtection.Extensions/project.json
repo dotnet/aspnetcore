@@ -1,13 +1,15 @@
 {
   "version": "1.0.0-*",
   "description": "Additional APIs for ASP.NET Core data protection.",
-  "tags": [
-    "aspnetcore",
-    "dataprotection"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/dataprotection"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/dataprotection"
+    },
+    "tags": [
+      "aspnetcore",
+      "dataprotection"
+    ]
   },
   "dependencies": {
     "Microsoft.AspNetCore.DataProtection": "1.0.0-*",
@@ -21,7 +23,7 @@
     "net451": {},
     "netstandard1.3": {}
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [

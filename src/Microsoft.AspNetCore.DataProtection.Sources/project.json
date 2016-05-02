@@ -1,13 +1,15 @@
 {
   "version": "1.0.0-*",
   "description": "ASP.NET Core data protection shared code.",
-  "tags": [
-    "aspnetcore",
-    "dataprotection"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/dataprotection"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/dataprotection"
+    },
+    "tags": [
+      "aspnetcore",
+      "dataprotection"
+    ]
   },
   "dependencies": {},
   "frameworks": {
@@ -20,7 +22,7 @@
     }
   },
   "shared": "**\\*.cs",
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   }
