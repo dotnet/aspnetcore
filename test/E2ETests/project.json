@@ -1,11 +1,12 @@
 {
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true
   },
   "compile": [
     "../../shared/**/*.cs"
   ],
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.AspNetCore.Identity": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.OpenIdConnect": "0.1.0-*",
@@ -22,7 +23,6 @@
           "version": "1.0.0-*",
           "type": "platform"
         },
-        "dotnet-test-xunit": "1.0.0-*",
         "System.Data.SqlClient": "4.1.0-*",
         "System.Xml.XmlDocument": "4.0.1-*"
       },
