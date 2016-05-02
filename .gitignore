@@ -28,3 +28,4 @@ project.lock.json
 
 .vs/
 npm-debug.log
+/.build/
