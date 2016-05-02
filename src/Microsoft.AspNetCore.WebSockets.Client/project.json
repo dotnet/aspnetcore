@@ -1,14 +1,18 @@
 {
   "version": "0.1.0-*",
   "description": "Client for communicating over web sockets.",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/websockets"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/websockets"
+    }
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "dependencies": {
