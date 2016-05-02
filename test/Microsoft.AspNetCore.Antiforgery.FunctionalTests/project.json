@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "AntiforgerySample": "1.0.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
@@ -15,7 +16,6 @@
         },
         "moq.netcore": "4.4.0-beta8",
         "System.Net.Http": "4.0.1-*",
-        "dotnet-test-xunit": "1.0.0-*",
         "System.Diagnostics.Process": "4.1.0-*"
       },
       "imports": [
