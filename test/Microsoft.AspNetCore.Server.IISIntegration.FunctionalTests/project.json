@@ -7,7 +7,14 @@
     ]
   },
   "buildOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "copyToOutput": {
+      "include": [
+        "Http.config",
+        "Https.config",
+        "NtlmAuthentation.config"
+      ]
+    }
   },
   "dependencies": {
     "Microsoft.AspNetCore.Server.Testing": "1.0.0-*",
