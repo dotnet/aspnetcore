@@ -8,12 +8,14 @@
     "Microsoft.Extensions.Localization": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*"
   },
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true
   },
-  "content": [
-    "web.config"
-  ],
+  "publishOptions": {
+    "include": [
+      "web.config"
+    ]
+  },
   "frameworks": {
     "net451": {},
     "netcoreapp1.0": {

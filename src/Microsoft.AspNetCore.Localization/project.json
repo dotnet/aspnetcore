@@ -1,15 +1,17 @@
 {
   "version": "1.0.0-*",
   "description": "ASP.NET Core middleware for automatically applying culture information to HTTP requests. Culture information can be specified in the HTTP header, query string, cookie, or custom source.",
-  "tags": [
-    "aspnetcore",
-    "localization"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aspnet/localization"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/aspnet/localization"
+    },
+    "tags": [
+      "aspnetcore",
+      "localization"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
