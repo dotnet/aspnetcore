@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc
                     request.QueryString.ToUriComponent());
 
                 // redirect to HTTPS version of page
-                filterContext.Result = new RedirectResult(newUrl, permanent: true);
+                filterContext.Result = new RedirectResult(newUrl, permanent: false);
             }
         }
     }
