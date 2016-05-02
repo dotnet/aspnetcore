@@ -1,11 +1,13 @@
 {
   "version": "0.1.0-*",
   "description": "Managed web socket protocol parser.",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/websockets"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/websockets"
+    }
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [

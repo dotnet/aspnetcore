@@ -1,6 +1,6 @@
 {
   "version": "0.1.0-*",
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -9,9 +9,11 @@
     "xmlDoc": true
   },
   "description": "ASP.NET 5 web socket middleware for use on top of opaque servers.",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/websockets"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/websockets"
+    }
   },
   "dependencies": {
     "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
