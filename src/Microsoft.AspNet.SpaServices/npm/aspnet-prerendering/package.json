@@ -4,7 +4,7 @@
   "description": "Helpers for server-side rendering of JavaScript applications in ASP.NET projects. Works in conjunction with the Microsoft.AspNet.SpaServices NuGet package.",
   "main": "index.js",
   "scripts": {
-    "prepublish": "tsd update && node_modules/.bin/tsc && echo 'Finished building NPM package \"aspnet-prerendering\"'",
+    "prepublish": "tsd update && tsc && echo 'Finished building NPM package \"aspnet-prerendering\"'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Microsoft",

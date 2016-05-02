@@ -4,7 +4,7 @@
   "description": "Tracks outstanding operations for a logical thread of execution",
   "main": "main.js",
   "scripts": {
-    "prepublish": "tsd update && node_modules/.bin/tsc && echo 'Finished building NPM package \"domain-task\"'",
+    "prepublish": "tsd update && tsc && echo 'Finished building NPM package \"domain-task\"'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Microsoft",
