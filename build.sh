@@ -1,43 +1,46 @@
 #!/usr/bin/env bash
+repoFolder="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $repoFolder
 
-if test `uname` = Darwin; then
-    cachedir=~/Library/Caches/KBuild
-else
-    if [ -z $XDG_DATA_HOME ]; then
-        cachedir=$HOME/.local/share
-    else
-        cachedir=$XDG_DATA_HOME;
+koreBuildZip="https://github.com/aspnet/KoreBuild/archive/dev.zip"
+if [ ! -z $KOREBUILD_ZIP ]; then
+    koreBuildZip=$KOREBUILD_ZIP
+fi
+
+buildFolder=".build"
+buildFile="$buildFolder/KoreBuild.sh"
+
+if test ! -d $buildFolder; then
+    echo "Downloading KoreBuild from $koreBuildZip"
+    
+    tempFolder="/tmp/KoreBuild-$(uuidgen)"    
+    mkdir $tempFolder
+    
+    localZipFile="$tempFolder/korebuild.zip"
+    
+    retries=6
+    until (wget -O $localZipFile $koreBuildZip 2>/dev/null || curl -o $localZipFile --location $koreBuildZip 2>/dev/null)
+    do
+        echo "Failed to download '$koreBuildZip'"
+        if [ "$retries" -le 0 ]; then
+            exit 1
+        fi
+        retries=$((retries - 1))
+        echo "Waiting 10 seconds before retrying. Retries left: $retries"
+        sleep 10s
+    done
+    
+    unzip -q -d $tempFolder $localZipFile
+  
+    mkdir $buildFolder
+    cp -r $tempFolder/**/build/** $buildFolder
+    
+    chmod +x $buildFile
+    
+    # Cleanup
+    if test ! -d $tempFolder; then
+        rm -rf $tempFolder  
     fi
 fi
-mkdir -p $cachedir
-nugetVersion=latest
-cachePath=$cachedir/nuget.$nugetVersion.exe
 
-url=https://dist.nuget.org/win-x86-commandline/$nugetVersion/nuget.exe
-
-if test ! -f $cachePath; then
-    wget -O $cachePath $url 2>/dev/null || curl -o $cachePath --location $url /dev/null
-fi
-
-if test ! -e .nuget; then
-    mkdir .nuget
-    cp $cachePath .nuget/nuget.exe
-fi
-
-if test ! -d packages/Sake; then
-    mono .nuget/nuget.exe install KoreBuild -ExcludeVersion -o packages -nocache -pre
-    mono .nuget/nuget.exe install Sake -ExcludeVersion -Source https://www.nuget.org/api/v2/ -Out packages
-fi
-
-if ! type dnvm > /dev/null 2>&1; then
-    source packages/KoreBuild/build/dnvm.sh
-fi
-
-if ! type dnx > /dev/null 2>&1 || [ -z "$SKIP_DNX_INSTALL" ]; then
-    dnvm install latest -runtime coreclr -alias default
-    dnvm install default -runtime mono -alias default
-else
-    dnvm use default -runtime mono
-fi
-
-mono packages/Sake/tools/Sake.exe -I packages/KoreBuild/build -f makefile.shade "$@"
+$buildFile -r $repoFolder "$@"
