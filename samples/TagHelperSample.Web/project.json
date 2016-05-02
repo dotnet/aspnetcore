@@ -1,5 +1,5 @@
 {
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true,
     "warningsAsErrors": true,
     "preserveCompilationContext": true
@@ -30,7 +30,7 @@
     }
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netcoreapp1.0": {
       "imports": [
         "dnxcore50",
@@ -44,11 +44,13 @@
       }
     }
   },
-  "content": [
-    "Views",
-    "wwwroot",
-    "web.config"
-  ],
+  "publishOptions": {
+    "include": [
+      "Views",
+      "wwwroot",
+      "web.config"
+    ]
+  },
   "scripts": {
     "postpublish": "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%"
   }

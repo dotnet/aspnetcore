@@ -1,16 +1,18 @@
 {
   "description": "ASP.NET Core MVC formatters for JSON input and output and for JSON PATCH input using Json.NET.",
-  "tags": [
-    "aspnetcore",
-    "aspnetcoremvc",
-    "json"
-  ],
   "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/mvc"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/mvc"
+    },
+    "tags": [
+      "aspnetcore",
+      "aspnetcoremvc",
+      "json"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -27,7 +29,7 @@
     }
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netstandard1.5": {
       "imports": [
         "portable-net451+win8"

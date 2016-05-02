@@ -1,6 +1,6 @@
 {
-  "resource": "TestFiles/**",
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Mvc.Core": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.0.0-*",
@@ -15,11 +15,22 @@
     "Microsoft.AspNetCore.Testing": "1.0.0-*"
   },
   "testRunner": "xunit",
-  "compilationOptions": {
+  "buildOptions": {
     "define": [
       "__RemoveThisBitTo__GENERATE_BASELINES"
     ],
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "embed": {
+      "include": "TestFiles/**"
+    },
+    "compile": {
+      "include": "**/*.cs",
+      "exclude": [
+        "TestFiles/**",
+        "bin",
+        "obj"
+      ]
+    }
   },
   "frameworks": {
     "netcoreapp1.0": {
@@ -33,7 +44,6 @@
           "type": "platform"
         },
         "moq.netcore": "4.4.0-beta8",
-        "dotnet-test-xunit": "1.0.0-*",
         "System.Diagnostics.Process": "4.1.0-*",
         "System.Diagnostics.TraceSource": "4.0.0-*"
       }
@@ -43,10 +53,5 @@
         "Moq": "4.2.1312.1622"
       }
     }
-  },
-  "exclude": [
-    "wwwroot",
-    "node_modules",
-    "bower_components"
-  ]
+  }
 }

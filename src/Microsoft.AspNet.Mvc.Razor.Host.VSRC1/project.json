@@ -1,11 +1,13 @@
 {
   "description": "Design time hosting infrastructure for the ASP.NET MVC Razor view engine.",
   "version": "6.0.0-rc1-final",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/mvc"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/mvc"
+    }
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   },

@@ -1,9 +1,11 @@
 {
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true,
-    "preserveCompilationContext": true
+    "preserveCompilationContext": true,
+    "embed": {
+      "include": "EmbeddedResources/**"
+    }
   },
-  "resource": "EmbeddedResources/**",
   "dependencies": {
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
@@ -12,7 +14,7 @@
     "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netcoreapp1.0": {
       "imports": [
         "dnxcore50",
@@ -26,9 +28,11 @@
       }
     }
   },
-  "content": [
-    "web.config"
-  ],
+  "publishOptions": {
+    "include": [
+      "web.config"
+    ]
+  },
   "tools": {
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": {
       "version": "1.0.0-*",

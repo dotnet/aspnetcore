@@ -1,16 +1,18 @@
 {
   "description": "ASP.NET Core MVC cross-origin resource sharing (CORS) features.",
-  "tags": [
-    "aspnetcore",
-    "aspnetcoremvc",
-    "cors"
-  ],
   "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/mvc"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/mvc"
+    },
+    "tags": [
+      "aspnetcore",
+      "aspnetcoremvc",
+      "cors"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -23,7 +25,7 @@
     "Microsoft.AspNetCore.Mvc.Core": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netstandard1.5": {
       "imports": [
         "portable-net451+win8"

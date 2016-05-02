@@ -1,12 +1,7 @@
 {
   "description": "ASP.NET Core MVC features that enable globalization and localization of applications.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.Mvc.Localization.IHtmlLocalizer<TResource>\r\nMicrosoft.AspNetCore.Mvc.Localization.IViewLocalizer",
-  "tags": [
-    "aspnetcore",
-    "aspnetcoremvc",
-    "localization"
-  ],
   "version": "1.0.0-*",
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -25,7 +20,7 @@
     }
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netstandard1.5": {
       "imports": [
         "portable-net45+win8"
@@ -37,8 +32,15 @@
     "node_modules",
     "bower_components"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aspnet/mvc"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/aspnet/mvc"
+    },
+    "tags": [
+      "aspnetcore",
+      "aspnetcoremvc",
+      "localization"
+    ]
   }
 }
