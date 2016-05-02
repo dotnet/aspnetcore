@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true
   },
   "dependencies": {
@@ -26,11 +26,13 @@
       }
     }
   },
-  "content": [
-    "project.json",
-    "wwwroot",
-    "web.config"
-  ],
+  "publishOptions": {
+    "include": [
+      "project.json",
+      "wwwroot",
+      "web.config"
+    ]
+  },
   "userSecretsId": "aspnet5-JwtBearerSample-20151210102827",
   "tools": {
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": {

@@ -1,16 +1,18 @@
 {
   "version": "1.0.0-*",
   "description": "ASP.NET Core contains middleware to support Google's OpenId and OAuth 2.0 authentication workflows.",
-  "tags": [
-    "aspnetcore",
-    "authentication",
-    "security"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/security"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/security"
+    },
+    "tags": [
+      "aspnetcore",
+      "authentication",
+      "security"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
