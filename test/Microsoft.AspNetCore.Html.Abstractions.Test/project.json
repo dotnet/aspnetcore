@@ -1,9 +1,10 @@
 {
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Html.Abstractions": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
@@ -18,7 +19,6 @@
           "version": "1.0.0-*",
           "type": "platform"
         },
-        "dotnet-test-xunit": "1.0.0-*",
         "System.Diagnostics.Process": "4.1.0-*"
       },
       "imports": [
