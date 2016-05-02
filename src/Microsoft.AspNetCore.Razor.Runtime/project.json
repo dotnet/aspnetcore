@@ -1,14 +1,7 @@
 {
   "description": "Runtime components for rendering Razor pages and implementing tag helpers.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute\r\nMicrosoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute\r\nMicrosoft.AspNetCore.Razor.TagHelpers.ITagHelper",
-  "tags": [
-    "aspnetcore",
-    "cshtml",
-    "razor",
-    "taghelper",
-    "taghelpers"
-  ],
   "version": "1.0.0-*",
-  "compilationOptions": {
+  "buildOptions": {
     "allowUnsafe": true,
     "keyFile": "../../tools/Key.snk",
     "warningsAsErrors": true,
@@ -17,9 +10,18 @@
     ],
     "xmlDoc": true
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/razor"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/razor"
+    },
+    "tags": [
+      "aspnetcore",
+      "cshtml",
+      "razor",
+      "taghelper",
+      "taghelpers"
+    ]
   },
   "dependencies": {
     "Microsoft.AspNetCore.Html.Abstractions": "1.0.0-*",

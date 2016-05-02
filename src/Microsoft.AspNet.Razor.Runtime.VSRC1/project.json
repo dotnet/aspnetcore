@@ -1,13 +1,15 @@
 {
   "description": "Runtime components for rendering Razor pages.",
   "version": "4.0.0-rc1-final",
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/razor"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/razor"
+    }
   },
   "dependencies": {
     "Microsoft.AspNet.Html.Abstractions": "1.0.0-rc1-final",
