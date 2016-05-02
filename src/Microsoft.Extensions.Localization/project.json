@@ -1,14 +1,16 @@
 {
   "version": "1.0.0-*",
   "description": "Application localization services and default implementation based on ResourceManager to load localized assembly resources.",
-  "tags": [
-    "localization"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aspnet/localization"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/aspnet/localization"
+    },
+    "tags": [
+      "localization"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
