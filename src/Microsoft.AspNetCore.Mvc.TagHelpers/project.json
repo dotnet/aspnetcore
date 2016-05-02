@@ -1,17 +1,19 @@
 {
   "description": "ASP.NET Core MVC default tag helpers. Contains tag helpers for anchor tags, HTML input elements, caching, scripts, links (for CSS), and more.",
-  "tags": [
-    "aspnetcore",
-    "aspnetcoremvc",
-    "taghelper",
-    "taghelpers"
-  ],
   "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/mvc"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/mvc"
+    },
+    "tags": [
+      "aspnetcore",
+      "aspnetcoremvc",
+      "taghelper",
+      "taghelpers"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -38,7 +40,7 @@
     }
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netstandard1.5": {
       "imports": [
         "portable-net45+win8"

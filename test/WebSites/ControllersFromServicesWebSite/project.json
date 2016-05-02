@@ -1,5 +1,5 @@
 {
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true,
     "preserveCompilationContext": true
   },
@@ -17,7 +17,7 @@
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netcoreapp1.0": {
       "imports": [
         "dnxcore50",
@@ -31,10 +31,12 @@
       }
     }
   },
-  "content": [
-    "Views",
-    "web.config"
-  ],
+  "publishOptions": {
+    "include": [
+      "Views",
+      "web.config"
+    ]
+  },
   "tools": {
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": {
       "version": "1.0.0-*",

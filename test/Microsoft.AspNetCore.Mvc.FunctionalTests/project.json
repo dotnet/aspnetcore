@@ -2,7 +2,7 @@
   "compile": [
     "../Microsoft.AspNetCore.Mvc.Formatters.Xml.Test/XmlAssert.cs"
   ],
-  "compilationOptions": {
+  "buildOptions": {
     "define": [
       "__RemoveThisBitTo__GENERATE_BASELINES",
       "FUNCTIONAL_TESTS"
@@ -10,6 +10,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "ApiExplorerWebSite": "1.0.0",
     "ApplicationModelWebSite": "1.0.0",
@@ -52,7 +53,6 @@
         },
         "Microsoft.Dnx.Compilation.CSharp.Common": "1.0.0-*",
         "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*",
-        "dotnet-test-xunit": "1.0.0-*",
         "System.Diagnostics.Process": "4.1.0-*"
       },
       "imports": [
@@ -60,11 +60,6 @@
         "portable-net451+win8"
       ]
     },
-    "net451": { }
-  },
-  "exclude": [
-    "wwwroot",
-    "node_modules",
-    "bower_components"
-  ]
+    "net451": {}
+  }
 }

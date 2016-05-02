@@ -1,15 +1,17 @@
 {
   "description": "ASP.NET Core MVC metadata and validation system using System.ComponentModel.DataAnnotations.",
-  "tags": [
-    "aspnetcore",
-    "aspnetcoremvc"
-  ],
   "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/mvc"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/mvc"
+    },
+    "tags": [
+      "aspnetcore",
+      "aspnetcoremvc"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [

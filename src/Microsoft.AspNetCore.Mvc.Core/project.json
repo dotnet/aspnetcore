@@ -1,15 +1,17 @@
 {
   "description": "ASP.NET Core MVC core components. Contains common action result types, attribute routing, application model conventions, API explorer, application parts, filters, formatters, model binding, and more.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.Mvc.AreaAttribute\r\nMicrosoft.AspNetCore.Mvc.BindAttribute\r\nMicrosoft.AspNetCore.Mvc.ControllerBase\r\nMicrosoft.AspNetCore.Mvc.FromBodyAttribute\r\nMicrosoft.AspNetCore.Mvc.FromFormAttribute\r\nMicrosoft.AspNetCore.Mvc.RequireHttpsAttribute\r\nMicrosoft.AspNetCore.Mvc.RouteAttribute",
-  "tags": [
-    "aspnetcore",
-    "aspnetcoremvc"
-  ],
   "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/mvc"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/mvc"
+    },
+    "tags": [
+      "aspnetcore",
+      "aspnetcoremvc"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -54,7 +56,7 @@
     "System.Diagnostics.DiagnosticSource": "4.0.0-*"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netstandard1.5": {
       "imports": [
         "portable-net451+win8"

@@ -1,16 +1,18 @@
 {
   "description": "ASP.NET Core MVC formatters for XML input and output using DataContractSerializer and XmlSerializer.",
-  "tags": [
-    "aspnetcore",
-    "aspnetcoremvc",
-    "xml"
-  ],
   "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/mvc"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/mvc"
+    },
+    "tags": [
+      "aspnetcore",
+      "aspnetcoremvc",
+      "xml"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [

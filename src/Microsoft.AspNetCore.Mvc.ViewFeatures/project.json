@@ -1,15 +1,17 @@
 {
   "description": "ASP.NET Core MVC view rendering features. Contains common types used in most MVC applications as well as view rendering features such as view engines, views, view components, and HTML helpers.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.Mvc.Controller\r\nMicrosoft.AspNetCore.Mvc.ValidateAntiForgeryTokenAttribute\r\nMicrosoft.AspNetCore.Mvc.ViewComponent",
-  "tags": [
-    "aspnetcore",
-    "aspnetcoremvc"
-  ],
   "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/mvc"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/mvc"
+    },
+    "tags": [
+      "aspnetcore",
+      "aspnetcoremvc"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -49,7 +51,7 @@
     "System.Buffers": "4.0.0-*"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netstandard1.5": {
       "dependencies": {
         "System.Runtime.Serialization.Primitives": "4.1.1-*"

@@ -1,15 +1,17 @@
 {
   "description": "ASP.NET Core MVC abstractions and interfaces for action invocation and dispatching, authorization, action filters, formatters, model binding, routing, validation, and more.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.Mvc.IActionResult",
-  "tags": [
-    "aspnetcore",
-    "aspnetcoremvc"
-  ],
   "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/mvc"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/mvc"
+    },
+    "tags": [
+      "aspnetcore",
+      "aspnetcoremvc"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -38,7 +40,7 @@
     "Microsoft.Net.Http.Headers": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netstandard1.3": {
       "dependencies": {
         "Microsoft.CSharp": "4.0.1-*",

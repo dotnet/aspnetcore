@@ -1,17 +1,19 @@
 {
   "description": "ASP.NET Core MVC Razor view engine for CSHTML files.",
-  "tags": [
-    "aspnetcore",
-    "aspnetcoremvc",
-    "cshtml",
-    "razor"
-  ],
   "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/mvc"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/mvc"
+    },
+    "tags": [
+      "aspnetcore",
+      "aspnetcoremvc",
+      "cshtml",
+      "razor"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [

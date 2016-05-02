@@ -1,13 +1,15 @@
 {
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true,
     "preserveCompilationContext": true
   },
-  "content": [
-    "Views",
-    "Shared-Views",
-    "web.config"
-  ],
+  "publishOptions": {
+    "include": [
+      "Views",
+      "Shared-Views",
+      "web.config"
+    ]
+  },
   "dependencies": {
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Localization": "1.0.0-*",
@@ -20,14 +22,14 @@
   },
   "frameworks": {
     "net451": {
-      "compilationOptions": {
+      "buildOptions": {
         "define": [
           "NET451_CUSTOM_DEFINE"
         ]
       }
     },
     "netcoreapp1.0": {
-      "compilationOptions": {
+      "buildOptions": {
         "define": [
           "NETCOREAPP1_0_CUSTOM_DEFINE"
         ]
