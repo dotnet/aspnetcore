@@ -9,7 +9,10 @@
     ],
     "xmlDoc": true,
     "compile": {
+      "include": "**/*.cs",
       "exclude": [
+        "bin",
+        "obj",
         "DeveloperExceptionPage/Views/*.cshtml",
         "RuntimeInfo/Views/*.cshtml",
         "WelcomePage/Views/*.cshtml"
