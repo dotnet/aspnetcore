@@ -1,11 +1,13 @@
 {
   "description": "Components for building a DecisionTree.",
   "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/routing"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/routing"
+    }
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   },

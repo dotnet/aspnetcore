@@ -1,15 +1,17 @@
 {
   "description": "ASP.NET Core middleware for routing requests to application logic and for generating links.\r\nCommonly used types:\r\n Microsoft.AspNetCore.Routing.Route\r\nMicrosoft.AspNetCore.Routing.RouteCollection",
-  "tags": [
-    "aspnetcore",
-    "routing"
-  ],
   "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/routing"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/routing"
+    },
+    "tags": [
+      "aspnetcore",
+      "routing"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
