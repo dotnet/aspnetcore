@@ -1,7 +1,13 @@
 {
   "buildOptions": {
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "copyToOutput": {
+      "include": [
+        "SubFolder/**/*",
+        "TestDocument.txt"
+      ]
+    }
   },
   "publishOptions": {
     "include": [
