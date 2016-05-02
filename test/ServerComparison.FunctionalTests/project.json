@@ -1,21 +1,29 @@
 {
-  "compilationOptions": {
-    "warningsAsErrors": true
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "copyToOutput": {
+      "include": [
+        "Http.config",
+        "nginx.conf",
+        "NtlmAuthentication.config"
+      ]
+    }
   },
   "testRunner": "xunit",
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Testing": "1.0.0-*",
     "Microsoft.Extensions.Logging": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "Microsoft.Net.Http.Headers": "1.0.0-*"
   },
-
-  "content": [
-    "Http.config",
-    "nginx.conf",
-    "NtlmAuthentication.config"
-  ],
-
+  "publishOptions": {
+    "include": [
+      "Http.config",
+      "nginx.conf",
+      "NtlmAuthentication.config"
+    ]
+  },
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
