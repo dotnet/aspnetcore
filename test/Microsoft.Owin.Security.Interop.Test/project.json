@@ -3,14 +3,14 @@
     "warningsAsErrors": true
   },
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.Owin.Security.Cookies": "3.0.1",
     "Microsoft.Owin.Security.Interop": "1.0.0-*",
     "Microsoft.Owin.Testing": "3.0.1",
-    "xunit": "2.1.0",
-    "xunit.runner.console": "2.1.0"
+    "xunit": "2.1.0"
   },
   "frameworks": {
     "net451": {
