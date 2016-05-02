@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
   "dependencies": {
     "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
@@ -13,12 +13,14 @@
   "compile": [
     "../ServerComparison.TestSites/Startup*.cs"
   ],
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true
   },
-  "content": [
-    "web.config"
-  ],
+  "publishOptions": {
+    "include": [
+      "web.config"
+    ]
+  },
   "frameworks": {
     "netcoreapp1.0": {
       "imports": [
@@ -40,11 +42,11 @@
     "postpublish": "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%"
   },
   "runtimes": {
-    "win7-x64": { },
-    "win7-x86": { },
-    "osx.10.10-x64": { },
-    "osx.10.11-x64": { },
-    "ubuntu.14.04-x64": { },
-    "ubuntu.15.04-x64": { }
+    "win7-x64": {},
+    "win7-x86": {},
+    "osx.10.10-x64": {},
+    "osx.10.11-x64": {},
+    "ubuntu.14.04-x64": {},
+    "ubuntu.15.04-x64": {}
   }
 }
