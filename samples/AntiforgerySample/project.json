@@ -10,7 +10,7 @@
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
     "Newtonsoft.Json": "8.0.3"
   },
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true
   },
   "frameworks": {
@@ -27,10 +27,12 @@
       }
     }
   },
-  "content": [
-    "wwwroot",
-    "web.config"
-  ],
+  "publishOptions": {
+    "include": [
+      "wwwroot",
+      "web.config"
+    ]
+  },
   "tools": {
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": {
       "version": "1.0.0-*",
