@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -9,15 +9,17 @@
     "xmlDoc": true
   },
   "description": "ASP.NET Core basic middleware for:\r\nX-Forwarded-* headers to forward headers from a proxy.\r\nHTTP method override header.",
-  "tags": [
-    "aspnetcore",
-    "proxy",
-    "headers",
-    "xforwarded"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/basicmiddleware"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/basicmiddleware"
+    },
+    "tags": [
+      "aspnetcore",
+      "proxy",
+      "headers",
+      "xforwarded"
+    ]
   },
   "dependencies": {
     "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
