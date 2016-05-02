@@ -1,14 +1,16 @@
 {
   "version": "1.0.0-*",
   "description": "Builds the pages for the Diagnostics projects. Runs in build.cmd.",
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "emitEntryPoint": true,
     "keyFile": "../../tools/Key.snk"
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/diagnostics"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/diagnostics"
+    }
   },
   "dependencies": {
     "Microsoft.AspNetCore.Razor": "1.0.0-*"

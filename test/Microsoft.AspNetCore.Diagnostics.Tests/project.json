@@ -1,9 +1,20 @@
 {
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "embed": {
+      "include": [
+        "Resources/**"
+      ]
+    },
+    "copyToOutput": {
+      "include": [
+        "TestFiles/**/*"
+      ]
+    }
   },
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
     "Microsoft.AspNetCore.Diagnostics.Elm": "0.1.0-*",
@@ -22,7 +33,6 @@
           "type": "platform"
         },
         "moq.netcore": "4.4.0-beta8",
-        "dotnet-test-xunit": "1.0.0-*",
         "System.Diagnostics.TraceSource": "4.0.0-*"
       },
       "imports": [
@@ -41,11 +51,5 @@
       }
     }
   },
-  "testRunner": "xunit",
-  "content": [
-    "TestFiles/**/*"
-  ],
-  "resource": [
-    "Resources/**"
-  ]
+  "testRunner": "xunit"
 }

@@ -1,15 +1,17 @@
 {
   "version": "1.0.0-*",
   "description": "ASP.NET Core diagnostics middleware abstractions and feature interface definitions.",
-  "tags": [
-    "aspnetcore",
-    "diagnostics"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/diagnostics"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/diagnostics"
+    },
+    "tags": [
+      "aspnetcore",
+      "diagnostics"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [

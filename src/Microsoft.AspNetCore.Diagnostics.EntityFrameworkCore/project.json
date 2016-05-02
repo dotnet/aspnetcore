@@ -1,16 +1,18 @@
 {
   "version": "1.0.0-*",
   "description": "ASP.NET Core middleware for Entity Framework Core error pages. Use this middleware to detect and diagnose errors with Entity Framework Core migrations.",
-  "tags": [
-    "aspnetcore",
-    "diagnostics",
-    "entityframeworkcore"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/diagnostics"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/diagnostics"
+    },
+    "tags": [
+      "aspnetcore",
+      "diagnostics",
+      "entityframeworkcore"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
