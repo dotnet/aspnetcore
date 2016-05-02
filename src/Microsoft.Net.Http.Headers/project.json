@@ -1,14 +1,16 @@
 {
   "version": "1.0.0-*",
   "description": "HTTP header parser implementations.",
-  "tags": [
-    "http"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/httpabstractions"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/httpabstractions"
+    },
+    "tags": [
+      "http"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [

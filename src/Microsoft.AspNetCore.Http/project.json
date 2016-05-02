@@ -1,14 +1,16 @@
 {
   "version": "1.0.0-*",
   "description": "ASP.NET Core default HTTP feature implementations.",
-  "tags": [
-    "aspnetcore"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/httpabstractions"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/httpabstractions"
+    },
+    "tags": [
+      "aspnetcore"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "allowUnsafe": true,
     "keyFile": "../../tools/Key.snk",

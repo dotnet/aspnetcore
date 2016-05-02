@@ -1,14 +1,16 @@
 {
   "version": "1.0.0-*",
   "description": "ASP.NET Core HTTP object model for HTTP requests and responses and also common extension methods for registering middleware in an IApplicationBuilder.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.Builder.IApplicationBuilder\r\nMicrosoft.AspNetCore.Http.HttpContext\r\nMicrosoft.AspNetCore.Http.HttpRequest\r\nMicrosoft.AspNetCore.Http.HttpResponse",
-  "tags": [
-    "aspnetcore"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/httpabstractions"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/httpabstractions"
+    },
+    "tags": [
+      "aspnetcore"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [

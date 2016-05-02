@@ -1,14 +1,16 @@
 {
   "version": "1.0.0-*",
   "description": "ASP.NET Core utilities, such as for working with forms, multipart messages, and query strings.",
-  "tags": [
-    "aspnetcore"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/httpabstractions"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/httpabstractions"
+    },
+    "tags": [
+      "aspnetcore"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
