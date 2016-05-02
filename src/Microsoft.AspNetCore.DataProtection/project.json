@@ -1,13 +1,15 @@
 {
   "version": "1.0.0-*",
   "description": "ASP.NET Core logic to protect and unprotect data, similar to DPAPI.",
-  "tags": [
-    "aspnetcore",
-    "dataprotection"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/dataprotection"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/dataprotection"
+    },
+    "tags": [
+      "aspnetcore",
+      "dataprotection"
+    ]
   },
   "dependencies": {
     "Microsoft.AspNetCore.Cryptography.Internal": "1.0.0-*",
@@ -44,7 +46,7 @@
       }
     }
   },
-  "compilationOptions": {
+  "buildOptions": {
     "allowUnsafe": true,
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",

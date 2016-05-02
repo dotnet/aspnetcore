@@ -1,14 +1,21 @@
 {
   "version": "1.0.0-*",
   "description": "A component to allow the ASP.NET Core data protection stack to work with the ASP.NET 4.x <machineKey> element.",
-  "tags": [
-    "aspnet",
-    "aspnetcore",
-    "dataprotection"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/dataprotection"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/dataprotection"
+    },
+    "tags": [
+      "aspnet",
+      "aspnetcore",
+      "dataprotection"
+    ],
+    "files": {
+      "mappings": {
+        "content/net451/": "web.config.transform"
+      }
+    }
   },
   "frameworks": {
     "net451": {
@@ -23,13 +30,12 @@
       }
     }
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
-  },
-  "packInclude": {
-    "content/net451/": "web.config.transform"
   }
 }

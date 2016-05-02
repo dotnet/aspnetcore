@@ -1,13 +1,15 @@
 {
   "version": "1.0.0-*",
   "description": "Infrastructure for ASP.NET Core cryptographic packages. Applications and libraries should not reference this package directly.",
-  "tags": [
-    "aspnetcore",
-    "dataprotection"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/dataprotection"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/dataprotection"
+    },
+    "tags": [
+      "aspnetcore",
+      "dataprotection"
+    ]
   },
   "dependencies": {},
   "frameworks": {
@@ -23,7 +25,7 @@
       }
     }
   },
-  "compilationOptions": {
+  "buildOptions": {
     "allowUnsafe": true,
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
