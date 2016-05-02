@@ -73,15 +73,16 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                     var httpClientHandler = new HttpClientHandler();
                     httpClientHandler.CookieContainer = cookieContainer;
 
-                    var httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
-
-                    // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
-                    var response = await RetryHelper.RetryRequest(() =>
+                    using (var httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) })
                     {
-                        return httpClient.GetAsync(string.Empty);
-                    }, logger, deploymentResult.HostShutdownToken);
+                        // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
+                        var response = await RetryHelper.RetryRequest(() =>
+                        {
+                            return httpClient.GetAsync(string.Empty);
+                        }, logger, deploymentResult.HostShutdownToken);
 
-                    return await response.Content.ReadAsStringAsync();
+                        return await response.Content.ReadAsStringAsync();
+                    }
                 }
             }
         }
