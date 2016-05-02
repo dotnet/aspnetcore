@@ -1,5 +1,5 @@
 {
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true
   },
   "dependencies": {
@@ -12,9 +12,11 @@
     "Microsoft.Extensions.Caching.SqlServer": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*"
   },
-  "content": [
-    "web.config"
-  ],
+  "publishOptions": {
+    "include": [
+      "web.config"
+    ]
+  },
   "frameworks": {
     "net451": {}
   },
