@@ -23,13 +23,15 @@
       }
     }
   },
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true
   },
-  "content": [
-    "project.json",
-    "web.config"
-  ],
+  "publishOptions": {
+    "include": [
+      "project.json",
+      "web.config"
+    ]
+  },
   "userSecretsId": "aspnet5-OpenIdConnectSample-20151210110318",
   "tools": {
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": {

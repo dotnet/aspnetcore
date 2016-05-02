@@ -15,11 +15,11 @@
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*"
   },
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netcoreapp1.0": {
       "imports": [
         "dnxcore50"
@@ -33,11 +33,13 @@
     }
   },
   "userSecretsId": "aspnet5-SocialSample-20151210111056",
-  "content": [
-    "config.json",
-    "project.json",
-    "web.config"
-  ],
+  "publishOptions": {
+    "include": [
+      "config.json",
+      "project.json",
+      "web.config"
+    ]
+  },
   "tools": {
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": {
       "version": "1.0.0-*",
