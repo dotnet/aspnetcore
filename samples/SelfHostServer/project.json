@@ -4,7 +4,7 @@
     "Microsoft.AspNetCore.Server.WebListener": "0.1.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*"
   },
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true
   },
   "commands": {

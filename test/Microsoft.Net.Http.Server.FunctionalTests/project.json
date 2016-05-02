@@ -1,6 +1,7 @@
 {
   "testRunner": "xunit",
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.Net.Http.Server": "0.1.0-*",
     "Microsoft.Net.WebSockets.Server": "0.1.0-*",
@@ -18,7 +19,6 @@
         "System.Net.Http.WinHttpHandler": "4.0.0-*",
         "System.Net.Requests": "4.0.11-*",
         "System.Net.WebSockets.Client": "4.0.0-*",
-        "dotnet-test-xunit": "1.0.0-*",
         "System.Diagnostics.Process": "4.1.0-*"
       },
       "imports": [

@@ -4,7 +4,7 @@
   "dependencies": {
     "Microsoft.Net.Http.Server": "0.1.0-*"
   },
-  "compilationOptions": {
+  "buildOptions": {
     "allowUnsafe": true,
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
