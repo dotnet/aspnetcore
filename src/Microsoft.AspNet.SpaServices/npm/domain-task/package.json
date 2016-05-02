@@ -4,7 +4,7 @@
   "description": "Tracks outstanding operations for a logical thread of execution",
   "main": "main.js",
   "scripts": {
-    "prepublish": "tsd update && tsc && echo 'Finished building NPM package \"domain-task\"'",
+    "prepublish": "tsd update && ./node_modules/.bin/tsc && echo 'Finished building NPM package \"domain-task\"'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Microsoft",
@@ -12,5 +12,8 @@
   "dependencies": {
     "domain-context": "^0.5.1",
     "isomorphic-fetch": "^2.2.1"
+  },
+  "devDependencies": {
+    "typescript": "^1.8.10"
   }
 }
