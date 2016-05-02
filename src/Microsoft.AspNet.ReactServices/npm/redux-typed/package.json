@@ -5,7 +5,7 @@
   "main": "main.js",
   "typings": "main.d.ts",
   "scripts": {
-    "prepublish": "tsd update && ./node_modules/.bin/tsc && echo 'Finished building NPM package \"redux-typed\"'",
+    "prepublish": "tsd update && node_modules/.bin/tsc && echo 'Finished building NPM package \"redux-typed\"'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Microsoft",
