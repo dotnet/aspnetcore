@@ -40,7 +40,10 @@
   },
   "buildOptions": {
     "allowUnsafe": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "copyToOutput": {
+      "include": "TestResources/testCert.pfx"
+    }
   },
   "testRunner": "xunit",
   "publishOptions": {
