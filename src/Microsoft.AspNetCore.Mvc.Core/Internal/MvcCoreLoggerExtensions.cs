@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly Action<ILogger, string, Exception> _noFormatter;
         private static readonly Action<ILogger, IOutputFormatter, string, Exception> _formatterSelected;
         private static readonly Action<ILogger, string, Exception> _skippedContentNegotiation;
-        private static readonly Action<ILogger, string, Exception> _noAcceptForNegotiation;
+        private static readonly Action<ILogger, Exception> _noAcceptForNegotiation;
         private static readonly Action<ILogger, IEnumerable<MediaTypeSegmentWithQuality>, Exception> _noFormatterFromNegotiation;
 
         private static readonly Action<ILogger, string, Exception> _redirectResultExecuting;
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 3,
                 "Skipped content negotiation as content type '{ContentType}' is explicitly set for the response.");
 
-            _noAcceptForNegotiation = LoggerMessage.Define<string>(
+            _noAcceptForNegotiation = LoggerMessage.Define(
                 LogLevel.Debug,
                 4,
                 "No information found on request to perform content negotiation.");
@@ -393,7 +393,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void NoAcceptForNegotiation(this ILogger logger)
         {
-            _noAcceptForNegotiation(logger, null, null);
+            _noAcceptForNegotiation(logger, null);
         }
 
         public static void NoFormatterFromNegotiation(this ILogger logger, IList<MediaTypeSegmentWithQuality> acceptTypes)

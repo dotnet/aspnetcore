@@ -8,13 +8,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
 {
     internal static class MvcJsonLoggerExtensions
     {
-        private static readonly Action<ILogger, string, Exception> _jsonInputFormatterCrashed;
+        private static readonly Action<ILogger, Exception> _jsonInputFormatterCrashed;
 
         private static readonly Action<ILogger, string, Exception> _jsonResultExecuting;
 
         static MvcJsonLoggerExtensions()
         {
-            _jsonInputFormatterCrashed = LoggerMessage.Define<string>(
+            _jsonInputFormatterCrashed = LoggerMessage.Define(
                 LogLevel.Debug,
                 1,
                 "JSON input formatter threw an exception.");
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
 
         public static void JsonInputException(this ILogger logger, Exception exception)
         {
-            _jsonInputFormatterCrashed(logger, exception.ToString(), exception);
+            _jsonInputFormatterCrashed(logger, exception);
         }
 
         public static void JsonResultExecuting(this ILogger logger, object value)
