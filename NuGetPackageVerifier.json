@@ -10,7 +10,6 @@
             "Microsoft.AspNetCore.Mvc.Core": { },
             "Microsoft.AspNetCore.Mvc.Cors": { },
             "Microsoft.AspNetCore.Mvc.DataAnnotations": { },
-            "Microsoft.AspNetCore.Mvc.Dnx": { },
             "Microsoft.AspNetCore.Mvc.Formatters.Json": { },
             "Microsoft.AspNetCore.Mvc.Formatters.Xml": { },
             "Microsoft.AspNetCore.Mvc.Localization": { },
