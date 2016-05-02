@@ -1,13 +1,11 @@
 {
   "version": "1.0.0-*",
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true
   },
-
   "dependencies": {
     "Dependency": "1.0.0"
   },
-
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {
