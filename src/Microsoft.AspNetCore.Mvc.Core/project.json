@@ -40,6 +40,7 @@
       "type": "build",
       "version": "1.0.0-*"
     },
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "Microsoft.Extensions.PropertyActivator.Sources": {
       "version": "1.0.0-*",
       "type": "build"
