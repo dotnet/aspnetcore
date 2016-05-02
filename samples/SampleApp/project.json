@@ -6,7 +6,7 @@
     "Microsoft.AspNetCore.Server.Kestrel.Https": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*"
   },
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true
   },
   "frameworks": {
@@ -24,8 +24,10 @@
       ]
     }
   },
-  "content": [
-    "hosting.json",
-    "testCert.pfx"
-  ]
+  "publishOptions": {
+    "include": [
+      "hosting.json",
+      "testCert.pfx"
+    ]
+  }
 }
