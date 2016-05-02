@@ -40,7 +40,11 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
         // Build the final Webpack config based on supplied options
         if (enableHotModuleReplacement) {
             // TODO: Stop assuming there's an entry point called 'main'
-            webpackConfig.entry['main'].unshift('webpack-hot-middleware/client');
+            if (typeof webpackConfig.entry['main'] === 'string') {
+              webpackConfig.entry['main'] = ['webpack-hot-middleware/client', webpackConfig.entry['main']];
+            } else {
+              webpackConfig.entry['main'].unshift('webpack-hot-middleware/client');
+            }
             webpackConfig.plugins.push(
                 new webpack.HotModuleReplacementPlugin()
             );
