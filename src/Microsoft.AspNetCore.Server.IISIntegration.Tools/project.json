@@ -1,14 +1,15 @@
-﻿{
+{
   "version": "1.0.0-*",
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true,
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true,
     "outputName": "dotnet-publish-iis"
   },
-
   "dependencies": {
     "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
     "Microsoft.DotNet.ProjectModel": "1.0.0-*",

@@ -1,11 +1,13 @@
 {
   "version": "1.0.0-*",
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true
   },
-  "content": [
-    "web.config"
-  ],
+  "publishOptions": {
+    "include": [
+      "web.config"
+    ]
+  },
   "dependencies": {
     "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
@@ -28,14 +30,14 @@
         "System.Diagnostics.Process": "4.1.0-*"
       }
     },
-    "net451": { }
+    "net451": {}
   },
   "runtimes": {
-    "win7-x64": { },
-    "win7-x86": { },
-    "osx.10.10-x64": { },
-    "osx.10.11-x64": { },
-    "ubuntu.14.04-x64": { },
-    "ubuntu.15.04-x64": { }
+    "win7-x64": {},
+    "win7-x86": {},
+    "osx.10.10-x64": {},
+    "osx.10.11-x64": {},
+    "ubuntu.14.04-x64": {},
+    "ubuntu.15.04-x64": {}
   }
 }
