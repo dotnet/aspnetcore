@@ -1,13 +1,15 @@
 {
   "version": "1.0.0-*",
   "description": "ASP.NET Core Kestrel cross-platform web server.",
-  "tags": [
-    "aspnetcore",
-    "kestrel"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/kestrelhttpserver"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/kestrelhttpserver"
+    },
+    "tags": [
+      "aspnetcore",
+      "kestrel"
+    ]
   },
   "dependencies": {
     "System.Buffers": "4.0.0-*",
@@ -51,7 +53,7 @@
       ]
     }
   },
-  "compilationOptions": {
+  "buildOptions": {
     "allowUnsafe": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [

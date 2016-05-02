@@ -1,6 +1,7 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel.Https": "1.0.0-*",
@@ -21,8 +22,7 @@
         "System.Net.Http": "4.0.1-*",
         "System.Net.Http.WinHttpHandler": "4.0.0-*",
         "System.Net.Sockets": "4.1.0-*",
-        "System.Runtime.Handles": "4.0.1-*",
-        "dotnet-test-xunit": "1.0.0-*"
+        "System.Runtime.Handles": "4.0.1-*"
       },
       "imports": [
         "dnxcore50",
@@ -38,12 +38,14 @@
       }
     }
   },
-  "compilationOptions": {
+  "buildOptions": {
     "allowUnsafe": true,
     "keyFile": "../../tools/Key.snk"
   },
   "testRunner": "xunit",
-  "content": [
-    "TestResources/testCert.pfx"
-  ]
+  "publishOptions": {
+    "include": [
+      "TestResources/testCert.pfx"
+    ]
+  }
 }

@@ -1,6 +1,7 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
@@ -16,7 +17,6 @@
           "version": "1.0.0-*",
           "type": "platform"
         },
-        "dotnet-test-xunit": "1.0.0-*",
         "System.Net.Http": "4.0.1-*",
         "System.Runtime.Serialization.Primitives": "4.1.1-*"
       },
@@ -35,7 +35,7 @@
       }
     }
   },
-  "compilationOptions": {
+  "buildOptions": {
     "allowUnsafe": true
   },
   "testRunner": "xunit"
