@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Session": "1.0.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
@@ -15,7 +16,6 @@
           "version": "1.0.0-*",
           "type": "platform"
         },
-        "dotnet-test-xunit": "1.0.0-*",
         "System.Threading.Thread": "4.0.0-*",
         "System.Diagnostics.Process": "4.1.0-*"
       },

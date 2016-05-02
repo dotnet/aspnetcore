@@ -1,14 +1,16 @@
 {
   "version": "1.0.0-*",
   "description": "ASP.NET Core session state middleware.",
-  "tags": [
-    "aspnetcore",
-    "session",
-    "sessionstate"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/session"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/session"
+    },
+    "tags": [
+      "aspnetcore",
+      "session",
+      "sessionstate"
+    ]
   },
   "dependencies": {
     "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
@@ -16,7 +18,7 @@
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Options": "1.0.0-*"
   },
-  "compilationOptions": {
+  "buildOptions": {
     "allowUnsafe": true,
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
