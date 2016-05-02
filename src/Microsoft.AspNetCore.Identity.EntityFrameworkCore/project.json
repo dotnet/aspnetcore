@@ -1,13 +1,7 @@
 {
   "description": "ASP.NET Core Identity provider that uses Entity Framework Core.",
-  "tags": [
-    "aspnetcore",
-    "entityframeworkcore",
-    "identity",
-    "membership"
-  ],
   "version": "1.0.0-*",
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -15,9 +9,17 @@
     ],
     "xmlDoc": true
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/identity"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/identity"
+    },
+    "tags": [
+      "aspnetcore",
+      "entityframeworkcore",
+      "identity",
+      "membership"
+    ]
   },
   "dependencies": {
     "Microsoft.AspNetCore.Identity": "1.0.0-*",
