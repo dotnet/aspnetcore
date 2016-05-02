@@ -21,7 +21,7 @@
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
-    "Microsoft.EntityFrameworkCore.Tools":{
+    "Microsoft.EntityFrameworkCore.Tools": {
       "version": "1.0.0-*",
       "type": "build"
     },
@@ -32,7 +32,7 @@
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "Microsoft.Extensions.Logging.Debug": "1.0.0-*"
   },
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true
   },
   "frameworks": {
@@ -69,8 +69,10 @@
     ],
     "postpublish": "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%"
   },
-  "content": [
-    "appsettings.json",
-    "web.config"
-  ]
+  "publishOptions": {
+    "include": [
+      "appsettings.json",
+      "web.config"
+    ]
+  }
 }
