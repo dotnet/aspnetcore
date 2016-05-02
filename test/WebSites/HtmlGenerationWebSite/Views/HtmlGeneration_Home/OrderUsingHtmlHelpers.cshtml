@@ -11,9 +11,9 @@
     <title></title>
 </head>
 <body>
-    @* Use comments and <text/> elements to force whitespace in generated HTML. *@@using (
-Html.BeginForm(actionName: "Submit", controllerName: "HtmlGeneration_Order"))
-    {<text></text>
+    @* Use <text/> element to force whitespace in generated HTML. *@
+    @using (Html.BeginForm(actionName: "Submit", controllerName: "HtmlGeneration_Order"))
+    {<text>
         <div>
             @Html.LabelFor(m => m.Shipping, htmlAttributes: new { @class = "order" })
             @Html.TextBoxFor(m => m.Shipping, format: "Your shipping method is {0}", htmlAttributes: new { size = "50" })
@@ -74,11 +74,11 @@ Html.BeginForm(actionName: "Submit", controllerName: "HtmlGeneration_Order"))
             @Html.LabelFor(m => m.Customer.Gender, htmlAttributes: new { @class = "order" })
             @Html.EditorFor(model => model.Customer.Gender, templateName: "GenderUsingHtmlHelpers")
             @Html.ValidationMessageFor(m => m.Customer.Gender)
-        </div><text>
-        </text>@Html.ValidationSummary(message: null, htmlAttributes: new { @class = "order" })<text>
-        </text>@Html.HiddenFor(m => m.Customer.Key)<text></text>
-        <input type="submit"/><text>
-    </text>@Html.AntiForgeryToken();
-    }@**@
+        </div>
+        @Html.ValidationSummary(message: null, htmlAttributes: new { @class = "order" })
+        @Html.HiddenFor(m => m.Customer.Key)
+        <input type="submit"/>
+    </text>}
+
 </body>
 </html>
