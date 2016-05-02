@@ -1,7 +1,6 @@
 {
   "buildOptions": {
-    "emitEntryPoint": true,
-    "preserveCompilationContext": true
+    "emitEntryPoint": true
   },
   "dependencies": {
     "Microsoft.NETCore.Platforms": "1.0.1-*",

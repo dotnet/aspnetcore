@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
@@ -202,10 +203,11 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.NotNull(descriptor.ImplementationInstance);
             var manager = Assert.IsType<ApplicationPartManager>(descriptor.ImplementationInstance);
 
-            Assert.Equal(3, manager.FeatureProviders.Count);
-            Assert.IsType<ControllerFeatureProvider>(manager.FeatureProviders[0]);
-            Assert.IsType<ViewComponentFeatureProvider>(manager.FeatureProviders[1]);
-            Assert.IsType<TagHelperFeatureProvider>(manager.FeatureProviders[2]);
+            Assert.Collection(manager.FeatureProviders,
+                feature => Assert.IsType<ControllerFeatureProvider>(feature),
+                feature => Assert.IsType<ViewComponentFeatureProvider>(feature),
+                feature => Assert.IsType<TagHelperFeatureProvider>(feature),
+                feature => Assert.IsType<MetadataReferenceFeatureProvider>(feature));
         }
 
         [Fact]

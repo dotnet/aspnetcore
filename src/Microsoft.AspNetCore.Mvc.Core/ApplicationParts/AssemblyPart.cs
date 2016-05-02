@@ -4,13 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 {
     /// <summary>
     /// An <see cref="ApplicationPart"/> backed by an <see cref="Assembly"/>.
     /// </summary>
-    public class AssemblyPart : ApplicationPart, IApplicationPartTypeProvider
+    public class AssemblyPart : ApplicationPart, IApplicationPartTypeProvider, ICompilationLibrariesProvider
     {
         /// <summary>
         /// Initalizes a new <see cref="AssemblyPart"/> instance.
@@ -38,5 +39,17 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 
         /// <inheritdoc />
         public IEnumerable<TypeInfo> Types => Assembly.DefinedTypes;
+
+        /// <inheritdoc />
+        public IReadOnlyList<CompilationLibrary> GetCompilationLibraries()
+        {
+            var dependencyContext = DependencyContext.Load(Assembly);
+            if (dependencyContext != null)
+            {
+                return dependencyContext.CompileLibraries;
+            }
+
+            return new CompilationLibrary[0];
+        }
     }
 }

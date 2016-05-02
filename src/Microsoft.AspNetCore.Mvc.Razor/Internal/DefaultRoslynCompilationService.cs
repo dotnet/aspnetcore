@@ -7,17 +7,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -29,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     /// </summary>
     public class DefaultRoslynCompilationService : ICompilationService
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly ApplicationPartManager _partManager;
         private readonly IFileProvider _fileProvider;
         private readonly Action<RoslynCompilationContext> _compilationCallback;
         private readonly CSharpParseOptions _parseOptions;
@@ -37,22 +35,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private readonly ILogger _logger;
         private object _applicationReferencesLock = new object();
         private bool _applicationReferencesInitialized;
-        private List<MetadataReference> _applicationReferences;
+        private IList<MetadataReference> _applicationReferences;
 
         /// <summary>
         /// Initalizes a new instance of the <see cref="DefaultRoslynCompilationService"/> class.
         /// </summary>
-        /// <param name="environment">The <see cref="IHostingEnvironment"/>.</param>
+        /// <param name="partManager">The <see cref="ApplicationPartManager"/>.</param>
         /// <param name="optionsAccessor">Accessor to <see cref="RazorViewEngineOptions"/>.</param>
         /// <param name="fileProviderAccessor">The <see cref="IRazorViewEngineFileProviderAccessor"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public DefaultRoslynCompilationService(
-            IHostingEnvironment environment,
+            ApplicationPartManager partManager,
             IOptions<RazorViewEngineOptions> optionsAccessor,
             IRazorViewEngineFileProviderAccessor fileProviderAccessor,
             ILoggerFactory loggerFactory)
         {
-            _hostingEnvironment = environment;
+            _partManager = partManager;
             _fileProvider = fileProviderAccessor.FileProvider;
             _compilationCallback = optionsAccessor.Value.CompilationCallback;
             _parseOptions = optionsAccessor.Value.ParseOptions;
@@ -60,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             _logger = loggerFactory.CreateLogger<DefaultRoslynCompilationService>();
         }
 
-        private List<MetadataReference> ApplicationReferences
+        private IList<MetadataReference> ApplicationReferences
         {
             get
             {
@@ -152,19 +150,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         }
 
         /// <summary>
-        /// Gets the <see cref="DependencyContext"/>.
+        /// Gets the sequence of <see cref="MetadataReference"/> instances used for compilation.
         /// </summary>
-        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
-        /// <returns>The <see cref="DependencyContext"/>.</returns>
-        protected virtual DependencyContext GetDependencyContext(IHostingEnvironment hostingEnvironment)
+        /// <returns>The <see cref="MetadataReference"/> instances.</returns>
+        protected virtual IList<MetadataReference> GetApplicationReferences()
         {
-            if (hostingEnvironment.ApplicationName != null)
-            {
-                var applicationAssembly = Assembly.Load(new AssemblyName(hostingEnvironment.ApplicationName));
-                return DependencyContext.Load(applicationAssembly);
-            }
-
-            return null;
+            var feature = new MetadataReferenceFeature();
+            _partManager.PopulateFeature(feature);
+            return feature.MetadataReferences;
         }
 
         private Assembly LoadStream(MemoryStream assemblyStream, MemoryStream pdbStream)
@@ -238,53 +231,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             }
 
             return diagnostic.Location.GetMappedLineSpan().Path;
-        }
-
-        private List<MetadataReference> GetApplicationReferences()
-        {
-            var metadataReferences = new List<MetadataReference>();
-            var dependencyContext = GetDependencyContext(_hostingEnvironment);
-            if (dependencyContext == null)
-            {
-                // Avoid null ref if the entry point does not have DependencyContext specified.
-                return metadataReferences;
-            }
-
-            var libraryPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            for (var i = 0; i < dependencyContext.CompileLibraries.Count; i++)
-            {
-                var library = dependencyContext.CompileLibraries[i];
-                IEnumerable<string> referencePaths;
-                try
-                {
-                    referencePaths = library.ResolveReferencePaths();
-                }
-                catch (InvalidOperationException)
-                {
-                    continue;
-                }
-
-                foreach (var path in referencePaths)
-                {
-                    if (libraryPaths.Add(path))
-                    {
-                        metadataReferences.Add(CreateMetadataFileReference(path));
-                    }
-                }
-            }
-
-            return metadataReferences;
-        }
-
-        private MetadataReference CreateMetadataFileReference(string path)
-        {
-            using (var stream = File.OpenRead(path))
-            {
-                var moduleMetadata = ModuleMetadata.CreateFromStream(stream, PEStreamOptions.PrefetchMetadata);
-                var assemblyMetadata = AssemblyMetadata.Create(moduleMetadata);
-
-                return assemblyMetadata.GetReference(filePath: path);
-            }
         }
 
         private static bool IsError(Diagnostic diagnostic)

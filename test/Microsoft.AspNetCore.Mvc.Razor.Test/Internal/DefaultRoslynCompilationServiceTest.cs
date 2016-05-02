@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
@@ -26,10 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var content = @"
 public class MyTestType  {}";
 
-            var compilationService = new TestableRoslynCompilationService(
-                GetDependencyContext(),
-                GetOptions(),
-                GetFileProviderAccessor());
+            var compilationService = GetRoslynCompilationService();
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
                 "some-relative-path");
@@ -53,10 +48,7 @@ this should fail";
             var fileProvider = new TestFileProvider();
             var fileInfo = fileProvider.AddFile(viewPath, fileContent);
 
-            var compilationService = new TestableRoslynCompilationService(
-                GetDependencyContext(),
-                GetOptions(),
-                GetFileProviderAccessor(fileProvider));
+            var compilationService = GetRoslynCompilationService(fileProvider: fileProvider);
             var relativeFileInfo = new RelativeFileInfo(fileInfo, "some-relative-path");
 
             // Act
@@ -77,10 +69,7 @@ this should fail";
             var fileContent = "file content";
             var content = @"this should fail";
 
-            var compilationService = new TestableRoslynCompilationService(
-                GetDependencyContext(),
-                GetOptions(),
-                GetFileProviderAccessor());
+            var compilationService = GetRoslynCompilationService();
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { Content = fileContent },
                 "some-relative-path");
@@ -112,10 +101,7 @@ this should fail";
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(path, mockFileInfo.Object);
 
-            var compilationService = new TestableRoslynCompilationService(
-                GetDependencyContext(),
-                GetOptions(),
-                GetFileProviderAccessor());
+            var compilationService = GetRoslynCompilationService(fileProvider: fileProvider);
             var relativeFileInfo = new RelativeFileInfo(mockFileInfo.Object, path);
 
             // Act
@@ -140,14 +126,9 @@ public class MyCustomDefinedClass {}
 public class MyNonCustomDefinedClass {}
 #endif
 ";
-
             var options = GetOptions();
             options.ParseOptions = options.ParseOptions.WithPreprocessorSymbols("MY_CUSTOM_DEFINE");
-
-            var compilationService = new TestableRoslynCompilationService(
-                 GetDependencyContext(),
-                 options,
-                 GetFileProviderAccessor());
+            var compilationService = GetRoslynCompilationService(options: options);
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
                 "some-relative-path");
@@ -170,12 +151,7 @@ public class MyNonCustomDefinedClass {}
             fileProvider.AddFile(viewPath, "view-content");
             var options = new RazorViewEngineOptions();
             options.FileProviders.Add(fileProvider);
-
-            var compilationService = new TestableRoslynCompilationService(
-                 GetDependencyContext(),
-                 options,
-                 GetFileProviderAccessor(fileProvider));
-
+            var compilationService = GetRoslynCompilationService(options: options, fileProvider: fileProvider);
             var assemblyName = "random-assembly-name";
 
             var diagnostics = new[]
@@ -256,11 +232,8 @@ public class MyNonCustomDefinedClass {}
             // Arrange
             var content = "public class MyTestType  {}";
             RoslynCompilationContext usedCompilation = null;
-
-            var compilationService = new TestableRoslynCompilationService(
-                 GetDependencyContext(),
-                 GetOptions(callback: c => usedCompilation = c),
-                 GetFileProviderAccessor());
+            var options = GetOptions(c => usedCompilation = c);
+            var compilationService = GetRoslynCompilationService(options: options);
 
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
@@ -274,43 +247,12 @@ public class MyNonCustomDefinedClass {}
         }
 
         [Fact]
-        public void Compile_ThrowsIfDependencyContextIsNullAndTheApplicationFailsToCompileWithNoReferences()
+        public void Compile_ThrowsIfNoMetadataReferencesAreDiscoveredAndApplicationFailsToCompile()
         {
             // Arrange
             var content = "public class MyTestType  {}";
-            var compilationService = new TestableRoslynCompilationService(
-                dependencyContext: null,
-                viewEngineOptions: GetOptions(),
-                fileProviderAccessor: GetFileProviderAccessor());
-
-            var relativeFileInfo = new RelativeFileInfo(
-                new TestFileInfo { PhysicalPath = "SomePath" },
-                "some-relative-path.cshtml");
-
-            var expected = "The Razor page 'some-relative-path.cshtml' failed to compile. Ensure that your "
-                 + "application's project.json sets the 'preserveCompilationContext' compilation property.";
-
-            // Act and Assert
-            var ex = Assert.Throws<InvalidOperationException>(() =>
-                compilationService.Compile(relativeFileInfo, content));
-            Assert.Equal(expected, ex.Message);
-        }
-
-        [Fact]
-        public void Compile_ThrowsIfDependencyContextReturnsNoReferencesAndTheApplicationFailsToCompile()
-        {
-            // Arrange
-            var content = "public class MyTestType  {}";
-            var dependencyContext = new DependencyContext(
-                new TargetInfo("framework", "runtime", "signature", isPortable: true),
-                Extensions.DependencyModel.CompilationOptions.Default,
-                new CompilationLibrary[0],
-                new RuntimeLibrary[0],
-                Enumerable.Empty<RuntimeFallbacks>());
-            var compilationService = new TestableRoslynCompilationService(
-                dependencyContext: dependencyContext,
-                viewEngineOptions: GetOptions(),
-                fileProviderAccessor: GetFileProviderAccessor());
+            var applicationPartManager = new ApplicationPartManager();
+            var compilationService = GetRoslynCompilationService(applicationPartManager);
 
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
@@ -334,11 +276,7 @@ public class MyNonCustomDefinedClass {}
                 context.Compilation = context.Compilation.RemoveAllReferences();
             });
             var content = "public class MyTestType  {}";
-            var compilationService = new TestableRoslynCompilationService(
-                dependencyContext: GetDependencyContext(),
-                viewEngineOptions: options,
-                fileProviderAccessor: GetFileProviderAccessor());
-
+            var compilationService = GetRoslynCompilationService(options: options);
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
                 "some-relative-path.cshtml");
@@ -363,10 +301,8 @@ public class MyNonCustomDefinedClass {}
                     .AddReferences(MetadataReference.CreateFromFile(assemblyLocation));
             });
             var content = "public class MyTestType  {}";
-            var compilationService = new TestableRoslynCompilationService(
-                dependencyContext: null,
-                viewEngineOptions: options,
-                fileProviderAccessor: GetFileProviderAccessor());
+            var applicationPartManager = new ApplicationPartManager();
+            var compilationService = GetRoslynCompilationService(applicationPartManager, options);
 
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
@@ -399,7 +335,7 @@ public class MyNonCustomDefinedClass {}
             };
         }
 
-        private IRazorViewEngineFileProviderAccessor GetFileProviderAccessor(IFileProvider fileProvider = null)
+        private static IRazorViewEngineFileProviderAccessor GetFileProviderAccessor(IFileProvider fileProvider = null)
         {
             var options = new Mock<IRazorViewEngineFileProviderAccessor>();
             options.SetupGet(o => o.FileProvider)
@@ -408,38 +344,36 @@ public class MyNonCustomDefinedClass {}
             return options.Object;
         }
 
-        private DependencyContext GetDependencyContext()
+        private static IOptions<RazorViewEngineOptions> GetAccessor(RazorViewEngineOptions options)
         {
-            var assembly = typeof(DefaultRoslynCompilationServiceTest).GetTypeInfo().Assembly;
-            return DependencyContext.Load(assembly);
+            var optionsAccessor = new Mock<IOptions<RazorViewEngineOptions>>();
+            optionsAccessor.SetupGet(a => a.Value).Returns(options);
+            return optionsAccessor.Object;
         }
 
-        private class TestableRoslynCompilationService : DefaultRoslynCompilationService
+        private static ApplicationPartManager GetApplicationPartManager()
         {
-            private readonly DependencyContext _dependencyContext;
+            var applicationPartManager = new ApplicationPartManager();
+            var assembly = typeof(DefaultRoslynCompilationServiceTest).GetTypeInfo().Assembly;
+            applicationPartManager.ApplicationParts.Add(new AssemblyPart(assembly));
+            applicationPartManager.FeatureProviders.Add(new MetadataReferenceFeatureProvider());
 
-            public TestableRoslynCompilationService(
-                DependencyContext dependencyContext,
-                RazorViewEngineOptions viewEngineOptions,
-                IRazorViewEngineFileProviderAccessor fileProviderAccessor)
-                : base(
-                      Mock.Of<IHostingEnvironment>(),
-                      GetAccessor(viewEngineOptions),
-                      fileProviderAccessor,
-                      NullLoggerFactory.Instance)
-            {
-                _dependencyContext = dependencyContext;
-            }
+            return applicationPartManager;
+        }
 
-            private static IOptions<RazorViewEngineOptions> GetAccessor(RazorViewEngineOptions options)
-            {
-                var optionsAccessor = new Mock<IOptions<RazorViewEngineOptions>>();
-                optionsAccessor.SetupGet(a => a.Value).Returns(options);
-                return optionsAccessor.Object;
-            }
+        private static DefaultRoslynCompilationService GetRoslynCompilationService(
+            ApplicationPartManager partManager = null,
+            RazorViewEngineOptions options = null,
+            IFileProvider fileProvider = null)
+        {
+            partManager = partManager ?? GetApplicationPartManager();
+            options = options ?? GetOptions();
 
-            protected override DependencyContext GetDependencyContext(IHostingEnvironment hostingEnvironment)
-                => _dependencyContext;
+            return new DefaultRoslynCompilationService(
+                partManager,
+                GetAccessor(options),
+                GetFileProviderAccessor(fileProvider),
+                NullLoggerFactory.Instance);
         }
     }
 }
