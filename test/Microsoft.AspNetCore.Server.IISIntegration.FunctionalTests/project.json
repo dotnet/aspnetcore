@@ -1,31 +1,33 @@
 {
-    "content": [
-        "Http.config",
-        "Https.config",
-        "NtlmAuthentation.config"
-    ],
-    "compilationOptions": {
-        "warningsAsErrors": true
-    },
-    "dependencies": {
-        "Microsoft.AspNetCore.Server.Testing": "1.0.0-*",
-        "Microsoft.Extensions.Logging": "1.0.0-*",
-        "Microsoft.Extensions.Logging.Console": "1.0.0-*",
-        "xunit": "2.1.0"
-    },
-    "frameworks": {
-        "net451": {
-            "dependencies": {
-                "xunit.runner.console": "2.1.0"
-            },
-            "frameworkAssemblies": {
-                "System.Data": "",
-                "System.Net.Http": "",
-                "System.Net.Http.WebRequest": "",
-                "System.Runtime": "",
-                "System.Xml": ""
-            }
-        }
-    },
-    "testRunner": "xunit"
+  "publishOptions": {
+    "include": [
+      "Http.config",
+      "Https.config",
+      "NtlmAuthentation.config"
+    ]
+  },
+  "buildOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "Microsoft.AspNetCore.Server.Testing": "1.0.0-*",
+    "Microsoft.Extensions.Logging": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
+    "xunit": "2.1.0"
+  },
+  "frameworks": {
+    "net451": {
+      "dependencies": {
+        "xunit.runner.console": "2.1.0"
+      },
+      "frameworkAssemblies": {
+        "System.Data": "",
+        "System.Net.Http": "",
+        "System.Net.Http.WebRequest": "",
+        "System.Runtime": "",
+        "System.Xml": ""
+      }
+    }
+  },
+  "testRunner": "xunit"
 }

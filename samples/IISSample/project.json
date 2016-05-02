@@ -5,11 +5,11 @@
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*"
   },
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
@@ -20,7 +20,9 @@
       "imports": "dnxcore50"
     }
   },
-  "content": [
-    "web.config"
-  ]
+  "publishOptions": {
+    "include": [
+      "web.config"
+    ]
+  }
 }
