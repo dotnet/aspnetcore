@@ -1,10 +1,11 @@
 {
   "version": "1.0.0",
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Razor.Runtime": "1.0.0-*",
     "Microsoft.AspNetCore.Razor.Test.Sources": {
@@ -27,7 +28,6 @@
           "version": "1.0.0-*",
           "type": "platform"
         },
-        "dotnet-test-xunit": "1.0.0-*",
         "moq.netcore": "4.4.0-beta8",
         "System.Diagnostics.Process": "4.1.0-*",
         "System.Diagnostics.TraceSource": "4.0.0-*"

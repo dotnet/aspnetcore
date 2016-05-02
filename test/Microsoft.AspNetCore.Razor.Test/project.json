@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "resource": "TestFiles/**/*",
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Razor": "1.0.0-*",
     "Microsoft.AspNetCore.Razor.Test.Sources": {
@@ -25,7 +25,6 @@
           "type": "platform"
         },
         "moq.netcore": "4.4.0-beta8",
-        "dotnet-test-xunit": "1.0.0-*",
         "System.Diagnostics.Process": "4.1.0-*",
         "System.Diagnostics.TraceSource": "4.0.0-*"
       }
@@ -36,16 +35,26 @@
         "System.Threading.Tasks": ""
       },
       "dependencies": {
-        "Moq": "4.2.1312.1622",
-        "xunit.runner.console": "2.1.0"
+        "Moq": "4.2.1312.1622"
       }
     }
   },
-  "compilationOptions": {
+  "buildOptions": {
     "define": [
       "__RemoveThisBitTo__GENERATE_BASELINES"
     ],
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "embed": {
+      "include": "TestFiles/**/*"
+    },
+    "compile": {
+      "include": "**/*.cs",
+      "exclude": [
+        "TestFiles/**/*",
+        "bin",
+        "obj"
+      ]
+    }
   }
 }
