@@ -177,12 +177,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                             for (var x = 0; x < 2; x++)
                             {
                                 var req = new UvWriteReq(new KestrelTrace(new TestKestrelTrace()));
-                                req.Init(loop);
-                                var block = MemoryPoolBlock.Create(
-                                    new ArraySegment<byte>(new byte[] { 65, 66, 67, 68, 69 }),
-                                    dataPtr: IntPtr.Zero,
-                                    pool: null,
-                                    slab: null);
+                                req.Init(loop); var pool = new MemoryPool();
+                                var block = pool.Lease();
+                                block.GetIterator().CopyFrom(new ArraySegment<byte>(new byte[] { 65, 66, 67, 68, 69 }));
+
                                 var start = new MemoryPoolIterator(block, 0);
                                 var end = new MemoryPoolIterator(block, block.Data.Count);
                                 req.Write(
@@ -192,7 +190,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                                     1,
                                     (_1, _2, _3, _4) =>
                                     {
-                                        block.Unpin();
+                                        pool.Return(block);
+                                        pool.Dispose();
                                     },
                                     null);
                             }

@@ -684,14 +684,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 var end = _lockedEnd.Block;
                 if (block == end)
                 {
-                    end.Unpin();
                     return;
                 }
 
                 while (block.Next != end)
                 {
                     block = block.Next;
-                    block.Unpin();
                 }
                 block.Next = null;
 
@@ -705,7 +703,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     var returnBlock = block;
                     block = block.Next;
 
-                    returnBlock.Unpin();
                     returnBlock.Pool.Return(returnBlock);
                 }
             }

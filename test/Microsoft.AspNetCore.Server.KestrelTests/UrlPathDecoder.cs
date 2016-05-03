@@ -14,13 +14,27 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void Empty()
         {
-            PositiveAssert(string.Empty, string.Empty);
+            using (var pool = new MemoryPool())
+            {
+                var mem = pool.Lease();
+
+                PositiveAssert(mem, string.Empty, string.Empty);
+
+                pool.Return(mem);
+            }
         }
 
         [Fact]
         public void WhiteSpace()
         {
-            PositiveAssert("    ", "    ");
+            using (var pool = new MemoryPool())
+            {
+                var mem = pool.Lease();
+
+                PositiveAssert(mem, "    ", "    ");
+
+                pool.Return(mem);
+            }
         }
 
         [Theory]
@@ -30,7 +44,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("/", "/")]
         public void NormalCases(string raw, string expect)
         {
-            PositiveAssert(raw, expect);
+            using (var pool = new MemoryPool())
+            {
+                var mem = pool.Lease();
+
+                PositiveAssert(mem, raw, expect);
+
+                pool.Return(mem);
+            }
         }
 
         [Theory]
@@ -39,7 +60,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("/foo%2F%20bar", "/foo%2F bar")]
         public void SkipForwardSlash(string raw, string expect)
         {
-            PositiveAssert(raw, expect);
+            using (var pool = new MemoryPool())
+            {
+                var mem = pool.Lease();
+
+                PositiveAssert(mem, raw, expect);
+
+                pool.Return(mem);
+            }
         }
 
         [Theory]
@@ -60,7 +88,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("%20", " ")]
         public void ValidUTF8(string raw, string expect)
         {
-            PositiveAssert(raw, expect);
+            using (var pool = new MemoryPool())
+            {
+                var mem = pool.Lease();
+
+                PositiveAssert(mem, raw, expect);
+
+                pool.Return(mem);
+            }
         }
 
         [Theory]
@@ -68,7 +103,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("%E6%88%91%E8%87%AA%E6%A8%AA%E5%88%80%E5%90%91%E5%A4%A9%E7%AC%91%E5%8E%BB%E7%95%99%E8%82%9D%E8%83%86%E4%B8%A4%E6%98%86%E4%BB%91", "我自横刀向天笑去留肝胆两昆仑")]
         public void Internationalized(string raw, string expect)
         {
-            PositiveAssert(raw, expect);
+            using (var pool = new MemoryPool())
+            {
+                var mem = pool.Lease();
+
+                PositiveAssert(mem, raw, expect);
+
+                pool.Return(mem);
+            }
         }
 
         [Theory]
@@ -92,7 +134,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("%C0%32%A4", "%C02%A4")]
         public void InvalidUTF8(string raw, string expect)
         {
-            PositiveAssert(raw, expect);
+            using (var pool = new MemoryPool())
+            {
+                var mem = pool.Lease();
+
+                PositiveAssert(mem, raw, expect);
+
+                pool.Return(mem);
+            }
         }
 
         [Theory]
@@ -110,21 +159,27 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("%C2%B5%40%C3%9F%C3%B6%C3%A4%C3%BC%C3%A0%C3%A1", 44, "µ@ßöäüà%C3%A", 12)]
         public void DecodeWithBoundary(string raw, int rawLength, string expect, int expectLength)
         {
-            var begin = BuildSample(raw);
-            var end = GetIterator(begin, rawLength);
+            using (var pool = new MemoryPool())
+            {
+                var mem = pool.Lease();
 
-            var end2 = UrlPathDecoder.Unescape(begin, end);
-            var result = begin.GetUtf8String(end2);
+                var begin = BuildSample(mem, raw);
+                var end = GetIterator(begin, rawLength);
 
-            Assert.Equal(expectLength, result.Length);
-            Assert.Equal(expect, result);
+                var end2 = UrlPathDecoder.Unescape(begin, end);
+                var result = begin.GetUtf8String(end2);
+
+                Assert.Equal(expectLength, result.Length);
+                Assert.Equal(expect, result);
+
+                pool.Return(mem);
+            }
         }
 
-        private MemoryPoolIterator BuildSample(string data)
+        private MemoryPoolIterator BuildSample(MemoryPoolBlock mem, string data)
         {
             var store = data.Select(c => (byte)c).ToArray();
-            var mem = MemoryPoolBlock.Create(new ArraySegment<byte>(store), IntPtr.Zero, null, null);
-            mem.End = store.Length;
+            mem.GetIterator().CopyFrom(new ArraySegment<byte>(store));
 
             return mem.GetIterator();
         }
@@ -140,27 +195,27 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             return result;
         }
 
-        private void PositiveAssert(string raw, string expect)
+        private void PositiveAssert(MemoryPoolBlock mem, string raw, string expect)
         {
-            var begin = BuildSample(raw);
+            var begin = BuildSample(mem, raw);
             var end = GetIterator(begin, raw.Length);
 
             var result = UrlPathDecoder.Unescape(begin, end);
             Assert.Equal(expect, begin.GetUtf8String(result));
         }
 
-        private void PositiveAssert(string raw)
+        private void PositiveAssert(MemoryPoolBlock mem, string raw)
         {
-            var begin = BuildSample(raw);
+            var begin = BuildSample(mem, raw);
             var end = GetIterator(begin, raw.Length);
 
             var result = UrlPathDecoder.Unescape(begin, end);
             Assert.NotEqual(raw.Length, begin.GetUtf8String(result).Length);
         }
 
-        private void NegativeAssert(string raw)
+        private void NegativeAssert(MemoryPoolBlock mem, string raw)
         {
-            var begin = BuildSample(raw);
+            var begin = BuildSample(mem, raw);
             var end = GetIterator(begin, raw.Length);
 
             var resultEnd = UrlPathDecoder.Unescape(begin, end);

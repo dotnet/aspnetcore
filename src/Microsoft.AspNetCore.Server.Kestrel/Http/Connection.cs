@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             var result = _rawSocketInput.IncomingStart();
 
             return handle.Libuv.buf_init(
-                result.Pin() + result.End,
+                result.DataArrayPtr + result.End,
                 result.Data.Offset + result.Data.Count - result.End);
         }
 

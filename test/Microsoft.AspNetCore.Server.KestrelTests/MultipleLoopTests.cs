@@ -64,11 +64,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var writeRequest = new UvWriteReq(new KestrelTrace(new TestKestrelTrace()));
                 writeRequest.Init(loop);
-                var block = MemoryPoolBlock.Create(
-                    new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }),
-                    dataPtr: IntPtr.Zero,
-                    pool: null,
-                    slab: null);
+
+                var pool = new MemoryPool();
+                var block = pool.Lease();
+                block.GetIterator().CopyFrom(new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }));
+
                 var start = new MemoryPoolIterator(block, 0);
                 var end = new MemoryPoolIterator(block, block.Data.Count);
                 writeRequest.Write(
@@ -81,7 +81,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         writeRequest.Dispose();
                         serverConnectionPipe.Dispose();
                         serverListenPipe.Dispose();
-                        block.Unpin();
+                        pool.Return(block);
+                        pool.Dispose();
                     },
                     null);
 
