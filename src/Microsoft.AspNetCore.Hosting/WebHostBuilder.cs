@@ -47,7 +47,19 @@ namespace Microsoft.AspNetCore.Hosting
             _configureLoggingDelegates = new List<Action<ILoggerFactory>>();
 
             // This may end up storing null, but that's indistinguishable from not adding it.
-            UseSetting(WebHostDefaults.EnvironmentKey, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
+            UseSetting(WebHostDefaults.EnvironmentKey, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+                // Legacy keys, never remove these.
+                ?? Environment.GetEnvironmentVariable("Hosting:Environment")
+                ?? Environment.GetEnvironmentVariable("ASPNET_ENV"));
+
+            if (Environment.GetEnvironmentVariable("Hosting:Environment") != null)
+            {
+                Console.WriteLine("The environment variable 'Hosting:Environment' is obsolete and has been replaced with 'ASPNETCORE_ENVIRONMENT'");
+            }
+            if (Environment.GetEnvironmentVariable("ASPNET_ENV") != null)
+            {
+                Console.WriteLine("The environment variable 'ASPNET_ENV' is obsolete and has been replaced with 'ASPNETCORE_ENVIRONMENT'");
+            }
         }
 
         /// <summary>
