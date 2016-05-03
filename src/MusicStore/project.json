@@ -33,7 +33,7 @@
     "Microsoft.AspNetCore.Authentication.Facebook": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.Google": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "1.0.0-*",
-    "Microsoft.AspNetCore.Authentication.OpenIdConnect": "0.1.0-*",
+    "Microsoft.AspNetCore.Authentication.OpenIdConnect": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.Twitter": "1.0.0-*",
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
     "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "1.0.0-*",
