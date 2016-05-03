@@ -10,7 +10,7 @@
     "Microsoft.AspNetCore.Authentication.Google": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.JwtBearer": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "1.0.0-*",
-    "Microsoft.AspNetCore.Authentication.OpenIdConnect": "0.1.0-*",
+    "Microsoft.AspNetCore.Authentication.OpenIdConnect": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.Twitter": "1.0.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
