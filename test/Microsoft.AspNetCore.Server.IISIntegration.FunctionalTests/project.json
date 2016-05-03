@@ -17,6 +17,7 @@
     }
   },
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Testing": "1.0.0-*",
     "Microsoft.Extensions.Logging": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
@@ -24,9 +25,6 @@
   },
   "frameworks": {
     "net451": {
-      "dependencies": {
-        "xunit.runner.console": "2.1.0"
-      },
       "frameworkAssemblies": {
         "System.Data": "",
         "System.Net.Http": "",
