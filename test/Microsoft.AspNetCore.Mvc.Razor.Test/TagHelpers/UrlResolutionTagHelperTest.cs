@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             Assert.Equal("href", attribute.Name, StringComparer.Ordinal);
             var attributeValue = Assert.IsType<string>(attribute.Value);
             Assert.Equal(expectedHref, attributeValue, StringComparer.Ordinal);
-            Assert.False(attribute.Minimized);
+            Assert.Equal(HtmlAttributeValueStyle.DoubleQuotes, attribute.ValueStyle);
         }
 
         public static TheoryData ResolvableUrlHtmlStringData
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             Assert.Equal("href", attribute.Name, StringComparer.Ordinal);
             var htmlContent = Assert.IsAssignableFrom<IHtmlContent>(attribute.Value);
             Assert.Equal(expectedHref, HtmlContentUtilities.HtmlContentToString(htmlContent), StringComparer.Ordinal);
-            Assert.False(attribute.Minimized);
+            Assert.Equal(HtmlAttributeValueStyle.DoubleQuotes, attribute.ValueStyle);
         }
 
         public static TheoryData UnresolvableUrlData
@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             Assert.Equal("href", attribute.Name, StringComparer.Ordinal);
             var attributeValue = Assert.IsType<string>(attribute.Value);
             Assert.Equal(url, attributeValue, StringComparer.Ordinal);
-            Assert.False(attribute.Minimized);
+            Assert.Equal(HtmlAttributeValueStyle.DoubleQuotes, attribute.ValueStyle);
         }
 
         public static TheoryData UnresolvableUrlHtmlStringData
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             Assert.Equal("href", attribute.Name, StringComparer.Ordinal);
             var attributeValue = Assert.IsType<HtmlString>(attribute.Value);
             Assert.Equal(url.ToString(), attributeValue.ToString(), StringComparer.Ordinal);
-            Assert.False(attribute.Minimized);
+            Assert.Equal(HtmlAttributeValueStyle.DoubleQuotes, attribute.ValueStyle);
         }
 
         [Fact]
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             var attribute = Assert.Single(tagHelperOutput.Attributes);
             Assert.Equal("href", attribute.Name, StringComparer.Ordinal);
             Assert.Equal(true, attribute.Value);
-            Assert.False(attribute.Minimized);
+            Assert.Equal(HtmlAttributeValueStyle.DoubleQuotes, attribute.ValueStyle);
         }
 
         [Fact]

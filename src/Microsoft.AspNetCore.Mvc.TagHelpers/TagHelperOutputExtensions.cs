@@ -158,10 +158,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             TagHelperContext context)
         {
             var existingAttribute = context.AllAttributes[allAttributeIndex];
-            var copiedAttribute = new TagHelperAttribute(
-                existingAttribute.Name,
-                existingAttribute.Value,
-                existingAttribute.Minimized);
 
             // Move backwards through context.AllAttributes from the provided index until we find a familiar attribute
             // in tagHelperOutput where we can insert the copied value after the familiar one.
@@ -171,7 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 var index = IndexOfFirstMatch(previousName, tagHelperOutput.Attributes);
                 if (index != -1)
                 {
-                    tagHelperOutput.Attributes.Insert(index + 1, copiedAttribute);
+                    tagHelperOutput.Attributes.Insert(index + 1, existingAttribute);
                     return;
                 }
             }
@@ -184,13 +180,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 var index = IndexOfFirstMatch(nextName, tagHelperOutput.Attributes);
                 if (index != -1)
                 {
-                    tagHelperOutput.Attributes.Insert(index, copiedAttribute);
+                    tagHelperOutput.Attributes.Insert(index, existingAttribute);
                     return;
                 }
             }
 
             // Couldn't determine the attribute's location, add it to the end.
-            tagHelperOutput.Attributes.Add(copiedAttribute);
+            tagHelperOutput.Attributes.Add(existingAttribute);
         }
 
         private static int IndexOfFirstMatch(string name, TagHelperAttributeList attributes)

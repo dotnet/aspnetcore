@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <remarks>
         /// All writes to the <see cref="Output"/> or <see cref="ViewContext.Writer"/> after calling this method will
         /// be buffered until <see cref="EndWriteTagHelperAttribute"/> is called.
-        /// The content will be buffered using a shared <see cref="StringWriter"/> within this <see cref="RazorPage"/> 
+        /// The content will be buffered using a shared <see cref="StringWriter"/> within this <see cref="RazorPage"/>
         /// Nesting of <see cref="BeginWriteTagHelperAttribute"/> and <see cref="EndWriteTagHelperAttribute"/> method calls
         /// is not supported.
         /// </remarks>
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </summary>
         /// <returns>The content buffered by the shared <see cref="StringWriter"/> of this <see cref="RazorPage"/>.</returns>
         /// <remarks>
-        /// This method assumes that there will be no nesting of <see cref="BeginWriteTagHelperAttribute"/> 
+        /// This method assumes that there will be no nesting of <see cref="BeginWriteTagHelperAttribute"/>
         /// and <see cref="EndWriteTagHelperAttribute"/> method calls.
         /// </remarks>
         public string EndWriteTagHelperAttribute()
@@ -572,9 +572,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public void BeginAddHtmlAttributeValues(
             TagHelperExecutionContext executionContext,
             string attributeName,
-            int attributeValuesCount)
+            int attributeValuesCount,
+            HtmlAttributeValueStyle attributeValueStyle)
         {
-            _tagHelperAttributeInfo = new TagHelperAttributeInfo(executionContext, attributeName, attributeValuesCount);
+            _tagHelperAttributeInfo = new TagHelperAttributeInfo(
+                executionContext,
+                attributeName,
+                attributeValuesCount,
+                attributeValueStyle);
         }
 
         public void AddHtmlAttributeValue(
@@ -596,7 +601,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     // attribute was removed from TagHelperOutput.Attributes).
                     _tagHelperAttributeInfo.ExecutionContext.AddTagHelperAttribute(
                         _tagHelperAttributeInfo.Name,
-                        value?.ToString() ?? string.Empty);
+                        value?.ToString() ?? string.Empty,
+                        _tagHelperAttributeInfo.AttributeValueStyle);
                     _tagHelperAttributeInfo.Suppressed = true;
                     return;
                 }
@@ -604,7 +610,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 {
                     _tagHelperAttributeInfo.ExecutionContext.AddHtmlAttribute(
                         _tagHelperAttributeInfo.Name,
-                        _tagHelperAttributeInfo.Name);
+                        _tagHelperAttributeInfo.Name,
+                        _tagHelperAttributeInfo.AttributeValueStyle);
                     _tagHelperAttributeInfo.Suppressed = true;
                     return;
                 }
@@ -637,7 +644,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 var content = _valueBuffer == null ? HtmlString.Empty : new HtmlString(_valueBuffer.ToString());
                 _valueBuffer?.GetStringBuilder().Clear();
 
-                executionContext.AddHtmlAttribute(_tagHelperAttributeInfo.Name, content);
+                executionContext.AddHtmlAttribute(_tagHelperAttributeInfo.Name, content, _tagHelperAttributeInfo.AttributeValueStyle);
             }
         }
 
@@ -1081,11 +1088,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             public TagHelperAttributeInfo(
                 TagHelperExecutionContext tagHelperExecutionContext,
                 string name,
-                int attributeValuesCount)
+                int attributeValuesCount,
+                HtmlAttributeValueStyle attributeValueStyle)
             {
                 ExecutionContext = tagHelperExecutionContext;
                 Name = name;
                 AttributeValuesCount = attributeValuesCount;
+                AttributeValueStyle = attributeValueStyle;
 
                 Suppressed = false;
             }
@@ -1095,6 +1104,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             public TagHelperExecutionContext ExecutionContext { get; }
 
             public int AttributeValuesCount { get; }
+
+            public HtmlAttributeValueStyle AttributeValueStyle { get; }
 
             public bool Suppressed { get; set; }
         }

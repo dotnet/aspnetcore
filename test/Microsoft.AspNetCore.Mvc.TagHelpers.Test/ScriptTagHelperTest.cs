@@ -623,11 +623,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var expectedContent =
-                "<script encoded=\"contains &quot;quotes&quot;\" literal=\"HtmlEncode[[all HTML encoded]]\" " +
-                "mixed=\"HtmlEncode[[HTML encoded]] and contains &quot;quotes&quot;\" " +
+                "<script encoded='contains \"quotes\"' literal=\"HtmlEncode[[all HTML encoded]]\" " +
+                "mixed='HtmlEncode[[HTML encoded]] and contains \"quotes\"' " +
                 "src=\"HtmlEncode[[/js/site.js]]\"></script>" +
-                "<script encoded=\"contains &quot;quotes&quot;\" literal=\"HtmlEncode[[all HTML encoded]]\" " +
-                "mixed=\"HtmlEncode[[HTML encoded]] and contains &quot;quotes&quot;\" " +
+                "<script encoded='contains \"quotes\"' literal=\"HtmlEncode[[all HTML encoded]]\" " +
+                "mixed='HtmlEncode[[HTML encoded]] and contains \"quotes\"' " +
                 "src=\"HtmlEncode[[/common.js]]\"></script>";
             var mixed = new DefaultTagHelperContent();
             mixed.Append("HTML encoded");
@@ -636,18 +636,18 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 attributes: new TagHelperAttributeList
                 {
                     { "asp-src-include", "**/*.js" },
-                    { "encoded", new HtmlString("contains \"quotes\"") },
+                    { new TagHelperAttribute("encoded", new HtmlString("contains \"quotes\""), HtmlAttributeValueStyle.SingleQuotes) },
                     { "literal", "all HTML encoded" },
-                    { "mixed", mixed },
+                    { new TagHelperAttribute("mixed", mixed, HtmlAttributeValueStyle.SingleQuotes) },
                     { "src", "/js/site.js" },
                 });
             var output = MakeTagHelperOutput(
                 "script",
                 attributes: new TagHelperAttributeList
                 {
-                    { "encoded", new HtmlString("contains \"quotes\"") },
+                    { new TagHelperAttribute("encoded", new HtmlString("contains \"quotes\""), HtmlAttributeValueStyle.SingleQuotes) },
                     { "literal", "all HTML encoded"},
-                    { "mixed", mixed},
+                    { new TagHelperAttribute("mixed", mixed, HtmlAttributeValueStyle.SingleQuotes) },
                 });
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
@@ -786,9 +786,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Assert
             Assert.Equal("script", output.TagName);
             Assert.Equal("/js/site.js?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", output.Attributes["src"].Value);
-            Assert.Equal(Environment.NewLine + "<script>(isavailable()||document.write(\"<script src=" +
-                "\\\"JavaScriptEncode[[HtmlEncode[[fallback.js?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]]]\\\"" +
-                "><\\/script>\"));</script>", output.PostElement.GetContent());
+            Assert.Equal(Environment.NewLine + "<script>(isavailable()||document.write(\"JavaScriptEncode[[<script " +
+                "src=\"HtmlEncode[[fallback.js?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\">" +
+                "</script>]]\"));</script>", output.PostElement.GetContent());
         }
 
         [Fact]
@@ -796,16 +796,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var expectedContent =
-                "<script encoded=\"contains &quot;quotes&quot;\" literal=\"HtmlEncode[[all HTML encoded]]\" " +
-                "mixed=\"HtmlEncode[[HTML encoded]] and contains &quot;quotes&quot;\" " +
+                "<script encoded='contains \"quotes\"' literal=\"HtmlEncode[[all HTML encoded]]\" " +
+                "mixed='HtmlEncode[[HTML encoded]] and contains \"quotes\"' " +
                 "src=\"HtmlEncode[[/js/site.js?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\"></script>" +
                 Environment.NewLine +
-                "<script>(isavailable()||document.write(\"<script " +
-                "JavaScriptEncode[[encoded]]=\\\"JavaScriptEncode[[contains &quot;quotes&quot;]]\\\" " +
-                "JavaScriptEncode[[literal]]=\\\"JavaScriptEncode[[HtmlEncode[[all HTML encoded]]]]\\\" " +
-                "JavaScriptEncode[[mixed]]=\\\"JavaScriptEncode[[HtmlEncode[[HTML encoded]] and contains &quot;quotes&quot;]]\\\" " +
-                "src=\\\"JavaScriptEncode[[HtmlEncode[[fallback.js?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]]]\\\">" +
-                "<\\/script>\"));</script>";
+                "<script>(isavailable()||document.write(\"JavaScriptEncode[[<script encoded=\'contains \"quotes\"\' " +
+                "literal=\"HtmlEncode[[all HTML encoded]]\" mixed=\'HtmlEncode[[HTML encoded]] and contains " +
+                "\"quotes\"' src=\"HtmlEncode[[fallback.js?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\">" +
+                "</script>]]\"));</script>";
             var mixed = new DefaultTagHelperContent();
             mixed.Append("HTML encoded");
             mixed.AppendHtml(" and contains \"quotes\"");
@@ -815,18 +813,18 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     { "asp-append-version", "true" },
                     { "asp-fallback-src-include", "fallback.js" },
                     { "asp-fallback-test", "isavailable()" },
-                    { "encoded", new HtmlString("contains \"quotes\"") },
+                    { new TagHelperAttribute("encoded", new HtmlString("contains \"quotes\""), HtmlAttributeValueStyle.SingleQuotes) },
                     { "literal", "all HTML encoded" },
-                    { "mixed", mixed },
+                    { new TagHelperAttribute("mixed", mixed, HtmlAttributeValueStyle.SingleQuotes) },
                     { "src", "/js/site.js" },
                 });
             var output = MakeTagHelperOutput(
                 "script",
                 attributes: new TagHelperAttributeList
                 {
-                    { "encoded", new HtmlString("contains \"quotes\"") },
+                    { new TagHelperAttribute("encoded", new HtmlString("contains \"quotes\""), HtmlAttributeValueStyle.SingleQuotes) },
                     { "literal", "all HTML encoded" },
-                    { "mixed", mixed },
+                    { new TagHelperAttribute("mixed", mixed, HtmlAttributeValueStyle.SingleQuotes) },
                 });
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();

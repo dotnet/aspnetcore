@@ -422,7 +422,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 }
                 else
                 {
-                    AppendAttribute(attribute.Name, attribute.Value, builder);
+                    attribute.CopyTo(builder);
+                    builder.AppendHtml(" ");
                 }
             }
 
@@ -441,15 +442,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 hrefValue = _fileVersionProvider.AddFileVersionToPath(hrefValue);
             }
 
-            AppendAttribute(hrefName, hrefValue, builder);
-        }
-
-        private void AppendAttribute(string key, object value, TagHelperContent builder)
-        {
             builder
-                .AppendHtml(key)
+                .AppendHtml(hrefName)
                 .AppendHtml("=\"")
-                .Append(HtmlEncoder, value)
+                .Append(hrefValue)
                 .AppendHtml("\" ");
         }
 

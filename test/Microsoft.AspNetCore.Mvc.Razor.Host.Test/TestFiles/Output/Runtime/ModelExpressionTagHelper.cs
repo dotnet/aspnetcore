@@ -55,7 +55,7 @@ __Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper.For = ModelExpressionProvide
 
 #line default
 #line hidden
-            __tagHelperExecutionContext.AddTagHelperAttribute("for", __Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper.For);
+            __tagHelperExecutionContext.AddTagHelperAttribute("for", __Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper.For, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             BeginContext(128, 24, false);
             Write(__tagHelperExecutionContext.Output);
@@ -74,7 +74,7 @@ __Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper.For = ModelExpressionProvide
 
 #line default
 #line hidden
-            __tagHelperExecutionContext.AddTagHelperAttribute("for", __Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper.For);
+            __tagHelperExecutionContext.AddTagHelperAttribute("for", __Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper.For, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             BeginContext(154, 27, false);
             Write(__tagHelperExecutionContext.Output);

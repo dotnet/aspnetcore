@@ -979,13 +979,21 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 // Normal comparer (TagHelperAttribute.Equals()) doesn't care about the Name case, in tests we do.
                 return attributeX != null &&
                     string.Equals(attributeX.Name, attributeY.Name, StringComparison.Ordinal) &&
-                    attributeX.Minimized == attributeY.Minimized &&
-                    (attributeX.Minimized || Equals(attributeX.Value, attributeY.Value));
+                    attributeX.ValueStyle == attributeY.ValueStyle &&
+                    (attributeX.ValueStyle == HtmlAttributeValueStyle.Minimized || Equals(attributeX.Value, attributeY.Value));
             }
 
             public int GetHashCode(TagHelperAttribute attribute)
             {
-                return attribute.GetHashCode();
+                // Manually combine hash codes here. We can't reference HashCodeCombiner because we have internals visible
+                // from Mvc.Core and Mvc.TagHelpers; both of which reference HashCodeCombiner.
+                var baseHashCode = 0x1505L;
+                var attributeHashCode = attribute.GetHashCode();
+                var combinedHash = ((baseHashCode << 5) + baseHashCode) ^ attributeHashCode;
+                var nameHashCode = StringComparer.Ordinal.GetHashCode(attribute.Name);
+                combinedHash = ((combinedHash << 5) + combinedHash) ^ nameHashCode;
+
+                return combinedHash.GetHashCode();
             }
         }
     }

@@ -14,7 +14,7 @@
     <link rel="stylesheet" title="&lt;the title" href="HtmlEncode[[/styles/site.css]]" /><link rel="stylesheet" title="&lt;the title" href="HtmlEncode[[/styles/sub/site2.css]]" /><link rel="stylesheet" title="&lt;the title" href="HtmlEncode[[/styles/sub/site3.css]]" /><link rel="stylesheet" title="&lt;the title" href="HtmlEncode[[/styles/sub/site3.min.css]]" />
 
     <!-- Globbed link tag with existing file and exclude -->
-    <link rel="stylesheet" title="&quot;the&quot; title" href="HtmlEncode[[/styles/site.css]]" /><link rel="stylesheet" title="&quot;the&quot; title" href="HtmlEncode[[/styles/sub/site2.css]]" />
+    <link rel="stylesheet" title='"the" title' href="HtmlEncode[[/styles/site.css]]" /><link rel="stylesheet" title='"the" title' href="HtmlEncode[[/styles/sub/site2.css]]" />
 
     <!-- Globbed link tag missing include -->
     <link rel="stylesheet">
@@ -38,7 +38,7 @@
     <link href="HtmlEncode[[/styles/site.css]]" rel="stylesheet" />
 
     <!-- Fallback to static href -->
-    <link href="HtmlEncode[[/styles/site.min.css?a=b&c=d]]" rel="stylesheet" data-extra="test" title="&quot;the&quot; title" />
+    <link href="HtmlEncode[[/styles/site.min.css?a=b&c=d]]" rel="stylesheet" data-extra="test" title='"the" title' />
 <meta name="x-stylesheet-fallback-test" content="" class="HtmlEncode[[hidden]]" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("JavaScriptEncode[[visibility]]","JavaScriptEncode[[hidden]]",["JavaScriptEncode[[HtmlEncode[[/styles/site.css?a=b&c=d]]]]"]);</script>
 
     <!-- Fallback from globbed href to static href -->

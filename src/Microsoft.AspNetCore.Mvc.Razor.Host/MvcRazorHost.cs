@@ -88,8 +88,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     ExecutionContextAddTagHelperAttributeMethodName =
                         nameof(TagHelperExecutionContext.AddTagHelperAttribute),
                     ExecutionContextAddHtmlAttributeMethodName = nameof(TagHelperExecutionContext.AddHtmlAttribute),
-                    ExecutionContextAddMinimizedHtmlAttributeMethodName =
-                        nameof(TagHelperExecutionContext.AddMinimizedHtmlAttribute),
                     ExecutionContextOutputPropertyName = nameof(TagHelperExecutionContext.Output),
 
                     RunnerTypeName = typeof(TagHelperRunner).FullName,
