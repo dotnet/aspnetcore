@@ -26,34 +26,39 @@ namespace Microsoft.AspNetCore.Http.Features
         public TFeature Fetch<TFeature, TState>(
             ref TFeature cached,
             TState state,
-            Func<TState, TFeature> factory)
+            Func<TState, TFeature> factory) where TFeature : class
         {
-            var cleared = false;
-            if (Revision != Collection.Revision)
+            var revision = Collection.Revision;
+            if (Revision == revision)
             {
-                cleared = true;
-                Cache = default(TCache);
+                // collection unchanged, use cached
+                return cached ?? UpdateCached(ref cached, state, factory);
+            }
+
+            // collection changed, clear cache
+            Cache = default(TCache);
+            // empty cache is current revision
+            Revision = revision;
+
+            return UpdateCached(ref cached, state, factory);
+        }
+
+        private TFeature UpdateCached<TFeature, TState>(ref TFeature cached, TState state, Func<TState, TFeature> factory) where TFeature : class
+        {
+            cached = Collection.Get<TFeature>();
+            if (cached == null)
+            {
+                // create if item not in collection
+                cached = factory(state);
+                Collection.Set(cached);
+                // Revision changed by .Set, update revision
                 Revision = Collection.Revision;
             }
 
-            var feature = cached;
-            if (feature == null || cleared)
-            {
-                feature = Collection.Get<TFeature>();
-                if (feature == null)
-                {
-                    feature = factory(state);
-
-                    Collection.Set(feature);
-
-                    Revision = Collection.Revision;
-                }
-                cached = feature;
-            }
-            return feature;
+            return cached;
         }
 
-        public TFeature Fetch<TFeature>(ref TFeature cached, Func<IFeatureCollection, TFeature> factory) =>
-            Fetch(ref cached, Collection, factory);
+        public TFeature Fetch<TFeature>(ref TFeature cached, Func<IFeatureCollection, TFeature> factory)
+            where TFeature : class => Fetch(ref cached, Collection, factory);
     }
 }
