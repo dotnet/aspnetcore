@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.NotNull(authContext.Result);
             var result = Assert.IsType<RedirectResult>(authContext.Result);
 
-            Assert.True(result.Permanent);
+            Assert.False(result.Permanent);
             Assert.Equal(expectedUrl, result.Url);
         }
 

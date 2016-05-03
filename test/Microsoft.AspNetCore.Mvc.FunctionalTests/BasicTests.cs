@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.GetAsync("Home/HttpsOnlyAction");
 
             // Assert
-            Assert.Equal(HttpStatusCode.MovedPermanently, response.StatusCode);
+            Assert.Equal(HttpStatusCode.Found, response.StatusCode);
             Assert.NotNull(response.Headers.Location);
             Assert.Equal("https://localhost/Home/HttpsOnlyAction", response.Headers.Location.ToString());
             Assert.Equal(0, response.Content.Headers.ContentLength);
