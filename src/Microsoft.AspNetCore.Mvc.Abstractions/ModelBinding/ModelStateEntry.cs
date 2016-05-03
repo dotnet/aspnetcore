@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// </summary>
     public abstract class ModelStateEntry
     {
+        private ModelErrorCollection _errors;
         /// <summary>
         /// Gets the raw value from the request associated with this entry.
         /// </summary>
@@ -23,7 +24,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the <see cref="ModelErrorCollection"/> for this entry.
         /// </summary>
-        public ModelErrorCollection Errors { get; } = new ModelErrorCollection();
+        public ModelErrorCollection Errors
+        {
+            get
+            {
+                if (_errors == null)
+                {
+                    _errors = new ModelErrorCollection();
+                }
+                return _errors;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="ModelValidationState"/> for this entry.
