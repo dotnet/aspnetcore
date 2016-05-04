@@ -54,7 +54,6 @@ namespace ES2015Example
         {
             var host = new WebHostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseDefaultHostingConfiguration(args)
                 .UseIISPlatformHandlerUrl()
                 .UseKestrel()
                 .UseStartup<Startup>()

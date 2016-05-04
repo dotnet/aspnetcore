@@ -41,7 +41,6 @@ namespace Webpack
         {
             var host = new WebHostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseDefaultHostingConfiguration(args)
                 .UseIISPlatformHandlerUrl()
                 .UseKestrel()
                 .UseStartup<Startup>()
