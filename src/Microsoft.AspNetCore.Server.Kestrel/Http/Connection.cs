@@ -328,20 +328,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         void IConnectionControl.End(ProduceEndType endType)
         {
-            lock (_stateLock)
+            switch (endType)
             {
-                switch (endType)
-                {
-                    case ProduceEndType.ConnectionKeepAlive:
-                        if (_connectionState != ConnectionState.Open)
-                        {
-                            return;
-                        }
+                case ProduceEndType.ConnectionKeepAlive:
+                    if (_connectionState != ConnectionState.Open)
+                    {
+                        return;
+                    }
 
-                        Log.ConnectionKeepAlive(ConnectionId);
-                        break;
-                    case ProduceEndType.SocketShutdown:
-                    case ProduceEndType.SocketDisconnect:
+                    Log.ConnectionKeepAlive(ConnectionId);
+                    break;
+                case ProduceEndType.SocketShutdown:
+                case ProduceEndType.SocketDisconnect:
+                    lock (_stateLock)
+                    {
                         if (_connectionState == ConnectionState.Disconnecting ||
                             _connectionState == ConnectionState.SocketClosed)
                         {
@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         Log.ConnectionDisconnect(ConnectionId);
                         _rawSocketOutput.End(endType);
                         break;
-                }
+                    }
             }
         }
 
