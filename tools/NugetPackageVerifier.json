@@ -4,48 +4,6 @@
             "SigningVerificationCompositeRule"
         ],
         "packages": {
-            "dnx-clr-win-x64": {
-                "SIGN_AUTHENTICODE": {
-                    "bin/lib/Microsoft.Dnx.DesignTimeHost/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin/lib/Microsoft.Dnx.Tooling/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
-                }
-            },
-            "dnx-clr-win-x86": {
-                "SIGN_AUTHENTICODE": {
-                    "bin/lib/Microsoft.Dnx.DesignTimeHost/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin/lib/Microsoft.Dnx.Tooling/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
-                }
-            },
-            "dnx-coreclr-darwin-x64": {
-                "SIGN_AUTHENTICODE": {
-                    "bin/lib/Microsoft.Dnx.DesignTimeHost/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin/lib/Microsoft.Dnx.Tooling/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
-                }
-            },
-            "dnx-coreclr-linux-x64": {
-                "SIGN_AUTHENTICODE": {
-                    "bin/lib/Microsoft.Dnx.DesignTimeHost/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin/lib/Microsoft.Dnx.Tooling/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
-                }
-            },
-            "dnx-coreclr-win-x64": {
-                "SIGN_AUTHENTICODE": {
-                    "bin/lib/Microsoft.Dnx.DesignTimeHost/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin/lib/Microsoft.Dnx.Tooling/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
-                }
-            },
-            "dnx-coreclr-win-x86": {
-                "SIGN_AUTHENTICODE": {
-                    "bin/lib/Microsoft.Dnx.DesignTimeHost/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin/lib/Microsoft.Dnx.Tooling/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
-                }
-            },
-            "dnx-mono": {
-                "SIGN_AUTHENTICODE": {
-                    "bin/lib/Microsoft.Dnx.DesignTimeHost/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin/lib/Microsoft.Dnx.Tooling/Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
-                }
-            },
             "Microsoft.Data.Sqlite": {
                 "SIGN_AUTHENTICODE": {
                     "runtimes/win7-x86/native/sqlite3.dll": "We don't sign 3rd party DLLs",
