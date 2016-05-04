@@ -11,27 +11,27 @@ var Configuration_Local = '${E("Configuration")}'
 default BASE_DIR_LOCAL='${Directory.GetCurrentDirectory()}'
 default TARGET_DIR_LOCAL='${Path.Combine(BASE_DIR_LOCAL, "artifacts")}'
 default BUILD_DIR_LOCAL='${Path.Combine(TARGET_DIR_LOCAL, "build")}'
+default SRC_PROJECT_GLOB_LOCAL="src/*/project.json"
+default TEST_PROJECT_GLOB_LOCAL="test/*/project.json"
 
-#build-compile target='compile' if='Directory.Exists("src")'
+#build-compile target='compile'
   @{
-
     Directory.CreateDirectory(TARGET_DIR_LOCAL);
 
     string commitHash = null;
     if (AddAssemblyInfo)
     {
-        var commitHashFile = Path.Combine(TARGET_DIR_LOCAL, "commit");
-        GitCommand("rev-parse HEAD >> " + commitHashFile);
-        commitHash = File.ReadAllLines(commitHashFile)[0];
+      var commitHashFile = Path.Combine(TARGET_DIR_LOCAL, "commit");
+      GitCommand("rev-parse HEAD >> " + commitHashFile);
+      commitHash = File.ReadAllLines(commitHashFile)[0];
     }
 
-    var projectFiles = Files.Include("src/*/project.json").ToList();
+    var srcProjects = Files.Include(SRC_PROJECT_GLOB_LOCAL).ToList();
     if (IsLinux)
     {
-        projectFiles.Remove("src/Microsoft.AspNetCore.DataProtection.SystemWeb/project.json");
+        srcProjects.Remove("src/Microsoft.AspNetCore.DataProtection.SystemWeb/project.json");
     }
-
-    projectFiles.ForEach(projectFile =>
+    srcProjects.ForEach(projectFile =>
     {
         if (AddAssemblyInfo)
         {
@@ -39,21 +39,21 @@ default BUILD_DIR_LOCAL='${Path.Combine(TARGET_DIR_LOCAL, "build")}'
             var project = (JsonObject)Json.Deserialize(projectText);
             var isSharedProject = project.Keys.Contains("shared");
 
-            // We don't want to embed the commit hash in it because
+            // We don't want to embed the commit hash in it because 
             // the consumers would get that file
             if (!isSharedProject)
             {
-                Console.WriteLine("Embedding commit hash in assembly");
-                var projectFolder = Path.GetDirectoryName(projectFile);
-                var commitHashAttribute = String.Format("[assembly: System.Reflection.AssemblyMetadata(\"CommitHash\", \"{0}\")]", commitHash);
+              Console.WriteLine("Embedding commit hash in assembly");
+              var projectFolder = Path.GetDirectoryName(projectFile);
+              var commitHashAttribute = String.Format("[assembly: System.Reflection.AssemblyMetadata(\"CommitHash\", \"{0}\")]", commitHash);
 
-                var buildInfoFile = Path.Combine(projectFolder, "BuildInfo.generated.cs");
-                File.WriteAllText(buildInfoFile, commitHashAttribute);
+              var buildInfoFile = Path.Combine(projectFolder, "BuildInfo.generated.cs");
+              File.WriteAllText(buildInfoFile, commitHashAttribute);
             }
         }
-
-        DotnetPack(projectFile, BUILD_DIR_LOCAL, Configuration_Local);
+        DotnetPack(projectFile, BUILD_DIR_LOCAL, Configuration_Local, " --no-build");
     });
+    DotnetBuild(TEST_PROJECT_GLOB_LOCAL, Configuration_Local, BuildFramework);
 
     foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR_LOCAL, "*/" + Configuration_Local + "/*.nupkg")))
     {
