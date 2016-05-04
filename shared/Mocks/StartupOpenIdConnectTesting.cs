@@ -42,11 +42,8 @@ namespace MusicStore
         {
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
-            //Sql client not available on mono
-            var useInMemoryStore = _platform.IsRunningOnMono;
-
             // Add EF services to the services container
-            if (useInMemoryStore)
+            if (_platform.UseInMemoryStore)
             {
                 services.AddDbContext<MusicStoreContext>(options =>
                             options.UseInMemoryDatabase());

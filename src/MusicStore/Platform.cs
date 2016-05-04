@@ -86,5 +86,14 @@ namespace MusicStore
                 return _isNano.Value;
             }
         }
+
+        // Sql client not available on mono, non-windows, or nano
+        public bool UseInMemoryStore
+        {
+            get
+            {
+                return !IsRunningOnWindows || IsRunningOnMono || IsRunningOnNanoServer;
+            }
+        }
     }
 }
