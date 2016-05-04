@@ -68,10 +68,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private async Task TestPathBase(string registerPathBase, string requestPath, string expectedPathBase, string expectedPath)
         {
-            var port = PortManager.GetPort();
             var config = new ConfigurationBuilder().AddInMemoryCollection(
                 new Dictionary<string, string> {
-                    { "server.urls", $"http://localhost:{port}{registerPathBase}" }
+                    { "server.urls", $"http://localhost:0{registerPathBase}" }
                 }).Build();
 
             var builder = new WebHostBuilder()
@@ -95,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var client = new HttpClient())
                 {
-                    var response = await client.GetAsync($"http://localhost:{port}{requestPath}");
+                    var response = await client.GetAsync($"http://localhost:{host.GetPort()}{requestPath}");
                     response.EnsureSuccessStatusCode();
 
                     var responseText = await response.Content.ReadAsStringAsync();

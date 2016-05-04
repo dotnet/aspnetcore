@@ -76,9 +76,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
             tcp.Init(loop, (a, b) => { });
-            var port = TestServer.GetNextPort();
-            var address = ServerAddress.FromUrl($"http://localhost:{port}/");
+            var address = ServerAddress.FromUrl($"http://localhost:0/");
             tcp.Bind(address);
+            var port = tcp.GetSockIPEndPoint().Port;
             tcp.Listen(10, (stream, status, error, state) =>
             {
                 var tcp2 = new UvTcpHandle(_logger);
@@ -105,9 +105,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
             tcp.Init(loop, (a, b) => { });
-            var port = TestServer.GetNextPort();
-            var address = ServerAddress.FromUrl($"http://localhost:{port}/");
+            var address = ServerAddress.FromUrl($"http://localhost:0/");
             tcp.Bind(address);
+            var port = tcp.GetSockIPEndPoint().Port;
             tcp.Listen(10, (_, status, error, state) =>
             {
                 var tcp2 = new UvTcpHandle(_logger);
@@ -155,9 +155,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
             tcp.Init(loop, (a, b) => { });
-            var port = TestServer.GetNextPort();
-            var address = ServerAddress.FromUrl($"http://localhost:{port}/");
+            var address = ServerAddress.FromUrl($"http://localhost:0/");
             tcp.Bind(address);
+            var port = tcp.GetSockIPEndPoint().Port;
             tcp.Listen(10, (_, status, error, state) =>
             {
                 var tcp2 = new UvTcpHandle(_logger);

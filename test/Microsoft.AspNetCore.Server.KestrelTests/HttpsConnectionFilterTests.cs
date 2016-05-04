@@ -69,18 +69,17 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var handler = new WinHttpHandler();
                 handler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 #endif
-                var serverAddress = $"https://localhost:{TestServer.GetNextPort()}/";
                 var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
                         new HttpsConnectionFilterOptions
                         { ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword") },
                         new NoOpConnectionFilter())
                 );
 
-                using (var server = new TestServer(App, serviceContext, serverAddress))
+                using (var server = new TestServer(App, serviceContext, "https://localhost:0/"))
                 {
                     using (var client = new HttpClient(handler))
                     {
-                        var result = await client.PostAsync(serverAddress, new FormUrlEncodedContent(new[] {
+                        var result = await client.PostAsync($"https://localhost:{server.Port}/", new FormUrlEncodedContent(new[] {
                             new KeyValuePair<string, string>("content", "Hello World?")
                         }));
 
@@ -114,7 +113,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 handler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 #endif
 
-                var serverAddress = $"https://localhost:{TestServer.GetNextPort()}/";
                 var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
                         new HttpsConnectionFilterOptions
                         {
@@ -124,12 +122,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         new NoOpConnectionFilter())
                 );
 
-                using (var server = new TestServer(App, serviceContext, serverAddress))
+                using (var server = new TestServer(App, serviceContext, "https://localhost:0/"))
                 {
                     using (var client = new HttpClient(handler))
                     {
                         await Assert.ThrowsAnyAsync<Exception>(
-                            () => client.GetAsync(serverAddress));
+                            () => client.GetAsync($"https://localhost:{server.Port}/"));
                     }
                 }
             }
@@ -159,7 +157,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 handler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 #endif
 
-                var serverAddress = $"https://localhost:{TestServer.GetNextPort()}/";
                 var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
                     new HttpsConnectionFilterOptions
                     {
@@ -175,11 +172,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     return context.Response.WriteAsync("hello world");
                 };
 
-                using (var server = new TestServer(app, serviceContext, serverAddress))
+                using (var server = new TestServer(app, serviceContext, "https://localhost:0/"))
                 {
                     using (var client = new HttpClient(handler))
                     {
-                        var result = await client.GetAsync(serverAddress);
+                        var result = await client.GetAsync($"https://localhost:{server.Port}/");
 
                         Assert.Equal("hello world", await result.Content.ReadAsStringAsync());
                     }
@@ -206,7 +203,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 ServicePointManager.ServerCertificateValidationCallback += validationCallback;
 #endif
 
-                var serverAddress = $"https://localhost:{TestServer.GetNextPort()}/";
                 var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
                     new HttpsConnectionFilterOptions
                     {
@@ -226,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     return context.Response.WriteAsync("hello world");
                 };
 
-                using (var server = new TestServer(app, serviceContext, serverAddress))
+                using (var server = new TestServer(app, serviceContext, "https://localhost:0/"))
                 {
                     // SslStream is used to ensure the certificate is actually passed to the server
                     // HttpClient might not send the certificate because it is invalid or it doesn't match any
@@ -274,7 +270,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 handler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 #endif
 
-                var serverAddress = $"https://localhost:{TestServer.GetNextPort()}/";
                 var serviceContext = new TestServiceContext(
                     new HttpsConnectionFilter(
                         new HttpsConnectionFilterOptions
@@ -286,11 +281,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 RequestDelegate app = context => context.Response.WriteAsync(context.Request.Scheme);
 
-                using (var server = new TestServer(app, serviceContext, serverAddress))
+                using (var server = new TestServer(app, serviceContext, "https://localhost:0/"))
                 {
                     using (var client = new HttpClient(handler))
                     {
-                        var result = await client.GetAsync(serverAddress);
+                        var result = await client.GetAsync($"https://localhost:{server.Port}/");
 
                         Assert.Equal("https", await result.Content.ReadAsStringAsync());
                     }
@@ -317,7 +312,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 ServicePointManager.ServerCertificateValidationCallback += validationCallback;
 #endif
 
-                var serverAddress = $"https://localhost:{TestServer.GetNextPort()}/";
                 var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
                     new HttpsConnectionFilterOptions
                     {
@@ -333,7 +327,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     return context.Response.WriteAsync("hello world");
                 };
 
-                using (var server = new TestServer(app, serviceContext, serverAddress))
+                using (var server = new TestServer(app, serviceContext, "https://localhost:0/"))
                 {
                     // SslStream is used to ensure the certificate is actually passed to the server
                     // HttpClient might not send the certificate because it is invalid or it doesn't match any

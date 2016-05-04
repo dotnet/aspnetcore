@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -96,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 engine.Start(threadCount);
                 var atLeastOneListener = false;
 
-                foreach (var address in _serverAddresses.Addresses)
+                foreach (var address in _serverAddresses.Addresses.ToArray())
                 {
                     var parsedAddress = ServerAddress.FromUrl(address);
                     if (parsedAddress == null)
@@ -108,6 +109,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                         atLeastOneListener = true;
                         _disposables.Push(engine.CreateServer(
                             parsedAddress));
+
+                        // If requested port was "0", replace with assigned dynamic port.
+                        _serverAddresses.Addresses.Remove(address);
+                        _serverAddresses.Addresses.Add(parsedAddress.ToString());
                     }
                 }
 

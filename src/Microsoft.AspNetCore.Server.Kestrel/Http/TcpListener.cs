@@ -25,6 +25,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             socket.Init(Thread.Loop, Thread.QueueCloseHandle);
             socket.NoDelay(ServerOptions.NoDelay);
             socket.Bind(ServerAddress);
+
+            // If requested port was "0", replace with assigned dynamic port.
+            ServerAddress.Port = socket.GetSockIPEndPoint().Port;
+
             socket.Listen(Constants.ListenBacklog, (stream, status, error, state) => ConnectionCallback(stream, status, error, state), this);
             return socket;
         }

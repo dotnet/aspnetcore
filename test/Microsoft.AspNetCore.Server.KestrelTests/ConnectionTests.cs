@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     FrameFactory = connectionContext => new Frame<HttpContext>(
                         new DummyApplication(httpContext => TaskUtilities.CompletedTask), connectionContext),
                     Memory = memory,
-                    ServerAddress = ServerAddress.FromUrl($"http://localhost:{TestServer.GetNextPort()}"),
+                    ServerAddress = ServerAddress.FromUrl($"http://localhost:0"),
                     Thread = engine.Threads[0]
                 };
                 var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, trace);

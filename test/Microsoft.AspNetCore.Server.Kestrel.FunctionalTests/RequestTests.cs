@@ -22,10 +22,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task LargeUpload()
         {
-            var port = PortManager.GetPort();
             var builder = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls($"http://localhost:{port}/")
+                .UseUrls($"http://localhost:0/")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -60,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         bytes[i] = (byte)i;
                     }
 
-                    var response = await client.PostAsync($"http://localhost:{port}/", new ByteArrayContent(bytes));
+                    var response = await client.PostAsync($"http://localhost:{host.GetPort()}/", new ByteArrayContent(bytes));
                     response.EnsureSuccessStatusCode();
                     var sizeString = await response.Content.ReadAsStringAsync();
                     Assert.Equal(sizeString, bytes.Length.ToString(CultureInfo.InvariantCulture));
@@ -72,10 +71,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Fails on Mono on Mac because it is not 64-bit.")]
         public async Task LargeMultipartUpload()
         {
-            var port = PortManager.GetPort();
             var builder = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls($"http://localhost:{port}/")
+                .UseUrls($"http://localhost:0/")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -111,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         }
 
                         var length = form.Headers.ContentLength.Value;
-                        var response = await client.PostAsync($"http://localhost:{port}/", form);
+                        var response = await client.PostAsync($"http://localhost:{host.GetPort()}/", form);
                         response.EnsureSuccessStatusCode();
                         Assert.Equal(length.ToString(CultureInfo.InvariantCulture), await response.Content.ReadAsStringAsync());
                     }
@@ -137,10 +135,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task DoesNotHangOnConnectionCloseRequest()
         {
-            var port = PortManager.GetPort();
             var builder = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls($"http://localhost:{port}")
+                .UseUrls($"http://localhost:0")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -158,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 client.DefaultRequestHeaders.Connection.Clear();
                 client.DefaultRequestHeaders.Connection.Add("close");
 
-                var response = await client.GetAsync($"http://localhost:{port}/");
+                var response = await client.GetAsync($"http://localhost:{host.GetPort()}/");
                 response.EnsureSuccessStatusCode();
             }
         }
@@ -166,10 +163,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public void RequestPathIsNormalized()
         {
-            var port = PortManager.GetPort();
             var builder = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls($"http://localhost:{port}/\u0041\u030A")
+                .UseUrls($"http://localhost:0/\u0041\u030A")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -185,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 host.Start();
 
-                using (var socket = TestConnection.CreateConnectedLoopbackSocket(port))
+                using (var socket = TestConnection.CreateConnectedLoopbackSocket(host.GetPort()))
                 {
                     socket.Send(Encoding.ASCII.GetBytes("GET /%41%CC%8A/A/../B/%41%CC%8A HTTP/1.1\r\n\r\n"));
                     socket.Shutdown(SocketShutdown.Send);
@@ -210,10 +206,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private async Task TestRemoteIPAddress(string registerAddress, string requestAddress, string expectAddress)
         {
-            var port = PortManager.GetPort();
             var builder = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls($"http://{registerAddress}:{port}")
+                .UseUrls($"http://{registerAddress}:0")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -234,7 +229,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 host.Start();
 
-                var response = await client.GetAsync($"http://{requestAddress}:{port}/");
+                var response = await client.GetAsync($"http://{requestAddress}:{host.GetPort()}/");
                 response.EnsureSuccessStatusCode();
 
                 var connectionFacts = await response.Content.ReadAsStringAsync();

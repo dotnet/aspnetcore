@@ -21,11 +21,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task LargeDownload()
         {
-            var port = PortManager.GetPort();
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string>
                 {
-                    { "server.urls", $"http://localhost:{port}/" }
+                    { "server.urls", $"http://localhost:0/" }
                 })
                 .Build();
 
@@ -57,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var client = new HttpClient())
                 {
-                    var response = await client.GetAsync($"http://localhost:{port}/");
+                    var response = await client.GetAsync($"http://localhost:{host.GetPort()}/");
                     response.EnsureSuccessStatusCode();
                     var responseBody = await response.Content.ReadAsStreamAsync();
 
@@ -81,11 +80,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Theory, MemberData(nameof(NullHeaderData))]
         public async Task IgnoreNullHeaderValues(string headerName, StringValues headerValue, string expectedValue)
         {
-            var port = PortManager.GetPort();
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string>
                 {
-                    { "server.urls", $"http://localhost:{port}/" }
+                    { "server.urls", $"http://localhost:0/" }
                 })
                 .Build();
 
@@ -108,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var client = new HttpClient())
                 {
-                    var response = await client.GetAsync($"http://localhost:{port}/");
+                    var response = await client.GetAsync($"http://localhost:{host.GetPort()}/");
                     response.EnsureSuccessStatusCode();
 
                     var headers = response.Headers;
@@ -129,11 +127,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task OnCompleteCalledEvenWhenOnStartingNotCalled()
         {
-            var port = PortManager.GetPort();
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string>
                 {
-                    { "server.urls", $"http://localhost:{port}/" }
+                    { "server.urls", $"http://localhost:0/" }
                 })
                 .Build();
 
@@ -161,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var client = new HttpClient())
                 {
-                    var response = await client.GetAsync($"http://localhost:{port}/");
+                    var response = await client.GetAsync($"http://localhost:{host.GetPort()}/");
 
                     Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
                     Assert.False(onStartingCalled);

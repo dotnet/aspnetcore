@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
     {
         public string Host { get; private set; }
         public string PathBase { get; private set; }
-        public int Port { get; private set; }
+        public int Port { get; internal set; }
         public string Scheme { get; private set; }
 
         public bool IsUnixPipe
@@ -36,7 +36,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         public override string ToString()
         {
-            return Scheme.ToLowerInvariant() + "://" + Host.ToLowerInvariant() + ":" + Port.ToString(CultureInfo.InvariantCulture) + PathBase.ToLowerInvariant();
+            if (IsUnixPipe)
+            {
+                if (String.IsNullOrEmpty(PathBase))
+                {
+                    return Scheme.ToLowerInvariant() + "://" + Host.ToLowerInvariant();
+                }
+                else
+                {
+                    return Scheme.ToLowerInvariant() + "://" + Host.ToLowerInvariant() + ":" + PathBase.ToLowerInvariant();
+                }
+            }
+            else
+            {
+                return Scheme.ToLowerInvariant() + "://" + Host.ToLowerInvariant() + ":" + Port.ToString(CultureInfo.InvariantCulture) + PathBase.ToLowerInvariant();
+            }
         }
 
         public override int GetHashCode()
