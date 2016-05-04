@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -10,7 +11,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace PushCoherence
 {
@@ -62,49 +65,111 @@ namespace PushCoherence
 
             var nonTimeStampedDir = Path.Combine(artifactsDir, "Signed", "Packages-NoTimeStamp");
             Directory.CreateDirectory(nonTimeStampedDir);
-            foreach (var file in Directory.EnumerateFiles(packagesDir))
+            var packages = Directory.GetFiles(packagesDir, "*.nupkg");
+            var packageIds = GetPackageIds(packages);
+
+            foreach (var file in packages)
             {
-                CreateTimeStampFreePackage(nonTimeStampedDir, file);
+                CreateTimeStampFreePackage(packageIds, nonTimeStampedDir, file);
             }
         }
 
-        private static void CreateTimeStampFreePackage(string outDir, string packagePath)
+        private static HashSet<string> GetPackageIds(string[] packagePaths)
         {
-            var packageInfo = PackageInfo.FromPath(packagePath);
-            var targetPath = Path.Combine(outDir, packageInfo.Id + '.' + StripBuildVersion(packageInfo.Version) + ".nupkg");
-            Console.WriteLine("Creating timestamp free version at {0}", targetPath);
-            File.Copy(packagePath, targetPath);
-
-            using (var fileStream = File.Open(targetPath, FileMode.Open, FileAccess.ReadWrite))
-            using (var package = new ZipArchive(fileStream, ZipArchiveMode.Update))
+            var packageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var packagePath in packagePaths)
             {
-                var manifest = package.Entries.First(f => f.FullName.EndsWith(".nuspec"));
-
-                using (var stream = manifest.Open())
+                using (var reader = new PackageArchiveReader(packagePath))
                 {
-                    var xdoc = XDocument.Load(stream);
-                    var ns = xdoc.Root.Name.NamespaceName;
-
-                    var version = xdoc.Descendants(XName.Get("version", ns)).First();
-                    version.Value = StripBuildVersion(version.Value);
-
-                    var dependencies = xdoc.Descendants(XName.Get("dependency", ns));
-                    foreach (var dependency in dependencies)
-                    {
-                        var attr = dependency.Attribute("version");
-                        attr.Value = StripBuildVersion(attr.Value);
-                    }
-
-                    stream.Position = 0;
-                    stream.SetLength(0);
-                    xdoc.Save(stream);
+                    packageIds.Add(reader.GetIdentity().Id);
                 }
             }
+
+            return packageIds;
         }
 
-        private static string StripBuildVersion(string version)
+        private static void CreateTimeStampFreePackage(HashSet<string> aspnetPackageIds, string outDir, string packagePath)
         {
-            if (Regex.IsMatch(version, @"(alpha|beta|rc)\d-\d+$"))
+            var targetPath = Path.Combine(outDir, Path.GetFileName(packagePath));
+            PackageIdentity updatedIdentity;
+            File.Copy(packagePath, targetPath, overwrite: true);
+
+            using (var fileStream = File.Open(targetPath, FileMode.Open))
+            using (var package = new ZipArchive(fileStream, ZipArchiveMode.Update))
+            {
+                var packageReader = new PackageArchiveReader(packagePath);
+                var identity = packageReader.GetIdentity();
+                var updatedVersion = new NuGetVersion(StripBuildVersion(identity.Version));
+
+                updatedIdentity = new PackageIdentity(identity.Id, updatedVersion);
+
+                var nuspecFile = packageReader.GetNuspecFile();
+                using (var stream = package.OpenFile(nuspecFile))
+                {
+                    var reader = Manifest.ReadFrom(stream, validateSchema: true);
+                    stream.Position = 0;
+                    var packageBuilder = new PackageBuilder(stream, basePath: null);
+                    packageBuilder.Version = updatedVersion;
+                    var updatedGroups = new List<PackageDependencyGroup>();
+
+                    foreach (var group in packageBuilder.DependencyGroups)
+                    {
+                        var packages = new List<PackageDependency>();
+                        var updatedGroup = new PackageDependencyGroup(group.TargetFramework, packages);
+                        foreach (var dependency in group.Packages)
+                        {
+                            PackageDependency dependencyToAdd;
+                            if (aspnetPackageIds.Contains(dependency.Id))
+                            {
+                                dependencyToAdd = UpdateDependency(identity, dependency);
+                            }
+                            else
+                            {
+                                dependencyToAdd = dependency;
+                            }
+
+                            packages.Add(dependencyToAdd);
+                        }
+
+                        updatedGroups.Add(updatedGroup);
+                    }
+
+                    packageBuilder.DependencyGroups.Clear();
+                    packageBuilder.DependencyGroups.AddRange(updatedGroups);
+
+                    var updatedManifest = Manifest.Create(packageBuilder);
+                    stream.Position = 0;
+                    stream.SetLength(0);
+                    updatedManifest.Save(stream);
+                }
+            }
+
+            var updatedTargetPath = Path.Combine(outDir, updatedIdentity.Id + '.' + updatedIdentity.Version + ".nupkg");
+            File.Move(targetPath, updatedTargetPath);
+            Console.WriteLine("Creating timestamp free version at {0}", updatedTargetPath);
+        }
+
+        private static PackageDependency UpdateDependency(PackageIdentity id, PackageDependency dependency)
+        {
+            if (!dependency.VersionRange.HasLowerBound)
+            {
+                throw new Exception($"Dependency {dependency} for {id} does not have a lower bound.");
+            }
+
+            if (dependency.VersionRange.HasUpperBound)
+            {
+                throw new Exception($"Dependency {dependency} for {id} has an upper bound.");
+            }
+
+            var minVersion = StripBuildVersion(dependency.VersionRange.MinVersion);
+            return new PackageDependency(dependency.Id, new VersionRange(minVersion));
+        }
+
+        private static NuGetVersion StripBuildVersion(NuGetVersion version)
+        {
+            var releaseLabel = version.Release;
+
+            if (Regex.IsMatch(releaseLabel, @"(alpha|beta|rc)\d-\d+$"))
             {
                 var timeStampFreeVersion = Environment.GetEnvironmentVariable("TIMESTAMP_FREE_VERSION");
                 if (string.IsNullOrEmpty(timeStampFreeVersion))
@@ -118,23 +183,23 @@ namespace PushCoherence
                 }
 
                 // E.g. change version 2.5.0-rc2-123123 to 2.5.0-rc2-final.
-                var index = version.LastIndexOf('-');
+                var index = releaseLabel.LastIndexOf('-');
                 if (index != -1)
                 {
-                    return version.Substring(0, index) + timeStampFreeVersion;
+                    releaseLabel = releaseLabel.Substring(0, index) + timeStampFreeVersion;
                 }
             }
-            else if (Regex.IsMatch(version, @"rtm-\d+$"))
+            else if (Regex.IsMatch(releaseLabel, @"rtm-\d+$"))
             {
                 // E.g. change version 2.5.0-rtm-123123 to 2.5.0.
-                var index = version.LastIndexOf('-');
+                var index = releaseLabel.LastIndexOf('-');
                 if (index != -1)
                 {
-                    return version.Substring(0, index);
+                    releaseLabel = releaseLabel.Substring(0, index);
                 }
             }
 
-            return version;
+            return new NuGetVersion(version.Version, releaseLabel);
         }
 
         private static void Retry(Action pushPackage)
@@ -184,30 +249,6 @@ namespace PushCoherence
                 }
             }
             Console.WriteLine("Pushed package {0}", packageName);
-        }
-
-        private class PackageInfo
-        {
-            private static readonly Regex _packageNameRegex = new Regex(@"^(?<id>.+?)\.(?<version>[0-9].*)$");
-
-            public string Id { get; set; }
-
-            public string Version { get; set; }
-
-            public static PackageInfo FromPath(string path)
-            {
-                var fileName = System.IO.Path.GetFileNameWithoutExtension(path);
-                var match = _packageNameRegex.Match(fileName);
-                if (!match.Success)
-                {
-                    throw new InvalidOperationException("Can't parse file " + path);
-                }
-                return new PackageInfo
-                {
-                    Id = match.Groups["id"].Value,
-                    Version = match.Groups["version"].Value
-                };
-            }
         }
     }
 }
