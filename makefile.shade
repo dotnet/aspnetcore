@@ -51,7 +51,7 @@ default TEST_PROJECT_GLOB_LOCAL="test/*/project.json"
               File.WriteAllText(buildInfoFile, commitHashAttribute);
             }
         }
-        DotnetPack(projectFile, BUILD_DIR_LOCAL, Configuration_Local, " --no-build");
+        DotnetPack(projectFile, BUILD_DIR_LOCAL, Configuration_Local, "");
     });
     DotnetBuild(TEST_PROJECT_GLOB_LOCAL, Configuration_Local, BuildFramework);
 
