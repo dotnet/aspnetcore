@@ -74,6 +74,7 @@ namespace AutobahnTestServer
         {
             var host = new WebHostBuilder()
                 .UseKestrel()
+                .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
 
