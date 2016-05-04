@@ -68,6 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             }
 
             var index = _index;
+            var wasLastBlock = block.Next == null;
 
             if (index < block.End)
             {
@@ -77,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
             do
             {
-                if (block.Next == null)
+                if (wasLastBlock)
                 {
                     return -1;
                 }
@@ -86,6 +87,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                     block = block.Next;
                     index = block.Start;
                 }
+
+                wasLastBlock = block.Next == null;
 
                 if (index < block.End)
                 {
@@ -102,7 +105,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             {
                 return;
             }
+
+            var wasLastBlock = _block.Next == null;
             var following = _block.End - _index;
+
             if (following >= bytesToSkip)
             {
                 _index += bytesToSkip;
@@ -113,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             var index = _index;
             while (true)
             {
-                if (block.Next == null)
+                if (wasLastBlock)
                 {
                     return;
                 }
@@ -123,7 +129,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                     block = block.Next;
                     index = block.Start;
                 }
+
+                wasLastBlock = block.Next == null;
                 following = block.End - index;
+
                 if (following >= bytesToSkip)
                 {
                     _block = block;
@@ -141,6 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                 return -1;
             }
 
+            var wasLastBlock = _block.Next == null;
             var index = _index;
 
             if (index < block.End)
@@ -150,7 +160,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
             do
             {
-                if (block.Next == null)
+                if (wasLastBlock)
                 {
                     return -1;
                 }
@@ -159,6 +169,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                     block = block.Next;
                     index = block.Start;
                 }
+
+                wasLastBlock = block.Next == null;
 
                 if (index < block.End)
                 {
@@ -173,14 +185,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             {
                 return -1;
             }
-            else if (_block.End - _index >= sizeof(long))
+
+            var wasLastBlock = _block.Next == null;
+
+            if (_block.End - _index >= sizeof(long))
             {
                 fixed (byte* ptr = &_block.Array[_index])
                 {
                     return *(long*)(ptr);
                 }
             }
-            else if (_block.Next == null)
+            else if (wasLastBlock)
             {
                 return -1;
             }
@@ -219,6 +234,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
             var block = _block;
             var index = _index;
+            var wasLastBlock = block.Next == null;
             var following = block.End - index;
             byte[] array;
             var byte0 = byte0Vector[0];
@@ -227,16 +243,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             {
                 while (following == 0)
                 {
-                    var newBlock = block.Next;
-                    if (newBlock == null)
+                    if (wasLastBlock)
                     {
                         _block = block;
                         _index = index;
                         return -1;
                     }
-                    index = newBlock.Start;
-                    following = newBlock.End - index;
-                    block = newBlock;
+                    block = block.Next;
+                    index = block.Start;
+                    wasLastBlock = block.Next == null;
+                    following = block.End - index;
                 }
                 array = block.Array;
                 while (following > 0)
@@ -298,6 +314,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
             var block = _block;
             var index = _index;
+            var wasLastBlock = block.Next == null;
             var following = block.End - index;
             byte[] array;
             int byte0Index = int.MaxValue;
@@ -309,16 +326,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             {
                 while (following == 0)
                 {
-                    var newBlock = block.Next;
-                    if (newBlock == null)
+                    if (wasLastBlock)
                     {
                         _block = block;
                         _index = index;
                         return -1;
                     }
-                    index = newBlock.Start;
-                    following = newBlock.End - index;
-                    block = newBlock;
+                    block = block.Next;
+                    index = block.Start;
+                    wasLastBlock = block.Next == null;
+                    following = block.End - index;
                 }
                 array = block.Array;
                 while (following > 0)
@@ -405,6 +422,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
             var block = _block;
             var index = _index;
+            var wasLastBlock = block.Next == null;
             var following = block.End - index;
             byte[] array;
             int byte0Index = int.MaxValue;
@@ -418,16 +436,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             {
                 while (following == 0)
                 {
-                    var newBlock = block.Next;
-                    if (newBlock == null)
+                    if (wasLastBlock)
                     {
                         _block = block;
                         _index = index;
                         return -1;
                     }
-                    index = newBlock.Start;
-                    following = newBlock.End - index;
-                    block = newBlock;
+                    block = block.Next;
+                    index = block.Start;
+                    wasLastBlock = block.Next == null;
+                    following = block.End - index;
                 }
                 array = block.Array;
                 while (following > 0)
@@ -605,16 +623,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             {
                 return false;
             }
-            else if (_index < _block.End)
-            {
-                _block.Array[_index++] = data;
-                return true;
-            }
 
             var block = _block;
             var index = _index;
             while (true)
             {
+                var wasLastBlock = block.Next == null;
+
                 if (index < block.End)
                 {
                     _block = block;
@@ -622,7 +637,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                     block.Array[index] = data;
                     return true;
                 }
-                else if (block.Next == null)
+                else if (wasLastBlock)
                 {
                     return false;
                 }
@@ -679,6 +694,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             var remaining = count;
             while (true)
             {
+                // Determine if we might attempt to copy data from block.Next before
+                // calculating "following" so we don't risk skipping data that could
+                // be added after block.End when we decide to copy from block.Next.
+                // block.End will always be advanced before block.Next is set.
+                var wasLastBlock = block.Next == null;
                 var following = block.End - index;
                 if (remaining <= following)
                 {
@@ -689,7 +709,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                     }
                     return new MemoryPoolIterator(block, index + remaining);
                 }
-                else if (block.Next == null)
+                else if (wasLastBlock)
                 {
                     actual = count - remaining + following;
                     if (array != null)
