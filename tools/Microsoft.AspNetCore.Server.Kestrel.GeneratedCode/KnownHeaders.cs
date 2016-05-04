@@ -299,6 +299,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         }}
         protected override void SetValueFast(string key, StringValues value)
         {{
+            {(loop.ClassName == "FrameResponseHeaders" ? "ValidateHeaderCharacters(value);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
@@ -313,10 +314,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     ")}}}
                     break;
 ")}}}
+            {(loop.ClassName == "FrameResponseHeaders" ? "ValidateHeaderCharacters(key);" : "")}
             Unknown[key] = value;
         }}
         protected override void AddValueFast(string key, StringValues value)
         {{
+            {(loop.ClassName == "FrameResponseHeaders" ? "ValidateHeaderCharacters(value);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
@@ -335,6 +338,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     ")}}}
                     break;
             ")}}}
+            {(loop.ClassName == "FrameResponseHeaders" ? "ValidateHeaderCharacters(key);" : "")}
             Unknown.Add(key, value);
         }}
         protected override bool RemoveFast(string key)

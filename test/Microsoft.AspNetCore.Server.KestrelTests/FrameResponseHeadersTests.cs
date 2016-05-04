@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
@@ -68,6 +69,52 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.Equal(0, frame.ResponseHeaders.Count);
             Assert.False(frame.ResponseHeaders.ContainsKey("Server"));
             Assert.False(frame.ResponseHeaders.ContainsKey("Date"));
+        }
+
+        [Theory]
+        [InlineData("Server", "\r\nData")]
+        [InlineData("Server", "\0Data")]
+        [InlineData("Server", "Data\r")]
+        [InlineData("Server", "Da\0ta")]
+        [InlineData("Server", "Da\u001Fta")]
+        [InlineData("Unknown-Header", "\r\nData")]
+        [InlineData("Unknown-Header", "\0Data")]
+        [InlineData("Unknown-Header", "Data\0")]
+        [InlineData("Unknown-Header", "Da\nta")]
+        [InlineData("\r\nServer", "Data")]
+        [InlineData("Server\r", "Data")]
+        [InlineData("Ser\0ver", "Data")]
+        [InlineData("Server\r\n", "Data")]
+        [InlineData("\u001FServer", "Data")]
+        [InlineData("Unknown-Header\r\n", "Data")]
+        [InlineData("\0Unknown-Header", "Data")]
+        [InlineData("Unknown\r-Header", "Data")]
+        [InlineData("Unk\nown-Header", "Data")]
+        public void AddingControlCharactersToHeadersThrows(string key, string value)
+        {
+            var responseHeaders = new FrameResponseHeaders();
+
+            Assert.Throws<InvalidOperationException>(() => {
+                ((IHeaderDictionary)responseHeaders)[key] = value;
+            });
+
+            Assert.Throws<InvalidOperationException>(() => {
+                ((IHeaderDictionary)responseHeaders)[key] = new StringValues(new[] { "valid", value });
+            });
+
+            Assert.Throws<InvalidOperationException>(() => {
+                ((IDictionary<string, StringValues>)responseHeaders)[key] = value;
+            });
+
+            Assert.Throws<InvalidOperationException>(() => {
+                var kvp = new KeyValuePair<string, StringValues>(key, value);
+                ((ICollection<KeyValuePair<string, StringValues>>)responseHeaders).Add(kvp);
+            });
+
+            Assert.Throws<InvalidOperationException>(() => {
+                var kvp = new KeyValuePair<string, StringValues>(key, value);
+                ((IDictionary<string, StringValues>)responseHeaders).Add(key, value);
+            });
         }
     }
 }
