@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Numerics;
+using System.Threading;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 {
@@ -767,7 +768,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                 {
                     var nextBlock = pool.Lease();
                     block.End = blockIndex;
-                    block.Next = nextBlock;
+                    Volatile.Write(ref block.Next, nextBlock);
                     block = nextBlock;
 
                     blockIndex = block.Data.Offset;
@@ -820,7 +821,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                     {
                         var nextBlock = pool.Lease();
                         block.End = blockIndex;
-                        block.Next = nextBlock;
+                        Volatile.Write(ref block.Next, nextBlock);
                         block = nextBlock;
 
                         blockIndex = block.Data.Offset;
