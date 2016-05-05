@@ -8,6 +8,8 @@ namespace MusicStore
     {
         // Defined in winnt.h
         private const int PRODUCT_NANO_SERVER = 0x0000006D;
+        private const int PRODUCT_DATACENTER_NANO_SERVER = 0x0000008F;
+        private const int PRODUCT_STANDARD_NANO_SERVER = 0x00000090;
 
         [DllImport("api-ms-win-core-sysinfo-l1-2-1.dll", SetLastError = false)]
         private static extern bool GetProductInfo(
@@ -64,7 +66,9 @@ namespace MusicStore
                         int productType;
                         if (GetProductInfo(osVersion.Major, osVersion.Minor, 0, 0, out productType))
                         {
-                            _isNano = productType == PRODUCT_NANO_SERVER;
+                            _isNano = productType == PRODUCT_NANO_SERVER ||
+                                productType == PRODUCT_DATACENTER_NANO_SERVER ||
+                                productType == PRODUCT_STANDARD_NANO_SERVER;
                         }
                         else
                         {
