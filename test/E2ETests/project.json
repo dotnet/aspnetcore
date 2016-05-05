@@ -1,10 +1,12 @@
 {
   "buildOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "compile": {
+      "include": [
+        "../../shared/**/*.cs"
+      ]
+    }
   },
-  "compile": [
-    "../../shared/**/*.cs"
-  ],
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.AspNetCore.Identity": "1.0.0-*",

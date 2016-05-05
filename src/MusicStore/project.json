@@ -5,17 +5,28 @@
   "description": "Music store application on ASP.NET 5",
   "version": "1.0.0-*",
   "buildOptions": {
-    "emitEntryPoint": true,
-    "warningsAsErrors": true,
+    "compile": {
+      "include": [
+        "../../shared/**/*.cs" 
+      ]
+    },
+    "copyToOutput": {
+      "include": [
+        "Areas",
+        "Views",
+        "wwwroot",
+        "config.json",
+        "web.config"
+      ]
+    },
     "define": [
       "DEMO",
       "TESTING"
     ],
-    "preserveCompilationContext": true
+    "emitEntryPoint": true,
+    "preserveCompilationContext": true,
+    "warningsAsErrors": true
   },
-  "compile": [
-    "../../shared/**/*.cs"
-  ],
   "publishOptions": {
     "include": [
       "Areas",
@@ -52,7 +63,7 @@
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
