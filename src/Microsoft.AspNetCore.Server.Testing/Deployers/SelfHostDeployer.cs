@@ -74,8 +74,10 @@ namespace Microsoft.AspNetCore.Server.Testing
             }
             else
             {
+                var targetFramework = DeploymentParameters.TargetFramework ?? (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.0");
+
                 executableName = DotnetCommandName;
-                executableArgs = $"run -p \"{DeploymentParameters.ApplicationPath}\" {DotnetArgumentSeparator}";
+                executableArgs = $"run -p \"{DeploymentParameters.ApplicationPath}\" --framework {targetFramework} {DotnetArgumentSeparator}";
             }
 
             executableArgs += $" --server.urls {uri} "

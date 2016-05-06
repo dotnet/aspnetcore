@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Testing
 
         protected void DotnetPublish(string publishRoot = null)
         {
-            if (string.IsNullOrEmpty(DeploymentParameters.PublishTargetFramework))
+            if (string.IsNullOrEmpty(DeploymentParameters.TargetFramework))
             {
                 throw new Exception($"A target framework must be specified in the deployment parameters for applications that require publishing before deployment");
             }
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Testing
 
             var parameters = $"publish \"{DeploymentParameters.ApplicationPath}\""
                 + $" -o \"{DeploymentParameters.PublishedApplicationRootPath}\""
-                + $" --framework {DeploymentParameters.PublishTargetFramework}";
+                + $" --framework {DeploymentParameters.TargetFramework}";
 
             Logger.LogInformation($"Executing command {DotnetCommandName} {parameters}");
 
