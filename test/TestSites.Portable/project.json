@@ -1,11 +1,11 @@
 {
   "version": "1.0.0-*",
   "buildOptions": {
-    "emitEntryPoint": true
+    "emitEntryPoint": true,
+    "compile": {
+      "include": "../TestSites/Startup*.cs"
+    }
   },
-  "compile": [
-    "../TestSites/Startup*.cs"
-  ],
   "publishOptions": {
     "include": [
       "web.config"
