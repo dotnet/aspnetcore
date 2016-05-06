@@ -5,23 +5,34 @@
   "description": "Music store application on ASP.NET 5",
   "version": "1.0.0-*",
   "buildOptions": {
-    "emitEntryPoint": true,
-    "warningsAsErrors": true,
+    "compile": {
+      "exclude": [
+        "../MusicStore/Program.cs",
+        "../MusicStore/bin",
+        "../MusicStore/obj"
+      ],
+      "include": [
+        "../../shared/**/*.cs",
+        "../MusicStore/**/*.cs"
+      ]
+    },
+    "copyToOutput": {
+      "include": [
+        "Areas",
+        "Views",
+        "wwwroot",
+        "config.json",
+        "web.config"
+      ]
+    },
     "define": [
       "DEMO",
       "TESTING"
     ],
-    "preserveCompilationContext": true
+    "emitEntryPoint": true,
+    "preserveCompilationContext": true,
+    "warningsAsErrors": true
   },
-  "compile": [
-    "../../shared/**/*.cs",
-    "../MusicStore/**/*.cs"
-  ],
-  "exclude": [
-    "../MusicStore/Program.cs",
-    "../MusicStore/bin",
-    "../MusicStore/obj"
-  ],
   "publishOptions": {
     "include": [
       "Areas",
@@ -79,11 +90,11 @@
     "postpublish": "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%"
   },
   "runtimes": {
-    "win7-x64": {},
-    "win7-x86": {},
-    "osx.10.10-x64": {},
-    "osx.10.11-x64": {},
-    "ubuntu.14.04-x64": {},
-    "ubuntu.15.04-x64": {}
+    "win7-x64": { },
+    "win7-x86": { },
+    "osx.10.10-x64": { },
+    "osx.10.11-x64": { },
+    "ubuntu.14.04-x64": { },
+    "ubuntu.15.04-x64": { }
   }
 }
