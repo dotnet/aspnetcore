@@ -2,6 +2,7 @@
 var VERSION='0.1'
 var FULL_VERSION='0.1'
 var AUTHORS='Microsoft Open Technologies, Inc.'
+-BuildQuality = "preview1";
 
 use-standard-lifecycle
 k-standard-goals
