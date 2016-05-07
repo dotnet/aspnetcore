@@ -60,7 +60,7 @@ namespace E2ETests
                     _remoteDeploymentConfig.AccountPassword,
                     _remoteDeploymentConfig.ExecutableRelativePath)
                 {
-                    PublishTargetFramework = "netcoreapp1.0",
+                    TargetFramework = "netcoreapp1.0",
                     ApplicationBaseUriHint = applicationBaseUrl
                 };
                 deploymentParameters.EnvironmentVariables.Add(
