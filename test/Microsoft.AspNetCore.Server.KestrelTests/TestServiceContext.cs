@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             AppLifetime = new LifetimeNotImplemented();
             Log = new TestKestrelTrace();
             ThreadPool = new LoggingThreadPool(Log);
-            DateHeaderValueManager = new TestDateHeaderValueManager();
+            DateHeaderValueManager = new DateHeaderValueManager();
 
             ServerOptions = new KestrelServerOptions();
             ServerOptions.ShutdownTimeout = TimeSpan.FromSeconds(5);

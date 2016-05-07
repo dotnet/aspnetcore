@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             try
             {
-                result = dateHeaderValueManager.GetDateHeaderValue();
+                result = dateHeaderValueManager.GetDateHeaderValues().String;
             }
             finally
             {
@@ -54,9 +54,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             try
             {
-                result1 = dateHeaderValueManager.GetDateHeaderValue();
+                result1 = dateHeaderValueManager.GetDateHeaderValues().String;
                 systemClock.UtcNow = future;
-                result2 = dateHeaderValueManager.GetDateHeaderValue();
+                result2 = dateHeaderValueManager.GetDateHeaderValues().String;
             }
             finally
             {
@@ -85,11 +85,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             try
             {
-                result1 = dateHeaderValueManager.GetDateHeaderValue();
+                result1 = dateHeaderValueManager.GetDateHeaderValues().String;
                 systemClock.UtcNow = future;
                 // Wait for longer than the idle timeout to ensure the timer is stopped
                 await Task.Delay(TimeSpan.FromSeconds(1));
-                result2 = dateHeaderValueManager.GetDateHeaderValue();
+                result2 = dateHeaderValueManager.GetDateHeaderValues().String;
             }
             finally
             {
@@ -114,10 +114,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var timerInterval = TimeSpan.FromSeconds(10);
             var dateHeaderValueManager = new DateHeaderValueManager(systemClock, timeWithoutRequestsUntilIdle, timerInterval);
 
-            var result1 = dateHeaderValueManager.GetDateHeaderValue();
+            var result1 = dateHeaderValueManager.GetDateHeaderValues().String;
             dateHeaderValueManager.Dispose();
             systemClock.UtcNow = future;
-            var result2 = dateHeaderValueManager.GetDateHeaderValue();
+            var result2 = dateHeaderValueManager.GetDateHeaderValues().String;
             
             Assert.Equal(now.ToString(Constants.RFC1123DateFormat), result1);
             Assert.Equal(future.ToString(Constants.RFC1123DateFormat), result2);
