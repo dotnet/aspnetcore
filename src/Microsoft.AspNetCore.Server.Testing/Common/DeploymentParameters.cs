@@ -69,14 +69,14 @@ namespace Microsoft.AspNetCore.Server.Testing
 
         public string ApplicationPath { get; set; }
 
+        public string TargetFramework { get; set; }
+
         /// <summary>
         /// To publish the application before deployment.
         /// </summary>
         public bool PublishApplicationBeforeDeployment { get; set; }
 
         public ApplicationType ApplicationType { get; set; }
-
-        public string PublishTargetFramework { get; set; }
 
         public string PublishedApplicationRootPath { get; set; }
 
