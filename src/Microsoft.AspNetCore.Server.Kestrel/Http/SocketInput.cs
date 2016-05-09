@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     }
                     else
                     {
-                        _tail.Next = _pinned;
+                        Volatile.Write(ref _tail.Next, _pinned);
                         _tail = _pinned;
                     }
 
