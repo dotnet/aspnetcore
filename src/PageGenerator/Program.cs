@@ -14,7 +14,7 @@ namespace PageGenerator
     {
         private const int NumArgs = 1;
 
-        public void Main(string[] args)
+        public static void Main(string[] args)
         {
             if (args.Length != NumArgs)
             {

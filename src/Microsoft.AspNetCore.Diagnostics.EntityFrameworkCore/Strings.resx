@@ -129,7 +129,7 @@
   <data name="DatabaseErrorPageMiddleware_Exception" xml:space="preserve">
     <value>An exception occurred while calculating the database error page content. Skipping display of the database error page.</value>
   </data>
-  <data name="DatabaseErrorPage_AddMigrationCommand" xml:space="preserve">
+  <data name="DatabaseErrorPage_AddMigrationCommandCLI" xml:space="preserve">
     <value>&gt; dotnet ef migrations add [migration name]</value>
   </data>
   <data name="DatabaseErrorPage_ApplyMigrationsButton" xml:space="preserve">
@@ -144,20 +144,20 @@
   <data name="DatabaseErrorPage_ApplyMigrationsFailed" xml:space="preserve">
     <value>An error occurred applying migrations, try applying them from the command line</value>
   </data>
-  <data name="DatabaseErrorPage_HowToApplyFromCmd" xml:space="preserve">
-    <value>You can also apply migrations from the command line:</value>
+  <data name="DatabaseErrorPage_HowToApplyFromPMC" xml:space="preserve">
+    <value>In Visual Studio, you can use the Package Manager Console to apply pending migrations to the database:</value>
   </data>
   <data name="DatabaseErrorPage_MigrationsAppliedRefresh" xml:space="preserve">
     <value>Try refreshing the page</value>
   </data>
-  <data name="DatabaseErrorPage_NoDbOrMigrationsInfo" xml:space="preserve">
-    <value>From the command line, scaffold a new migration and apply it to the database:</value>
+  <data name="DatabaseErrorPage_NoDbOrMigrationsInfoPMC" xml:space="preserve">
+    <value>In Visual Studio, use the Package Manager Console to scaffold a new migration and apply it to the database:</value>
   </data>
   <data name="DatabaseErrorPage_NoDbOrMigrationsTitle" xml:space="preserve">
     <value>Use migrations to create the database for {0}</value>
   </data>
-  <data name="DatabaseErrorPage_PendingChangesInfo" xml:space="preserve">
-    <value>Scaffold a new migration for these changes and apply them to the database from the command line:</value>
+  <data name="DatabaseErrorPage_PendingChangesInfoPMC" xml:space="preserve">
+    <value>In Visual Studio, use the Package Manager Console to scaffold a new migration for these changes and apply them to the database:</value>
   </data>
   <data name="DatabaseErrorPage_PendingChangesTitle" xml:space="preserve">
     <value>There are pending model changes for {0}</value>
@@ -168,7 +168,7 @@
   <data name="DatabaseErrorPage_PendingMigrationsTitle" xml:space="preserve">
     <value>Applying existing migrations for {0} may resolve this issue</value>
   </data>
-  <data name="DatabaseErrorPage_ApplyMigrationsCommand" xml:space="preserve">
+  <data name="DatabaseErrorPage_ApplyMigrationsCommandCLI" xml:space="preserve">
     <value>&gt; dotnet ef database update</value>
   </data>
   <data name="InvalidEnumValue" xml:space="preserve">
@@ -212,5 +212,20 @@
   </data>
   <data name="DatabaseErrorPage_NoMatch" xml:space="preserve">
     <value>The current exception (and its inner exceptions) do not match the last exception Entity Framework recorded due to a failed database operation. This means the database operation exception was handled and another exception occurred later in the request.</value>
+  </data>
+  <data name="DatabaseErrorPage_AddMigrationCommandPMC" xml:space="preserve">
+    <value>PM&gt; Add-Migration [migration name]</value>
+  </data>
+  <data name="DatabaseErrorPage_ApplyMigrationsCommandPMC" xml:space="preserve">
+    <value>PM&gt; Update-Database</value>
+  </data>
+  <data name="DatabaseErrorPage_NoDbOrMigrationsInfoCLI" xml:space="preserve">
+    <value>Alternatively, you can scaffold a new migration and apply it from a command prompt at your project directory:</value>
+  </data>
+  <data name="DatabaseErrorPage_PendingChangesInfoCLI" xml:space="preserve">
+    <value>Alternatively, you can scaffold a new migration and apply it from a command prompt at your project directory:</value>
+  </data>
+  <data name="DatabaseErrorPage_HowToApplyFromCLI" xml:space="preserve">
+    <value>Alternatively, you can apply pending migrations from a command prompt at your project directory:</value>
   </data>
 </root>

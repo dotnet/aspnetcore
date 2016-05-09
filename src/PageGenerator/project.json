@@ -2,6 +2,7 @@
   "version": "1.0.0-*",
   "description": "Builds the pages for the Diagnostics projects. Runs in build.cmd.",
   "buildOptions": {
+    "emitEntryPoint": true,
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   },

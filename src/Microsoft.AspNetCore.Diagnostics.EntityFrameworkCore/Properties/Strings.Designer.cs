@@ -77,17 +77,17 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         /// <summary>
         /// &gt; dotnet ef migrations add [migration name]
         /// </summary>
-        internal static string DatabaseErrorPage_AddMigrationCommand
+        internal static string DatabaseErrorPage_AddMigrationCommandCLI
         {
-            get { return GetString("DatabaseErrorPage_AddMigrationCommand"); }
+            get { return GetString("DatabaseErrorPage_AddMigrationCommandCLI"); }
         }
 
         /// <summary>
         /// &gt; dotnet ef migrations add [migration name]
         /// </summary>
-        internal static string FormatDatabaseErrorPage_AddMigrationCommand()
+        internal static string FormatDatabaseErrorPage_AddMigrationCommandCLI()
         {
-            return GetString("DatabaseErrorPage_AddMigrationCommand");
+            return GetString("DatabaseErrorPage_AddMigrationCommandCLI");
         }
 
         /// <summary>
@@ -155,19 +155,19 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         }
 
         /// <summary>
-        /// You can also apply migrations from the command line:
+        /// In Visual Studio, you can use Package Manager Console apply pending migrations to the database:
         /// </summary>
-        internal static string DatabaseErrorPage_HowToApplyFromCmd
+        internal static string DatabaseErrorPage_HowToApplyFromPMC
         {
-            get { return GetString("DatabaseErrorPage_HowToApplyFromCmd"); }
+            get { return GetString("DatabaseErrorPage_HowToApplyFromPMC"); }
         }
 
         /// <summary>
-        /// You can also apply migrations from the command line:
+        /// In Visual Studio, you can use Package Manager Console apply pending migrations to the database:
         /// </summary>
-        internal static string FormatDatabaseErrorPage_HowToApplyFromCmd()
+        internal static string FormatDatabaseErrorPage_HowToApplyFromPMC()
         {
-            return GetString("DatabaseErrorPage_HowToApplyFromCmd");
+            return GetString("DatabaseErrorPage_HowToApplyFromPMC");
         }
 
         /// <summary>
@@ -187,19 +187,19 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         }
 
         /// <summary>
-        /// From the command line, scaffold a new migration and apply it to the database:
+        /// In Visual Studio, use Package Manager Console to scaffold a new migration and apply it to the database:
         /// </summary>
-        internal static string DatabaseErrorPage_NoDbOrMigrationsInfo
+        internal static string DatabaseErrorPage_NoDbOrMigrationsInfoPMC
         {
-            get { return GetString("DatabaseErrorPage_NoDbOrMigrationsInfo"); }
+            get { return GetString("DatabaseErrorPage_NoDbOrMigrationsInfoPMC"); }
         }
 
         /// <summary>
-        /// From the command line, scaffold a new migration and apply it to the database:
+        /// In Visual Studio, use Package Manager Console to scaffold a new migration and apply it to the database:
         /// </summary>
-        internal static string FormatDatabaseErrorPage_NoDbOrMigrationsInfo()
+        internal static string FormatDatabaseErrorPage_NoDbOrMigrationsInfoPMC()
         {
-            return GetString("DatabaseErrorPage_NoDbOrMigrationsInfo");
+            return GetString("DatabaseErrorPage_NoDbOrMigrationsInfoPMC");
         }
 
         /// <summary>
@@ -219,19 +219,19 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Scaffold a new migration for these changes and apply them to the database from the command line:
+        /// In Visual Studio, use Package Manager Console to scaffold a new migration for these changes and apply them to the database:
         /// </summary>
-        internal static string DatabaseErrorPage_PendingChangesInfo
+        internal static string DatabaseErrorPage_PendingChangesInfoPMC
         {
-            get { return GetString("DatabaseErrorPage_PendingChangesInfo"); }
+            get { return GetString("DatabaseErrorPage_PendingChangesInfoPMC"); }
         }
 
         /// <summary>
-        /// Scaffold a new migration for these changes and apply them to the database from the command line:
+        /// In Visual Studio, use Package Manager Console to scaffold a new migration for these changes and apply them to the database:
         /// </summary>
-        internal static string FormatDatabaseErrorPage_PendingChangesInfo()
+        internal static string FormatDatabaseErrorPage_PendingChangesInfoPMC()
         {
-            return GetString("DatabaseErrorPage_PendingChangesInfo");
+            return GetString("DatabaseErrorPage_PendingChangesInfoPMC");
         }
 
         /// <summary>
@@ -285,17 +285,17 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         /// <summary>
         /// &gt; dotnet ef database update
         /// </summary>
-        internal static string DatabaseErrorPage_ApplyMigrationsCommand
+        internal static string DatabaseErrorPage_ApplyMigrationsCommandCLI
         {
-            get { return GetString("DatabaseErrorPage_ApplyMigrationsCommand"); }
+            get { return GetString("DatabaseErrorPage_ApplyMigrationsCommandCLI"); }
         }
 
         /// <summary>
         /// &gt; dotnet ef database update
         /// </summary>
-        internal static string FormatDatabaseErrorPage_ApplyMigrationsCommand()
+        internal static string FormatDatabaseErrorPage_ApplyMigrationsCommandCLI()
         {
-            return GetString("DatabaseErrorPage_ApplyMigrationsCommand");
+            return GetString("DatabaseErrorPage_ApplyMigrationsCommandCLI");
         }
 
         /// <summary>
@@ -520,6 +520,86 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         internal static string FormatDatabaseErrorPage_NoMatch()
         {
             return GetString("DatabaseErrorPage_NoMatch");
+        }
+
+        /// <summary>
+        /// PM&gt; Add-Migration [migration name]
+        /// </summary>
+        internal static string DatabaseErrorPage_AddMigrationCommandPMC
+        {
+            get { return GetString("DatabaseErrorPage_AddMigrationCommandPMC"); }
+        }
+
+        /// <summary>
+        /// PM&gt; Add-Migration [migration name]
+        /// </summary>
+        internal static string FormatDatabaseErrorPage_AddMigrationCommandPMC()
+        {
+            return GetString("DatabaseErrorPage_AddMigrationCommandPMC");
+        }
+
+        /// <summary>
+        /// PM&gt; Update-Database
+        /// </summary>
+        internal static string DatabaseErrorPage_ApplyMigrationsCommandPMC
+        {
+            get { return GetString("DatabaseErrorPage_ApplyMigrationsCommandPMC"); }
+        }
+
+        /// <summary>
+        /// PM&gt; Update-Database
+        /// </summary>
+        internal static string FormatDatabaseErrorPage_ApplyMigrationsCommandPMC()
+        {
+            return GetString("DatabaseErrorPage_ApplyMigrationsCommandPMC");
+        }
+
+        /// <summary>
+        /// Alternatively, you can scaffold a new migration and apply it from a command prompt at your project directory:
+        /// </summary>
+        internal static string DatabaseErrorPage_NoDbOrMigrationsInfoCLI
+        {
+            get { return GetString("DatabaseErrorPage_NoDbOrMigrationsInfoCLI"); }
+        }
+
+        /// <summary>
+        /// Alternatively, you can scaffold a new migration and apply it from a command prompt at your project directory:
+        /// </summary>
+        internal static string FormatDatabaseErrorPage_NoDbOrMigrationsInfoCLI()
+        {
+            return GetString("DatabaseErrorPage_NoDbOrMigrationsInfoCLI");
+        }
+
+        /// <summary>
+        /// Alternatively, you can scaffold a new migration and apply it from a command prompt at your project directory:
+        /// </summary>
+        internal static string DatabaseErrorPage_PendingChangesInfoCLI
+        {
+            get { return GetString("DatabaseErrorPage_PendingChangesInfoCLI"); }
+        }
+
+        /// <summary>
+        /// Alternatively, you can scaffold a new migration and apply it from a command prompt at your project directory:
+        /// </summary>
+        internal static string FormatDatabaseErrorPage_PendingChangesInfoCLI()
+        {
+            return GetString("DatabaseErrorPage_PendingChangesInfoCLI");
+        }
+
+        /// <summary>
+        /// Alternatively, you can apply pending migrations from a command prompt at your project directory:
+        /// </summary>
+        internal static string DatabaseErrorPage_HowToApplyFromCLI
+        {
+            get { return GetString("DatabaseErrorPage_HowToApplyFromCLI"); }
+        }
+
+        /// <summary>
+        /// Alternatively, you can apply pending migrations from a command prompt at your project directory:
+        /// </summary>
+        internal static string FormatDatabaseErrorPage_HowToApplyFromCLI()
+        {
+            return GetString("DatabaseErrorPage_HowToApplyFromCLI");
         }
 
         private static string GetString(string name, params string[] formatterNames)
