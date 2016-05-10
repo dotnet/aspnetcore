@@ -1,11 +1,13 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.Net.Http.Server
@@ -412,6 +414,65 @@ namespace Microsoft.Net.Http.Server
                 Assert.Equal("value1b", response.Headers.GetValues("Custom1").Skip(1).First());
                 Assert.Equal(1, response.Headers.GetValues("Custom2").Count());
                 Assert.Equal("value2a, value2b", response.Headers.GetValues("Custom2").First());
+            }
+        }
+
+        [Theory]
+        [InlineData("Server", "\r\nData")]
+        [InlineData("Server", "\0Data")]
+        [InlineData("Server", "Data\r")]
+        [InlineData("Server", "Da\0ta")]
+        [InlineData("Server", "Da\u001Fta")]
+        [InlineData("Unknown-Header", "\r\nData")]
+        [InlineData("Unknown-Header", "\0Data")]
+        [InlineData("Unknown-Header", "Data\0")]
+        [InlineData("Unknown-Header", "Da\nta")]
+        [InlineData("\r\nServer", "Data")]
+        [InlineData("Server\r", "Data")]
+        [InlineData("Ser\0ver", "Data")]
+        [InlineData("Server\r\n", "Data")]
+        [InlineData("\u001FServer", "Data")]
+        [InlineData("Unknown-Header\r\n", "Data")]
+        [InlineData("\0Unknown-Header", "Data")]
+        [InlineData("Unknown\r-Header", "Data")]
+        [InlineData("Unk\nown-Header", "Data")]
+        public async Task AddingControlCharactersToHeadersThrows(string key, string value)
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+
+                var context = await server.GetContextAsync();
+
+                var responseHeaders = context.Response.Headers;
+
+                Assert.Throws<InvalidOperationException>(() => {
+                    responseHeaders[key] = value;
+                });
+
+                Assert.Throws<InvalidOperationException>(() => {
+                    responseHeaders[key] = new StringValues(new[] { "valid", value });
+                });
+
+                Assert.Throws<InvalidOperationException>(() => {
+                    ((IDictionary<string, StringValues>)responseHeaders)[key] = value;
+                });
+
+                Assert.Throws<InvalidOperationException>(() => {
+                    var kvp = new KeyValuePair<string, StringValues>(key, value);
+                    ((ICollection<KeyValuePair<string, StringValues>>)responseHeaders).Add(kvp);
+                });
+
+                Assert.Throws<InvalidOperationException>(() => {
+                    var kvp = new KeyValuePair<string, StringValues>(key, value);
+                    ((IDictionary<string, StringValues>)responseHeaders).Add(key, value);
+                });
+
+                context.Dispose();
+
+                HttpResponseMessage response = await responseTask;
+                response.EnsureSuccessStatusCode();
             }
         }
 
