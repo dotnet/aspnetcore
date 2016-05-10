@@ -15,7 +15,7 @@ export default function (params: any): Promise<{ html: string, globals?: any }> 
         ...ngUniversal.NODE_HTTP_PROVIDERS,
     ];
 
-    return ngUniversal.bootloader({
+    let bootloader = ngUniversal.bootloader({
         directives: [App],
         componentProviders: serverBindings,
         async: true,
@@ -23,7 +23,10 @@ export default function (params: any): Promise<{ html: string, globals?: any }> 
         // TODO: Render just the <app> component instead of wrapping it inside an extra HTML document
         // Waiting on https://github.com/angular/universal/issues/347
         template: '<!DOCTYPE html>\n<html><head></head><body><app></app></body></html>'
-    }).serializeApplication().then(html => {
+    });
+
+    return bootloader.serializeApplication().then(html => {
+        bootloader.dispose();
         return { html };
     });
 }
