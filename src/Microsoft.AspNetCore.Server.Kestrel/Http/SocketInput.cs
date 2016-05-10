@@ -175,11 +175,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             MemoryPoolIterator consumed,
             MemoryPoolIterator examined)
         {
+            MemoryPoolBlock returnStart = null;
+            MemoryPoolBlock returnEnd = null;
+
             lock (_sync)
             {
-                MemoryPoolBlock returnStart = null;
-                MemoryPoolBlock returnEnd = null;
-
                 if (!consumed.IsDefault)
                 {
                     returnStart = _head;
@@ -200,18 +200,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         _awaitableIsNotCompleted,
                         _awaitableIsCompleted);
                 }
+            }
 
-                while (returnStart != returnEnd)
-                {
-                    var returnBlock = returnStart;
-                    returnStart = returnStart.Next;
-                    returnBlock.Pool.Return(returnBlock);
-                }
+            while (returnStart != returnEnd)
+            {
+                var returnBlock = returnStart;
+                returnStart = returnStart.Next;
+                returnBlock.Pool.Return(returnBlock);
+            }
 
-                if (Interlocked.CompareExchange(ref _consumingState, 0, 1) != 1)
-                {
-                    throw new InvalidOperationException("No ongoing consuming operation to complete.");
-                }
+            if (Interlocked.CompareExchange(ref _consumingState, 0, 1) != 1)
+            {
+                throw new InvalidOperationException("No ongoing consuming operation to complete.");
             }
         }
 
