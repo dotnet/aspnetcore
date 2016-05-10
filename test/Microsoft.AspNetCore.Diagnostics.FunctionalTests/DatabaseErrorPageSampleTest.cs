@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests
             // Assert
             var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            Assert.Contains("From the command line, scaffold a new migration and apply it to the database:", body);
+            Assert.Contains("In Visual Studio, use the Package Manager Console to scaffold a new migration and apply it to the database:", body);
         }
     }
 }

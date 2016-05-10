@@ -115,8 +115,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             var content = await response.Content.ReadAsStringAsync();
             Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_NoDbOrMigrationsTitle", typeof(BloggingContext).Name), content);
-            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommand").Replace(">", "&gt;"), content);
-            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommand").Replace(">", "&gt;"), content);
+            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommandPMC").Replace(">", "&gt;"), content);
+            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommandPMC").Replace(">", "&gt;"), content);
         }
 
         class NoMigrationsMiddleware
@@ -144,11 +144,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
             var content = await response.Content.ReadAsStringAsync();
             Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_PendingMigrationsTitle", typeof(BloggingContextWithMigrations).Name), content);
-            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommand").Replace(">", "&gt;"), content);
+            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommandPMC").Replace(">", "&gt;"), content);
             Assert.Contains("<li>111111111111111_MigrationOne</li>", content);
             Assert.Contains("<li>222222222222222_MigrationTwo</li>", content);
 
-            Assert.DoesNotContain(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommand").Replace(">", "&gt;"), content);
+            Assert.DoesNotContain(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommandPMC").Replace(">", "&gt;"), content);
         }
 
         class PendingMigrationsMiddleware

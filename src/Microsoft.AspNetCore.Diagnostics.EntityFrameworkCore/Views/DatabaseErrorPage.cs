@@ -122,24 +122,42 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 #line hidden
             WriteLiteral("</h2>\r\n        <p>");
 #line 48 "DatabaseErrorPage.cshtml"
-      Write(Strings.DatabaseErrorPage_NoDbOrMigrationsInfo);
+      Write(Strings.DatabaseErrorPage_NoDbOrMigrationsInfoPMC);
 
 #line default
 #line hidden
             WriteLiteral("</p>\r\n        <code> ");
 #line 49 "DatabaseErrorPage.cshtml"
-          Write(Strings.DatabaseErrorPage_AddMigrationCommand);
+          Write(Strings.DatabaseErrorPage_AddMigrationCommandPMC);
 
 #line default
 #line hidden
-            WriteLiteral(" </code>\r\n        <br />\r\n        <code> ");
+            WriteLiteral("</code>\r\n        <br />\r\n        <code> ");
 #line 51 "DatabaseErrorPage.cshtml"
-          Write(Strings.DatabaseErrorPage_ApplyMigrationsCommand);
+          Write(Strings.DatabaseErrorPage_ApplyMigrationsCommandPMC);
 
 #line default
 #line hidden
-            WriteLiteral(" </code>\r\n        <hr />\r\n");
+            WriteLiteral("</code>\r\n        <p>");
+#line 52 "DatabaseErrorPage.cshtml"
+      Write(Strings.DatabaseErrorPage_NoDbOrMigrationsInfoCLI);
+
+#line default
+#line hidden
+            WriteLiteral("</p>\r\n        <code> ");
 #line 53 "DatabaseErrorPage.cshtml"
+          Write(Strings.DatabaseErrorPage_AddMigrationCommandCLI);
+
+#line default
+#line hidden
+            WriteLiteral("</code>\r\n        <br />\r\n        <code> ");
+#line 55 "DatabaseErrorPage.cshtml"
+          Write(Strings.DatabaseErrorPage_ApplyMigrationsCommandCLI);
+
+#line default
+#line hidden
+            WriteLiteral("</code>\r\n        <hr />\r\n");
+#line 57 "DatabaseErrorPage.cshtml"
     }
     else if (Model.PendingMigrations.Any())
     {
@@ -148,25 +166,25 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 #line hidden
 
             WriteLiteral("        <div>\r\n            <h2>");
-#line 57 "DatabaseErrorPage.cshtml"
+#line 61 "DatabaseErrorPage.cshtml"
            Write(Strings.FormatDatabaseErrorPage_PendingMigrationsTitle(Model.ContextType.Name));
 
 #line default
 #line hidden
             WriteLiteral("</h2>\r\n            <p>");
-#line 58 "DatabaseErrorPage.cshtml"
+#line 62 "DatabaseErrorPage.cshtml"
           Write(Strings.FormatDatabaseErrorPage_PendingMigrationsInfo(Model.ContextType.Name));
 
 #line default
 #line hidden
             WriteLiteral("</p>\r\n\r\n            <ul>\r\n");
-#line 61 "DatabaseErrorPage.cshtml"
+#line 65 "DatabaseErrorPage.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 61 "DatabaseErrorPage.cshtml"
+#line 65 "DatabaseErrorPage.cshtml"
                  foreach (var migration in Model.PendingMigrations)
                 {
 
@@ -174,20 +192,20 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 #line hidden
 
             WriteLiteral("                    <li>");
-#line 63 "DatabaseErrorPage.cshtml"
+#line 67 "DatabaseErrorPage.cshtml"
                    Write(migration);
 
 #line default
 #line hidden
             WriteLiteral("</li>\r\n");
-#line 64 "DatabaseErrorPage.cshtml"
+#line 68 "DatabaseErrorPage.cshtml"
                 }
 
 #line default
 #line hidden
 
             WriteLiteral("            </ul>\r\n\r\n            <p>\r\n                <button id=\"applyMigrations\" onclick=\"ApplyMigrations()\">");
-#line 68 "DatabaseErrorPage.cshtml"
+#line 72 "DatabaseErrorPage.cshtml"
                                                                     Write(Strings.DatabaseErrorPage_ApplyMigrationsButton);
 
 #line default
@@ -201,19 +219,19 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
                     applyMigrations.disabled = true;
                     applyMigrationsError.innerHTML = """";
                     applyMigrations.innerHTML = """);
-#line 76 "DatabaseErrorPage.cshtml"
+#line 80 "DatabaseErrorPage.cshtml"
                                             Write(JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButtonRunning));
 
 #line default
 #line hidden
             WriteLiteral("\";\r\n\r\n                    var req = new XMLHttpRequest();\r\n\r\n                    req.onload = function (e) {\r\n                        if (req.status === 204) {\r\n                            applyMigrations.innerHTML = \"");
-#line 82 "DatabaseErrorPage.cshtml"
+#line 86 "DatabaseErrorPage.cshtml"
                                                     Write(JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButtonDone));
 
 #line default
 #line hidden
             WriteLiteral("\";\r\n                            applyMigrationsSuccess.innerHTML = \"");
-#line 83 "DatabaseErrorPage.cshtml"
+#line 87 "DatabaseErrorPage.cshtml"
                                                            Write(JavaScriptEncode(Strings.DatabaseErrorPage_MigrationsAppliedRefresh));
 
 #line default
@@ -229,13 +247,13 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
                     };
 
                     var formBody = ""context=");
-#line 93 "DatabaseErrorPage.cshtml"
+#line 97 "DatabaseErrorPage.cshtml"
                                        Write(JavaScriptEncode(UrlEncode(Model.ContextType.AssemblyQualifiedName)));
 
 #line default
 #line hidden
             WriteLiteral("\";\r\n                    req.open(\"POST\", \"");
-#line 94 "DatabaseErrorPage.cshtml"
+#line 98 "DatabaseErrorPage.cshtml"
                                  Write(JavaScriptEncode(Model.Options.MigrationsEndPointPath.Value));
 
 #line default
@@ -249,31 +267,43 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 
                 function ErrorApplyingMigrations() {
                     applyMigrations.innerHTML = """);
-#line 102 "DatabaseErrorPage.cshtml"
+#line 106 "DatabaseErrorPage.cshtml"
                                             Write(JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButton));
 
 #line default
 #line hidden
             WriteLiteral("\";\r\n                    applyMigrationsError.innerHTML = \"");
-#line 103 "DatabaseErrorPage.cshtml"
+#line 107 "DatabaseErrorPage.cshtml"
                                                  Write(JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsFailed));
 
 #line default
 #line hidden
             WriteLiteral("\";\r\n                    applyMigrations.disabled = false;\r\n                }\r\n            </script>\r\n\r\n            <p>");
-#line 108 "DatabaseErrorPage.cshtml"
-          Write(Strings.DatabaseErrorPage_HowToApplyFromCmd);
+#line 112 "DatabaseErrorPage.cshtml"
+          Write(Strings.DatabaseErrorPage_HowToApplyFromPMC);
 
 #line default
 #line hidden
             WriteLiteral("</p>\r\n            <code>");
-#line 109 "DatabaseErrorPage.cshtml"
-             Write(Strings.DatabaseErrorPage_ApplyMigrationsCommand);
+#line 113 "DatabaseErrorPage.cshtml"
+             Write(Strings.DatabaseErrorPage_ApplyMigrationsCommandPMC);
+
+#line default
+#line hidden
+            WriteLiteral("</code>\r\n            <p>");
+#line 114 "DatabaseErrorPage.cshtml"
+          Write(Strings.DatabaseErrorPage_HowToApplyFromCLI);
+
+#line default
+#line hidden
+            WriteLiteral("</p>\r\n            <code>");
+#line 115 "DatabaseErrorPage.cshtml"
+             Write(Strings.DatabaseErrorPage_ApplyMigrationsCommandCLI);
 
 #line default
 #line hidden
             WriteLiteral("</code>\r\n            <hr />\r\n        </div>\r\n");
-#line 112 "DatabaseErrorPage.cshtml"
+#line 118 "DatabaseErrorPage.cshtml"
     }
     else if (Model.PendingModelChanges)
     {
@@ -282,31 +312,49 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 #line hidden
 
             WriteLiteral("        <div>\r\n            <h2>");
-#line 116 "DatabaseErrorPage.cshtml"
+#line 122 "DatabaseErrorPage.cshtml"
            Write(Strings.FormatDatabaseErrorPage_PendingChangesTitle(Model.ContextType.Name));
 
 #line default
 #line hidden
             WriteLiteral("</h2>\r\n            <p>");
-#line 117 "DatabaseErrorPage.cshtml"
-          Write(Strings.DatabaseErrorPage_PendingChangesInfo);
+#line 123 "DatabaseErrorPage.cshtml"
+          Write(Strings.DatabaseErrorPage_PendingChangesInfoPMC);
 
 #line default
 #line hidden
             WriteLiteral("</p>\r\n            <code>");
-#line 118 "DatabaseErrorPage.cshtml"
-             Write(Strings.DatabaseErrorPage_AddMigrationCommand);
+#line 124 "DatabaseErrorPage.cshtml"
+             Write(Strings.DatabaseErrorPage_AddMigrationCommandPMC);
 
 #line default
 #line hidden
             WriteLiteral("</code>\r\n            <br />\r\n            <code>");
-#line 120 "DatabaseErrorPage.cshtml"
-             Write(Strings.DatabaseErrorPage_ApplyMigrationsCommand);
+#line 126 "DatabaseErrorPage.cshtml"
+             Write(Strings.DatabaseErrorPage_ApplyMigrationsCommandPMC);
+
+#line default
+#line hidden
+            WriteLiteral("</code>\r\n            <p>");
+#line 127 "DatabaseErrorPage.cshtml"
+          Write(Strings.DatabaseErrorPage_PendingChangesInfoCLI);
+
+#line default
+#line hidden
+            WriteLiteral("</p>\r\n            <code>");
+#line 128 "DatabaseErrorPage.cshtml"
+             Write(Strings.DatabaseErrorPage_AddMigrationCommandCLI);
+
+#line default
+#line hidden
+            WriteLiteral("</code>\r\n            <br />\r\n            <code>");
+#line 130 "DatabaseErrorPage.cshtml"
+             Write(Strings.DatabaseErrorPage_ApplyMigrationsCommandCLI);
 
 #line default
 #line hidden
             WriteLiteral("</code>\r\n            <hr />\r\n        </div>\r\n");
-#line 123 "DatabaseErrorPage.cshtml"
+#line 133 "DatabaseErrorPage.cshtml"
     }
 
 #line default
