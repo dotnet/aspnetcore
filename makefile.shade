@@ -846,7 +846,7 @@ functions
                     }
                 }
 
-                var otherDirs = new[] { "test", "samples" };
+                var otherDirs = new[] { "test", "samples", "tools" };
                 for (var i = 0; i < otherDirs.Length; i++)
                 {
                     var otherDir = Path.Combine(repo, otherDirs[i]);
