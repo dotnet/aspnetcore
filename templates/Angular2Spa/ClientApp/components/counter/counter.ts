@@ -1,4 +1,4 @@
-import * as ng from 'angular2/core';
+import * as ng from '@angular/core';
 
 @ng.Component({
   selector: 'counter',

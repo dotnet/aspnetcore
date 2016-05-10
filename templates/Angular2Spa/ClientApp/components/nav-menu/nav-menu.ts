@@ -1,5 +1,5 @@
-import * as ng from 'angular2/core';
-import * as router from 'angular2/router';
+import * as ng from '@angular/core';
+import * as router from '@angular/router-deprecated';
 
 @ng.Component({
   selector: 'nav-menu',

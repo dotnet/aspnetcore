@@ -1,14 +1,16 @@
-import 'angular2/bundles/angular2-polyfills';
 import 'bootstrap';
+require('zone.js');
+import 'reflect-metadata';
 import './styles/site.css';
 
-import { bootstrap } from 'angular2/platform/browser';
-import { FormBuilder } from 'angular2/common';
-import * as router from 'angular2/router';
-import { Http, HTTP_PROVIDERS } from 'angular2/http';
+
+import { bootstrap } from '@angular/platform-browser-dynamic';
+import { FormBuilder } from '@angular/common';
+import * as router from '@angular/router-deprecated';
+import { Http, HTTP_PROVIDERS } from '@angular/http';
 import { App } from './components/app/app';
 
-bootstrap(App, [router.ROUTER_BINDINGS, HTTP_PROVIDERS, FormBuilder]);
+bootstrap(App, [router.ROUTER_PROVIDERS, HTTP_PROVIDERS, FormBuilder]);
 
 // Basic hot reloading support. Automatically reloads and restarts the Angular 2 app each time
 // you modify source files. This will not preserve any application state other than the URL.
