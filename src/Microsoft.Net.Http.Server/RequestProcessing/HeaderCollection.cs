@@ -41,6 +41,8 @@ namespace Microsoft.Net.Http.Server
                 }
                 else
                 {
+                    ValidateHeaderCharacters(key);
+                    ValidateHeaderCharacters(value);
                     Store[key] = value;
                 }
             }
@@ -52,6 +54,8 @@ namespace Microsoft.Net.Http.Server
             set
             {
                 ThrowIfReadOnly();
+                ValidateHeaderCharacters(key);
+                ValidateHeaderCharacters(value);
                 Store[key] = value;
             }
         }
@@ -74,18 +78,24 @@ namespace Microsoft.Net.Http.Server
         public void Add(KeyValuePair<string, StringValues> item)
         {
             ThrowIfReadOnly();
+            ValidateHeaderCharacters(item.Key);
+            ValidateHeaderCharacters(item.Value);
             Store.Add(item);
         }
 
         public void Add(string key, StringValues value)
         {
             ThrowIfReadOnly();
+            ValidateHeaderCharacters(key);
+            ValidateHeaderCharacters(value);
             Store.Add(key, value);
         }
 
         public void Append(string key, string value)
         {
             ThrowIfReadOnly();
+            ValidateHeaderCharacters(key);
+            ValidateHeaderCharacters(value);
             StringValues values;
             Store.TryGetValue(key, out values);
             Store[key] = StringValues.Concat(values, value);
@@ -154,6 +164,28 @@ namespace Microsoft.Net.Http.Server
             if (IsReadOnly)
             {
                 throw new InvalidOperationException("The response headers cannot be modified because the response has already started.");
+            }
+        }
+
+        public static void ValidateHeaderCharacters(StringValues headerValues)
+        {
+            foreach (var value in headerValues)
+            {
+                ValidateHeaderCharacters(value);
+            }
+        }
+
+        public static void ValidateHeaderCharacters(string headerCharacters)
+        {
+            if (headerCharacters != null)
+            {
+                foreach (var ch in headerCharacters)
+                {
+                    if (ch < 0x20)
+                    {
+                        throw new InvalidOperationException(string.Format("Invalid control character in header: 0x{0:X2}", (byte)ch));
+                    }
+                }
             }
         }
     }
