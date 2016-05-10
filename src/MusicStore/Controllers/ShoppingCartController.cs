@@ -71,19 +71,29 @@ namespace MusicStore.Controllers
                 .Include(c => c.Album)
                 .SingleOrDefaultAsync();
 
-            // Remove from cart
-            int itemCount = cart.RemoveFromCart(id);
+            string message;
+            int itemCount;
+            if (cartItem != null)
+            {
+                // Remove from cart
+                itemCount = cart.RemoveFromCart(id);
 
-            await DbContext.SaveChangesAsync(requestAborted);
+                await DbContext.SaveChangesAsync(requestAborted);
 
-            string removed = (itemCount > 0) ? " 1 copy of " : string.Empty;
+                string removed = (itemCount > 0) ? " 1 copy of " : string.Empty;
+                message = removed + cartItem.Album.Title + " has been removed from your shopping cart.";
+            }
+            else
+            {
+                itemCount = 0;
+                message = "Could not find this item, nothing has been removed from your shopping cart.";
+            }
 
             // Display the confirmation message
 
             var results = new ShoppingCartRemoveViewModel
             {
-                Message = removed + cartItem.Album.Title +
-                    " has been removed from your shopping cart.",
+                Message = message,
                 CartTotal = await cart.GetTotal(),
                 CartCount = await cart.GetCount(),
                 ItemCount = itemCount,
