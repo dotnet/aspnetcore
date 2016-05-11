@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Routing
     public class RouteData
     {
         private RouteValueDictionary _dataTokens;
-        private IList<IRouter> _routers;
+        private List<IRouter> _routers;
         private RouteValueDictionary _values;
 
         /// <summary>
@@ -126,10 +126,23 @@ namespace Microsoft.AspNetCore.Routing
         /// <returns>A <see cref="RouteDataSnapshot"/> that captures the current state.</returns>
         public RouteDataSnapshot PushState(IRouter router, RouteValueDictionary values, RouteValueDictionary dataTokens)
         {
+            // Perf: this is optimized for small list sizes, in particular to avoid overhead of a native call in
+            // Array.CopyTo inside the List(IEnumerable<T>) constructor.
+            List<IRouter> routers = null;
+            var count = _routers?.Count;
+            if (count > 0)
+            {
+                routers = new List<IRouter>(count.Value);
+                for (var i = 0; i < count.Value; i++)
+                {
+                    routers.Add(_routers[i]);
+                }
+            }
+
             var snapshot = new RouteDataSnapshot(
                 this,
                 _dataTokens?.Count > 0 ? new RouteValueDictionary(_dataTokens) : null, 
-                _routers?.Count > 0 ? new List<IRouter>(_routers) : null,
+                routers,
                 _values?.Count > 0 ? new RouteValueDictionary(_values) : null);
 
             if (router != null)
@@ -222,15 +235,41 @@ namespace Microsoft.AspNetCore.Routing
                 }
                 else if (_routers == null)
                 {
-                    _routeData._routers.Clear();
+                    // Perf: this is optimized for small list sizes, in particular to avoid overhead of a native call in
+                    // Array.Clear inside the List.Clear() method.
+                    var routers = _routeData._routers;
+                    for (var i = routers.Count - 1; i >= 0 ; i--)
+                    {
+                        routers.RemoveAt(i);
+                    }
                 }
                 else
                 {
-                    _routeData._routers.Clear();
+                    // Perf: this is optimized for small list sizes, in particular to avoid overhead of a native call in
+                    // Array.Clear inside the List.Clear() method.
+                    //
+                    // We want to basically copy the contents of _routers in _routeData._routers - this change does
+                    // that with the minimal number of reads/writes and without calling Clear().
+                    var routers = _routeData._routers;
+                    var snapshotRouters = _routers;
 
-                    for (var i = 0; i < _routers.Count; i++)
+                    // This is made more complicated by the fact that List[int] throws if i == Count, so we have
+                    // to do two loops and call Add for those cases.
+                    var i = 0;
+                    for (; i < snapshotRouters.Count && i < routers.Count; i++)
                     {
-                        _routeData._routers.Add(_routers[i]);
+                        routers[i] = snapshotRouters[i];
+                    }
+
+                    for (; i < snapshotRouters.Count; i++)
+                    {
+                        routers.Add(snapshotRouters[i]);
+                    }
+
+                    // Trim excess - again avoiding RemoveRange because it uses native methods.
+                    for (i = routers.Count - 1; i >= snapshotRouters.Count; i--)
+                    {
+                        routers.RemoveAt(i);
                     }
                 }
 
