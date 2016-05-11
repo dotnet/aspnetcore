@@ -24,6 +24,7 @@ namespace E2ETests
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("remoteDeploymentConfig.json")
+                .AddUserSecrets()
                 .AddEnvironmentVariables()
                 .Build();
 
@@ -57,11 +58,11 @@ namespace E2ETests
                     _remoteDeploymentConfig.FileSharePath,
                     _remoteDeploymentConfig.ServerName,
                     _remoteDeploymentConfig.AccountName,
-                    _remoteDeploymentConfig.AccountPassword,
-                    _remoteDeploymentConfig.ExecutableRelativePath)
+                    _remoteDeploymentConfig.AccountPassword)
                 {
                     TargetFramework = "netcoreapp1.0",
-                    ApplicationBaseUriHint = applicationBaseUrl
+                    ApplicationBaseUriHint = applicationBaseUrl,
+                    ApplicationType = applicationType
                 };
                 deploymentParameters.EnvironmentVariables.Add(
                     new KeyValuePair<string, string>("ASPNETCORE_ENVIRONMENT", "SocialTesting"));
