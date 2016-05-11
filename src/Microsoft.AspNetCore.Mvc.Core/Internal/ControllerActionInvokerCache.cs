@@ -56,7 +56,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Entry cacheEntry;
             if (cache.Entries.TryGetValue(actionDescriptor, out cacheEntry))
             {
-                filters = GetFilters(controllerContext, cacheEntry.FilterItems);
+                // Deep copy the cached filter items as filter providers could modify them
+                var filterItems = new List<FilterItem>(cacheEntry.FilterItems.Count);
+                for (var i = 0; i < cacheEntry.FilterItems.Count; i++)
+                {
+                    var filterItem = cacheEntry.FilterItems[i];
+                    filterItems.Add(
+                        new FilterItem(filterItem.Descriptor)
+                        {
+                            Filter = filterItem.Filter,
+                            IsReusable = filterItem.IsReusable
+                        });
+                }
+
+                filters = GetFilters(controllerContext, filterItems);
 
                 return new ControllerActionInvokerState(filters, cacheEntry.ActionMethodExecutor);
             }
@@ -71,7 +84,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 staticFilterItems.Add(new FilterItem(actionDescriptor.FilterDescriptors[i]));
             }
 
-            filters = GetFilters(controllerContext, staticFilterItems);
+            // Create a separate collection as we want to hold onto the statically defined filter items
+            // in order to cache them
+            var allFilterItems = new List<FilterItem>(staticFilterItems);
+
+            filters = GetFilters(controllerContext, allFilterItems);
 
             // Cache the filter items based on the following criteria
             // 1. Are created statically (ex: via filter attributes, added to global filter list etc.)
@@ -90,12 +107,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return new ControllerActionInvokerState(filters, cacheEntry.ActionMethodExecutor);
         }
 
-        private IFilterMetadata[] GetFilters(ActionContext actionContext, List<FilterItem> staticFilterItems)
+        private IFilterMetadata[] GetFilters(ActionContext actionContext, List<FilterItem> filterItems)
         {
-            // Create a separate collection as we want to hold onto the statically defined filter items
-            // in order to cache them
-            var filterItems = new List<FilterItem>(staticFilterItems);
-
             // Execute providers
             var context = new FilterProviderContext(actionContext, filterItems);
 
