@@ -258,7 +258,7 @@
                 <term>chunking</term>
                 <Justification>Used to describe network chunks</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Extensions.CodeGenerators.Mvc\Controller\CommandLineGeneratorModel.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.VisualStudio.Web.CodeGenerators.Mvc\Controller\CommandLineGeneratorModel.cs">
                 <term>crud</term>
                 <Justification>Acronym for Create, Read, Update, and Delete</Justification>
             </SrcExclusions>
@@ -315,7 +315,7 @@
                 <term>ku</term>
                 <Justification>CultureInfo term</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.SqlServer\Storage\Internal\SqlServerTypeMapper.cs;">
+            <SrcExclusions Include="$(PoliCheckPath)Microsoft.EntityFrameworkCore.SqlServer*\src\Storage\Internal\SqlServerTypeMapper.cs;">
                 <term>national</term>
                 <Justification>Refers to SQL Server datatype</Justification>
             </SrcExclusions>

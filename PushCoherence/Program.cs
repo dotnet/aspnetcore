@@ -144,7 +144,7 @@ namespace PushCoherence
                 }
             }
 
-            var updatedTargetPath = Path.Combine(outDir, updatedIdentity.Id + '.' + updatedIdentity.Version + ".nupkg");
+            var updatedTargetPath = Path.Combine(outDir, updatedIdentity.Id + '.' + updatedIdentity.Version.ToNormalizedString() + ".nupkg");
             File.Move(targetPath, updatedTargetPath);
             Console.WriteLine("Creating timestamp free version at {0}", updatedTargetPath);
         }
