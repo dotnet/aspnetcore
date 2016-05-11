@@ -9,9 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
@@ -19,7 +17,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     public abstract class FilterActionInvoker : IActionInvoker
     {
         private readonly ControllerActionInvokerCache _controllerActionInvokerCache;
-        private readonly IReadOnlyList<IInputFormatter> _inputFormatters;
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
         private readonly DiagnosticSource _diagnosticSource;
         private readonly int _maxModelValidationErrors;
@@ -44,7 +41,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public FilterActionInvoker(
             ActionContext actionContext,
             ControllerActionInvokerCache controllerActionInvokerCache,
-            IReadOnlyList<IInputFormatter> inputFormatters,
             IReadOnlyList<IValueProviderFactory> valueProviderFactories,
             ILogger logger,
             DiagnosticSource diagnosticSource,
@@ -58,11 +54,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (controllerActionInvokerCache == null)
             {
                 throw new ArgumentNullException(nameof(controllerActionInvokerCache));
-            }
-
-            if (inputFormatters == null)
-            {
-                throw new ArgumentNullException(nameof(inputFormatters));
             }
 
             if (valueProviderFactories == null)
@@ -83,7 +74,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Context = new ControllerContext(actionContext);
 
             _controllerActionInvokerCache = controllerActionInvokerCache;
-            _inputFormatters = inputFormatters;
             _valueProviderFactories = valueProviderFactories;
             Logger = logger;
             _diagnosticSource = diagnosticSource;

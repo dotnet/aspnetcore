@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ControllerActionInvokerCache controllerActionInvokerCache,
             IControllerFactory controllerFactory,
             ControllerActionDescriptor descriptor,
-            IReadOnlyList<IInputFormatter> inputFormatters,
             IControllerActionArgumentBinder argumentBinder,
             IReadOnlyList<IValueProviderFactory> valueProviderFactories,
             ILogger logger,
@@ -38,7 +37,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             : base(
                   actionContext,
                   controllerActionInvokerCache,
-                  inputFormatters,
                   valueProviderFactories,
                   logger,
                   diagnosticSource,
