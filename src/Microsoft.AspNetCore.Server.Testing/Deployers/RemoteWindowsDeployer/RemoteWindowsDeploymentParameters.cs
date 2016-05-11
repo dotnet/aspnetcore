@@ -13,15 +13,13 @@ namespace Microsoft.AspNetCore.Server.Testing
             string remoteServerFileSharePath,
             string remoteServerName,
             string remoteServerAccountName,
-            string remoteServerAccountPassword,
-            string remoteServerRelativeExecutablePath)
+            string remoteServerAccountPassword)
             : base(applicationPath, serverType, runtimeFlavor, runtimeArchitecture)
         {
             RemoteServerFileSharePath = remoteServerFileSharePath;
             ServerName = remoteServerName;
             ServerAccountName = remoteServerAccountName;
             ServerAccountPassword = remoteServerAccountPassword;
-            RemoteServerRelativeExecutablePath = remoteServerRelativeExecutablePath;
         }
 
         public string ServerName { get; }
@@ -34,10 +32,5 @@ namespace Microsoft.AspNetCore.Server.Testing
         /// The full path to the remote server's file share
         /// </summary>
         public string RemoteServerFileSharePath { get; }
-
-        /// <summary>
-        /// The relative path to the executable in the published output
-        /// </summary>
-        public string RemoteServerRelativeExecutablePath { get; }
     }
 }

@@ -59,12 +59,6 @@ namespace Microsoft.AspNetCore.Server.Testing
                     " . A file share is required to copy the application's published output.");
             }
 
-            if (string.IsNullOrWhiteSpace(_deploymentParameters.RemoteServerRelativeExecutablePath))
-            {
-                throw new ArgumentException($"Invalid value for {nameof(RemoteWindowsDeploymentParameters.RemoteServerRelativeExecutablePath)}." +
-                    " This is the name of the executable in the published output which needs to be executed on the remote server.");
-            }
-
             if (string.IsNullOrWhiteSpace(_deploymentParameters.ApplicationBaseUriHint))
             {
                 throw new ArgumentException($"Invalid value for {nameof(RemoteWindowsDeploymentParameters.ApplicationBaseUriHint)}.");
@@ -143,12 +137,23 @@ namespace Microsoft.AspNetCore.Server.Testing
         {
             var remotePSSessionHelperScript = _scripts.Value.RemotePSSessionHelper;
 
+            string executablePath = null;
+            var applicationName = new DirectoryInfo(DeploymentParameters.ApplicationPath).Name;
+            if (DeploymentParameters.ApplicationType == ApplicationType.Portable)
+            {
+                executablePath = $"dotnet {applicationName}.dll";
+            }
+            else
+            {
+                executablePath = Path.Combine(_deployedFolderPathInFileShare, applicationName + ".exe");
+            }
+
             var parameterBuilder = new StringBuilder();
             parameterBuilder.Append($"\"{remotePSSessionHelperScript}\"");
             parameterBuilder.Append($" -serverName {_deploymentParameters.ServerName}");
             parameterBuilder.Append($" -accountName {_deploymentParameters.ServerAccountName}");
             parameterBuilder.Append($" -accountPassword {_deploymentParameters.ServerAccountPassword}");
-            parameterBuilder.Append($" -executablePath \"{Path.Combine(_deployedFolderPathInFileShare, _deploymentParameters.RemoteServerRelativeExecutablePath)}\"");
+            parameterBuilder.Append($" -executablePath \'{executablePath}\'");
             parameterBuilder.Append($" -serverType {_deploymentParameters.ServerType}");
             parameterBuilder.Append($" -serverAction {serverAction}");
             parameterBuilder.Append($" -applicationBaseUrl {_deploymentParameters.ApplicationBaseUriHint}");
