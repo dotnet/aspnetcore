@@ -63,67 +63,67 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         private object FastFeatureGet(Type key)
         {
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestFeature))
+            if (key == IHttpRequestFeatureType)
             {
                 return _currentIHttpRequestFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResponseFeature))
+            if (key == IHttpResponseFeatureType)
             {
                 return _currentIHttpResponseFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestIdentifierFeature))
+            if (key == IHttpRequestIdentifierFeatureType)
             {
                 return _currentIHttpRequestIdentifierFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IServiceProvidersFeature))
+            if (key == IServiceProvidersFeatureType)
             {
                 return _currentIServiceProvidersFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestLifetimeFeature))
+            if (key == IHttpRequestLifetimeFeatureType)
             {
                 return _currentIHttpRequestLifetimeFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature))
+            if (key == IHttpConnectionFeatureType)
             {
                 return _currentIHttpConnectionFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.Authentication.IHttpAuthenticationFeature))
+            if (key == IHttpAuthenticationFeatureType)
             {
                 return _currentIHttpAuthenticationFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IQueryFeature))
+            if (key == IQueryFeatureType)
             {
                 return _currentIQueryFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IFormFeature))
+            if (key == IFormFeatureType)
             {
                 return _currentIFormFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature))
+            if (key == IHttpUpgradeFeatureType)
             {
                 return _currentIHttpUpgradeFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IResponseCookiesFeature))
+            if (key == IResponseCookiesFeatureType)
             {
                 return _currentIResponseCookiesFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IItemsFeature))
+            if (key == IItemsFeatureType)
             {
                 return _currentIItemsFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature))
+            if (key == ITlsConnectionFeatureType)
             {
                 return _currentITlsConnectionFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IHttpWebSocketFeature))
+            if (key == IHttpWebSocketFeatureType)
             {
                 return _currentIHttpWebSocketFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.ISessionFeature))
+            if (key == ISessionFeatureType)
             {
                 return _currentISessionFeature;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature))
+            if (key == IHttpSendFileFeatureType)
             {
                 return _currentIHttpSendFileFeature;
             }
@@ -134,82 +134,82 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             _featureRevision++;
             
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestFeature))
+            if (key == IHttpRequestFeatureType)
             {
                 _currentIHttpRequestFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResponseFeature))
+            if (key == IHttpResponseFeatureType)
             {
                 _currentIHttpResponseFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestIdentifierFeature))
+            if (key == IHttpRequestIdentifierFeatureType)
             {
                 _currentIHttpRequestIdentifierFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IServiceProvidersFeature))
+            if (key == IServiceProvidersFeatureType)
             {
                 _currentIServiceProvidersFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestLifetimeFeature))
+            if (key == IHttpRequestLifetimeFeatureType)
             {
                 _currentIHttpRequestLifetimeFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature))
+            if (key == IHttpConnectionFeatureType)
             {
                 _currentIHttpConnectionFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.Authentication.IHttpAuthenticationFeature))
+            if (key == IHttpAuthenticationFeatureType)
             {
                 _currentIHttpAuthenticationFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IQueryFeature))
+            if (key == IQueryFeatureType)
             {
                 _currentIQueryFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IFormFeature))
+            if (key == IFormFeatureType)
             {
                 _currentIFormFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature))
+            if (key == IHttpUpgradeFeatureType)
             {
                 _currentIHttpUpgradeFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IResponseCookiesFeature))
+            if (key == IResponseCookiesFeatureType)
             {
                 _currentIResponseCookiesFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IItemsFeature))
+            if (key == IItemsFeatureType)
             {
                 _currentIItemsFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature))
+            if (key == ITlsConnectionFeatureType)
             {
                 _currentITlsConnectionFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IHttpWebSocketFeature))
+            if (key == IHttpWebSocketFeatureType)
             {
                 _currentIHttpWebSocketFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.ISessionFeature))
+            if (key == ISessionFeatureType)
             {
                 _currentISessionFeature = feature;
                 return;
             }
-            if (key == typeof(global::Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature))
+            if (key == IHttpSendFileFeatureType)
             {
                 _currentIHttpSendFileFeature = feature;
                 return;

@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         private object FastFeatureGet(Type key)
         {{{Each(allFeatures, feature => $@"
-            if (key == typeof(global::{feature.FullName}))
+            if (key == {feature.Name}Type)
             {{
                 return _current{feature.Name};
             }}")}
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {{
             _featureRevision++;
             {Each(allFeatures, feature => $@"
-            if (key == typeof(global::{feature.FullName}))
+            if (key == {feature.Name}Type)
             {{
                 _current{feature.Name} = feature;
                 return;
