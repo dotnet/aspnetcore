@@ -132,7 +132,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void AfterOnResourceExecution(
             this DiagnosticSource diagnosticSource,
-            ActionDescriptor actionDescriptor,
             ResourceExecutedContext resourceExecutedContext,
             IAsyncResourceFilter filter)
         {
@@ -142,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     "Microsoft.AspNetCore.Mvc.AfterOnResourceExecution",
                     new
                     {
-                        actionDescriptor = actionDescriptor,
+                        actionDescriptor = resourceExecutedContext.ActionDescriptor,
                         resourceExecutedContext = resourceExecutedContext,
                         filter = filter
                     });
@@ -187,7 +186,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void BeforeOnResourceExecuted(
             this DiagnosticSource diagnosticSource,
-            ActionDescriptor actionDescriptor,
             ResourceExecutedContext resourceExecutedContext,
             IResourceFilter filter)
         {
@@ -197,7 +195,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     "Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuted",
                     new
                     {
-                        actionDescriptor = actionDescriptor,
+                        actionDescriptor = resourceExecutedContext.ActionDescriptor,
                         resourceExecutedContext = resourceExecutedContext,
                         filter = filter
                     });
@@ -206,7 +204,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void AfterOnResourceExecuted(
             this DiagnosticSource diagnosticSource,
-            ActionDescriptor actionDescriptor,
             ResourceExecutedContext resourceExecutedContext,
             IResourceFilter filter)
         {
@@ -216,7 +213,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     "Microsoft.AspNetCore.Mvc.AfterOnResourceExecuted",
                     new
                     {
-                        actionDescriptor = actionDescriptor,
+                        actionDescriptor = resourceExecutedContext.ActionDescriptor,
                         resourceExecutedContext = resourceExecutedContext,
                         filter = filter
                     });
@@ -315,7 +312,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void AfterOnActionExecution(
             this DiagnosticSource diagnosticSource,
-            ActionDescriptor actionDescriptor,
             ActionExecutedContext actionExecutedContext,
             IAsyncActionFilter filter)
         {
@@ -325,7 +321,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     "Microsoft.AspNetCore.Mvc.AfterOnActionExecution",
                     new
                     {
-                        actionDescriptor = actionDescriptor,
+                        actionDescriptor = actionExecutedContext.ActionDescriptor,
                         actionExecutedContext = actionExecutedContext,
                         filter = filter
                     });
@@ -370,7 +366,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void BeforeOnActionExecuted(
             this DiagnosticSource diagnosticSource,
-            ActionDescriptor actionDescriptor,
             ActionExecutedContext actionExecutedContext,
             IActionFilter filter)
         {
@@ -380,7 +375,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     "Microsoft.AspNetCore.Mvc.BeforeOnActionExecuted",
                     new
                     {
-                        actionDescriptor = actionDescriptor,
+                        actionDescriptor = actionExecutedContext.ActionDescriptor,
                         actionExecutedContext = actionExecutedContext,
                         filter = filter
                     });
@@ -389,7 +384,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void AfterOnActionExecuted(
             this DiagnosticSource diagnosticSource,
-            ActionDescriptor actionDescriptor,
             ActionExecutedContext actionExecutedContext,
             IActionFilter filter)
         {
@@ -399,7 +393,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     "Microsoft.AspNetCore.Mvc.AfterOnActionExecuted",
                     new
                     {
-                        actionDescriptor = actionDescriptor,
+                        actionDescriptor = actionExecutedContext.ActionDescriptor,
                         actionExecutedContext = actionExecutedContext,
                         filter = filter
                     });
@@ -466,7 +460,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void AfterOnResultExecution(
             this DiagnosticSource diagnosticSource,
-            ActionDescriptor actionDescriptor,
             ResultExecutedContext resultExecutedContext,
             IAsyncResultFilter filter)
         {
@@ -476,7 +469,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     "Microsoft.AspNetCore.Mvc.AfterOnResultExecution",
                     new
                     {
-                        actionDescriptor = actionDescriptor,
+                        actionDescriptor = resultExecutedContext.ActionDescriptor,
                         resultExecutedContext = resultExecutedContext,
                         filter = filter
                     });
@@ -521,7 +514,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void BeforeOnResultExecuted(
             this DiagnosticSource diagnosticSource,
-            ActionDescriptor actionDescriptor,
             ResultExecutedContext resultExecutedContext,
             IResultFilter filter)
         {
@@ -531,7 +523,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     "Microsoft.AspNetCore.Mvc.BeforeOnResultExecuted",
                     new
                     {
-                        actionDescriptor = actionDescriptor,
+                        actionDescriptor = resultExecutedContext.ActionDescriptor,
                         resultExecutedContext = resultExecutedContext,
                         filter = filter
                     });
@@ -540,7 +532,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void AfterOnResultExecuted(
             this DiagnosticSource diagnosticSource,
-            ActionDescriptor actionDescriptor,
             ResultExecutedContext resultExecutedContext,
             IResultFilter filter)
         {
@@ -550,7 +541,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     "Microsoft.AspNetCore.Mvc.AfterOnResultExecuted",
                     new
                     {
-                        actionDescriptor = actionDescriptor,
+                        actionDescriptor = resultExecutedContext.ActionDescriptor,
                         resultExecutedContext = resultExecutedContext,
                         filter = filter
                     });

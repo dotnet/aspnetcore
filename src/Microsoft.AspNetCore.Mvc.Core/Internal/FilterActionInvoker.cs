@@ -176,15 +176,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var current = _cursor.GetNextFilter<IAuthorizationFilter, IAsyncAuthorizationFilter>();
             if (current.FilterAsync != null)
             {
-                _diagnosticSource.BeforeOnAuthorizationAsync(
-                    _authorizationContext,
-                    current.FilterAsync);
+                _diagnosticSource.BeforeOnAuthorizationAsync(_authorizationContext, current.FilterAsync);
 
                 await current.FilterAsync.OnAuthorizationAsync(_authorizationContext);
 
-                _diagnosticSource.AfterOnAuthorizationAsync(
-                    _authorizationContext,
-                    current.FilterAsync);
+                _diagnosticSource.AfterOnAuthorizationAsync(_authorizationContext, current.FilterAsync);
 
                 if (_authorizationContext.Result == null)
                 {
@@ -198,15 +194,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
             else if (current.Filter != null)
             {
-                _diagnosticSource.BeforeOnAuthorization(
-                    _authorizationContext,
-                    current.Filter);
+                _diagnosticSource.BeforeOnAuthorization(_authorizationContext, current.Filter);
 
                 current.Filter.OnAuthorization(_authorizationContext);
 
-                _diagnosticSource.AfterOnAuthorization(
-                    _authorizationContext,
-                    current.Filter);
+                _diagnosticSource.AfterOnAuthorization(_authorizationContext, current.Filter);
 
                 if (_authorizationContext.Result == null)
                 {
@@ -254,18 +246,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 if (item.FilterAsync != null)
                 {
-                    _diagnosticSource.BeforeOnResourceExecution(
-                        _resourceExecutingContext,
-                        item.FilterAsync);
+                    _diagnosticSource.BeforeOnResourceExecution(_resourceExecutingContext, item.FilterAsync);
 
-                    await item.FilterAsync.OnResourceExecutionAsync(
-                        _resourceExecutingContext,
-                        InvokeResourceFilterAsync);
+                    await item.FilterAsync.OnResourceExecutionAsync(_resourceExecutingContext, InvokeResourceFilterAsync);
 
-                    _diagnosticSource.AfterOnResourceExecution(
-                        _resourceExecutingContext.ActionDescriptor,
-                        _resourceExecutedContext,
-                        item.FilterAsync);
+                    _diagnosticSource.AfterOnResourceExecution(_resourceExecutedContext, item.FilterAsync);
 
                     if (_resourceExecutedContext == null)
                     {
@@ -286,15 +271,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 }
                 else if (item.Filter != null)
                 {
-                    _diagnosticSource.BeforeOnResourceExecuting(
-                        _resourceExecutingContext,
-                        item.Filter);
+                    _diagnosticSource.BeforeOnResourceExecuting(_resourceExecutingContext, item.Filter);
 
                     item.Filter.OnResourceExecuting(_resourceExecutingContext);
 
-                    _diagnosticSource.AfterOnResourceExecuting(
-                        _resourceExecutingContext,
-                        item.Filter);
+                    _diagnosticSource.AfterOnResourceExecuting(_resourceExecutingContext, item.Filter);
 
                     if (_resourceExecutingContext.Result != null)
                     {
@@ -311,17 +292,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     }
                     else
                     {
-                        _diagnosticSource.BeforeOnResourceExecuted(
-                            _resourceExecutingContext.ActionDescriptor,
-                            _resourceExecutedContext,
-                            item.Filter);
+                        _diagnosticSource.BeforeOnResourceExecuted(_resourceExecutedContext, item.Filter);
 
                         item.Filter.OnResourceExecuted(await InvokeResourceFilterAsync());
 
-                        _diagnosticSource.AfterOnResourceExecuted(
-                            _resourceExecutingContext.ActionDescriptor,
-                            _resourceExecutedContext,
-                            item.Filter);
+                        _diagnosticSource.AfterOnResourceExecuted(_resourceExecutedContext, item.Filter);
                     }
                 }
                 else
@@ -416,17 +391,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 Debug.Assert(_exceptionContext != null);
                 if (_exceptionContext.Exception != null)
                 {
-                    _diagnosticSource.BeforeOnExceptionAsync(
-                        _exceptionContext,
-                        current.FilterAsync);
+                    _diagnosticSource.BeforeOnExceptionAsync(_exceptionContext, current.FilterAsync);
 
                     // Exception filters only run when there's an exception - unsetting it will short-circuit
                     // other exception filters.
                     await current.FilterAsync.OnExceptionAsync(_exceptionContext);
 
-                    _diagnosticSource.AfterOnExceptionAsync(
-                        _exceptionContext,
-                        current.FilterAsync);
+                    _diagnosticSource.AfterOnExceptionAsync(_exceptionContext, current.FilterAsync);
 
                     if (_exceptionContext.Exception == null)
                     {
@@ -443,17 +414,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 Debug.Assert(_exceptionContext != null);
                 if (_exceptionContext.Exception != null)
                 {
-                    _diagnosticSource.BeforeOnException(
-                        _exceptionContext,
-                        current.Filter);
+                    _diagnosticSource.BeforeOnException(_exceptionContext, current.Filter);
 
                     // Exception filters only run when there's an exception - unsetting it will short-circuit
                     // other exception filters.
                     current.Filter.OnException(_exceptionContext);
 
-                    _diagnosticSource.AfterOnException(
-                        _exceptionContext,
-                        current.Filter);
+                    _diagnosticSource.AfterOnException(_exceptionContext, current.Filter);
 
                     if (_exceptionContext.Exception == null)
                     {
@@ -530,16 +497,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 if (item.FilterAsync != null)
                 {
-                    _diagnosticSource.BeforeOnActionExecution(
-                        _actionExecutingContext,
-                        item.FilterAsync);
+                    _diagnosticSource.BeforeOnActionExecution(_actionExecutingContext, item.FilterAsync);
 
                     await item.FilterAsync.OnActionExecutionAsync(_actionExecutingContext, InvokeActionFilterAsync);
 
-                    _diagnosticSource.AfterOnActionExecution(
-                        _actionExecutingContext.ActionDescriptor,
-                        _actionExecutedContext,
-                        item.FilterAsync);
+                    _diagnosticSource.AfterOnActionExecution(_actionExecutedContext, item.FilterAsync);
 
                     if (_actionExecutedContext == null)
                     {
@@ -558,15 +520,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 }
                 else if (item.Filter != null)
                 {
-                    _diagnosticSource.BeforeOnActionExecuting(
-                        _actionExecutingContext,
-                        item.Filter);
+                    _diagnosticSource.BeforeOnActionExecuting(_actionExecutingContext, item.Filter);
 
                     item.Filter.OnActionExecuting(_actionExecutingContext);
 
-                    _diagnosticSource.AfterOnActionExecuting(
-                        _actionExecutingContext,
-                        item.Filter);
+                    _diagnosticSource.AfterOnActionExecuting(_actionExecutingContext, item.Filter);
 
                     if (_actionExecutingContext.Result != null)
                     {
@@ -584,17 +542,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     }
                     else
                     {
-                        _diagnosticSource.BeforeOnActionExecuted(
-                            _actionExecutingContext.ActionDescriptor,
-                            _actionExecutedContext,
-                            item.Filter);
+                        _diagnosticSource.BeforeOnActionExecuted(_actionExecutedContext, item.Filter);
 
                         item.Filter.OnActionExecuted(await InvokeActionFilterAsync());
 
-                        _diagnosticSource.BeforeOnActionExecuted(
-                            _actionExecutingContext.ActionDescriptor,
-                            _actionExecutedContext,
-                            item.Filter);
+                        _diagnosticSource.BeforeOnActionExecuted(_actionExecutedContext, item.Filter);
                     }
                 }
                 else
@@ -686,16 +638,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 var item = _cursor.GetNextFilter<IResultFilter, IAsyncResultFilter>();
                 if (item.FilterAsync != null)
                 {
-                    _diagnosticSource.BeforeOnResultExecution(
-                        _resultExecutingContext,
-                        item.FilterAsync);
+                    _diagnosticSource.BeforeOnResultExecution(_resultExecutingContext, item.FilterAsync);
 
                     await item.FilterAsync.OnResultExecutionAsync(_resultExecutingContext, InvokeResultFilterAsync);
 
-                    _diagnosticSource.AfterOnResultExecution(
-                        _resultExecutingContext.ActionDescriptor,
-                        _resultExecutedContext,
-                        item.FilterAsync);
+                    _diagnosticSource.AfterOnResultExecution(_resultExecutedContext, item.FilterAsync);
 
                     if (_resultExecutedContext == null || _resultExecutingContext.Cancel == true)
                     {
@@ -714,15 +661,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 }
                 else if (item.Filter != null)
                 {
-                    _diagnosticSource.BeforeOnResultExecuting(
-                        _resultExecutingContext,
-                        item.Filter);
+                    _diagnosticSource.BeforeOnResultExecuting(_resultExecutingContext, item.Filter);
 
                     item.Filter.OnResultExecuting(_resultExecutingContext);
 
-                    _diagnosticSource.AfterOnResultExecuting(
-                        _resultExecutingContext,
-                        item.Filter);
+                    _diagnosticSource.AfterOnResultExecuting(_resultExecutingContext, item.Filter);
 
                     if (_resultExecutingContext.Cancel == true)
                     {
@@ -740,17 +683,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     }
                     else
                     {
-                        _diagnosticSource.BeforeOnResultExecuted(
-                            _resultExecutingContext.ActionDescriptor,
-                            _resultExecutedContext,
-                            item.Filter);
+                        _diagnosticSource.BeforeOnResultExecuted(_resultExecutedContext, item.Filter);
 
                         item.Filter.OnResultExecuted(await InvokeResultFilterAsync());
 
-                        _diagnosticSource.AfterOnResultExecuted(
-                            _resultExecutingContext.ActionDescriptor,
-                            _resultExecutedContext,
-                            item.Filter);
+                        _diagnosticSource.AfterOnResultExecuted(_resultExecutedContext, item.Filter);
                     }
                 }
                 else
