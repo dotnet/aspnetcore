@@ -132,7 +132,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 var handle = UvMemory.FromIntPtr<UvHandle>(ptr);
                 if (handle != _post)
                 {
-                    handle.Dispose();
+                    // handle can be null because UvMemory.FromIntPtr looks up a weak reference
+                    handle?.Dispose();
                 }
             });
 
