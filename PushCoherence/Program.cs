@@ -3,13 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -23,7 +19,6 @@ namespace PushCoherence
             var nugetFeed = Environment.GetEnvironmentVariable("NUGET_FEED");
             var dropRoot = Environment.GetEnvironmentVariable("DROP_ROOT");
             var apiKey = Environment.GetEnvironmentVariable("APIKEY");
-            var nugetExe = Environment.GetEnvironmentVariable("PUSH_NUGET_EXE");
 
             if (string.IsNullOrEmpty(nugetFeed))
             {
@@ -40,11 +35,6 @@ namespace PushCoherence
                 throw new Exception("APIKEY not specified");
             }
 
-            if (string.IsNullOrEmpty(nugetExe))
-            {
-                throw new Exception("PUSH_NUGET_EXE not specified");
-            }
-
             var artifactsDir = Path.Combine(Directory.GetCurrentDirectory(), "artifacts");
             var packagesDir = Path.Combine(artifactsDir, "Signed", "Packages");
 
@@ -57,10 +47,7 @@ namespace PushCoherence
             }.SelectMany(d => Directory.EnumerateFiles(d, "*.nupkg"));
             Console.WriteLine("Pushing packages from {0} to feed {1}", packagesDir, nugetFeed);
 
-            Parallel.ForEach(packagesToPush, new ParallelOptions { MaxDegreeOfParallelism = 5 }, package =>
-            {
-                Retry(() => PushPackage(nugetFeed, apiKey, nugetExe, package));
-            });
+            PackagePublisher.PublishToFeedAsync(packagesToPush, nugetFeed, apiKey).Wait();
 
             var nonTimeStampedDir = Path.Combine(artifactsDir, "Signed", "Packages-NoTimeStamp");
             Directory.CreateDirectory(nonTimeStampedDir);
@@ -73,15 +60,20 @@ namespace PushCoherence
             }
         }
 
+        public static PackageIdentity GetPackageIdentity(string packagePath)
+        {
+            using (var reader = new PackageArchiveReader(packagePath))
+            {
+                return reader.GetIdentity();
+            }
+        }
+
         private static HashSet<string> GetPackageIds(string[] packagePaths)
         {
             var packageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var packagePath in packagePaths)
             {
-                using (var reader = new PackageArchiveReader(packagePath))
-                {
-                    packageIds.Add(reader.GetIdentity().Id);
-                }
+                packageIds.Add(GetPackageIdentity(packagePath).Id);
             }
 
             return packageIds;
@@ -198,55 +190,6 @@ namespace PushCoherence
             }
 
             return new NuGetVersion(version.Version, releaseLabel);
-        }
-
-        private static void Retry(Action pushPackage)
-        {
-            int attempts = 5;
-            while (attempts-- > 0)
-            {
-                try
-                {
-                    pushPackage();
-                    break;
-                }
-                catch (Exception)
-                {
-                    if (attempts == 1)
-                    {
-                        throw;
-                    }
-                    Thread.Sleep(TimeSpan.FromSeconds(3));
-                    Console.WriteLine("Retry ({0})", attempts);
-                }
-            }
-        }
-
-        private static void PushPackage(string nugetFeed, string apiKey, string nugetExe, string packagePath)
-        {
-            var nugetExeArgs = string.Format(
-                CultureInfo.InvariantCulture, "push -Source {0} -ApiKey {1} {2}",
-                nugetFeed,
-                apiKey,
-                packagePath);
-            var packageName = Path.GetFileNameWithoutExtension(packagePath);
-            Console.WriteLine("Pushing package {0}", packageName);
-            var psi = new ProcessStartInfo(nugetExe, nugetExeArgs)
-            {
-                CreateNoWindow = true,
-                UseShellExecute = false
-            };
-
-            using (var p = Process.Start(psi))
-            {
-                p.WaitForExit();
-                if (p.ExitCode != 0)
-                {
-                    var message = string.Format("Pushing package {0} failed. Exit code from nuget.exe: {1}", packageName, p.ExitCode);
-                    throw new Exception(message);
-                }
-            }
-            Console.WriteLine("Pushed package {0}", packageName);
         }
     }
 }
