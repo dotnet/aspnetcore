@@ -63,22 +63,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new[] { new DefaultFilterProvider() });
             var filterDescriptors = controllerContext.ActionDescriptor.FilterDescriptors;
 
-            // Act - 1
+            // Act & Assert
             var filters = controllerActionInvokerCache.GetState(controllerContext).Filters;
-
-            // Assert - 1
             Assert.Equal(2, filters.Length);
-            var request1Filter1 = Assert.IsType<TestFilter>(filters[0]); // Created by factory
+            var cachedFactoryCreatedFilter = Assert.IsType<TestFilter>(filters[0]); // Created by factory
             Assert.Same(staticFilter, filters[1]); // Cached and the same statically created filter instance
 
-            // Act - 2
-            filters = controllerActionInvokerCache.GetState(controllerContext).Filters;
+            for (var i = 0; i < 5; i++)
+            {
+                filters = controllerActionInvokerCache.GetState(controllerContext).Filters;
 
-            // Assert - 2
-            Assert.Collection(
-                filters,
-                f => Assert.Same(request1Filter1, f), // Cached
-                f => Assert.Same(staticFilter, f)); // Cached and the same statically created filter instance
+                var currentFactoryCreatedFilter = filters[0];
+                Assert.Same(currentFactoryCreatedFilter, cachedFactoryCreatedFilter); // Cached
+                Assert.Same(staticFilter, filters[1]); // Cached
+            }
         }
 
         [Fact]
@@ -96,22 +94,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new[] { new DefaultFilterProvider() });
             var filterDescriptors = controllerContext.ActionDescriptor.FilterDescriptors;
 
-            // Act - 1
-            var filters = controllerActionInvokerCache.GetState(controllerContext).Filters;
+            // Act & Assert
+            IFilterMetadata previousFactoryCreatedFilter = null;
+            for (var i = 0; i < 5; i++)
+            {
+                var filters = controllerActionInvokerCache.GetState(controllerContext).Filters;
 
-            // Assert - 1
-            Assert.Equal(2, filters.Length);
-            var request1Filter1 = Assert.IsType<TestFilter>(filters[0]); // Created by factory
-            Assert.Same(staticFilter, filters[1]); // Cached and the same statically created filter instance
+                var currentFactoryCreatedFilter = filters[0];
+                Assert.NotSame(currentFactoryCreatedFilter, previousFactoryCreatedFilter); // Never Cached
+                Assert.Same(staticFilter, filters[1]); // Cached
 
-            // Act - 2
-            filters = controllerActionInvokerCache.GetState(controllerContext).Filters;
-
-            // Assert - 2
-            Assert.Collection(
-                filters,
-                f => Assert.NotSame(request1Filter1, f), // Created by factory again
-                f => Assert.Same(staticFilter, f)); // Cached and the same statically created filter instance
+                previousFactoryCreatedFilter = currentFactoryCreatedFilter;
+            }
         }
 
         [Fact]
