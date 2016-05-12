@@ -10,16 +10,10 @@
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "MiddlewareAnalysisSample": "1.0.0",
-    "RuntimeInfoPageSample": "1.0.0",
     "StatusCodePagesSample": "1.0.0",
     "WelcomePageSample": "1.0.0",
     "xunit": "2.1.0"
   },
-  "exclude": [
-    "wwwroot",
-    "node_modules",
-    "bower_components"
-  ],
   "frameworks": {
     "netcoreapp1.0": {
       "imports": [
@@ -40,9 +34,5 @@
     }
   },
   "testRunner": "xunit",
-  "publishExclude": [
-    "**.user",
-    "**.vspscc"
-  ],
   "version": "1.0.0-*"
 }
