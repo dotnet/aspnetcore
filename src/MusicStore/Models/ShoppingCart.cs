@@ -54,7 +54,7 @@ namespace MusicStore.Models
         public int RemoveFromCart(int id)
         {
             // Get the cart
-            var cartItem = _dbContext.CartItems.Single(
+            var cartItem = _dbContext.CartItems.SingleOrDefault(
                 cart => cart.CartId == _shoppingCartId
                 && cart.CartItemId == id);
 
