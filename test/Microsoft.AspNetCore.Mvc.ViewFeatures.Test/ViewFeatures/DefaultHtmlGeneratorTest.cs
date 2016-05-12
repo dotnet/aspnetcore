@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
@@ -636,13 +637,40 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Equal<string>(expected, result);
         }
 
+        [Theory]
+        [InlineData(true, "")]
+        [InlineData(false, "<input name=\"formFieldName\" type=\"hidden\" value=\"requestToken\" />")]
+        public void GenerateAntiforgery_GeneratesAntiforgeryFieldsOnlyIfRequired(
+            bool hasAntiforgeryToken,
+            string expectedAntiforgeryHtmlField)
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var htmlGenerator = GetGenerator(metadataProvider);
+            var viewContext = GetViewContext<Model>(model: null, metadataProvider: metadataProvider);
+            viewContext.FormContext.HasAntiforgeryToken = hasAntiforgeryToken;
+
+            // Act
+            var result = htmlGenerator.GenerateAntiforgery(viewContext);
+
+            // Assert
+            var antiforgeryField = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
+            Assert.Equal(expectedAntiforgeryHtmlField, antiforgeryField);
+        }
+
         // GetCurrentValues uses only the IModelMetadataProvider passed to the DefaultHtmlGenerator constructor.
         private static IHtmlGenerator GetGenerator(IModelMetadataProvider metadataProvider)
         {
             var mvcViewOptionsAccessor = new Mock<IOptions<MvcViewOptions>>();
             mvcViewOptionsAccessor.SetupGet(accessor => accessor.Value).Returns(new MvcViewOptions());
             var htmlEncoder = Mock.Of<HtmlEncoder>();
-            var antiforgery = Mock.Of<IAntiforgery>();
+            var antiforgery = new Mock<IAntiforgery>();
+            antiforgery
+                .Setup(mock => mock.GetAndStoreTokens(It.IsAny<DefaultHttpContext>()))
+                .Returns(() =>
+                {
+                    return new AntiforgeryTokenSet("requestToken", "cookieToken", "formFieldName", "headerName");
+                });
 
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();
             optionsAccessor
@@ -650,7 +678,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 .Returns(new MvcOptions());
 
             return new DefaultHtmlGenerator(
-                antiforgery,
+                antiforgery.Object,
                 mvcViewOptionsAccessor.Object,
                 metadataProvider,
                 new UrlHelperFactory(),

@@ -31,5 +31,11 @@ namespace TagHelpersWebSite.Controllers
             }
             return View(employee);
         }
+
+        // GET: Employee/DuplicateAntiforgeryTokenRegistration
+        public IActionResult DuplicateAntiforgeryTokenRegistration()
+        {
+            return View();
+        }
     }
 }

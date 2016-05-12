@@ -156,6 +156,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(viewContext));
             }
 
+            // If we're inside a BeginForm/BeginRouteForm, the antiforgery token might have already been
+            // created and appended to the 'end form' content OR the form tag helper might have already generated
+            // an antiforgery token.
+            if (viewContext.FormContext.HasAntiforgeryToken)
+            {
+                return HtmlString.Empty;
+            }
+
+            viewContext.FormContext.HasAntiforgeryToken = true;
+
             return _antiforgery.GetHtml(viewContext.HttpContext);
         }
 
@@ -1468,7 +1478,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             // Group items in the SelectList if requested.
-            // The worst case complexity of this algorithm is O(number of groups*n). 
+            // The worst case complexity of this algorithm is O(number of groups*n).
             // If there aren't any groups, it is O(n) where n is number of items in the list.
             var optionGenerated = new bool[itemsList.Count];
             for (var i = 0; i < itemsList.Count; i++)

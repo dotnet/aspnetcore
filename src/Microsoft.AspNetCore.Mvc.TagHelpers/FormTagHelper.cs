@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         routeValues = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
                     }
 
-                    // Unconditionally replace any value from asp-route-area. 
+                    // Unconditionally replace any value from asp-route-area.
                     routeValues["area"] = Area;
                 }
 

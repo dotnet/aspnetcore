@@ -258,14 +258,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <inheritdoc />
         public IHtmlContent AntiForgeryToken()
         {
-            // If we're inside a BeginForm/BeginRouteForm, the antiforgery token might have already been
-            // created and appended to the 'end form' content.
-            if (ViewContext.FormContext.HasAntiforgeryToken)
-            {
-                return HtmlString.Empty;
-            }
-
-            ViewContext.FormContext.HasAntiforgeryToken = true;
             var html = _htmlGenerator.GenerateAntiforgery(ViewContext);
             return html ?? HtmlString.Empty;
         }
@@ -900,7 +892,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             if (shouldGenerateAntiforgery)
             {
                 ViewContext.FormContext.EndOfFormContent.Add(_htmlGenerator.GenerateAntiforgery(ViewContext));
-                ViewContext.FormContext.HasAntiforgeryToken = true;
             }
 
             return CreateForm();
@@ -957,7 +948,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             if (shouldGenerateAntiforgery)
             {
                 ViewContext.FormContext.EndOfFormContent.Add(_htmlGenerator.GenerateAntiforgery(ViewContext));
-                ViewContext.FormContext.HasAntiforgeryToken = true;
             }
 
             return CreateForm();

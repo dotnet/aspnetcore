@@ -10,6 +10,7 @@
         <section id="loginForm">
             @using (Html.BeginForm("Login", "Antiforgery", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
             {
+                @* BeginForm already registers antiforgery tokens. This Html helper call should be no-op *@
                 @Html.AntiForgeryToken()
                 <h4>Use a local account to log in.</h4>
                 <hr />
@@ -39,6 +40,7 @@
 
 @using (Html.BeginForm("UseFacebookLogin", "Antiforgery", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
 {
+    @* BeginForm already registers antiforgery tokens. This Html helper call should be no-op *@
     @Html.AntiForgeryToken()
     <h4>Use Facebook login.</h4>
     <hr />

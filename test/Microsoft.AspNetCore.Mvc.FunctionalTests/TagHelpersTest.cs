@@ -87,6 +87,42 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 #endif
         }
 
+        [Fact]
+        public async Task ReregisteringAntiforgeryTokenInsideFormTagHelper_DoesNotAddDuplicateAntiforgeryTokenFields()
+        {
+            // Arrange
+            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+            var outputFile = "compiler/resources/TagHelpersWebSite.Employee.DuplicateAntiforgeryTokenRegistration.html";
+            var expectedContent =
+                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
+
+            // Act
+            var response = await Client.GetAsync("http://localhost/Employee/DuplicateAntiforgeryTokenRegistration");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+
+            responseContent = responseContent.Trim();
+
+            var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(
+                responseContent, "/Employee/DuplicateAntiforgeryTokenRegistration");
+
+#if GENERATE_BASELINES
+            // Reverse usual substitution and insert a format item into the new file content.
+            responseContent = responseContent.Replace(forgeryToken, "{0}");
+            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+#else
+            expectedContent = string.Format(expectedContent, forgeryToken);
+            // Mono issue - https://github.com/aspnet/External/issues/19
+            Assert.Equal(
+                PlatformNormalizer.NormalizeContent(expectedContent.Trim()),
+                responseContent,
+                ignoreLineEndingDifferences: true);
+#endif
+        }
+
         public static TheoryData TagHelpersAreInheritedFromViewImportsPagesData
         {
             get
