@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
         {
             var folders = CreateTestDir($@"{{ ""frameworks"": {{ ""{targetFramework}"": {{ }} }} }}");
 
-            new PublishIISCommand(folders.PublishOutput, targetFramework, folders.ProjectPath).Run();
+            new PublishIISCommand(folders.PublishOutput, targetFramework, null, folders.ProjectPath).Run();
 
             var processPath = (string)GetPublishedWebConfig(folders.PublishOutput)
                 .Descendants("aspNetCore").Attributes("processPath").Single();
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
     }
   }");
 
-            new PublishIISCommand(folders.PublishOutput, "netcoreapp1.0", folders.ProjectPath).Run();
+            new PublishIISCommand(folders.PublishOutput, "netcoreapp1.0", null, folders.ProjectPath).Run();
 
             var aspNetCoreElement = GetPublishedWebConfig(folders.PublishOutput)
                 .Descendants("aspNetCore").Single();
@@ -68,12 +68,54 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
         {
             var folders = CreateTestDir($@"{{ ""name"": ""{projectName}"", ""frameworks"": {{ ""netcoreapp1.0"": {{}} }} }}");
 
-            new PublishIISCommand(folders.PublishOutput, "netcoreapp1.0", folders.ProjectPath).Run();
+            new PublishIISCommand(folders.PublishOutput, "netcoreapp1.0", null, folders.ProjectPath).Run();
 
             var processPath = (string)GetPublishedWebConfig(folders.PublishOutput)
                 .Descendants("aspNetCore").Attributes("processPath").Single();
 
             Assert.Equal($@".\{projectName}.exe", processPath);
+
+            Directory.Delete(folders.TestRoot, recursive: true);
+        }
+
+        [Fact]
+        public void PublishIIS_reads_application_name_from_outputName_if_specified()
+        {
+            var folders = CreateTestDir(
+@"{
+    ""name"": ""awesomeApp"",
+    ""buildOptions"": { ""outputName"": ""myApp"" },
+    ""frameworks"": { ""netcoreapp1.0"": { } }
+}");
+
+            new PublishIISCommand(folders.PublishOutput, "netcoreapp1.0", null, folders.ProjectPath).Run();
+
+            var processPath = (string)GetPublishedWebConfig(folders.PublishOutput)
+                .Descendants("aspNetCore").Attributes("processPath").Single();
+
+            Assert.Equal(@".\myApp.exe", processPath);
+
+            Directory.Delete(folders.TestRoot, recursive: true);
+        }
+
+        [Theory]
+        [InlineData("Debug", "myApp")]
+        [InlineData("Release", "awesomeApp")]
+        public void PublishIIS_reads_application_name_from_configuration_specific_outputName_if_specified(string configuration, string expectedName)
+        {
+            var folders = CreateTestDir(
+@"{
+    ""name"": ""awesomeApp"",
+    ""configurations"": { ""Debug"": { ""buildOptions"": { ""outputName"": ""myApp"" } } },
+    ""frameworks"": { ""netcoreapp1.0"": { } }
+}");
+
+            new PublishIISCommand(folders.PublishOutput, "netcoreapp1.0", configuration, folders.ProjectPath).Run();
+
+            var processPath = (string)GetPublishedWebConfig(folders.PublishOutput)
+                .Descendants("aspNetCore").Attributes("processPath").Single();
+
+            Assert.Equal($@".\{expectedName}.exe", processPath);
 
             Directory.Delete(folders.TestRoot, recursive: true);
         }
@@ -85,7 +127,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
         {
             var folders = CreateTestDir(@"{ ""frameworks"": { ""netcoreapp1.0"": { } } }", projectDir);
 
-            new PublishIISCommand(folders.PublishOutput, "netcoreapp1.0",
+            new PublishIISCommand(folders.PublishOutput, "netcoreapp1.0", null,
                     Path.Combine(folders.ProjectPath, "project.json")).Run();
 
             var processPath = (string)GetPublishedWebConfig(folders.PublishOutput)
@@ -111,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
   </system.webServer>
 </configuration>");
 
-            new PublishIISCommand(folders.PublishOutput, "netcoreapp1.0",
+            new PublishIISCommand(folders.PublishOutput, "netcoreapp1.0", null,
                     Path.Combine(folders.ProjectPath, "project.json")).Run();
 
             var aspNetCoreElement = GetPublishedWebConfig(folders.PublishOutput)

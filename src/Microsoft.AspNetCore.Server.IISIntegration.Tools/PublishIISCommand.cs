@@ -17,12 +17,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
         private readonly string _publishFolder;
         private readonly string _projectPath;
         private readonly string _framework;
+        private readonly string _configuration;
 
-        public PublishIISCommand(string publishFolder, string framework, string projectPath)
+        public PublishIISCommand(string publishFolder, string framework, string configuration, string projectPath)
         {
             _publishFolder = publishFolder;
             _projectPath = projectPath;
             _framework = framework;
+            _configuration = configuration;
         }
 
         public int Run()
@@ -48,7 +50,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
 
             var projectContext = GetProjectContext(applicationBasePath, _framework);
             var isPortable = !projectContext.TargetFramework.IsDesktop() && projectContext.IsPortable;
-            var applicationName = projectContext.ProjectFile.Name + (isPortable ? ".dll" : ".exe");
+            var applicationName =
+                projectContext.ProjectFile.GetCompilerOptions(projectContext.TargetFramework, _configuration).OutputName +
+                (isPortable ? ".dll" : ".exe");
             var transformedConfig = WebConfigTransform.Transform(webConfigXml, applicationName, ConfigureForAzure(), isPortable);
 
             using (var f = new FileStream(webConfigPath, FileMode.Create))
