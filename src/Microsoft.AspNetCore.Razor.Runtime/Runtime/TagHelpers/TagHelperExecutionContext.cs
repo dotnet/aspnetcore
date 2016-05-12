@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Internal;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                    tagMode,
                    items: new Dictionary<object, object>(),
                    uniqueId: string.Empty,
-                   executeChildContentAsync: async () => await Task.FromResult(result: true),
+                   executeChildContentAsync: () => TaskCache.CompletedTask,
                    startTagHelperWritingScope: _ => { },
                    endTagHelperWritingScope: () => new DefaultTagHelperContent())
         {

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Internal;
 
 namespace Microsoft.AspNetCore.Razor.TagHelpers
 {
@@ -37,11 +38,10 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// <param name="output">A stateful HTML element used to generate an HTML tag.</param>
         /// <returns>A <see cref="Task"/> that on completion updates the <paramref name="output"/>.</returns>
         /// <remarks>By default this calls into <see cref="Process"/>.</remarks>.
-#pragma warning disable 1998
-        public virtual async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
+        public virtual Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             Process(context, output);
+            return TaskCache.CompletedTask;
         }
-#pragma warning restore 1998
     }
 }
