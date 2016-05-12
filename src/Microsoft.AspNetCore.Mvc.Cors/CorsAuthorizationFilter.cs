@@ -68,6 +68,13 @@ namespace Microsoft.AspNetCore.Mvc.Cors
             if (request.Headers.ContainsKey(CorsConstants.Origin))
             {
                 var policy = await _corsPolicyProvider.GetPolicyAsync(httpContext, PolicyName);
+
+                if (policy == null)
+                {
+                    throw new InvalidOperationException(
+                        Resources.FormatCorsAuthorizationFilter_MissingCorsPolicy(PolicyName));
+                }
+
                 var result = _corsService.EvaluatePolicy(context.HttpContext, policy);
                 _corsService.ApplyResult(result, context.HttpContext.Response);
 
