@@ -7,23 +7,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public static class TaskCache
     {
-#if NET451
-        static readonly Task _completedTask = Task.FromResult(0);
-#endif
 
-        /// <summary>Gets a task that's already been completed successfully.</summary>
-        /// <remarks>May not always return the same instance.</remarks>        
-        public static Task CompletedTask
-        {
-            get
-            {
+        /// <summary>
+        /// A <see cref="Task"/> that's already completed successfully.
+        /// </summary>
+        /// <remarks>
+        /// We're caching this in a static readonly field to make it more inlinable and avoid the volatile lookup done
+        /// by <c>Task.CompletedTask</c>.
+        /// </remarks>
 #if NET451
-                return _completedTask;
+        public static readonly Task CompletedTask = Task.FromResult(0);
 #else
-                return Task.CompletedTask;
+        public static readonly Task CompletedTask = Task.CompletedTask;
 #endif
-            }
-        }
     }
-
 }
