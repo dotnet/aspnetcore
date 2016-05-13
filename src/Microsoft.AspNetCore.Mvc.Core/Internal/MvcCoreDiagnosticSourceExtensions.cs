@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
+    // We're doing a lot of asserts here because these methods are really tedious to test and
+    // highly dependent on the details of the invoker's state machine. Basically if we wrote the
+    // obvious unit tests that would generate a lot of boilerplate and wouldn't cover the hard parts.
     public static class MvcCoreDiagnosticSourceExtensions
     {
         public static void BeforeAction(
@@ -18,6 +21,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             HttpContext httpContext,
             RouteData routeData)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(actionDescriptor != null);
+            Debug.Assert(httpContext != null);
+            Debug.Assert(routeData != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeAction"))
             {
                 diagnosticSource.Write(
@@ -32,6 +40,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             HttpContext httpContext,
             RouteData routeData)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(actionDescriptor != null);
+            Debug.Assert(httpContext != null);
+            Debug.Assert(routeData != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterAction"))
             {
                 diagnosticSource.Write(
@@ -45,6 +58,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             AuthorizationFilterContext authorizationContext,
             IAsyncAuthorizationFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(authorizationContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnAuthorization"))
             {
                 diagnosticSource.Write(
@@ -63,6 +80,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             AuthorizationFilterContext authorizationContext,
             IAsyncAuthorizationFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(authorizationContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnAuthorization"))
             {
                 diagnosticSource.Write(
@@ -81,6 +102,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             AuthorizationFilterContext authorizationContext,
             IAuthorizationFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(authorizationContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnAuthorization"))
             {
                 diagnosticSource.Write(
@@ -99,6 +124,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             AuthorizationFilterContext authorizationContext,
             IAuthorizationFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(authorizationContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnAuthorization"))
             {
                 diagnosticSource.Write(
@@ -117,6 +146,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ResourceExecutingContext resourceExecutingContext,
             IAsyncResourceFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(resourceExecutingContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResourceExecution"))
             {
                 diagnosticSource.Write(
@@ -135,6 +168,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ResourceExecutedContext resourceExecutedContext,
             IAsyncResourceFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(resourceExecutedContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResourceExecution"))
             {
                 diagnosticSource.Write(
@@ -153,6 +190,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ResourceExecutingContext resourceExecutingContext,
             IResourceFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(resourceExecutingContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuting"))
             {
                 diagnosticSource.Write(
@@ -171,6 +212,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ResourceExecutingContext resourceExecutingContext,
             IResourceFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(resourceExecutingContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResourceExecuting"))
             {
                 diagnosticSource.Write(
@@ -189,6 +234,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ResourceExecutedContext resourceExecutedContext,
             IResourceFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(resourceExecutedContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuted"))
             {
                 diagnosticSource.Write(
@@ -207,6 +256,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ResourceExecutedContext resourceExecutedContext,
             IResourceFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(resourceExecutedContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResourceExecuted"))
             {
                 diagnosticSource.Write(
@@ -225,6 +278,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ExceptionContext exceptionContext,
             IAsyncExceptionFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(exceptionContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnException"))
             {
                 diagnosticSource.Write(
@@ -243,6 +300,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ExceptionContext exceptionContext,
             IAsyncExceptionFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(exceptionContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnException"))
             {
                 diagnosticSource.Write(
@@ -261,6 +322,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ExceptionContext exceptionContext,
             IExceptionFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(exceptionContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnException"))
             {
                 diagnosticSource.Write(
@@ -279,6 +344,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ExceptionContext exceptionContext,
             IExceptionFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(exceptionContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnException"))
             {
                 diagnosticSource.Write(
@@ -297,6 +366,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ActionExecutingContext actionExecutingContext,
             IAsyncActionFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(actionExecutingContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnActionExecution"))
             {
                 diagnosticSource.Write(
@@ -315,6 +388,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ActionExecutedContext actionExecutedContext,
             IAsyncActionFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(actionExecutedContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnActionExecution"))
             {
                 diagnosticSource.Write(
@@ -333,6 +410,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ActionExecutingContext actionExecutingContext,
             IActionFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(actionExecutingContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnActionExecuting"))
             {
                 diagnosticSource.Write(
@@ -351,6 +432,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ActionExecutingContext actionExecutingContext,
             IActionFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(actionExecutingContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnActionExecuting"))
             {
                 diagnosticSource.Write(
@@ -369,6 +454,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ActionExecutedContext actionExecutedContext,
             IActionFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(actionExecutedContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnActionExecuted"))
             {
                 diagnosticSource.Write(
@@ -387,6 +476,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ActionExecutedContext actionExecutedContext,
             IActionFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(actionExecutedContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnActionExecuted"))
             {
                 diagnosticSource.Write(
@@ -406,6 +499,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             IDictionary<string, object> actionArguments,
             object controller)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(actionContext != null);
+            Debug.Assert(actionArguments != null);
+            Debug.Assert(controller != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeActionMethod"))
             {
                 diagnosticSource.Write(
@@ -426,6 +524,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             object controller,
             IActionResult result)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(actionContext != null);
+            Debug.Assert(actionArguments != null);
+            Debug.Assert(controller != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterActionMethod"))
             {
                 diagnosticSource.Write(
@@ -445,6 +548,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ResultExecutingContext resultExecutingContext,
             IAsyncResultFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(resultExecutingContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResultExecution"))
             {
                 diagnosticSource.Write(
@@ -463,6 +570,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ResultExecutedContext resultExecutedContext,
             IAsyncResultFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(resultExecutedContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResultExecution"))
             {
                 diagnosticSource.Write(
@@ -481,6 +592,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ResultExecutingContext resultExecutingContext,
             IResultFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(resultExecutingContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResultExecuting"))
             {
                 diagnosticSource.Write(
@@ -499,6 +614,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ResultExecutingContext resultExecutingContext,
             IResultFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(resultExecutingContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResultExecuting"))
             {
                 diagnosticSource.Write(
@@ -517,6 +636,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ResultExecutedContext resultExecutedContext,
             IResultFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(resultExecutedContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResultExecuted"))
             {
                 diagnosticSource.Write(
@@ -535,6 +658,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ResultExecutedContext resultExecutedContext,
             IResultFilter filter)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(resultExecutedContext != null);
+            Debug.Assert(filter != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResultExecuted"))
             {
                 diagnosticSource.Write(
@@ -553,6 +680,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ActionContext actionContext,
             IActionResult result)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(actionContext != null);
+            Debug.Assert(result != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeActionResult"))
             {
                 diagnosticSource.Write(
@@ -566,6 +697,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ActionContext actionContext,
             IActionResult result)
         {
+            Debug.Assert(diagnosticSource != null);
+            Debug.Assert(actionContext != null);
+            Debug.Assert(result != null);
+
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterActionResult"))
             {
                 diagnosticSource.Write(

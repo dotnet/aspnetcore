@@ -262,23 +262,23 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                     await item.FilterAsync.OnResourceExecutionAsync(_resourceExecutingContext, InvokeResourceFilterAwaitedAsync);
 
-                    _diagnosticSource.AfterOnResourceExecution(_resourceExecutedContext, item.FilterAsync);
-
                     if (_resourceExecutedContext == null)
                     {
                         // If we get here then the filter didn't call 'next' indicating a short circuit
-                        if (_resourceExecutingContext.Result != null)
-                        {
-                            Logger.ResourceFilterShortCircuited(item.FilterAsync);
-
-                            await InvokeResultAsync(_resourceExecutingContext.Result);
-                        }
-
                         _resourceExecutedContext = new ResourceExecutedContext(_resourceExecutingContext, _filters)
                         {
                             Canceled = true,
                             Result = _resourceExecutingContext.Result,
                         };
+                    }
+
+                    _diagnosticSource.AfterOnResourceExecution(_resourceExecutedContext, item.FilterAsync);
+                    
+                    if (_resourceExecutingContext.Result != null)
+                    {
+                        Logger.ResourceFilterShortCircuited(item.FilterAsync);
+
+                        await InvokeResultAsync(_resourceExecutingContext.Result);
                     }
                 }
                 else if (item.Filter != null)
@@ -509,8 +509,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                     await item.FilterAsync.OnActionExecutionAsync(_actionExecutingContext, InvokeActionFilterAwaitedAsync);
 
-                    _diagnosticSource.AfterOnActionExecution(_actionExecutedContext, item.FilterAsync);
-
                     if (_actionExecutedContext == null)
                     {
                         // If we get here then the filter didn't call 'next' indicating a short circuit
@@ -525,6 +523,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             Result = _actionExecutingContext.Result,
                         };
                     }
+
+                    _diagnosticSource.AfterOnActionExecution(_actionExecutedContext, item.FilterAsync);
                 }
                 else if (item.Filter != null)
                 {
@@ -665,8 +665,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                     await item.FilterAsync.OnResultExecutionAsync(_resultExecutingContext, InvokeResultFilterAwaitedAsync);
 
-                    _diagnosticSource.AfterOnResultExecution(_resultExecutedContext, item.FilterAsync);
-
                     if (_resultExecutedContext == null || _resultExecutingContext.Cancel == true)
                     {
                         // Short-circuited by not calling next || Short-circuited by setting Cancel == true
@@ -681,6 +679,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             Canceled = true,
                         };
                     }
+
+                    _diagnosticSource.AfterOnResultExecution(_resultExecutedContext, item.FilterAsync);
                 }
                 else if (item.Filter != null)
                 {
