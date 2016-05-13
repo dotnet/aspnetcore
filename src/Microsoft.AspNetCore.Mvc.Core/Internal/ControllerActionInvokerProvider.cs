@@ -58,14 +58,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (actionDescriptor != null)
             {
                 context.Result = new ControllerActionInvoker(
-                    context.ActionContext,
                     _controllerActionInvokerCache,
                     _controllerFactory,
-                    actionDescriptor,
                     _argumentBinder,
-                    _valueProviderFactories,
                     _logger,
                     _diagnosticSource,
+                    context.ActionContext,
+                    _valueProviderFactories,
                     _maxModelValidationErrors);
             }
         }

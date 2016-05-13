@@ -2050,14 +2050,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .Returns(-1000);
 
             var invoker = new TestControllerActionInvoker(
-                actionContext,
                 new[] { filterProvider.Object },
                 new MockControllerFactory(this),
-                actionDescriptor,
                 argumentBinder.Object,
-                new IValueProviderFactory[0],
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
                 new DiagnosticListener("Microsoft.AspNetCore"),
+                actionContext,
+                new IValueProviderFactory[0],
                 maxAllowedErrorsInModelState);
             return invoker;
         }
@@ -2100,18 +2099,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var metadataProvider = new EmptyModelMetadataProvider();
 
-            var invoker = new ControllerActionInvoker(
-                actionContext,
-                CreateFilterCache(),
-                controllerFactory.Object,
-                actionDescriptor,
-                new ControllerArgumentBinder(
+            var argumentBinder = new ControllerArgumentBinder(
                     metadataProvider,
                     TestModelBinderFactory.CreateDefault(metadataProvider),
-                    new DefaultObjectValidator(metadataProvider, new IModelValidatorProvider[0])),
-                new IValueProviderFactory[0],
+                    new DefaultObjectValidator(metadataProvider, new IModelValidatorProvider[0]));
+
+            var invoker = new ControllerActionInvoker(
+                CreateFilterCache(),
+                controllerFactory.Object,
+                argumentBinder,
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
                 new DiagnosticListener("Microsoft.AspNetCore"),
+                actionContext,
+                new IValueProviderFactory[0],
                 200);
 
             // Act
@@ -2226,24 +2226,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private class TestControllerActionInvoker : ControllerActionInvoker
         {
             public TestControllerActionInvoker(
-                ActionContext actionContext,
                 IFilterProvider[] filterProviders,
                 MockControllerFactory controllerFactory,
-                ControllerActionDescriptor descriptor,
                 IControllerArgumentBinder argumentBinder,
-                IReadOnlyList<IValueProviderFactory> valueProviderFactories,
                 ILogger logger,
                 DiagnosticSource diagnosticSource,
+                ActionContext actionContext,
+                IReadOnlyList<IValueProviderFactory> valueProviderFactories,
                 int maxAllowedErrorsInModelState)
                 : base(
-                      actionContext,
                       CreateFilterCache(filterProviders),
                       controllerFactory,
-                      descriptor,
                       argumentBinder,
-                      valueProviderFactories,
                       logger,
                       diagnosticSource,
+                      actionContext,
+                      valueProviderFactories,
                       maxAllowedErrorsInModelState)
             {
                 ControllerFactory = controllerFactory;
