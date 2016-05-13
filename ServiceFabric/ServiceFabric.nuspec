@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<package >
-  <metadata>
-    <id>DnxServiceFabricMeta</id>
-    <version>1.0.0</version>
-    <authors>Microsoft</authors>
-    <description>Meta package to deliver v3 NuGet packages to ServiceFabric</description>
-  </metadata>
-</package>

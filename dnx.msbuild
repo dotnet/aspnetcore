@@ -184,39 +184,6 @@
         <RemoveDir Directories="$(CommandsPath)"/>
     </Target>
 
-    <Target Name="BuildServiceFabricMetaPackage">
-        <PropertyGroup>
-            <SourcePackagesDirectory>$(SignedOutputPath)Packages-NoTimeStamp\</SourcePackagesDirectory>
-            <TargetDirectory>$(DNXRootPath)ServiceFabric\output\</TargetDirectory>
-            <TargetRuntimeDirectory>$(TargetDirectory)runtime\</TargetRuntimeDirectory>
-            <TargetPackagesDirectory>$(TargetDirectory)libraries\</TargetPackagesDirectory>
-            <TempRestoreDirectory>$(DNXRootPath)ServiceFabric\temp\</TempRestoreDirectory>
-            <ServiceFabricNuspec>$(DNXRootPath)ServiceFabric\ServiceFabric.nuspec</ServiceFabricNuspec>
-            <BUILD_NUMBER Condition=" '$(BUILD_NUMBER)' == '' ">0</BUILD_NUMBER>
-            <ServiceFabricPackageVersion>1.0.$(BUILD_NUMBER)</ServiceFabricPackageVersion>
-            <ServiceFabricPackageOutDir>$(SignedBinariesPath)ServiceFabric\</ServiceFabricPackageOutDir>
-        </PropertyGroup>
-
-        <Exec Command="dnu restore ServiceFabric/project.json --source &quot;$(SourcePackagesDirectory) &quot; --source $(NuGetV3Feed) --packages &quot;$(TempRestoreDirectory) &quot;" />
-
-        <ItemGroup>
-            <PackagesToCopy Include="$(TempRestoreDirectory)**\*.nupkg" />
-        </ItemGroup>
-
-        <MakeDir Directories="$(TargetPackagesDirectory)" Condition=" !Exists('$(TargetPackagesDirectory)') " />
-        <Copy SourceFiles="@(PackagesToCopy)" DestinationFolder="$(TargetPackagesDirectory)" />
-
-        <Exec Command="$(DNXRootPath)tools/nuget.exe install dnx-clr-win-x86 -source &quot;$(SourcePackagesDirectory) &quot; -excludeversion  -pre -output &quot;$(TargetRuntimeDirectory) &quot;" />
-        <Exec Command="$(DNXRootPath)tools/nuget.exe pack -BasePath &quot;$(TargetDirectory) &quot; -nodefaultexcludes -nopackageanalysis &quot;$(ServiceFabricNuspec)&quot; -Version $(ServiceFabricPackageVersion) -Out &quot;$(TargetDirectory) &quot; " />
-
-        <ItemGroup>
-            <FilesToCopy Include="$(TargetDirectory)*.nupkg" />
-        </ItemGroup>
-
-        <MakeDir Directories="$(ServiceFabricPackageOutDir)" Condition=" !Exists('$(ServiceFabricPackageOutDir)') " />
-        <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(ServiceFabricPackageOutDir)" />
-    </Target>
-
     <Target Name="PoliCheck" DependsOnTargets="CopyAndExtractUnsignedPackages">
         <ItemGroup>
             <PoliCheckPackages Include="$(CoherenceDestinationDir)\symbols\*.nupkg;"/>
