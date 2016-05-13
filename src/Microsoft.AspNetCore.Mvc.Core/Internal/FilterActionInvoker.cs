@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return InvokeResourceFilterAsync();
         }
 
-        private async Task<ResourceExecutedContext> InvokeResourceFilterAsync()
+        private async Task<ResourceExecutedContext> InvokeResourceFilterAwaitedAsync()
         {
             Debug.Assert(_resourceExecutingContext != null);
 
@@ -243,6 +243,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new InvalidOperationException(message);
             }
 
+            await InvokeResourceFilterAsync();
+
+            Debug.Assert(_resourceExecutedContext != null);
+            return _resourceExecutedContext;
+        }
+
+        private async Task InvokeResourceFilterAsync()
+        {
+            Debug.Assert(_resourceExecutingContext != null);
+
             var item = _cursor.GetNextFilter<IResourceFilter, IAsyncResourceFilter>();
             try
             {
@@ -250,7 +260,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 {
                     _diagnosticSource.BeforeOnResourceExecution(_resourceExecutingContext, item.FilterAsync);
 
-                    await item.FilterAsync.OnResourceExecutionAsync(_resourceExecutingContext, InvokeResourceFilterAsync);
+                    await item.FilterAsync.OnResourceExecutionAsync(_resourceExecutingContext, InvokeResourceFilterAwaitedAsync);
 
                     _diagnosticSource.AfterOnResourceExecution(_resourceExecutedContext, item.FilterAsync);
 
@@ -294,9 +304,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     }
                     else
                     {
+                        await InvokeResourceFilterAsync();
+                        Debug.Assert(_resourceExecutedContext != null);
+
                         _diagnosticSource.BeforeOnResourceExecuted(_resourceExecutedContext, item.Filter);
 
-                        item.Filter.OnResourceExecuted(await InvokeResourceFilterAsync());
+                        item.Filter.OnResourceExecuted(_resourceExecutedContext);
 
                         _diagnosticSource.AfterOnResourceExecuted(_resourceExecutedContext, item.Filter);
                     }
@@ -359,7 +372,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             Debug.Assert(_resourceExecutedContext != null);
-            return _resourceExecutedContext;
         }
 
         private Task InvokeAllExceptionFiltersAsync()
@@ -463,7 +475,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             await InvokeActionFilterAsync();
         }
 
-        private async Task<ActionExecutedContext> InvokeActionFilterAsync()
+        private async Task<ActionExecutedContext> InvokeActionFilterAwaitedAsync()
         {
             Debug.Assert(_actionExecutingContext != null);
             if (_actionExecutingContext.Result != null)
@@ -478,6 +490,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new InvalidOperationException(message);
             }
 
+            await InvokeActionFilterAsync();
+
+            Debug.Assert(_actionExecutedContext != null);
+            return _actionExecutedContext;
+        }
+
+        private async Task InvokeActionFilterAsync()
+        {
+            Debug.Assert(_actionExecutingContext != null);
+
             var item = _cursor.GetNextFilter<IActionFilter, IAsyncActionFilter>();
             try
             {
@@ -485,7 +507,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 {
                     _diagnosticSource.BeforeOnActionExecution(_actionExecutingContext, item.FilterAsync);
 
-                    await item.FilterAsync.OnActionExecutionAsync(_actionExecutingContext, InvokeActionFilterAsync);
+                    await item.FilterAsync.OnActionExecutionAsync(_actionExecutingContext, InvokeActionFilterAwaitedAsync);
 
                     _diagnosticSource.AfterOnActionExecution(_actionExecutedContext, item.FilterAsync);
 
@@ -528,9 +550,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     }
                     else
                     {
+                        await InvokeActionFilterAsync();
+                        Debug.Assert(_actionExecutedContext != null);
+
                         _diagnosticSource.BeforeOnActionExecuted(_actionExecutedContext, item.Filter);
 
-                        item.Filter.OnActionExecuted(await InvokeActionFilterAsync());
+                        item.Filter.OnActionExecuted(_actionExecutedContext);
 
                         _diagnosticSource.BeforeOnActionExecuted(_actionExecutedContext, item.Filter);
                     }
@@ -578,7 +603,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception)
                 };
             }
-            return _actionExecutedContext;
+
+            Debug.Assert(_actionExecutedContext != null);
         }
 
         private async Task InvokeAllResultFiltersAsync(IActionResult result)
@@ -603,9 +629,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private async Task<ResultExecutedContext> InvokeResultFilterAsync()
+        private async Task<ResultExecutedContext> InvokeResultFilterAwaitedAsync()
         {
             Debug.Assert(_resultExecutingContext != null);
+
             if (_resultExecutingContext.Cancel == true)
             {
                 // If we get here, it means that an async filter set cancel == true AND called next().
@@ -619,6 +646,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new InvalidOperationException(message);
             }
 
+            await InvokeResultFilterAsync();
+
+            Debug.Assert(_resultExecutedContext != null);
+            return _resultExecutedContext;
+        }
+
+        private async Task InvokeResultFilterAsync()
+        {
+            Debug.Assert(_resultExecutingContext != null);
+
             try
             {
                 var item = _cursor.GetNextFilter<IResultFilter, IAsyncResultFilter>();
@@ -626,7 +663,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 {
                     _diagnosticSource.BeforeOnResultExecution(_resultExecutingContext, item.FilterAsync);
 
-                    await item.FilterAsync.OnResultExecutionAsync(_resultExecutingContext, InvokeResultFilterAsync);
+                    await item.FilterAsync.OnResultExecutionAsync(_resultExecutingContext, InvokeResultFilterAwaitedAsync);
 
                     _diagnosticSource.AfterOnResultExecution(_resultExecutedContext, item.FilterAsync);
 
@@ -669,9 +706,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     }
                     else
                     {
+                        await InvokeResultFilterAsync();
+                        Debug.Assert(_resultExecutedContext != null);
+
                         _diagnosticSource.BeforeOnResultExecuted(_resultExecutedContext, item.Filter);
 
-                        item.Filter.OnResultExecuted(await InvokeResultFilterAsync());
+                        item.Filter.OnResultExecuted(_resultExecutedContext);
 
                         _diagnosticSource.AfterOnResultExecuted(_resultExecutedContext, item.Filter);
                     }
@@ -708,7 +748,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 };
             }
 
-            return _resultExecutedContext;
+            Debug.Assert(_resultExecutedContext != null);
         }
 
         private async Task InvokeResultAsync(IActionResult result)
