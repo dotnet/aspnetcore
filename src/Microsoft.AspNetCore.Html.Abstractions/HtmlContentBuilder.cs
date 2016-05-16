@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Html
         {
             if (!string.IsNullOrEmpty(encoded))
             {
-                Entries.Add(new HtmlEncodedString(encoded));
+                Entries.Add(new HtmlString(encoded));
             }
 
             return this;

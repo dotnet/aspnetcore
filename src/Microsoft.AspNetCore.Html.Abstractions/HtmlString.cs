@@ -10,18 +10,23 @@ namespace Microsoft.AspNetCore.Html
     /// <summary>
     /// An <see cref="IHtmlContent"/> implementation that wraps an HTML encoded <see cref="string"/>.
     /// </summary>
-    public class HtmlEncodedString : IHtmlContent
+    public class HtmlString : IHtmlContent
     {
         /// <summary>
-        /// An <see cref="IHtmlContent"/> instance for <see cref="Environment.NewLine"/>.
+        /// An <see cref="HtmlString"/> instance for <see cref="Environment.NewLine"/>.
         /// </summary>
-        public static readonly IHtmlContent NewLine = new HtmlEncodedString(Environment.NewLine);
+        public static readonly HtmlString NewLine = new HtmlString(Environment.NewLine);
 
         /// <summary>
-        /// Creates a new <see cref="HtmlEncodedString"/>.
+        /// An <see cref="HtmlString"/> instance for <see cref="string.Empty"/>.
+        /// </summary>
+        public static readonly HtmlString Empty = new HtmlString(string.Empty);
+
+        /// <summary>
+        /// Creates a new <see cref="HtmlString"/>.
         /// </summary>
         /// <param name="value">The HTML encoded value.</param>
-        public HtmlEncodedString(string value)
+        public HtmlString(string value)
         {
             Value = value;
         }

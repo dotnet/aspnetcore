@@ -54,10 +54,10 @@ namespace Microsoft.AspNetCore.Html
         }
 
         [Fact]
-        public void HtmlFormattableString_WithHtmlEncodedString()
+        public void HtmlFormattableString_WithHtmlString()
         {
             // Arrange
-            var formattableString = new HtmlFormattableString("{0}!", new HtmlEncodedString("First"));
+            var formattableString = new HtmlFormattableString("{0}!", new HtmlString("First"));
 
             // Act
             var result = HtmlContentToString(formattableString);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Html
             // Arrange
             var formattableString = new HtmlFormattableString(
                 "Happy {0}, {1}!",
-                new HtmlEncodedString("Birthday"),
+                new HtmlString("Birthday"),
                 new HtmlContentBuilder().Append("Billy"));
 
             // Act
@@ -100,10 +100,10 @@ namespace Microsoft.AspNetCore.Html
         }
 
         [Fact]
-        public void HtmlFormattableString_WithHtmlEncodedString_AndOffset()
+        public void HtmlFormattableString_WithHtmlString_AndOffset()
         {
             // Arrange
-            var formattableString = new HtmlFormattableString("{0, 20}!", new HtmlEncodedString("First"));
+            var formattableString = new HtmlFormattableString("{0, 20}!", new HtmlString("First"));
 
             // Act
             var result = HtmlContentToString(formattableString);

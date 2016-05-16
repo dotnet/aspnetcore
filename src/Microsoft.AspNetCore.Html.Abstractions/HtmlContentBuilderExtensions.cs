@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Html
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.AppendHtml(HtmlEncodedString.NewLine);
+            builder.AppendHtml(HtmlString.NewLine);
             return builder;
         }
 
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Html
             }
 
             builder.Append(unencoded);
-            builder.AppendHtml(HtmlEncodedString.NewLine);
+            builder.AppendHtml(HtmlString.NewLine);
             return builder;
         }
 
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Html
             }
 
             builder.AppendHtml(content);
-            builder.AppendHtml(HtmlEncodedString.NewLine);
+            builder.AppendHtml(HtmlString.NewLine);
             return builder;
         }
 
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Html
             }
 
             builder.AppendHtml(encoded);
-            builder.AppendHtml(HtmlEncodedString.NewLine);
+            builder.AppendHtml(HtmlString.NewLine);
             return builder;
         }
 

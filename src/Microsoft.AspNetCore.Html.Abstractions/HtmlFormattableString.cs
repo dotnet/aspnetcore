@@ -10,7 +10,7 @@ using System.Text.Encodings.Web;
 namespace Microsoft.AspNetCore.Html
 {
     /// <summary>
-    /// An <see cref="IHtmlContent"/> implementation of composite string formatting 
+    /// An <see cref="IHtmlContent"/> implementation of composite string formatting
     /// (see https://msdn.microsoft.com/en-us/library/txafckwd(v=vs.110).aspx) which HTML encodes
     /// formatted arguments.
     /// </summary>
@@ -107,9 +107,9 @@ namespace Microsoft.AspNetCore.Html
 
             public string Format(string format, object arg, IFormatProvider formatProvider)
             {
-                // These are the cases we need to special case. We trust the HtmlEncodedString or IHtmlContent instance
+                // These are the cases we need to special case. We trust the HtmlString or IHtmlContent instance
                 // to do the right thing with encoding.
-                var htmlString = arg as HtmlEncodedString;
+                var htmlString = arg as HtmlString;
                 if (htmlString != null)
                 {
                     return htmlString.ToString();
