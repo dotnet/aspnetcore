@@ -100,11 +100,6 @@ namespace MusicStore
 
             app.UseDatabaseErrorPage();
 
-            // Add the runtime information page that can be used by developers
-            // to see what packages are used by the application
-            // default path is: /runtimeinfo
-            app.UseRuntimeInfoPage();
-
             // Configure Session.
             app.UseSession();
 

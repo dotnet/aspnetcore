@@ -103,11 +103,6 @@ namespace MusicStore
             app.UseDeveloperExceptionPage();
             app.UseDatabaseErrorPage();
 
-            // Add the runtime information page that can be used by developers
-            // to see what packages are used by the application
-            // default path is: /runtimeinfo
-            app.UseRuntimeInfoPage();
-
             app.Use(async (context, next) =>
             {
                 // Who will get admin access? For demo sake I'm listing the currently logged on user as the application
