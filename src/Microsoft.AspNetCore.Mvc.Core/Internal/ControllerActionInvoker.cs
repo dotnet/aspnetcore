@@ -573,12 +573,67 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                         _logger.ActionMethodExecuting(_actionExecutingContext, arguments);
 
-                        var actionReturnValue = await ControllerActionExecutor.ExecuteAsync(
-                            _executor,
-                            _controller,
-                            arguments);
+                        var returnType = _executor.MethodReturnType;
 
-                        result = CreateActionResult( actionMethodInfo.ReturnType, actionReturnValue);
+                        if (returnType == typeof(void))
+                        {
+                            _executor.Execute(_controller, arguments);
+                            result = new EmptyResult();
+                        }
+                        else if (returnType == typeof(Task))
+                        {
+                            await (Task)_executor.Execute(_controller, arguments);
+                            result = new EmptyResult();
+                        }
+                        else if (_executor.TaskGenericType == typeof(IActionResult))
+                        {
+                            result = await (Task<IActionResult>)_executor.Execute(_controller, arguments);
+                            if (result == null)
+                            {
+                                throw new InvalidOperationException(
+                                    Resources.FormatActionResult_ActionReturnValueCannotBeNull(typeof(IActionResult)));
+                            }
+                        }
+                        else if (_executor.IsTypeAssignableFromIActionResult)
+                        {
+                            if (_executor.IsMethodAsync)
+                            {
+                                result = (IActionResult)await _executor.ExecuteAsync(_controller, arguments);
+                            }
+                            else
+                            {
+                                result = (IActionResult)_executor.Execute(_controller, arguments);
+                            }
+
+                            if (result == null)
+                            {
+                                throw new InvalidOperationException(
+                                    Resources.FormatActionResult_ActionReturnValueCannotBeNull(_executor.TaskGenericType ?? returnType));
+                            }
+                        }
+                        else if (!_executor.IsMethodAsync)
+                        {
+                            var resultAsObject = _executor.Execute(_controller, arguments);
+                            result = new ObjectResult(resultAsObject)
+                            {
+                                DeclaredType = returnType,
+                            };
+                        }
+                        else if (_executor.TaskGenericType != null)
+                        {
+                            var resultAsObject = await _executor.ExecuteAsync(_controller, arguments);
+                            result = new ObjectResult(resultAsObject)
+                            {
+                                DeclaredType = _executor.TaskGenericType,
+                            };
+                        }
+                        else
+                        {
+                            // This will be the case for types which have derived from Task and Task<T> or non Task types.
+                            throw new InvalidOperationException(Resources.FormatActionExecutor_UnexpectedTaskInstance(
+                                _executor.MethodInfo.Name,
+                                _executor.MethodInfo.DeclaringType));
+                        }
 
                         _logger.ActionMethodExecuted(_actionExecutingContext, result);
                     }
@@ -771,49 +826,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 _diagnosticSource.AfterActionResult(_controllerContext, result);
             }
-        }
-
-        // Marking as internal for Unit Testing purposes.
-        internal static IActionResult CreateActionResult(Type declaredReturnType, object actionReturnValue)
-        {
-            if (declaredReturnType == null)
-            {
-                throw new ArgumentNullException(nameof(declaredReturnType));
-            }
-
-            // optimize common path
-            var actionResult = actionReturnValue as IActionResult;
-            if (actionResult != null)
-            {
-                return actionResult;
-            }
-
-            if (declaredReturnType == typeof(void) ||
-                declaredReturnType == typeof(Task))
-            {
-                return new EmptyResult();
-            }
-
-            // Unwrap potential Task<T> types.
-            var actualReturnType = GetTaskInnerTypeOrNull(declaredReturnType) ?? declaredReturnType;
-            if (actionReturnValue == null &&
-                typeof(IActionResult).IsAssignableFrom(actualReturnType))
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatActionResult_ActionReturnValueCannotBeNull(actualReturnType));
-            }
-
-            return new ObjectResult(actionReturnValue)
-            {
-                DeclaredType = actualReturnType
-            };
-        }
-
-        private static Type GetTaskInnerTypeOrNull(Type type)
-        {
-            var genericType = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(Task<>));
-
-            return genericType?.GenericTypeArguments[0];
         }
 
         /// <summary>

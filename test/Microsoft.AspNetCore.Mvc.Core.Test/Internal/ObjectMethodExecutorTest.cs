@@ -70,26 +70,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async void ExecuteValueMethodUsingAsyncMethod()
-        {
-            var executor = GetExecutorForMethod("ValueMethod");
-            var result = await executor.ExecuteAsync(
-                _targetObject,
-                new object[] { 10, 20 });
-            Assert.Equal(30, (int)result);
-        }
-
-        [Fact]
-        public async void ExecuteVoidValueMethodUsingAsyncMethod()
-        {
-            var executor = GetExecutorForMethod("VoidValueMethod");
-            var result = await executor.ExecuteAsync(
-                _targetObject,
-                new object[] { 10 });
-            Assert.Same(null, result);
-        }
-
-        [Fact]
         public async void ExecuteValueMethodAsync()
         {
             var executor = GetExecutorForMethod("ValueMethodAsync");
@@ -97,16 +77,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 _targetObject,
                 new object[] { 10, 20 });
             Assert.Equal(30, (int)result);
-        }
-
-        [Fact]
-        public async void ExecuteVoidValueMethodAsync()
-        {
-            var executor = GetExecutorForMethod("VoidValueMethodAsync");
-            var result = await executor.ExecuteAsync(
-                _targetObject,
-                new object[] { 10 });
-            Assert.Same(null, result);
         }
 
         [Fact]
@@ -143,33 +113,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             new object[] { parameter }));
         }
 
-        [Fact]
-        public void ExecuteMethodOfTaskDerivedTypeReturnTypeThrowsException()
-        {
-            var expectedException = string.Format(
-                CultureInfo.CurrentCulture,
-                "The method 'TaskActionWithCustomTaskReturnType' on type '{0}' returned a Task instance even though it is not an asynchronous method.",
-                typeof(TestObject));
-
-            var ex = Assert.Throws<InvalidOperationException>(
-                    () => GetExecutorForMethod("TaskActionWithCustomTaskReturnType"));
-            Assert.Equal(expectedException, ex.Message);
-        }
-
-        [Fact]
-        public void ExecuteMethodOfTaskDerivedTypeOfTReturnTypeThrowsException()
-        {
-            var expectedException = string.Format(
-                CultureInfo.CurrentCulture,
-                "The method 'TaskActionWithCustomTaskOfTReturnType' on type '{0}' returned a Task instance even though it is not an asynchronous method.",
-                typeof(TestObject));
-
-            var ex = Assert.Throws<InvalidOperationException>(
-                    () => GetExecutorForMethod("TaskActionWithCustomTaskOfTReturnType"));
-
-            Assert.Equal(expectedException, ex.Message);
-        }
-
         [Theory]
         [InlineData("EchoWithDefaultAttributes", new object[] { "hello", true, 10 })]
         [InlineData("EchoWithDefaultValues", new object[] { "hello", true, 20 })]
@@ -186,7 +129,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             Assert.Equal(expectedValues, defaultValues);
-
         }
 
         private ObjectMethodExecutor GetExecutorForMethod(string methodName)
@@ -197,16 +139,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         public class TestObject
-        {            
+        {
             public string value;
             public int ValueMethod(int i, int j)
             {
-                return i+j;
+                return i + j;
             }
 
             public void VoidValueMethod(int i)
             {
-                
+
             }
             public TestObject ValueMethodWithReturnType(int i)
             {
@@ -249,16 +191,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 return Task.FromResult<TestObject>(parameter);
             }
 
-            public TaskDerivedType TaskActionWithCustomTaskReturnType(int i, string s)
-            {
-                return new TaskDerivedType();
-            }
-
-            public TaskOfTDerivedType<int> TaskActionWithCustomTaskOfTReturnType(int i, string s)
-            {
-                return new TaskOfTDerivedType<int>(1);
-            }
-
             public string EchoWithDefaultAttributes(
                 [DefaultValue("hello")] string input1,
                 [DefaultValue(true)] bool input2,
@@ -283,28 +215,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             public string EchoWithNoDefaultAttributesAndValues(
-                string input1, 
-                int input2, 
+                string input1,
+                int input2,
                 bool input3,
                 TestObject input4)
             {
                 return input1;
-            }
-
-            public class TaskDerivedType : Task
-            {
-                public TaskDerivedType()
-                    : base(() => Console.WriteLine("In The Constructor"))
-                {
-                }
-            }
-
-            public class TaskOfTDerivedType<T> : Task<T>
-            {
-                public TaskOfTDerivedType(T input)
-                    : base(() => input)
-                {
-                }
             }
         }
     }

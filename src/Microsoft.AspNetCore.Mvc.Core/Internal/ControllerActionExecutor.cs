@@ -11,23 +11,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public static class ControllerActionExecutor
     {
-        public static Task<object> ExecuteAsync(
-            ObjectMethodExecutor actionMethodExecutor,
-            object instance,
-            IDictionary<string, object> actionArguments)
-        {
-            var orderedArguments = PrepareArguments(actionArguments, actionMethodExecutor);
-            return ExecuteAsync(actionMethodExecutor, instance, orderedArguments);
-        }
-
-        public static Task<object> ExecuteAsync(
-            ObjectMethodExecutor actionMethodExecutor,
-            object instance,
-            object[] orderedActionArguments)
-        {
-            return actionMethodExecutor.ExecuteAsync(instance, orderedActionArguments);
-        }
-
         public static object[] PrepareArguments(
             IDictionary<string, object> actionParameters,
             ObjectMethodExecutor actionMethodExecutor)

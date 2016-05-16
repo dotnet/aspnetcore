@@ -71,48 +71,64 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var methodInfo = context.ViewComponentDescriptor?.MethodInfo;
-            if (methodInfo == null)
+            var executor = _viewComponentInvokerCache.GetViewComponentMethodExecutor(context);
+
+            var returnType = executor.MethodReturnType;
+
+            if (returnType == typeof(void) || returnType == typeof(Task))
             {
-                throw new InvalidOperationException(Resources.FormatPropertyOfTypeCannotBeNull(
-                    nameof(ViewComponentDescriptor.MethodInfo),
-                    nameof(ViewComponentDescriptor)));
+                throw new InvalidOperationException(Resources.ViewComponent_MustReturnValue);
             }
 
-            var isAsync = typeof(Task).IsAssignableFrom(methodInfo.ReturnType);
             IViewComponentResult result;
-            if (isAsync)
+            if (executor.IsMethodAsync)
             {
-                result = await InvokeAsyncCore(context);
+                result = await InvokeAsyncCore(executor, context);
             }
             else
             {
                 // We support falling back to synchronous if there is no InvokeAsync method, in this case we'll still
                 // execute the IViewResult asynchronously.
-                result = InvokeSyncCore(context);
+                result = InvokeSyncCore(executor, context);
             }
 
             await result.ExecuteAsync(context);
         }
 
-        private async Task<IViewComponentResult> InvokeAsyncCore(ViewComponentContext context)
+        private async Task<IViewComponentResult> InvokeAsyncCore(ObjectMethodExecutor executor, ViewComponentContext context)
         {
             var component = _viewComponentFactory.CreateViewComponent(context);
 
             using (_logger.ViewComponentScope(context))
             {
-                var method = context.ViewComponentDescriptor.MethodInfo;
-                var methodExecutor = _viewComponentInvokerCache.GetViewComponentMethodExecutor(context);
-
-                var arguments = ControllerActionExecutor.PrepareArguments(context.Arguments, methodExecutor);
+                var arguments = ControllerActionExecutor.PrepareArguments(context.Arguments, executor);
 
                 _diagnosticSource.BeforeViewComponent(context, component);
                 _logger.ViewComponentExecuting(context, arguments);
 
                 var startTimestamp = _logger.IsEnabled(LogLevel.Debug) ? Stopwatch.GetTimestamp() : 0;
-                var result = await ControllerActionExecutor.ExecuteAsync(methodExecutor, component, arguments);
 
-                var viewComponentResult = CoerceToViewComponentResult(result);
+                object resultAsObject = null;
+                var taskGenericType = executor.TaskGenericType;
+
+                if (taskGenericType == typeof(IViewComponentResult))
+                {
+                    resultAsObject = await (Task<IViewComponentResult>)executor.Execute(component, arguments);
+                }
+                else if (taskGenericType == typeof(string))
+                {
+                    resultAsObject = await (Task<string>)executor.Execute(component, arguments);
+                }
+                else if (taskGenericType == typeof(IHtmlContent))
+                {
+                    resultAsObject = await (Task<IHtmlContent>)executor.Execute(component, arguments);
+                }
+                else
+                {
+                    resultAsObject = await executor.ExecuteAsync(component, arguments);
+                }
+
+                var viewComponentResult = CoerceToViewComponentResult(resultAsObject);
                 _logger.ViewComponentExecuted(context, startTimestamp, viewComponentResult);
                 _diagnosticSource.AfterViewComponent(context, viewComponentResult, component);
 
@@ -122,27 +138,25 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             }
         }
 
-        private IViewComponentResult InvokeSyncCore(ViewComponentContext context)
+        private IViewComponentResult InvokeSyncCore(ObjectMethodExecutor executor, ViewComponentContext context)
         {
             var component = _viewComponentFactory.CreateViewComponent(context);
 
             using (_logger.ViewComponentScope(context))
             {
-                var method = context.ViewComponentDescriptor.MethodInfo;
-                var methodExecutor = _viewComponentInvokerCache.GetViewComponentMethodExecutor(context);
-
                 var arguments = ControllerActionExecutor.PrepareArguments(
                     context.Arguments,
-                    methodExecutor);
+                    executor);
 
                 _diagnosticSource.BeforeViewComponent(context, component);
                 _logger.ViewComponentExecuting(context, arguments);
 
                 var startTimestamp = _logger.IsEnabled(LogLevel.Debug) ? Stopwatch.GetTimestamp() : 0;
                 object result;
+
                 try
                 {
-                    result = methodExecutor.Execute(component, arguments);
+                    result = executor.Execute(component, arguments);
                 }
                 finally
                 {

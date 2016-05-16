@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
@@ -44,6 +45,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             if (cache.Entries.TryGetValue(viewComponentDescriptor, out executor))
             {
                 return executor;
+            }
+
+            var methodInfo = viewComponentContext.ViewComponentDescriptor?.MethodInfo;
+            if (methodInfo == null)
+            {
+                throw new InvalidOperationException(Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(ViewComponentDescriptor.MethodInfo),
+                    nameof(ViewComponentDescriptor)));
             }
 
             executor = ObjectMethodExecutor.Create(viewComponentDescriptor.MethodInfo, viewComponentDescriptor.TypeInfo);
