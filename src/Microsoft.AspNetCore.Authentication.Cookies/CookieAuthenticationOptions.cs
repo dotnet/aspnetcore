@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Builder
             ExpireTimeSpan = TimeSpan.FromDays(14);
             SlidingExpiration = true;
             CookieHttpOnly = true;
-            CookieSecure = CookieSecureOption.SameAsRequest;
+            CookieSecure = CookieSecurePolicy.SameAsRequest;
             SystemClock = new SystemClock();
             Events = new CookieAuthenticationEvents();
         }
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Builder
         public string CookieDomain { get; set; }
 
         /// <summary>
-        /// Determines the path used to create the cookie. The default value is "/" for highest browser compatability.
+        /// Determines the path used to create the cookie. The default value is "/" for highest browser compatibility.
         /// </summary>
         public string CookiePath { get; set; }
 
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Builder
         /// to HTTPS requests if the page which is doing the SignIn is also HTTPS. If you have an HTTPS sign in page
         /// and portions of your site are HTTP you may need to change this value.
         /// </summary>
-        public CookieSecureOption CookieSecure { get; set; }
+        public CookieSecurePolicy CookieSecure { get; set; }
 
         /// <summary>
         /// If set this will be used by the CookieAuthenticationMiddleware for data protection.

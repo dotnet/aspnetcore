@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.CookiePolicy;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -15,10 +16,11 @@ namespace Microsoft.AspNetCore.Builder
         /// Affects whether cookies must be HttpOnly.
         /// </summary>
         public HttpOnlyPolicy HttpOnly { get; set; } = HttpOnlyPolicy.None;
+
         /// <summary>
         /// Affects whether cookies must be Secure.
         /// </summary>
-        public SecurePolicy Secure { get; set; } = SecurePolicy.None;
+        public CookieSecurePolicy Secure { get; set; } = CookieSecurePolicy.None;
 
         /// <summary>
         /// Called when a cookie is appended.

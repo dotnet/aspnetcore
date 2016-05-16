@@ -145,13 +145,13 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 HttpOnly = Options.CookieHttpOnly,
                 Path = Options.CookiePath ?? (OriginalPathBase.HasValue ? OriginalPathBase.ToString() : "/"),
             };
-            if (Options.CookieSecure == CookieSecureOption.SameAsRequest)
+            if (Options.CookieSecure == CookieSecurePolicy.SameAsRequest)
             {
                 cookieOptions.Secure = Request.IsHttps;
             }
             else
             {
-                cookieOptions.Secure = Options.CookieSecure == CookieSecureOption.Always;
+                cookieOptions.Secure = Options.CookieSecure == CookieSecurePolicy.Always;
             }
             return cookieOptions;
         }

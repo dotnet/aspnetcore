@@ -192,14 +192,14 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         }
 
         [Theory]
-        [InlineData(CookieSecureOption.Always, "http://example.com/testpath", true)]
-        [InlineData(CookieSecureOption.Always, "https://example.com/testpath", true)]
-        [InlineData(CookieSecureOption.Never, "http://example.com/testpath", false)]
-        [InlineData(CookieSecureOption.Never, "https://example.com/testpath", false)]
-        [InlineData(CookieSecureOption.SameAsRequest, "http://example.com/testpath", false)]
-        [InlineData(CookieSecureOption.SameAsRequest, "https://example.com/testpath", true)]
+        [InlineData(CookieSecurePolicy.Always, "http://example.com/testpath", true)]
+        [InlineData(CookieSecurePolicy.Always, "https://example.com/testpath", true)]
+        [InlineData(CookieSecurePolicy.None, "http://example.com/testpath", false)]
+        [InlineData(CookieSecurePolicy.None, "https://example.com/testpath", false)]
+        [InlineData(CookieSecurePolicy.SameAsRequest, "http://example.com/testpath", false)]
+        [InlineData(CookieSecurePolicy.SameAsRequest, "https://example.com/testpath", true)]
         public async Task SecureSignInCausesSecureOnlyCookieByDefault(
-            CookieSecureOption cookieSecureOption,
+            CookieSecurePolicy cookieSecurePolicy,
             string requestUri,
             bool shouldBeSecureOnly)
         {
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 LoginPath = new PathString("/login"),
                 CookieName = "TestCookie",
-                CookieSecure = cookieSecureOption
+                CookieSecure = cookieSecurePolicy
             }, SignInAsAlice);
 
             var transaction = await SendAsync(server, requestUri);
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 CookieName = "TestCookie",
                 CookiePath = "/foo",
                 CookieDomain = "another.com",
-                CookieSecure = CookieSecureOption.Always,
+                CookieSecure = CookieSecurePolicy.Always,
                 CookieHttpOnly = true
             }, SignInAsAlice, new Uri("http://example.com/base"));
 
@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var server2 = CreateServer(new CookieAuthenticationOptions
             {
                 CookieName = "SecondCookie",
-                CookieSecure = CookieSecureOption.Never,
+                CookieSecure = CookieSecurePolicy.None,
                 CookieHttpOnly = false
             }, SignInAsAlice, new Uri("http://example.com/base"));
 

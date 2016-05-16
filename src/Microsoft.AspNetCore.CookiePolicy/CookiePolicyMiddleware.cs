@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
 
             private bool PolicyRequiresCookieOptions()
             {
-                return Policy.HttpOnly != HttpOnlyPolicy.None || Policy.Secure != SecurePolicy.None;
+                return Policy.HttpOnly != HttpOnlyPolicy.None || Policy.Secure != CookieSecurePolicy.None;
             }
 
             public void Append(string key, string value)
@@ -140,13 +140,13 @@ namespace Microsoft.AspNetCore.CookiePolicy
             {
                 switch (Policy.Secure)
                 {
-                    case SecurePolicy.Always:
+                    case CookieSecurePolicy.Always:
                         options.Secure = true;
                         break;
-                    case SecurePolicy.SameAsRequest:
+                    case CookieSecurePolicy.SameAsRequest:
                         options.Secure = Context.Request.IsHttps;
                         break;
-                    case SecurePolicy.None:
+                    case CookieSecurePolicy.None:
                         break;
                     default:
                         throw new InvalidOperationException();
