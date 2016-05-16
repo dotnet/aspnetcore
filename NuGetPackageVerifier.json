@@ -5,17 +5,7 @@
         ],
         "packages": {
             "Microsoft.AspNetCore.Razor": { },
-            "Microsoft.AspNet.Razor.VSRC1": { 
-                "DOC_MISSING": {
-                    "lib/net451/Microsoft.AspNet.Razor.VSRC1.dll": "Enter justification"
-                }
-            },
-            "Microsoft.AspNetCore.Razor.Runtime": { },
-            "Microsoft.AspNet.Razor.Runtime.VSRC1": {
-                "DOC_MISSING": {
-                    "lib/net451/Microsoft.AspNet.Razor.Runtime.VSRC1.dll": "Enter justification"
-                }
-            }
+            "Microsoft.AspNetCore.Razor.Runtime": { }
         }
     },
     "adx-nonshipping": { // Packages written by the ADX team but that don't ship on NuGet.org (thus, no need to scan anything in them)
