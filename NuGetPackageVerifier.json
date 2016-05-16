@@ -15,11 +15,6 @@
             "Microsoft.AspNetCore.Mvc.Localization": { },
             "Microsoft.AspNetCore.Mvc.Razor": { },
             "Microsoft.AspNetCore.Mvc.Razor.Host": { },
-            "Microsoft.AspNet.Mvc.Razor.Host.VSRC1": {
-                "DOC_MISSING": {
-                    "lib/net451/Microsoft.AspNet.Mvc.Razor.Host.VSRC1.dll": "This project is temporary."
-                }
-            },
             "Microsoft.AspNetCore.Mvc.TagHelpers": { },
             "Microsoft.AspNetCore.Mvc.ViewFeatures": { },
             "Microsoft.AspNetCore.Mvc.WebApiCompatShim": { }
