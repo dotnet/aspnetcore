@@ -1,5 +1,6 @@
 # Getting Started with ASP.NET Core
 
+[![Slack Status](https://aspnetcoreslack.herokuapp.com/badge.svg?2)](http://tattoocoder.com/aspnet-slack-sign-up/)
 [![Join the chat at https://gitter.im/aspnet/Home](https://badges.gitter.im/aspnet/Home.svg)](https://gitter.im/aspnet/Home?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 This guide is designed to get you started building applications with the latest development versions ASP.NET Core. This means nightly builds and potentially broken or unstable packages.
