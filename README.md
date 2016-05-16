@@ -5,8 +5,8 @@
 
 If you want a more stable, released, experience or getting started instructions then go to one of the following:
 
-- [.NET Landing Page](http://dot.net)
-Check out the dot.net landing page for released versions of .NET, getting started guides, and learning resources.
+- [.NET Homepage](http://dot.net)
+Check out dot.net for released versions of .NET, getting started guides, and learning resources.
 
 - [ASP.NET Core Documentation](http://docs.asp.net) or [.NET Core Documentation](http://microsoft.com/net/core). We intend to merge these in the future.
 
@@ -28,7 +28,7 @@ The schedule and milestone themes for ASP.NET Core.
     <configuration>
         <packageSources>
             <clear />
-            <add key="AspNetCI" value="https://www.myget.org/F/aspnetcirelease/api/v3/index.json" />
+            <add key="AspNetCI" value="https://www.myget.org/F/aspnetvnext/api/v3/index.json" />
             <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
         </packageSources>
     </configuration>
