@@ -191,6 +191,27 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(expectedUrl, result.Url);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void OnAuthorization_RedirectsToHttpsEndpoint_WithSpecifiedStatusCode(bool permanent)
+        {
+            var requestContext = new DefaultHttpContext();
+            requestContext.RequestServices = CreateServices();
+            requestContext.Request.Scheme = "http";
+            requestContext.Request.Method = "GET";
+            
+            var authContext = CreateAuthorizationContext(requestContext);
+            var attr = new RequireHttpsAttribute { Permanent = permanent };
+
+            // Act
+            attr.OnAuthorization(authContext);
+
+            // Assert
+            var result = Assert.IsType<RedirectResult>(authContext.Result);
+            Assert.Equal(permanent, result.Permanent);
+        }
+
         private class CustomRequireHttpsAttribute : RequireHttpsAttribute
         {
             protected override void HandleNonHttpsRequest(AuthorizationFilterContext filterContext)

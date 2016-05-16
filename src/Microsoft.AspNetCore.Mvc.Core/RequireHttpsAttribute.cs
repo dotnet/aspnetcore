@@ -15,6 +15,12 @@ namespace Microsoft.AspNetCore.Mvc
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
     public class RequireHttpsAttribute : Attribute, IAuthorizationFilter, IOrderedFilter
     {
+        /// <summary>
+        /// Specifies whether a permanent redirect, <c>301 Moved Permanently</c>,
+        /// should be used instead of a temporary redirect, <c>302 Found</c>.
+        /// </summary>
+        public bool Permanent { get; set; }
+
         /// <inheritdoc />
         public int Order { get; set; }
 
@@ -84,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc
                     request.QueryString.ToUriComponent());
 
                 // redirect to HTTPS version of page
-                filterContext.Result = new RedirectResult(newUrl, permanent: false);
+                filterContext.Result = new RedirectResult(newUrl, Permanent);
             }
         }
     }
