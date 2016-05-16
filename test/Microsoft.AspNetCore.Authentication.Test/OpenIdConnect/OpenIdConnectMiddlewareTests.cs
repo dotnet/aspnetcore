@@ -161,6 +161,8 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
                     return Task.FromResult(0);
                 }
             };
+            options.ClientId = "Test Id";
+            options.Configuration = TestUtilities.DefaultOpenIdConnectConfiguration;
             return options;
         }
 
@@ -549,6 +551,67 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             }
 
             return nonceTime;
+        }
+
+        [Fact]
+        public void ThrowsWithNoClientId()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions
+                    {
+                        SignInScheme = "TestScheme",
+                        Authority = DefaultAuthority,
+                        Configuration = TestUtilities.DefaultOpenIdConnectConfiguration,
+                        AuthenticationMethod = OpenIdConnectRedirectBehavior.FormPost
+                    });
+                }).ConfigureServices(services =>
+                {
+                    services.AddAuthentication();
+                });
+
+            try
+            {
+                var server = new TestServer(builder);
+            }
+            catch (ArgumentException e)
+            {
+                Assert.Equal("ClientId", e.ParamName);
+                return;
+            }
+
+            Assert.True(false);
+        }
+
+        [Fact]
+        public void ThrowsWithNoConfigurationValues()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions
+                    {
+                        SignInScheme = "TestScheme",
+                        ClientId = "Test Id",
+                        AuthenticationMethod = OpenIdConnectRedirectBehavior.FormPost
+                    });
+                }).ConfigureServices(services =>
+                {
+                    services.AddAuthentication();
+                });
+
+            try
+            {
+                var server = new TestServer(builder);
+            }
+            catch (InvalidOperationException e)
+            {
+                Assert.Equal("Provide Authority, MetadataAddress, Configuration, or ConfigurationManager to OpenIdConnectOptions", e.Message);
+                return;
+            }
+
+            Assert.True(false);
         }
     }
 }

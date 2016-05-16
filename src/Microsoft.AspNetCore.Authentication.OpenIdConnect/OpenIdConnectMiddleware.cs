@@ -82,6 +82,11 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 throw new ArgumentNullException(nameof(htmlEncoder));
             }
 
+            if (string.IsNullOrEmpty(Options.ClientId))
+            {
+                throw new ArgumentException("Options.ClientId must be provided", nameof(Options.ClientId));
+            }
+            
             if (!Options.CallbackPath.HasValue)
             {
                 throw new ArgumentException("Options.CallbackPath must be provided.");
@@ -119,7 +124,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
                 Options.StringDataFormat = new SecureDataFormat<string>(new StringSerializer(), dataProtector);
             }
-
 
             if (Options.Events == null)
             {
@@ -163,6 +167,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                     Options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(Options.MetadataAddress, new OpenIdConnectConfigurationRetriever(),
                         new HttpDocumentRetriever(Backchannel) { RequireHttps = Options.RequireHttpsMetadata });
                 }
+            }
+            
+            if (Options.ConfigurationManager == null)
+            {
+                throw new InvalidOperationException($"Provide {nameof(Options.Authority)}, {nameof(Options.MetadataAddress)}, "
+                + $"{nameof(Options.Configuration)}, or {nameof(Options.ConfigurationManager)} to {nameof(OpenIdConnectOptions)}");
             }
         }
 
