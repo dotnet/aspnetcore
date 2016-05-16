@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
         /// <summary>
         /// Function that is called to handle this requirement
         /// </summary>
-        public Func<AuthorizationContext, Task<bool>> Handler { get; }
+        public Func<AuthorizationHandlerContext, Task<bool>> Handler { get; }
 
-        public AssertionRequirement(Func<AuthorizationContext, bool> assert)
+        public AssertionRequirement(Func<AuthorizationHandlerContext, bool> assert)
         {
             if (assert == null)
             {
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
             Handler = context => Task.FromResult(assert(context));
         }
 
-        public AssertionRequirement(Func<AuthorizationContext, Task<bool>> assert)
+        public AssertionRequirement(Func<AuthorizationHandlerContext, Task<bool>> assert)
         {
             if (assert == null)
             {
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
             Handler = assert;
         }
 
-        public async Task HandleAsync(AuthorizationContext context)
+        public async Task HandleAsync(AuthorizationHandlerContext context)
         {
             if (await Handler(context))
             {

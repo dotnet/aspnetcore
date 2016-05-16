@@ -11,13 +11,13 @@ namespace Microsoft.AspNetCore.Authorization
     /// <summary>
     /// Contains authorization information used by <see cref="IAuthorizationHandler"/>.
     /// </summary>
-    public class AuthorizationContext
+    public class AuthorizationHandlerContext
     {
         private HashSet<IAuthorizationRequirement> _pendingRequirements;
         private bool _failCalled;
         private bool _succeedCalled;
 
-        public AuthorizationContext(
+        public AuthorizationHandlerContext(
             IEnumerable<IAuthorizationRequirement> requirements,
             ClaimsPrincipal user,
             object resource)

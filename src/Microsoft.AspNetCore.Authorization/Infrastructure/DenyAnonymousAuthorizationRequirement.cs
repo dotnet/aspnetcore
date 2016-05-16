@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
 {
     public class DenyAnonymousAuthorizationRequirement : AuthorizationHandler<DenyAnonymousAuthorizationRequirement>, IAuthorizationRequirement
     {
-        protected override void Handle(AuthorizationContext context, DenyAnonymousAuthorizationRequirement requirement)
+        protected override void Handle(AuthorizationHandlerContext context, DenyAnonymousAuthorizationRequirement requirement)
         {
             var user = context.User;
             var userIsAnonymous =

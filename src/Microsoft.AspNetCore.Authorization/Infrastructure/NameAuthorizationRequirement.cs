@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
 
         public string RequiredName { get; }
 
-        protected override void Handle(AuthorizationContext context, NameAuthorizationRequirement requirement)
+        protected override void Handle(AuthorizationHandlerContext context, NameAuthorizationRequirement requirement)
         {
             if (context.User != null)
             {

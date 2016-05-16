@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
         public string ClaimType { get; }
         public IEnumerable<string> AllowedValues { get; }
 
-        protected override void Handle(AuthorizationContext context, ClaimsAuthorizationRequirement requirement)
+        protected override void Handle(AuthorizationHandlerContext context, ClaimsAuthorizationRequirement requirement)
         {
             if (context.User != null)
             {

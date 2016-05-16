@@ -580,7 +580,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
         public class CustomRequirement : IAuthorizationRequirement { }
         public class CustomHandler : AuthorizationHandler<CustomRequirement>
         {
-            protected override void Handle(AuthorizationContext context, CustomRequirement requirement)
+            protected override void Handle(AuthorizationHandlerContext context, CustomRequirement requirement)
             {
                 context.Succeed(requirement);
             }
@@ -636,7 +636,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
             public bool Succeed { get; set; }
 
-            protected override void Handle(AuthorizationContext context, PassThroughRequirement requirement)
+            protected override void Handle(AuthorizationHandlerContext context, PassThroughRequirement requirement)
             {
                 if (Succeed) {
                     context.Succeed(requirement);
@@ -766,7 +766,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
             private IEnumerable<OperationAuthorizationRequirement> _allowed;
 
-            protected override void Handle(AuthorizationContext context, OperationAuthorizationRequirement requirement, ExpenseReport resource)
+            protected override void Handle(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement, ExpenseReport resource)
             {
                 if (_allowed.Contains(requirement))
                 {
@@ -777,7 +777,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
         public class SuperUserHandler : AuthorizationHandler<OperationAuthorizationRequirement>
         {
-            protected override void Handle(AuthorizationContext context, OperationAuthorizationRequirement requirement)
+            protected override void Handle(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement)
             {
                 if (context.User.HasClaim("SuperUser", "yes"))
                 {
@@ -812,7 +812,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
         public class NotCalledHandler : AuthorizationHandler<OperationAuthorizationRequirement, string>
         {
-            protected override void Handle(AuthorizationContext context, OperationAuthorizationRequirement requirement, string resource)
+            protected override void Handle(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement, string resource)
             {
                 throw new NotImplementedException();
             }
@@ -820,7 +820,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
         public class EvenHandler : AuthorizationHandler<OperationAuthorizationRequirement, int>
         {
-            protected override void Handle(AuthorizationContext context, OperationAuthorizationRequirement requirement, int id)
+            protected override void Handle(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement, int id)
             {
                 if (id % 2 == 0)
                 {

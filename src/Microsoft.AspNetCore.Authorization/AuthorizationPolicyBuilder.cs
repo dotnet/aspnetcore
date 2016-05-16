@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// </summary>
         /// <param name="assert">Function that must return true</param>
         /// <returns></returns>
-        public AuthorizationPolicyBuilder RequireAssertion(Func<AuthorizationContext, bool> assert)
+        public AuthorizationPolicyBuilder RequireAssertion(Func<AuthorizationHandlerContext, bool> assert)
         {
             if (assert == null)
             {
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// </summary>
         /// <param name="assert">Function that must return true</param>
         /// <returns></returns>
-        public AuthorizationPolicyBuilder RequireAssertion(Func<AuthorizationContext, Task<bool>> assert)
+        public AuthorizationPolicyBuilder RequireAssertion(Func<AuthorizationHandlerContext, Task<bool>> assert)
         {
             if (assert == null)
             {

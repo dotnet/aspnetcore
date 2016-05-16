@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
 {
     public class PassThroughAuthorizationHandler : IAuthorizationHandler
     {
-        public async Task HandleAsync(AuthorizationContext context)
+        public async Task HandleAsync(AuthorizationHandlerContext context)
         {
             foreach (var handler in context.Requirements.OfType<IAuthorizationHandler>())
             {

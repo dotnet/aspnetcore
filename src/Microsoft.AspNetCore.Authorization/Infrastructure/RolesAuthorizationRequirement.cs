@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
 
         public IEnumerable<string> AllowedRoles { get; }
 
-        protected override void Handle(AuthorizationContext context, RolesAuthorizationRequirement requirement)
+        protected override void Handle(AuthorizationHandlerContext context, RolesAuthorizationRequirement requirement)
         {
             if (context.User != null)
             {

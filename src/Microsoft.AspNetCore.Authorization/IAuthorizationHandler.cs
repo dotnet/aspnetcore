@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Authorization
 {
     public interface IAuthorizationHandler
     {
-        Task HandleAsync(AuthorizationContext context);
+        Task HandleAsync(AuthorizationHandlerContext context);
     }
 }
