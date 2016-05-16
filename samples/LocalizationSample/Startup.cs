@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace LocalizationSample
 {

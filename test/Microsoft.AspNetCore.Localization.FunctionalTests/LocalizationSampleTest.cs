@@ -5,7 +5,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Localization.FunctionalTests
