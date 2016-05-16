@@ -1,7 +1,7 @@
 
 [![Join the chat at https://gitter.im/aspnet/Home](https://badges.gitter.im/aspnet/Home.svg)](https://gitter.im/aspnet/Home?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-**This is not the homepage for ASP.NET Core.** This is the home page of our source code repositories and is intended for those contributing to ASP.NET Core or using bleeding edge nightly builds.
+If you are looking for the homepage of .NET Core, with getting started guides and downloads for released versions of ASP.NET Core then you should go to http://dot.net. This is the home page of our source code repositories and is intended for those contributing to ASP.NET Core or using bleeding edge nightly builds.
 
 If you want a more stable, released, experience or getting started instructions then go to one of the following:
 
