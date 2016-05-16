@@ -300,13 +300,11 @@
                 <Justification>file extension - powerpoint</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Mvc.Core\Internal\AttributeRoute.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.TestHost\ResponseStream.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Extensions.Caching.Memory.VSRC1\CacheEntry.cs">
+                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.TestHost\ResponseStream.cs">
                 <term>race</term>
                 <Justification>Refers to race condition.</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Mvc.Razor.Host.VSRC1\PropertyHelper.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.Mvc.Razor\Internal\CompilerCache.cs;
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Mvc.Razor\Internal\CompilerCache.cs;
                                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs;
                                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\Driver.cs;
                                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\Team.cs;
