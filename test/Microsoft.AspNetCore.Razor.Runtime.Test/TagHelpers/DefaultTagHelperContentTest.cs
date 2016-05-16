@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         {
             // Arrange
             var source = new DefaultTagHelperContent();
-            source.AppendHtml(new HtmlEncodedString("hello"));
+            source.AppendHtml(new HtmlString("hello"));
             source.Append("Test");
 
             var items = new List<object>();
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             Assert.Equal(3, items.Count);
 
             Assert.Equal("some-content", Assert.IsType<string>(items[0]));
-            Assert.Equal("hello", Assert.IsType<HtmlEncodedString>(items[1]).Value);
+            Assert.Equal("hello", Assert.IsType<HtmlString>(items[1]).Value);
             Assert.Equal("Test", Assert.IsType<string>(items[2]));
         }
 
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
             var nested = new DefaultTagHelperContent();
             source.AppendHtml(nested);
-            nested.AppendHtml(new HtmlEncodedString("hello"));
+            nested.AppendHtml(new HtmlString("hello"));
             source.Append("Test");
 
             var items = new List<object>();
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             Assert.Equal(3, items.Count);
 
             Assert.Equal("some-content", Assert.IsType<string>(items[0]));
-            Assert.Equal("hello", Assert.IsType<HtmlEncodedString>(items[1]).Value);
+            Assert.Equal("hello", Assert.IsType<HtmlString>(items[1]).Value);
             Assert.Equal("Test", Assert.IsType<string>(items[2]));
         }
 
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         {
             // Arrange
             var source = new DefaultTagHelperContent();
-            source.AppendHtml(new HtmlEncodedString("hello"));
+            source.AppendHtml(new HtmlString("hello"));
             source.Append("Test");
 
             var items = new List<object>();
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             Assert.Equal(3, items.Count);
 
             Assert.Equal("some-content", Assert.IsType<string>(items[0]));
-            Assert.Equal("hello", Assert.IsType<HtmlEncodedString>(items[1]).Value);
+            Assert.Equal("hello", Assert.IsType<HtmlString>(items[1]).Value);
             Assert.Equal("Test", Assert.IsType<string>(items[2]));
         }
 
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
             var nested = new DefaultTagHelperContent();
             source.AppendHtml(nested);
-            nested.AppendHtml(new HtmlEncodedString("hello"));
+            nested.AppendHtml(new HtmlString("hello"));
             source.Append("Test");
 
             var items = new List<object>();
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             Assert.Equal(3, items.Count);
 
             Assert.Equal("some-content", Assert.IsType<string>(items[0]));
-            Assert.Equal("hello", Assert.IsType<HtmlEncodedString>(items[1]).Value);
+            Assert.Equal("hello", Assert.IsType<HtmlString>(items[1]).Value);
             Assert.Equal("Test", Assert.IsType<string>(items[2]));
         }
 

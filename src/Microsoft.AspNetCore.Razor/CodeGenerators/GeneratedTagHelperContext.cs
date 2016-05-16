@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
             TagHelperOutputContentPropertyName = "Content";
             ExecutionContextSetOutputContentAsyncMethodName = "SetOutputContentAsync";
             TagHelperAttributeTypeName = "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute";
-            EncodedHtmlStringTypeName = "Microsoft.AspNetCore.Html.HtmlEncodedString";
+            EncodedHtmlStringTypeName = "Microsoft.AspNetCore.Html.HtmlString";
         }
 
         /// <summary>

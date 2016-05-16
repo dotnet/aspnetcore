@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 return AppendCore(null);
             }
 
-            return AppendCore(new HtmlEncodedString(encoded));
+            return AppendCore(new HtmlString(encoded));
         }
 
         /// <inheritdoc />

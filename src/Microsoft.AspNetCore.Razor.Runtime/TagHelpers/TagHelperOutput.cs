@@ -422,10 +422,10 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                     if (htmlContent != null)
                     {
                         // Perf: static text in a bound attribute go down this path. Avoid allocating if possible (common case).
-                        var htmlEncodedString = value as HtmlEncodedString;
-                        if (htmlEncodedString != null && !htmlEncodedString.Value.Contains("\""))
+                        var htmlString = value as HtmlString;
+                        if (htmlString != null && !htmlString.Value.Contains("\""))
                         {
-                            writer.Write(htmlEncodedString.Value);
+                            writer.Write(htmlString.Value);
                         }
                         else
                         {
@@ -499,10 +499,10 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 if (htmlContent != null)
                 {
                     // Perf: static text in a bound attribute go down this path. Avoid allocating if possible (common case).
-                    var htmlEncodedString = value as HtmlEncodedString;
-                    if (htmlEncodedString != null && !htmlEncodedString.Value.Contains("\""))
+                    var htmlString = value as HtmlString;
+                    if (htmlString != null && !htmlString.Value.Contains("\""))
                     {
-                        destination.AppendHtml(htmlEncodedString);
+                        destination.AppendHtml(htmlString);
                     }
                     else
                     {
