@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Xunit;

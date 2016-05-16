@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Html;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
 {
@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
         /// <summary>
         /// Gets the <see cref="HtmlString"/> instance.
         /// </summary>
-        public HtmlString Html { get; set; }  
+        public HtmlString Html { get; set; }
     }
 }

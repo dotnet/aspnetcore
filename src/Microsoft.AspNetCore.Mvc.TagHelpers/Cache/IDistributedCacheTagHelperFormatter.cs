@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Html;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
 {
     /// <summary>
-    /// An implementation of this interface provides a service to 
+    /// An implementation of this interface provides a service to
     /// serialize html fragments for being store by <see cref="IDistributedCacheTagHelperStorage" />
     /// </summary>
-    public interface IDistributedCacheTagHelperFormatter 
+    public interface IDistributedCacheTagHelperFormatter
     {
         /// <summary>
         /// Serializes some html content.

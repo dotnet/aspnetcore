@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -142,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Equal(expectedOutput.TagName, output.TagName);
             Assert.Equal(4, output.Attributes.Count);
 
-            for(int i=0; i < expectedOutput.Attributes.Count; i++)
+            for (var i = 0; i < expectedOutput.Attributes.Count; i++)
             {
                 var expectedAtribute = expectedOutput.Attributes[i];
                 var actualAttribute = output.Attributes[i];

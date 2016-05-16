@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
 
             string stringValue;
-            var htmlString = value as HtmlEncodedString;
+            var htmlString = value as HtmlString;
             if (htmlString != null)
             {
                 // No need for a StringWriter in this case.

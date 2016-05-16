@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Moq;
 using Xunit;

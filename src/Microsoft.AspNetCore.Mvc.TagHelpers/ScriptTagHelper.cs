@@ -344,12 +344,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private string GetAttributeValue(object value)
         {
             string stringValue;
-            var htmlEncodedString = value as HtmlEncodedString;
-            if (htmlEncodedString != null)
+            var htmlString = value as HtmlString;
+            if (htmlString != null)
             {
                 // Value likely came from an HTML context in the .cshtml file but may still contain double quotes
                 // since attribute could have been enclosed in single quotes.
-                stringValue = htmlEncodedString.Value;
+                stringValue = htmlString.Value;
                 stringValue = stringValue.Replace("\"", "&quot;");
             }
             else
@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 RazorPage.WriteTo(writer, HtmlEncoder, value);
 
                 // Value is now correctly HTML-encoded but may still contain double quotes since attribute could
-                // have been enclosed in single quotes and portions that were HtmlEncodedStrings are not re-encoded.
+                // have been enclosed in single quotes and portions that were HtmlStrings are not re-encoded.
                 var builder = writer.GetStringBuilder();
                 builder.Replace("\"", "&quot;");
 

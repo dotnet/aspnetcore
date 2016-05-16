@@ -212,8 +212,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             // Assert
             Assert.Same(nested, buffer.Pages[0].Buffer[0].Value);
-            Assert.Equal("Hello", Assert.IsType<HtmlEncodedString>(nestedItems[0]).Value);
-            Assert.Equal("Hello", Assert.IsType<HtmlEncodedString>(destinationItems[0]).Value);
+            Assert.Equal("Hello", Assert.IsType<HtmlString>(nestedItems[0]).Value);
+            Assert.Equal("Hello", Assert.IsType<HtmlString>(destinationItems[0]).Value);
         }
 
         [Fact]
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             // Assert
             Assert.Empty(nestedItems);
             Assert.Empty(buffer.Pages);
-            Assert.Equal("Hello", Assert.IsType<HtmlEncodedString>(destinationItems[0]).Value);
+            Assert.Equal("Hello", Assert.IsType<HtmlString>(destinationItems[0]).Value);
         }
 
         [Fact]

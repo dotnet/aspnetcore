@@ -154,6 +154,22 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             return string.Format(CultureInfo.CurrentCulture, GetString("FormTagHelper_CannotDetermineActionWithRouteAndActionOrControllerSpecified"), p0, p1, p2, p3, p4);
         }
 
+        /// <summary>
+        /// The '{0}' property of '{1}' must not be null.
+        /// </summary>
+        internal static string PropertyOfTypeCannotBeNull
+        {
+            get { return GetString("PropertyOfTypeCannotBeNull"); }
+        }
+
+        /// <summary>
+        /// The '{0}' property of '{1}' must not be null.
+        /// </summary>
+        internal static string FormatPropertyOfTypeCannotBeNull(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("PropertyOfTypeCannotBeNull"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

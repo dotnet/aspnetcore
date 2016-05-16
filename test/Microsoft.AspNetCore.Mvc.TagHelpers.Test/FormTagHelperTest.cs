@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -223,7 +224,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             await formTagHelper.ProcessAsync(context, output);
 
             Assert.Equal("form", output.TagName);
-            Assert.Equal(TagMode.StartTagAndEndTag ,output.TagMode);
+            Assert.Equal(TagMode.StartTagAndEndTag, output.TagMode);
             var attribute = Assert.Single(output.Attributes);
             Assert.Equal(expectedAttribute, attribute);
             Assert.Empty(output.PreContent.GetContent());

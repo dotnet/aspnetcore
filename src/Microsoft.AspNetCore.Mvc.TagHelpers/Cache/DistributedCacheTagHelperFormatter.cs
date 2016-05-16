@@ -4,7 +4,7 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Html;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
 {
@@ -14,18 +14,20 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
     /// </summary>
     public class DistributedCacheTagHelperFormatter : IDistributedCacheTagHelperFormatter
     {
-        
         /// <inheritdoc />
         public Task<byte[]> SerializeAsync(DistributedCacheTagHelperFormattingContext context)
         {
-            if (context == null) 
+            if (context == null)
             {
-                throw new ArgumentNullException(nameof(context));    
+                throw new ArgumentNullException(nameof(context));
             }
-            
-            if (context.Html == null) 
+
+            if (context.Html == null)
             {
-                throw new ArgumentNullException(nameof(context.Html));    
+                throw new ArgumentException(
+                    Resources.FormatPropertyOfTypeCannotBeNull(
+                        nameof(DistributedCacheTagHelperFormattingContext.Html),
+                        typeof(DistributedCacheTagHelperFormattingContext).FullName));
             }
 
             var serialized = Encoding.UTF8.GetBytes(context.Html.ToString());
@@ -35,11 +37,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
         /// <inheritdoc />
         public Task<HtmlString> DeserializeAsync(byte[] value)
         {
-            if (value == null) 
+            if (value == null)
             {
-                throw new ArgumentNullException(nameof(value));    
+                throw new ArgumentNullException(nameof(value));
             }
-            
+
             var content = Encoding.UTF8.GetString(value);
             return Task.FromResult(new HtmlString(content));
         }
