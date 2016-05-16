@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task Http10(ServiceContext testContext)
+        public async Task Http10RequestReceivesHttp11Response(ServiceContext testContext)
         {
             using (var server = new TestServer(App, testContext))
             {
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "Hello World");
                     await connection.ReceiveEnd(
-                        "HTTP/1.0 200 OK",
+                        "HTTP/1.1 200 OK",
                         "",
                         "Hello World");
                 }
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "Hello World");
                     await connection.ReceiveEnd(
-                        "HTTP/1.0 200 OK",
+                        "HTTP/1.1 200 OK",
                         "",
                         "Hello World");
                 }
@@ -291,12 +291,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "Goodbye");
                     await connection.Receive(
-                        "HTTP/1.0 200 OK",
+                        "HTTP/1.1 200 OK",
                         "Connection: keep-alive",
                         "Content-Length: 0",
                         "\r\n");
                     await connection.ReceiveEnd(
-                        "HTTP/1.0 200 OK",
+                        "HTTP/1.1 200 OK",
                         "Content-Length: 7",
                         "",
                         "Goodbye");
@@ -322,12 +322,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "Goodbye");
                     await connection.Receive(
-                        "HTTP/1.0 200 OK",
+                        "HTTP/1.1 200 OK",
                         "Connection: keep-alive",
                         "Content-Length: 0",
                         "\r\n");
                     await connection.ReceiveEnd(
-                        "HTTP/1.0 200 OK",
+                        "HTTP/1.1 200 OK",
                         "",
                         "Goodbye");
                 }
@@ -351,13 +351,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "Goodbye");
                     await connection.Receive(
-                        "HTTP/1.0 200 OK",
+                        "HTTP/1.1 200 OK",
                         "Connection: keep-alive",
                         "Content-Length: 11",
                         "",
                         "Hello World");
                     await connection.ReceiveEnd(
-                        "HTTP/1.0 200 OK",
+                        "HTTP/1.1 200 OK",
                         "Content-Length: 7",
                         "",
                         "Goodbye");
@@ -408,7 +408,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "GET / HTTP/1.0",
                         "\r\n");
                     await connection.ReceiveEnd(
-                        "HTTP/1.0 200 OK",
+                        "HTTP/1.1 200 OK",
                         "\r\n");
                 }
             }
@@ -433,7 +433,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "HTTP/1.1 200 OK",
                         "Content-Length: 0",
                         "",
-                        "HTTP/1.0 200 OK",
+                        "HTTP/1.1 200 OK",
                         "Connection: keep-alive",
                         "Content-Length: 0",
                         "",
@@ -469,7 +469,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "");
                     await connection.ReceiveEnd(
-                        "HTTP/1.0 200 OK",
+                        "HTTP/1.1 200 OK",
                         "",
                         "");
                 }
@@ -729,7 +729,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     await connection.SendEnd(
                         "GET /");
                     await connection.Receive(
-                        "HTTP/1.0 400 Bad Request",
+                        "HTTP/1.1 400 Bad Request",
                         "");
                     await connection.ReceiveStartsWith("Date:");
                     await connection.ReceiveForcedEnd(
@@ -749,7 +749,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "HTTP/1.1 200 OK",
                         "Content-Length: 0",
                         "",
-                        "HTTP/1.0 400 Bad Request",
+                        "HTTP/1.1 400 Bad Request",
                         "");
                     await connection.ReceiveStartsWith("Date:");
                     await connection.ReceiveForcedEnd(
@@ -1063,7 +1063,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "");
                     await connection.ReceiveForcedEnd(
-                        "HTTP/1.0 200 OK",
+                        "HTTP/1.1 200 OK",
                         "Content-Length: 11",
                         "",
                         "Hello World");

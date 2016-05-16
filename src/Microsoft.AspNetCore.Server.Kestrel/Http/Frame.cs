@@ -30,12 +30,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
-        private static readonly byte[] _bytesHttpVersion1_0 = Encoding.ASCII.GetBytes("HTTP/1.0 ");
         private static readonly byte[] _bytesHttpVersion1_1 = Encoding.ASCII.GetBytes("HTTP/1.1 ");
         private static readonly byte[] _bytesContentLengthZero = Encoding.ASCII.GetBytes("\r\nContent-Length: 0");
         private static readonly byte[] _bytesSpace = Encoding.ASCII.GetBytes(" ");
         private static readonly byte[] _bytesEndHeaders = Encoding.ASCII.GetBytes("\r\n\r\n");
-        private static readonly int _httpVersionLength = "HTTP/1.*".Length;
 
         private static Vector<byte> _vectorCRs = new Vector<byte>((byte)'\r');
         private static Vector<byte> _vectorColons = new Vector<byte>((byte)':');
@@ -707,6 +705,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }
                 else
                 {
+                    // Note for future reference: never change this to set _autoChunk to true on HTTP/1.0
+                    // connections, even if we were to infer the client supports it because an HTTP/1.0 request
+                    // was received that used chunked encoding. Sending a chunked response to an HTTP/1.0
+                    // client would break compliance with RFC 7230 (section 3.3.1):
+                    //
+                    // A server MUST NOT send a response containing Transfer-Encoding unless the corresponding
+                    // request indicates HTTP/1.1 (or later).
                     if (_httpVersion == HttpVersionType.Http1_1)
                     {
                         _autoChunk = true;
@@ -728,7 +733,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 responseHeaders.SetRawConnection("keep-alive", _bytesConnectionKeepAlive);
             }
 
-            end.CopyFrom(_httpVersion == HttpVersionType.Http1_1 ? _bytesHttpVersion1_1 : _bytesHttpVersion1_0);
+            end.CopyFrom(_bytesHttpVersion1_1);
             end.CopyFrom(statusBytes);
             responseHeaders.CopyTo(ref end);
             end.CopyFrom(_bytesEndHeaders, 0, _bytesEndHeaders.Length);

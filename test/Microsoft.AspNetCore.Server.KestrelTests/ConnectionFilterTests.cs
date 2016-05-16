@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     // "?" changes to "!"
                     await connection.SendEnd(sendString);
                     await connection.ReceiveEnd(
-                        "HTTP/1.0 200 OK",
+                        "HTTP/1.1 200 OK",
                         "",
                         "Hello World!");
                 }
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "Hello World?");
                     await connection.ReceiveEnd(
-                        "HTTP/1.0 200 OK",
+                        "HTTP/1.1 200 OK",
                         "",
                         "Hello World!");
                 }

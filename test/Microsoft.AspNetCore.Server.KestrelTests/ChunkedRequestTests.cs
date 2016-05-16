@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "0",
                          "");
                     await connection.ReceiveEnd(
-                        "HTTP/1.0 200 OK",
+                        "HTTP/1.1 200 OK",
                         "",
                         "Hello World");
                 }
@@ -105,13 +105,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "Goodbye");
                     await connection.Receive(
-                        "HTTP/1.0 200 OK",
+                        "HTTP/1.1 200 OK",
                         "Connection: keep-alive",
                         "Content-Length: 11",
                         "",
                         "Hello World");
                     await connection.ReceiveEnd(
-                        "HTTP/1.0 200 OK",
+                        "HTTP/1.1 200 OK",
                         "Content-Length: 7",
                         "",
                         "Goodbye");

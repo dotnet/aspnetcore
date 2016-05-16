@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     var receiveTask = Task.Run(async () =>
                     {
                         await connection.Receive(
-                            "HTTP/1.0 400 Bad Request",
+                            "HTTP/1.1 400 Bad Request",
                             "");
                         await connection.ReceiveStartsWith("Date: ");
                         await connection.ReceiveForcedEnd(

@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                         var reader = new StreamReader(stream);
                         var line = await reader.ReadLineAsync();
-                        Assert.Equal("HTTP/1.0 200 OK", line);
+                        Assert.Equal("HTTP/1.1 200 OK", line);
                     }
                 }
             }
