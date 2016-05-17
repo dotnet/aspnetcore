@@ -31,11 +31,11 @@
     }
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.5": {
       "dependencies": {
         "System.Collections.Concurrent": "4.0.12-*",
-        "System.ComponentModel.TypeConverter": "4.0.1-*",
+        "System.ComponentModel.TypeConverter": "4.1.0-*",
         "System.Reflection.Extensions": "4.0.1-*",
         "System.Text.Encoding.Extensions": "4.0.11-*"
       }
