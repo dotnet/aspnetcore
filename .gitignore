@@ -39,3 +39,4 @@ node_modules
 project.lock.json
 .build/
 .testpublish/
+launchSettings.json
