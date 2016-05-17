@@ -27,7 +27,7 @@
     "netstandard1.3": {
       "dependencies": {
         "System.Diagnostics.Contracts": "4.0.1-*",
-        "System.Net.Http": "4.0.1-*"
+        "System.Net.Http": "4.1.0-*"
       },
       "imports": [
         "portable-net45+win8"
