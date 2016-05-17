@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.Filters
 {
@@ -16,9 +18,19 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// </summary>
         /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
         /// <param name="filters">The list of <see cref="IFilterMetadata"/> instances.</param>
-        public ResourceExecutingContext(ActionContext actionContext, IList<IFilterMetadata> filters)
+        /// <param name="valueProviderFactories">The list of <see cref="IValueProviderFactory"/> instances.</param>
+        public ResourceExecutingContext(
+            ActionContext actionContext,
+            IList<IFilterMetadata> filters,
+            IList<IValueProviderFactory> valueProviderFactories)
             : base(actionContext, filters)
         {
+            if (valueProviderFactories == null)
+            {
+                throw new ArgumentNullException(nameof(valueProviderFactories));
+            }
+
+            ValueProviderFactories = valueProviderFactories;
         }
 
         /// <summary>
@@ -29,5 +41,10 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// short-circuit execution of additional resource filters and the action itself.
         /// </remarks>
         public virtual IActionResult Result { get; set; }
+
+        /// <summary>
+        /// Gets the list of <see cref="IValueProviderFactory"/> instances used by model binding.
+        /// </summary>
+        public IList<IValueProviderFactory> ValueProviderFactories { get; }
     }
 }

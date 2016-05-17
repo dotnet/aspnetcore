@@ -31,6 +31,10 @@
       "imports": [
         "portable-net45+wp80+win8+wpa81+dnxcore50"
       ]
+    },
+    "Microsoft.DotNet.Watcher.Tools": {
+      "version": "1.0.0-*",
+      "imports": "portable-net451+win8"
     }
   },
   "frameworks": {

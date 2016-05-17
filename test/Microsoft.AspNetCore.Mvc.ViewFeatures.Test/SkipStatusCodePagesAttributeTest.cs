@@ -1,10 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Xunit;
 
@@ -43,7 +45,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         {
             return new ResourceExecutingContext(
                 CreateActionContext(),
-                filters);
+                filters,
+                new List<IValueProviderFactory>());
         }
 
         private static ActionContext CreateActionContext()

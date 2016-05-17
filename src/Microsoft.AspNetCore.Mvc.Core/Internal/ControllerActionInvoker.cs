@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 throw new ArgumentNullException(nameof(valueProviderFactories));
             }
-            
+
             _controllerFactory = controllerFactory;
             _controllerArgumentBinder = controllerArgumentBinder;
             _logger = logger;
@@ -216,7 +216,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             _cursor.Reset();
 
-            _resourceExecutingContext = new ResourceExecutingContext(_controllerContext, _filters);
+            _resourceExecutingContext = new ResourceExecutingContext(
+                _controllerContext,
+                _filters,
+                _controllerContext.ValueProviderFactories);
+
             return InvokeResourceFilterAsync();
         }
 
@@ -266,7 +270,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     }
 
                     _diagnosticSource.AfterOnResourceExecution(_resourceExecutedContext, item.FilterAsync);
-                    
+
                     if (_resourceExecutingContext.Result != null)
                     {
                         _logger.ResourceFilterShortCircuited(item.FilterAsync);

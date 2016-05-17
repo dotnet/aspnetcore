@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task CanAuthorize(string testAction)
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/AuthorizeUser/"+testAction);
+            var response = await Client.GetAsync("http://localhost/AuthorizeUser/" + testAction);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -508,6 +509,32 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
             Assert.Equal("\"someValue\"", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task ResourceFilter_RemovingValueProviderFactoriesForAnAction_DoesNotAffectOtherActions()
+        {
+            // Request to an action which does NOT expect form value model binding
+            // Arrange & Act
+            var response = await Client.PostAsync(
+                "http://localhost/ResourceFilter/FormValueModelBinding_Disabled",
+                new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("SampleInt", "10") }));
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.MediaType);
+            Assert.Equal("Data:0", await response.Content.ReadAsStringAsync());
+
+            // Request to an action which expects form value model binding
+            // Arrange & Act
+            response = await Client.PostAsync(
+                "http://localhost/ResourceFilter/FormValueModelBinding_Enabled",
+                new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("SampleInt", "10") }));
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.MediaType);
+            Assert.Equal("Data:10", await response.Content.ReadAsStringAsync());
         }
     }
 }

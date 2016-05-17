@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
@@ -87,7 +89,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var resourceExecutingContext = new ResourceExecutingContext(
                 ac,
-                new IFilterMetadata[] { });
+                new IFilterMetadata[] { },
+                new List<IValueProviderFactory>());
 
             var filter = new FormatFilter(mockObjects.OptionsManager);
 
@@ -322,7 +325,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var resourceExecutingContext = new ResourceExecutingContext(
                 actionContext,
-                new IFilterMetadata[] { });
+                new IFilterMetadata[] { },
+                new List<IValueProviderFactory>());
 
             var filter = new FormatFilter(mockObjects.OptionsManager);
 
@@ -356,7 +360,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var resourceExecutingContext = new ResourceExecutingContext(
                 actionContext,
-                new IFilterMetadata[] { });
+                new IFilterMetadata[] { },
+                new List<IValueProviderFactory>());
 
             var filter = new FormatFilter(mockObjects.OptionsManager);
 
@@ -392,7 +397,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 var context = new ResourceExecutingContext(
                     MockActionContext,
-                    filters);
+                    filters,
+                    new List<IValueProviderFactory>());
                 return context;
             }
 

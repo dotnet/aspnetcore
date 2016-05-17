@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -309,7 +310,10 @@ namespace Microsoft.AspNetCore.Mvc
             };
             var actionContext = new ActionContext(httpContext, new RouteData(), actionWithConstraint);
 
-            var resourceExecutingContext = new ResourceExecutingContext(actionContext, new[] { consumesFilter });
+            var resourceExecutingContext = new ResourceExecutingContext(
+                actionContext,
+                new[] { consumesFilter },
+                new List<IValueProviderFactory>());
 
             // Act
             consumesFilter.OnResourceExecuting(resourceExecutingContext);
@@ -336,7 +340,10 @@ namespace Microsoft.AspNetCore.Mvc
             };
             var actionContext = new ActionContext(httpContext, new RouteData(), actionWithConstraint);
 
-            var resourceExecutingContext = new ResourceExecutingContext(actionContext, new[] { consumesFilter });
+            var resourceExecutingContext = new ResourceExecutingContext(
+                actionContext,
+                new[] { consumesFilter },
+                new List<IValueProviderFactory>());
 
             // Act
             consumesFilter.OnResourceExecuting(resourceExecutingContext);
@@ -361,7 +368,10 @@ namespace Microsoft.AspNetCore.Mvc
                     new List<FilterDescriptor>() { new FilterDescriptor(consumesFilter, FilterScope.Action) }
             };
             var actionContext = new ActionContext(httpContext, new RouteData(), actionWithConstraint);
-            var resourceExecutingContext = new ResourceExecutingContext(actionContext, new[] { consumesFilter });
+            var resourceExecutingContext = new ResourceExecutingContext(
+                actionContext,
+                new[] { consumesFilter },
+                new List<IValueProviderFactory>());
 
             // Act
             consumesFilter.OnResourceExecuting(resourceExecutingContext);

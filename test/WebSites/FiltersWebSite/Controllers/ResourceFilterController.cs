@@ -28,6 +28,29 @@ namespace FiltersWebSite.Controllers
             return "NeverGetsExecuted";
         }
 
+        [HttpPost]
+        public IActionResult FormValueModelBinding_Enabled(DummyClass dc)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            return Ok("Data:" + dc?.SampleInt);
+        }
+
+        [HttpPost]
+        [DisableFormValueModelBinding]
+        public IActionResult FormValueModelBinding_Disabled(DummyClass dc)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            return Ok("Data:" + dc?.SampleInt);
+        }
+
         private class ShortCircuitWithFormatterAttribute : Attribute, IResourceFilter
         {
             public void OnResourceExecuted(ResourceExecutedContext context)
