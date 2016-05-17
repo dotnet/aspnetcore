@@ -40,7 +40,6 @@ namespace Microsoft.AspNetCore.Session
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddMemoryCache();
                     services.AddDistributedMemoryCache();
                     services.AddSession();
                 });
@@ -72,7 +71,6 @@ namespace Microsoft.AspNetCore.Session
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddMemoryCache();
                     services.AddDistributedMemoryCache();
                     services.AddSession();
                 });
@@ -111,9 +109,7 @@ namespace Microsoft.AspNetCore.Session
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddMemoryCache();
                     services.AddDistributedMemoryCache();
-
                     services.AddSession();
                 });
 
@@ -166,9 +162,7 @@ namespace Microsoft.AspNetCore.Session
                 .ConfigureServices(
                 services =>
                 {
-                    services.AddMemoryCache();
                     services.AddDistributedMemoryCache();
-
                     services.AddSession();
                 });
 
@@ -219,9 +213,7 @@ namespace Microsoft.AspNetCore.Session
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddMemoryCache();
                     services.AddDistributedMemoryCache();
-
                     services.AddSession();
                 });
 
@@ -258,10 +250,7 @@ namespace Microsoft.AspNetCore.Session
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
-
-                    services.AddMemoryCache();
                     services.AddDistributedMemoryCache();
-
                     services.AddSession();
                 });
 
@@ -310,10 +299,7 @@ namespace Microsoft.AspNetCore.Session
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
-
-                    services.AddMemoryCache();
                     services.AddDistributedMemoryCache();
-
                     services.AddSession(o => o.IdleTimeout = TimeSpan.FromMilliseconds(30));
                 });
 
@@ -373,10 +359,7 @@ namespace Microsoft.AspNetCore.Session
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton(typeof(ILoggerFactory), new NullLoggerFactory());
-
-                    services.AddMemoryCache();
                     services.AddDistributedMemoryCache();
-
                     services.AddSession(o => o.IdleTimeout = TimeSpan.FromMinutes(20));
                     services.Configure<MemoryCacheOptions>(o => o.Clock = clock);
                 });
@@ -426,9 +409,7 @@ namespace Microsoft.AspNetCore.Session
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddMemoryCache();
                     services.AddDistributedMemoryCache();
-
                     services.AddSession();
                 });
 
@@ -471,9 +452,7 @@ namespace Microsoft.AspNetCore.Session
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddMemoryCache();
                     services.AddDistributedMemoryCache();
-
                     services.AddSession();
                 });
 
@@ -502,9 +481,7 @@ namespace Microsoft.AspNetCore.Session
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddMemoryCache();
                     services.AddDistributedMemoryCache();
-
                     services.AddSession();
                 });
 
@@ -513,6 +490,132 @@ namespace Microsoft.AspNetCore.Session
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
                 response.EnsureSuccessStatusCode();
+            }
+        }
+
+        [Fact]
+        public async Task SessionLogsCacheReadException()
+        {
+            var sink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseSession();
+                    app.Run(context =>
+                    {
+                        byte[] value;
+                        Assert.False(context.Session.TryGetValue("key", out value));
+                        Assert.Equal(null, value);
+                        Assert.Equal(string.Empty, context.Session.Id);
+                        Assert.False(context.Session.Keys.Any());
+                        return Task.FromResult(0);
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
+                    services.AddSingleton<IDistributedCache>(new UnreliableCache(new MemoryCache(new MemoryCacheOptions()))
+                    {
+                        DisableGet = true
+                    });
+                    services.AddSession();
+                });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync(string.Empty);
+                response.EnsureSuccessStatusCode();
+
+                var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
+
+                Assert.Equal(1, sessionLogMessages.Length);
+                Assert.Contains("Session cache read exception", sessionLogMessages[0].State.ToString());
+                Assert.Equal(LogLevel.Error, sessionLogMessages[0].LogLevel);
+            }
+        }
+
+        [Fact]
+        public async Task SessionLogsCacheWriteException()
+        {
+            var sink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseSession();
+                    app.Run(context =>
+                    {
+                        context.Session.SetInt32("key", 0);
+                        return Task.FromResult(0);
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
+                    services.AddSingleton<IDistributedCache>(new UnreliableCache(new MemoryCache(new MemoryCacheOptions()))
+                    {
+                        DisableSetAsync = true
+                    });
+                    services.AddSession();
+                });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync(string.Empty);
+                response.EnsureSuccessStatusCode();
+
+                var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
+
+                Assert.Equal(1, sessionLogMessages.Length);
+                Assert.Contains("Session started", sessionLogMessages[0].State.ToString());
+                Assert.Equal(LogLevel.Information, sessionLogMessages[0].LogLevel);
+
+                var sessionMiddlewareLogMessages = sink.Writes.OnlyMessagesFromSource<SessionMiddleware>().ToArray();
+                Assert.Equal(1, sessionMiddlewareLogMessages.Length);
+                Assert.Contains("Error closing the session.", sessionMiddlewareLogMessages[0].State.ToString());
+                Assert.Equal(LogLevel.Error, sessionMiddlewareLogMessages[0].LogLevel);
+            }
+        }
+
+        [Fact]
+        public async Task SessionLogsCacheRefreshException()
+        {
+            var sink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseSession();
+                    app.Run(context =>
+                    {
+                        // The middleware calls context.Session.CommitAsync() once per request
+                        return Task.FromResult(0);
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
+                    services.AddSingleton<IDistributedCache>(new UnreliableCache(new MemoryCache(new MemoryCacheOptions()))
+                    {
+                        DisableRefreshAsync = true
+                    });
+                    services.AddSession();
+                });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync(string.Empty);
+                response.EnsureSuccessStatusCode();
+
+                var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<SessionMiddleware>().ToArray();
+
+                Assert.Equal(1, sessionLogMessages.Length);
+                Assert.Contains("Error closing the session.", sessionLogMessages[0].State.ToString());
+                Assert.Equal(LogLevel.Error, sessionLogMessages[0].LogLevel);
             }
         }
 
@@ -531,46 +634,47 @@ namespace Microsoft.AspNetCore.Session
             }
         }
 
-        private class TestDistributedCache : IDistributedCache
+        private class UnreliableCache : IDistributedCache
         {
+            private readonly MemoryDistributedCache _cache;
+
+            public bool DisableGet { get; set; }
+            public bool DisableSetAsync { get; set; }
+            public bool DisableRefreshAsync { get; set; }
+
+            public UnreliableCache(IMemoryCache memoryCache)
+            {
+                _cache = new MemoryDistributedCache(memoryCache);
+            }
+
             public byte[] Get(string key)
             {
-                throw new NotImplementedException();
+                if (DisableGet)
+                {
+                    throw new InvalidOperationException();
+                }
+                return _cache.Get(key);
             }
-
-            public Task<byte[]> GetAsync(string key)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Refresh(string key)
-            {
-                throw new NotImplementedException();
-            }
-
+            public Task<byte[]> GetAsync(string key) => _cache.GetAsync(key);
+            public void Refresh(string key) => _cache.Refresh(key);
             public Task RefreshAsync(string key)
             {
-                throw new NotImplementedException();
+                if (DisableRefreshAsync)
+                {
+                    throw new InvalidOperationException();
+                }
+                return _cache.RefreshAsync(key);
             }
-
-            public void Remove(string key)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task RemoveAsync(string key)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
-            {
-                throw new NotImplementedException();
-            }
-
+            public void Remove(string key) => _cache.Remove(key);
+            public Task RemoveAsync(string key) => _cache.RemoveAsync(key);
+            public void Set(string key, byte[] value, DistributedCacheEntryOptions options) => _cache.Set(key, value, options);
             public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options)
             {
-                throw new NotImplementedException();
+                if (DisableSetAsync)
+                {
+                    throw new InvalidOperationException();
+                }
+                return  _cache.SetAsync(key, value, options);
             }
         }
     }

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
@@ -26,10 +25,11 @@ namespace Microsoft.AspNetCore.Session
         private readonly string _sessionKey;
         private readonly TimeSpan _idleTimeout;
         private readonly Func<bool> _tryEstablishSession;
-        private readonly IDictionary<EncodedKey, byte[]> _store;
         private readonly ILogger _logger;
+        private IDictionary<EncodedKey, byte[]> _store;
         private bool _isModified;
         private bool _loaded;
+        private bool _isAvailable;
         private bool _isNewSessionKey;
         private string _sessionId;
         private byte[] _sessionIdBytes;
@@ -71,11 +71,20 @@ namespace Microsoft.AspNetCore.Session
             _isNewSessionKey = isNewSessionKey;
         }
 
+        public bool IsAvailable
+        {
+            get
+            {
+                Load();
+                return _isAvailable;
+            }
+        }
+
         public string Id
         {
             get
             {
-                Load(); // TODO: Silent failure
+                Load();
                 if (_sessionId == null)
                 {
                     _sessionId = new Guid(IdBytes).ToString();
@@ -88,8 +97,7 @@ namespace Microsoft.AspNetCore.Session
         {
             get
             {
-                Load(); // TODO: Silent failure
-                if (_sessionIdBytes == null)
+                if (IsAvailable && _sessionIdBytes == null)
                 {
                     _sessionIdBytes = new byte[IdByteCount];
                     CryptoRandom.GetBytes(_sessionIdBytes);
@@ -102,14 +110,14 @@ namespace Microsoft.AspNetCore.Session
         {
             get
             {
-                Load(); // TODO: Silent failure
+                Load();
                 return _store.Keys.Select(key => key.KeyString);
             }
         }
 
         public bool TryGetValue(string key, out byte[] value)
         {
-            Load(); // TODO: Silent failure
+            Load();
             return _store.TryGetValue(new EncodedKey(key), out value);
         }
 
@@ -120,22 +128,24 @@ namespace Microsoft.AspNetCore.Session
                 throw new ArgumentNullException(nameof(value));
             }
 
-            var encodedKey = new EncodedKey(key);
-            if (encodedKey.KeyBytes.Length > KeyLengthLimit)
+            if (IsAvailable)
             {
-                throw new ArgumentOutOfRangeException(nameof(key),
-                    Resources.FormatException_KeyLengthIsExceeded(KeyLengthLimit));
-            }
+                var encodedKey = new EncodedKey(key);
+                if (encodedKey.KeyBytes.Length > KeyLengthLimit)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(key),
+                        Resources.FormatException_KeyLengthIsExceeded(KeyLengthLimit));
+                }
 
-            Load();
-            if (!_tryEstablishSession())
-            {
-                throw new InvalidOperationException(Resources.Exception_InvalidSessionEstablishment);
+                if (!_tryEstablishSession())
+                {
+                    throw new InvalidOperationException(Resources.Exception_InvalidSessionEstablishment);
+                }
+                _isModified = true;
+                byte[] copy = new byte[value.Length];
+                Buffer.BlockCopy(src: value, srcOffset: 0, dst: copy, dstOffset: 0, count: value.Length);
+                _store[encodedKey] = copy;
             }
-            _isModified = true;
-            byte[] copy = new byte[value.Length];
-            Buffer.BlockCopy(src: value, srcOffset: 0, dst: copy, dstOffset: 0, count: value.Length);
-            _store[encodedKey] = copy;
         }
 
         public void Remove(string key)
@@ -155,21 +165,35 @@ namespace Microsoft.AspNetCore.Session
         {
             if (!_loaded)
             {
-                var data = _cache.Get(_sessionKey);
-                if (data != null)
+                try
                 {
-                    Deserialize(new MemoryStream(data));
+                    var data = _cache.Get(_sessionKey);
+                    if (data != null)
+                    {
+                        Deserialize(new MemoryStream(data));
+                    }
+                    else if (!_isNewSessionKey)
+                    {
+                        _logger.AccessingExpiredSession(_sessionKey);
+                    }
+                    _isAvailable = true;
                 }
-                else if (!_isNewSessionKey)
+                catch (Exception exception)
                 {
-                    _logger.AccessingExpiredSession(_sessionKey);
+                    _logger.SessionCacheReadException(_sessionKey, exception);
+                    _isAvailable = false;
+                    _sessionId = string.Empty;
+                    _sessionIdBytes = null;
+                    _store = new NoOpSessionStore();
                 }
-                _loaded = true;
+                finally
+                {
+                    _loaded = true;
+                }
             }
         }
 
-        // TODO: This should throw if called directly, but most other places it should fail silently
-        // (e.g. TryGetValue should just return null).
+        // This will throw if called directly and a failure occurs. The user is expected to handle the failures.
         public async Task LoadAsync()
         {
             if (!_loaded)
@@ -183,6 +207,7 @@ namespace Microsoft.AspNetCore.Session
                 {
                     _logger.AccessingExpiredSession(_sessionKey);
                 }
+                _isAvailable = true;
                 _loaded = true;
             }
         }
@@ -191,24 +216,32 @@ namespace Microsoft.AspNetCore.Session
         {
             if (_isModified)
             {
-                var data = await _cache.GetAsync(_sessionKey);
-                if (_logger.IsEnabled(LogLevel.Information) && data == null)
+                if (_logger.IsEnabled(LogLevel.Information))
                 {
-                    _logger.SessionStarted(_sessionKey, Id);
+                    try
+                    {
+                        var data = await _cache.GetAsync(_sessionKey);
+                        if (data == null)
+                        {
+                            _logger.SessionStarted(_sessionKey, Id);
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        _logger.SessionCacheReadException(_sessionKey, exception);
+                    }
                 }
-                _isModified = false;
 
                 var stream = new MemoryStream();
                 Serialize(stream);
+                
                 await _cache.SetAsync(
                     _sessionKey,
                     stream.ToArray(),
                     new DistributedCacheEntryOptions().SetSlidingExpiration(_idleTimeout));
 
-                if (_logger.IsEnabled(LogLevel.Debug))
-                {
-                    _logger.SessionStored(_sessionKey, Id, _store.Count);
-                }
+                _isModified = false;
+                _logger.SessionStored(_sessionKey, Id, _store.Count);
             }
             else
             {
@@ -245,7 +278,6 @@ namespace Microsoft.AspNetCore.Session
         {
             if (content == null || content.ReadByte() != SerializationRevision)
             {
-                // TODO: Throw?
                 // Replace the un-readable format.
                 _isModified = true;
                 return;
@@ -333,77 +365,5 @@ namespace Microsoft.AspNetCore.Session
             return output;
         }
 
-        // Keys are stored in their utf-8 encoded state.
-        // This saves us from de-serializing and re-serializing every key on every request.
-        private class EncodedKey
-        {
-            private string _keyString;
-            private int? _hashCode;
-
-            internal EncodedKey(string key)
-            {
-                _keyString = key;
-                KeyBytes = Encoding.UTF8.GetBytes(key);
-            }
-
-            public EncodedKey(byte[] key)
-            {
-                KeyBytes = key;
-            }
-
-            internal string KeyString
-            {
-                get
-                {
-                    if (_keyString == null)
-                    {
-                        _keyString = Encoding.UTF8.GetString(KeyBytes, 0, KeyBytes.Length);
-                    }
-                    return _keyString;
-                }
-            }
-
-            internal byte[] KeyBytes { get; private set; }
-
-            public override bool Equals(object obj)
-            {
-                var otherKey = obj as EncodedKey;
-                if (otherKey == null)
-                {
-                    return false;
-                }
-                if (KeyBytes.Length != otherKey.KeyBytes.Length)
-                {
-                    return false;
-                }
-                if (_hashCode.HasValue && otherKey._hashCode.HasValue
-                    && _hashCode.Value != otherKey._hashCode.Value)
-                {
-                    return false;
-                }
-                for (int i = 0; i < KeyBytes.Length; i++)
-                {
-                    if (KeyBytes[i] != otherKey.KeyBytes[i])
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            }
-
-            public override int GetHashCode()
-            {
-                if (!_hashCode.HasValue)
-                {
-                    _hashCode = SipHash.GetHashCode(KeyBytes);
-                }
-                return _hashCode.Value;
-            }
-
-            public override string ToString()
-            {
-                return KeyString;
-            }
-        }
     }
 }

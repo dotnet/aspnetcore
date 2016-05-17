@@ -12,6 +12,7 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, string, string, Exception> _sessionStarted;
         private static Action<ILogger, string, string, int, Exception> _sessionLoaded;
         private static Action<ILogger, string, string, int, Exception> _sessionStored;
+        private static Action<ILogger, string, Exception> _sessionCacheReadException;
         private static Action<ILogger, Exception> _errorUnprotectingCookie;
 
         static LoggingExtensions()
@@ -23,7 +24,7 @@ namespace Microsoft.Extensions.Logging
             _accessingExpiredSession = LoggerMessage.Define<string>(
                 eventId: 2,
                 logLevel: LogLevel.Warning,
-                formatString: "Accessing expired session; Key:{sessionKey}");
+                formatString: "Accessing expired session, Key:{sessionKey}");
             _sessionStarted = LoggerMessage.Define<string, string>(
                 eventId: 3,
                 logLevel: LogLevel.Information,
@@ -36,8 +37,12 @@ namespace Microsoft.Extensions.Logging
                 eventId: 5,
                 logLevel: LogLevel.Debug,
                 formatString: "Session stored; Key:{sessionKey}, Id:{sessionId}, Count:{count}");
-            _errorUnprotectingCookie = LoggerMessage.Define(
+            _sessionCacheReadException = LoggerMessage.Define<string>(
                 eventId: 6,
+                logLevel: LogLevel.Error,
+                formatString: "Session cache read exception, Key:{sessionKey}");
+            _errorUnprotectingCookie = LoggerMessage.Define(
+                eventId: 7,
                 logLevel: LogLevel.Warning,
                 formatString: "Error unprotecting the session cookie.");
         }
@@ -65,6 +70,11 @@ namespace Microsoft.Extensions.Logging
         public static void SessionStored(this ILogger logger, string sessionKey, string sessionId, int count)
         {
             _sessionStored(logger, sessionKey, sessionId, count, null);
+        }
+
+        public static void SessionCacheReadException(this ILogger logger, string sessionKey, Exception exception)
+        {
+            _sessionCacheReadException(logger, sessionKey, exception);
         }
 
         public static void ErrorUnprotectingSessionCookie(this ILogger logger, Exception exception)

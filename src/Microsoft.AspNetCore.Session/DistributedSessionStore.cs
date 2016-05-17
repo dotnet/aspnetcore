@@ -29,14 +29,6 @@ namespace Microsoft.AspNetCore.Session
             _loggerFactory = loggerFactory;
         }
 
-        public bool IsAvailable
-        {
-            get
-            {
-                return true; // TODO:
-            }
-        }
-
         public ISession Create(string sessionKey, TimeSpan idleTimeout, Func<bool> tryEstablishSession, bool isNewSessionKey)
         {
             if (string.IsNullOrEmpty(sessionKey))

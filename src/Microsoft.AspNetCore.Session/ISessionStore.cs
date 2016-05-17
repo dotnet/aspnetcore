@@ -8,8 +8,6 @@ namespace Microsoft.AspNetCore.Session
 {
     public interface ISessionStore
     {
-        bool IsAvailable { get; }
-
         ISession Create(string sessionKey, TimeSpan idleTimeout, Func<bool> tryEstablishSession, bool isNewSessionKey);
     }
 }

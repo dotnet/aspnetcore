@@ -19,6 +19,9 @@ namespace SessionSample
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // Adds a default in-memory implementation of IDistributedCache
+            services.AddDistributedMemoryCache();
+
             // Uncomment the following line to use the Microsoft SQL Server implementation of IDistributedCache.
             // Note that this would require setting up the session state database.
             //services.AddSqlServerCache(o =>
@@ -32,10 +35,6 @@ namespace SessionSample
             // This will override any previously registered IDistributedCache service.
             //services.AddSingleton<IDistributedCache, RedisCache>();
 #endif
-            // Adds a default in-memory implementation of IDistributedCache
-            services.AddMemoryCache();
-            services.AddDistributedMemoryCache();
-
             services.AddSession(o =>
             {
                 o.IdleTimeout = TimeSpan.FromSeconds(10);
