@@ -1,8 +1,7 @@
-import 'bootstrap';
 require('zone.js');
+import 'bootstrap';
 import 'reflect-metadata';
 import './styles/site.css';
-
 
 import { bootstrap } from '@angular/platform-browser-dynamic';
 import { FormBuilder } from '@angular/common';
