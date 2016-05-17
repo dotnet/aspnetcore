@@ -32,8 +32,8 @@
     "aspnet-webpack": "^1.0.1",
     "css": "^2.2.1",
     "isomorphic-fetch": "^2.2.1",
-    "preboot": "^2.0.5",
-    "rxjs": "^5.0.0-beta.7",
+    "preboot": "^2.0.10",
+    "rxjs": "5.0.0-beta.6",
     "webpack-externals-plugin": "^1.0.0",
     "zone.js": "^0.6.12"
   }
