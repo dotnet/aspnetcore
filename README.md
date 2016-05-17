@@ -44,14 +44,9 @@ If you're a keen early-adopter type, you can infer usage from the samples. Let u
 
 To get started,
 
-1. Ensure you have [installed the latest stable version of ASP.NET Core](https://www.asp.net/vnext). Instructions are available for [Windows](http://docs.asp.net/en/latest/getting-started/installing-on-windows.html), [Mac](http://docs.asp.net/en/latest/getting-started/installing-on-mac.html), and [Linux](http://docs.asp.net/en/latest/getting-started/installing-on-linux.html).
+1. Ensure you have [installed the latest stable version of .NET Core](https://www.microsoft.com/net). The packages are built to work with .NET Core version RC2 or later. [Installers](https://www.microsoft.com/net/download) are available for **Windows**, **OS X**, **Linux**.
 2. Ensure you have [installed a recent version of Node.js](https://nodejs.org/en/). To check this works, open a console prompt, and type `node -v`. It should print a version number.
-3. Ensure you have installed `gulp` globally. You can check if it's there by running `gulp -v`. If you need to install it:
-
    ```
-   npm install -g gulp
-   ```
-
 3. Clone this repository:
 
    ```
@@ -67,38 +62,30 @@ To get started,
 
 Note that to run the React example, you'll also need to run `webpack` from the `samples\react\ReactGrid` directory (having first installed webpack if you don't yet have it - `npm install -g webpack`).
 
-**Using dnx on Windows/Mac/Linux**
+**Using dotnet on Windows/Mac/Linux**
 
-1. Ensure you are using a suitable .NET runtime. Currently, this project is tested with version `1.0.0-rc1-final` on `coreclr`:
-
-   ```
-   dnvm use 1.0.0-rc1-final -r coreclr
-   ```
-
-2. In the solution root directory (`NodeServices` - i.e., the directory that contains `NodeServices.sln`), restore the .NET dependencies:
+1. In the solution root directory (`NodeServices` - i.e., the directory that contains `NodeServices.sln`), restore the .NET dependencies:
 
 
    ```
-   cd NodeServices
-   dnu restore
+   dotnet restore
    ```
 
-3. Change directory to whichever sample you want to run, then restore the Node dependencies. For example:
+2. Change directory to whichever sample you want to run, then restore the Node dependencies. For example:
 
    ```
    cd samples/angular/MusicStore/
    npm install
    ```
 
-4. Where applicable, build the project. For example, the Angular example uses Gulp, so you'll need to execute `gulp`, whereas the React example uses Webpack, so you'll need to execute `webpack`. The ES2015 example does not need to be built.
+3. Where applicable, build the project. For example, the Angular example uses Gulp, so you'll need to execute `gulp`, whereas the React example uses Webpack, so you'll need to execute `webpack`. The ES2015 example does not need to be built.
 
    If you don't already have it, install the applicable build tool first (e.g., `npm install -g webpack`).
 
-5. Run the project (and wait until it displays the message `Application started`)
+4. Run the project (and wait until it displays the message `Application started`)
 
   ```
-  dnx web
+  dotnet run
   ```
 
-6. Browse to [`http://localhost:5000/`](http://localhost:5000/)
-
+5. Browse to [`http://localhost:5000/`](http://localhost:5000/)
