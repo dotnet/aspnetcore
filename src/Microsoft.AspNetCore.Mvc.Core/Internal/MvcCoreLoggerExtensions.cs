@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _contentResultExecuting(logger, contentType, null);
         }
 
-        public static void ActionMethodExecuting(this ILogger logger, ActionExecutingContext context, object[] arguments)
+        public static void ActionMethodExecuting(this ILogger logger, ControllerContext context, object[] arguments)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        public static void ActionMethodExecuted(this ILogger logger, ActionExecutingContext context, IActionResult result)
+        public static void ActionMethodExecuted(this ILogger logger, ControllerContext context, IActionResult result)
         {
             if (logger.IsEnabled(LogLevel.Debug))
             {

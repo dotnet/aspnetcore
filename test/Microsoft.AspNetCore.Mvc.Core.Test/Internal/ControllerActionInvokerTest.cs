@@ -1803,6 +1803,56 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public async Task InvokeAction_InvokesAsyncResourceFilter_ShortCircuit_WithoutResult()
+        {
+            // Arrange
+            ResourceExecutedContext context = null;
+            var resourceFilter1 = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter1
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    context = await next();
+                })
+                .Verifiable();
+
+            var resourceFilter2 = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter2
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>((c, next) =>
+                {
+                    return Task.FromResult(true);
+                })
+                .Verifiable();
+
+            var resourceFilter3 = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            var exceptionFilter = new Mock<IExceptionFilter>(MockBehavior.Strict);
+            var actionFilter = new Mock<IAsyncActionFilter>(MockBehavior.Strict);
+            var resultFilter = new Mock<IAsyncResultFilter>(MockBehavior.Strict);
+
+            var invoker = CreateInvoker(
+                new IFilterMetadata[]
+                {
+                    resourceFilter1.Object, // This filter should see the result retured from resourceFilter2
+                    resourceFilter2.Object, // This filter will short circuit
+                    resourceFilter3.Object, // This shouldn't run - it will throw if it does
+                    exceptionFilter.Object, // This shouldn't run - it will throw if it does
+                    actionFilter.Object, // This shouldn't run - it will throw if it does
+                    resultFilter.Object // This shouldn't run - it will throw if it does
+                },
+                // The action won't run
+                actionThrows: true);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            Assert.Null(context.Result);
+            Assert.True(context.Canceled);
+            Assert.False(invoker.ControllerFactory.CreateCalled);
+        }
+
+        [Fact]
         public async Task InvokeAction_InvokesResourceFilter_ShortCircuit()
         {
             // Arrange
@@ -2700,6 +2750,49 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             Assert.NotNull(listener.AfterAction?.ActionDescriptor);
             Assert.NotNull(listener.AfterAction?.HttpContext);
+        }
+        
+        public async Task InvokeAction_ExceptionBubbling_AsyncActionFilter_To_ResourceFilter()
+        {
+            // Arrange
+            var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+                {
+                    var context = await next();
+                    Assert.Same(_actionException, context.Exception);
+                    context.ExceptionHandled = true;
+                });
+
+            var actionFilter1 = new Mock<IAsyncActionFilter>(MockBehavior.Strict);
+            actionFilter1
+                .Setup(f => f.OnActionExecutionAsync(It.IsAny<ActionExecutingContext>(), It.IsAny<ActionExecutionDelegate>()))
+                .Returns<ActionExecutingContext, ActionExecutionDelegate>(async (c, next) =>
+                {
+                    await next();
+                });
+
+            var actionFilter2 = new Mock<IAsyncActionFilter>(MockBehavior.Strict);
+            actionFilter2
+                .Setup(f => f.OnActionExecutionAsync(It.IsAny<ActionExecutingContext>(), It.IsAny<ActionExecutionDelegate>()))
+                .Returns<ActionExecutingContext, ActionExecutionDelegate>(async (c, next) =>
+                {
+                    await next();
+                });
+
+            var invoker = CreateInvoker(
+                new IFilterMetadata[]
+                {
+                    resourceFilter.Object,
+                    actionFilter1.Object,
+                    actionFilter2.Object,
+                },
+                // The action won't run
+                actionThrows: true);
+
+            // Act & Assert
+            await invoker.InvokeAsync();
         }
 
         private TestControllerActionInvoker CreateInvoker(

@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MvcSandbox
 {
@@ -15,6 +17,10 @@ namespace MvcSandbox
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+
+            services.Insert(0, ServiceDescriptor.Singleton(
+                typeof(IConfigureOptions<AntiforgeryOptions>), 
+                new ConfigureOptions<AntiforgeryOptions>(options => options.CookieName = "<choose a name>")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
