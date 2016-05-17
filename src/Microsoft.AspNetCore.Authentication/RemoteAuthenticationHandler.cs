@@ -89,9 +89,32 @@ namespace Microsoft.AspNetCore.Authentication
 
         protected abstract Task<AuthenticateResult> HandleRemoteAuthenticateAsync();
 
-        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            return Task.FromResult(AuthenticateResult.Fail("Remote authentication does not support authenticate"));
+            // Most RemoteAuthenticationHandlers will have a PriorHandler, but it might not be set up during unit tests.
+            if (PriorHandler != null)
+            {
+                var authenticateContext = new AuthenticateContext(Options.SignInScheme);
+                await PriorHandler.AuthenticateAsync(authenticateContext);
+                if (authenticateContext.Accepted)
+                {
+                    if (authenticateContext.Error != null)
+                    {
+                        return AuthenticateResult.Fail(authenticateContext.Error);
+                    }
+
+                    if (authenticateContext.Principal != null)
+                    {
+                        return AuthenticateResult.Success(new AuthenticationTicket(authenticateContext.Principal,
+                            new AuthenticationProperties(authenticateContext.Properties), Options.AuthenticationScheme));
+                    }
+
+                    return AuthenticateResult.Fail("Not authenticated");
+                }
+
+            }
+
+            return AuthenticateResult.Fail("Remote authentication does not support authenticate");
         }
 
         protected override Task HandleSignOutAsync(SignOutContext context)
@@ -104,9 +127,11 @@ namespace Microsoft.AspNetCore.Authentication
             throw new NotSupportedException();
         }
 
-        protected override Task<bool> HandleForbiddenAsync(ChallengeContext context)
+        protected override async Task<bool> HandleForbiddenAsync(ChallengeContext context)
         {
-            throw new NotSupportedException();
+            var challengeContext = new ChallengeContext(Options.SignInScheme, context.Properties, ChallengeBehavior.Forbidden);
+            await PriorHandler.ChallengeAsync(challengeContext);
+            return challengeContext.Accepted;
         }
 
         protected virtual void GenerateCorrelationId(AuthenticationProperties properties)

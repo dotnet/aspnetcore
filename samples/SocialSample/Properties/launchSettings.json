@@ -19,10 +19,10 @@
     "SocialSample": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "https://localhost:54541/",
+      "launchUrl": "https://localhost:44318/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_SERVER.URLS": "https://localhost:54541/"
+        "ASPNETCORE_SERVER.URLS": "https://localhost:44318/"
       }
     }
   }

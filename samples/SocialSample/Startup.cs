@@ -313,21 +313,32 @@ namespace SocialSample
                 });
             });
 
-            // Deny anonymous request beyond this point.
-            app.Use(async (context, next) =>
-            {
-                if (!context.User.Identities.Any(identity => identity.IsAuthenticated))
-                {
-                    // The cookie middleware will intercept this 401 and redirect to /login
-                    await context.Authentication.ChallengeAsync();
-                    return;
-                }
-                await next();
-            });
 
-            // Display user information
             app.Run(async context =>
             {
+                // CookieAuthenticationOptions.AutomaticAuthenticate = true (default) causes User to be set
+                var user = context.User;
+
+                // This is what [Authorize] calls
+                // var user = await context.Authentication.AuthenticateAsync(AuthenticationManager.AutomaticScheme);
+
+                // This is what [Authorize(ActiveAuthenticationSchemes = MicrosoftAccountDefaults.AuthenticationScheme)] calls
+                // var user = await context.Authentication.AuthenticateAsync(MicrosoftAccountDefaults.AuthenticationScheme);
+
+                // Deny anonymous request beyond this point.
+                if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
+                {
+                    // This is what [Authorize] calls
+                    // The cookie middleware will intercept this 401 and redirect to /login
+                    await context.Authentication.ChallengeAsync();
+
+                    // This is what [Authorize(ActiveAuthenticationSchemes = MicrosoftAccountDefaults.AuthenticationScheme)] calls
+                    // await context.Authentication.ChallengeAsync(MicrosoftAccountDefaults.AuthenticationScheme);
+
+                    return;
+                }
+
+                // Display user information
                 context.Response.ContentType = "text/html";
                 await context.Response.WriteAsync("<html><body>");
                 await context.Response.WriteAsync("Hello " + (context.User.Identity.Name ?? "anonymous") + "<br>");
@@ -342,7 +353,7 @@ namespace SocialSample
                 await context.Response.WriteAsync("Refresh Token: " + await context.Authentication.GetTokenAsync("refresh_token") + "<br>");
                 await context.Response.WriteAsync("Token Type: " + await context.Authentication.GetTokenAsync("token_type") + "<br>");
                 await context.Response.WriteAsync("expires_at: " + await context.Authentication.GetTokenAsync("expires_at") + "<br>");
-                await context.Response.WriteAsync("<a href=\"/logout\">Logout</a>");
+                await context.Response.WriteAsync("<a href=\"/logout\">Logout</a><br>");
                 await context.Response.WriteAsync("</body></html>");
             });
         }

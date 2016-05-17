@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -81,25 +82,58 @@ namespace OpenIdConnectSample
                 {
                     await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     context.Response.ContentType = "text/html";
-                    await context.Response.WriteAsync($"<html><body>Signing out {context.User.Identity.Name}<br>{Environment.NewLine}");
+                    await context.Response.WriteAsync($"<html><body>Signed out {context.User.Identity.Name}<br>{Environment.NewLine}");
                     await context.Response.WriteAsync("<a href=\"/\">Sign In</a>");
                     await context.Response.WriteAsync($"</body></html>");
                     return;
                 }
-
-                if (!context.User.Identities.Any(identity => identity.IsAuthenticated))
+                if (context.Request.Path.Equals("/Account/AccessDenied"))
                 {
-                    await context.Authentication.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/" });
+                    await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    context.Response.ContentType = "text/html";
+                    await context.Response.WriteAsync($"<html><body>Access Denied for user {context.User.Identity.Name} to resource '{context.Request.Query["ReturnUrl"]}'<br>{Environment.NewLine}");
+                    await context.Response.WriteAsync("<a href=\"/signout\">Sign Out</a>");
+                    await context.Response.WriteAsync($"</body></html>");
+                    return;
+                }
+
+                // CookieAuthenticationOptions.AutomaticAuthenticate = true (default) causes User to be set
+                var user = context.User;
+
+                // This is what [Authorize] calls
+                // var user = await context.Authentication.AuthenticateAsync(AuthenticationManager.AutomaticScheme);
+
+                // This is what [Authorize(ActiveAuthenticationSchemes = OpenIdConnectDefaults.AuthenticationScheme)] calls
+                // var user = await context.Authentication.AuthenticateAsync(OpenIdConnectDefaults.AuthenticationScheme);
+
+                // Not authenticated
+                if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
+                {
+                    // This is what [Authorize] calls
+                    // The cookie middleware will intercept this 401 and redirect to /login
+                    await context.Authentication.ChallengeAsync();
+
+                    // This is what [Authorize(ActiveAuthenticationSchemes = OpenIdConnectDefaults.AuthenticationScheme)] calls
+                    // await context.Authentication.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme);
+
+                    return;
+                }
+
+                // Authenticated, but not authorized
+                if (context.Request.Path.Equals("/restricted") && !user.Identities.Any(identity => identity.HasClaim("special", "true")))
+                {
+                    await context.Authentication.ChallengeAsync();
                     return;
                 }
 
                 context.Response.ContentType = "text/html";
-                await context.Response.WriteAsync($"<html><body>Hello Authenticated User {context.User.Identity.Name}<br>{Environment.NewLine}");
-                foreach (var claim in context.User.Claims)
+                await context.Response.WriteAsync($"<html><body>Hello Authenticated User {user.Identity.Name}<br>{Environment.NewLine}");
+                foreach (var claim in user.Claims)
                 {
                     await context.Response.WriteAsync($"{claim.Type}: {claim.Value}<br>{Environment.NewLine}");
                 }
-                await context.Response.WriteAsync("<a href=\"/signout\">Sign Out</a>");
+                await context.Response.WriteAsync("<a href=\"/restricted\">Restricted</a><br>");
+                await context.Response.WriteAsync("<a href=\"/signout\">Sign Out</a><br>");
                 await context.Response.WriteAsync($"</body></html>");
             });
         }
