@@ -371,6 +371,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                     await connection.Receive(
                         "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
                         "");
                     await connection.ReceiveStartsWith("Date:");
                     await connection.ReceiveForcedEnd(
@@ -415,6 +416,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                     await connection.Receive(
                         "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
                         "");
                     await connection.ReceiveStartsWith("Date:");
                     await connection.ReceiveForcedEnd(

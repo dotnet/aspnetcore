@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
-        private static readonly byte[] _bytesHttpVersion1_1 = Encoding.ASCII.GetBytes("HTTP/1.1 ");
+        private static readonly byte[] _bytesHttpVersion11 = Encoding.ASCII.GetBytes("HTTP/1.1 ");
         private static readonly byte[] _bytesContentLengthZero = Encoding.ASCII.GetBytes("\r\nContent-Length: 0");
         private static readonly byte[] _bytesSpace = Encoding.ASCII.GetBytes(" ");
         private static readonly byte[] _bytesEndHeaders = Encoding.ASCII.GetBytes("\r\n\r\n");
@@ -87,29 +87,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             get
             {
-                if (_httpVersion == HttpVersionType.Http1_1)
+                if (_httpVersion == HttpVersionType.Http11)
                 {
                     return "HTTP/1.1";
                 }
-                if (_httpVersion == HttpVersionType.Http1_0)
+                if (_httpVersion == HttpVersionType.Http10)
                 {
                     return "HTTP/1.0";
                 }
+
                 return string.Empty;
             }
             set
             {
                 if (value == "HTTP/1.1")
                 {
-                    _httpVersion = HttpVersionType.Http1_1;
+                    _httpVersion = HttpVersionType.Http11;
                 }
                 else if (value == "HTTP/1.0")
                 {
-                    _httpVersion = HttpVersionType.Http1_0;
+                    _httpVersion = HttpVersionType.Http10;
                 }
                 else
                 {
-                    _httpVersion = HttpVersionType.Unknown;
+                    _httpVersion = HttpVersionType.Unset;
                 }
             }
         }
@@ -229,7 +230,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             PathBase = null;
             Path = null;
             QueryString = null;
-            _httpVersion = HttpVersionType.Unknown;
+            _httpVersion = HttpVersionType.Unset;
             StatusCode = 200;
             ReasonPhrase = null;
 
@@ -512,7 +513,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
 
             StringValues expect;
-            if (_httpVersion == HttpVersionType.Http1_1 &&
+            if (_httpVersion == HttpVersionType.Http11 &&
                 RequestHeaders.TryGetValue("Expect", out expect) &&
                 (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
             {
@@ -595,6 +596,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     // 400 Bad Request
                     StatusCode = 400;
+                    _keepAlive = false;
                 }
                 else
                 {
@@ -712,7 +714,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     //
                     // A server MUST NOT send a response containing Transfer-Encoding unless the corresponding
                     // request indicates HTTP/1.1 (or later).
-                    if (_httpVersion == HttpVersionType.Http1_1)
+                    if (_httpVersion == HttpVersionType.Http11)
                     {
                         _autoChunk = true;
                         responseHeaders.SetRawTransferEncoding("chunked", _bytesTransferEncodingChunked);
@@ -724,16 +726,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }
             }
 
-            if (_keepAlive == false && responseHeaders.HasConnection == false && _httpVersion == HttpVersionType.Http1_1)
+            if (!_keepAlive && !responseHeaders.HasConnection && _httpVersion != HttpVersionType.Http10)
             {
                 responseHeaders.SetRawConnection("close", _bytesConnectionClose);
             }
-            else if (_keepAlive && responseHeaders.HasConnection == false && _httpVersion == HttpVersionType.Http1_0)
+            else if (_keepAlive && !responseHeaders.HasConnection && _httpVersion == HttpVersionType.Http10)
             {
                 responseHeaders.SetRawConnection("keep-alive", _bytesConnectionKeepAlive);
             }
 
-            end.CopyFrom(_bytesHttpVersion1_1);
+            end.CopyFrom(_bytesHttpVersion11);
             end.CopyFrom(statusBytes);
             responseHeaders.CopyTo(ref end);
             end.CopyFrom(_bytesEndHeaders, 0, _bytesEndHeaders.Length);
@@ -838,12 +840,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     }
                     else if (httpVersion != "HTTP/1.0" && httpVersion != "HTTP/1.1")
                     {
-                        RejectRequest("Malformed request.");
+                        RejectRequest("Unrecognized HTTP version.");
                     }
                 }
-
-                // HttpVersion must be set here to send correct response when request is rejected
-                HttpVersion = httpVersion;
 
                 scan.Take();
                 var next = scan.Take();
@@ -879,6 +878,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 Method = method;
                 RequestUri = requestUrlPath;
                 QueryString = queryString;
+                HttpVersion = httpVersion;
 
                 bool caseMatches;
 
@@ -1099,9 +1099,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         private enum HttpVersionType
         {
-            Unknown = -1,
-            Http1_0 = 0,
-            Http1_1 = 1
+            Unset = -1,
+            Http10 = 0,
+            Http11 = 1
         }
 
         protected enum RequestLineStatus

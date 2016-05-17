@@ -727,21 +727,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
-                        "GET /");
-                    await connection.Receive(
-                        "HTTP/1.1 400 Bad Request",
-                        "");
-                    await connection.ReceiveStartsWith("Date:");
-                    await connection.ReceiveForcedEnd(
-                        "Content-Length: 0",
-                        "Server: Kestrel",
-                        "",
-                        "");
-                }
-
-                using (var connection = new TestConnection(server.Port))
-                {
-                    await connection.SendEnd(
                         "GET / HTTP/1.1",
                         "",
                         "POST / HTTP/1.1");
@@ -750,6 +735,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Content-Length: 0",
                         "",
                         "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
                         "");
                     await connection.ReceiveStartsWith("Date:");
                     await connection.ReceiveForcedEnd(
