@@ -15,10 +15,13 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "web": {
-      "commandName": "web",
+    "OpenIdConnect": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:42023",
       "environmentVariables": {
-        "Hosting:Environment": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_SERVER.URLS": "http://localhost:42023"
       }
     }
   }

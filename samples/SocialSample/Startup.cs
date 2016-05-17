@@ -1,11 +1,8 @@
 using System;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Security.Claims;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -20,7 +17,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
@@ -29,13 +25,20 @@ namespace SocialSample
     /* Note all servers must use the same address and port because these are pre-registered with the various providers. */
     public class Startup
     {
-        public Startup()
+        public Startup(IHostingEnvironment env)
         {
-            Configuration = new ConfigurationBuilder()
-                .AddEnvironmentVariables()
-                .AddJsonFile("config.json")
-                .AddUserSecrets()
-                .Build();
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json");
+
+            if (env.IsDevelopment())
+            {
+                // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
+                builder.AddUserSecrets();
+            }
+
+            builder.AddEnvironmentVariables();
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; set; }
@@ -342,40 +345,6 @@ namespace SocialSample
                 await context.Response.WriteAsync("<a href=\"/logout\">Logout</a>");
                 await context.Response.WriteAsync("</body></html>");
             });
-        }
-
-        public static void Main(string[] args)
-        {
-            var host = new WebHostBuilder()
-                .UseKestrel(options =>
-                {
-                    //Configure SSL
-                    var serverCertificate = LoadCertificate();
-                    options.UseHttps(serverCertificate);
-                })
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
-
-            host.Run();
-        }
-
-        private static X509Certificate2 LoadCertificate()
-        {
-            var socialSampleAssembly = typeof(Startup).GetTypeInfo().Assembly;
-            var embeddedFileProvider = new EmbeddedFileProvider(socialSampleAssembly, "SocialSample");
-            var certificateFileInfo = embeddedFileProvider.GetFileInfo("compiler/resources/cert.pfx");
-            using (var certificateStream = certificateFileInfo.CreateReadStream())
-            {
-                byte[] certificatePayload;
-                using (var memoryStream = new MemoryStream())
-                {
-                    certificateStream.CopyTo(memoryStream);
-                    certificatePayload = memoryStream.ToArray();
-                }
-
-                return new X509Certificate2(certificatePayload, "testPassword");
-            }
         }
     }
 }

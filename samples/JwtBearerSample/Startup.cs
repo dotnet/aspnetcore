@@ -13,12 +13,19 @@ namespace JwtBearerSample
 {
     public class Startup
     {
-        public Startup()
+        public Startup(IHostingEnvironment env)
         {
-            Configuration = new ConfigurationBuilder()
-                .AddEnvironmentVariables()
-                .AddUserSecrets()
-                .Build();
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath);
+
+            if (env.IsDevelopment())
+            {
+                // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
+                builder.AddUserSecrets();
+            }
+
+            builder.AddEnvironmentVariables();
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; set; }
@@ -105,18 +112,6 @@ namespace JwtBearerSample
                     }
                 });
             });
-        }
-
-        // Entry point for the application.
-        public static void Main(string[] args)
-        {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
-
-            host.Run();
         }
     }
 }

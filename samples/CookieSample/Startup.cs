@@ -41,16 +41,5 @@ namespace CookieSample
                 await context.Response.WriteAsync("Hello old timer");
             });
         }
-
-        public static void Main(string[] args)
-        {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
-
-            host.Run();
-        }
     }
 }

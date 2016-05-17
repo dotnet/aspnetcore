@@ -12,15 +12,16 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNET_ENV": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "web": {
-      "commandName": "web",
+    "CookieSample": {
+      "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "http://localhost:12345",
       "environmentVariables": {
-        "Hosting:Environment": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_SERVER.URLS": "http://localhost:12345"
       }
     }
   }

@@ -20,12 +20,19 @@ namespace OpenIdConnect.AzureAdSample
     {
         private const string GraphResourceID = "https://graph.windows.net";
 
-        public Startup()
+        public Startup(IHostingEnvironment env)
         {
-            Configuration = new ConfigurationBuilder()
-                .AddEnvironmentVariables()
-                .AddUserSecrets()
-                .Build();
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath);
+
+            if (env.IsDevelopment())
+            {
+                // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
+                builder.AddUserSecrets();
+            }
+
+            builder.AddEnvironmentVariables();
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; set; }
@@ -149,17 +156,6 @@ namespace OpenIdConnect.AzureAdSample
                 await context.Response.WriteAsync("<a href=\"/signout\">Sign Out</a>");
                 await context.Response.WriteAsync($"</body></html>");
             });
-        }
-
-        public static void Main(string[] args)
-        {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
-
-            host.Run();
         }
     }
 }

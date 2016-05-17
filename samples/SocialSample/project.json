@@ -19,7 +19,7 @@
     "emitEntryPoint": true
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netcoreapp1.0": {
       "imports": [
         "dnxcore50"
@@ -35,7 +35,7 @@
   "userSecretsId": "aspnet5-SocialSample-20151210111056",
   "publishOptions": {
     "include": [
-      "config.json",
+      "appsettings.json",
       "project.json",
       "web.config"
     ]
