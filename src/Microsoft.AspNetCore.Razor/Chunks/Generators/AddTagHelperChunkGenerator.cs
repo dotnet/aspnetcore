@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Chunks.Generators
 {
@@ -34,6 +36,24 @@ namespace Microsoft.AspNetCore.Razor.Chunks.Generators
         public override void GenerateChunk(Span target, ChunkGeneratorContext context)
         {
             context.ChunkTreeBuilder.AddAddTagHelperChunk(_lookupText, target);
+        }
+
+        /// <inheritdoc />
+        public override bool Equals(object obj)
+        {
+            var other = obj as AddTagHelperChunkGenerator;
+            return base.Equals(other) &&
+                string.Equals(_lookupText, other._lookupText, StringComparison.Ordinal);
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            var combiner = HashCodeCombiner.Start();
+            combiner.Add(base.GetHashCode());
+            combiner.Add(_lookupText, StringComparer.Ordinal);
+
+            return combiner.CombinedHash;
         }
     }
 }

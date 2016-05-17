@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser.CSharp
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharacters.None),
                     Factory.Code("\"Foo")
-                        .AsTagHelperPrefixDirective("Foo")),
+                        .AsTagHelperPrefixDirective("\"Foo")),
                 new RazorError(
                     RazorResources.ParseError_Unterminated_String_Literal,
                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser.CSharp
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharacters.None),
                     Factory.Code("Foo   \"")
-                        .AsTagHelperPrefixDirective("Foo")),
+                        .AsTagHelperPrefixDirective("Foo   \"")),
                 new RazorError(
                     RazorResources.ParseError_Unterminated_String_Literal,
                     absoluteIndex: 23, lineIndex: 0, columnIndex: 23, length: 1),
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser.CSharp
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
                     Factory.Code("\"Foo")
-                        .AsRemoveTagHelper("Foo")),
+                        .AsRemoveTagHelper("\"Foo")),
                  new RazorError(
                      RazorResources.ParseError_Unterminated_String_Literal,
                      absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser.CSharp
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
                     Factory.Code("Foo\"")
-                        .AsRemoveTagHelper("Foo")
+                        .AsRemoveTagHelper("Foo\"")
                         .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                      RazorResources.ParseError_Unterminated_String_Literal,
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser.CSharp
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + "     ")
                            .Accepts(AcceptedCharacters.None),
                     Factory.Code("Foo,   Bar    ")
-                        .AsAddTagHelper("Foo,  Bar")));
+                        .AsAddTagHelper("Foo,   Bar")));
         }
 
         [Fact]
@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser.CSharp
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
                     Factory.Code("\"Foo")
-                        .AsAddTagHelper("Foo")),
+                        .AsAddTagHelper("\"Foo")),
                  new RazorError(
                      RazorResources.ParseError_Unterminated_String_Literal,
                      absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 1),
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser.CSharp
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
                     Factory.Code("Foo\"")
-                        .AsAddTagHelper("Foo")
+                        .AsAddTagHelper("Foo\"")
                         .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                      RazorResources.ParseError_Unterminated_String_Literal,
