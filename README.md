@@ -46,7 +46,6 @@ To get started,
 
 1. Ensure you have [installed the latest stable version of .NET Core](https://www.microsoft.com/net). The packages are built to work with .NET Core version RC2 or later. [Installers](https://www.microsoft.com/net/download) are available for **Windows**, **OS X**, **Linux**.
 2. Ensure you have [installed a recent version of Node.js](https://nodejs.org/en/). To check this works, open a console prompt, and type `node -v`. It should print a version number.
-   ```
 3. Clone this repository:
 
    ```
@@ -65,7 +64,6 @@ Note that to run the React example, you'll also need to run `webpack` from the `
 **Using dotnet on Windows/Mac/Linux**
 
 1. In the solution root directory (`NodeServices` - i.e., the directory that contains `NodeServices.sln`), restore the .NET dependencies:
-
 
    ```
    dotnet restore
