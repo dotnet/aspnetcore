@@ -28,7 +28,7 @@
       "dependencies": {
         "Microsoft.CSharp": "4.0.1-*",
         "System.Collections.Concurrent": "4.0.12-*",
-        "System.ComponentModel.TypeConverter": "4.0.1-*",
+        "System.ComponentModel.TypeConverter": "4.1.0-*",
         "System.Diagnostics.Debug": "4.0.11-*",
         "System.Globalization": "4.0.11-*",
         "System.Linq": "4.1.0-*",
