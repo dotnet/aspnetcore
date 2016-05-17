@@ -29,8 +29,8 @@ namespace MusicStore.Apis
             await _storeContext.Artists.LoadAsync();
 
             var albums = await _storeContext.Albums
-            //  .Include(a => a.Genre)
-            //  .Include(a => a.Artist)
+              .Include(a => a.Genre)
+              .Include(a => a.Artist)
             .ToPagedListAsync(page, pageSize, sortBy,
                     a => a.Title,                                    // sortExpression
                     SortDirection.Ascending,                         // defaultSortDirection
@@ -44,8 +44,8 @@ namespace MusicStore.Apis
         public async Task<ActionResult> All()
         {
             var albums = await _storeContext.Albums
-                //.Include(a => a.Genre)
-                //.Include(a => a.Artist)
+                .Include(a => a.Genre)
+                .Include(a => a.Artist)
                 .OrderBy(a => a.Title)
                 .ToListAsync();
 
@@ -74,16 +74,12 @@ namespace MusicStore.Apis
             await _storeContext.Artists.LoadAsync();
 
             var album = await _storeContext.Albums
-                //.Include(a => a.Artist)
-                //.Include(a => a.Genre)
+                .Include(a => a.Artist)
+                .Include(a => a.Genre)
                 .Where(a => a.AlbumId == albumId)
                 .SingleOrDefaultAsync();
 
             var albumResult = Mapper.Map(album, new AlbumResultDto());
-
-            // TODO: Get these from the related entities when EF supports that again, i.e. when .Include() works
-            //album.Artist.Name = (await _storeContext.Artists.SingleOrDefaultAsync(a => a.ArtistId == album.ArtistId)).Name;
-            //album.Genre.Name = (await _storeContext.Genres.SingleOrDefaultAsync(g => g.GenreId == album.GenreId)).Name;
 
             // TODO: Add null checking and return 404 in that case
 
@@ -147,7 +143,6 @@ namespace MusicStore.Apis
         public async Task<ActionResult> DeleteAlbum(int albumId)
         {
             var album = await _storeContext.Albums.SingleOrDefaultAsync(a => a.AlbumId == albumId);
-            //var album = _storeContext.Albums.SingleOrDefault(a => a.AlbumId == albumId);
 
             if (album != null)
             {

@@ -5,10 +5,6 @@
     "keyFile": "../../tools/Key.snk"
   },
   "authors": [ "Microsoft" ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/nodeservices"
-  },
   "tooling": {
     "defaultNamespace": "Microsoft.AspNetCore.ReactServices"
   },
@@ -20,15 +16,10 @@
   "frameworks": {
     "netcoreapp1.0": {
       "imports": [
+        "dotnet5.6",
         "dnxcore50",
-        "portable-net451+win8"
-      ],
-      "dependencies": {
-        "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
-          "type": "platform"
-        }
-      }
+        "portable-net45+win8"
+      ]
     }
   }
 }

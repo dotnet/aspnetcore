@@ -1,18 +1,24 @@
 {
   "version": "1.0.0-*",
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true,
-    "warningsAsErrors": true,
     "preserveCompilationContext": true
+  },
+  "runtimeOptions": {
+    "gcServer": true
   },
   "tooling": {
     "defaultNamespace": "MusicStore"
   },
 
-  "dependencies": {
+"dependencies": {
+    "Microsoft.NETCore.App": {
+      "version": "1.0.0-rc2-*",
+      "type": "platform"
+    },
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
     "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.0.0-*",
-    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
@@ -25,39 +31,26 @@
     "Microsoft.AspNetCore.ReactServices": "1.0.0-*",
     "AutoMapper": "4.1.1"
   },
-
-  "commands": {
-    "web": "Microsoft.AspNetCore.Server.Kestrel"
-  },
-
   "frameworks": {
     "netcoreapp1.0": {
       "imports": [
+        "dotnet5.6",
         "dnxcore50",
-        "portable-net451+win8"
-      ],
-      "dependencies": {
-        "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
-          "type": "platform"
-        }
-      }
+        "portable-net45+win8"
+      ]
     }
   },
-
-  "exclude": [
-    "wwwroot",
-    "node_modules"
-  ],
-  "publishExclude": [
-    "node_modules",
-    "**.xproj",
-    "**.user",
-    "**.vspscc"
-  ],
-  "scripts": {
-    "prepublish": [
-      "npm install"
+  "publishOptions": {
+    "exclude": [
+      "node_modules",
+      "bower_components",
+      "**.xproj",
+      "**.user",
+      "**.vspscc"
     ]
+  },
+  "scripts": {
+    "prepublish": [ "npm install" ],
+    "postpublish": [ "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%" ]
   }
 }

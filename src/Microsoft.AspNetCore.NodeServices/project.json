@@ -5,32 +5,28 @@
     "keyFile": "../../tools/Key.snk"
   },
   "authors": [ "Microsoft" ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/nodeservices"
-  },
   "dependencies": {
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*",
-    "Newtonsoft.Json": "8.0.3"
+    "Newtonsoft.Json": "8.0.3",
+    "System.Diagnostics.Process": "4.1.0-*",
+    "System.Text.RegularExpressions": "4.0.0-*",
+    "System.Net.Http": "4.0.0-*",
+    "System.Console": "4.0.0-*"
   },
   "frameworks": {
     "netcoreapp1.0": {
       "imports": [
+        "dotnet5.6",
         "dnxcore50",
-        "portable-net451+win8"
-      ],
-      "dependencies": {
-        "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
-          "type": "platform"
-        },
-        "System.Diagnostics.Process": "4.1.0-*"
-      }
+        "portable-net45+win8"
+      ]
     }
   },
-  "resource": [
-    "Content/**/*"
-  ]
+  "buildOptions": {
+    "embed": [
+      "Content/**/*"
+    ]
+  } 
 }

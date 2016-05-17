@@ -53,7 +53,7 @@ namespace WebApplicationBasic
         {
             var host = new WebHostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISPlatformHandlerUrl()
+                .UseIISIntegration()
                 .UseKestrel()
                 .UseStartup<Startup>()
                 .Build();

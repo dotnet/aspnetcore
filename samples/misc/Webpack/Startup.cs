@@ -21,11 +21,13 @@ namespace Webpack
         {
             app.UseDeveloperExceptionPage();
 
-            if (env.IsDevelopment()) {
-                app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
-                    HotModuleReplacement = true
-                });
-            }
+            // For real apps, you should only use Webpack Dev Middleware at development time. For production,
+            // you'll get better performance and reliability if you precompile the webpack output and simply
+            // serve the resulting static files. For examples of setting up this automatic switch between
+            // development-style and production-style webpack usage, see the 'templates' dir in this repo.
+            app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
+                HotModuleReplacement = true
+            });
 
             app.UseStaticFiles();
             loggerFactory.AddConsole();
@@ -41,7 +43,7 @@ namespace Webpack
         {
             var host = new WebHostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISPlatformHandlerUrl()
+                .UseIISIntegration()
                 .UseKestrel()
                 .UseStartup<Startup>()
                 .Build();

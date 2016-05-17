@@ -1,37 +1,28 @@
 {
   "version": "1.0.0-*",
-  "description": "Helpers for building single-page applications on ASP.NET Core",
+  "description": "Helpers for building single-page applications on ASP.NET MVC Core",
   "compilationOptions": {
     "keyFile": "../../tools/Key.snk"
   },
   "authors": [
     "Microsoft"
   ],
-  "tags": [
-    ""
-  ],
-  "projectUrl": "",
-  "licenseUrl": "",
   "dependencies": {
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
-    "Microsoft.AspNetCore.Routing": "1.0.0-*",
     "Microsoft.AspNetCore.NodeServices": "1.0.0-*"
   },
   "frameworks": {
     "netcoreapp1.0": {
       "imports": [
+        "dotnet5.6",
         "dnxcore50",
-        "portable-net451+win8"
-      ],
-      "dependencies": {
-        "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
-          "type": "platform"
-        }
-      }
+        "portable-net45+win8"
+      ]
     }
   },
-  "resource": [
-    "Content/**/*"
-  ]
+  "buildOptions": {
+    "embed": [
+      "Content/**/*"
+    ]
+  } 
 }

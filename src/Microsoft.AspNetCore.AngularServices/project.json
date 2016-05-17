@@ -5,30 +5,21 @@
     "keyFile": "../../tools/Key.snk"
   },
   "authors": [ "Microsoft" ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/nodeservices"
-  },
   "tooling": {
     "defaultNamespace": "Microsoft.AspNetCore.AngularServices"
-  },
-  "frameworks": {
-    "netcoreapp1.0": {
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ],
-      "dependencies": {
-        "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
-          "type": "platform"
-        }
-      }
-    }
   },
   "dependencies": {
     "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
     "Microsoft.AspNetCore.NodeServices": "1.0.0-*",
     "Microsoft.AspNetCore.SpaServices": "1.0.0-*"
+  },
+  "frameworks": {
+    "netcoreapp1.0": {
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ]
+    }
   }
 }
