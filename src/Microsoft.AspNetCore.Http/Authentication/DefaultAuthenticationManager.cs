@@ -92,7 +92,8 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
             return new AuthenticateInfo
             {
                 Principal = context.Principal,
-                Properties = new AuthenticationProperties(context.Properties)
+                Properties = new AuthenticationProperties(context.Properties),
+                Description = new AuthenticationDescription(context.Description)
             };
         }
 

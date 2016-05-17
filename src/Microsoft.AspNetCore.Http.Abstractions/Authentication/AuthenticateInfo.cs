@@ -20,5 +20,10 @@ namespace Microsoft.AspNetCore.Http.Authentication
         /// The <see cref="AuthenticationProperties"/>.
         /// </summary>
         public AuthenticationProperties Properties { get; set; }
+
+        /// <summary>
+        /// The <see cref="AuthenticationDescription"/>.
+        /// </summary>
+        public AuthenticationDescription Description { get; set; }
     }
 }
