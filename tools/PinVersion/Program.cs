@@ -2,38 +2,56 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NuGet;
+using NuGet.Common;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3;
+using NuGet.Versioning;
 
 namespace PinVersion
 {
     public class Program
     {
-        public void Main(string[] args)
+        private static ConcurrentDictionary<string, Task<NuGetVersion>> _packageVersionLookup =
+            new ConcurrentDictionary<string, Task<NuGetVersion>>(StringComparer.OrdinalIgnoreCase);
+
+        public static void Main(string[] args)
         {
             if (args.Length != 3)
             {
-                Console.Error.WriteLine("Usage <repository-path> <package source> <Korebuild Version>");
+                Console.Error.WriteLine("Usage <package source> <Korebuild Tag> <repository-names-file>");
             }
 
-            var repositoryPath = args[0];
-            var packageSource = args[1];
-            var korebuildVersion = args[2];
+            var packageSource = args[0];
+            var korebuildTag = args[1];
 
-            var packageRepository = PackageRepositoryFactory.Default.CreateRepository(packageSource);
+            var repositoryNames = File.ReadAllLines(args[2]);
+
+            Task.WaitAll(repositoryNames
+                .Select(repositoryPath => ExecuteAsync(repositoryPath, packageSource, korebuildTag))
+                .ToArray());
+        }
+
+        public static async Task ExecuteAsync(string repositoryPath, string packageSource, string korebuildTag)
+        {
+            var packageRepository = Repository.Factory.GetCoreV3(packageSource);
+            var metadataResource = await packageRepository.GetResourceAsync<MetadataResource>();
 
             // Pin project.json files
             foreach (var file in Directory.EnumerateFiles(repositoryPath, "project.json", SearchOption.AllDirectories))
             {
                 var projectJson = JObject.Parse(File.ReadAllText(file));
-                var directoryName = Path.GetFileName(Path.GetDirectoryName(file));
-                var latestPackage = packageRepository.FindPackage(directoryName);
-                if (latestPackage != null)
+                var projectName = Path.GetFileName(Path.GetDirectoryName(file));
+                var latestPackageVersion = await GetOrAddVersion(metadataResource, projectName);
+                if (latestPackageVersion != null)
                 {
-                    ((JValue)projectJson["version"]).Value = latestPackage.Version.ToNormalizedString();
+                    ((JValue)projectJson["version"]).Value = latestPackageVersion.ToNormalizedString();
                 }
 
                 var frameworkDependencies = projectJson["frameworks"]
@@ -47,19 +65,19 @@ namespace PinVersion
 
                 foreach (var dependency in dependencies)
                 {
-                    latestPackage = packageRepository.FindPackage(dependency.Name);
-                    if (latestPackage != null)
+                    latestPackageVersion = await GetOrAddVersion(metadataResource, dependency.Name);
+                    if (latestPackageVersion != null)
                     {
                         if (dependency.Value.Type == JTokenType.Object)
                         {
                             // "key": { "version": "1.0.0-*", "type": "build" }
                             var value = (JObject)dependency.Value;
-                            value["version"] = latestPackage.Version.ToNormalizedString();
+                            value["version"] = latestPackageVersion.ToNormalizedString();
                         }
                         else
                         {
                             // "key": "version"
-                            dependency.Value = latestPackage.Version.ToNormalizedString();
+                            dependency.Value = latestPackageVersion.ToNormalizedString();
                         }
                     }
                 }
@@ -70,51 +88,38 @@ namespace PinVersion
                     fileWriter.Indentation = 2;
                     projectJson.WriteTo(fileWriter);
                 }
+
+                // Update KoreBuild path
+
+                var buildFiles = new[] { "build.ps1", "build.sh" };
+                foreach (var buildFile in buildFiles)
+                {
+                    var buildFilePath = Path.Combine(repositoryPath, buildFile);
+                    if (File.Exists(buildFilePath))
+                    {
+                        var content = File.ReadAllText(buildFilePath);
+                        var replaced = content.Replace("KoreBuild/archive/release.zip", $"KoreBuild/archive/{korebuildTag}.zip");
+
+                        if (content != replaced)
+                        {
+                            File.WriteAllText(buildFilePath, replaced);
+                        }
+                    }
+                }
             }
+        }
 
-            // Pin the build scripts
-            //TODO: handle build.sh files too
-            var dnxPackageName = "dnx-clr-win-x86";
-            var dnxPackage = packageRepository.FindPackage(dnxPackageName);
-            if (dnxPackage == null)
+        private static Task<NuGetVersion> GetOrAddVersion(MetadataResource resource, string packageId)
+        {
+            return _packageVersionLookup.GetOrAdd(packageId, id =>
             {
-                throw new InvalidOperationException(
-                    $"Could not find the DNX package with name '{dnxPackageName}' to " +
-                    "pin the build script");
-            }
-
-            var buildCmdFiles = Directory.GetFiles(repositoryPath, "build.cmd", SearchOption.TopDirectoryOnly);
-            if (buildCmdFiles == null || buildCmdFiles.Length == 0)
-            {
-                throw new InvalidOperationException($"No build.cmd files found at {repositoryPath}");
-            }
-
-            var buildCmdFile = buildCmdFiles[0];
-            var buildCmdFileContent = File.ReadAllText(buildCmdFile);
-            buildCmdFileContent = buildCmdFileContent.Replace(
-                "SET BUILDCMD_KOREBUILD_VERSION=\"\"",
-                $"SET BUILDCMD_KOREBUILD_VERSION={korebuildVersion}");
-            buildCmdFileContent = buildCmdFileContent.Replace(
-                "SET BUILDCMD_DNX_VERSION=\"\"",
-                $"SET BUILDCMD_DNX_VERSION={dnxPackage.Version.ToNormalizedString()}");
-
-            // Replace all content of the file
-            File.WriteAllText(buildCmdFile, buildCmdFileContent);
-
-            // Pin the global.json
-            var globalJsonPath = Path.Combine(repositoryPath, "global.json");
-            var globalJson = JObject.Parse(File.ReadAllText(globalJsonPath));
-            globalJson["sdk"] = new JObject
-            {
-                ["version"] = dnxPackage.Version.ToNormalizedString()
-            };
-
-            using (var fileWriter = new JsonTextWriter(new StreamWriter(globalJsonPath)))
-            {
-                fileWriter.Formatting = Formatting.Indented;
-                fileWriter.Indentation = 2;
-                globalJson.WriteTo(fileWriter);
-            }
+                return resource.GetLatestVersion(
+                    packageId,
+                    includePrerelease: true,
+                    includeUnlisted: false,
+                    log: NullLogger.Instance,
+                    token: default(CancellationToken));
+            });
         }
     }
 }

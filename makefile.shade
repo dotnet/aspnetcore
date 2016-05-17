@@ -35,11 +35,8 @@ functions
         static string kBuildVersion = GetEnvironmentParameter("DNX_BUILD_VERSION");
         static string ciVolatileShare = GetEnvironmentParameter("CI_VOLATILE_SHARE");
         static string koreBuildTargets = GetEnvironmentParameter("KOREBUILD_BUILD_TARGETS");
-        static string coherenceFeed = GetEnvironmentParameter("COHERENCE_FEED");
-        static string koreBuildVersion = GetEnvironmentParameter("KOREBUILD_VERSION");
         static string nugetVersion = GetEnvironmentParameter("NUGET_VERSION");
         static string nugetExe = GetEnvironmentParameter("PUSH_NUGET_EXE");
-        static string preReleaseTag = GetEnvironmentParameter("PRERELEASETAG");
         static string universeCommitsFile = GetEnvironmentParameter("UNIVERSE_COMMITS_FILE");
         static bool skipNoCredentials = GetEnvironmentParameter("UNIVERSE_SKIP_NO_CREDENTIALS", value => value == "1");
         static string repositoryInclude = GetEnvironmentParameter("KOREBUILD_REPOSITORY_INCLUDE");

@@ -101,20 +101,17 @@
     -// Pin versions of packages in project.json and updated project.lock.json
     -// More information https://github.com/aspnet/Universe/wiki/%23pin-version-:-Pinning-package-version-for-a-particular-release-in-project.json
     @{
+        var koreBuildTag = GetEnvironmentParameter("KOREBUILD_TAG");
+        var coherenceFeed = GetEnvironmentParameter("COHERENCE_FEED");
 
         if (string.IsNullOrEmpty(coherenceFeed))
         {
             throw new Exception("COHERENCE_FEED not specified. Usually this is Packages-NoTimestamp directory of Coherence-Signed.");
         }
 
-        if (string.IsNullOrEmpty(koreBuildVersion))
+        if (string.IsNullOrEmpty(koreBuildTag))
         {
-            throw new Exception("KOREBUILD_VERSION environment variable is not specified.");
-        }
-
-        if (string.IsNullOrEmpty(nugetVersion))
-        {
-            throw new Exception("NUGET_VERSION not specified. This is most recent stable build of NuGet from http://dist.nuget.org/index.html. e.g. v3.2");
+            throw new Exception("KOREBUILD_TAG environment variable is not specified.");
         }
 
         var excludeReposForJson = new[]
@@ -127,7 +124,7 @@
           "libuv-build",
         };
 
-        Exec("cmd", "/C dnu restore", @"tools\PinVersion");
+        Exec("dotnet", "restore", "tools/PinVersion");
 
         foreach (var repo in GetAllRepos())
         {
@@ -144,19 +141,33 @@
         }
 
         var reposToPin = GetAllRepos().Except(excludeReposForJson);
+        var repositoryNamesFile = Path.GetTempFileName();
+
+        File.WriteAllLines(repositoryNamesFile, reposToPin.Select(r => Path.Combine(Directory.GetCurrentDirectory(), r)));
+        var pinToolsArgs = string.Format(@"run -p tools/PinVersion ""{0}"" ""{1}"" ""{2}""",
+            coherenceFeed,
+            koreBuildTag,
+            repositoryNamesFile);
+        Exec("dotnet", pinToolsArgs, "");
+        try
+        {
+            File.Delete(repositoryNamesFile);
+        }
+        catch
+        {
+        }
 
         foreach (var repo in reposToPin)
         {
             var repoPath = Path.Combine(Directory.GetCurrentDirectory(), repo);
-
-            Exec("dnx",
-                string.Format(@"run ""{0}"" ""{1}"" ""{2}""",
-                    Path.Combine(Directory.GetCurrentDirectory(), repo),
-                    coherenceFeed,
-                    koreBuildVersion),
-                @"tools\PinVersion");
-
-            GitCommand(repo, "commit -am \"Updating json files to pin versions and build.cmd to pin KoreBuild and DNX\"");
+            try
+            {
+                GitCommand(repo, "commit -am \"Updating json files to pin versions and build files to pin KoreBuild\"");
+            }
+            catch
+            {
+                // Don't fail if there was nothing to add.
+            }
         }
 
         foreach (var repo in GetAllRepos())
@@ -170,6 +181,7 @@
 #update-prerelease-tags
     -// Update tags on each repo to have the latest release tag
     @{
+        var preReleaseTag = GetEnvironmentParameter("PRERELEASETAG");
         if (string.IsNullOrEmpty(preReleaseTag))
         {
             throw new Exception("PRERELEASETAG tag not defined");
@@ -180,6 +192,7 @@
         foreach (var repo in GetAllRepos())
         {
             GitCommand(repo, "pull --tags");
+            string version = null;
 
             try
             {
@@ -187,12 +200,15 @@
             }
             catch
             {
-                Log.Warn(string.Format("{0} repo not tagged. Skipping....", repo));
-                continue;
+                version = "1.0.0-" + preReleaseTag;
+                Log.Warn(string.Format("{0} repo not tagged. Using default version {1}.", repo, version));
             }
 
-            var version = File.ReadAllText(versionFile);
-            File.Delete(versionFile);
+            if (version == null)
+            {
+                version = File.ReadAllText(versionFile);
+                File.Delete(versionFile);
+            }
 
             Log.Info(string.Format("Current version on repo {0} is {1}", repo, version));
 

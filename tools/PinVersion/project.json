@@ -1,15 +1,13 @@
 ﻿{
-    "version": "1.0.0-*",
-    "dependencies": {
-        "Newtonsoft.Json": "8.0.2",
-        "NuGet.Core": "2.8.6"
-    },
-
-    "commands": {
-        "PinVersion": "PinVersion"
-    },
-
-    "frameworks": {
-        "dnx451": { }
-    }
+  "version": "1.0.0-*",
+  "buildOptions": {
+    "emitEntryPoint": true
+  },
+  "dependencies": {
+    "Newtonsoft.Json": "8.0.3",
+    "NuGet.Protocol.Core.v3": "3.5.0-beta-final"
+  },
+  "frameworks": {
+    "net451": { }
+  }
 }
