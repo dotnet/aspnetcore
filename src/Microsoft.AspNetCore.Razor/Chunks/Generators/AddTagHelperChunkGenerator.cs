@@ -12,8 +12,6 @@ namespace Microsoft.AspNetCore.Razor.Chunks.Generators
     /// </summary>
     public class AddTagHelperChunkGenerator : SpanChunkGenerator
     {
-        private readonly string _lookupText;
-
         /// <summary>
         /// Initializes a new instance of <see cref="AddTagHelperChunkGenerator"/>.
         /// </summary>
@@ -22,8 +20,13 @@ namespace Microsoft.AspNetCore.Razor.Chunks.Generators
         /// </param>
         public AddTagHelperChunkGenerator(string lookupText)
         {
-            _lookupText = lookupText;
+            LookupText = lookupText;
         }
+
+        /// <summary>
+        /// Gets the text used to look up <see cref="Compilation.TagHelpers.TagHelperDescriptor"/>s that should be added.
+        /// </summary>
+        public string LookupText { get; }
 
         /// <summary>
         /// Generates <see cref="AddTagHelperChunk"/>s.
@@ -35,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Chunks.Generators
         /// the current chunk generation process.</param>
         public override void GenerateChunk(Span target, ChunkGeneratorContext context)
         {
-            context.ChunkTreeBuilder.AddAddTagHelperChunk(_lookupText, target);
+            context.ChunkTreeBuilder.AddAddTagHelperChunk(LookupText, target);
         }
 
         /// <inheritdoc />
@@ -43,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Chunks.Generators
         {
             var other = obj as AddTagHelperChunkGenerator;
             return base.Equals(other) &&
-                string.Equals(_lookupText, other._lookupText, StringComparison.Ordinal);
+                string.Equals(LookupText, other.LookupText, StringComparison.Ordinal);
         }
 
         /// <inheritdoc />
@@ -51,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Chunks.Generators
         {
             var combiner = HashCodeCombiner.Start();
             combiner.Add(base.GetHashCode());
-            combiner.Add(_lookupText, StringComparer.Ordinal);
+            combiner.Add(LookupText, StringComparer.Ordinal);
 
             return combiner.CombinedHash;
         }

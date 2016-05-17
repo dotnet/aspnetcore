@@ -87,18 +87,27 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers
                 throw new ArgumentNullException(nameof(span));
             }
 
+            string directiveText;
             TagHelperDirectiveType directiveType;
-            if (span.ChunkGenerator is AddTagHelperChunkGenerator)
+
+            var addTagHelperChunkGenerator = span.ChunkGenerator as AddTagHelperChunkGenerator;
+            var removeTagHelperChunkGenerator = span.ChunkGenerator as RemoveTagHelperChunkGenerator;
+            var tagHelperPrefixChunkGenerator = span.ChunkGenerator as TagHelperPrefixDirectiveChunkGenerator;
+
+            if (addTagHelperChunkGenerator != null)
             {
                 directiveType = TagHelperDirectiveType.AddTagHelper;
+                directiveText = addTagHelperChunkGenerator.LookupText;
             }
-            else if (span.ChunkGenerator is RemoveTagHelperChunkGenerator)
+            else if (removeTagHelperChunkGenerator != null)
             {
                 directiveType = TagHelperDirectiveType.RemoveTagHelper;
+                directiveText = removeTagHelperChunkGenerator.LookupText;
             }
-            else if (span.ChunkGenerator is TagHelperPrefixDirectiveChunkGenerator)
+            else if (tagHelperPrefixChunkGenerator != null)
             {
                 directiveType = TagHelperDirectiveType.TagHelperPrefix;
+                directiveText = tagHelperPrefixChunkGenerator.Prefix;
             }
             else
             {
@@ -106,7 +115,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers
                 return;
             }
 
-            var directiveText = span.Content.Trim();
+            directiveText = directiveText.Trim();
             var startOffset = span.Content.IndexOf(directiveText, StringComparison.Ordinal);
             var offsetContent = span.Content.Substring(0, startOffset);
             var offsetTextLocation = SourceLocation.Advance(span.Start, offsetContent);

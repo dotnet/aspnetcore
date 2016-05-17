@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.Razor.Chunks.Generators
     /// </summary>
     public class TagHelperPrefixDirectiveChunkGenerator : SpanChunkGenerator
     {
-        private readonly string _prefix;
-
         /// <summary>
         /// Initializes a new instance of <see cref="TagHelperPrefixDirectiveChunkGenerator"/>.
         /// </summary>
@@ -23,8 +21,13 @@ namespace Microsoft.AspNetCore.Razor.Chunks.Generators
         /// </param>
         public TagHelperPrefixDirectiveChunkGenerator(string prefix)
         {
-            _prefix = prefix;
+            Prefix = prefix;
         }
+
+        /// <summary>
+        /// Text used as a required prefix when matching HTML.
+        /// </summary>
+        public string Prefix { get; }
 
         /// <summary>
         /// Generates <see cref="TagHelperPrefixDirectiveChunk"/>s.
@@ -36,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Chunks.Generators
         /// the current chunk generation process.</param>
         public override void GenerateChunk(Span target, ChunkGeneratorContext context)
         {
-            context.ChunkTreeBuilder.AddTagHelperPrefixDirectiveChunk(_prefix, target);
+            context.ChunkTreeBuilder.AddTagHelperPrefixDirectiveChunk(Prefix, target);
         }
 
         /// <inheritdoc />
@@ -44,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Chunks.Generators
         {
             var other = obj as TagHelperPrefixDirectiveChunkGenerator;
             return base.Equals(other) &&
-                string.Equals(_prefix, other._prefix, StringComparison.Ordinal);
+                string.Equals(Prefix, other.Prefix, StringComparison.Ordinal);
         }
 
         /// <inheritdoc />
@@ -52,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Chunks.Generators
         {
             var combiner = HashCodeCombiner.Start();
             combiner.Add(base.GetHashCode());
-            combiner.Add(_prefix, StringComparer.Ordinal);
+            combiner.Add(Prefix, StringComparer.Ordinal);
 
             return combiner.CombinedHash;
         }

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Razor.Parser;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Parser.TagHelpers;
 using Microsoft.AspNetCore.Razor.Test.Framework;
+using Microsoft.AspNetCore.Razor.Tokenizer;
 using Microsoft.Extensions.Internal;
 using Moq;
 using Xunit;
@@ -17,6 +18,109 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
     public class TagHelperDirectiveSpanVisitorTest
     {
         private static readonly SpanFactory Factory = SpanFactory.CreateCsHtml();
+
+        public static TheoryData QuotedTagHelperDirectivesData
+        {
+            get
+            {
+                var factory = new SpanFactory
+                {
+                    MarkupTokenizerFactory = doc => new HtmlTokenizer(doc),
+                    CodeTokenizerFactory = doc => new CSharpTokenizer(doc),
+                };
+
+                // document, expectedDescriptors
+                return new TheoryData<MarkupBlock, IEnumerable<TagHelperDirectiveDescriptor>>
+                {
+                    {
+                        new MarkupBlock(factory.Code("\"*, someAssembly\"").AsAddTagHelper("*, someAssembly")),
+                        new[]
+                        {
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "*, someAssembly",
+                                DirectiveType = TagHelperDirectiveType.AddTagHelper
+                            },
+                        }
+                    },
+                    {
+                        new MarkupBlock(factory.Code("\"*, someAssembly\"").AsRemoveTagHelper("*, someAssembly")),
+                        new[]
+                        {
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "*, someAssembly",
+                                DirectiveType = TagHelperDirectiveType.RemoveTagHelper
+                            },
+                        }
+                    },
+                    {
+                        new MarkupBlock(factory.Code("\"th:\"").AsTagHelperPrefixDirective("th:")),
+                        new[]
+                        {
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "th:",
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                            },
+                        }
+                    },
+                    {
+                        new MarkupBlock(factory.Code("   \"*, someAssembly  \"  ").AsAddTagHelper("*, someAssembly  ")),
+                        new[]
+                        {
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "*, someAssembly",
+                                DirectiveType = TagHelperDirectiveType.AddTagHelper
+                            },
+                        }
+                    },
+                    {
+                        new MarkupBlock(factory.Code("   \"*, someAssembly  \"  ").AsRemoveTagHelper("*, someAssembly  ")),
+                        new[]
+                        {
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "*, someAssembly",
+                                DirectiveType = TagHelperDirectiveType.RemoveTagHelper
+                            },
+                        }
+                    },
+                    {
+                        new MarkupBlock(factory.Code("   \"  th  :\"").AsTagHelperPrefixDirective(" th  :")),
+                        new[]
+                        {
+                            new TagHelperDirectiveDescriptor
+                            {
+                                DirectiveText = "th  :",
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                            },
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(QuotedTagHelperDirectivesData))]
+        public void GetDescriptors_LocatesQuotedTagHelperDirectives_CreatesDirectiveDescriptors(
+            MarkupBlock document,
+            IEnumerable<TagHelperDirectiveDescriptor> expectedDescriptors)
+        {
+            // Arrange
+            var resolver = new TestTagHelperDescriptorResolver();
+            var tagHelperDirectiveSpanVisitor = new TagHelperDirectiveSpanVisitor(resolver, new ErrorSink());
+
+            // Act
+            tagHelperDirectiveSpanVisitor.GetDescriptors(document);
+
+            // Assert
+            Assert.Equal(
+                expectedDescriptors,
+                resolver.DirectiveDescriptors,
+                TagHelperDirectiveDescriptorComparer.Default);
+        }
 
         [Fact]
         public void GetDescriptors_InvokesResolveOnceForAllDirectives()
