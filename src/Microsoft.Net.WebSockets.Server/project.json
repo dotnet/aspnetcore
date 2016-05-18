@@ -22,7 +22,7 @@
         "System.Net.WebSockets": "4.0.0-*",
         "System.Resources.ResourceManager": "4.0.1-*",
         "System.Runtime.Extensions": "4.1.0-*",
-        "System.Security.Cryptography.Algorithms": "4.2.0-*",
+        "System.Security.Cryptography.Algorithms": "4.1.0-*",
         "System.Threading": "4.0.11-*",
         "System.Threading.Tasks": "4.0.11-*",
         "System.Threading.Timer": "4.0.1-*",
