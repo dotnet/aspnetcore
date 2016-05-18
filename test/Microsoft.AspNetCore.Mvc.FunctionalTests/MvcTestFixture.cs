@@ -20,18 +20,15 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class MvcTestFixture<TStartup> : IDisposable
     {
+        private const string SolutionName = "Mvc.sln";
         private readonly TestServer _server;
 
         public MvcTestFixture()
-#if NET451
-            : this(Path.Combine("..", "..", "..", "..", "..", "WebSites"))
-#else
-            : this(Path.Combine("..", "..", "..", "..", "WebSites"))
-#endif
+            : this(Path.Combine("test", "WebSites"))
         {
         }
 
-        protected MvcTestFixture(string relativePath)
+        protected MvcTestFixture(string solutionRelativePath)
         {
             // RequestLocalizationOptions saves the current culture when constructed, potentially changing response
             // localization i.e. RequestLocalizationMiddleware behavior. Ensure the saved culture
@@ -39,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             using (new CultureReplacer())
             {
                 var builder = new WebHostBuilder()
-                    .UseContentRoot(GetApplicationPath(relativePath))
+                    .UseContentRoot(GetApplicationPath(solutionRelativePath))
                     .ConfigureServices(InitializeServices)
                     .UseStartup(typeof(TStartup));
 
@@ -58,12 +55,26 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             _server.Dispose();
         }
 
-        private static string GetApplicationPath(string relativePath)
+        private static string GetApplicationPath(string solutionRelativePath)
         {
             var startupAssembly = typeof(TStartup).GetTypeInfo().Assembly;
             var applicationName = startupAssembly.GetName().Name;
             var applicationBasePath = PlatformServices.Default.Application.ApplicationBasePath;
-            return Path.GetFullPath(Path.Combine(applicationBasePath, relativePath, applicationName));
+
+            var directoryInfo = new DirectoryInfo(applicationBasePath);
+            do
+            {
+                var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, SolutionName));
+                if (solutionFileInfo.Exists)
+                {
+                    return Path.Combine(directoryInfo.FullName, solutionRelativePath, applicationName);
+                }
+
+                directoryInfo = directoryInfo.Parent;
+            }
+            while (directoryInfo.Parent != null);
+
+            throw new Exception($"Solution root could not be located using application root {applicationBasePath}.");
         }
 
         protected virtual void InitializeServices(IServiceCollection services)
