@@ -19,7 +19,7 @@
     "netstandard1.3": {
       "dependencies": {
         "System.Runtime.Extensions": "4.1.0-*",
-        "System.Security.Cryptography.Algorithms": "4.2.0-*",
+        "System.Security.Cryptography.Algorithms": "4.1.0-*",
         "System.Text.Encoding.Extensions": "4.0.11-*"
       }
     }
