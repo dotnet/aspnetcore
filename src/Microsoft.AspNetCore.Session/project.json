@@ -31,7 +31,7 @@
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "System.Security.Cryptography.Algorithms": "4.2.0-*"
+        "System.Security.Cryptography.Algorithms": "4.1.0-*"
       }
     }
   }
