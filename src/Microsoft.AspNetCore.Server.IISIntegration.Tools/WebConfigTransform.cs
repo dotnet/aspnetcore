@@ -61,23 +61,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
             // replaced with backwards slashes when the application is published on a non-Windows machine
             var appPath = Path.Combine(".", appName).Replace("/", "\\");
             var logPath = Path.Combine(configureForAzure ? @"\\?\%home%\LogFiles" : @".\logs", "stdout").Replace("/", "\\");
+            RemoveLauncherArgs(aspNetCoreElement);
 
             if (!isPortable)
             {
                 aspNetCoreElement.SetAttributeValue("processPath", appPath);
-                var arguments = (string)aspNetCoreElement.Attribute("arguments");
-
-                if (arguments != null)
-                {
-                    const string launcherArgs = "%LAUNCHER_ARGS%";
-                    var position = 0;
-                    while ((position = arguments.IndexOf(launcherArgs, position, StringComparison.OrdinalIgnoreCase)) >= 0)
-                    {
-                        arguments = arguments.Remove(position, launcherArgs.Length);
-                    }
-
-                    aspNetCoreElement.SetAttributeValue("arguments", arguments.Trim());
-                }
             }
             else
             {
@@ -85,10 +73,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
 
                 // In Xml the order of attributes does not matter but it is nice to have
                 // the `arguments` attribute next to the `processPath` attribute
-                aspNetCoreElement.Attribute("arguments")?.Remove();
+                var argumentsAttribute = aspNetCoreElement.Attribute("arguments");
+                argumentsAttribute?.Remove();
                 var attributes = aspNetCoreElement.Attributes().ToList();
                 var processPathIndex = attributes.FindIndex(a => a.Name.LocalName == "processPath");
-                attributes.Insert(processPathIndex + 1, new XAttribute("arguments", appPath));
+                attributes.Insert(processPathIndex + 1,
+                    new XAttribute("arguments", (appPath + " " + (string)argumentsAttribute).Trim()));
 
                 aspNetCoreElement.Attributes().Remove();
                 aspNetCoreElement.Add(attributes);
@@ -112,6 +102,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
         private static void SetAttributeValueIfEmpty(XElement element, string attributeName, string value)
         {
             element.SetAttributeValue(attributeName, (string)element.Attribute(attributeName) ?? value);
+        }
+
+        private static void RemoveLauncherArgs(XElement aspNetCoreElement)
+        {
+            var arguments = (string)aspNetCoreElement.Attribute("arguments");
+
+            if (arguments != null)
+            {
+                const string launcherArgs = "%LAUNCHER_ARGS%";
+                var position = 0;
+                while ((position = arguments.IndexOf(launcherArgs, position, StringComparison.OrdinalIgnoreCase)) >= 0)
+                {
+                    arguments = arguments.Remove(position, launcherArgs.Length);
+                }
+
+                aspNetCoreElement.SetAttributeValue("arguments", arguments.Trim());
+            }
         }
     }
 }

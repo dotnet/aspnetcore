@@ -186,22 +186,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
                 aspNetCoreElement));
         }
 
-        [Fact]
-        public void WebConfigTransform_overwrites_existing_arguments_attribute_for_portable_apps()
-        {
-            var input = WebConfigTemplate;
-            input.Descendants("aspNetCore").Single().SetAttributeValue("arguments", "42");
-
-            var aspNetCoreElement =
-                WebConfigTransform.Transform(input, "test.exe", configureForAzure: false, isPortable: true)
-                    .Descendants("aspNetCore").Single();
-
-            Assert.True(XNode.DeepEquals(
-                XDocument.Parse(@"<aspNetCore processPath=""dotnet"" arguments="".\test.exe"" stdoutLogEnabled=""false""
-                     stdoutLogFile="".\logs\stdout"" />").Root,
-                aspNetCoreElement));
-        }
-
         [Theory]
         [InlineData("%LAUNCHER_ARGS%", "")]
         [InlineData(" %launcher_ARGS%", "")]
@@ -223,6 +207,29 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
 
             Assert.Equal(outputArguments, (string)aspNetCoreElement.Attribute("arguments"));
         }
+
+        [Theory]
+        [InlineData("", ".\\myapp.dll")]
+        [InlineData("%LAUNCHER_ARGS%", ".\\myapp.dll")]
+        [InlineData("%LAUNCHER_ARGS% %launcher_args%", ".\\myapp.dll")]
+        [InlineData("-my-switch", ".\\myapp.dll -my-switch")]
+        [InlineData(" %launcher_args% -my-switch", ".\\myapp.dll -my-switch")]
+        [InlineData("-my-switch %LaUnChEr_ArGs%", ".\\myapp.dll -my-switch")]
+        [InlineData("-switch-1 -switch-2", ".\\myapp.dll -switch-1 -switch-2")]
+        [InlineData("-switch-1 %LAUNCHER_ARGS% -switch-2", ".\\myapp.dll -switch-1  -switch-2")]
+        [InlineData("%LAUNCHER_ARGS% -switch %launcher_args%", ".\\myapp.dll -switch")]
+        public void WebConfigTransform_wont_override_existing_args_for_portable_apps(string inputArguments, string outputArguments)
+        {
+            var input = WebConfigTemplate;
+            input.Descendants("aspNetCore").Single().SetAttributeValue("arguments", inputArguments);
+
+            var aspNetCoreElement =
+                WebConfigTransform.Transform(input, "myapp.dll", configureForAzure: false, isPortable: true)
+                    .Descendants("aspNetCore").Single();
+
+            Assert.Equal(outputArguments, (string)aspNetCoreElement.Attribute("arguments"));
+        }
+
 
         private bool VerifyMissingElementCreated(params string[] elementNames)
         {
