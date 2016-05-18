@@ -197,9 +197,11 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private void ComputeIfModifiedSince()
         {
+            var now = DateTimeOffset.UtcNow;
+
             // 14.25 If-Modified-Since
             var ifModifiedSince = _requestHeaders.IfModifiedSince;
-            if (ifModifiedSince.HasValue)
+            if (ifModifiedSince.HasValue && ifModifiedSince <= now)
             {
                 bool modified = ifModifiedSince < _lastModified;
                 _ifModifiedSinceState = modified ? PreconditionState.ShouldProcess : PreconditionState.NotModified;
@@ -207,7 +209,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             // 14.28 If-Unmodified-Since
             var ifUnmodifiedSince = _requestHeaders.IfUnmodifiedSince;
-            if (ifUnmodifiedSince.HasValue)
+            if (ifUnmodifiedSince.HasValue && ifModifiedSince <= now)
             {
                 bool unmodified = ifUnmodifiedSince >= _lastModified;
                 _ifUnmodifiedSinceState = unmodified ? PreconditionState.ShouldProcess : PreconditionState.PreconditionFailed;

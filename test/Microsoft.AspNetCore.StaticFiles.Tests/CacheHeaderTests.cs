@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -41,36 +43,50 @@ namespace Microsoft.AspNetCore.StaticFiles
         // as PUT, from modifying a resource that has changed since the client
         // last retrieved it.
 
-        [Fact]
-        public async Task IfMatchShouldReturn412WhenNotListed()
+        [Theory]
+        [MemberData(nameof(SupportedMethods))]
+        public async Task IfMatchShouldReturn412WhenNotListed(HttpMethod method)
         {
             TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
-            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/extra.xml");
+            var req = new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml");
             req.Headers.Add("If-Match", "\"fake\"");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.PreconditionFailed, resp.StatusCode);
         }
 
-        [Fact]
-        public async Task IfMatchShouldBeServedWhenListed()
+        [Theory]
+        [MemberData(nameof(SupportedMethods))]
+        public async Task IfMatchShouldBeServedWhenListed(HttpMethod method)
         {
             TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
             HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/extra.xml");
+            var req = new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml");
             req.Headers.Add("If-Match", original.Headers.ETag.ToString());
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
         }
 
-        [Fact]
-        public async Task IfMatchShouldBeServedForAstrisk()
+        [Theory]
+        [MemberData(nameof(SupportedMethods))]
+        public async Task IfMatchShouldBeServedForAstrisk(HttpMethod method)
         {
             TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
-            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/extra.xml");
+            var req = new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml");
             req.Headers.Add("If-Match", "*");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        }
+
+        [Theory]
+        [MemberData(nameof(UnsupportedMethods))]
+        public async Task IfMatchShouldBeIgnoredForUnsupportedMethods(HttpMethod method)
+        {
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            var req = new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml");
+            req.Headers.Add("If-Match", "*");
+            HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
+            Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
         }
 
         // 14.26 If-None-Match
@@ -87,38 +103,43 @@ namespace Microsoft.AspNetCore.StaticFiles
         // matched. For all other request methods, the server MUST respond with
         // a status of 412 (Precondition Failed).
 
-        [Fact]
-        public async Task IfNoneMatchShouldReturn304ForMatchingOnGetAndHeadMethod()
+        [Theory]
+        [MemberData(nameof(SupportedMethods))]
+        public async Task IfNoneMatchShouldReturn304ForMatching(HttpMethod method)
         {
             TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
             HttpResponseMessage resp1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
 
-            var req2 = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/extra.xml");
+            var req2 = new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml");
             req2.Headers.Add("If-None-Match", resp1.Headers.ETag.ToString());
             HttpResponseMessage resp2 = await server.CreateClient().SendAsync(req2);
             Assert.Equal(HttpStatusCode.NotModified, resp2.StatusCode);
-
-            var req3 = new HttpRequestMessage(HttpMethod.Head, "http://localhost/SubFolder/extra.xml");
-            req3.Headers.Add("If-None-Match", resp1.Headers.ETag.ToString());
-            HttpResponseMessage resp3 = await server.CreateClient().SendAsync(req3);
-            Assert.Equal(HttpStatusCode.NotModified, resp3.StatusCode);
         }
 
-        [Fact]
-        public async Task IfNoneMatchShouldBeIgnoredForNonTwoHundredAnd304Responses()
+        [Theory]
+        [MemberData(nameof(SupportedMethods))]
+        public async Task IfNoneMatchAllShouldReturn304ForMatching(HttpMethod method)
         {
             TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
             HttpResponseMessage resp1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
 
-            var req2 = new HttpRequestMessage(HttpMethod.Post, "http://localhost/SubFolder/extra.xml");
+            var req2 = new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml");
+            req2.Headers.Add("If-None-Match", "*");
+            HttpResponseMessage resp2 = await server.CreateClient().SendAsync(req2);
+            Assert.Equal(HttpStatusCode.NotModified, resp2.StatusCode);
+        }
+
+        [Theory]
+        [MemberData(nameof(UnsupportedMethods))]
+        public async Task IfNoneMatchShouldBeIgnoredForNonTwoHundredAnd304Responses(HttpMethod method)
+        {
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            HttpResponseMessage resp1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
+
+            var req2 = new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml");
             req2.Headers.Add("If-None-Match", resp1.Headers.ETag.ToString());
             HttpResponseMessage resp2 = await server.CreateClient().SendAsync(req2);
             Assert.Equal(HttpStatusCode.NotFound, resp2.StatusCode);
-
-            var req3 = new HttpRequestMessage(HttpMethod.Put, "http://localhost/SubFolder/extra.xml");
-            req3.Headers.Add("If-None-Match", resp1.Headers.ETag.ToString());
-            HttpResponseMessage resp3 = await server.CreateClient().SendAsync(req3);
-            Assert.Equal(HttpStatusCode.NotFound, resp3.StatusCode);
         }
 
         // 14.26 If-None-Match
@@ -131,12 +152,15 @@ namespace Microsoft.AspNetCore.StaticFiles
         // A server MUST use the strong comparison function (see section 13.3.3)
         // to compare the entity tags in If-Match.
 
-        [Fact]
-        public async Task ServerShouldReturnLastModified()
+        [Theory]
+        [MemberData(nameof(SupportedMethods))]
+        public async Task ServerShouldReturnLastModified(HttpMethod method)
         {
             TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
 
-            HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
+            HttpResponseMessage response = await server.CreateClient().SendAsync(
+                new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml"));
+
             Assert.NotNull(response.Content.Headers.LastModified);
             // Verify that DateTimeOffset is UTC
             Assert.Equal(response.Content.Headers.LastModified.Value.Offset, TimeSpan.Zero);
@@ -151,30 +175,58 @@ namespace Microsoft.AspNetCore.StaticFiles
         // unless doing so is consistent with all of the conditional header
         // fields in the request.
 
-        [Fact]
-        public async Task MatchingBothConditionsReturnsNotModified()
+        [Theory]
+        [MemberData(nameof(SupportedMethods))]
+        public async Task MatchingBothConditionsReturnsNotModified(HttpMethod method)
         {
             TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
             HttpResponseMessage resp1 = await server
                 .CreateRequest("/SubFolder/extra.xml")
-                .GetAsync();
+                .SendAsync(method.Method);
 
             HttpResponseMessage resp2 = await server
                 .CreateRequest("/SubFolder/extra.xml")
                 .AddHeader("If-None-Match", resp1.Headers.ETag.ToString())
                 .And(req => req.Headers.IfModifiedSince = resp1.Content.Headers.LastModified)
-                .GetAsync();
+                .SendAsync(method.Method);
 
             Assert.Equal(HttpStatusCode.NotModified, resp2.StatusCode);
         }
 
-        [Fact]
-        public async Task MissingEitherOrBothConditionsReturnsNormally()
+
+        [Theory]
+        [MemberData(nameof(SupportedMethods))]
+        public async Task MatchingAtLeastOneETagReturnsNotModified(HttpMethod method)
         {
             TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
             HttpResponseMessage resp1 = await server
                 .CreateRequest("/SubFolder/extra.xml")
-                .GetAsync();
+                .SendAsync(method.Method);
+            var etag = resp1.Headers.ETag.ToString();
+
+            HttpResponseMessage resp2 = await server
+                .CreateRequest("/SubFolder/extra.xml")
+                .AddHeader("If-Match", etag + ", " + etag)
+                .SendAsync(method.Method);
+
+            Assert.Equal(HttpStatusCode.OK, resp2.StatusCode);
+
+            HttpResponseMessage resp3 = await server
+                .CreateRequest("/SubFolder/extra.xml")
+                .AddHeader("If-Match", etag+ ", \"badetag\"")
+                .SendAsync(method.Method);
+
+            Assert.Equal(HttpStatusCode.OK, resp3.StatusCode);
+        }
+
+        [Theory]
+        [MemberData(nameof(SupportedMethods))]
+        public async Task MissingEitherOrBothConditionsReturnsNormally(HttpMethod method)
+        {
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            HttpResponseMessage resp1 = await server
+                .CreateRequest("/SubFolder/extra.xml")
+                .SendAsync(method.Method);
 
             DateTimeOffset lastModified = resp1.Content.Headers.LastModified.Value;
             DateTimeOffset pastDate = lastModified.AddHours(-1);
@@ -184,19 +236,19 @@ namespace Microsoft.AspNetCore.StaticFiles
                 .CreateRequest("/SubFolder/extra.xml")
                 .AddHeader("If-None-Match", "\"fake\"")
                 .And(req => req.Headers.IfModifiedSince = lastModified)
-                .GetAsync();
+                .SendAsync(method.Method);
 
             HttpResponseMessage resp3 = await server
                 .CreateRequest("/SubFolder/extra.xml")
                 .AddHeader("If-None-Match", resp1.Headers.ETag.ToString())
                 .And(req => req.Headers.IfModifiedSince = pastDate)
-                .GetAsync();
+                .SendAsync(method.Method);
 
             HttpResponseMessage resp4 = await server
                 .CreateRequest("/SubFolder/extra.xml")
                 .AddHeader("If-None-Match", "\"fake\"")
                 .And(req => req.Headers.IfModifiedSince = furtureDate)
-                .GetAsync();
+                .SendAsync(method.Method);
 
             Assert.Equal(HttpStatusCode.OK, resp2.StatusCode);
             Assert.Equal(HttpStatusCode.OK, resp3.StatusCode);
@@ -215,15 +267,30 @@ namespace Microsoft.AspNetCore.StaticFiles
         //   invalid, the response is exactly the same as for a normal GET.
         //   A date which is later than the server's current time is
         //   invalid.
-        [Fact]
-        public async Task InvalidIfModifiedSinceDateFormatGivesNormalGet()
+        [Theory]
+        [MemberData(nameof(SupportedMethods))]
+        public async Task InvalidIfModifiedSinceDateFormatGivesNormalGet(HttpMethod method)
         {
             TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
 
             HttpResponseMessage res = await server
                 .CreateRequest("/SubFolder/extra.xml")
                 .AddHeader("If-Modified-Since", "bad-date")
-                .GetAsync();
+                .SendAsync(method.Method);
+
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        }
+
+        [Theory]
+        [MemberData(nameof(SupportedMethods))]
+        public async Task FutureIfModifiedSinceDateFormatGivesNormalGet(HttpMethod method)
+        {
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+
+            HttpResponseMessage res = await server
+                .CreateRequest("/SubFolder/extra.xml")
+                .And(req => req.Headers.IfModifiedSince = DateTimeOffset.Now.AddYears(1))
+                .SendAsync(method.Method);
 
             Assert.Equal(HttpStatusCode.OK, res.StatusCode);
         }
@@ -235,38 +302,82 @@ namespace Microsoft.AspNetCore.StaticFiles
         //   Modified-Since date, the server SHOULD return a 304 (Not
         //   Modified) response.
 
-        [Fact]
-        public async Task IfModifiedSinceDateGreaterThanLastModifiedShouldReturn304()
+        [Theory]
+        [MemberData(nameof(SupportedMethods))]
+        public async Task IfModifiedSinceDateGreaterThanLastModifiedShouldReturn304(HttpMethod method)
         {
             TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
 
             HttpResponseMessage res1 = await server
                 .CreateRequest("/SubFolder/extra.xml")
-                .GetAsync();
+                .SendAsync(method.Method);
 
             HttpResponseMessage res2 = await server
                 .CreateRequest("/SubFolder/extra.xml")
                 .And(req => req.Headers.IfModifiedSince = DateTimeOffset.Now)
-                .GetAsync();
+                .SendAsync(method.Method);
 
             Assert.Equal(HttpStatusCode.NotModified, res2.StatusCode);
         }
 
-        [Fact]
-        public async Task IfModifiedSinceDateLessThanLastModifiedShouldReturn200()
+        [Theory]
+        [MemberData(nameof(SupportedMethods))]
+        public async Task SuppportsIfModifiedDateFormats(HttpMethod method)
+        {
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            HttpResponseMessage res1 = await server
+                .CreateRequest("/SubFolder/extra.xml")
+                .SendAsync(method.Method);
+
+            var formats = new[]
+            {
+                "ddd, dd MMM yyyy HH:mm:ss 'GMT'",
+                "dddd, dd-MMM-yy HH:mm:ss 'GMT'",
+                "ddd MMM  d HH:mm:ss yyyy"
+            };
+
+            foreach (var format in formats)
+            {
+                HttpResponseMessage res2 = await server
+                    .CreateRequest("/SubFolder/extra.xml")
+                    .AddHeader("If-Modified-Since", DateTimeOffset.Now.ToString(format))
+                    .SendAsync(method.Method);
+
+                Assert.Equal(HttpStatusCode.NotModified, res2.StatusCode);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(SupportedMethods))]
+        public async Task IfModifiedSinceDateLessThanLastModifiedShouldReturn200(HttpMethod method)
         {
             TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
 
             HttpResponseMessage res1 = await server
                 .CreateRequest("/SubFolder/extra.xml")
-                .GetAsync();
+                .SendAsync(method.Method);
 
             HttpResponseMessage res2 = await server
                 .CreateRequest("/SubFolder/extra.xml")
                 .And(req => req.Headers.IfModifiedSince = DateTimeOffset.MinValue)
-                .GetAsync();
+                .SendAsync(method.Method);
 
             Assert.Equal(HttpStatusCode.OK, res2.StatusCode);
         }
+
+        public static IEnumerable<object> SupportedMethods => new[]
+        {
+            new [] { HttpMethod.Get },
+            new [] { HttpMethod.Head }
+        };
+
+        public static IEnumerable<object> UnsupportedMethods => new[]
+        {
+            new [] { HttpMethod.Post },
+            new [] { HttpMethod.Put },
+            new [] { HttpMethod.Options },
+            new [] { HttpMethod.Trace },
+            new [] { new HttpMethod("VERB") }
+        };
     }
 }

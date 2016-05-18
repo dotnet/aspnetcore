@@ -16,6 +16,10 @@ namespace Microsoft.AspNetCore.StaticFiles.Infrastructure
         internal static IList<RangeItemHeaderValue> NormalizeRanges(ICollection<RangeItemHeaderValue> ranges, long length)
         {
             IList<RangeItemHeaderValue> normalizedRanges = new List<RangeItemHeaderValue>(ranges.Count);
+            if (length == 0)
+            {
+                return normalizedRanges;
+            }
             foreach (var range in ranges)
             {
                 long? start = range.From;

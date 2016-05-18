@@ -72,6 +72,35 @@ namespace Microsoft.AspNetCore.StaticFiles
             Assert.Equal("0123456789a", await resp.Content.ReadAsStringAsync());
         }
 
+        [Fact]
+        public async Task IfModifiedSinceWithPastDateShouldServePartialContent()
+        {
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/ranges.txt");
+
+            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/ranges.txt");
+            req.Headers.Add("If-Modified-Since", original.Content.Headers.LastModified.Value.AddHours(-1).ToString("r"));
+            req.Headers.Add("Range", "bytes=0-10");
+            HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
+            Assert.Equal(HttpStatusCode.PartialContent, resp.StatusCode);
+            Assert.Equal("bytes 0-10/62", resp.Content.Headers.ContentRange.ToString());
+            Assert.Equal(11, resp.Content.Headers.ContentLength);
+            Assert.Equal("0123456789a", await resp.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task IfModifiedSinceWithCurrentDateShouldReturn304()
+        {
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/ranges.txt");
+
+            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/ranges.txt");
+            req.Headers.Add("If-Modified-Since", original.Content.Headers.LastModified.Value.ToString("r"));
+            req.Headers.Add("Range", "bytes=0-10");
+            HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
+            Assert.Equal(HttpStatusCode.NotModified, resp.StatusCode);
+        }
+
         // 14.27 If-Range
         // If the client has no entity tag for an entity, but does have a Last- Modified date, it MAY use that date in an If-Range header.
         // HEAD requests should ignore the Range header
@@ -216,7 +245,9 @@ namespace Microsoft.AspNetCore.StaticFiles
         // 14.35 Range
         [Theory]
         [InlineData("0-0", "0-0", 1, "0")]
-        [InlineData("0-9", "0-9", 10, "0123456789")]
+        [InlineData("0- 9", "0-9", 10, "0123456789")]
+        [InlineData("0 -9", "0-9", 10, "0123456789")]
+        [InlineData("0 - 9", "0-9", 10, "0123456789")]
         [InlineData("10-35", "10-35", 26, "abcdefghijklmnopqrstuvwxyz")]
         [InlineData("36-61", "36-61", 26, "ABCDEFGHIJKLMNOPQRSTUVWXYZ")]
         [InlineData("36-", "36-61", 26, "ABCDEFGHIJKLMNOPQRSTUVWXYZ")] // Last 26
@@ -234,6 +265,42 @@ namespace Microsoft.AspNetCore.StaticFiles
             Assert.Equal("bytes " + expectedRange + "/62", resp.Content.Headers.ContentRange.ToString());
             Assert.Equal(length, resp.Content.Headers.ContentLength);
             Assert.Equal(expectedData, await resp.Content.ReadAsStringAsync());
+        }
+
+        [Theory]
+        [InlineData("0-0", "0-0", 1, "A")]
+        [InlineData("0-", "0-0", 1, "A")]
+        [InlineData("-1", "0-0", 1, "A")]
+        [InlineData("-2", "0-0", 1, "A")]
+        [InlineData("0-1", "0-0", 1, "A")]
+        [InlineData("0-2", "0-0", 1, "A")]
+        public async Task SingleValidRangeShouldServePartialContentSingleByteFile(string range, string expectedRange, int length, string expectedData)
+        {
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/SingleByte.txt");
+            req.Headers.Add("Range", "bytes=" + range);
+            HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
+            Assert.Equal(HttpStatusCode.PartialContent, resp.StatusCode);
+            Assert.NotNull(resp.Content.Headers.ContentRange);
+            Assert.Equal("bytes " + expectedRange + "/1", resp.Content.Headers.ContentRange.ToString());
+            Assert.Equal(length, resp.Content.Headers.ContentLength);
+            Assert.Equal(expectedData, await resp.Content.ReadAsStringAsync());
+        }
+
+        [Theory]
+        [InlineData("0-0")]
+        [InlineData("0-")]
+        [InlineData("-1")]
+        [InlineData("-2")]
+        [InlineData("0-1")]
+        [InlineData("0-2")]
+        public async Task SingleValidRangeShouldServeRequestedRangeNotSatisfiableEmptyFile(string range)
+        {
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+            var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/Empty.txt");
+            req.Headers.Add("Range", "bytes=" + range);
+            HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
+            Assert.Equal(HttpStatusCode.RequestedRangeNotSatisfiable, resp.StatusCode);
         }
 
         // 14.35 Range
@@ -287,6 +354,9 @@ namespace Microsoft.AspNetCore.StaticFiles
         [InlineData("0")]
         [InlineData("1-0")]
         [InlineData("-")]
+        [InlineData("a-")]
+        [InlineData("-b")]
+        [InlineData("a-b")]
         public async Task SingleInvalidRangeIgnored(string range)
         {
             TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
@@ -305,6 +375,9 @@ namespace Microsoft.AspNetCore.StaticFiles
         [InlineData("0")]
         [InlineData("1-0")]
         [InlineData("-")]
+        [InlineData("a-")]
+        [InlineData("-b")]
+        [InlineData("a-b")]
         public async Task HEADSingleInvalidRangeIgnored(string range)
         {
             TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
