@@ -6,15 +6,15 @@
   },
   "authors": [ "Microsoft" ],
   "dependencies": {
+    "Microsoft.NETCore.App": {
+      "version": "1.0.0-rc2-*",
+      "type": "platform"
+    },
+    "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
-    "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*",
-    "Newtonsoft.Json": "8.0.3",
-    "System.Diagnostics.Process": "4.1.0-*",
-    "System.Text.RegularExpressions": "4.0.0-*",
-    "System.Net.Http": "4.0.0-*",
-    "System.Console": "4.0.0-*"
+    "Newtonsoft.Json": "8.0.3"
   },
   "frameworks": {
     "netcoreapp1.0": {
