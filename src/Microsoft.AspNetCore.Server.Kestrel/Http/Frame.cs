@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Numerics;
 using System.Text;
 using System.Threading;
@@ -74,6 +75,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             Reset();
         }
 
+        public string ConnectionIdFeature { get; set; }
+        public IPAddress RemoteIpAddress { get; set; }
+        public int RemotePort { get; set; }
+        public IPAddress LocalIpAddress { get; set; }
+        public int LocalPort { get; set; }
         public string Scheme { get; set; }
         public string Method { get; set; }
         public string RequestUri { get; set; }
@@ -241,14 +247,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             StatusCode = 200;
             ReasonPhrase = null;
 
-            var httpConnectionFeature = this as IHttpConnectionFeature;
-            httpConnectionFeature.RemoteIpAddress = RemoteEndPoint?.Address;
-            httpConnectionFeature.RemotePort = RemoteEndPoint?.Port ?? 0;
+            RemoteIpAddress = RemoteEndPoint?.Address;
+            RemotePort = RemoteEndPoint?.Port ?? 0;
 
-            httpConnectionFeature.LocalIpAddress = LocalEndPoint?.Address;
-            httpConnectionFeature.LocalPort = LocalEndPoint?.Port ?? 0;
-
-            httpConnectionFeature.ConnectionId = ConnectionId;
+            LocalIpAddress = LocalEndPoint?.Address;
+            LocalPort = LocalEndPoint?.Port ?? 0;
+            ConnectionIdFeature = ConnectionId;
 
             PrepareRequest?.Invoke(this);
 

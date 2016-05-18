@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Http
@@ -265,15 +264,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         int IFeatureCollection.Revision => _featureRevision;
 
-        IPAddress IHttpConnectionFeature.RemoteIpAddress { get; set; }
+        IPAddress IHttpConnectionFeature.RemoteIpAddress
+        {
+            get { return RemoteIpAddress; }
+            set { RemoteIpAddress = value; }
+        }
 
-        IPAddress IHttpConnectionFeature.LocalIpAddress { get; set; }
+        IPAddress IHttpConnectionFeature.LocalIpAddress
+        {
+            get { return LocalIpAddress; }
+            set { LocalIpAddress = value; }
+        }
 
-        int IHttpConnectionFeature.RemotePort { get; set; }
+        int IHttpConnectionFeature.RemotePort
+        {
+            get { return RemotePort; }
+            set { RemotePort = value; }
+        }
 
-        int IHttpConnectionFeature.LocalPort { get; set; }
+        int IHttpConnectionFeature.LocalPort
+        {
+            get { return LocalPort; }
+            set { LocalPort = value; }
+        }
 
-        string IHttpConnectionFeature.ConnectionId { get; set; }
+        string IHttpConnectionFeature.ConnectionId
+        {
+            get { return ConnectionIdFeature; }
+            set { ConnectionIdFeature = value; }
+        }
 
         object IFeatureCollection.this[Type key]
         {
