@@ -43,7 +43,7 @@
     "netstandard1.3": {
       "dependencies": {
         "System.Collections": "4.0.11-*",
-        "System.Text.RegularExpressions": "4.1.0-*"
+        "System.Text.RegularExpressions": "4.0.12-*"
       }
     }
   }
