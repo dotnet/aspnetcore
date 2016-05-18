@@ -5,7 +5,7 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 
 ## What is this?
 
-This repo hosts sources for the `Microsoft.AspNetCore.AngularServices` and `Microsoft.AspNetCore.ReactServices` packages, along with samples and the underlying `Microsoft.AspNetCore.NodeServices project`.
+This repo hosts sources for the `Microsoft.AspNetCore.AngularServices` and `Microsoft.AspNetCore.ReactServices` packages, along with samples and the underlying `Microsoft.AspNetCore.SpaServices` and `Microsoft.AspNetCore.NodeServices` packages.
 
 #### `Microsoft.AspNetCore.AngularServices`
 
@@ -49,12 +49,12 @@ To get started,
 3. Clone this repository:
 
    ```
-   git clone https://github.com/aspnet/NodeServices.git
+   git clone https://github.com/aspnet/JavaScriptServices.git
    ```
 
 **Using Visual Studio on Windows**
 
-1. Open the solution file, `NodeServices.sln`, in Visual Studio.
+1. Open the solution file, `JavaScriptServices.sln`, in Visual Studio.
 2. Wait for it to finish fetching and installing dependencies.
 3. If you get the error `'reactivex/rxjs' is not in the npm registry`, then your Visual Studio installation's version of the NPM tool is out of date. You will need to restore NPM dependencies manually from a command prompt (e.g., `cd samples\angular\MusicStore` then `npm install`).
 4. Select a sample and run it. For example, right-click on the `MusicStore` project in Solution Explorer and choose `Set as startup project`. Then press `Ctrl+F5` to launch it.
@@ -63,7 +63,7 @@ Note that to run the React example, you'll also need to run `webpack` from the `
 
 **Using dotnet on Windows/Mac/Linux**
 
-1. In the solution root directory (`NodeServices` - i.e., the directory that contains `NodeServices.sln`), restore the .NET dependencies:
+1. In the solution root directory (`JavaScriptServices` - i.e., the directory that contains `JavaScriptServices.sln`), restore the .NET dependencies:
 
    ```
    dotnet restore
