@@ -44,19 +44,21 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             var cookieToken = httpContext.Request.Cookies[_options.CookieName];
 
+            // We want to delay reading the form as much as possible, for example in case of large file uploads,
+            // request token could be part of the header.
             StringValues requestToken;
-            if (httpContext.Request.HasFormContentType)
+            if (_options.HeaderName != null)
+            {
+                requestToken = httpContext.Request.Headers[_options.HeaderName];
+            }
+
+            // Fall back to reading form instead
+            if (requestToken.Count == 0 && httpContext.Request.HasFormContentType)
             {
                 // Check the content-type before accessing the form collection to make sure
                 // we report errors gracefully.
                 var form = await httpContext.Request.ReadFormAsync();
                 requestToken = form[_options.FormFieldName];
-            }
-
-            // Fall back to header if the form value was not provided.
-            if (requestToken.Count == 0 && _options.HeaderName != null)
-            {
-                requestToken = httpContext.Request.Headers[_options.HeaderName];
             }
 
             return new AntiforgeryTokenSet(requestToken, cookieToken, _options.FormFieldName, _options.HeaderName);

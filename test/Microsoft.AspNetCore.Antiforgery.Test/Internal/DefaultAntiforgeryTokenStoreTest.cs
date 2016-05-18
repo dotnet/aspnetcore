@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
@@ -99,39 +100,15 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Fact]
-        public async Task GetRequestTokens_NonFormContentType_HeaderDisabled_ReturnsNullToken()
-        {
-            // Arrange
-            var httpContext = GetHttpContext("cookie-name", "cookie-value");
-            httpContext.Request.ContentType = "application/json";
-
-            // Will not be accessed
-            httpContext.Request.Form = null;
-
-            var options = new AntiforgeryOptions()
-            {
-                CookieName = "cookie-name",
-                FormFieldName = "form-field-name",
-                HeaderName = null,
-            };
-
-            var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
-
-            // Act
-            var tokenSet = await tokenStore.GetRequestTokensAsync(httpContext);
-
-            // Assert
-            Assert.Equal("cookie-value", tokenSet.CookieToken);
-            Assert.Null(tokenSet.RequestToken);
-        }
-
-        [Fact]
-        public async Task GetRequestTokens_FormContentType_FallbackHeaderToken()
+        public async Task GetRequestTokens_HeaderTokenTakensPriority_OverFormToken()
         {
             // Arrange
             var httpContext = GetHttpContext("cookie-name", "cookie-value");
             httpContext.Request.ContentType = "application/x-www-form-urlencoded";
-            httpContext.Request.Form = FormCollection.Empty;
+            httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
+            {
+                { "form-field-name", "form-value" },
+            }); // header value has priority.
             httpContext.Request.Headers.Add("header-name", "header-value");
 
             var options = new AntiforgeryOptions()
@@ -149,6 +126,34 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             // Assert
             Assert.Equal("cookie-value", tokens.CookieToken);
             Assert.Equal("header-value", tokens.RequestToken);
+        }
+
+        [Fact]
+        public async Task GetRequestTokens_NoHeaderToken_FallsBackToFormToken()
+        {
+            // Arrange
+            var httpContext = GetHttpContext("cookie-name", "cookie-value");
+            httpContext.Request.ContentType = "application/x-www-form-urlencoded";
+            httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
+            {
+                { "form-field-name", "form-value" },
+            });
+
+            var options = new AntiforgeryOptions()
+            {
+                CookieName = "cookie-name",
+                FormFieldName = "form-field-name",
+                HeaderName = "header-name",
+            };
+
+            var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
+
+            // Act
+            var tokens = await tokenStore.GetRequestTokensAsync(httpContext);
+
+            // Assert
+            Assert.Equal("cookie-value", tokens.CookieToken);
+            Assert.Equal("form-value", tokens.RequestToken);
         }
 
         [Fact]
@@ -180,7 +185,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Fact]
-        public async Task GetRequestTokens_NonFormContentType_NoHeaderToken_ReturnsNullToken()
+        public async Task GetRequestTokens_NoHeaderToken_NonFormContentType_ReturnsNullToken()
         {
             // Arrange
             var httpContext = GetHttpContext("cookie-name", "cookie-value");
@@ -207,7 +212,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Fact]
-        public async Task GetRequestTokens_BothFieldsEmpty_ReturnsNullTokens()
+        public async Task GetRequestTokens_BothHeaderValueAndFormFieldsEmpty_ReturnsNullTokens()
         {
             // Arrange
             var httpContext = GetHttpContext("cookie-name", "cookie-value");
@@ -229,35 +234,6 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             // Assert
             Assert.Equal("cookie-value", tokenSet.CookieToken);
             Assert.Null(tokenSet.RequestToken);
-        }
-
-        [Fact]
-        public async Task GetFormToken_FormFieldIsValid_ReturnsToken()
-        {
-            // Arrange
-            var httpContext = GetHttpContext("cookie-name", "cookie-value");
-            httpContext.Request.ContentType = "application/x-www-form-urlencoded";
-            httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
-            {
-                { "form-field-name", "form-value" },
-            });
-            httpContext.Request.Headers.Add("header-name", "header-value"); // form value has priority.
-
-            var options = new AntiforgeryOptions()
-            {
-                CookieName = "cookie-name",
-                FormFieldName = "form-field-name",
-                HeaderName = "header-name",
-            };
-
-            var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
-
-            // Act
-            var tokens = await tokenStore.GetRequestTokensAsync(httpContext);
-
-            // Assert
-            Assert.Equal("cookie-value", tokens.CookieToken);
-            Assert.Equal("form-value", tokens.RequestToken);
         }
 
         [Theory]
