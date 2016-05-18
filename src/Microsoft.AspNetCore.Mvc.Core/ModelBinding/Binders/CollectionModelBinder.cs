@@ -11,6 +11,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
@@ -169,7 +170,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             ValueProviderResult values)
         {
             var boundCollection = new List<TElement>();
-            
+
             var elementMetadata = bindingContext.ModelMetadata.ElementMetadata;
 
             foreach (var value in values)

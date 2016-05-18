@@ -11,6 +11,7 @@ using System.Reflection;
 #endif
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(bindingContext));
             }
 
-            var createFileCollection = 
+            var createFileCollection =
                 bindingContext.ModelType == typeof(IFormFileCollection) &&
                 !bindingContext.ModelMetadata.IsReadOnly;
             if (!createFileCollection && !ModelBindingHelper.CanGetCompatibleCollection<IFormFile>(bindingContext))

@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Internal
 {
     public static class ModelBindingHelper
     {
@@ -426,7 +426,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 modelMetadata,
                 bindingInfo: null,
                 modelName: prefix ?? string.Empty);
-            
+
             modelBindingContext.Model = model;
             modelBindingContext.PropertyFilter = propertyFilter;
 
