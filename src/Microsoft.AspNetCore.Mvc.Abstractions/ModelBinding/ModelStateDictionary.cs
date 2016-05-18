@@ -633,7 +633,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             HasRecordedMaxModelError = false;
             ErrorCount = 0;
             _root.Reset();
-            _root.ChildNodes.Clear();
+            _root.ChildNodes?.Clear();
         }
 
         /// <inheritdoc />

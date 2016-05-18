@@ -126,6 +126,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
+        public void Clear_RemovesAllEntries_IfDictionaryIsEmpty()
+        {
+            // Arrange
+            var dictionary = new ModelStateDictionary();
+
+            // Act
+            dictionary.Clear();
+
+            // Assert
+            Assert.Equal(0, dictionary.Count);
+            Assert.Equal(0, dictionary.ErrorCount);
+            Assert.Empty(dictionary);
+            Assert.Equal(ModelValidationState.Valid, dictionary.ValidationState);
+        }
+
+        [Fact]
         public void MarkFieldSkipped_MarksFieldAsSkipped_IfStateIsUnvalidated()
         {
             // Arrange
