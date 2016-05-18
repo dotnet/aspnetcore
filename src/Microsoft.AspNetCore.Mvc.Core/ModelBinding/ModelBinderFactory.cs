@@ -9,7 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private readonly IModelMetadataProvider _metadataProvider;
         private readonly IModelBinderProvider[] _providers;
 
-        private readonly ConcurrentDictionary<object, IModelBinder> _cache;
+        private readonly ConcurrentDictionary<Key, IModelBinder> _cache;
 
         /// <summary>
         /// Creates a new <see cref="ModelBinderFactory"/>.
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             _metadataProvider = metadataProvider;
             _providers = options.Value.ModelBinderProviders.ToArray();
 
-            _cache = new ConcurrentDictionary<object, IModelBinder>(ReferenceEqualityComparer.Instance);
+            _cache = new ConcurrentDictionary<Key, IModelBinder>();
         }
 
         /// <inheritdoc />
@@ -46,31 +46,52 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // We perform caching in CreateBinder (not in CreateBinderCore) because we only want to
-            // cache the top-level binder.
             IModelBinder binder;
-            if (context.CacheToken != null && _cache.TryGetValue(context.CacheToken, out binder))
+            if (TryGetCachedBinder(context.Metadata, context.CacheToken, out binder))
             {
                 return binder;
             }
-
+            
+            // Perf: We're calling the Uncached version of the API here so we can:
+            // 1. avoid allocating a context when the value is already cached
+            // 2. avoid checking the cache twice when the value is not cached
             var providerContext = new DefaultModelBinderProviderContext(this, context);
-            binder = CreateBinderCore(providerContext, context.CacheToken);
+            binder = CreateBinderCoreUncached(providerContext, context.CacheToken);
             if (binder == null)
             {
                 var message = Resources.FormatCouldNotCreateIModelBinder(providerContext.Metadata.ModelType);
                 throw new InvalidOperationException(message);
             }
 
-            if (context.CacheToken != null)
+            Debug.Assert(!(binder is PlaceholderBinder));
+            AddToCache(context.Metadata, context.CacheToken, binder);
+
+            return binder;
+        }
+
+        // Called by the DefaultModelBinderProviderContext when we're recursively creating a binder
+        // so that all intermediate results can be cached.
+        private IModelBinder CreateBinderCoreCached(DefaultModelBinderProviderContext providerContext, object token)
+        {
+            IModelBinder binder;
+            if (TryGetCachedBinder(providerContext.Metadata, token, out binder))
             {
-                _cache.TryAdd(context.CacheToken, binder);
+                return binder;
+            }
+
+            // We're definitely creating a binder for an non-root node here, so it's OK for binder creation
+            // to fail.
+            binder = CreateBinderCoreUncached(providerContext, token) ?? NoOpBinder.Instance;
+
+            if (!(binder is PlaceholderBinder))
+            {
+                AddToCache(providerContext.Metadata, token, binder);
             }
 
             return binder;
         }
 
-        private IModelBinder CreateBinderCore(DefaultModelBinderProviderContext providerContext, object token)
+        private IModelBinder CreateBinderCoreUncached(DefaultModelBinderProviderContext providerContext, object token)
         {
             if (!providerContext.Metadata.IsBindingAllowed)
             {
@@ -82,32 +103,34 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // happen looking at just model metadata.
             var key = new Key(providerContext.Metadata, token);
 
-            // If we're currently recursively building a binder for this type, just return
-            // a PlaceholderBinder. We'll fix it up later to point to the 'real' binder
-            // when the stack unwinds.
-            var stack = providerContext.Stack;
-            for (var i = 0; i < stack.Count; i++)
+            // The providerContext.Visited is used here to break cycles in recursion. We need a separate
+            // per-operation cache for cycle breaking because the global cache (_cache) needs to always stay
+            // in a valid state.
+            //
+            // We store null as a sentinel inside the providerContext.Visited to track the fact that we've visited
+            // a given node but haven't yet created a binder for it. We don't want to eagerly create a
+            // PlaceholderBinder because that would result in lots of unnecessary indirection and allocations.
+            var visited = providerContext.Visited;
+
+            IModelBinder binder;
+            if (visited.TryGetValue(key, out binder))
             {
-                var entry = stack[i];
-                if (key.Equals(entry.Key))
+                if (binder != null)
                 {
-                    if (entry.Value == null)
-                    {
-                        // Recursion detected, create a DelegatingBinder.
-                        var binder = new PlaceholderBinder();
-                        stack[i] = new KeyValuePair<Key, PlaceholderBinder>(entry.Key, binder);
-                        return binder;
-                    }
-                    else
-                    {
-                        return entry.Value;
-                    }
+                    return binder;
                 }
+
+                // If we're currently recursively building a binder for this type, just return
+                // a PlaceholderBinder. We'll fix it up later to point to the 'real' binder
+                // when the stack unwinds.
+                binder = new PlaceholderBinder();
+                visited[key] = binder;
+                return binder;
             }
 
-            // OK this isn't a recursive case (yet) so "push" an entry on the stack and then ask the providers
+            // OK this isn't a recursive case (yet) so add an entry and then ask the providers
             // to create the binder.
-            stack.Add(new KeyValuePair<Key, PlaceholderBinder>(key, null));
+            visited.Add(key, null);
 
             IModelBinder result = null;
 
@@ -121,24 +144,47 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 }
             }
 
-            if (result == null && stack.Count > 1)
+            // If the PlaceholderBinder was created, then it means we recursed. Hook it up to the 'real' binder.
+            var placeholderBinder = visited[key] as PlaceholderBinder;
+            if (placeholderBinder != null)
             {
-                // Use a no-op binder if we're below the top level. At the top level, we throw.
-                result = NoOpBinder.Instance;
+                // It's also possible that user code called into `CreateBinder` but then returned null, we don't
+                // want to create something that will null-ref later so just hook this up to the no-op binder.
+                placeholderBinder.Inner = result ?? NoOpBinder.Instance;
             }
 
-            // "pop"
-            Debug.Assert(stack.Count > 0);
-            var delegatingBinder = stack[stack.Count - 1].Value;
-            stack.RemoveAt(stack.Count - 1);
-
-            // If the DelegatingBinder was created, then it means we recursed. Hook it up to the 'real' binder.
-            if (delegatingBinder != null)
+            if (result != null)
             {
-                delegatingBinder.Inner = result;
+                visited[key] = result;
             }
 
             return result;
+        }
+
+        private void AddToCache(ModelMetadata metadata, object cacheToken, IModelBinder binder)
+        {
+            Debug.Assert(metadata != null);
+            Debug.Assert(binder != null);
+
+            if (cacheToken == null)
+            {
+                return;
+            }
+
+            _cache.TryAdd(new Key(metadata, cacheToken), binder);
+        }
+
+        private bool TryGetCachedBinder(ModelMetadata metadata, object cacheToken, out IModelBinder binder)
+        {
+            Debug.Assert(metadata != null);
+
+            if (cacheToken == null)
+            {
+                binder = null;
+                return false;
+            }
+
+            return _cache.TryGetValue(new Key(metadata, cacheToken), out binder);
         }
 
         private class DefaultModelBinderProviderContext : ModelBinderProviderContext
@@ -161,7 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 };
 
                 MetadataProvider = _factory._metadataProvider;
-                Stack = new List<KeyValuePair<Key, PlaceholderBinder>>();
+                Visited = new Dictionary<Key, IModelBinder>();
             }
 
             private DefaultModelBinderProviderContext(
@@ -172,7 +218,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
                 _factory = parent._factory;
                 MetadataProvider = parent.MetadataProvider;
-                Stack = parent.Stack;
+                Visited = parent.Visited;
 
                 BindingInfo = new BindingInfo()
                 {
@@ -189,16 +235,32 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             public override IModelMetadataProvider MetadataProvider { get; }
 
-            // Not using a 'real' Stack<> because we want random access to modify the entries.
-            public List<KeyValuePair<Key, PlaceholderBinder>> Stack { get; }
+            public Dictionary<Key, IModelBinder> Visited { get; }
 
             public override IModelBinder CreateBinder(ModelMetadata metadata)
             {
+                if (metadata == null)
+                {
+                    throw new ArgumentNullException(nameof(metadata));
+                }
+
+                // For non-root nodes we use the ModelMetadata as the cache token. This ensures that all non-root
+                // nodes with the same metadata will have the the same binder. This is OK because for an non-root
+                // node there's no opportunity to customize binding info like there is for a parameter.
+                var token = metadata;
+
                 var nestedContext = new DefaultModelBinderProviderContext(this, metadata);
-                return _factory.CreateBinderCore(nestedContext, token: null);
+                return _factory.CreateBinderCoreCached(nestedContext, token);
             }
         }
 
+        // This key allows you to specify a ModelMetadata which represents the type/property being bound
+        // and a 'token' which acts as an arbitrary discriminator.
+        //
+        // This is necessary because the same metadata might be bound as a top-level parameter (with BindingInfo on
+        // the ParameterDescriptor) or in a call to TryUpdateModel (no BindingInfo) or as a collection element.
+        //
+        // We need to be able to tell the difference between these things to avoid over-caching.
         private struct Key : IEquatable<Key>
         {
             private readonly ModelMetadata _metadata;
@@ -227,6 +289,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 hash.Add(_metadata);
                 hash.Add(RuntimeHelpers.GetHashCode(_token));
                 return hash;
+            }
+
+            public override string ToString()
+            {
+                if (_metadata.MetadataKind == ModelMetadataKind.Type)
+                {
+                    return $"{_token} (Type: '{_metadata.ModelType.Name}')";
+                }
+                else
+                {
+                    return $"{_token} (Property: '{_metadata.ContainerType.Name}.{_metadata.PropertyName}' Type: '{_metadata.ModelType.Name}')";
+                }
             }
         }
     }
