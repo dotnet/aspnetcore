@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
@@ -10,12 +11,50 @@ using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Test.DependencyInjection
 {
     public class MvcRazorMvcCoreBuilderExtensionsTest
     {
+        [Fact]
+        public void AddMvcCore_OnServiceCollectionWithoutIHostingEnvironmentInstance_DoesNotDiscoverApplicationParts()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            // Act
+            var builder = services
+                .AddMvcCore();
+
+            // Assert
+            Assert.Empty(builder.PartManager.ApplicationParts);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void AddMvcCore_OnServiceCollectionWithIHostingEnvironmentInstanceWithInvalidApplicationName_DoesNotDiscoverApplicationParts(string applicationName)
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            hostingEnvironment
+                .Setup(h => h.ApplicationName)
+                .Returns(applicationName);
+
+            services.AddSingleton(hostingEnvironment.Object);
+
+            // Act
+            var builder = services
+                .AddMvcCore();
+
+            // Assert
+            Assert.Empty(builder.PartManager.ApplicationParts);
+        }
+
         [Fact]
         public void AddTagHelpersAsServices_ReplacesTagHelperActivatorAndTagHelperTypeResolver()
         {

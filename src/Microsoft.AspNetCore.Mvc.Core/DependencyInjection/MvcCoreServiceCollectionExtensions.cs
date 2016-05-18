@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 manager = new ApplicationPartManager();
 
                 var environment = GetServiceFromCollection<IHostingEnvironment>(services);
-                if (environment == null)
+                if (string.IsNullOrEmpty(environment?.ApplicationName))
                 {
                     return manager;
                 }
