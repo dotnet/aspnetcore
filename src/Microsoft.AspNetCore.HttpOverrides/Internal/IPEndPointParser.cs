@@ -14,6 +14,11 @@ namespace Microsoft.AspNetCore.HttpOverrides.Internal
             IPAddress address;
             endpoint = null;
 
+            if (string.IsNullOrEmpty(addressWithPort))
+            {
+                return false;
+            }
+
             var lastColonIndex = addressWithPort.LastIndexOf(':');
             if (lastColonIndex > 0)
             {

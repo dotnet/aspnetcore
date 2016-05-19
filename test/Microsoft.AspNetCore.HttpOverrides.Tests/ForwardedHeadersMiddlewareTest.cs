@@ -364,6 +364,46 @@ namespace Microsoft.AspNetCore.HttpOverrides
         }
 
         [Theory]
+        [InlineData(0, "h1", "::1", "http")]
+        [InlineData(1, "", "::1", "http")]
+        [InlineData(1, "h1", "", "h1")]
+        [InlineData(1, "h1", "::1", "h1")]
+        [InlineData(3, "h1", "::1", "h1")]
+        [InlineData(3, "h1", "::1, ::1", "h1")]
+        [InlineData(3, "h2, h1", "::1", "h2")]
+        [InlineData(5, "h2, h1", "::1, ::1", "h2")]
+        [InlineData(10, "h3, h2, h1", "::1, ::1, ::1", "h3")]
+        [InlineData(10, "h3, h2, h1", "::1, badip, ::1", "h3")]
+        public async Task XForwardedProtoOverrideCanBeIndependentOfXForwardedForCount(int limit, string protoHeader, string forHeader, string expected)
+        {
+            var assertsExecuted = false;
+
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    {
+                        ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
+                        RequireHeaderSymmetry = false,
+                        ForwardLimit = limit,
+                    });
+                    app.Run(context =>
+                    {
+                        Assert.Equal(expected, context.Request.Scheme);
+                        assertsExecuted = true;
+                        return Task.FromResult(0);
+                    });
+                });
+            var server = new TestServer(builder);
+
+            var req = new HttpRequestMessage(HttpMethod.Get, "");
+            req.Headers.Add("X-Forwarded-Proto", protoHeader);
+            req.Headers.Add("X-Forwarded-For", forHeader);
+            await server.CreateClient().SendAsync(req);
+            Assert.True(assertsExecuted);
+        }
+
+        [Theory]
         [InlineData("", "", "::1", false, "http")]
         [InlineData("h1", "", "::1", false, "http")]
         [InlineData("h1", "F::", "::1", false, "h1")]

@@ -65,75 +65,61 @@ namespace Microsoft.AspNetCore.HttpOverrides
             {
                 checkFor = true;
                 forwardedFor = context.Request.Headers.GetCommaSeparatedValues(XForwardedForHeaderName);
-                if (StringValues.IsNullOrEmpty(forwardedFor))
-                {
-                    return;
-                }
-                entryCount = forwardedFor.Length;
+                entryCount = Math.Max(forwardedFor.Length, entryCount);
             }
 
             if ((_options.ForwardedHeaders & ForwardedHeaders.XForwardedProto) == ForwardedHeaders.XForwardedProto)
             {
                 checkProto = true;
                 forwardedProto = context.Request.Headers.GetCommaSeparatedValues(XForwardedProtoHeaderName);
-                if (StringValues.IsNullOrEmpty(forwardedProto))
-                {
-                    return;
-                }
-                if (checkFor && forwardedFor.Length != forwardedProto.Length)
+                if (_options.RequireHeaderSymmetry && checkFor && forwardedFor.Length != forwardedProto.Length)
                 {
                     _logger.LogDebug(1, "Parameter count mismatch between X-Forwarded-For and X-Forwarded-Proto.");
                     return;
                 }
-                entryCount = forwardedProto.Length;
+                entryCount = Math.Max(forwardedProto.Length, entryCount);
             }
 
             if ((_options.ForwardedHeaders & ForwardedHeaders.XForwardedHost) == ForwardedHeaders.XForwardedHost)
             {
                 checkHost = true;
                 forwardedHost = context.Request.Headers.GetCommaSeparatedValues(XForwardedHostHeaderName);
-                if (StringValues.IsNullOrEmpty(forwardedHost))
-                {
-                    return;
-                }
-                if ((checkFor && forwardedFor.Length != forwardedHost.Length)
-                    || (checkProto && forwardedProto.Length != forwardedHost.Length))
+                if (_options.RequireHeaderSymmetry
+                    && ((checkFor && forwardedFor.Length != forwardedHost.Length)
+                        || (checkProto && forwardedProto.Length != forwardedHost.Length)))
                 {
                     _logger.LogDebug(1, "Parameter count mismatch between X-Forwarded-Host and X-Forwarded-For or X-Forwarded-Proto.");
                     return;
                 }
-                entryCount = forwardedHost.Length;
+                entryCount =  Math.Max(forwardedHost.Length, entryCount);
             }
 
             // Apply ForwardLimit, if any
-            int offset = 0;
             if (_options.ForwardLimit.HasValue && entryCount > _options.ForwardLimit)
             {
-                offset = entryCount - _options.ForwardLimit.Value;
                 entryCount = _options.ForwardLimit.Value;
             }
 
             // Group the data together.
-            var sets = new List<SetOfForwarders>(entryCount);
-            for (int i = 0; i < entryCount; i++)
+            var sets = new SetOfForwarders[entryCount];
+            for (int i = 0; i < sets.Length; i++)
             {
+                // They get processed in reverse order, right to left.
                 var set = new SetOfForwarders();
-                if (checkFor)
+                if (checkFor && i < forwardedFor.Length)
                 {
-                    set.IpAndPortText = forwardedFor[offset + i];
+                    set.IpAndPortText = forwardedFor[forwardedFor.Length - i - 1];
                 }
-                if (checkProto)
+                if (checkProto && i < forwardedProto.Length)
                 {
-                    set.Scheme = forwardedProto[offset + i];
+                    set.Scheme = forwardedProto[forwardedProto.Length - i - 1];
                 }
-                if (checkHost)
+                if (checkHost && i < forwardedHost.Length)
                 {
-                    set.Host = forwardedHost[offset + i];
+                    set.Host = forwardedHost[forwardedHost.Length - i - 1];
                 }
-                sets.Add(set);
+                sets[i] = set;
             }
-            // They get processed in reverse order, right to left.
-            sets.Reverse();
 
             // Gather initial values
             var connection = context.Connection;
@@ -148,8 +134,9 @@ namespace Microsoft.AspNetCore.HttpOverrides
             bool applyChanges = false;
             int entriesConsumed = 0;
 
-            foreach (var set in sets)
+            for ( ; entriesConsumed < sets.Length; entriesConsumed++)
             {
+                var set = sets[entriesConsumed];
                 if (checkFor)
                 {
                     // For the first instance, allow remoteIp to be null for servers that don't support it natively.
@@ -159,7 +146,16 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         _logger.LogDebug(1, $"Unknown proxy: {currentValues.RemoteIpAndPort}");
                         break;
                     }
-                    if (!IPEndPointParser.TryParse(set.IpAndPortText, out set.RemoteIpAndPort))
+
+                    IPEndPoint parsedEndPoint;
+                    if (IPEndPointParser.TryParse(set.IpAndPortText, out parsedEndPoint))
+                    {
+                        applyChanges = true;
+                        set.RemoteIpAndPort = parsedEndPoint;
+                        currentValues.IpAndPortText = set.IpAndPortText;
+                        currentValues.RemoteIpAndPort = set.RemoteIpAndPort;
+                    }
+                    else if (_options.RequireHeaderSymmetry)
                     {
                         _logger.LogDebug(2, $"Failed to parse forwarded IPAddress: {currentValues.IpAndPortText}");
                         return;
@@ -168,7 +164,12 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
                 if (checkProto)
                 {
-                    if (string.IsNullOrEmpty(set.Scheme))
+                    if (!string.IsNullOrEmpty(set.Scheme))
+                    {
+                        applyChanges = true;
+                        currentValues.Scheme = set.Scheme;
+                    }
+                    else if (_options.RequireHeaderSymmetry)
                     {
                         _logger.LogDebug(3, $"Failed to parse forwarded scheme: {set.Scheme}");
                         return;
@@ -177,21 +178,22 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
                 if (checkHost)
                 {
-                    if (string.IsNullOrEmpty(set.Host))
+                    if (!string.IsNullOrEmpty(set.Host))
+                    {
+                        applyChanges = true;
+                        currentValues.Host = set.Host;
+                    }
+                    else if (_options.RequireHeaderSymmetry)
                     {
                         _logger.LogDebug(4, $"Failed to parse forwarded host: {set.Host}");
                         return;
                     }
                 }
-
-                applyChanges = true;
-                currentValues = set;
-                entriesConsumed++;
             }
 
             if (applyChanges)
             {
-                if (checkFor)
+                if (checkFor && currentValues.RemoteIpAndPort != null)
                 {
                     if (connection.RemoteIpAddress != null)
                     {
@@ -212,7 +214,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     connection.RemotePort = currentValues.RemoteIpAndPort.Port;
                 }
 
-                if (checkProto)
+                if (checkProto && currentValues.Scheme != null)
                 {
                     // Save the original
                     request.Headers[XOriginalProtoName] = request.Scheme;
@@ -229,7 +231,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     request.Scheme = currentValues.Scheme;
                 }
 
-                if (checkHost)
+                if (checkHost && currentValues.Host != null)
                 {
                     // Save the original
                     request.Headers[XOriginalHostName] = request.Host.ToString();
@@ -264,7 +266,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
             return false;
         }
 
-        private class SetOfForwarders
+        private struct SetOfForwarders
         {
             public string IpAndPortText;
             public IPEndPoint RemoteIpAndPort;
