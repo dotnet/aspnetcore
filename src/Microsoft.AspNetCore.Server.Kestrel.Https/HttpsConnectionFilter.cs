@@ -40,7 +40,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
 
             if (string.Equals(context.Address.Scheme, "https", StringComparison.OrdinalIgnoreCase))
             {
-                var certificateHandle = IntPtr.Zero;
                 SslStream sslStream;
                 if (_options.ClientCertificateMode == ClientCertificateMode.NoCertificate)
                 {
@@ -66,16 +65,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                                 }
                             }
 
-                            X509Certificate2 certificate2 = certificate as X509Certificate2;
+                            var certificate2 = ConvertToX509Certificate2(certificate);
                             if (certificate2 == null)
                             {
-#if NETSTANDARD1_3
-                                // conversion X509Certificate to X509Certificate2 not supported
-                                // https://github.com/dotnet/corefx/issues/4510
                                 return false;
-#else
-                                certificate2 = new X509Certificate2(certificate);
-#endif
                             }
 
                             if (_options.ClientCertificateValidation != null)
@@ -86,7 +79,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                                 }
                             }
 
-                            certificateHandle = certificate2.Handle;
                             return true;
                         });
                     await sslStream.AuthenticateAsServerAsync(_options.ServerCertificate, clientCertificateRequired: true,
@@ -98,15 +90,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                 {
                     previousPrepareRequest?.Invoke(features);
 
-                    if (certificateHandle != IntPtr.Zero)
+                    var clientCertificate = ConvertToX509Certificate2(sslStream.RemoteCertificate);
+                    if (clientCertificate != null)
                     {
-                        features.Set<ITlsConnectionFeature>(new TlsConnectionFeature { ClientCertificate = new X509Certificate2(sslStream.RemoteCertificate.Handle) });
+                        features.Set<ITlsConnectionFeature>(new TlsConnectionFeature { ClientCertificate = clientCertificate });
                     }
 
                     features.Get<IHttpRequestFeature>().Scheme = "https";
                 };
                 context.Connection = sslStream;
             }
+        }
+
+        private X509Certificate2 ConvertToX509Certificate2(X509Certificate certificate)
+        {
+            if (certificate == null)
+            {
+                return null;
+            }
+
+            X509Certificate2 certificate2 = certificate as X509Certificate2;
+            if (certificate2 != null)
+            {
+                return certificate2;
+            }
+
+#if NETSTANDARD1_3
+            // conversion X509Certificate to X509Certificate2 not supported
+            // https://github.com/dotnet/corefx/issues/4510
+            return null;
+#else
+            return new X509Certificate2(certificate);
+#endif
         }
     }
 }
