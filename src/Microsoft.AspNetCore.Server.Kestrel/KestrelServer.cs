@@ -94,6 +94,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                         "ThreadCount must be positive.");
                 }
 
+                if (!Constants.ECONNRESET.HasValue)
+                {
+                    _logger.LogWarning("Unable to determine ECONNRESET value on this platform.");
+                }
+
                 engine.Start(threadCount);
                 var atLeastOneListener = false;
 
