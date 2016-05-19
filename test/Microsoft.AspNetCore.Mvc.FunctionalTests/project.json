@@ -50,10 +50,7 @@
         "Microsoft.NETCore.App": {
           "version": "1.0.0-*",
           "type": "platform"
-        },
-        "Microsoft.Dnx.Compilation.CSharp.Common": "1.0.0-*",
-        "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*",
-        "System.Diagnostics.Process": "4.1.0-*"
+        }
       },
       "imports": [
         "dnxcore50",
