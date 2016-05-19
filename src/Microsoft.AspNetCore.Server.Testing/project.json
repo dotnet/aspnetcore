@@ -6,7 +6,12 @@
     "nowarn": [
       "CS1591"
     ],
-    "xmlDoc": true
+    "xmlDoc": true,
+    "embed": [
+      "Deployers/RemoteWindowsDeployer/RemotePSSessionHelper.ps1",
+      "Deployers/RemoteWindowsDeployer/StartServer.ps1",
+      "Deployers/RemoteWindowsDeployer/StopServer.ps1"
+    ],
   },
   "description": "ASP.NET 5 helpers to deploy applications to IIS Express, IIS, WebListener and Kestrel for testing.",
   "packOptions": {
@@ -15,11 +20,6 @@
       "url": "git://github.com/aspnet/hosting"
     }
   },
-  "resource": [
-    "Deployers/RemoteWindowsDeployer/RemotePSSessionHelper.ps1",
-    "Deployers/RemoteWindowsDeployer/StartServer.ps1",
-    "Deployers/RemoteWindowsDeployer/StopServer.ps1"
-  ],
   "dependencies": {
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
