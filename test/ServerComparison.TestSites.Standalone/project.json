@@ -10,11 +10,11 @@
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "Microsoft.Net.Http.Headers": "1.0.0-*"
   },
-  "compile": [
-    "../ServerComparison.TestSites/Startup*.cs"
-  ],
   "buildOptions": {
-    "emitEntryPoint": true
+    "emitEntryPoint": true,
+    "compile": {
+      "include": "../ServerComparison.TestSites/Startup*.cs"
+    }
   },
   "publishOptions": {
     "include": [
