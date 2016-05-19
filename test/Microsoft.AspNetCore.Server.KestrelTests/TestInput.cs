@@ -18,14 +18,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
-            var context = new FrameContext()
+            var context = new Frame<object>(null, new ConnectionContext() { ServerAddress = new ServerAddress() })
             {
                 DateHeaderValueManager = new DateHeaderValueManager(),
                 ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
                 ConnectionControl = this,
                 FrameControl = this
             };
-            FrameContext = new Frame<object>(null, context);
+            FrameContext = context;
 
             _memoryPool = new MemoryPool();
             FrameContext.SocketInput = new SocketInput(_memoryPool, ltp);
