@@ -22,7 +22,7 @@ namespace SampleStartups
 
             var host = new WebHostBuilder()
                 .UseConfiguration(config) // Default set of configurations to use, may be subsequently overridden 
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel") // Set the server manually
+              //.UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory()) // Override the content root with the current directory
                 .UseUrls("http://*:1000", "https://*:902")
                 .UseEnvironment("Development")

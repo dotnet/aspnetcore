@@ -12,7 +12,7 @@ namespace SampleStartups
     {
         private IWebHost _host;
         private readonly List<string> _urls = new List<string>();
-        
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public override void Configure(IApplicationBuilder app)
         {
@@ -29,7 +29,7 @@ namespace SampleStartups
         public void Start()
         {
             _host = new WebHostBuilder()
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                //.UseKestrel()
                 .UseStartup<StartupExternallyControlled>()
                 .Start(_urls.ToArray());
         }

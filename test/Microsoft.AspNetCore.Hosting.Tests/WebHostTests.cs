@@ -71,13 +71,12 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var vals = new Dictionary<string, string>
             {
-                { "server", "Microsoft.AspNetCore.Hosting.Tests" }
             };
 
             var builder = new ConfigurationBuilder()
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
-            var host = CreateBuilder(config).Build();
+            var host = CreateBuilder(config).UseServer(this).Build();
             host.Start();
             Assert.NotNull(host.Services.GetService<IHostingEnvironment>());
         }
@@ -87,13 +86,12 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var vals = new Dictionary<string, string>
             {
-                { "Server", "Microsoft.AspNetCore.Hosting.Tests" }
             };
 
             var builder = new ConfigurationBuilder()
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
-            var host = CreateBuilder(config).Build();
+            var host = CreateBuilder(config).UseServer(this).Build();
             host.Start();
             Assert.NotNull(host.Services.GetService<IHostingEnvironment>());
         }
@@ -103,13 +101,12 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var vals = new Dictionary<string, string>
             {
-                { "Server", "Microsoft.AspNetCore.Hosting.Tests" }
             };
 
             var builder = new ConfigurationBuilder()
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
-            var host = CreateBuilder(config).Build();
+            var host = CreateBuilder(config).UseServer(this).Build();
             host.Start();
             Assert.NotNull(host.Services.GetService<IHostingEnvironment>());
             Assert.Equal("http://localhost:5000", host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.First());

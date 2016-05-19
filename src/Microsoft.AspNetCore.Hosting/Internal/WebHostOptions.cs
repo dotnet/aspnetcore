@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             DetailedErrors = ParseBool(configuration, WebHostDefaults.DetailedErrorsKey);
             CaptureStartupErrors = ParseBool(configuration, WebHostDefaults.CaptureStartupErrorsKey);
             Environment = configuration[WebHostDefaults.EnvironmentKey];
-            ServerAssembly = configuration[WebHostDefaults.ServerKey];
             WebRoot = configuration[WebHostDefaults.WebRootKey];
             ContentRootPath = configuration[WebHostDefaults.ContentRootKey];
         }
@@ -36,8 +35,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public bool CaptureStartupErrors { get; set; }
 
         public string Environment { get; set; }
-
-        public string ServerAssembly { get; set; }
         
         public string StartupAssembly { get; set; }
 

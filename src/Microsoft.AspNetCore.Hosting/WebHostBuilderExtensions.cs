@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             return hostBuilder.UseSetting(WebHostDefaults.CaptureStartupErrorsKey, captureStartupErrors ? "true" : "false");
         }
-        
+
         /// <summary>
         /// Specify the startup method to be used to configure the web application.
         /// </summary>
@@ -56,17 +56,17 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 throw new ArgumentNullException(nameof(configureApp));
             }
-            
+
             var startupAssemblyName = configureApp.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name;
-            
+
             return hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName)
                               .ConfigureServices(services =>
                               {
                                   services.AddSingleton<IStartup>(new DelegateStartup(configureApp));
                               });
         }
-        
-        
+
+
         /// <summary>
         /// Specify the startup type to be used by the web host. 
         /// </summary>
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Hosting
         public static IWebHostBuilder UseStartup(this IWebHostBuilder hostBuilder, Type startupType)
         {
             var startupAssemblyName = startupType.GetTypeInfo().Assembly.GetName().Name;
-            
+
             return hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName)
                               .ConfigureServices(services =>
                               {
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Hosting
                                   }
                                   else
                                   {
-                                      services.AddSingleton(typeof(IStartup), sp => 
+                                      services.AddSingleton(typeof(IStartup), sp =>
                                       {
                                           var hostingEnvironment = sp.GetRequiredService<IHostingEnvironment>();
                                           return new ConventionBasedStartup(StartupLoader.LoadMethods(sp, startupType, hostingEnvironment.EnvironmentName));
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Hosting
                                   }
                               });
         }
-        
+
         /// <summary>
         /// Specify the startup type to be used by the web host.
         /// </summary>
@@ -119,26 +119,10 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(startupAssemblyName));
             }
 
-                
+
             return hostBuilder
                     .UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName)
                     .UseSetting(WebHostDefaults.StartupAssemblyKey, startupAssemblyName);
-        }
-
-        /// <summary>
-        /// Specify the assembly containing the server to be used by the web host.
-        /// </summary>
-        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
-        /// <param name="assemblyName">The name of the assembly containing the server to be used.</param>
-        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public static IWebHostBuilder UseServer(this IWebHostBuilder hostBuilder, string assemblyName)
-        {
-            if (assemblyName == null)
-            {
-                throw new ArgumentNullException(nameof(assemblyName));
-            }
-
-            return hostBuilder.UseSetting(WebHostDefaults.ServerKey, assemblyName);
         }
 
         /// <summary>

@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var parameters = new Dictionary<string, string>()
             {
                 { "webroot", "wwwroot"},
-                { "server", "Microsoft.AspNetCore.Server.Kestrel"},
                 { "applicationName", "MyProjectReference"},
                 { "startupAssembly", "MyProjectReference" },
                 { "environment", "Development"},
@@ -27,7 +26,6 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
 
             Assert.Equal("wwwroot", config.WebRoot);
-            Assert.Equal("Microsoft.AspNetCore.Server.Kestrel", config.ServerAssembly);
             Assert.Equal("MyProjectReference", config.ApplicationName);
             Assert.Equal("MyProjectReference", config.StartupAssembly);
             Assert.Equal("Development", config.Environment);
