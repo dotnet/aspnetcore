@@ -22,7 +22,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
     public abstract partial class Frame : FrameContext, IFrameControl
     {
-        private static readonly Encoding _ascii = Encoding.ASCII;
         private static readonly ArraySegment<byte> _endChunkedResponseBytes = CreateAsciiByteArraySegment("0\r\n\r\n");
         private static readonly ArraySegment<byte> _continueBytes = CreateAsciiByteArraySegment("HTTP/1.1 100 Continue\r\n\r\n");
         private static readonly ArraySegment<byte> _emptyData = new ArraySegment<byte>(new byte[0]);
@@ -32,7 +31,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
         private static readonly byte[] _bytesHttpVersion11 = Encoding.ASCII.GetBytes("HTTP/1.1 ");
         private static readonly byte[] _bytesContentLengthZero = Encoding.ASCII.GetBytes("\r\nContent-Length: 0");
-        private static readonly byte[] _bytesSpace = Encoding.ASCII.GetBytes(" ");
         private static readonly byte[] _bytesEndHeaders = Encoding.ASCII.GetBytes("\r\n\r\n");
 
         private static Vector<byte> _vectorCRs = new Vector<byte>((byte)'\r');
