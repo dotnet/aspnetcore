@@ -14,6 +14,8 @@ namespace MusicStore.Controllers
 
         public string Id { get; set; }
 
+        public bool IsAvailable { get; } = true;
+
         public void Clear()
         {
             _store.Clear();
