@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     // Discovers assemblies that are part of the MVC application using the DependencyContext.
     public static class DefaultAssemblyPartDiscoveryProvider
     {
-        internal static HashSet<string> ReferenceAssemblies { get; } = new HashSet<string>(StringComparer.Ordinal)
+        internal static HashSet<string> ReferenceAssemblies { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "Microsoft.AspNetCore.Mvc",
             "Microsoft.AspNetCore.Mvc.Abstractions",
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             public CandidateResolver(IReadOnlyList<RuntimeLibrary> dependencies, ISet<string> referenceAssemblies)
             {
                 _dependencies = dependencies
-                    .ToDictionary(d => d.Name, d => CreateDependency(d, referenceAssemblies));
+                    .ToDictionary(d => d.Name, d => CreateDependency(d, referenceAssemblies), StringComparer.OrdinalIgnoreCase);
             }
 
             private Dependency CreateDependency(RuntimeLibrary library, ISet<string> referenceAssemblies)

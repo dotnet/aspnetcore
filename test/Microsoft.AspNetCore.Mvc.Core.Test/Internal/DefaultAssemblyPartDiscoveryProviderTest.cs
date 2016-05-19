@@ -80,6 +80,37 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public void GetCandidateLibraries_LibraryNameComparisonsAreCaseInsensitive()
+        {
+            // Arrange
+            var dependencyContext = new DependencyContext(
+                new TargetInfo("framework", "runtime", "signature", isPortable: true),
+                CompilationOptions.Default,
+                new CompilationLibrary[0],
+                new[]
+                {
+                     GetLibrary("Foo", "MICROSOFT.ASPNETCORE.MVC.CORE"),
+                     GetLibrary("Bar", "microsoft.aspnetcore.mvc"),
+                     GetLibrary("Qux", "Not.Mvc.Assembly", "Unofficial.Microsoft.AspNetCore.Mvc"),
+                     GetLibrary("Baz", "mIcRoSoFt.AsPnEtCoRe.MvC.aBsTrAcTiOnS"),
+                     GetLibrary("Microsoft.AspNetCore.Mvc.Core"),
+                     GetLibrary("LibraryA", "LIBRARYB"),
+                     GetLibrary("LibraryB", "microsoft.aspnetcore.mvc"),
+                     GetLibrary("Microsoft.AspNetCore.Mvc"),
+                     GetLibrary("Not.Mvc.Assembly"),
+                     GetLibrary("Unofficial.Microsoft.AspNetCore.Mvc"),
+                     GetLibrary("Microsoft.AspNetCore.Mvc.Abstractions"),
+                },
+                Enumerable.Empty<RuntimeFallbacks>());
+
+            // Act
+            var candidates = DefaultAssemblyPartDiscoveryProvider.GetCandidateLibraries(dependencyContext);
+
+            // Assert
+            Assert.Equal(new[] { "Foo", "Bar", "Baz", "LibraryA", "LibraryB" }, candidates.Select(a => a.Name));
+        }
+
+        [Fact]
         public void GetCandidateLibraries_ReturnsLibrariesWithTransitiveReferencesToAnyMvcAssembly()
         {
             // Arrange
