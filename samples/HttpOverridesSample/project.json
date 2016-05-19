@@ -3,6 +3,12 @@
   "buildOptions": {
     "emitEntryPoint": true
   },
+  "publishOptions": {
+    "exclude": [
+      "**.user",
+      "**.vspscc"
+    ]
+  },
   "dependencies": {
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.HttpOverrides": "1.0.0-*",
@@ -24,13 +30,5 @@
         }
       }
     }
-  },
-  "exclude": [
-    "wwwroot",
-    "node_modules"
-  ],
-  "publishExclude": [
-    "**.user",
-    "**.vspscc"
-  ]
+  }
 }
