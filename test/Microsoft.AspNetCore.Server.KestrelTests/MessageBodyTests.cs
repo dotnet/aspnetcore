@@ -20,7 +20,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             using (var input = new TestInput())
             {
                 var body = MessageBody.For("HTTP/1.0", new FrameRequestHeaders(), input.FrameContext);
-                var stream = new FrameRequestStream().StartAcceptingReads(body);
+                var stream = new FrameRequestStream();
+                stream.StartAcceptingReads(body);
 
                 input.Add("Hello", true);
 
@@ -40,7 +41,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             using (var input = new TestInput())
             {
                 var body = MessageBody.For("HTTP/1.0", new FrameRequestHeaders(), input.FrameContext);
-                var stream = new FrameRequestStream().StartAcceptingReads(body);
+                var stream = new FrameRequestStream();
+                stream.StartAcceptingReads(body);
 
                 input.Add("Hello", true);
 
@@ -60,7 +62,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             using (var input = new TestInput())
             {
                 var body = MessageBody.For("HTTP/1.0", new FrameRequestHeaders(), input.FrameContext);
-                var stream = new FrameRequestStream().StartAcceptingReads(body);
+                var stream = new FrameRequestStream();
+                stream.StartAcceptingReads(body);
 
                 // Input needs to be greater than 4032 bytes to allocate a block not backed by a slab.
                 var largeInput = new string('a', 8192);

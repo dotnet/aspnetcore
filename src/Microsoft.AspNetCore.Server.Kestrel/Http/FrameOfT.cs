@@ -155,7 +155,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     await TryProduceInvalidRequestResponse();
 
-                    ResetComponents();
                     _abortedCts = null;
 
                     // If _requestAborted is set, the connection has already been closed.

@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
-    public class FrameRequestStream : Stream
+    class FrameRequestStream : Stream
     {
         private MessageBody _body;
         private FrameStreamState _state;
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             throw new NotSupportedException();
         }
 
-        public Stream StartAcceptingReads(MessageBody body)
+        public void StartAcceptingReads(MessageBody body)
         {
             // Only start if not aborted
             if (_state == FrameStreamState.Closed)
@@ -140,7 +140,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 _state = FrameStreamState.Open;
                 _body = body;
             }
-            return this;
         }
 
         public void PauseAcceptingReads()

@@ -174,19 +174,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public void InitializeHeaders()
         {
-            _frameHeaders = HttpComponentFactory.CreateHeaders(DateHeaderValueManager);
-            RequestHeaders = _frameHeaders.RequestHeaders;
-            ResponseHeaders = _frameHeaders.ResponseHeaders;
+            if (_frameHeaders == null)
+            {
+                _frameHeaders = new Headers(ServerOptions);
+                RequestHeaders = _frameHeaders.RequestHeaders;
+                ResponseHeaders = _frameHeaders.ResponseHeaders;
+            }
+
+            _frameHeaders.Initialize(DateHeaderValueManager);
         }
 
 
         public void InitializeStreams(MessageBody messageBody)
         {
-            _frameStreams = HttpComponentFactory.CreateStreams(this);
+            if (_frameStreams == null)
+            {
+                _frameStreams = new Streams(this);
+                RequestBody = _frameStreams.RequestBody;
+                ResponseBody = _frameStreams.ResponseBody;
+                DuplexStream = _frameStreams.DuplexStream;
+            }
 
-            RequestBody = _frameStreams.RequestBody.StartAcceptingReads(messageBody);
-            ResponseBody = _frameStreams.ResponseBody.StartAcceptingWrites();
-            DuplexStream = _frameStreams.DuplexStream;
+            _frameStreams.RequestBody.StartAcceptingReads(messageBody);
+            _frameStreams.ResponseBody.StartAcceptingWrites();
         }
 
         public void PauseStreams()
@@ -209,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public void Reset()
         {
-            ResetComponents();
+            _frameHeaders?.Reset();
 
             _onStarting = null;
             _onCompleted = null;
@@ -244,26 +254,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
             _manuallySetRequestAbortToken = null;
             _abortedCts = null;
-        }
-
-        protected void ResetComponents()
-        {
-            var frameHeaders = Interlocked.Exchange(ref _frameHeaders, null);
-            if (frameHeaders != null)
-            {
-                RequestHeaders = null;
-                ResponseHeaders = null;
-                HttpComponentFactory.DisposeHeaders(frameHeaders);
-            }
-
-            var frameStreams = Interlocked.Exchange(ref _frameStreams, null);
-            if (frameStreams != null)
-            {
-                RequestBody = null;
-                ResponseBody = null;
-                DuplexStream = null;
-                HttpComponentFactory.DisposeStreams(frameStreams);
-            }
         }
 
         /// <summary>

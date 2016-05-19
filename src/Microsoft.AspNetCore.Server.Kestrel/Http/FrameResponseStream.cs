@@ -14,8 +14,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private IFrameControl _frameControl;
         private FrameStreamState _state;
 
-        public FrameResponseStream()
+        public FrameResponseStream(IFrameControl frameControl)
         {
+            _frameControl = frameControl;
             _state = FrameStreamState.Closed;
         }
 
@@ -94,15 +95,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             return task;
         }
 
-        public Stream StartAcceptingWrites()
+        public void StartAcceptingWrites()
         {
             // Only start if not aborted
             if (_state == FrameStreamState.Closed)
             {
                 _state = FrameStreamState.Open;
             }
-
-            return this;
         }
 
         public void PauseAcceptingWrites()
@@ -132,17 +131,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 _state = FrameStreamState.Aborted;
             }
-        }
-
-        public void Initialize(IFrameControl frameControl)
-        {
-            _frameControl = frameControl;
-        }
-
-        public void Uninitialize()
-        {
-            _frameControl = null;
-            _state = FrameStreamState.Closed;
         }
 
         private Task ValidateState(CancellationToken cancellationToken)

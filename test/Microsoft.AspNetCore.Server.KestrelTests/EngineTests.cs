@@ -170,13 +170,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ReuseStreamsOn(ServiceContext testContext)
+        public async Task HeadersAndStreamsAreReused(ServiceContext testContext)
         {
-            testContext.ServerOptions.MaxPooledStreams = 120;
-
             var streamCount = 0;
+            var requestHeadersCount = 0;
+            var responseHeadersCount = 0;
             var loopCount = 20;
             Stream lastStream = null;
+            IHeaderDictionary lastRequestHeaders = null;
+            IHeaderDictionary lastResponseHeaders = null;
 
             using (var server = new TestServer(
                 context =>
@@ -185,6 +187,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         {
                             lastStream = context.Request.Body;
                             streamCount++;
+                        }
+                        if (context.Request.Headers != lastRequestHeaders)
+                        {
+                            lastRequestHeaders = context.Request.Headers;
+                            requestHeadersCount++;
+                        }
+                        if (context.Response.Headers != lastResponseHeaders)
+                        {
+                            lastResponseHeaders = context.Response.Headers;
+                            responseHeadersCount++;
                         }
                         context.Response.Headers.Clear();
                         return context.Request.Body.CopyToAsync(context.Response.Body);
@@ -208,49 +220,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
 
                 Assert.Equal(1, streamCount);
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
-        public async Task ReuseStreamsOff(ServiceContext testContext)
-        {
-            testContext.ServerOptions.MaxPooledStreams = 0;
-
-            var streamCount = 0;
-            var loopCount = 20;
-            Stream lastStream = null;
-
-            using (var server = new TestServer(
-                context =>
-                {
-                    if (context.Request.Body != lastStream)
-                    {
-                        lastStream = context.Request.Body;
-                        streamCount++;
-                    }
-                    context.Response.Headers.Clear();
-                    return context.Request.Body.CopyToAsync(context.Response.Body);
-                },
-                    testContext))
-            {
-
-                using (var connection = new TestConnection(server.Port))
-                {
-                    var requestData =
-                        Enumerable.Repeat("GET / HTTP/1.1\r\n", loopCount)
-                            .Concat(new[] { "GET / HTTP/1.1\r\nConnection: close\r\n\r\nGoodbye" });
-
-                    var responseData =
-                        Enumerable.Repeat("HTTP/1.1 200 OK\r\nContent-Length: 0\r\n", loopCount)
-                            .Concat(new[] { "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\nGoodbye" });
-
-                    await connection.SendEnd(requestData.ToArray());
-
-                    await connection.ReceiveEnd(responseData.ToArray());
-                }
-
-                Assert.Equal(loopCount + 1, streamCount);
+                Assert.Equal(1, requestHeadersCount);
+                Assert.Equal(1, responseHeadersCount);
             }
         }
 

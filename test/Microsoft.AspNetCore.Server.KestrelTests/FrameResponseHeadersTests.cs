@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -27,7 +25,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 DateHeaderValueManager = new DateHeaderValueManager(),
                 ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
                 ServerOptions = serverOptions,
-                HttpComponentFactory = new HttpComponentFactory(serverOptions)
             };
             var frame = new Frame<object>(application: null, context: connectionContext);
             frame.InitializeHeaders();
@@ -70,7 +67,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 DateHeaderValueManager = new DateHeaderValueManager(),
                 ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
                 ServerOptions = serverOptions,
-                HttpComponentFactory = new HttpComponentFactory(serverOptions)
             };
             var frame = new Frame<object>(application: null, context: connectionContext);
             frame.InitializeHeaders();
