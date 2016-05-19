@@ -288,6 +288,8 @@ namespace Microsoft.AspNetCore.Http
 
             public string Id { get; set; }
 
+            public bool IsAvailable { get; } = true;
+
             public IEnumerable<string> Keys { get { return _store.Keys; } }
 
             public void Clear()
