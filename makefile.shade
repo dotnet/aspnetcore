@@ -30,7 +30,7 @@ functions
         static string targetDir = Path.Combine(baseDir, "artifacts", "build");
 
         static string buildBranch = GetEnvironmentParameter("BUILD_BRANCH") ?? DefaultBuildBranch;
-        static string coherenceCacheDir = GetEnvironmentParameter("COHERENCE_CACHE_DIR") ?? Path.Combine(baseDir, DefaultCoherenceCacheDir);
+        static string coherencePath = GetEnvironmentParameter("COHERENCE_PATH");
         static string dropsShare = GetEnvironmentParameter("ASPNETCI_DROPS_SHARE", DefaultDropsShare);
         static string kBuildVersion = GetEnvironmentParameter("DNX_BUILD_VERSION");
         static string ciVolatileShare = GetEnvironmentParameter("CI_VOLATILE_SHARE");
@@ -96,6 +96,11 @@ var buildTarget = "compile"
 
 #sync-commits
    @{
+       if (string.IsNullOrEmpty(universeCommitsFile))
+       {
+           throw new Exception("UNIVERSE_COMMITS_FILE not specified.");
+       }
+
        var commitsToSync = GetCommitsToSync(universeCommitsFile);
 
        Parallel.ForEach(repositories, repo =>
@@ -111,7 +116,7 @@ var buildTarget = "compile"
 
 #verify-all .pull .change-default-build-target-to-verify .build-all
 
-#ci-test .cache-coherence .pull .sync-commits .remove-src-folders .change-default-build-target-to-verify .build-all
+#ci-test .pull .sync-commits .remove-src-folders .change-default-build-target-to-verify .build-all
 
 #ci-pull
     @{
@@ -293,66 +298,13 @@ var buildTarget = "compile"
 
 #cache-coherence
     @{
-        if (Directory.Exists(dropsShare))
+        if (string.IsNullOrEmpty(coherencePath))
         {
-            var coherenceShare = Path.Combine(dropsShare, "Coherence", buildBranch);
-            var latestBuild = Directory.EnumerateDirectories(coherenceShare)
-                .Select(d => Path.GetFileName(d))
-                .Where(d => { int _; return int.TryParse(d, out _); })
-                .OrderByDescending(d => d)
-                .First();
-            var latestBuildShare = Path.Combine(coherenceShare, latestBuild, "build");
-            var coherenceVersionFilePath = Path.Combine(coherenceCacheDir, CoherenceCacheVersionFileName);
-            var universeCommitsFileTarget = Path.Combine(coherenceCacheDir, UniverseCommitsFileName);
-
-            Log.Info("Latest Coherence build is " + latestBuild);
-
-            if (Directory.Exists(coherenceCacheDir) &&
-                File.Exists(coherenceVersionFilePath) &&
-                File.ReadAllText(coherenceVersionFilePath) == latestBuild)
-            {
-                Log.Info("Coherence build " + latestBuild + " already cached at " + coherenceCacheDir);
-            }
-            else
-            {
-                if (Directory.Exists(coherenceCacheDir))
-                {
-                    Log.Info("Deleting previous Coherence cache");
-                    Directory.Delete(coherenceCacheDir, true);
-                }
-
-                Log.Info("Creating new Coherence cache directory at " + coherenceCacheDir);
-                Directory.CreateDirectory(coherenceCacheDir);
-
-                Log.Info("Caching Coherence build " + latestBuild + " at " + coherenceCacheDir);
-                if (IsLinux)
-                {
-                    CopyFolder(latestBuildShare, coherenceCacheDir, overwrite: true);
-                }
-                else
-                {
-                    NuGetPackagesAdd(sourcePackagesDir: latestBuildShare, targetPackagesDir: coherenceCacheDir);
-                }
-
-                Log.Info("Copying Universe commits file to " + universeCommitsFileTarget);
-                File.Copy(Path.Combine(coherenceShare, latestBuild, UniverseCommitsFileName), universeCommitsFileTarget);
-
-                Log.Info("Saving cached Coherence build version");
-                File.WriteAllText(coherenceVersionFilePath, latestBuild);
-            }
-
-            Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ASPNETVNEXT", coherenceCacheDir);
-            Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_EXTERNAL", Path.Combine(dropsShare, "latest-packages", "external", buildBranch));
-            
-            // Only update commits file location if it hadn't been previously set
-            if (string.IsNullOrWhiteSpace(universeCommitsFile))
-            {
-                universeCommitsFile = universeCommitsFileTarget;
-                Log.Info("Updating UNIVERSE_COMMITS_FILE to " + universeCommitsFileTarget);
-                Environment.SetEnvironmentVariable("UNIVERSE_COMMITS_FILE", universeCommitsFileTarget);
-            }
+            throw new Exception("COHERENCE_PATH not specified.");
         }
-    }
+
+        Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ASPNETVNEXT", coherencePath);
+        Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_EXTERNAL", Path.Combine(dropsShare, "latest-packages", "external", buildBranch));
 
 #change-default-build-target-to-verify
     - buildTarget = "verify";
