@@ -1079,7 +1079,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Content-Length: 1",
                         "",
                         "");
-                    await connection.ReceiveEnd();
+                    await connection.ReceiveForcedEnd();
                 }
             }
         }
