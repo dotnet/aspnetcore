@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
     {
         KestrelServerOptions ServerOptions { get; set; }
 
-        Streams CreateStreams(FrameContext owner);
+        Streams CreateStreams(IFrameControl frameControl);
 
         void DisposeStreams(Streams streams);
 

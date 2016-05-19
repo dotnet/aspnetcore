@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             MaybeExtra.Add(new KeyValuePair<Type, object>(key, value));
         }
 
+        public IFrameControl FrameControl { get; set; }
 
         string IHttpRequestFeature.Protocol
         {

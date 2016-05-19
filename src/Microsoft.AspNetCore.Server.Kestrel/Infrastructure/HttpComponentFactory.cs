@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             ServerOptions = serverOptions;
         }
 
-        public Streams CreateStreams(FrameContext owner)
+        public Streams CreateStreams(IFrameControl frameControl)
         {
             Streams streams;
 
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                 streams = new Streams();
             }
 
-            streams.Initialize(owner);
+            streams.Initialize(frameControl);
 
             return streams;
         }
@@ -103,9 +103,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             DuplexStream = new FrameDuplexStream(RequestBody, ResponseBody);
         }
 
-        public void Initialize(FrameContext renter)
+        public void Initialize(IFrameControl frameControl)
         {
-            ResponseBody.Initialize(renter);
+            ResponseBody.Initialize(frameControl);
         }
 
         public void Uninitialize()

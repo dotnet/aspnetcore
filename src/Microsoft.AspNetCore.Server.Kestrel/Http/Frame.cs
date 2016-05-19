@@ -20,7 +20,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
-    public abstract partial class Frame : FrameContext, IFrameControl
+    public abstract partial class Frame : ConnectionContext, IFrameControl
     {
         private static readonly Encoding _ascii = Encoding.ASCII;
         private static readonly ArraySegment<byte> _endChunkedResponseBytes = CreateAsciiByteArraySegment("0\r\n\r\n");
