@@ -78,9 +78,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
         public void Initialize(DateHeaderValueManager dateValueManager)
         {
-            ResponseHeaders.SetRawDate(
-                dateValueManager.GetDateHeaderValue(),
-                dateValueManager.GetDateHeaderValueBytes());
+            var dateHeaderValues = dateValueManager.GetDateHeaderValues();
+            ResponseHeaders.SetRawDate(dateHeaderValues.String, dateHeaderValues.Bytes);
             ResponseHeaders.SetRawServer("Kestrel", BytesServer);
         }
 

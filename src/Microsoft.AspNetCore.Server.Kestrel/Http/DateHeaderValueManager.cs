@@ -13,15 +13,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
     /// </summary>
     public class DateHeaderValueManager : IDisposable
     {
+        private static readonly byte[] _datePreambleBytes = Encoding.ASCII.GetBytes("\r\nDate: ");
+
         private readonly ISystemClock _systemClock;
         private readonly TimeSpan _timeWithoutRequestsUntilIdle;
         private readonly TimeSpan _timerInterval;
+        private readonly object _timerLocker = new object();
 
-        private volatile string _dateValue;
-        private volatile bool _activeDateBytes;
-        private readonly byte[] _dateBytes0 = Encoding.ASCII.GetBytes("\r\nDate: DDD, dd mmm yyyy hh:mm:ss GMT");
-        private readonly byte[] _dateBytes1 = Encoding.ASCII.GetBytes("\r\nDate: DDD, dd mmm yyyy hh:mm:ss GMT");
-        private object _timerLocker = new object();
+        private DateHeaderValues _dateValues;
+
         private volatile bool _isDisposed = false;
         private volatile bool _hadRequestsSinceLastTimerTick = false;
         private Timer _dateValueTimer;
@@ -55,19 +55,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         /// Returns a value representing the current server date/time for use in the HTTP "Date" response header
         /// in accordance with http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.18
         /// </summary>
-        /// <returns>The value.</returns>
-        public virtual string GetDateHeaderValue()
+        /// <returns>The value in string and byte[] format.</returns>
+        public DateHeaderValues GetDateHeaderValues()
         {
-            _hadRequestsSinceLastTimerTick = true;
-            PrepareDateValues();
-            return _dateValue;
-        }
+            if (!_hadRequestsSinceLastTimerTick)
+            {
+                PrepareDateValues();
+            }
 
-        public byte[] GetDateHeaderValueBytes()
-        {
-            _hadRequestsSinceLastTimerTick = true;
-            PrepareDateValues();
-            return _activeDateBytes ? _dateBytes0 : _dateBytes1;
+            return _dateValues;
         }
 
         /// <summary>
@@ -78,6 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             if (!_isDisposed)
             {
                 _isDisposed = true;
+                _hadRequestsSinceLastTimerTick = false;
 
                 lock (_timerLocker)
                 {
@@ -125,6 +122,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     {
                         _timerIsRunning = false;
                         _dateValueTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                        _hadRequestsSinceLastTimerTick = false;
                     }
                 }
             }
@@ -158,16 +156,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         /// </summary>
         private void PrepareDateValues()
         {
-            if (_isDisposed)
+            _hadRequestsSinceLastTimerTick = !_isDisposed;
+            if (!_timerIsRunning)
             {
-                SetDateValues(_systemClock.UtcNow);
-            }
-            else
-            {
-                if (!_timerIsRunning)
-                {
-                    StartTimer();
-                }
+                StartTimer();
             }
         }
 
@@ -178,9 +170,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private void SetDateValues(DateTimeOffset value)
         {
             // See http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.18 for required format of Date header
-            _dateValue = value.ToString(Constants.RFC1123DateFormat);
-            Encoding.ASCII.GetBytes(_dateValue, 0, _dateValue.Length, !_activeDateBytes ? _dateBytes0 : _dateBytes1, "\r\nDate: ".Length);
-            _activeDateBytes = !_activeDateBytes;
+            var dateValue = value.ToString(Constants.RFC1123DateFormat);
+            var dateBytes = new byte[_datePreambleBytes.Length + dateValue.Length];
+            Buffer.BlockCopy(_datePreambleBytes, 0, dateBytes, 0, _datePreambleBytes.Length);
+            Encoding.ASCII.GetBytes(dateValue, 0, dateValue.Length, dateBytes, _datePreambleBytes.Length);
+
+            var dateValues = new DateHeaderValues()
+            {
+                Bytes = dateBytes,
+                String = dateValue
+            };
+            Volatile.Write(ref _dateValues, dateValues);
+        }
+
+        public class DateHeaderValues
+        {
+            public byte[] Bytes;
+            public string String;
         }
     }
 }
