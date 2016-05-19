@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -18,6 +19,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         // Perf: Share the StringBuilder object across multiple calls of GenerateURL for this UrlHelper
         private StringBuilder _stringBuilder;
+        // Perf: Reuse the RouteValueDictionary across multiple calls of Action for this UrlHelper
+        private readonly RouteValueDictionary _routeValueDictionary;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UrlHelper"/> class using the specified action context and
@@ -32,6 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
 
             ActionContext = actionContext;
+            _routeValueDictionary = new RouteValueDictionary();
         }
 
         /// <inheritdoc />
@@ -51,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 throw new ArgumentNullException(nameof(actionContext));
             }
 
-            var valuesDictionary = new RouteValueDictionary(actionContext.Values);
+            var valuesDictionary = GetValuesDictionary(actionContext.Values);
 
             if (actionContext.Action == null)
             {
@@ -106,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 throw new ArgumentNullException(nameof(routeContext));
             }
 
-            var valuesDictionary = new RouteValueDictionary(routeContext.Values);
+            var valuesDictionary = routeContext.Values as RouteValueDictionary ?? GetValuesDictionary(routeContext.Values);
             var virtualPathData = GetVirtualPathData(routeContext.RouteName, valuesDictionary);
             return GenerateUrl(routeContext.Protocol, routeContext.Host, virtualPathData, routeContext.Fragment);
         }
@@ -203,6 +207,37 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 Protocol = HttpContext.Request.Scheme,
                 Host = HttpContext.Request.Host.ToUriComponent()
             });
+        }
+
+        private RouteValueDictionary GetValuesDictionary(object values)
+        {
+            // Perf: RouteValueDictionary can be cast to IDictionary<string, object>, but it is
+            // special cased to avoid allocating boxed Enumerator.
+            var routeValuesDictionary = values as RouteValueDictionary;
+            if (routeValuesDictionary != null)
+            {
+                _routeValueDictionary.Clear();
+                foreach (var kvp in routeValuesDictionary)
+                {
+                    _routeValueDictionary.Add(kvp.Key, kvp.Value);
+                }
+
+                return _routeValueDictionary;
+            }
+
+            var dictionaryValues = values as IDictionary<string, object>;
+            if (dictionaryValues != null)
+            {
+                _routeValueDictionary.Clear();
+                foreach (var kvp in dictionaryValues)
+                {
+                    _routeValueDictionary.Add(kvp.Key, kvp.Value);
+                }
+
+                return _routeValueDictionary;
+            }
+
+            return new RouteValueDictionary(values);
         }
 
         private StringBuilder GetStringBuilder()
