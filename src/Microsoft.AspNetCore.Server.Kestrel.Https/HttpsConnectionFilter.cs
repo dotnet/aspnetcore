@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
 
             if (string.Equals(context.Address.Scheme, "https", StringComparison.OrdinalIgnoreCase))
             {
-                X509Certificate2 clientCertificate = null;
+                var certificateHandle = IntPtr.Zero;
                 SslStream sslStream;
                 if (_options.ClientCertificateMode == ClientCertificateMode.NoCertificate)
                 {
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                                 }
                             }
 
-                            clientCertificate = certificate2;
+                            certificateHandle = certificate2.Handle;
                             return true;
                         });
                     await sslStream.AuthenticateAsServerAsync(_options.ServerCertificate, clientCertificateRequired: true,
@@ -98,9 +98,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                 {
                     previousPrepareRequest?.Invoke(features);
 
-                    if (clientCertificate != null)
+                    if (certificateHandle != IntPtr.Zero)
                     {
-                        features.Set<ITlsConnectionFeature>(new TlsConnectionFeature { ClientCertificate = clientCertificate });
+                        features.Set<ITlsConnectionFeature>(new TlsConnectionFeature { ClientCertificate = new X509Certificate2(sslStream.RemoteCertificate.Handle) });
                     }
 
                     features.Get<IHttpRequestFeature>().Scheme = "https";
