@@ -53,10 +53,5 @@
         "System.Runtime.Loader": "4.0.0-*"
       }
     }
-  },
-  "exclude": [
-    "wwwroot",
-    "node_modules",
-    "bower_components"
-  ]
+  }
 }

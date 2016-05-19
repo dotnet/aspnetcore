@@ -46,10 +46,5 @@
         "portable-net45+win8"
       ]
     }
-  },
-  "exclude": [
-    "wwwroot",
-    "node_modules",
-    "bower_components"
-  ]
+  }
 }

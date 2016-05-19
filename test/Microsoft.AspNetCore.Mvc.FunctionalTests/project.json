@@ -1,12 +1,12 @@
 {
-  "compile": [
-    "../Microsoft.AspNetCore.Mvc.Formatters.Xml.Test/XmlAssert.cs"
-  ],
   "buildOptions": {
     "define": [
       "__RemoveThisBitTo__GENERATE_BASELINES",
       "FUNCTIONAL_TESTS"
     ],
+    "compile": {
+      "include": "../Microsoft.AspNetCore.Mvc.Formatters.Xml.Test/XmlAssert.cs"
+    },
     "warningsAsErrors": true
   },
   "dependencies": {

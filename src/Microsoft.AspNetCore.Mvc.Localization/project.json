@@ -27,11 +27,6 @@
       ]
     }
   },
-  "exclude": [
-    "wwwroot",
-    "node_modules",
-    "bower_components"
-  ],
   "packOptions": {
     "repository": {
       "type": "git",
