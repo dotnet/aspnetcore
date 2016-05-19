@@ -34,9 +34,11 @@
     }
   },
   "testRunner": "xunit",
-  "compile": "../common/**/*.cs",
   "buildOptions": {
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "compile": {
+      "include": "../common/**/*.cs"
+    }
   }
 }
