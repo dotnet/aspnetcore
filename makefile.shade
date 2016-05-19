@@ -305,6 +305,7 @@ var buildTarget = "compile"
 
         Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ASPNETVNEXT", coherencePath);
         Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_EXTERNAL", Path.Combine(dropsShare, "latest-packages", "external", buildBranch));
+    }
 
 #change-default-build-target-to-verify
     - buildTarget = "verify";
