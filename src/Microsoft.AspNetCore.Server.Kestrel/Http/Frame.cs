@@ -50,7 +50,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         protected List<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
-        private bool _requestProcessingStarted;
         private Task _requestProcessingTask;
         protected volatile bool _requestProcessingStopping; // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
         protected int _requestAborted;
@@ -272,17 +271,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         /// </summary>
         public void Start()
         {
-            if (!_requestProcessingStarted)
-            {
-                _requestProcessingStarted = true;
-                _requestProcessingTask =
-                    Task.Factory.StartNew(
-                        (o) => ((Frame)o).RequestProcessingAsync(),
-                        this,
-                        default(CancellationToken),
-                        TaskCreationOptions.DenyChildAttach,
-                        TaskScheduler.Default);
-            }
+            _requestProcessingTask =
+                Task.Factory.StartNew(
+                    (o) => ((Frame)o).RequestProcessingAsync(),
+                    this,
+                    default(CancellationToken),
+                    TaskCreationOptions.DenyChildAttach,
+                    TaskScheduler.Default);
         }
 
         /// <summary>
