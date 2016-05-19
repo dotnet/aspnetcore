@@ -4,6 +4,9 @@
     "keyFile": "../../tools/Key.snk",
     "copyToOutput": {
       "include": "config.json"
+    },
+    "compile": {
+      "include": "../Shared/*.cs"
     }
   },
   "publishOptions": {
@@ -27,7 +30,6 @@
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
   },
-  "compile": "../Shared/*.cs",
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {
