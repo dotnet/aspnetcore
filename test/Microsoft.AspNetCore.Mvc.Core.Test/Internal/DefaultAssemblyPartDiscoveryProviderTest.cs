@@ -63,6 +63,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                      GetLibrary("Bar", "Microsoft.AspNetCore.Mvc"),
                      GetLibrary("Qux", "Not.Mvc.Assembly", "Unofficial.Microsoft.AspNetCore.Mvc"),
                      GetLibrary("Baz", "Microsoft.AspNetCore.Mvc.Abstractions"),
+                     GetLibrary("Microsoft.AspNetCore.Mvc.Core"),
+                     GetLibrary("Microsoft.AspNetCore.Mvc"),
+                     GetLibrary("Not.Mvc.Assembly"),
+                     GetLibrary("Unofficial.Microsoft.AspNetCore.Mvc"),
+                     GetLibrary("Microsoft.AspNetCore.Mvc.Abstractions"),
+
                 },
                 Enumerable.Empty<RuntimeFallbacks>());
 
@@ -71,6 +77,45 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             Assert.Equal(new[] { "Foo", "Bar", "Baz" }, candidates.Select(a => a.Name));
+        }
+
+        [Fact]
+        public void GetCandidateLibraries_ReturnsLibrariesWithTransitiveReferencesToAnyMvcAssembly()
+        {
+            // Arrange
+            var expectedLibraries = new[] { "Foo", "Bar", "Baz", "LibraryA", "LibraryB", "LibraryC", "LibraryE", "LibraryG", "LibraryH" };
+
+            var dependencyContext = new DependencyContext(
+                new TargetInfo("framework", "runtime", "signature", isPortable: true),
+                CompilationOptions.Default,
+                new CompilationLibrary[0],
+                new[]
+                {
+                     GetLibrary("Foo", "Bar"),
+                     GetLibrary("Bar", "Microsoft.AspNetCore.Mvc"),
+                     GetLibrary("Qux", "Not.Mvc.Assembly", "Unofficial.Microsoft.AspNetCore.Mvc"),
+                     GetLibrary("Baz", "Microsoft.AspNetCore.Mvc.Abstractions"),
+                     GetLibrary("Microsoft.AspNetCore.Mvc"),
+                     GetLibrary("Not.Mvc.Assembly"),
+                     GetLibrary("Microsoft.AspNetCore.Mvc.Abstractions"),
+                     GetLibrary("Unofficial.Microsoft.AspNetCore.Mvc"),
+                     GetLibrary("LibraryA", "LibraryB"),
+                     GetLibrary("LibraryB","LibraryC"),
+                     GetLibrary("LibraryC", "LibraryD", "Microsoft.AspNetCore.Mvc.Abstractions"),
+                     GetLibrary("LibraryD"),
+                     GetLibrary("LibraryE","LibraryF","LibraryG"),
+                     GetLibrary("LibraryF"),
+                     GetLibrary("LibraryG", "LibraryH"),
+                     GetLibrary("LibraryH", "LibraryI", "Microsoft.AspNetCore.Mvc"),
+                     GetLibrary("LibraryI")
+                },
+                Enumerable.Empty<RuntimeFallbacks>());
+
+            // Act
+            var candidates = DefaultAssemblyPartDiscoveryProvider.GetCandidateLibraries(dependencyContext);
+
+            // Assert
+            Assert.Equal(expectedLibraries, candidates.Select(a => a.Name));
         }
 
         [Fact]
@@ -84,11 +129,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new[]
                 {
                      GetLibrary("MvcSandbox", "Microsoft.AspNetCore.Mvc.Core", "Microsoft.AspNetCore.Mvc"),
-                     GetLibrary("Microsoft.AspNetCore.Mvc.TagHelpers", "Microsoft.AspNetCore.Mvc.Razor"),
-                     GetLibrary("Microsoft.AspNetCore.Mvc", "Microsoft.AspNetCore.Mvc.Abstractions", "Microsoft.AspNetCore.Mvc.Core"),
                      GetLibrary("Microsoft.AspNetCore.Mvc.Core", "Microsoft.AspNetCore.HttpAbstractions"),
+                     GetLibrary("Microsoft.AspNetCore.HttpAbstractions"),
+                     GetLibrary("Microsoft.AspNetCore.Mvc", "Microsoft.AspNetCore.Mvc.Abstractions", "Microsoft.AspNetCore.Mvc.Core"),
+                     GetLibrary("Microsoft.AspNetCore.Mvc.Abstractions"),
+                     GetLibrary("Microsoft.AspNetCore.Mvc.TagHelpers", "Microsoft.AspNetCore.Mvc.Razor"),
+                     GetLibrary("Microsoft.AspNetCore.Mvc.Razor"),
                      GetLibrary("ControllersAssembly", "Microsoft.AspNetCore.Mvc"),
-
                 },
                 Enumerable.Empty<RuntimeFallbacks>());
 

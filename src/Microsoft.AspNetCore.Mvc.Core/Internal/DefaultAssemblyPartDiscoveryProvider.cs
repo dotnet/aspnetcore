@@ -63,14 +63,96 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 return Enumerable.Empty<RuntimeLibrary>();
             }
 
-            return dependencyContext.RuntimeLibraries.Where(IsCandidateLibrary);
+            var candidatesResolver = new CandidateResolver(dependencyContext.RuntimeLibraries, ReferenceAssemblies);
+            return candidatesResolver.GetCandidates();
         }
 
-        private static bool IsCandidateLibrary(RuntimeLibrary library)
+        private class CandidateResolver
         {
-            Debug.Assert(ReferenceAssemblies != null);
-            return !ReferenceAssemblies.Contains(library.Name) &&
-                library.Dependencies.Any(dependency => ReferenceAssemblies.Contains(dependency.Name));
+            private readonly IDictionary<string, Dependency> _dependencies;
+
+            public CandidateResolver(IReadOnlyList<RuntimeLibrary> dependencies, ISet<string> referenceAssemblies)
+            {
+                _dependencies = dependencies
+                    .ToDictionary(d => d.Name, d => CreateDependency(d, referenceAssemblies));
+            }
+
+            private Dependency CreateDependency(RuntimeLibrary library, ISet<string> referenceAssemblies)
+            {
+                var classification = DependencyClassification.Unknown;
+                if (referenceAssemblies.Contains(library.Name))
+                {
+                    classification = DependencyClassification.MvcReference;
+                }
+
+                return new Dependency(library, classification);
+            }
+
+            private DependencyClassification ComputeClassification(string dependency)
+            {
+                Debug.Assert(_dependencies.ContainsKey(dependency));
+
+                var candidateEntry = _dependencies[dependency];
+                if (candidateEntry.Classification != DependencyClassification.Unknown)
+                {
+                    return candidateEntry.Classification;
+                }
+                else
+                {
+                    var classification = DependencyClassification.NotCandidate;
+                    foreach (var candidateDependency in candidateEntry.Library.Dependencies)
+                    {
+                        var dependencyClassification = ComputeClassification(candidateDependency.Name);
+                        if (dependencyClassification == DependencyClassification.Candidate ||
+                            dependencyClassification == DependencyClassification.MvcReference)
+                        {
+                            classification = DependencyClassification.Candidate;
+                            break;
+                        }
+                    }
+
+                    candidateEntry.Classification = classification;
+
+                    return classification;
+                }
+            }
+
+            public IEnumerable<RuntimeLibrary> GetCandidates()
+            {
+                foreach (var dependency in _dependencies)
+                {
+                    if (ComputeClassification(dependency.Key) == DependencyClassification.Candidate)
+                    {
+                        yield return dependency.Value.Library;
+                    }
+                }
+            }
+
+            private class Dependency
+            {
+                public Dependency(RuntimeLibrary library, DependencyClassification classification)
+                {
+                    Library = library;
+                    Classification = classification;
+                }
+
+                public RuntimeLibrary Library { get; }
+
+                public DependencyClassification Classification { get; set; }
+
+                public override string ToString()
+                {
+                    return $"Library: {Library.Name}, Classification: {Classification}";
+                }
+            }
+
+            private enum DependencyClassification
+            {
+                Unknown = 0,
+                Candidate = 1,
+                NotCandidate = 2,
+                MvcReference = 3
+            }
         }
     }
 }
