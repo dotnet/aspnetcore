@@ -140,7 +140,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                 scanIndex = 1;
             }
 
-
             int textLength = queryString.Length;
             int equalIndex = queryString.IndexOf('=');
             if (equalIndex == -1)
@@ -169,6 +168,13 @@ namespace Microsoft.AspNetCore.WebUtilities
                     if (equalIndex == -1)
                     {
                         equalIndex = textLength;
+                    }
+                }
+                else
+                {
+                    if (delimiterIndex > scanIndex)
+                    {
+                        accumulator.Append(queryString.Substring(scanIndex, delimiterIndex - scanIndex), string.Empty);
                     }
                 }
                 scanIndex = delimiterIndex + 1;
