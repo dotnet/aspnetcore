@@ -15,10 +15,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class FrameResponseHeadersTests
     {
-        [Fact]
-        public void InitialDictionaryContainsServerAndDate()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void InitialDictionaryContainsServerAndDate(bool addServerHeader)
         {
-            var serverOptions = new KestrelServerOptions();
+            var serverOptions = new KestrelServerOptions { AddServerHeader = addServerHeader };
+
             var connectionContext = new ConnectionContext
             {
                 DateHeaderValueManager = new DateHeaderValueManager(),
@@ -31,12 +34,22 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             IDictionary<string, StringValues> headers = frame.ResponseHeaders;
 
-            Assert.Equal(2, headers.Count);
+            if (addServerHeader)
+            {
+                Assert.Equal(2, headers.Count);
 
-            StringValues serverHeader;
-            Assert.True(headers.TryGetValue("Server", out serverHeader));
-            Assert.Equal(1, serverHeader.Count);
-            Assert.Equal("Kestrel", serverHeader[0]);
+                StringValues serverHeader;
+                Assert.True(headers.TryGetValue("Server", out serverHeader));
+                Assert.Equal(1, serverHeader.Count);
+                Assert.Equal("Kestrel", serverHeader[0]);
+            }
+            else
+            {
+                Assert.Equal(1, headers.Count);
+
+                StringValues serverHeader;
+                Assert.False(headers.TryGetValue("Server", out serverHeader));
+            }
 
             StringValues dateHeader;
             DateTime date;
