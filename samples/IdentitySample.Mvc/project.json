@@ -60,15 +60,6 @@
       "imports": "portable-net451+win8"
     }
   },
-  "scripts": {
-    "prepublish": [
-      "npm install",
-      "bower install",
-      "gulp clean",
-      "gulp min"
-    ],
-    "postpublish": "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%"
-  },
   "publishOptions": {
     "include": [
       "appsettings.json",
