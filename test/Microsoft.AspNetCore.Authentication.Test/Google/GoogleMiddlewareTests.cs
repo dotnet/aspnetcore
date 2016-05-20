@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 {
                     Sender = req =>
                     {
-                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v3/token")
+                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v4/token")
                         {
                             return ReturnJsonResponse(new
                             {
@@ -489,7 +489,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 {
                     Sender = req =>
                     {
-                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v3/token")
+                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v4/token")
                         {
                             return ReturnJsonResponse(new
                             {
@@ -569,7 +569,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 {
                     Sender = req =>
                     {
-                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v3/token")
+                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v4/token")
                         {
                             return ReturnJsonResponse(new
                             {
@@ -659,7 +659,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 {
                     Sender = req =>
                     {
-                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v3/token")
+                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v4/token")
                         {
                             return ReturnJsonResponse(new
                             {
