@@ -116,7 +116,7 @@ var buildTarget = "compile"
 
 #verify-all .pull .change-default-build-target-to-verify .build-all
 
-#ci-test .pull .sync-commits .remove-src-folders .change-default-build-target-to-verify .build-all
+#ci-test .pull .use-local-coherence .sync-commits .remove-src-folders .change-default-build-target-to-verify .build-all
 
 #ci-pull
     @{
@@ -296,14 +296,23 @@ var buildTarget = "compile"
         }
     }
 
-#cache-coherence
+#use-local-coherence description='Sets up environment variables to use Coherence at COHERENCE_PATH'
     @{
         if (string.IsNullOrEmpty(coherencePath))
         {
             throw new Exception("COHERENCE_PATH not specified.");
         }
 
-        Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ASPNETVNEXT", coherencePath);
+        if (string.IsNullOrEmpty(universeCommitsFile))
+        {
+            universeCommitsFile = Path.Combine(coherencePath, UniverseCommitsFileName);
+            if (!File.Exists(universeCommitsFile))
+            {
+                throw new Exception("Universe commits file could not be found at " + universeCommitsFile);
+            }
+        }
+
+        Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ASPNETVNEXT", Path.Combine(coherencePath, "packages-expanded"));
         Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_EXTERNAL", Path.Combine(dropsShare, "latest-packages", "external", buildBranch));
     }
 
