@@ -121,8 +121,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         public IHeaderDictionary RequestHeaders { get; set; }
         public Stream RequestBody { get; set; }
 
-        public int StatusCode { get; set; }
-        public string ReasonPhrase { get; set; }
+        private int _statusCode;
+        public int StatusCode
+        {
+            get
+            {
+                return _statusCode;
+            }
+            set
+            {
+                if (HasResponseStarted)
+                {
+                    throw new InvalidOperationException("Status code cannot be set, response has already started.");
+                }
+
+                _statusCode = value;
+            }
+        }
+
+        private string _reasonPhrase;
+        public string ReasonPhrase
+        {
+            get
+            {
+                return _reasonPhrase;
+            }
+            set
+            {
+                if (HasResponseStarted)
+                {
+                    throw new InvalidOperationException("Reason phrase cannot be set, response had already started.");
+                }
+
+                _reasonPhrase = value;
+            }
+        }
+
         public IHeaderDictionary ResponseHeaders { get; set; }
         public Stream ResponseBody { get; set; }
 
@@ -579,6 +613,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             if (_requestRejected || _applicationException != null)
             {
+                if (HasResponseStarted)
+                {
+                    // We can no longer change the response, so we simply close the connection.
+                    _requestProcessingStopping = true;
+                    return TaskUtilities.CompletedTask;
+                }
+
                 if (_requestRejected)
                 {
                     // 400 Bad Request
@@ -591,30 +632,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     StatusCode = 500;
                 }
 
-                if (HasResponseStarted)
+                ReasonPhrase = null;
+
+                var responseHeaders = _frameHeaders.ResponseHeaders;
+                responseHeaders.Reset();
+                var dateHeaderValues = DateHeaderValueManager.GetDateHeaderValues();
+
+                responseHeaders.SetRawDate(dateHeaderValues.String, dateHeaderValues.Bytes);
+                responseHeaders.SetRawContentLength("0", _bytesContentLengthZero);
+
+                if (ServerOptions.AddServerHeader)
                 {
-                    // We can no longer respond with a 500, so we simply close the connection.
-                    _requestProcessingStopping = true;
-                    return TaskUtilities.CompletedTask;
+                    responseHeaders.SetRawServer(Constants.ServerName, Headers.BytesServer);
                 }
-                else
-                {
-                    ReasonPhrase = null;
 
-                    var responseHeaders = _frameHeaders.ResponseHeaders;
-                    responseHeaders.Reset();
-                    var dateHeaderValues = DateHeaderValueManager.GetDateHeaderValues();
-
-                    responseHeaders.SetRawDate(dateHeaderValues.String, dateHeaderValues.Bytes);
-                    responseHeaders.SetRawContentLength("0", _bytesContentLengthZero);
-
-                    if (ServerOptions.AddServerHeader)
-                    {
-                        responseHeaders.SetRawServer(Constants.ServerName, Headers.BytesServer);
-                    }
-
-                    ResponseHeaders = responseHeaders;
-                }
+                ResponseHeaders = responseHeaders;
             }
 
             if (!HasResponseStarted)

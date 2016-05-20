@@ -125,5 +125,47 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 ((IDictionary<string, StringValues>)responseHeaders).Add(key, value);
             });
         }
+
+        [Fact]
+        public void ThrowsWhenAddingHeaderAfterReadOnlyIsSet()
+        {
+            var headers = new FrameResponseHeaders();
+            headers.SetReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => ((IDictionary<string, StringValues>)headers).Add("my-header", new[] { "value" }));
+        }
+
+        [Fact]
+        public void ThrowsWhenChangingHeaderAfterReadOnlyIsSet()
+        {
+            var headers = new FrameResponseHeaders();
+            var dictionary = (IDictionary<string, StringValues>)headers;
+            dictionary.Add("my-header", new[] { "value" });
+            headers.SetReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => dictionary["my-header"] = "other-value");
+        }
+
+        [Fact]
+        public void ThrowsWhenRemovingHeaderAfterReadOnlyIsSet()
+        {
+            var headers = new FrameResponseHeaders();
+            var dictionary = (IDictionary<string, StringValues>)headers;
+            dictionary.Add("my-header", new[] { "value" });
+            headers.SetReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => dictionary.Remove("my-header"));
+        }
+
+        [Fact]
+        public void ThrowsWhenClearingHeadersAfterReadOnlyIsSet()
+        {
+            var headers = new FrameResponseHeaders();
+            var dictionary = (IDictionary<string, StringValues>)headers;
+            dictionary.Add("my-header", new[] { "value" });
+            headers.SetReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => dictionary.Clear());
+        }
     }
 }

@@ -4,9 +4,11 @@
 using System;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -49,6 +51,69 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var scan = socketInput.ConsumingStart();
                 Assert.True(scan.IsEnd);
             }
+        }
+
+        [Fact]
+        public void ResetResetsScheme()
+        {
+            // Arrange
+            var connectionContext = new ConnectionContext()
+            {
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+            };
+            var frame = new Frame<object>(application: null, context: connectionContext);
+            frame.Scheme = "https";
+
+            // Act
+            frame.Reset();
+
+            // Assert
+            Assert.Equal("http", ((IFeatureCollection)frame).Get<IHttpRequestFeature>().Scheme);
+        }
+
+        [Fact]
+        public void ThrowsWhenStatusCodeIsSetAfterResponseStarted()
+        {
+            // Arrange
+            var connectionContext = new ConnectionContext()
+            {
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                ServerOptions = new KestrelServerOptions(),
+                SocketOutput = new MockSocketOuptut()
+            };
+            var frame = new Frame<object>(application: null, context: connectionContext);
+            frame.InitializeHeaders();
+
+            // Act
+            frame.Write(new ArraySegment<byte>(new byte[1]));
+
+            // Assert
+            Assert.True(frame.HasResponseStarted);
+            Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)frame).StatusCode = 404);
+        }
+
+        [Fact]
+        public void ThrowsWhenReasonPhraseIsSetAfterResponseStarted()
+        {
+            // Arrange
+            var connectionContext = new ConnectionContext()
+            {
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                ServerOptions = new KestrelServerOptions(),
+                SocketOutput = new MockSocketOuptut()
+            };
+            var frame = new Frame<object>(application: null, context: connectionContext);
+            frame.InitializeHeaders();
+
+            // Act
+            frame.Write(new ArraySegment<byte>(new byte[1]));
+
+            // Assert
+            Assert.True(frame.HasResponseStarted);
+            Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)frame).ReasonPhrase = "Reason phrase");
         }
     }
 }
