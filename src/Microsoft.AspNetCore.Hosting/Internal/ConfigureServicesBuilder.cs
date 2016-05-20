@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             if (parameters.Length > 1 ||
                 parameters.Any(p => p.ParameterType != typeof(IServiceCollection)))
             {
-                throw new InvalidOperationException("ConfigureServices can take at most a single IServiceCollection parameter.");
+                throw new InvalidOperationException("The ConfigureServices method must either be parameterless or take only one parameter of type IServiceCollection.");
             }
 
             MethodInfo = configureServices;
