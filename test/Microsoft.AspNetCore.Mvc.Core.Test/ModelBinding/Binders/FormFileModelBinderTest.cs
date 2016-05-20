@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
 
             var entry = bindingContext.ValidationState[result.Model];
@@ -51,7 +50,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
 
             var entry = bindingContext.ValidationState[result.Model];
@@ -84,7 +82,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
             Assert.IsAssignableFrom(destinationType, result.Model);
             Assert.Equal(formFiles, result.Model as IEnumerable<IFormFile>);
@@ -103,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
+            Assert.True(result.IsModelSet);
             var file = Assert.IsAssignableFrom<IFormFile>(result.Model);
             Assert.Equal("file1.txt", file.FileName);
         }
@@ -121,7 +118,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.False(result.IsModelSet);
             Assert.Null(result.Model);
         }
@@ -140,7 +136,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.False(result.IsModelSet);
             Assert.Null(result.Model);
         }
@@ -167,7 +162,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
             var file = Assert.IsAssignableFrom<IFormFile>(result.Model);
 
@@ -188,7 +182,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.False(result.IsModelSet);
             Assert.Null(result.Model);
         }
@@ -207,7 +200,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.False(result.IsModelSet);
             Assert.Null(result.Model);
         }
@@ -225,7 +217,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.False(result.IsModelSet);
             Assert.Null(result.Model);
         }
@@ -243,7 +234,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.False(result.IsModelSet);
             Assert.Null(result.Model);
         }

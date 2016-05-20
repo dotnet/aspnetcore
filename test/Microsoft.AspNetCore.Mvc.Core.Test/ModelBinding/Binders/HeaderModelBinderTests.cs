@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(modelBindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
+            Assert.False(result.IsModelSet);
         }
 
         [Fact]
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(modelBindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
+            Assert.True(result.IsModelSet);
             Assert.Equal(headerValue.Split(','), result.Model);
         }
 
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(modelBindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
+            Assert.True(result.IsModelSet);
             Assert.Equal(headerValue, result.Model);
         }
 
@@ -95,7 +95,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(modelBindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
             Assert.IsAssignableFrom(destinationType, result.Model);
             Assert.Equal(headerValue.Split(','), result.Model as IEnumerable<string>);
@@ -117,9 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(modelBindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.False(result.IsModelSet);
-            Assert.Equal("modelName", result.Key);
             Assert.Null(result.Model);
         }
 
@@ -139,9 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(modelBindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.False(result.IsModelSet);
-            Assert.Equal("modelName", result.Key);
             Assert.Null(result.Model);
         }
 

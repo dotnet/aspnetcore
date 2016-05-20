@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
             if (valueProviderResult == ValueProviderResult.None)
             {
-                bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+                bindingContext.Result = ModelBindingResult.Failed();
                 return TaskCache.CompletedTask;
             }
 
@@ -34,14 +34,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var value = valueProviderResult.FirstValue;
             if (string.IsNullOrEmpty(value))
             {
-                bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+                bindingContext.Result = ModelBindingResult.Failed();
                 return TaskCache.CompletedTask;
             }
 
             try
             {
                 var model = Convert.FromBase64String(value);
-                bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
+                bindingContext.Result = ModelBindingResult.Success(model);
                 return TaskCache.CompletedTask;
             }
             catch (Exception exception)
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Matched the type (byte[]) only this binder supports. As in missing data cases, always tell the model
             // binding system to skip other model binders i.e. return non-null.
-            bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+            bindingContext.Result = ModelBindingResult.Failed();
             return TaskCache.CompletedTask;
         }
     }

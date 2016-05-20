@@ -53,7 +53,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.False(result.IsModelSet);
         }
 
@@ -104,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
+            Assert.False(result.IsModelSet);
             Assert.Null(result.Model);
             Assert.False(bindingContext.ModelState.IsValid);
             var error = Assert.Single(bindingContext.ModelState["theModelName"].Errors);
@@ -122,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.Failed("theModelName"), result);
+            Assert.Equal(ModelBindingResult.Failed(), result);
             Assert.Empty(bindingContext.ModelState);
         }
 

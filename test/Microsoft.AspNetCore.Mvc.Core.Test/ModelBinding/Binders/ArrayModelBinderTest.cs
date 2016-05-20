@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
+            Assert.True(result.IsModelSet);
 
             var array = Assert.IsType<int[]>(result.Model);
             Assert.Equal(new[] { 42, 84 }, array);
@@ -59,10 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(context);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
-
             Assert.Empty(Assert.IsType<string[]>(result.Model));
-            Assert.Equal("modelName", result.Key);
             Assert.True(result.IsModelSet);
         }
 
@@ -134,7 +131,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
             Assert.Same(model, result.Model);
 
@@ -153,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 if (value != ValueProviderResult.None)
                 {
                     var model = value.ConvertTo(mbc.ModelType);
-                    return ModelBindingResult.Success(mbc.ModelName, model);
+                    return ModelBindingResult.Success(model);
                 }
                 return null;
             });

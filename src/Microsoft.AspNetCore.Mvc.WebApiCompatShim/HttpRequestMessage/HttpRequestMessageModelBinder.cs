@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
         {
             var model = bindingContext.HttpContext.GetHttpRequestMessage();
             bindingContext.ValidationState.Add(model, new ValidationStateEntry() { SuppressValidation = true });
-            bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
+            bindingContext.Result = ModelBindingResult.Success(model);
 
             return TaskCache.CompletedTask;
         }

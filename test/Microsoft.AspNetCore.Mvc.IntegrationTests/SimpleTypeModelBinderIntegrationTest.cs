@@ -462,7 +462,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Assert
 
             // ModelBindingResult
-            Assert.Equal(ModelBindingResult.Failed(string.Empty), modelBindingResult);
+            Assert.Equal(ModelBindingResult.Failed(), modelBindingResult);
 
             // ModelState
             Assert.True(modelState.IsValid);

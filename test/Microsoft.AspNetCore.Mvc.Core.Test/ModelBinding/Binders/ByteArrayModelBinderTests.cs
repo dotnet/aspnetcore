@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Assert
             Assert.NotNull(binderResult);
             Assert.False(binderResult.IsModelSet);
-            Assert.Equal("foo", binderResult.Key);
             Assert.Null(binderResult.Model);
 
             var modelState = Assert.Single(bindingContext.ModelState);
@@ -100,7 +99,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Assert
             Assert.NotNull(binderResult);
             Assert.False(binderResult.IsModelSet);
-            Assert.Equal("foo", binderResult.Key);
             Assert.Null(binderResult.Model);
 
             Assert.Empty(bindingContext.ModelState); // No submitted data for "foo".

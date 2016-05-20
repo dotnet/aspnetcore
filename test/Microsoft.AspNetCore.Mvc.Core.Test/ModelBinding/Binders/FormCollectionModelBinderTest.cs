@@ -32,9 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
-
             Assert.Empty(bindingContext.ValidationState);
 
             var form = Assert.IsAssignableFrom<IFormCollection>(result.Model);
@@ -55,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
+            Assert.True(result.IsModelSet);
             var form = Assert.IsAssignableFrom<IFormCollection>(result.Model);
             Assert.Empty(form);
         }

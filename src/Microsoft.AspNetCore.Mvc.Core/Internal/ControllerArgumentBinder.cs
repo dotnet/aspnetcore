@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 _validator.Validate(
                     controllerContext,
                     modelBindingContext.ValidationState,
-                    modelBindingResult.Value.Key,
+                    modelBindingContext.ModelName,
                     modelBindingResult.Value.Model);
             }
 

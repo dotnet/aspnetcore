@@ -51,7 +51,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
-            Assert.Equal("parameter", modelBindingResult.Key);
 
             var model = Assert.IsType<Person1>(modelBindingResult.Model);
             Assert.Null(model.Name);
@@ -101,7 +100,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
-            Assert.Equal("parameter", modelBindingResult.Key);
 
             var model = Assert.IsType<Person2>(modelBindingResult.Model);
             Assert.Null(model.Name);
@@ -141,7 +139,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
-            Assert.Equal(string.Empty, modelBindingResult.Key);
 
             var model = Assert.IsType<Person3>(modelBindingResult.Model);
             Assert.Null(model.Name);
@@ -191,7 +188,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
-            Assert.Equal(string.Empty, modelBindingResult.Key);
 
             var model = Assert.IsType<Person4>(modelBindingResult.Model);
             Assert.Null(model.Name);
@@ -238,7 +234,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
-            Assert.Equal(string.Empty, modelBindingResult.Key);
 
             var model = Assert.IsType<Person5>(modelBindingResult.Model);
             Assert.Null(model.Name);

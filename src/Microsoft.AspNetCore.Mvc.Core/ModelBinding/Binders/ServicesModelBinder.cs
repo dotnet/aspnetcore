@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             bindingContext.ValidationState.Add(model, new ValidationStateEntry() { SuppressValidation = true });
 
-            bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
+            bindingContext.Result = ModelBindingResult.Success(model);
             return TaskCache.CompletedTask;
         }
     }

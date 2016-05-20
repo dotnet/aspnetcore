@@ -84,7 +84,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
 
             var list = Assert.IsAssignableFrom<IList<int>>(result.Model);
@@ -116,7 +115,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
 
             Assert.Same(list, result.Model);
@@ -143,7 +141,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
 
             var list = Assert.IsAssignableFrom<IList<int>>(result.Model);
@@ -170,7 +167,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
 
             Assert.Same(list, result.Model);
@@ -192,7 +188,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
             Assert.NotNull(result.Model);
 
@@ -236,10 +231,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(context);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
-
             Assert.Empty(Assert.IsType<List<string>>(result.Model));
-            Assert.Equal("modelName", result.Key);
             Assert.True(result.IsModelSet);
         }
 
@@ -269,11 +261,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(context);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
-
             Assert.Same(list, result.Model);
             Assert.Empty(list);
-            Assert.Equal("modelName", result.Key);
             Assert.True(result.IsModelSet);
         }
 
@@ -343,7 +332,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var elementBinder = new StubModelBinder(mbc =>
             {
                 Assert.Equal("someName", mbc.ModelName);
-                mbc.Result = ModelBindingResult.Success(mbc.ModelName, 42);
+                mbc.Result = ModelBindingResult.Success(42);
             });
 
             var modelBinder = new CollectionModelBinder<int>(elementBinder);
@@ -395,11 +384,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 var model = value.ConvertTo(mbc.ModelType);
                 if (model == null)
                 {
-                    return ModelBindingResult.Failed(mbc.ModelName);
+                    return ModelBindingResult.Failed();
                 }
                 else
                 {
-                    return ModelBindingResult.Success(mbc.ModelName, model);
+                    return ModelBindingResult.Success(model);
                 }
             });
         }

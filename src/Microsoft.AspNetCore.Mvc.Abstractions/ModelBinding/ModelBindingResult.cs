@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -15,39 +14,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Creates a <see cref="ModelBindingResult"/> representing a failed model binding operation.
         /// </summary>
-        /// <param name="key">The key of the current model binding operation.</param>
         /// <returns>A <see cref="ModelBindingResult"/> representing a failed model binding operation.</returns>
-        public static ModelBindingResult Failed(string key)
+        public static ModelBindingResult Failed()
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            return new ModelBindingResult(key, model: null, isModelSet: false);
+            return new ModelBindingResult(model: null, isModelSet: false);
         }
         
         /// <summary>
         /// Creates a <see cref="ModelBindingResult"/> representing a successful model binding operation.
         /// </summary>
-        /// <param name="key">The key of the current model binding operation.</param>
         /// <param name="model">The model value. May be <c>null.</c></param>
         /// <returns>A <see cref="ModelBindingResult"/> representing a successful model bind.</returns>
-        public static ModelBindingResult Success(
-            string key,
-            object model)
+        public static ModelBindingResult Success(object model)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            return new ModelBindingResult(key, model, isModelSet: true);
+            return new ModelBindingResult( model, isModelSet: true);
         }
 
-        private ModelBindingResult(string key, object model, bool isModelSet)
+        private ModelBindingResult(object model, bool isModelSet)
         {
-            Key = key;
             Model = model;
             IsModelSet = isModelSet;
         }
@@ -56,16 +40,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets the model associated with this context.
         /// </summary>
         public object Model { get; }
-
-        /// <summary>
-        /// <para>
-        /// Gets the model name which was used to bind the model.
-        /// </para>
-        /// <para>
-        /// This property can be used during validation to add model state for a bound model.
-        /// </para>
-        /// </summary>
-        public string Key { get; }
 
         /// <summary>
         /// <para>
@@ -96,7 +70,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public override int GetHashCode()
         {
             var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(Key, StringComparer.OrdinalIgnoreCase);
             hashCodeCombiner.Add(IsModelSet);
             hashCodeCombiner.Add(Model);
 
@@ -107,7 +80,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public bool Equals(ModelBindingResult other)
         {
             return
-                string.Equals(Key, other.Key, StringComparison.OrdinalIgnoreCase) &&
                 IsModelSet == other.IsModelSet &&
                 object.Equals(Model, other.Model);
         }
@@ -115,17 +87,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public override string ToString()
         {
-            if (Key == null)
+            if (IsModelSet)
             {
-                return "No Result";
-            }
-            else if (IsModelSet)
-            {
-                return $"Success {Key} -> '{Model}'";
+                return $"Success '{Model}'";
             }
             else
             {
-                return $"Failed {Key}";
+                return $"Failed";
             }
         }
 

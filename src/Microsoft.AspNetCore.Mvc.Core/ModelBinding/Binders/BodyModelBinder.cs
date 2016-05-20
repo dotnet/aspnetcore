@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 // This model binder is the only handler for the Body binding source and it cannot run twice. Always
                 // tell the model binding system to skip other model binders and never to fall back i.e. indicate a
                 // fatal error.
-                bindingContext.Result = ModelBindingResult.Failed(modelBindingKey);
+                bindingContext.Result = ModelBindingResult.Failed();
                 return;
             }
 
@@ -109,11 +109,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 {
                     // Formatter encountered an error. Do not use the model it returned. As above, tell the model
                     // binding system to skip other model binders and never to fall back.
-                    bindingContext.Result = ModelBindingResult.Failed(modelBindingKey);
+                    bindingContext.Result = ModelBindingResult.Failed();
                     return;
                 }
 
-                bindingContext.Result = ModelBindingResult.Success(modelBindingKey, model);
+                bindingContext.Result = ModelBindingResult.Success(model);
                 return;
             }
             catch (Exception ex)
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 // This model binder is the only handler for the Body binding source and it cannot run twice. Always
                 // tell the model binding system to skip other model binders and never to fall back i.e. indicate a
                 // fatal error.
-                bindingContext.Result = ModelBindingResult.Failed(modelBindingKey);
+                bindingContext.Result = ModelBindingResult.Failed();
                 return;
             }
         }

@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                     return TaskCache.CompletedTask;
                 }
 
-                bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, new Address());
+                bindingContext.Result = ModelBindingResult.Success(new Address());
                 return TaskCache.CompletedTask;
             }
         }

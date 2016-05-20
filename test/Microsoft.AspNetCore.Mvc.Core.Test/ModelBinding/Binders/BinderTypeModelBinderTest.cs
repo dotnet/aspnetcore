@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), binderResult);
             Assert.False(binderResult.IsModelSet);
         }
 
@@ -116,8 +115,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             public Task BindModelAsync(ModelBindingContext bindingContext)
             {
-                bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, _model);
-                return Task.FromResult(0);
+                bindingContext.Result = ModelBindingResult.Success(_model);
+                return TaskCache.CompletedTask;
             }
         }
     }

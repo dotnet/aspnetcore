@@ -90,12 +90,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     model: propertyModel))
                 {
                     await BindProperty(bindingContext);
-                    result = bindingContext.Result ?? ModelBindingResult.Failed(modelName);
+                    result = bindingContext.Result ?? ModelBindingResult.Failed();
                 }
 
                 if (result.IsModelSet)
                 {
-                    SetProperty(bindingContext, property, result);
+                    SetProperty(bindingContext, modelName, property, result);
                 }
                 else if (property.IsBindingRequired)
                 {
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 }
             }
 
-            bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, bindingContext.Model);
+            bindingContext.Result = ModelBindingResult.Success(bindingContext.Model);
         }
 
         /// <summary>
@@ -335,16 +335,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// Updates a property in the current <see cref="ModelBindingContext.Model"/>.
         /// </summary>
         /// <param name="bindingContext">The <see cref="ModelBindingContext"/>.</param>
+        /// <param name="modelName">The model name.</param>
         /// <param name="propertyMetadata">The <see cref="ModelMetadata"/> for the property to set.</param>
         /// <param name="result">The <see cref="ModelBindingResult"/> for the property's new value.</param>
         protected virtual void SetProperty(
             ModelBindingContext bindingContext,
+            string modelName,
             ModelMetadata propertyMetadata,
             ModelBindingResult result)
         {
             if (bindingContext == null)
             {
                 throw new ArgumentNullException(nameof(bindingContext));
+            }
+
+            if (modelName == null)
+            {
+                throw new ArgumentNullException(nameof(modelName));
             }
 
             if (propertyMetadata == null)
@@ -372,12 +379,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
             catch (Exception exception)
             {
-                AddModelError(exception, bindingContext, result);
+                AddModelError(exception, modelName, bindingContext, result);
             }
         }
 
         private static void AddModelError(
             Exception exception,
+            string modelName,
             ModelBindingContext bindingContext,
             ModelBindingResult result)
         {
@@ -389,11 +397,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Do not add an error message if a binding error has already occurred for this property.
             var modelState = bindingContext.ModelState;
-            var modelStateKey = result.Key;
-            var validationState = modelState.GetFieldValidationState(modelStateKey);
+            var validationState = modelState.GetFieldValidationState(modelName);
             if (validationState == ModelValidationState.Unvalidated)
             {
-                modelState.AddModelError(modelStateKey, exception, bindingContext.ModelMetadata);
+                modelState.AddModelError(modelName, exception, bindingContext.ModelMetadata);
             }
         }
     }

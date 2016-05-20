@@ -185,11 +185,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
             set
             {
-                if (value.HasValue && value.Value == default(ModelBindingResult))
-                {
-                    throw new ArgumentException(nameof(ModelBindingResult));
-                }
-
                 _state.Result = value;
             }
         }

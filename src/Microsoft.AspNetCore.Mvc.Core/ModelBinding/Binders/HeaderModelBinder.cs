@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 // Silently fail if unable to create an instance or use the current instance. Also reach here in the
                 // typeof(string) case if the header does not exist in the request and in the
                 // typeof(IEnumerable<string>) case if the header does not exist and this is not a top-level object.
-                bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+                bindingContext.Result = ModelBindingResult.Failed();
             }
             else
             {
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     request.Headers.GetCommaSeparatedValues(headerName),
                     request.Headers[headerName]);
 
-                bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
+                bindingContext.Result = ModelBindingResult.Success(model);
             }
 
             return TaskCache.CompletedTask;

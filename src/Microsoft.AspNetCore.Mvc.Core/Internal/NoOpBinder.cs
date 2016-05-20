@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+            bindingContext.Result = ModelBindingResult.Failed();
             return TaskCache.CompletedTask;
         }
     }

@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             if (bindingContext.Result == null)
             {
-                bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+                bindingContext.Result = ModelBindingResult.Failed();
             }
         }
     }

@@ -150,7 +150,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Assert
             Assert.True(result.IsModelSet);
-            Assert.Equal(modelName, result.Key);
 
             var resultDictionary = Assert.IsAssignableFrom<IDictionary<string, string>>(result.Model);
             Assert.Equal(dictionary, resultDictionary);
@@ -186,9 +185,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(context);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
-            Assert.Equal("prefix", result.Key);
 
             var resultDictionary = Assert.IsAssignableFrom<IDictionary<string, string>>(result.Model);
             Assert.Empty(resultDictionary);
@@ -238,9 +235,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(context);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
-            Assert.Equal("prefix", result.Key);
 
             var resultDictionary = Assert.IsAssignableFrom<IDictionary<long, int>>(result.Model);
             Assert.Equal(dictionary, resultDictionary);
@@ -287,9 +282,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(context);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
-            Assert.Equal("prefix", result.Key);
 
             var resultDictionary = Assert.IsAssignableFrom<IDictionary<int, ModelWithProperties>>(result.Model);
             Assert.Equal(dictionary, resultDictionary);
@@ -335,9 +328,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(context);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
-            Assert.Equal(modelName, result.Key);
 
             var resultDictionary = Assert.IsAssignableFrom<SortedDictionary<string, string>>(result.Model);
             Assert.Equal(expectedDictionary, resultDictionary);
@@ -366,10 +357,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(context);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
-
             Assert.Empty(Assert.IsType<Dictionary<string, string>>(result.Model));
-            Assert.Equal("modelName", result.Key);
             Assert.True(result.IsModelSet);
         }
 

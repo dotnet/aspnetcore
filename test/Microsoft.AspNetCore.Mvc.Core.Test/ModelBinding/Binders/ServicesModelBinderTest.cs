@@ -25,10 +25,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(modelBindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
             Assert.NotNull(result.Model);
-            Assert.Equal("modelName", result.Key);
 
             var entry = modelBindingContext.ValidationState[result.Model];
             Assert.True(entry.SuppressValidation);

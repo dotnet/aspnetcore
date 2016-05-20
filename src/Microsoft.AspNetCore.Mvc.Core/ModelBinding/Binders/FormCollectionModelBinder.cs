@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 model = new EmptyFormCollection();
             }
             
-            bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
+            bindingContext.Result = ModelBindingResult.Success(model);
         }
 
         private class EmptyFormCollection : IFormCollection

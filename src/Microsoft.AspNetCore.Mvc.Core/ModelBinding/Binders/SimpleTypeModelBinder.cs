@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (valueProviderResult == ValueProviderResult.None)
             {
                 // no entry
-                bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+                bindingContext.Result = ModelBindingResult.Failed();
                 return TaskCache.CompletedTask;
             }
 
@@ -77,12 +77,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         bindingContext.ModelMetadata.ModelBindingMessageProvider.ValueMustNotBeNullAccessor(
                             valueProviderResult.ToString()));
 
-                    bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+                    bindingContext.Result = ModelBindingResult.Failed();
                     return TaskCache.CompletedTask;
                 }
                 else
                 {
-                    bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
+                    bindingContext.Result = ModelBindingResult.Success(model);
                     return TaskCache.CompletedTask;
                 }
             }
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
                 // Were able to find a converter for the type but conversion failed.
                 // Tell the model binding system to skip other model binders.
-                bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+                bindingContext.Result = ModelBindingResult.Failed();
                 return TaskCache.CompletedTask;
             }
         }

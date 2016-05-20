@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
+            Assert.False(result.IsModelSet);
             Assert.Null(result.Model);
             Assert.False(bindingContext.ModelState.IsValid);
             Assert.Equal("someName", bindingContext.ModelName);
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
+            Assert.True(result.IsModelSet);
             Assert.Equal(new KeyValuePair<int, string>(42, "some-value"), result.Model);
         }
 
@@ -106,11 +106,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             ModelBindingResult? innerResult;
             if (isSuccess)
             {
-                innerResult = ModelBindingResult.Success("somename.Key", model);
+                innerResult = ModelBindingResult.Success(model);
             }
             else
             {
-                innerResult = ModelBindingResult.Failed("somename.Key");
+                innerResult = ModelBindingResult.Failed();
             }
 
             var innerBinder = new StubModelBinder(context =>
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new KeyValuePairModelBinder<int, string>(innerBinder, innerBinder);
 
             // Act
-            var result = await binder.TryBindStrongModel<int>(bindingContext, innerBinder, "Key");
+            var result = await binder.TryBindStrongModel<int>(bindingContext, innerBinder, "Key", "someName.Key");
 
             // Assert
             Assert.Equal(innerResult.Value, result);
@@ -155,11 +155,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = await binder.BindModelResultAsync(context);
 
             // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
-
             var model = Assert.IsType<KeyValuePair<string, string>>(result.Model);
             Assert.Equal(default(KeyValuePair<string, string>), model);
-            Assert.Equal("modelName", result.Key);
             Assert.True(result.IsModelSet);
         }
 
@@ -226,7 +223,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 if (mbc.ModelType == typeof(int) && success)
                 {
                     var model = 42;
-                    return ModelBindingResult.Success(mbc.ModelName, model);
+                    return ModelBindingResult.Success(model);
                 }
                 return null;
             });
@@ -240,7 +237,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 if (mbc.ModelType == typeof(string) && success)
                 {
                     var model = "some-value";
-                    return ModelBindingResult.Success(mbc.ModelName, model);
+                    return ModelBindingResult.Success(model);
                 }
                 return null;
             });

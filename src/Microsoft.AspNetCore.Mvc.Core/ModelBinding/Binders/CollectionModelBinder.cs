@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         model = CreateEmptyCollection(bindingContext.ModelType);
                     }
 
-                    bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
+                    bindingContext.Result = ModelBindingResult.Success(model);
                 }
 
                 return;
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     valueProviderResult);
             }
 
-            bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
+            bindingContext.Result = ModelBindingResult.Success(model);
         }
 
         /// <inheritdoc />

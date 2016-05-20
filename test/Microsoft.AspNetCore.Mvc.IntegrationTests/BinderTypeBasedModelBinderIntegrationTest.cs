@@ -181,8 +181,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Assert
 
             // ModelBindingResult
+            Assert.True(modelBindingResult.IsModelSet);
             Assert.Equal("Success", modelBindingResult.Model);
-            Assert.Equal("CustomParameter", modelBindingResult.Key);
 
             // ModelState
             Assert.True(modelState.IsValid);
@@ -225,7 +225,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // ModelBindingResult
             Assert.True(modelBindingResult.IsModelSet);
-            Assert.Equal(string.Empty, modelBindingResult.Key);
 
             // Model
             var boundPerson = Assert.IsType<Person>(modelBindingResult.Model);
@@ -264,7 +263,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Assert
 
             // ModelBindingResult
-            Assert.Equal("CustomParameter", modelBindingResult.Key);
+            Assert.True(modelBindingResult.IsModelSet);
 
             // Model
             var boundPerson = Assert.IsType<Person>(modelBindingResult.Model);
@@ -301,7 +300,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                     new string[] { address.Street },
                     address.Street);
 
-                bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, address);
+                bindingContext.Result = ModelBindingResult.Success(address);
                 return TaskCache.CompletedTask;
             }
         }
@@ -322,7 +321,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                     new string[] { model },
                     model);
 
-                bindingContext.Result =ModelBindingResult.Success(bindingContext.ModelName, model);
+                bindingContext.Result =ModelBindingResult.Success(model);
                 return TaskCache.CompletedTask;
             }
         }
@@ -337,7 +336,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 }
                 Debug.Assert(bindingContext.Result == null);
 
-                bindingContext.Result =  ModelBindingResult.Success(bindingContext.ModelName, model: null);
+                bindingContext.Result =  ModelBindingResult.Success(model: null);
                 return TaskCache.CompletedTask;
             }
         }
@@ -352,7 +351,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 }
                 Debug.Assert(bindingContext.Result == null);
 
-                bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+                bindingContext.Result = ModelBindingResult.Failed();
                 return TaskCache.CompletedTask;
             }
         }

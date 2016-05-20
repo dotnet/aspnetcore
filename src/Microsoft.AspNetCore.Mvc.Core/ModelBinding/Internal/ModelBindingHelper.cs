@@ -455,7 +455,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Internal
                 objectModelValidator.Validate(
                     actionContext,
                     modelBindingContext.ValidationState,
-                    modelBindingResult.Value.Key,
+                    modelBindingContext.ModelName,
                     modelBindingResult.Value.Model);
 
                 return modelState.IsValid;

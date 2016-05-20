@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .Callback((ModelBindingContext context) =>
                 {
                     context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(string));
-                    context.Result = ModelBindingResult.Success(string.Empty, value);
+                    context.Result = ModelBindingResult.Success(value);
                 })
                 .Returns(TaskCache.CompletedTask);
             var factory = GetModelBinderFactory(binder.Object);
@@ -374,7 +374,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var controller = new TestController();
             var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
-            var binder = new StubModelBinder(ModelBindingResult.Success(string.Empty, model: null));
+            var binder = new StubModelBinder(ModelBindingResult.Success(model: null));
             var factory = GetModelBinderFactory(binder);
             var argumentBinder = GetArgumentBinder(factory);
 
@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var controller = new TestController();
             var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
-            var binder = new StubModelBinder(ModelBindingResult.Success(key: string.Empty, model: null));
+            var binder = new StubModelBinder(ModelBindingResult.Success(model: null));
             var factory = GetModelBinderFactory(binder);
             var argumentBinder = GetArgumentBinder(factory);
 
@@ -548,11 +548,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 object model;
                 if (inputPropertyValues.TryGetValue(bindingContext.FieldName, out model))
                 {
-                    bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
+                    bindingContext.Result = ModelBindingResult.Success( model);
                 }
                 else
                 {
-                    bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+                    bindingContext.Result = ModelBindingResult.Failed();
                 }
             });
 
@@ -605,7 +605,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .Setup(b => b.BindModelAsync(It.IsAny<DefaultModelBindingContext>()))
                 .Returns<DefaultModelBindingContext>(mbc =>
                 {
-                    mbc.Result = ModelBindingResult.Success(string.Empty, model);
+                    mbc.Result = ModelBindingResult.Success(model);
                     return TaskCache.CompletedTask;
                 });
 
