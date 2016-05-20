@@ -7,10 +7,10 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
     {
         public const string AuthenticationScheme = "Facebook";
 
-        public static readonly string AuthorizationEndpoint = "https://www.facebook.com/v2.5/dialog/oauth";
+        public static readonly string AuthorizationEndpoint = "https://www.facebook.com/v2.6/dialog/oauth";
 
-        public static readonly string TokenEndpoint = "https://graph.facebook.com/v2.5/oauth/access_token";
+        public static readonly string TokenEndpoint = "https://graph.facebook.com/v2.6/oauth/access_token";
 
-        public static readonly string UserInformationEndpoint = "https://graph.facebook.com/v2.5/me";
+        public static readonly string UserInformationEndpoint = "https://graph.facebook.com/v2.6/me";
     }
 }

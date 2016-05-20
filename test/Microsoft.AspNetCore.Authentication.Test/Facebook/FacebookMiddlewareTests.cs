@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             var transaction = await server.SendAsync("http://example.com/base/login");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            Assert.Contains("https://www.facebook.com/v2.5/dialog/oauth", location);
+            Assert.Contains("https://www.facebook.com/v2.6/dialog/oauth", location);
             Assert.Contains("response_type=code", location);
             Assert.Contains("client_id=", location);
             Assert.Contains("redirect_uri=" + UrlEncoder.Default.Encode("http://example.com/base/signin-facebook"), location);
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             var transaction = await server.SendAsync("http://example.com/login");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            Assert.Contains("https://www.facebook.com/v2.5/dialog/oauth", location);
+            Assert.Contains("https://www.facebook.com/v2.6/dialog/oauth", location);
             Assert.Contains("response_type=code", location);
             Assert.Contains("client_id=", location);
             Assert.Contains("redirect_uri="+ UrlEncoder.Default.Encode("http://example.com/signin-facebook"), location);
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             var transaction = await server.SendAsync("http://example.com/challenge");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            Assert.Contains("https://www.facebook.com/v2.5/dialog/oauth", location);
+            Assert.Contains("https://www.facebook.com/v2.6/dialog/oauth", location);
             Assert.Contains("response_type=code", location);
             Assert.Contains("client_id=", location);
             Assert.Contains("redirect_uri=", location);
