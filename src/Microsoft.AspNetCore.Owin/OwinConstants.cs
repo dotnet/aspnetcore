@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Owin
     {
         #region OWIN v1.0.0 - 3.2.1. Request Data
 
-        // http://owin.org/spec/owin-1.0.0.html
+        // http://owin.org/spec/spec/owin-1.0.0.html
 
         public const string RequestScheme = "owin.RequestScheme";
         public const string RequestMethod = "owin.RequestMethod";
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Owin
 
         #region OWIN v1.0.0 - 3.2.2. Response Data
 
-        // http://owin.org/spec/owin-1.0.0.html
+        // http://owin.org/spec/spec/owin-1.0.0.html
 
         public const string ResponseStatusCode = "owin.ResponseStatusCode";
         public const string ResponseReasonPhrase = "owin.ResponseReasonPhrase";
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Owin
 
         #region OWIN v1.0.0 - 3.2.3. Other Data
 
-        // http://owin.org/spec/owin-1.0.0.html
+        // http://owin.org/spec/spec/owin-1.0.0.html
 
         public const string CallCancelled = "owin.CallCancelled";
 
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Owin
 
         #region OWIN Key Guidelines and Common Keys - 6. Common keys
 
-        // http://owin.org/spec/CommonKeys.html
+        // http://owin.org/spec/spec/CommonKeys.html
 
         internal static class CommonKeys
         {
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Owin
 
         #region SendFiles v0.3.0
 
-        // http://owin.org/extensions/owin-SendFile-Extension-v0.3.0.htm
+        // http://owin.org/spec/extensions/owin-SendFile-Extension-v0.3.0.htm
 
         internal static class SendFiles
         {
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Owin
 
         #region Opaque v0.3.0
 
-        // http://owin.org/extensions/owin-OpaqueStream-Extension-v0.3.0.htm
+        // http://owin.org/spec/extensions/owin-OpaqueStream-Extension-v0.3.0.htm
 
         internal static class OpaqueConstants
         {
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Owin
 
         #region WebSocket v0.4.0
 
-        // http://owin.org/extensions/owin-OpaqueStream-Extension-v0.3.0.htm
+        // http://owin.org/spec/extensions/owin-OpaqueStream-Extension-v0.3.0.htm
 
         internal static class WebSocket
         {
@@ -165,23 +165,11 @@ namespace Microsoft.AspNetCore.Owin
 
         #region Security v0.1.0
 
-        // http://owin.org/extensions/owin-Security-Extension-v0.1.0.htm
-
         internal static class Security
         {
             // 3.2. Per Request
 
             public const string User = "server.User";
-
-            public const string Authenticate = "security.Authenticate";
-
-            // 3.3. Response
-
-            public const string SignIn = "security.SignIn";
-
-            public const string SignOut = "security.SignOut";
-
-            public const string Challenge = "security.Challenge";
         }
 
         #endregion
