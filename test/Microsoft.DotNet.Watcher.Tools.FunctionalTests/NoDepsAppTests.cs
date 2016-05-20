@@ -52,46 +52,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
-        public void RestartProcessThatTerminatesAfterFileChange()
-        {
-            using (var scenario = new NoDepsAppScenario())
-            {
-                // Wait for the process to start
-                using (var wait = new WaitForFileToChange(scenario.StartedFile))
-                {
-                    scenario.RunDotNetWatch(scenario.StatusFile);
-
-                    wait.Wait(_defaultTimeout,
-                        expectedToChange: true,
-                        errorMessage: $"File not created: {scenario.StartedFile}");
-                }
-
-                // Then wait for the app to exit
-                Waiters.WaitForFileToBeReadable(scenario.StartedFile, _defaultTimeout);
-                var ids = File.ReadAllLines(scenario.StatusFile);
-                var procId = int.Parse(ids[0]);
-                Waiters.WaitForProcessToStop(
-                    procId,
-                    _defaultTimeout,
-                    expectedToStop: true,
-                    errorMessage: "Test app did not exit");
-
-                // Then wait for it to restart when we change a file
-                using (var wait = new WaitForFileToChange(scenario.StartedFile))
-                {
-                    var fileToChange = Path.Combine(scenario.TestAppFolder, "Program.cs");
-                    var programCs = File.ReadAllText(fileToChange);
-                    File.WriteAllText(fileToChange, programCs);
-
-                    wait.Wait(_defaultTimeout,
-                        expectedToChange: true,
-                        errorMessage: $"Process did not restart because {scenario.StartedFile} was not changed");
-                }
-            }
-        }
-
-
-        [Fact]
         public void ExitOnChange()
         {
             using (var scenario = new NoDepsAppScenario())
