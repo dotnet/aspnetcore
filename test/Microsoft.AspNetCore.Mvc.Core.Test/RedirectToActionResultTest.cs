@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc
     public class RedirectToActionResultTest
     {
         [Fact]
-        public async void RedirectToAction_Execute_PassesCorrectValuesToRedirect()
+        public async Task RedirectToAction_Execute_PassesCorrectValuesToRedirect()
         {
             // Arrange
             var expectedUrl = "SampleAction";

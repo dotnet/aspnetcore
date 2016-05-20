@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async void ExecuteValueMethodAsync()
+        public async Task ExecuteValueMethodAsync()
         {
             var executor = GetExecutorForMethod("ValueMethodAsync");
             var result = await executor.ExecuteAsync(
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async void ExecuteValueMethodWithReturnTypeAsync()
+        public async Task ExecuteValueMethodWithReturnTypeAsync()
         {
             var executor = GetExecutorForMethod("ValueMethodWithReturnTypeAsync");
             var result = await executor.ExecuteAsync(
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async void ExecuteValueMethodUpdateValueAsync()
+        public async Task ExecuteValueMethodUpdateValueAsync()
         {
             var executor = GetExecutorForMethod("ValueMethodUpdateValueAsync");
             var parameter = new TestObject();
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async void ExecuteValueMethodWithReturnTypeThrowsExceptionAsync()
+        public async Task ExecuteValueMethodWithReturnTypeThrowsExceptionAsync()
         {
             var executor = GetExecutorForMethod("ValueMethodWithReturnTypeThrowsExceptionAsync");
             var parameter = new TestObject();

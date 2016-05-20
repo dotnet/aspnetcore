@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc
     {
         [Theory]
         [MemberData(nameof(RedirectToRouteData))]
-        public async void RedirectToRoute_Execute_PassesCorrectValuesToRedirect(object values)
+        public async Task RedirectToRoute_Execute_PassesCorrectValuesToRedirect(object values)
         {
             // Arrange
             var expectedUrl = "SampleAction";
