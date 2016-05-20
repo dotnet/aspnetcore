@@ -854,6 +854,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [InlineData("DateTimeLocal", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fff}", "datetime-local")]
         [InlineData("Time", Html5DateRenderingMode.CurrentCulture, "{0:t}", "time")]    // Format from [DataType].
         [InlineData("Time", Html5DateRenderingMode.Rfc3339, "{0:HH:mm:ss.fff}", "time")]
+        [InlineData("NullableDate", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-dd}", "date")]
+        [InlineData("NullableDateTime", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fffK}", "datetime")]
+        [InlineData("NullableDateTimeOffset", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fffK}", "datetime")]
         public async Task ProcessAsync_CallsGenerateTextBox_AddsExpectedAttributesForRfc3339(
             string propertyName,
             Html5DateRenderingMode dateRenderingMode,
@@ -995,6 +998,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             public DateTime DateTime { get; set; }
 
             public DateTimeOffset DateTimeOffset { get; set; }
+
+            [DataType(DataType.Date)]
+            public DateTime? NullableDate { get; set; }
+
+            public DateTime? NullableDateTime { get; set; }
+
+            public DateTimeOffset? NullableDateTimeOffset { get; set; }
 
             [DataType("datetime-local")]
             public DateTime DateTimeLocal { get; set; }

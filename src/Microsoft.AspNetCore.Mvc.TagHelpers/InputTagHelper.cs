@@ -356,7 +356,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             else if (_rfc3339Formats.TryGetValue(inputType, out rfc3339Format) &&
                 ViewContext.Html5DateRenderingMode == Html5DateRenderingMode.Rfc3339 &&
                 !modelExplorer.Metadata.HasNonDefaultEditFormat &&
-                (typeof(DateTime) == modelExplorer.ModelType || typeof(DateTimeOffset) == modelExplorer.ModelType))
+                (typeof(DateTime) == modelExplorer.Metadata.UnderlyingOrModelType || typeof(DateTimeOffset) == modelExplorer.Metadata.UnderlyingOrModelType))
             {
                 // Rfc3339 mode _may_ override EditFormatString in a limited number of cases e.g. EditFormatString
                 // must be a default format (i.e. came from a built-in [DataType] attribute).
