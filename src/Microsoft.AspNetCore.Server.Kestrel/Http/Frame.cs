@@ -675,14 +675,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             var responseHeaders = _frameHeaders.ResponseHeaders;
             responseHeaders.SetReadOnly();
 
+            var hasConnection = responseHeaders.HasConnection;
+
             var end = SocketOutput.ProducingStart();
-            if (_keepAlive)
+            if (_keepAlive && hasConnection)
             {
                 foreach (var connectionValue in responseHeaders.HeaderConnection)
                 {
                     if (connectionValue.IndexOf("close", StringComparison.OrdinalIgnoreCase) != -1)
                     {
                         _keepAlive = false;
+                        break;
                     }
                 }
             }
@@ -721,11 +724,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }
             }
 
-            if (!_keepAlive && !responseHeaders.HasConnection && _httpVersion != HttpVersionType.Http10)
+            if (!_keepAlive && !hasConnection && _httpVersion != HttpVersionType.Http10)
             {
                 responseHeaders.SetRawConnection("close", _bytesConnectionClose);
             }
-            else if (_keepAlive && !responseHeaders.HasConnection && _httpVersion == HttpVersionType.Http10)
+            else if (_keepAlive && !hasConnection && _httpVersion == HttpVersionType.Http10)
             {
                 responseHeaders.SetRawConnection("keep-alive", _bytesConnectionKeepAlive);
             }
