@@ -350,5 +350,68 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 #endif
             }
         }
+
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "This test currently fails on Mono because of an issue with SslStream (https://github.com/aspnet/KestrelHttpServer/issues/240).")]
+        public async Task CertificatePassedToHttpContextIsNotDisposed()
+        {
+            RemoteCertificateValidationCallback validationCallback =
+                    (sender, cert, chain, sslPolicyErrors) => true;
+
+            try
+            {
+#if NET451
+                ServicePointManager.ServerCertificateValidationCallback += validationCallback;
+#endif
+
+                var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
+                    new HttpsConnectionFilterOptions
+                    {
+                        ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"),
+                        ClientCertificateMode = ClientCertificateMode.RequireCertificate,
+                        ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
+                    },
+                    new NoOpConnectionFilter())
+                );
+
+                RequestDelegate app = context =>
+                {
+                    var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+                    Assert.NotNull(tlsFeature);
+                    Assert.NotNull(tlsFeature.ClientCertificate);
+                    Assert.NotNull(context.Connection.ClientCertificate);
+                    Assert.NotNull(context.Connection.ClientCertificate.PublicKey);
+                    return context.Response.WriteAsync("hello world");
+                };
+
+                using (var server = new TestServer(app, serviceContext, "https://localhost:0/"))
+                {
+                    // SslStream is used to ensure the certificate is actually passed to the server
+                    // HttpClient might not send the certificate because it is invalid or it doesn't match any
+                    // of the certificate authorities sent by the server in the SSL handshake.
+                    using (var client = new TcpClient())
+                    {
+                        await client.ConnectAsync("127.0.0.1", server.Port);
+
+                        var stream = new SslStream(client.GetStream(), false, (sender, certificate, chain, errors) => true,
+                            (sender, host, certificates, certificate, issuers) => new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"));
+                        await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+
+                        var request = Encoding.UTF8.GetBytes("GET / HTTP/1.0\r\n\r\n");
+                        await stream.WriteAsync(request, 0, request.Length);
+
+                        var reader = new StreamReader(stream);
+                        var line = await reader.ReadLineAsync();
+                        Assert.Equal("HTTP/1.1 200 OK", line);
+                    }
+                }
+            }
+            finally
+            {
+#if NET451
+                ServicePointManager.ServerCertificateValidationCallback -= validationCallback;
+#endif
+            }
+        }
     }
 }
