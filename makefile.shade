@@ -186,7 +186,7 @@ var buildTarget = "compile"
         var blockLogger = Log as IBlockLogger;
         var commits = new ConcurrentDictionary<string, string>();
         var threads = int.Parse(Environment.GetEnvironmentVariable("UNIVERSE_THREADS") ?? "4");
-        buildTarget = koreBuildTargets ?? "--quiet compile nuget-install";
+        buildTarget = koreBuildTargets ?? "--quiet compile nuget-verify nuget-install";
 
         var batchedRepos = GetBuildGraph();
         Log.Info("Building repositories in batches: ");
