@@ -22,9 +22,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-    // Most of the in-depth testing for SelectCandidates is part of the descision tree tests.
-    // This is just basic coverage of the API in common scenarios.
-    public class DefaultActionSelectorTests
+    public class ActionSelectorTest
     {
         [Fact]
         public void SelectCandidates_SingleMatch()
@@ -171,6 +169,110 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             // Assert
             Assert.Empty(candidates);
+        }
+
+        // In this context `CaseSensitiveMatch` means that the input route values exactly match one of the action
+        // descriptor's route values in terms of casing. This is important because we optimize for this case
+        // in the implementation.
+        [Fact]
+        public void SelectCandidates_Match_CaseSensitiveMatch_IncludesAllCaseInsensitiveMatches()
+        {
+            var actions = new ActionDescriptor[]
+            {
+                new ActionDescriptor()
+                {
+                    DisplayName = "A1",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                },
+                new ActionDescriptor()
+                {
+                    DisplayName = "A2",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "home" },
+                        { "action", "Index" }
+                    },
+                },
+                new ActionDescriptor() // This won't match the request
+                {
+                    DisplayName = "A3",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "About" }
+                    },
+                },
+            };
+
+            var expected = actions.Take(2).ToArray();
+
+            var selector = CreateSelector(actions);
+
+            var routeContext = CreateRouteContext("GET");
+            routeContext.RouteData.Values.Add("controller", "Home");
+            routeContext.RouteData.Values.Add("action", "Index");
+
+            // Act
+            var candidates = selector.SelectCandidates(routeContext);
+
+            // Assert
+            Assert.Equal(expected, candidates);
+        }
+
+        // In this context `CaseInsensitiveMatch` means that the input route values do not match any action
+        // descriptor's route values in terms of casing. This is important because we optimize for the case
+        // where the casing matches - the non-matching-casing path is handled a bit differently.
+        [Fact]
+        public void SelectCandidates_Match_CaseInsensitiveMatch_IncludesAllCaseInsensitiveMatches()
+        {
+            var actions = new ActionDescriptor[]
+            {
+                new ActionDescriptor()
+                {
+                    DisplayName = "A1",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                },
+                new ActionDescriptor()
+                {
+                    DisplayName = "A2",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "home" },
+                        { "action", "Index" }
+                    },
+                },
+                new ActionDescriptor() // This won't match the request
+                {
+                    DisplayName = "A3",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "About" }
+                    },
+                },
+            };
+
+            var expected = actions.Take(2).ToArray();
+
+            var selector = CreateSelector(actions);
+
+            var routeContext = CreateRouteContext("GET");
+            routeContext.RouteData.Values.Add("controller", "HOME");
+            routeContext.RouteData.Values.Add("action", "iNDex");
+
+            // Act
+            var candidates = selector.SelectCandidates(routeContext);
+
+            // Assert
+            Assert.Equal(expected, candidates);
         }
 
         [Fact]
@@ -661,15 +763,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var actionDescriptorCollectionProvider = new ActionDescriptorCollectionProvider(
                 new[] { actionDescriptorProvider },
                 Enumerable.Empty<IActionDescriptorChangeProvider>());
-            var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionDescriptorCollectionProvider);
 
             var actionConstraintProviders = new[]
             {
                 new DefaultActionConstraintProvider(),
             };
-
+            
             var actionSelector = new ActionSelector(
-                decisionTreeProvider,
+                actionDescriptorCollectionProvider,
                 GetActionConstraintCache(actionConstraintProviders),
                 NullLoggerFactory.Instance);
 
@@ -679,7 +780,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private ControllerActionDescriptorProvider GetActionDescriptorProvider()
         {
-            var controllerTypes = typeof(DefaultActionSelectorTests)
+            var controllerTypes = typeof(ActionSelectorTest)
                 .GetNestedTypes(BindingFlags.NonPublic)
                 .Select(t => t.GetTypeInfo())
                 .ToList();
@@ -753,9 +854,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var actionProvider = new Mock<IActionDescriptorCollectionProvider>(MockBehavior.Strict);
 
             actionProvider
-                .Setup(p => p.ActionDescriptors).Returns(new ActionDescriptorCollection(actions, 0));
-
-            var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionProvider.Object);
+                .Setup(p => p.ActionDescriptors)
+                .Returns(new ActionDescriptorCollection(actions, 0));
 
             var actionConstraintProviders = new IActionConstraintProvider[] {
                     new DefaultActionConstraintProvider(),
@@ -763,7 +863,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 };
 
             return new ActionSelector(
-                decisionTreeProvider,
+                actionProvider.Object,
                 GetActionConstraintCache(actionConstraintProviders),
                 loggerFactory);
         }

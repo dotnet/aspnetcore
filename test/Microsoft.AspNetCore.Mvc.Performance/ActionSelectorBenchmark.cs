@@ -208,6 +208,11 @@ namespace Microsoft.AspNetCore.Mvc.Performance
 
         private static void Verify(IReadOnlyList<ActionDescriptor> expected, IReadOnlyList<ActionDescriptor> actual)
         {
+            if (expected.Count == 0 && actual == null)
+            {
+                return;
+            }
+
             if (expected.Count != actual.Count)
             {
                 throw new InvalidOperationException("The count is different.");
@@ -227,7 +232,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
             var actionCollection = new MockActionDescriptorCollectionProvider(actions);
 
             return new ActionSelector(
-                new ActionSelectorDecisionTreeProvider(actionCollection),
+                actionCollection,
                 new ActionConstraintCache(actionCollection, Enumerable.Empty<IActionConstraintProvider>()),
                 NullLoggerFactory.Instance);
         }
