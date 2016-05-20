@@ -33,6 +33,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         public bool NoDelay { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets whether the <c>Server</c> header should be included in each response.
+        /// </summary>
+        public bool AddServerHeader { get; set; } = true;
+
+        /// <summary>
         /// The amount of time after the server begins shutting down before connections will be forcefully closed.
         /// By default, Kestrel will wait 5 seconds for any ongoing requests to complete before terminating
         /// the connection.

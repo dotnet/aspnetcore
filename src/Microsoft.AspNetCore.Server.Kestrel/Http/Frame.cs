@@ -610,9 +610,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     var responseHeaders = _frameHeaders.ResponseHeaders;
                     responseHeaders.Reset();
                     var dateHeaderValues = DateHeaderValueManager.GetDateHeaderValues();
+
                     responseHeaders.SetRawDate(dateHeaderValues.String, dateHeaderValues.Bytes);
-                    responseHeaders.SetRawServer("Kestrel", Headers.BytesServer);
                     responseHeaders.SetRawContentLength("0", _bytesContentLengthZero);
+
+                    if (ServerOptions.AddServerHeader)
+                    {
+                        responseHeaders.SetRawServer(Constants.ServerName, Headers.BytesServer);
+                    }
 
                     ResponseHeaders = responseHeaders;
                 }

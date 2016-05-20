@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         /// </summary>
         public const string RFC1123DateFormat = "r";
 
+        public const string ServerName = "Kestrel";
+
         private static int? GetECONNRESET()
         {
             switch (PlatformServices.Default.Runtime.OperatingSystemPlatform)
