@@ -192,9 +192,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 {
                     await ElementBinder.BindModelAsync(bindingContext);
 
-                    if (bindingContext.Result != null && bindingContext.Result.Value.IsModelSet)
+                    if (bindingContext.Result.IsModelSet)
                     {
-                        boundValue = bindingContext.Result.Value.Model;
+                        boundValue = bindingContext.Result.Model;
                         boundCollection.Add(ModelBindingHelper.CastOrDefault<TElement>(boundValue));
                     }
                 }

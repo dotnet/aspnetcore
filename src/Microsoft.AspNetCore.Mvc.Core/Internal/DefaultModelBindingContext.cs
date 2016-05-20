@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public override ModelBindingResult? Result
+        public override ModelBindingResult Result
         {
             get
             {
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             _stack.Push(_state);
 
-            Result = null;
+            Result = default(ModelBindingResult);
 
             return new NestedScope(this);
         }
@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             public BindingSource BindingSource;
             public bool IsTopLevelObject;
 
-            public ModelBindingResult? Result;
+            public ModelBindingResult Result;
         };
     }
 }

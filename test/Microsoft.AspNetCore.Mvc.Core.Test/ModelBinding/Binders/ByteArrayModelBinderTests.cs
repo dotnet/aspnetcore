@@ -24,12 +24,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new ByteArrayModelBinder();
 
             // Act
-            var binderResult = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(binderResult);
-            Assert.False(binderResult.IsModelSet);
-            Assert.Null(binderResult.Model);
+            Assert.False(bindingContext.Result.IsModelSet);
+            Assert.Null(bindingContext.Result.Model);
 
             var modelState = Assert.Single(bindingContext.ModelState);
             Assert.Equal("foo", modelState.Key);
@@ -49,11 +48,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new ByteArrayModelBinder();
 
             // Act
-            var binderResult = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(binderResult);
-            var bytes = Assert.IsType<byte[]>(binderResult.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
+            var bytes = Assert.IsType<byte[]>(bindingContext.Result.Model);
             Assert.Equal(new byte[] { 23, 43, 53 }, bytes);
         }
 
@@ -72,10 +71,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new ByteArrayModelBinder();
 
             // Act
-            var binderResult = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(binderResult);
+            Assert.False(bindingContext.Result.IsModelSet);
             Assert.False(bindingContext.ModelState.IsValid);
             var error = Assert.Single(bindingContext.ModelState["foo"].Errors);
             Assert.Equal(expected, error.ErrorMessage);
@@ -94,12 +93,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new ByteArrayModelBinder();
 
             // Act
-            var binderResult = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(binderResult);
-            Assert.False(binderResult.IsModelSet);
-            Assert.Null(binderResult.Model);
+            Assert.False(bindingContext.Result.IsModelSet);
+            Assert.Null(bindingContext.Result.Model);
 
             Assert.Empty(bindingContext.ModelState); // No submitted data for "foo".
         }

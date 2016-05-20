@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     model: propertyModel))
                 {
                     await BindProperty(bindingContext);
-                    result = bindingContext.Result ?? ModelBindingResult.Failed();
+                    result = bindingContext.Result;
                 }
 
                 if (result.IsModelSet)

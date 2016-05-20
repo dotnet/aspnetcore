@@ -283,12 +283,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 .Returns(false);
 
             // Act
-            var result = await testableBinder.Object.BindModelResultAsync(bindingContext);
+            await testableBinder.Object.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.True(result.IsModelSet);
-            var returnedPerson = Assert.IsType<Person>(result.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
+            var returnedPerson = Assert.IsType<Person>(bindingContext.Result.Model);
             Assert.Same(model, returnedPerson);
             testableBinder.Verify();
         }

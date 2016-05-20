@@ -25,9 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
             await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(bindingContext.Result.HasValue);
-
-            var result = bindingContext.Result.Value;
+            var result = bindingContext.Result;
             Assert.True(result.IsModelSet);
             Assert.Same(expectedModel, result.Model);
 

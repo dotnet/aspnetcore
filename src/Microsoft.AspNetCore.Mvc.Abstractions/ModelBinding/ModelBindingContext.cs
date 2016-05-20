@@ -106,18 +106,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         /// <summary>
         /// <para>
-        /// On completion returns a <see cref="ModelBindingResult"/> which
-        /// represents the result of the model binding process.
+        /// Gets or sets a <see cref="ModelBindingResult"/> which represents the result of the model binding process.
         /// </para>
         /// <para>
-        /// If model binding was successful, the <see cref="ModelBindingResult"/> should be a value created
-        /// with <see cref="ModelBindingResult.Success"/>. If model binding failed, the
-        /// <see cref="ModelBindingResult"/> should be a value created with <see cref="ModelBindingResult.Failed"/>.
-        /// If there was no data, or this model binder cannot handle the operation, the
-        /// <see cref="ModelBindingResult"/> should be null.
+        /// Before an <see cref="IModelBinder"/> is called, <see cref="Result"/> will be set to a value indicating
+        /// failure. The binder should set <see cref="Result"/> to a value created with
+        /// <see cref="ModelBindingResult.Success"/> if model binding succeeded.
         /// </para>
         /// </summary>
-        public abstract ModelBindingResult? Result { get; set; }
+        public abstract ModelBindingResult Result { get; set; }
 
         /// <summary>
         /// Pushes a layer of state onto this context. Model binders will call this as part of recursion when binding properties

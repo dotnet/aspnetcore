@@ -22,13 +22,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             // Arrange
             var binder = new HeaderModelBinder();
-            var modelBindingContext = GetBindingContext(type);
+            var bindingContext = GetBindingContext(type);
 
             // Act
-            var result = await binder.BindModelResultAsync(modelBindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(result.IsModelSet);
+            Assert.False(bindingContext.Result.IsModelSet);
         }
 
         [Fact]
@@ -39,17 +39,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var header = "Accept";
             var headerValue = "application/json,text/json";
             var binder = new HeaderModelBinder();
-            var modelBindingContext = GetBindingContext(type);
+            var bindingContext = GetBindingContext(type);
 
-            modelBindingContext.FieldName = header;
-            modelBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
+            bindingContext.FieldName = header;
+            bindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
 
             // Act
-            var result = await binder.BindModelResultAsync(modelBindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
-            Assert.Equal(headerValue.Split(','), result.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
+            Assert.Equal(headerValue.Split(','), bindingContext.Result.Model);
         }
 
         [Fact]
@@ -60,17 +60,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var header = "User-Agent";
             var headerValue = "UnitTest";
             var binder = new HeaderModelBinder();
-            var modelBindingContext = GetBindingContext(type);
+            var bindingContext = GetBindingContext(type);
 
-            modelBindingContext.FieldName = header;
-            modelBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
+            bindingContext.FieldName = header;
+            bindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
 
             // Act
-            var result = await binder.BindModelResultAsync(modelBindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
-            Assert.Equal(headerValue, result.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
+            Assert.Equal(headerValue, bindingContext.Result.Model);
         }
 
         [Theory]
@@ -86,18 +86,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var header = "Accept";
             var headerValue = "application/json,text/json";
             var binder = new HeaderModelBinder();
-            var modelBindingContext = GetBindingContext(destinationType);
+            var bindingContext = GetBindingContext(destinationType);
 
-            modelBindingContext.FieldName = header;
-            modelBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
+            bindingContext.FieldName = header;
+            bindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
 
             // Act
-            var result = await binder.BindModelResultAsync(modelBindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
-            Assert.IsAssignableFrom(destinationType, result.Model);
-            Assert.Equal(headerValue.Split(','), result.Model as IEnumerable<string>);
+            Assert.True(bindingContext.Result.IsModelSet);
+            Assert.IsAssignableFrom(destinationType, bindingContext.Result.Model);
+            Assert.Equal(headerValue.Split(','), bindingContext.Result.Model as IEnumerable<string>);
         }
 
         [Fact]
@@ -107,17 +107,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var header = "Accept";
             var headerValue = "application/json,text/json";
             var binder = new HeaderModelBinder();
-            var modelBindingContext = GetBindingContextForReadOnlyArray();
+            var bindingContext = GetBindingContextForReadOnlyArray();
 
-            modelBindingContext.FieldName = header;
-            modelBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
+            bindingContext.FieldName = header;
+            bindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
 
             // Act
-            var result = await binder.BindModelResultAsync(modelBindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(result.IsModelSet);
-            Assert.Null(result.Model);
+            Assert.False(bindingContext.Result.IsModelSet);
+            Assert.Null(bindingContext.Result.Model);
         }
 
         [Fact]
@@ -127,17 +127,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var header = "Accept";
             var headerValue = "application/json,text/json";
             var binder = new HeaderModelBinder();
-            var modelBindingContext = GetBindingContext(typeof(ISet<string>));
+            var bindingContext = GetBindingContext(typeof(ISet<string>));
 
-            modelBindingContext.FieldName = header;
-            modelBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
+            bindingContext.FieldName = header;
+            bindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
 
             // Act
-            var result = await binder.BindModelResultAsync(modelBindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(result.IsModelSet);
-            Assert.Null(result.Model);
+            Assert.False(bindingContext.Result.IsModelSet);
+            Assert.Null(bindingContext.Result.Model);
         }
 
         private static DefaultModelBindingContext GetBindingContext(Type modelType)

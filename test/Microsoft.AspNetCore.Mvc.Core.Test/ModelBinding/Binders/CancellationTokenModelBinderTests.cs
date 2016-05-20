@@ -20,11 +20,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new CancellationTokenModelBinder();
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
-            Assert.Equal(bindingContext.HttpContext.RequestAborted, result.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
+            Assert.Equal(bindingContext.HttpContext.RequestAborted, bindingContext.Result.Model);
         }
 
         private static DefaultModelBindingContext GetBindingContext(Type modelType)

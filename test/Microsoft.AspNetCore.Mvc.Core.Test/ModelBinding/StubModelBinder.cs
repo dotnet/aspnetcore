@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             _callback = context => TaskCache.CompletedTask;
         }
 
-        public StubModelBinder(ModelBindingResult? result)
+        public StubModelBinder(ModelBindingResult result)
         {
             _callback = context =>
             {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             };
         }
 
-        public StubModelBinder(Func<ModelBindingContext, ModelBindingResult?> callback)
+        public StubModelBinder(Func<ModelBindingContext, ModelBindingResult> callback)
         {
             _callback = context =>
             {
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             };
         }
 
-        public StubModelBinder(Func<ModelBindingContext, Task<ModelBindingResult?>> callback)
+        public StubModelBinder(Func<ModelBindingContext, Task<ModelBindingResult>> callback)
         {
             _callback = async context =>
             {
@@ -66,8 +66,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 throw new ArgumentNullException(nameof(bindingContext));
             }
-            Debug.Assert(bindingContext.Result == null);
 
+            Debug.Assert(bindingContext.Result == ModelBindingResult.Failed());
             await _callback.Invoke(bindingContext);
         }
     }

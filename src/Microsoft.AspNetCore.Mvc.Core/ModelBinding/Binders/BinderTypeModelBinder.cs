@@ -52,11 +52,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = (IModelBinder)_factory(requestServices, arguments: null);
 
             await binder.BindModelAsync(bindingContext);
-
-            if (bindingContext.Result == null)
-            {
-                bindingContext.Result = ModelBindingResult.Failed();
-            }
         }
     }
 }

@@ -29,13 +29,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new FormCollectionModelBinder();
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
+            Assert.True(bindingContext.Result.IsModelSet);
             Assert.Empty(bindingContext.ValidationState);
 
-            var form = Assert.IsAssignableFrom<IFormCollection>(result.Model);
+            var form = Assert.IsAssignableFrom<IFormCollection>(bindingContext.Result.Model);
             Assert.Equal(2, form.Count);
             Assert.Equal("value1", form["field1"]);
             Assert.Equal("value2", form["field2"]);
@@ -50,11 +50,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new FormCollectionModelBinder();
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
-            var form = Assert.IsAssignableFrom<IFormCollection>(result.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
+            var form = Assert.IsAssignableFrom<IFormCollection>(bindingContext.Result.Model);
             Assert.Empty(form);
         }
 

@@ -22,25 +22,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class ModelBindingHelperTest
     {
-        public static TheoryData<ModelBindingResult?> UnsuccessfulModelBindingData
-        {
-            get
-            {
-                return new TheoryData<ModelBindingResult?>
-                {
-                    null,
-                    ModelBindingResult.Failed(),
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(UnsuccessfulModelBindingData))]
-        public async Task TryUpdateModel_ReturnsFalse_IfBinderIsUnsuccessful(ModelBindingResult? binderResult)
+        [Fact]
+        public async Task TryUpdateModel_ReturnsFalse_IfBinderIsUnsuccessful()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
-            var binder = new StubModelBinder(binderResult);
+            var binder = new StubModelBinder(ModelBindingResult.Failed());
             var model = new MyModel();
 
             // Act
@@ -141,14 +128,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Equal("MyPropertyValue", model.MyProperty);
         }
 
-        [Theory]
-        [MemberData(nameof(UnsuccessfulModelBindingData))]
-        public async Task TryUpdateModel_UsingPropertyFilterOverload_ReturnsFalse_IfBinderIsUnsuccessful(
-            ModelBindingResult? binderResult)
+        [Fact]
+        public async Task TryUpdateModel_UsingPropertyFilterOverload_ReturnsFalse_IfBinderIsUnsuccessful()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
-            var binder = new StubModelBinder(binderResult);
+            var binder = new StubModelBinder(ModelBindingResult.Failed());
             var model = new MyModel();
             Func<ModelMetadata, bool> propertyFilter = (m) => true;
 
@@ -224,14 +209,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Equal("Old-ExcludedPropertyValue", model.ExcludedProperty);
         }
 
-        [Theory]
-        [MemberData(nameof(UnsuccessfulModelBindingData))]
-        public async Task TryUpdateModel_UsingIncludeExpressionOverload_ReturnsFalse_IfBinderIsUnsuccessful(
-            ModelBindingResult? binderResult)
+        [Fact]
+        public async Task TryUpdateModel_UsingIncludeExpressionOverload_ReturnsFalse_IfBinderIsUnsuccessful()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
-            var binder = new StubModelBinder(binderResult);
+            var binder = new StubModelBinder(ModelBindingResult.Failed());
             var model = new MyModel();
 
             // Act
@@ -472,14 +455,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 ex.Message);
         }
 
-        [Theory]
-        [MemberData(nameof(UnsuccessfulModelBindingData))]
-        public async Task TryUpdateModelNonGeneric_PropertyFilterOverload_ReturnsFalse_IfBinderIsUnsuccessful(
-            ModelBindingResult? binderResult)
+        [Fact]
+        public async Task TryUpdateModelNonGeneric_PropertyFilterOverload_ReturnsFalse_IfBinderIsUnsuccessful()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
-            var binder = new StubModelBinder(binderResult);
+            var binder = new StubModelBinder(ModelBindingResult.Failed());
             var model = new MyModel();
             Func<ModelMetadata, bool> propertyFilter = (m) => true;
 
@@ -557,14 +538,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Equal("Old-ExcludedPropertyValue", model.ExcludedProperty);
         }
 
-        [Theory]
-        [MemberData(nameof(UnsuccessfulModelBindingData))]
-        public async Task TryUpdateModelNonGeneric_ModelTypeOverload_ReturnsFalse_IfBinderIsUnsuccessful(
-            ModelBindingResult? binderResult)
+        [Fact]
+        public async Task TryUpdateModelNonGeneric_ModelTypeOverload_ReturnsFalse_IfBinderIsUnsuccessful()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
-            var binder = new StubModelBinder(binderResult);
+            var binder = new StubModelBinder(ModelBindingResult.Failed());
 
             var model = new MyModel();
 

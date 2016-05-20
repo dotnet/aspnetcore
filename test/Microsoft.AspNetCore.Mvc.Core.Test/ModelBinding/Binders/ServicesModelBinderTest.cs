@@ -19,16 +19,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var type = typeof(IService);
 
             var binder = new ServicesModelBinder();
-            var modelBindingContext = GetBindingContext(type);
+            var bindingContext = GetBindingContext(type);
 
             // Act
-            var result = await binder.BindModelResultAsync(modelBindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
-            Assert.NotNull(result.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
 
-            var entry = modelBindingContext.ValidationState[result.Model];
+            var entry = bindingContext.ValidationState[bindingContext.Result.Model];
             Assert.True(entry.SuppressValidation);
             Assert.Null(entry.Key);
             Assert.Null(entry.Metadata);

@@ -29,12 +29,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new ArrayModelBinder<int>(new SimpleTypeModelBinder(typeof(int)));
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
+            Assert.True(bindingContext.Result.IsModelSet);
 
-            var array = Assert.IsType<int[]>(result.Model);
+            var array = Assert.IsType<int[]>(bindingContext.Result.Model);
             Assert.Equal(new[] { 42, 84 }, array);
         }
 
@@ -44,23 +44,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var binder = new ArrayModelBinder<string>(new SimpleTypeModelBinder(typeof(string)));
 
-            var context = CreateContext();
-            context.IsTopLevelObject = true;
+            var bindingContext = CreateContext();
+            bindingContext.IsTopLevelObject = true;
 
             // Lack of prefix and non-empty model name both ignored.
-            context.ModelName = "modelName";
+            bindingContext.ModelName = "modelName";
 
             var metadataProvider = new TestModelMetadataProvider();
-            context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(string[]));
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForType(typeof(string[]));
 
-            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+            bindingContext.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
 
             // Act
-            var result = await binder.BindModelResultAsync(context);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Empty(Assert.IsType<string[]>(result.Model));
-            Assert.True(result.IsModelSet);
+            Assert.Empty(Assert.IsType<string[]>(bindingContext.Result.Model));
+            Assert.True(bindingContext.Result.IsModelSet);
         }
 
         [Theory]
@@ -71,21 +71,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var binder = new ArrayModelBinder<string>(new SimpleTypeModelBinder(typeof(string)));
 
-            var context = CreateContext();
-            context.ModelName = ModelNames.CreatePropertyModelName(prefix, "ArrayProperty");
+            var bindingContext = CreateContext();
+            bindingContext.ModelName = ModelNames.CreatePropertyModelName(prefix, "ArrayProperty");
 
             var metadataProvider = new TestModelMetadataProvider();
-            context.ModelMetadata = metadataProvider.GetMetadataForProperty(
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithArrayProperty),
                 nameof(ModelWithArrayProperty.ArrayProperty));
 
-            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+            bindingContext.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
 
             // Act
-            var result = await binder.BindModelResultAsync(context);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Equal(default(ModelBindingResult), result);
+            Assert.False(bindingContext.Result.IsModelSet);
         }
 
         public static TheoryData<int[]> ArrayModelData
@@ -128,11 +128,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new ArrayModelBinder<int>(new SimpleTypeModelBinder(typeof(int)));
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
-            Assert.Same(model, result.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
+            Assert.Same(model, bindingContext.Result.Model);
 
             for (var i = 0; i < arrayLength; i++)
             {
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     var model = value.ConvertTo(mbc.ModelType);
                     return ModelBindingResult.Success(model);
                 }
-                return null;
+                return ModelBindingResult.Failed();
             });
         }
 

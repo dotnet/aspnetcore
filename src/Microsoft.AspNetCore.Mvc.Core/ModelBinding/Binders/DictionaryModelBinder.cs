@@ -49,13 +49,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
 
             await base.BindModelAsync(bindingContext);
-            if (bindingContext.Result == null || !bindingContext.Result.Value.IsModelSet)
+            if (!bindingContext.Result.IsModelSet)
             {
                 // No match for the prefix at all.
                 return;
             }
 
-            var result = bindingContext.Result.Value;
+            var result = bindingContext.Result;
 
             Debug.Assert(result.Model != null);
             var model = (IDictionary<TKey, TValue>)result.Model;
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     var valueResult = bindingContext.Result;
 
                     // Always add an entry to the dictionary but validate only if binding was successful.
-                    model[convertedKey] = ModelBindingHelper.CastOrDefault<TValue>(valueResult.Value.Model);
+                    model[convertedKey] = ModelBindingHelper.CastOrDefault<TValue>(valueResult.Model);
                     keyMappings.Add(kvp.Key, convertedKey);
                 }
             }

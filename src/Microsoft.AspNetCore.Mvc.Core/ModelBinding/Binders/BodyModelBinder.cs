@@ -91,11 +91,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
                 var exception = new UnsupportedContentTypeException(message);
                 bindingContext.ModelState.AddModelError(modelBindingKey, exception, bindingContext.ModelMetadata);
-
-                // This model binder is the only handler for the Body binding source and it cannot run twice. Always
-                // tell the model binding system to skip other model binders and never to fall back i.e. indicate a
-                // fatal error.
-                bindingContext.Result = ModelBindingResult.Failed();
                 return;
             }
 
@@ -107,9 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
                 if (result.HasError)
                 {
-                    // Formatter encountered an error. Do not use the model it returned. As above, tell the model
-                    // binding system to skip other model binders and never to fall back.
-                    bindingContext.Result = ModelBindingResult.Failed();
+                    // Formatter encountered an error. Do not use the model it returned.
                     return;
                 }
 
@@ -119,11 +112,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             catch (Exception ex)
             {
                 bindingContext.ModelState.AddModelError(modelBindingKey, ex, bindingContext.ModelMetadata);
-
-                // This model binder is the only handler for the Body binding source and it cannot run twice. Always
-                // tell the model binding system to skip other model binders and never to fall back i.e. indicate a
-                // fatal error.
-                bindingContext.Result = ModelBindingResult.Failed();
                 return;
             }
         }

@@ -40,19 +40,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 new SimpleTypeModelBinder(typeof(string)));
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
+            Assert.True(bindingContext.Result.IsModelSet);
 
-            var dictionary = Assert.IsAssignableFrom<IDictionary<int, string>>(result.Model);
+            var dictionary = Assert.IsAssignableFrom<IDictionary<int, string>>(bindingContext.Result.Model);
             Assert.NotNull(dictionary);
             Assert.Equal(2, dictionary.Count);
             Assert.Equal("forty-two", dictionary[42]);
             Assert.Equal("eighty-four", dictionary[84]);
 
             // This uses the default IValidationStrategy
-            Assert.DoesNotContain(result.Model, bindingContext.ValidationState.Keys);
+            Assert.DoesNotContain(bindingContext.Result.Model, bindingContext.ValidationState.Keys);
         }
 
         [Theory]
@@ -80,19 +80,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 new SimpleTypeModelBinder(typeof(string)));
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
+            Assert.True(bindingContext.Result.IsModelSet);
 
-            Assert.Same(dictionary, result.Model);
+            Assert.Same(dictionary, bindingContext.Result.Model);
             Assert.NotNull(dictionary);
             Assert.Equal(2, dictionary.Count);
             Assert.Equal("forty-two", dictionary[42]);
             Assert.Equal("eighty-four", dictionary[84]);
 
             // This uses the default IValidationStrategy
-            Assert.DoesNotContain(result.Model, bindingContext.ValidationState.Keys);
+            Assert.DoesNotContain(bindingContext.Result.Model, bindingContext.ValidationState.Keys);
         }
 
         // modelName, keyFormat, dictionary
@@ -135,23 +135,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 new SimpleTypeModelBinder(typeof(string)), 
                 new SimpleTypeModelBinder(typeof(string)));
 
-            var context = CreateContext();
-            context.ModelName = modelName;
-            context.ValueProvider = CreateEnumerableValueProvider(keyFormat, dictionary);
-            context.FieldName = modelName;
+            var bindingContext = CreateContext();
+            bindingContext.ModelName = modelName;
+            bindingContext.ValueProvider = CreateEnumerableValueProvider(keyFormat, dictionary);
+            bindingContext.FieldName = modelName;
 
             var metadataProvider = new TestModelMetadataProvider();
-            context.ModelMetadata = metadataProvider.GetMetadataForProperty(
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithDictionaryProperties),
                 nameof(ModelWithDictionaryProperties.DictionaryProperty));
 
             // Act
-            var result = await binder.BindModelResultAsync(context);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
+            Assert.True(bindingContext.Result.IsModelSet);
 
-            var resultDictionary = Assert.IsAssignableFrom<IDictionary<string, string>>(result.Model);
+            var resultDictionary = Assert.IsAssignableFrom<IDictionary<string, string>>(bindingContext.Result.Model);
             Assert.Equal(dictionary, resultDictionary);
         }
 
@@ -171,23 +171,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 new SimpleTypeModelBinder(typeof(string)), 
                 new SimpleTypeModelBinder(typeof(string)));
 
-            var context = CreateContext();
-            context.ModelName = "prefix";
-            context.ValueProvider = CreateTestValueProvider("prefix[{0}]", dictionary);
-            context.FieldName = context.ModelName;
+            var bindingContext = CreateContext();
+            bindingContext.ModelName = "prefix";
+            bindingContext.ValueProvider = CreateTestValueProvider("prefix[{0}]", dictionary);
+            bindingContext.FieldName = bindingContext.ModelName;
 
             var metadataProvider = new TestModelMetadataProvider();
-            context.ModelMetadata = metadataProvider.GetMetadataForProperty(
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithDictionaryProperties),
                 nameof(ModelWithDictionaryProperties.DictionaryProperty));
 
             // Act
-            var result = await binder.BindModelResultAsync(context);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
+            Assert.True(bindingContext.Result.IsModelSet);
 
-            var resultDictionary = Assert.IsAssignableFrom<IDictionary<string, string>>(result.Model);
+            var resultDictionary = Assert.IsAssignableFrom<IDictionary<string, string>>(bindingContext.Result.Model);
             Assert.Empty(resultDictionary);
         }
 
@@ -221,23 +221,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 new SimpleTypeModelBinder(typeof(long)), 
                 new SimpleTypeModelBinder(typeof(int)));
 
-            var context = CreateContext();
-            context.ModelName = "prefix";
-            context.ValueProvider = CreateEnumerableValueProvider("prefix[{0}]", stringDictionary);
-            context.FieldName = context.ModelName;
+            var bindingContext = CreateContext();
+            bindingContext.ModelName = "prefix";
+            bindingContext.ValueProvider = CreateEnumerableValueProvider("prefix[{0}]", stringDictionary);
+            bindingContext.FieldName = bindingContext.ModelName;
 
             var metadataProvider = new TestModelMetadataProvider();
-            context.ModelMetadata = metadataProvider.GetMetadataForProperty(
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithDictionaryProperties),
                 nameof(ModelWithDictionaryProperties.DictionaryWithValueTypesProperty));
 
             // Act
-            var result = await binder.BindModelResultAsync(context);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
+            Assert.True(bindingContext.Result.IsModelSet);
 
-            var resultDictionary = Assert.IsAssignableFrom<IDictionary<long, int>>(result.Model);
+            var resultDictionary = Assert.IsAssignableFrom<IDictionary<long, int>>(bindingContext.Result.Model);
             Assert.Equal(dictionary, resultDictionary);
         }
 
@@ -258,13 +258,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "prefix[27].Name", "Fred" },
             };
 
-            var context = CreateContext();
-            context.ModelName = "prefix";
-            context.ValueProvider = CreateEnumerableValueProvider("{0}", stringDictionary);
-            context.FieldName = context.ModelName;
+            var bindingContext = CreateContext();
+            bindingContext.ModelName = "prefix";
+            bindingContext.ValueProvider = CreateEnumerableValueProvider("{0}", stringDictionary);
+            bindingContext.FieldName = bindingContext.ModelName;
 
             var metadataProvider = new TestModelMetadataProvider();
-            context.ModelMetadata = metadataProvider.GetMetadataForProperty(
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithDictionaryProperties),
                 nameof(ModelWithDictionaryProperties.DictionaryWithComplexValuesProperty));
 
@@ -279,17 +279,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 }));
 
             // Act
-            var result = await binder.BindModelResultAsync(context);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
+            Assert.True(bindingContext.Result.IsModelSet);
 
-            var resultDictionary = Assert.IsAssignableFrom<IDictionary<int, ModelWithProperties>>(result.Model);
+            var resultDictionary = Assert.IsAssignableFrom<IDictionary<int, ModelWithProperties>>(bindingContext.Result.Model);
             Assert.Equal(dictionary, resultDictionary);
 
             // This requires a non-default IValidationStrategy
-            Assert.Contains(result.Model, context.ValidationState.Keys);
-            var entry = context.ValidationState[result.Model];
+            Assert.Contains(bindingContext.Result.Model, bindingContext.ValidationState.Keys);
+            var entry = bindingContext.ValidationState[bindingContext.Result.Model];
             var strategy = Assert.IsType<ShortFormDictionaryValidationStrategy<int, ModelWithProperties>>(entry.Strategy);
             Assert.Equal(
                 new KeyValuePair<string, int>[]
@@ -313,24 +313,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 new SimpleTypeModelBinder(typeof(string)), 
                 new SimpleTypeModelBinder(typeof(string)));
 
-            var context = CreateContext();
-            context.ModelName = modelName;
+            var bindingContext = CreateContext();
+            bindingContext.ModelName = modelName;
 
-            context.ValueProvider = CreateEnumerableValueProvider(keyFormat, dictionary);
-            context.FieldName = context.ModelName;
+            bindingContext.ValueProvider = CreateEnumerableValueProvider(keyFormat, dictionary);
+            bindingContext.FieldName = bindingContext.ModelName;
 
             var metadataProvider = new TestModelMetadataProvider();
-            context.ModelMetadata = metadataProvider.GetMetadataForProperty(
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithDictionaryProperties),
                 nameof(ModelWithDictionaryProperties.CustomDictionaryProperty));
 
             // Act
-            var result = await binder.BindModelResultAsync(context);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
+            Assert.True(bindingContext.Result.IsModelSet);
 
-            var resultDictionary = Assert.IsAssignableFrom<SortedDictionary<string, string>>(result.Model);
+            var resultDictionary = Assert.IsAssignableFrom<SortedDictionary<string, string>>(bindingContext.Result.Model);
             Assert.Equal(expectedDictionary, resultDictionary);
         }
 
@@ -342,23 +342,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 new SimpleTypeModelBinder(typeof(string)), 
                 new SimpleTypeModelBinder(typeof(string)));
 
-            var context = CreateContext();
-            context.IsTopLevelObject = true;
+            var bindingContext = CreateContext();
+            bindingContext.IsTopLevelObject = true;
 
             // Lack of prefix and non-empty model name both ignored.
-            context.ModelName = "modelName";
+            bindingContext.ModelName = "modelName";
 
             var metadataProvider = new TestModelMetadataProvider();
-            context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(Dictionary<string, string>));
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForType(typeof(Dictionary<string, string>));
 
-            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+            bindingContext.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
 
             // Act
-            var result = await binder.BindModelResultAsync(context);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Empty(Assert.IsType<Dictionary<string, string>>(result.Model));
-            Assert.True(result.IsModelSet);
+            Assert.Empty(Assert.IsType<Dictionary<string, string>>(bindingContext.Result.Model));
+            Assert.True(bindingContext.Result.IsModelSet);
         }
 
         [Theory]
@@ -371,21 +371,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 new SimpleTypeModelBinder(typeof(int)), 
                 new SimpleTypeModelBinder(typeof(int)));
 
-            var context = CreateContext();
-            context.ModelName = ModelNames.CreatePropertyModelName(prefix, "ListProperty");
+            var bindingContext = CreateContext();
+            bindingContext.ModelName = ModelNames.CreatePropertyModelName(prefix, "ListProperty");
 
             var metadataProvider = new TestModelMetadataProvider();
-            context.ModelMetadata = metadataProvider.GetMetadataForProperty(
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithDictionaryProperties),
                 nameof(ModelWithDictionaryProperties.DictionaryProperty));
 
-            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+            bindingContext.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
 
             // Act
-            var result = await binder.BindModelResultAsync(context);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Equal(default(ModelBindingResult), result);
+            Assert.False(bindingContext.Result.IsModelSet);
         }
 
         // Model type -> can create instance.

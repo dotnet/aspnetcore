@@ -34,9 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 !bindingContext.ModelMetadata.IsReadOnly;
             if (!createFileCollection && !ModelBindingHelper.CanGetCompatibleCollection<IFormFile>(bindingContext))
             {
-                // Silently fail and stop other model binders running if unable to create an instance or use the
-                // current instance.
-                bindingContext.Result = ModelBindingResult.Failed();
+                // Silently fail if unable to create an instance or use the current instance.
                 return;
             }
 
@@ -65,7 +63,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 if (postedFiles.Count == 0)
                 {
                     // Silently fail if the named file does not exist in the request.
-                    bindingContext.Result = ModelBindingResult.Failed();
                     return;
                 }
 
@@ -77,7 +74,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 {
                     // Silently fail if no files match. Will bind to an empty collection (treat empty as a success
                     // case and not reach here) if binding to a top-level object.
-                    bindingContext.Result = ModelBindingResult.Failed();
                     return;
                 }
 

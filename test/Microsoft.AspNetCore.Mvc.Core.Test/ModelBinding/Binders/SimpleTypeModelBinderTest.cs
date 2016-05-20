@@ -50,10 +50,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new SimpleTypeModelBinder(destinationType);
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(result.IsModelSet);
+            Assert.False(bindingContext.Result.IsModelSet);
         }
 
         [Theory]
@@ -75,11 +75,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new SimpleTypeModelBinder(destinationType);
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(result.IsModelSet);
-            Assert.Null(result.Model);
+            Assert.False(bindingContext.Result.IsModelSet);
+            Assert.Null(bindingContext.Result.Model);
 
             var error = Assert.Single(bindingContext.ModelState["theModelName"].Errors);
             Assert.Equal("The value '' is invalid.", error.ErrorMessage, StringComparer.Ordinal);
@@ -100,11 +100,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new SimpleTypeModelBinder(typeof(int));
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(result.IsModelSet);
-            Assert.Null(result.Model);
+            Assert.False(bindingContext.Result.IsModelSet);
+            Assert.Null(bindingContext.Result.Model);
             Assert.False(bindingContext.ModelState.IsValid);
             var error = Assert.Single(bindingContext.ModelState["theModelName"].Errors);
             Assert.Equal(message, error.ErrorMessage);
@@ -118,10 +118,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new SimpleTypeModelBinder(typeof(int));
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.Failed(), result);
+            Assert.Equal(ModelBindingResult.Failed(), bindingContext.Result);
             Assert.Empty(bindingContext.ModelState);
         }
 
@@ -138,10 +138,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new SimpleTypeModelBinder(typeof(string));
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Null(result.Model);
+            Assert.Null(bindingContext.Result.Model);
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
         }
 
@@ -160,10 +160,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new SimpleTypeModelBinder(typeof(string));
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Null(result.Model);
+            Assert.Null(bindingContext.Result.Model);
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
         }
 
@@ -180,11 +180,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new SimpleTypeModelBinder(typeof(int?));
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
-            Assert.Equal(12, result.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
+            Assert.Equal(12, bindingContext.Result.Model);
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
         }
 
@@ -201,11 +201,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new SimpleTypeModelBinder(typeof(double?));
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
-            Assert.Equal(12.5, result.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
+            Assert.Equal(12.5, bindingContext.Result.Model);
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
         }
 
@@ -222,11 +222,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new SimpleTypeModelBinder(typeof(int));
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
-            Assert.Equal(42, result.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
+            Assert.Equal(42, bindingContext.Result.Model);
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
         }
 
@@ -243,11 +243,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new SimpleTypeModelBinder(typeof(decimal));
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
-            Assert.Equal(12.5M, result.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
+            Assert.Equal(12.5M, bindingContext.Result.Model);
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
         }
 
@@ -264,11 +264,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new SimpleTypeModelBinder(typeof(decimal));
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(result.IsModelSet);
-            Assert.Null(result.Model);
+            Assert.False(bindingContext.Result.IsModelSet);
+            Assert.Null(bindingContext.Result.Model);
 
             var error = Assert.Single(bindingContext.ModelState["theModelName"].Errors);
             Assert.Equal("The value '12,5' is not valid for Decimal.", error.ErrorMessage, StringComparer.Ordinal);
@@ -288,11 +288,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new SimpleTypeModelBinder(typeof(IntEnum));
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
-            var boundModel = Assert.IsType<IntEnum>(result.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
+            var boundModel = Assert.IsType<IntEnum>(bindingContext.Result.Model);
             Assert.Equal(IntEnum.Value1, boundModel);
         }
 
@@ -309,11 +309,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new SimpleTypeModelBinder(typeof(IntEnum));
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
-            var boundModel = Assert.IsType<IntEnum>(result.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
+            var boundModel = Assert.IsType<IntEnum>(bindingContext.Result.Model);
             Assert.Equal(IntEnum.Value1, boundModel);
         }
 
@@ -335,11 +335,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new SimpleTypeModelBinder(typeof(FlagsEnum));
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
-            var boundModel = Assert.IsType<FlagsEnum>(result.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
+            var boundModel = Assert.IsType<FlagsEnum>(bindingContext.Result.Model);
             Assert.Equal((FlagsEnum)expected, boundModel);
         }
 

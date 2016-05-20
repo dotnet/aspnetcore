@@ -85,9 +85,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 var parameter = parameters[i];
 
                 var result = await BindModelAsync(parameter, controllerContext, valueProvider);
-                if (result != null && result.Value.IsModelSet)
+                if (result.IsModelSet)
                 {
-                    arguments[parameter.Name] = result.Value.Model;
+                    arguments[parameter.Name] = result.Model;
                 }
             }
 
@@ -105,18 +105,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 var property = properties[i];
 
                 var result = await BindModelAsync(property, controllerContext, valueProvider);
-                if (result != null && result.Value.IsModelSet)
+                if (result.IsModelSet)
                 {
                     var propertyHelper = FindPropertyHelper(propertyHelpers, property);
                     if (propertyHelper != null)
                     {
-                        ActivateProperty(property, propertyHelper, controller, result.Value.Model);
+                        ActivateProperty(property, propertyHelper, controller, result.Model);
                     }
                 }
             }
         }
 
-        public async Task<ModelBindingResult?> BindModelAsync(
+        public async Task<ModelBindingResult> BindModelAsync(
             ParameterDescriptor parameter,
             ControllerContext controllerContext)
         {
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return await BindModelAsync(parameter, controllerContext, valueProvider);
         }
 
-        public async Task<ModelBindingResult?> BindModelAsync(
+        public async Task<ModelBindingResult> BindModelAsync(
             ParameterDescriptor parameter,
             ControllerContext controllerContext,
             IValueProvider valueProvider)
@@ -189,13 +189,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             await binder.BindModelAsync(modelBindingContext);
 
             var modelBindingResult = modelBindingContext.Result;
-            if (modelBindingResult != null && modelBindingResult.Value.IsModelSet)
+            if (modelBindingResult.IsModelSet)
             {
                 _validator.Validate(
                     controllerContext,
                     modelBindingContext.ValidationState,
                     modelBindingContext.ModelName,
-                    modelBindingResult.Value.Model);
+                    modelBindingResult.Model);
             }
 
             return modelBindingResult;

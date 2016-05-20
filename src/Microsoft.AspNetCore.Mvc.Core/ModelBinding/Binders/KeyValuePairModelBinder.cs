@@ -68,10 +68,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 bindingContext.ModelState.TryAddModelError(
                     keyModelName,
                     bindingContext.ModelMetadata.ModelBindingMessageProvider.MissingKeyOrValueAccessor());
-
-                // Were able to get some data for this model.
-                // Always tell the model binding system to skip other model binders.
-                bindingContext.Result = ModelBindingResult.Failed();
                 return;
             }
 
@@ -80,10 +76,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 bindingContext.ModelState.TryAddModelError(
                     valueModelName,
                     bindingContext.ModelMetadata.ModelBindingMessageProvider.MissingKeyOrValueAccessor());
-
-                // Were able to get some data for this model.
-                // Always tell the model binding system to skip other model binders.
-                bindingContext.Result = ModelBindingResult.Failed();
                 return;
             }
 
@@ -112,15 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 await binder.BindModelAsync(bindingContext);
 
-                var result = bindingContext.Result;
-                if (result != null && result.Value.IsModelSet)
-                {
-                    return result.Value;
-                }
-                else
-                {
-                    return ModelBindingResult.Failed();
-                }
+                return bindingContext.Result;
             }
         }
     }

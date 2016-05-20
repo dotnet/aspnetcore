@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
 
             // Assert
-            Assert.False(modelBindingResult.Value.IsModelSet);
+            Assert.False(modelBindingResult.IsModelSet);
 
             // ModelState (not set unless inner binder sets it)
             Assert.True(modelState.IsValid);
@@ -82,75 +82,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private class Person2
         {
-        }
-
-        [Fact]
-        public async Task BindParameter_WithModelBinderType_NonGreedy_NoData()
-        {
-            // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
-            var parameter = new ParameterDescriptor()
-            {
-                Name = "Parameter1",
-                BindingInfo = new BindingInfo()
-                {
-                    BinderType = typeof(NullResultModelBinder)
-                },
-
-                ParameterType = typeof(Person2)
-            };
-
-            // No data is passed.
-            var testContext = ModelBindingTestHelper.GetTestContext();
-            var modelState = testContext.ModelState;
-
-            // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
-
-            // Assert
-
-            // ModelBindingResult
-            Assert.False(modelBindingResult.Value.IsModelSet);
-
-            // ModelState
-            Assert.True(modelState.IsValid);
-            Assert.Empty(modelState.Keys);
-        }
-
-        // ModelBinderAttribute can be used without specifying the binder type.
-        // In such cases BinderTypeBasedModelBinder acts like a non greedy binder where
-        // it returns an empty ModelBindingResult allowing other ModelBinders to run.
-        [Fact]
-        public async Task BindParameter_WithOutModelBinderType()
-        {
-            // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
-            var parameter = new ParameterDescriptor()
-            {
-                Name = "Parameter1",
-                BindingInfo = new BindingInfo()
-                {
-                    BinderType = typeof(NullResultModelBinder)
-                },
-
-                ParameterType = typeof(Person2)
-            };
-
-            // No data is passed.
-            var testContext = ModelBindingTestHelper.GetTestContext();
-            var modelState = testContext.ModelState;
-
-            // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
-
-            // Assert
-
-            // ModelBindingResult
-            Assert.False(modelBindingResult.Value.IsModelSet);
-
-            // ModelState
-            Assert.True(modelState.IsValid);
-            Assert.Empty(modelState.Keys);
         }
 
         // Ensures that prefix is part of the result returned back.
@@ -176,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 
@@ -219,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 
@@ -258,7 +189,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext) ?? default(ModelBindingResult);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 
@@ -286,7 +217,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 {
                     throw new ArgumentNullException(nameof(bindingContext));
                 }
-                Debug.Assert(bindingContext.Result == null);
+
+                Debug.Assert(bindingContext.Result == ModelBindingResult.Failed());
 
                 if (bindingContext.ModelType != typeof(Address))
                 {
@@ -313,7 +245,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 {
                     throw new ArgumentNullException(nameof(bindingContext));
                 }
-                Debug.Assert(bindingContext.Result == null);
+                Debug.Assert(bindingContext.Result == ModelBindingResult.Failed());
 
                 var model = "Success";
                 bindingContext.ModelState.SetModelValue(
@@ -334,7 +266,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 {
                     throw new ArgumentNullException(nameof(bindingContext));
                 }
-                Debug.Assert(bindingContext.Result == null);
+                Debug.Assert(bindingContext.Result == ModelBindingResult.Failed());
 
                 bindingContext.Result =  ModelBindingResult.Success(model: null);
                 return TaskCache.CompletedTask;
@@ -349,23 +281,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 {
                     throw new ArgumentNullException(nameof(bindingContext));
                 }
-                Debug.Assert(bindingContext.Result == null);
+                Debug.Assert(bindingContext.Result == ModelBindingResult.Failed());
 
                 bindingContext.Result = ModelBindingResult.Failed();
-                return TaskCache.CompletedTask;
-            }
-        }
-
-        private class NullResultModelBinder : IModelBinder
-        {
-            public Task BindModelAsync(ModelBindingContext bindingContext)
-            {
-                if (bindingContext == null)
-                {
-                    throw new ArgumentNullException(nameof(bindingContext));
-                }
-                Debug.Assert(bindingContext.Result == null);
-
                 return TaskCache.CompletedTask;
             }
         }

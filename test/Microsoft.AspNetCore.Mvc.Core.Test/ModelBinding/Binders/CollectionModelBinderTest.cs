@@ -81,12 +81,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new CollectionModelBinder<int>(CreateIntBinder());
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
+            Assert.True(bindingContext.Result.IsModelSet);
 
-            var list = Assert.IsAssignableFrom<IList<int>>(result.Model);
+            var list = Assert.IsAssignableFrom<IList<int>>(bindingContext.Result.Model);
             Assert.Equal(new[] { 42, 100, 200 }, list.ToArray());
 
             Assert.True(modelState.IsValid);
@@ -112,12 +112,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new CollectionModelBinder<int>(CreateIntBinder());
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
+            Assert.True(bindingContext.Result.IsModelSet);
 
-            Assert.Same(list, result.Model);
+            Assert.Same(list, bindingContext.Result.Model);
             Assert.Equal(new[] { 42, 100, 200 }, list.ToArray());
 
             Assert.True(modelState.IsValid);
@@ -138,12 +138,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new CollectionModelBinder<int>(CreateIntBinder());
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
+            Assert.True(bindingContext.Result.IsModelSet);
 
-            var list = Assert.IsAssignableFrom<IList<int>>(result.Model);
+            var list = Assert.IsAssignableFrom<IList<int>>(bindingContext.Result.Model);
             Assert.Equal(new[] { 42, 100, 200 }, list.ToArray());
         }
 
@@ -164,12 +164,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new CollectionModelBinder<int>(CreateIntBinder());
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
+            Assert.True(bindingContext.Result.IsModelSet);
 
-            Assert.Same(list, result.Model);
+            Assert.Same(list, bindingContext.Result.Model);
             Assert.Equal(new[] { 42, 100, 200 }, list.ToArray());
         }
 
@@ -185,13 +185,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingContext = GetModelBindingContext(valueProvider, isReadOnly: false);
 
             // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(result.IsModelSet);
-            Assert.NotNull(result.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
 
-            var model = Assert.IsType<List<int>>(result.Model);
+            var model = Assert.IsType<List<int>>(bindingContext.Result.Model);
             Assert.Empty(model);
         }
 
@@ -214,25 +213,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task CollectionModelBinder_CreatesEmptyCollection_IfIsTopLevelObject()
         {
             // Arrange
-            var binder = new CollectionModelBinder<string>(new StubModelBinder(result: null));
+            var binder = new CollectionModelBinder<string>(new StubModelBinder(result: ModelBindingResult.Failed()));
 
-            var context = CreateContext();
-            context.IsTopLevelObject = true;
+            var bindingContext = CreateContext();
+            bindingContext.IsTopLevelObject = true;
 
             // Lack of prefix and non-empty model name both ignored.
-            context.ModelName = "modelName";
+            bindingContext.ModelName = "modelName";
 
             var metadataProvider = new TestModelMetadataProvider();
-            context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(List<string>));
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForType(typeof(List<string>));
 
-            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+            bindingContext.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
 
             // Act
-            var result = await binder.BindModelResultAsync(context);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Empty(Assert.IsType<List<string>>(result.Model));
-            Assert.True(result.IsModelSet);
+            Assert.Empty(Assert.IsType<List<string>>(bindingContext.Result.Model));
+            Assert.True(bindingContext.Result.IsModelSet);
         }
 
         // Setup like CollectionModelBinder_CreatesEmptyCollection_IfIsTopLevelObject  except
@@ -241,29 +240,29 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task CollectionModelBinder_DoesNotCreateEmptyCollection_IfModelNonNull()
         {
             // Arrange
-            var binder = new CollectionModelBinder<string>(new StubModelBinder(result: null));
+            var binder = new CollectionModelBinder<string>(new StubModelBinder(result: ModelBindingResult.Failed()));
 
-            var context = CreateContext();
-            context.IsTopLevelObject = true;
+            var bindingContext = CreateContext();
+            bindingContext.IsTopLevelObject = true;
 
             var list = new List<string>();
-            context.Model = list;
+            bindingContext.Model = list;
 
             // Lack of prefix and non-empty model name both ignored.
-            context.ModelName = "modelName";
+            bindingContext.ModelName = "modelName";
 
             var metadataProvider = new TestModelMetadataProvider();
-            context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(List<string>));
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForType(typeof(List<string>));
 
-            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+            bindingContext.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
 
             // Act
-            var result = await binder.BindModelResultAsync(context);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Same(list, result.Model);
+            Assert.Same(list, bindingContext.Result.Model);
             Assert.Empty(list);
-            Assert.True(result.IsModelSet);
+            Assert.True(bindingContext.Result.IsModelSet);
         }
 
         [Theory]
@@ -272,23 +271,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task CollectionModelBinder_DoesNotCreateCollection_IfNotIsTopLevelObject(string prefix)
         {
             // Arrange
-            var binder = new CollectionModelBinder<string>(new StubModelBinder(result: null));
+            var binder = new CollectionModelBinder<string>(new StubModelBinder(result: ModelBindingResult.Failed()));
 
-            var context = CreateContext();
-            context.ModelName = ModelNames.CreatePropertyModelName(prefix, "ListProperty");
+            var bindingContext = CreateContext();
+            bindingContext.ModelName = ModelNames.CreatePropertyModelName(prefix, "ListProperty");
 
             var metadataProvider = new TestModelMetadataProvider();
-            context.ModelMetadata = metadataProvider.GetMetadataForProperty(
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithListProperty),
                 nameof(ModelWithListProperty.ListProperty));
 
-            context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
+            bindingContext.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
 
             // Act
-            var result = await binder.BindModelResultAsync(context);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Equal(default(ModelBindingResult), result);
+            Assert.False(bindingContext.Result.IsModelSet);
         }
 
         // Model type -> can create instance.
@@ -378,7 +377,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 var value = mbc.ValueProvider.GetValue(mbc.ModelName);
                 if (value == ValueProviderResult.None)
                 {
-                    return null;
+                    return ModelBindingResult.Failed();
                 }
 
                 var model = value.ConvertTo(mbc.ModelType);

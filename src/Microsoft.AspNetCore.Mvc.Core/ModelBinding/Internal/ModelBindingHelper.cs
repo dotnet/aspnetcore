@@ -450,13 +450,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Internal
 
             await binder.BindModelAsync(modelBindingContext);
             var modelBindingResult = modelBindingContext.Result;
-            if (modelBindingResult != null && modelBindingResult.Value.IsModelSet)
+            if (modelBindingResult.IsModelSet)
             {
                 objectModelValidator.Validate(
                     actionContext,
                     modelBindingContext.ValidationState,
                     modelBindingContext.ModelName,
-                    modelBindingResult.Value.Model);
+                    modelBindingResult.Model);
 
                 return modelState.IsValid;
             }

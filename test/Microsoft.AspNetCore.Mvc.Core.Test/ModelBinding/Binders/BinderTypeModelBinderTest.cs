@@ -23,10 +23,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new BinderTypeModelBinder(typeof(NullModelBinder));
 
             // Act
-            var binderResult = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(binderResult.IsModelSet);
+            Assert.False(bindingContext.Result.IsModelSet);
         }
 
         [Fact]
@@ -45,12 +45,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = new BinderTypeModelBinder(typeof(NotNullModelBinder));
 
             // Act
-            var binderResult = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            var p = (Person)binderResult.Model;
-            Assert.Equal(model.Age, p.Age);
-            Assert.Equal(model.Name, p.Name);
+            var person = (Person)bindingContext.Result.Model;
+            Assert.Equal(model.Age, person.Age);
+            Assert.Equal(model.Name, person.Name);
         }
 
         [Fact]

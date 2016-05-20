@@ -40,13 +40,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = CreateBinder(new[] { inputFormatter });
 
             // Act
-            var binderResult = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
             mockInputFormatter.Verify(v => v.CanRead(It.IsAny<InputFormatterContext>()), Times.Once);
             mockInputFormatter.Verify(v => v.ReadAsync(It.IsAny<InputFormatterContext>()), Times.Once);
-            Assert.NotNull(binderResult);
-            Assert.True(binderResult.IsModelSet);
+            Assert.True(bindingContext.Result.IsModelSet);
         }
 
         [Fact]
@@ -61,14 +60,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = CreateBinder(new List<IInputFormatter>());
 
             // Act
-            var binderResult = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-
-            // Returns non-null because it understands the metadata type.
-            Assert.NotNull(binderResult);
-            Assert.False(binderResult.IsModelSet);
-            Assert.Null(binderResult.Model);
+            Assert.False(bindingContext.Result.IsModelSet);
+            Assert.Null(bindingContext.Result.Model);
 
             // Key is the empty string because this was a top-level binding.
             var entry = Assert.Single(bindingContext.ModelState);
@@ -89,14 +85,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = CreateBinder(new List<IInputFormatter>());
 
             // Act
-            var binderResult = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-
-            // Returns non-null because it understands the metadata type.
-            Assert.NotNull(binderResult);
-            Assert.False(binderResult.IsModelSet);
-            Assert.Null(binderResult.Model);
+            Assert.False(bindingContext.Result.IsModelSet);
+            Assert.Null(bindingContext.Result.Model);
 
             // Key is the bindermodelname because this was a top-level binding.
             var entry = Assert.Single(bindingContext.ModelState);
@@ -116,11 +109,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = CreateBinder(new List<IInputFormatter>());
 
             // Act
-            var binderResult = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotNull(binderResult);
-            Assert.False(binderResult.IsModelSet);
+            Assert.False(bindingContext.Result.IsModelSet);
         }
 
         [Fact]
@@ -142,14 +134,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = CreateBinder(new[] { new XyzFormatter() });
 
             // Act
-            var binderResult = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-
-            // Returns non-null because it understands the metadata type.
-            Assert.NotNull(binderResult);
-            Assert.False(binderResult.IsModelSet);
-            Assert.Null(binderResult.Model);
+            Assert.False(bindingContext.Result.IsModelSet);
+            Assert.Null(bindingContext.Result.Model);
 
             // Key is the empty string because this was a top-level binding.
             var entry = Assert.Single(bindingContext.ModelState);
@@ -176,14 +165,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = CreateBinder(new List<IInputFormatter>());
 
             // Act
-            var binderResult = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-
-            // Returns non-null result because it understands the metadata type.
-            Assert.NotNull(binderResult);
-            Assert.False(binderResult.IsModelSet);
-            Assert.Null(binderResult.Model);
+            Assert.False(bindingContext.Result.IsModelSet);
+            Assert.Null(bindingContext.Result.Model);
 
             // Key is the empty string because this was a top-level binding.
             var entry = Assert.Single(bindingContext.ModelState);
@@ -213,11 +199,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var binder = CreateBinder(inputFormatters);
 
             // Act
-            var binderResult = await binder.BindModelResultAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.True(binderResult.IsModelSet);
-            Assert.Same(canReadFormatter1, binderResult.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
+            Assert.Same(canReadFormatter1, bindingContext.Result.Model);
         }
 
         private static DefaultModelBindingContext GetBindingContext(
