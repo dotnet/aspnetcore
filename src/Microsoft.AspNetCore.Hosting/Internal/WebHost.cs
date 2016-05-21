@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 {
     public class WebHost : IWebHost
     {
+        private static readonly string DeprecatedServerUrlsKey = "server.urls";
+
         private readonly IServiceCollection _applicationServiceCollection;
         private IStartup _startup;
 
@@ -188,7 +190,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 var addresses = Server.Features?.Get<IServerAddressesFeature>()?.Addresses;
                 if (addresses != null && !addresses.IsReadOnly && addresses.Count == 0)
                 {
-                    var urls = _config[WebHostDefaults.ServerUrlsKey];
+                    var urls = _config[WebHostDefaults.ServerUrlsKey] ?? _config[DeprecatedServerUrlsKey];
                     if (!string.IsNullOrEmpty(urls))
                     {
                         foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))

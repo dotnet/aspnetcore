@@ -9,7 +9,6 @@ using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Hosting.Builder;
 using Microsoft.AspNetCore.Hosting.Internal;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,14 +46,8 @@ namespace Microsoft.AspNetCore.Hosting
                 ?? Environment.GetEnvironmentVariable("Hosting:Environment")
                 ?? Environment.GetEnvironmentVariable("ASPNET_ENV"));
 
-            if (Environment.GetEnvironmentVariable("Hosting:Environment") != null)
-            {
-                Console.WriteLine("The environment variable 'Hosting:Environment' is obsolete and has been replaced with 'ASPNETCORE_ENVIRONMENT'");
-            }
-            if (Environment.GetEnvironmentVariable("ASPNET_ENV") != null)
-            {
-                Console.WriteLine("The environment variable 'ASPNET_ENV' is obsolete and has been replaced with 'ASPNETCORE_ENVIRONMENT'");
-            }
+            // Add the default server.urls key
+            UseSetting(WebHostDefaults.ServerUrlsKey, Environment.GetEnvironmentVariable("ASPNETCORE_URLS"));
         }
 
         /// <summary>
@@ -133,6 +126,17 @@ namespace Microsoft.AspNetCore.Hosting
         /// </summary>
         public IWebHost Build()
         {
+            // Warn about deprecated environment variables
+            if (Environment.GetEnvironmentVariable("Hosting:Environment") != null)
+            {
+                Console.WriteLine("The environment variable 'Hosting:Environment' is obsolete and has been replaced with 'ASPNETCORE_ENVIRONMENT'");
+            }
+
+            if (Environment.GetEnvironmentVariable("ASPNET_ENV") != null)
+            {
+                Console.WriteLine("The environment variable 'ASPNET_ENV' is obsolete and has been replaced with 'ASPNETCORE_ENVIRONMENT'");
+            }
+
             var hostingServices = BuildHostingServices();
             var hostingContainer = hostingServices.BuildServiceProvider();
 
@@ -192,7 +196,7 @@ namespace Microsoft.AspNetCore.Hosting
                 try
                 {
                     var startupType = StartupLoader.FindStartupType(_options.StartupAssembly, _hostingEnvironment.EnvironmentName);
-                    
+
                     if (typeof(IStartup).GetTypeInfo().IsAssignableFrom(startupType.GetTypeInfo()))
                     {
                         services.AddSingleton(typeof(IStartup), startupType);

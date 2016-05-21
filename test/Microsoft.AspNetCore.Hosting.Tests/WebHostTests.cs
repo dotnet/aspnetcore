@@ -76,6 +76,52 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
+        public void UsesLegacyConfigurationForAddresses()
+        {
+            var data = new Dictionary<string, string>
+            {
+                { "server.urls", "http://localhost:5002" }
+            };
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(data).Build();
+
+            var host = CreateBuilder(config).UseServer(this).Build();
+            host.Start();
+            Assert.Equal("http://localhost:5002", host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.First());
+        }
+
+        [Fact]
+        public void UsesConfigurationForAddresses()
+        {
+            var data = new Dictionary<string, string>
+            {
+                { "urls", "http://localhost:5003" }
+            };
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(data).Build();
+
+            var host = CreateBuilder(config).UseServer(this).Build();
+            host.Start();
+            Assert.Equal("http://localhost:5003", host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.First());
+        }
+
+        [Fact]
+        public void UsesNewConfigurationOverLegacyConfigForAddresses()
+        {
+            var data = new Dictionary<string, string>
+            {
+                { "server.urls", "http://localhost:5003" },
+                { "urls", "http://localhost:5009" }
+            };
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(data).Build();
+
+            var host = CreateBuilder(config).UseServer(this).Build();
+            host.Start();
+            Assert.Equal("http://localhost:5009", host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.First());
+        }
+
+        [Fact]
         public void WebHostCanBeStarted()
         {
             var host = CreateBuilder()
