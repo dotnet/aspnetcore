@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var logger = new LoggerFactory()
                             .AddConsole()
+                            .AddDebug()
                             .CreateLogger($"HelloWorld:{serverType}:{runtimeFlavor}:{architecture}:{delegateServer}");
 
             using (logger.BeginScope("HelloWorldTest"))

@@ -12,13 +12,15 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNET_ENVIRONMENT": "HelloWorld"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "web": {
-      "commandName": "web",
+    "TestSites": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:5000",
       "environmentVariables": {
-        "ASPNET_ENVIRONMENT": "HelloWorld"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }
