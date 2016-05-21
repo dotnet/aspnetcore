@@ -1,6 +1,12 @@
 {
   "buildOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "compile": {
+      "include": [
+        "../Shared/ApiConsistencyTestBase.cs",
+        "../Shared/TestHelpers.cs"
+      ]
+    }
   },
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
@@ -10,10 +16,6 @@
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
   },
-  "compile": [
-    "../Shared/ApiConsistencyTestBase.cs",
-    "../Shared/TestHelpers.cs"
-  ],
   "testRunner": "xunit",
   "frameworks": {
     "netcoreapp1.0": {
