@@ -13,12 +13,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class FrameResponseHeadersTests
     {
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void InitialDictionaryContainsServerAndDate(bool addServerHeader)
+        [Fact]
+        public void InitialDictionaryIsEmpty()
         {
-            var serverOptions = new KestrelServerOptions { AddServerHeader = addServerHeader };
+            var serverOptions = new KestrelServerOptions();
 
             var connectionContext = new ConnectionContext
             {
@@ -26,58 +24,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
                 ServerOptions = serverOptions,
             };
+
             var frame = new Frame<object>(application: null, context: connectionContext);
+
             frame.InitializeHeaders();
 
             IDictionary<string, StringValues> headers = frame.ResponseHeaders;
 
-            if (addServerHeader)
-            {
-                Assert.Equal(2, headers.Count);
-
-                StringValues serverHeader;
-                Assert.True(headers.TryGetValue("Server", out serverHeader));
-                Assert.Equal(1, serverHeader.Count);
-                Assert.Equal("Kestrel", serverHeader[0]);
-            }
-            else
-            {
-                Assert.Equal(1, headers.Count);
-
-                StringValues serverHeader;
-                Assert.False(headers.TryGetValue("Server", out serverHeader));
-            }
-
-            StringValues dateHeader;
-            DateTime date;
-            Assert.True(headers.TryGetValue("Date", out dateHeader));
-            Assert.Equal(1, dateHeader.Count);
-            Assert.True(DateTime.TryParse(dateHeader[0], out date));
-            Assert.True(DateTime.Now - date <= TimeSpan.FromMinutes(1));
-
+            Assert.Equal(0, headers.Count);
             Assert.False(headers.IsReadOnly);
-        }
-
-        [Fact]
-        public void InitialEntriesCanBeCleared()
-        {
-            var serverOptions = new KestrelServerOptions();
-            var connectionContext = new ConnectionContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
-                ServerOptions = serverOptions,
-            };
-            var frame = new Frame<object>(application: null, context: connectionContext);
-            frame.InitializeHeaders();
-
-            Assert.True(frame.ResponseHeaders.Count > 0);
-
-            frame.ResponseHeaders.Clear();
-
-            Assert.Equal(0, frame.ResponseHeaders.Count);
-            Assert.False(frame.ResponseHeaders.ContainsKey("Server"));
-            Assert.False(frame.ResponseHeaders.ContainsKey("Date"));
         }
 
         [Theory]

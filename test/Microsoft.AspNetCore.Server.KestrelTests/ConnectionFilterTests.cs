@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var request = httpContext.Request;
             var response = httpContext.Response;
-            response.Headers.Clear();
             while (true)
             {
                 var buffer = new byte[8192];
@@ -39,12 +38,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var server = new TestServer(App, serviceContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     // "?" changes to "!"
                     await connection.SendEnd(sendString);
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {serviceContext.DateHeaderValue}",
                         "",
                         "Hello World!");
                 }
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var server = new TestServer(App, serviceContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "POST / HTTP/1.0",
@@ -68,6 +68,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Hello World?");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {serviceContext.DateHeaderValue}",
                         "",
                         "Hello World!");
                 }
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var server = new TestServer(App, serviceContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     try
                     {

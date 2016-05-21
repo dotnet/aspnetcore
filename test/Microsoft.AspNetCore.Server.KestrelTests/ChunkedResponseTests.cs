@@ -12,11 +12,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class ChunkedResponseTests
     {
-        public static TheoryData<ServiceContext> ConnectionFilterData
+        public static TheoryData<TestServiceContext> ConnectionFilterData
         {
             get
             {
-                return new TheoryData<ServiceContext>
+                return new TheoryData<TestServiceContext>
                 {
                     {
                         new TestServiceContext()
@@ -30,17 +30,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ResponsesAreChunkedAutomatically(ServiceContext testContext)
+        public async Task ResponsesAreChunkedAutomatically(TestServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                response.Headers.Clear();
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
             }, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -48,6 +47,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
                         "6",
@@ -63,18 +63,17 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ZeroLengthWritesAreIgnored(ServiceContext testContext)
+        public async Task ZeroLengthWritesAreIgnored(TestServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                response.Headers.Clear();
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
                 await response.Body.WriteAsync(new byte[0], 0, 0);
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
             }, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -82,6 +81,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
                         "6",
@@ -97,16 +97,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task EmptyResponseBodyHandledCorrectlyWithZeroLengthWrite(ServiceContext testContext)
+        public async Task EmptyResponseBodyHandledCorrectlyWithZeroLengthWrite(TestServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                response.Headers.Clear();
                 await response.Body.WriteAsync(new byte[0], 0, 0);
             }, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -114,6 +113,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
                         "0",
@@ -125,17 +125,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ConnectionClosedIfExeptionThrownAfterWrite(ServiceContext testContext)
+        public async Task ConnectionClosedIfExeptionThrownAfterWrite(TestServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                response.Headers.Clear();
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World!"), 0, 12);
                 throw new Exception();
             }, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     // SendEnd is not called, so it isn't the client closing the connection.
                     // client closing the connection.
@@ -145,6 +144,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
                     await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
                         "c",
@@ -156,17 +156,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ConnectionClosedIfExeptionThrownAfterZeroLengthWrite(ServiceContext testContext)
+        public async Task ConnectionClosedIfExeptionThrownAfterZeroLengthWrite(TestServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                response.Headers.Clear();
                 await response.Body.WriteAsync(new byte[0], 0, 0);
                 throw new Exception();
             }, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     // SendEnd is not called, so it isn't the client closing the connection.
                     await connection.Send(
@@ -177,6 +176,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     // Headers are sent before connection is closed, but chunked body terminator isn't sent
                     await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
                         "");
@@ -186,14 +186,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task WritesAreFlushedPriorToResponseCompletion(ServiceContext testContext)
+        public async Task WritesAreFlushedPriorToResponseCompletion(TestServiceContext testContext)
         {
             var flushWh = new ManualResetEventSlim();
 
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                response.Headers.Clear();
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
 
                 // Don't complete response until client has received the first chunk.
@@ -202,7 +201,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
             }, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -210,6 +209,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
                         "6",

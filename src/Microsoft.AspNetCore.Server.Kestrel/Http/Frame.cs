@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private static readonly byte[] _bytesHttpVersion11 = Encoding.ASCII.GetBytes("HTTP/1.1 ");
         private static readonly byte[] _bytesContentLengthZero = Encoding.ASCII.GetBytes("\r\nContent-Length: 0");
         private static readonly byte[] _bytesEndHeaders = Encoding.ASCII.GetBytes("\r\n\r\n");
+        private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: Kestrel");
 
         private static Vector<byte> _vectorCRs = new Vector<byte>((byte)'\r');
         private static Vector<byte> _vectorColons = new Vector<byte>((byte)':');
@@ -44,7 +45,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private readonly object _onCompletedSync = new Object();
 
         private bool _requestRejected;
-        private Headers _frameHeaders;
         private Streams _frameStreams;
 
         protected List<KeyValuePair<Func<object, Task>, object>> _onStarting;
@@ -210,20 +210,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             get { return _requestProcessingStatus == RequestProcessingStatus.ResponseStarted; }
         }
 
-        protected FrameRequestHeaders FrameRequestHeaders => _frameHeaders.RequestHeaders;
+        protected FrameRequestHeaders FrameRequestHeaders { get; private set; }
+
+        protected FrameResponseHeaders FrameResponseHeaders { get; private set; }
 
         public void InitializeHeaders()
         {
-            if (_frameHeaders == null)
+            if (FrameRequestHeaders == null)
             {
-                _frameHeaders = new Headers(ServerOptions);
-                RequestHeaders = _frameHeaders.RequestHeaders;
-                ResponseHeaders = _frameHeaders.ResponseHeaders;
+                RequestHeaders = FrameRequestHeaders = new FrameRequestHeaders();
             }
 
-            _frameHeaders.Initialize(DateHeaderValueManager);
+            if (FrameResponseHeaders == null)
+            {
+                ResponseHeaders = FrameResponseHeaders = new FrameResponseHeaders();
+            }
         }
-
 
         public void InitializeStreams(MessageBody messageBody)
         {
@@ -259,7 +261,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public void Reset()
         {
-            _frameHeaders?.Reset();
+            FrameRequestHeaders?.Reset();
+            FrameResponseHeaders?.Reset();
 
             _onStarting = null;
             _onCompleted = null;
@@ -598,7 +601,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             if (_requestProcessingStatus == RequestProcessingStatus.RequestStarted && _requestRejected)
             {
-                if (_frameHeaders == null)
+                if (FrameRequestHeaders == null || FrameResponseHeaders == null)
                 {
                     InitializeHeaders();
                 }
@@ -634,7 +637,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                 ReasonPhrase = null;
 
-                var responseHeaders = _frameHeaders.ResponseHeaders;
+                var responseHeaders = FrameResponseHeaders;
                 responseHeaders.Reset();
                 var dateHeaderValues = DateHeaderValueManager.GetDateHeaderValues();
 
@@ -643,7 +646,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                 if (ServerOptions.AddServerHeader)
                 {
-                    responseHeaders.SetRawServer(Constants.ServerName, Headers.BytesServer);
+                    responseHeaders.SetRawServer(Constants.ServerName, _bytesServer);
                 }
 
                 ResponseHeaders = responseHeaders;
@@ -698,7 +701,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             byte[] statusBytes,
             bool appCompleted)
         {
-            var responseHeaders = _frameHeaders.ResponseHeaders;
+            var responseHeaders = FrameResponseHeaders;
             responseHeaders.SetReadOnly();
 
             var hasConnection = responseHeaders.HasConnection;
@@ -757,6 +760,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             else if (_keepAlive && !hasConnection && _httpVersion == HttpVersionType.Http10)
             {
                 responseHeaders.SetRawConnection("keep-alive", _bytesConnectionKeepAlive);
+            }
+
+            if (ServerOptions.AddServerHeader && !responseHeaders.HasServer)
+            {
+                responseHeaders.SetRawServer(Constants.ServerName, _bytesServer);
+            }
+
+            if (!responseHeaders.HasDate)
+            {
+                var dateHeaderValues = DateHeaderValueManager.GetDateHeaderValues();
+                responseHeaders.SetRawDate(dateHeaderValues.String, dateHeaderValues.Bytes);
             }
 
             end.CopyFrom(_bytesHttpVersion11);

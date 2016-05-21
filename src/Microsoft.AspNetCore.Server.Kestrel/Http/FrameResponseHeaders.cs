@@ -19,6 +19,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public bool HasContentLength => HeaderContentLength.Count != 0;
 
+        public bool HasServer => HeaderServer.Count != 0;
+
+        public bool HasDate => HeaderDate.Count != 0;
 
         public Enumerator GetEnumerator()
         {

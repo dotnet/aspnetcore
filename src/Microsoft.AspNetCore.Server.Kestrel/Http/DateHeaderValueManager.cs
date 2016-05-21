@@ -32,22 +32,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         /// Initializes a new instance of the <see cref="DateHeaderValueManager"/> class.
         /// </summary>
         public DateHeaderValueManager()
-            : this(
-                  systemClock: new SystemClock(),
-                  timeWithoutRequestsUntilIdle: TimeSpan.FromSeconds(10),
-                  timerInterval: TimeSpan.FromSeconds(1))
+            : this(systemClock: new SystemClock())
         {
         }
 
         // Internal for testing
         internal DateHeaderValueManager(
             ISystemClock systemClock,
-            TimeSpan timeWithoutRequestsUntilIdle,
-            TimeSpan timerInterval)
+            TimeSpan? timeWithoutRequestsUntilIdle = null,
+            TimeSpan? timerInterval = null)
         {
+            if (systemClock == null)
+            {
+                throw new ArgumentNullException(nameof(systemClock));
+            }
+
             _systemClock = systemClock;
-            _timeWithoutRequestsUntilIdle = timeWithoutRequestsUntilIdle;
-            _timerInterval = timerInterval;
+            _timeWithoutRequestsUntilIdle = timeWithoutRequestsUntilIdle ?? TimeSpan.FromSeconds(10);
+            _timerInterval = timerInterval ?? TimeSpan.FromSeconds(1);
             _dateValueTimer = new Timer(TimerLoop, state: null, dueTime: Timeout.Infinite, period: Timeout.Infinite);
         }
 
