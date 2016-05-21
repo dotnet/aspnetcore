@@ -67,46 +67,9 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
-        public void CanStartWithOldServerConfig()
-        {
-            var vals = new Dictionary<string, string>
-            {
-            };
-
-            var builder = new ConfigurationBuilder()
-                .AddInMemoryCollection(vals);
-            var config = builder.Build();
-            var host = CreateBuilder(config).UseServer(this).Build();
-            host.Start();
-            Assert.NotNull(host.Services.GetService<IHostingEnvironment>());
-        }
-
-        [Fact]
-        public void CanStartWithServerConfig()
-        {
-            var vals = new Dictionary<string, string>
-            {
-            };
-
-            var builder = new ConfigurationBuilder()
-                .AddInMemoryCollection(vals);
-            var config = builder.Build();
-            var host = CreateBuilder(config).UseServer(this).Build();
-            host.Start();
-            Assert.NotNull(host.Services.GetService<IHostingEnvironment>());
-        }
-
-        [Fact]
         public void CanDefaultAddressesIfNotConfigured()
         {
-            var vals = new Dictionary<string, string>
-            {
-            };
-
-            var builder = new ConfigurationBuilder()
-                .AddInMemoryCollection(vals);
-            var config = builder.Build();
-            var host = CreateBuilder(config).UseServer(this).Build();
+            var host = CreateBuilder().UseServer(this).Build();
             host.Start();
             Assert.NotNull(host.Services.GetService<IHostingEnvironment>());
             Assert.Equal("http://localhost:5000", host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.First());
