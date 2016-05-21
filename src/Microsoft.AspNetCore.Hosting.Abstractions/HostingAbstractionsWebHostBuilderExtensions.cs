@@ -61,22 +61,6 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Specify the assembly containing the server to be used by the web host.
-        /// </summary>
-        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
-        /// <param name="assemblyName">The name of the assembly containing the server to be used.</param>
-        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public static IWebHostBuilder UseServer(this IWebHostBuilder hostBuilder, string assemblyName)
-        {
-            if (assemblyName == null)
-            {
-                throw new ArgumentNullException(nameof(assemblyName));
-            }
-
-            return hostBuilder.UseSetting(WebHostDefaults.ServerKey, assemblyName);
-        }
-
-        /// <summary>
         /// Specify the server to be used by the web host.
         /// </summary>
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
