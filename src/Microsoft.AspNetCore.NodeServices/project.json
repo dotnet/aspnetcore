@@ -6,11 +6,6 @@
   },
   "authors": [ "Microsoft" ],
   "dependencies": {
-    "Microsoft.NETCore.App": {
-      "version": "1.0.0-rc2-*",
-      "type": "platform"
-    },
-    "System.IO.Pipes": "4.0.0-*",
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
@@ -18,17 +13,28 @@
     "Newtonsoft.Json": "8.0.3"
   },
   "frameworks": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Net.Http": "4.0.0.0"
+      }
+    },
     "netstandard1.3": {
       "imports": [
         "dotnet5.6",
         "dnxcore50",
         "portable-net45+win8"
-      ]
+      ],
+      "dependencies": {
+        "System.Console": "4.0.0-*",
+        "System.Diagnostics.Process": "4.1.0-*",
+        "System.Net.Http": "4.0.1-*",
+        "System.Text.RegularExpressions": "4.0.12-*"
+      }
     }
   },
   "buildOptions": {
     "embed": [
       "Content/**/*"
     ]
-  } 
+  }
 }
