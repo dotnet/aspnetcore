@@ -252,7 +252,30 @@ namespace Microsoft.AspNetCore.Razor.Parser
                 if (CurrentSymbol.Type == HtmlSymbolType.DoubleHyphen)
                 {
                     AcceptAndMoveNext();
-                    return AcceptUntilAll(HtmlSymbolType.DoubleHyphen, HtmlSymbolType.CloseAngle);
+
+                    Span.EditHandler.AcceptedCharacters = AcceptedCharacters.Any;
+                    while (!EndOfFile)
+                    {
+                        SkipToAndParseCode(HtmlSymbolType.DoubleHyphen);
+                        if (At(HtmlSymbolType.DoubleHyphen))
+                        {
+                            AcceptWhile(HtmlSymbolType.DoubleHyphen);
+
+                            if (At(HtmlSymbolType.Text) &&
+                                string.Equals(CurrentSymbol.Content, "-", StringComparison.Ordinal))
+                            {
+                                AcceptAndMoveNext();
+                            }
+
+                            if (At(HtmlSymbolType.CloseAngle))
+                            {
+                                AcceptAndMoveNext();
+                                return true;
+                            }
+                        }
+                    }
+
+                    return false;
                 }
                 else if (CurrentSymbol.Type == HtmlSymbolType.LeftBracket)
                 {

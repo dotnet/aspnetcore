@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Razor.Parser;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Test.Framework;
 using Microsoft.AspNetCore.Razor.Text;
+using Microsoft.AspNetCore.Razor.Tokenizer;
 using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
 using Xunit;
 
@@ -355,6 +356,66 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser.Html
                     new MarkupTagBlock(
                         Factory.Markup("</foo>").Accepts(AcceptedCharacters.None))));
         }
+
+        public static TheoryData HtmlCommentSupportsMultipleDashesData
+        {
+            get
+            {
+                var factory = new SpanFactory
+                {
+                    MarkupTokenizerFactory = doc => new HtmlTokenizer(doc),
+                    CodeTokenizerFactory = doc => new CSharpTokenizer(doc)
+                };
+
+                return new TheoryData<string, MarkupBlock>
+                {
+                    {
+                        "<div><!--- Hello World ---></div>",
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                factory.Markup("<div>").Accepts(AcceptedCharacters.None)),
+                            factory.Markup("<!--- Hello World --->").Accepts(AcceptedCharacters.None),
+                            new MarkupTagBlock(
+                                factory.Markup("</div>").Accepts(AcceptedCharacters.None)))
+                    },
+                    {
+                        "<div><!---- Hello World ----></div>",
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                factory.Markup("<div>").Accepts(AcceptedCharacters.None)),
+                            factory.Markup("<!---- Hello World ---->").Accepts(AcceptedCharacters.None),
+                            new MarkupTagBlock(
+                                factory.Markup("</div>").Accepts(AcceptedCharacters.None)))
+                    },
+                    {
+                        "<div><!----- Hello World -----></div>",
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                factory.Markup("<div>").Accepts(AcceptedCharacters.None)),
+                            factory.Markup("<!----- Hello World ----->").Accepts(AcceptedCharacters.None),
+                            new MarkupTagBlock(
+                                factory.Markup("</div>").Accepts(AcceptedCharacters.None)))
+                    },
+                    {
+                        "<div><!----- Hello < --- > World </div> -----></div>",
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                factory.Markup("<div>").Accepts(AcceptedCharacters.None)),
+                            factory.Markup("<!----- Hello < --- > World </div> ----->").Accepts(AcceptedCharacters.None),
+                            new MarkupTagBlock(
+                                factory.Markup("</div>").Accepts(AcceptedCharacters.None)))
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HtmlCommentSupportsMultipleDashesData))]
+        public void HtmlCommentSupportsMultipleDashes(string documentContent, MarkupBlock expectedOutput)
+        {
+            ParseBlockTest(documentContent, expectedOutput);
+        }
+
 
         [Fact]
         public void ParseBlockProperlyBalancesCommentStartAndEndTags()
