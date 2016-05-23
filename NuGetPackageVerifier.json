@@ -4,6 +4,7 @@
             "AdxVerificationCompositeRule"
         ],
         "packages": {
+            "Microsoft.AspNet.Identity.CoreCompat": { },
             "Microsoft.AspNetCore.Identity": { },
             "Microsoft.AspNetCore.Identity.EntityFrameworkCore": { }
         }
