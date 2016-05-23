@@ -8,10 +8,11 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
-    public class ServerAddressFacts
+    public class ServerAddressTests
     {
         [Theory]
         [InlineData("")]
+        [InlineData("5000")]
         [InlineData("//noscheme")]
         public void FromUriReturnsNullForSchemelessUrls(string url)
         {
@@ -19,7 +20,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [InlineData("5000", "http", "+", 5000, "/", "http://+:5000/")]
         [InlineData("://emptyscheme", "", "emptyscheme", 0, "", "://emptyscheme:0")]
         [InlineData("http://localhost", "http", "localhost", 80, "", "http://localhost:80")]
         [InlineData("http://www.example.com", "http", "www.example.com", 80, "", "http://www.example.com:80")]

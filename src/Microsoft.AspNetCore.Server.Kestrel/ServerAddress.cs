@@ -78,17 +78,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             int schemeDelimiterStart = url.IndexOf("://", StringComparison.Ordinal);
             if (schemeDelimiterStart < 0)
             {
-                int port;
-                if (int.TryParse(url, NumberStyles.None, CultureInfo.InvariantCulture, out port))
-                {
-                    return new ServerAddress()
-                    {
-                        Scheme = "http",
-                        Host = "+",
-                        Port = port,
-                        PathBase = "/"
-                    };
-                }
                 return null;
             }
             int schemeDelimiterEnd = schemeDelimiterStart + "://".Length;

@@ -97,8 +97,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // Static port
                 var port1 = GetNextPort();
                 var port2 = GetNextPort();
-                dataset.Add($"{port1}", _ => new[] { $"http://localhost:{port1}/" });
-                dataset.Add($"{port1};{port2}", _ => new[] { $"http://localhost:{port1}/", $"http://localhost:{port2}/" });
+
+                // Ensure multiple addresses can be separated by semicolon
+                dataset.Add($"http://localhost:{port1};http://localhost:{port2}",
+                    _ => new[] { $"http://localhost:{port1}/", $"http://localhost:{port2}/" });
 
                 // Ensure "localhost" and "127.0.0.1" are equivalent
                 dataset.Add($"http://localhost:{port1}", _ => new[] { $"http://localhost:{port1}/", $"http://127.0.0.1:{port1}/" });
@@ -108,7 +110,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 dataset.Add($"http://localhost:{port1}/base/path", _ => new[] { $"http://localhost:{port1}/base/path" });
 
                 // Dynamic port
-                dataset.Add("0", GetTestUrls);
                 dataset.Add("http://localhost:0/", GetTestUrls);
                 dataset.Add($"http://{Dns.GetHostName()}:0/", GetTestUrls);
 
