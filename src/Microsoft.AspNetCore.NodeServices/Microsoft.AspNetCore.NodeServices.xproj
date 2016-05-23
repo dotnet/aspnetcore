@@ -9,9 +9,8 @@
     <ProjectGuid>b0fa4175-8b29-4904-9780-28b3c24b0567</ProjectGuid>
     <RootNamespace>Microsoft.AspNetCore.NodeServices</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">..\JavaScriptServices.sln\artifacts\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
-    <OutputPath Condition="'$(OutputPath)'=='' ">..\JavaScriptServices.sln\artifacts\bin\$(MSBuildProjectName)\</OutputPath>
+    <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
   </PropertyGroup>
-
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>

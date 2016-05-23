@@ -1,8 +1,9 @@
-namespace Microsoft.AspNetCore.NodeServices {
+namespace Microsoft.AspNetCore.NodeServices
+{
     public class NodeInvocationInfo
     {
-        public string ModuleName;
-        public string ExportedFunctionName;
-        public object[] Args;
+        public string ModuleName { get; set; }
+        public string ExportedFunctionName { get; set; }
+        public object[] Args { get; set; }
     }
 }

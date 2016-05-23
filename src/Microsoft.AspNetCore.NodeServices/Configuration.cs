@@ -2,31 +2,37 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Microsoft.AspNetCore.NodeServices {
-    public static class Configuration {
-        private readonly static string[] defaultWatchFileExtensions = new[] { ".js", ".jsx", ".ts", ".tsx", ".json", ".html" };
-        private readonly static NodeServicesOptions defaultOptions = new NodeServicesOptions {
+namespace Microsoft.AspNetCore.NodeServices
+{
+    using System;
+
+    public static class Configuration
+    {
+        private static readonly string[] DefaultWatchFileExtensions = {".js", ".jsx", ".ts", ".tsx", ".json", ".html"};
+
+        private static readonly NodeServicesOptions DefaultOptions = new NodeServicesOptions
+        {
             HostingModel = NodeHostingModel.Http,
-            WatchFileExtensions = defaultWatchFileExtensions
+            WatchFileExtensions = DefaultWatchFileExtensions
         };
 
-        public static void AddNodeServices(this IServiceCollection serviceCollection) {
-            AddNodeServices(serviceCollection, defaultOptions);
-        }
+        public static void AddNodeServices(this IServiceCollection serviceCollection)
+            => AddNodeServices(serviceCollection, DefaultOptions);
 
-        public static void AddNodeServices(this IServiceCollection serviceCollection, NodeServicesOptions options) {
-            serviceCollection.AddSingleton(typeof(INodeServices), (serviceProvider) => {
+        public static void AddNodeServices(this IServiceCollection serviceCollection, NodeServicesOptions options)
+            => serviceCollection.AddSingleton(typeof(INodeServices), serviceProvider =>
+            {
                 var hostEnv = serviceProvider.GetRequiredService<IHostingEnvironment>();
-                if (string.IsNullOrEmpty(options.ProjectPath)) {
+                if (string.IsNullOrEmpty(options.ProjectPath))
+                {
                     options.ProjectPath = hostEnv.ContentRootPath;
                 }
                 return CreateNodeServices(options);
             });
-        }
 
         public static INodeServices CreateNodeServices(NodeServicesOptions options)
         {
-            var watchFileExtensions = options.WatchFileExtensions ?? defaultWatchFileExtensions;
+            var watchFileExtensions = options.WatchFileExtensions ?? DefaultWatchFileExtensions;
             switch (options.HostingModel)
             {
                 case NodeHostingModel.Http:
@@ -34,18 +40,8 @@ namespace Microsoft.AspNetCore.NodeServices {
                 case NodeHostingModel.InputOutputStream:
                     return new InputOutputStreamNodeInstance(options.ProjectPath);
                 default:
-                    throw new System.ArgumentException("Unknown hosting model: " + options.HostingModel.ToString());
+                    throw new ArgumentException("Unknown hosting model: " + options.HostingModel);
             }
-        }
-    }
-
-    public class NodeServicesOptions {
-        public NodeHostingModel HostingModel { get; set; }
-        public string ProjectPath { get; set; }
-        public string[] WatchFileExtensions { get; set; }
-
-        public NodeServicesOptions() {
-            this.HostingModel = NodeHostingModel.Http;
         }
     }
 }

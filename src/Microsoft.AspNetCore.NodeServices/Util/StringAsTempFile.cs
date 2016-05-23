@@ -1,30 +1,20 @@
 using System;
 using System.IO;
 
-namespace Microsoft.AspNetCore.NodeServices {
+namespace Microsoft.AspNetCore.NodeServices
+{
     // Makes it easier to pass script files to Node in a way that's sure to clean up after the process exits
-    public sealed class StringAsTempFile : IDisposable {
-        public string FileName { get; private set; }
-
+    public sealed class StringAsTempFile : IDisposable
+    {
         private bool _disposedValue;
 
-        public StringAsTempFile(string content) {
-            this.FileName = Path.GetTempFileName();
-            File.WriteAllText(this.FileName, content);
-        }
-
-        private void DisposeImpl(bool disposing)
+        public StringAsTempFile(string content)
         {
-            if (!_disposedValue) {
-                if (disposing) {
-                    // TODO: dispose managed state (managed objects).
-                }
-
-                File.Delete(this.FileName);
-
-                _disposedValue = true;
-            }
+            FileName = Path.GetTempFileName();
+            File.WriteAllText(FileName, content);
         }
+
+        public string FileName { get; }
 
         public void Dispose()
         {
@@ -32,8 +22,24 @@ namespace Microsoft.AspNetCore.NodeServices {
             GC.SuppressFinalize(this);
         }
 
-        ~StringAsTempFile() {
-           DisposeImpl(false);
+        private void DisposeImpl(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects).
+                }
+
+                File.Delete(FileName);
+
+                _disposedValue = true;
+            }
+        }
+
+        ~StringAsTempFile()
+        {
+            DisposeImpl(false);
         }
     }
 }
