@@ -45,6 +45,13 @@ namespace Microsoft.AspNetCore.Hosting
                     services.Configure<ForwardedHeadersOptions>(options =>
                     {
                         options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+                        // https://github.com/aspnet/IISIntegration/issues/140
+                        // Azure Web Sites needs to be treated specially as we get an imbalanced set of X-Forwarded-* headers.
+                        // We use the existence of the %WEBSITE_INSTANCE_ID% environment variable to determine if we're running
+                        // in this environment, and if so we disable the symmetry check.
+                        var isAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID"));
+                        options.RequireHeaderSymmetry = !isAzure;
                     });
                 });
             }
