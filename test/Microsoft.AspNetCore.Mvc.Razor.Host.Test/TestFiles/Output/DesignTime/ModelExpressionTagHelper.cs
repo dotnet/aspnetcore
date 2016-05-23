@@ -1,4 +1,4 @@
-namespace Asp
+namespace AspNetCore
 {
     using System;
     using System.Linq;

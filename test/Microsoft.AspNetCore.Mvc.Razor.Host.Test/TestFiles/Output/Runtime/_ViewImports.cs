@@ -1,5 +1,5 @@
 #pragma checksum "TestFiles/Input/_ViewImports.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "778b41f9406fcda776cc3f1bf093f3b21956e582"
-namespace Asp
+namespace AspNetCore
 {
     using System;
     using System.Linq;

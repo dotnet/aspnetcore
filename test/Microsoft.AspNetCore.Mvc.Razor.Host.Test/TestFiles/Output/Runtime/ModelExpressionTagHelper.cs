@@ -1,5 +1,5 @@
 #pragma checksum "TestFiles/Input/ModelExpressionTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "bb128a8b2ca348e77a9b5481e541b5a8bf82de0b"
-namespace Asp
+namespace AspNetCore
 {
     using System;
     using System.Linq;

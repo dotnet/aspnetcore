@@ -1,5 +1,5 @@
 #pragma checksum "TestFiles/Input/InjectWithSemicolon.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "fc807ec0dc76610bdca62f482fefd7f584348df9"
-namespace Asp
+namespace AspNetCore
 {
     using System;
     using System.Linq;

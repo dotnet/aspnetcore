@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             _chunkTreeCache = chunkTreeCache;
 
             DefaultBaseClass = $"{BaseType}<{ChunkHelper.TModelToken}>";
-            DefaultNamespace = "Asp";
+            DefaultNamespace = "AspNetCore";
             // Enable instrumentation by default to allow precompiled views to work with BrowserLink.
             EnableInstrumentation = true;
             GeneratedClassContext = new GeneratedClassContext(

@@ -1,4 +1,4 @@
-namespace Asp
+namespace AspNetCore
 {
 #line 1 "testfiles/input/inject.cshtml"
 using MyNamespace
