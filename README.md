@@ -1,6 +1,10 @@
 
 [![Join the chat at https://gitter.im/aspnet/Home](https://badges.gitter.im/aspnet/Home.svg)](https://gitter.im/aspnet/Home?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+We are pleased to [announce](https://blogs.msdn.microsoft.com/webdev/2016/05/16/announcing-asp-net-core-rc2/) the release of ASP.NET Core RC2!
+
+[Get started with ASP.NET Core RC2](https://docs.asp.net/en/1.0.0-rc2/getting-started.html)
+
 If you are looking for the homepage of .NET Core, with getting started guides and downloads for released versions of ASP.NET Core then you should go to http://dot.net. This is the home page of our source code repositories and is intended for those contributing to ASP.NET Core or using bleeding edge nightly builds.
 
 If you want a more stable, released, experience or getting started instructions then go to one of the following:
