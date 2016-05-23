@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http
     public interface ISession
     {
         /// <summary>
-        /// Indicate whether the current session has loaded correctly.
+        /// Indicate whether the current session has loaded.
         /// </summary>
         bool IsAvailable { get; }
 
