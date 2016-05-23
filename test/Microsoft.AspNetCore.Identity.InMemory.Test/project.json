@@ -1,7 +1,10 @@
 {
   "buildOptions": {
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "compile": {
+      "include": "../Shared/*.cs"
+    }
   },
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
@@ -15,7 +18,6 @@
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
   },
-  "compile": "../Shared/*.cs",
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {
