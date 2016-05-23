@@ -23,6 +23,7 @@ namespace IdentitySample
         {
             // Set up configuration sources.
             var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
 
@@ -47,8 +48,8 @@ namespace IdentitySample
 
             services.AddIdentity<ApplicationUser, IdentityRole>(options => {
                 options.Cookies.ApplicationCookie.AuthenticationScheme = "ApplicationCookie";
-                options.Cookies.ApplicationCookie.DataProtectionProvider = DataProtectionProvider.Create(new DirectoryInfo("C:\\Github\\Identity\\artifacts"));
                 options.Cookies.ApplicationCookie.CookieName = "Interop";
+                options.Cookies.ApplicationCookie.DataProtectionProvider = DataProtectionProvider.Create(new DirectoryInfo("C:\\Github\\Identity\\artifacts"));
             })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
@@ -113,18 +114,6 @@ namespace IdentitySample
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-        }
-
-        // Entry point for the application.
-        public static void Main(string[] args)
-        {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
-
-            host.Run();
         }
     }
 }

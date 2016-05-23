@@ -33,7 +33,8 @@
     "Microsoft.Extensions.Logging.Debug": "1.0.0-*"
   },
   "buildOptions": {
-    "emitEntryPoint": true
+    "emitEntryPoint": true,
+    "preserveCompilationContext": true
   },
   "frameworks": {
     "net451": {},
