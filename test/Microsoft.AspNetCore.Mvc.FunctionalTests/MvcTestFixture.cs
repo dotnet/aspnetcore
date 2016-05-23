@@ -2,25 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class MvcTestFixture<TStartup> : IDisposable
     {
-        private const string SolutionName = "Mvc.sln";
         private readonly TestServer _server;
 
         public MvcTestFixture()
@@ -35,8 +31,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // (DefaultRequestCulture) is consistent regardless of system configuration or personal preferences.
             using (new CultureReplacer())
             {
+                var startupAssembly = typeof(TStartup).GetTypeInfo().Assembly;
+                var contentRoot = SolutionPathUtility.GetProjectPath(solutionRelativePath, startupAssembly);
+
                 var builder = new WebHostBuilder()
-                    .UseContentRoot(GetApplicationPath(solutionRelativePath))
+                    .UseContentRoot(contentRoot)
                     .ConfigureServices(InitializeServices)
                     .UseStartup(typeof(TStartup));
 
@@ -53,28 +52,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             Client.Dispose();
             _server.Dispose();
-        }
-
-        private static string GetApplicationPath(string solutionRelativePath)
-        {
-            var startupAssembly = typeof(TStartup).GetTypeInfo().Assembly;
-            var applicationName = startupAssembly.GetName().Name;
-            var applicationBasePath = PlatformServices.Default.Application.ApplicationBasePath;
-
-            var directoryInfo = new DirectoryInfo(applicationBasePath);
-            do
-            {
-                var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, SolutionName));
-                if (solutionFileInfo.Exists)
-                {
-                    return Path.Combine(directoryInfo.FullName, solutionRelativePath, applicationName);
-                }
-
-                directoryInfo = directoryInfo.Parent;
-            }
-            while (directoryInfo.Parent != null);
-
-            throw new Exception($"Solution root could not be located using application root {applicationBasePath}.");
         }
 
         protected virtual void InitializeServices(IServiceCollection services)

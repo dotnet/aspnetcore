@@ -44,8 +44,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// </exception>
         public static Stream GetResourceStream(Assembly assembly, string resourceName, bool sourceFile)
         {
-            // The DNX runtime compiles every file under the resources folder as a resource available at runtime with
-            // the same name as the file name.
             var fullName = $"{ assembly.GetName().Name }.{ resourceName.Replace('/', '.') }";
             if (!Exists(assembly, fullName))
             {
@@ -190,10 +188,9 @@ namespace Microsoft.AspNetCore.Mvc
 
             if (!string.Equals(normalizedPreviousContent, normalizedContent, StringComparison.Ordinal))
             {
-                // The DNX runtime compiles every file under the resources folder as a resource available at runtime
+                // The build system compiles every file under the resources folder as a resource available at runtime
                 // with the same name as the file name. Need to update this file on disc.
-                var projectName = assembly.GetName().Name;
-                var projectPath = GetProjectPath(projectName);
+                var projectPath = SolutionPathUtility.GetProjectPath("test", assembly);
                 var fullPath = Path.Combine(projectPath, resourceName);
                 WriteFile(fullPath, content);
             }
@@ -212,28 +209,6 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             return false;
-        }
-
-        private static string GetProjectPath(string projectName)
-        {
-            // Initial guess: Already in the project directory.
-            var projectPath = Path.GetFullPath(".");
-
-            var currentDirectoryName = new DirectoryInfo(projectPath).Name;
-            if (!string.Equals(projectName, currentDirectoryName, StringComparison.Ordinal))
-            {
-                // Not running from test project directory. Should be in "test" or solution directory.
-                if (string.Equals("test", currentDirectoryName, StringComparison.Ordinal))
-                {
-                    projectPath = Path.Combine(projectPath, projectName);
-                }
-                else
-                {
-                    projectPath = Path.Combine(projectPath, "test", projectName);
-                }
-            }
-
-            return projectPath;
         }
 
         private static void WriteFile(string fullPath, string content)
