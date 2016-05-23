@@ -26,9 +26,14 @@ namespace Microsoft.AspNetCore.AngularServices
             {
                 var request = html.ViewContext.HttpContext.Request;
                 var baseUri =
-                    new Uri(string.Concat(request.Scheme, "://", request.Host.ToUriComponent(),
-                        request.PathBase.ToUriComponent(), request.Path.ToUriComponent(),
-                        request.QueryString.ToUriComponent()));
+                    new Uri(
+                        string.Concat(
+                            request.Scheme,
+                            "://",
+                            request.Host.ToUriComponent(),
+                            request.PathBase.ToUriComponent(),
+                            request.Path.ToUriComponent(),
+                            request.QueryString.ToUriComponent()));
                 var fullUri = new Uri(baseUri, url);
                 var response = await new HttpClient().GetAsync(fullUri.ToString());
                 var responseBody = await response.Content.ReadAsStringAsync();
