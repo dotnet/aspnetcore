@@ -397,6 +397,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             public string Id => "TestId";
 
+            public bool IsAvailable { get; } = true;
+
             public Task LoadAsync()
             {
                 return Task.FromResult(0);
