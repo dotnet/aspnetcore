@@ -39,7 +39,18 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// Represents a user in the identity system
     /// </summary>
     /// <typeparam name="TKey">The type used for the primary key for the user.</typeparam>
-    public class IdentityUser<TKey> where TKey : IEquatable<TKey>
+    public class IdentityUser<TKey> : IdentityUser<TKey, IdentityUserClaim<TKey>, IdentityUserRole<TKey>, IdentityUserLogin<TKey>>
+        where TKey : IEquatable<TKey>
+    { }
+
+    /// <summary>
+    /// Represents a user in the identity system
+    /// </summary>
+    /// <typeparam name="TKey">The type used for the primary key for the user.</typeparam>
+    /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
+    /// <typeparam name="TUserRole">The type representing a user role.</typeparam>
+    /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
+    public class IdentityUser<TKey, TUserClaim, TUserRole, TUserLogin> where TKey : IEquatable<TKey>
     {
         /// <summary>
         /// Initializes a new instance of <see cref="IdentityUser{TKey}"/>.
@@ -140,17 +151,17 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <summary>
         /// Navigation property for the roles this user belongs to.
         /// </summary>
-        public virtual ICollection<IdentityUserRole<TKey>> Roles { get; } = new List<IdentityUserRole<TKey>>();
+        public virtual ICollection<TUserRole> Roles { get; } = new List<TUserRole>();
 
         /// <summary>
         /// Navigation property for the claims this user possesses.
         /// </summary>
-        public virtual ICollection<IdentityUserClaim<TKey>> Claims { get; } = new List<IdentityUserClaim<TKey>>();
+        public virtual ICollection<TUserClaim> Claims { get; } = new List<TUserClaim>();
 
         /// <summary>
         /// Navigation property for this users login accounts.
         /// </summary>
-        public virtual ICollection<IdentityUserLogin<TKey>> Logins { get; } = new List<IdentityUserLogin<TKey>>();
+        public virtual ICollection<TUserLogin> Logins { get; } = new List<TUserLogin>();
 
         /// <summary>
         /// Returns the username for this user.

@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
 {
     /// <summary>
-    /// Creates a new instance of a persistence store for users, using the default implementation
+    /// Represents a new instance of a persistence store for users, using the default implementation
     /// of <see cref="IdentityUser{TKey}"/> with a string as a primary key.
     /// </summary>
     public class UserStore : UserStore<IdentityUser<string>>
@@ -26,24 +26,77 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// Creates a new instance of a persistence store for the specified user type.
     /// </summary>
     /// <typeparam name="TUser">The type representing a user.</typeparam>
-    public class UserStore<TUser> : UserStore<TUser, IdentityRole, DbContext>
+    public class UserStore<TUser> : UserStore<TUser, IdentityRole, DbContext, string>
         where TUser : IdentityUser<string>, new()
     {
         public UserStore(DbContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
     }
 
     /// <summary>
-    /// Creates a new instance of a persistence store for the specified user and role types.
+    /// Represents a new instance of a persistence store for the specified user and role types.
     /// </summary>
     /// <typeparam name="TUser">The type representing a user.</typeparam>
     /// <typeparam name="TRole">The type representing a role.</typeparam>
     /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
     public class UserStore<TUser, TRole, TContext> : UserStore<TUser, TRole, TContext, string>
-        where TUser : IdentityUser<string>, new()
-        where TRole : IdentityRole<string>, new()
+        where TUser : IdentityUser<string>
+        where TRole : IdentityRole<string>
         where TContext : DbContext
     {
         public UserStore(TContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
+    }
+    /// <summary>
+    /// Represents a new instance of a persistence store for the specified user and role types.
+    /// </summary>
+    /// <typeparam name="TUser">The type representing a user.</typeparam>
+    /// <typeparam name="TRole">The type representing a role.</typeparam>
+    /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
+    /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+    public class UserStore<TUser, TRole, TContext, TKey> : UserStore<TUser, TRole, TContext, TKey, IdentityUserClaim<TKey>, IdentityUserRole<TKey>, IdentityUserLogin<TKey>, IdentityUserToken<TKey>>
+    where TUser : IdentityUser<TKey>
+    where TRole : IdentityRole<TKey>
+    where TContext : DbContext
+    where TKey : IEquatable<TKey>
+    {
+        public UserStore(TContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
+
+        protected override IdentityUserRole<TKey> CreateUserRole(TUser user, TRole role)
+        {
+            return new IdentityUserRole<TKey>()
+            {
+                UserId = user.Id,
+                RoleId = role.Id
+            };
+        }
+
+        protected override IdentityUserClaim<TKey> CreateUserClaim(TUser user, Claim claim)
+        {
+            var userClaim = new IdentityUserClaim<TKey> { UserId = user.Id };
+            userClaim.InitializeFromClaim(claim);
+            return userClaim;
+        }
+
+        protected override IdentityUserLogin<TKey> CreateUserLogin(TUser user, UserLoginInfo login)
+        {
+            return new IdentityUserLogin<TKey>
+            {
+                UserId = user.Id,
+                ProviderKey = login.ProviderKey,
+                LoginProvider = login.LoginProvider,
+                ProviderDisplayName = login.ProviderDisplayName
+            };
+        }
+
+        protected override IdentityUserToken<TKey> CreateUserToken(TUser user, string loginProvider, string name, string value)
+        {
+            return new IdentityUserToken<TKey>
+            {
+                UserId = user.Id,
+                LoginProvider = loginProvider,
+                Name = name,
+                Value = value
+            };
+        }
     }
 
     /// <summary>
@@ -53,7 +106,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TRole">The type representing a role.</typeparam>
     /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
     /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
-    public class UserStore<TUser, TRole, TContext, TKey> :
+    /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
+    /// <typeparam name="TUserRole">The type representing a user role.</typeparam>
+    /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
+    /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
+    public abstract class UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken> :
         IUserLoginStore<TUser>,
         IUserRoleStore<TUser>,
         IUserClaimStore<TUser>,
@@ -65,12 +122,15 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         IQueryableUserStore<TUser>,
         IUserTwoFactorStore<TUser>,
         IUserAuthenticationTokenStore<TUser>
-        where TUser : IdentityUser<TKey>
-        where TRole : IdentityRole<TKey>
+        where TUser : IdentityUser<TKey, TUserClaim, TUserRole, TUserLogin>
+        where TRole : IdentityRole<TKey, TUserRole, IdentityRoleClaim<TKey>>
         where TContext : DbContext
         where TKey : IEquatable<TKey>
+        where TUserClaim : IdentityUserClaim<TKey>
+        where TUserRole : IdentityUserRole<TKey>
+        where TUserLogin : IdentityUserLogin<TKey>
+        where TUserToken : IdentityUserToken<TKey>
     {
-
         /// <summary>
         /// Creates a new instance of <see cref="UserStore"/>.
         /// </summary>
@@ -98,6 +158,46 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// </summary>
         public IdentityErrorDescriber ErrorDescriber { get; set; }
 
+        private DbSet<TRole> Roles { get { return Context.Set<TRole>(); } }
+        private DbSet<TUserClaim> UserClaims { get { return Context.Set<TUserClaim>(); } }
+        private DbSet<TUserRole> UserRoles { get { return Context.Set<TUserRole>(); } }
+        private DbSet<TUserLogin> UserLogins { get { return Context.Set<TUserLogin>(); } }
+        private DbSet<TUserToken> UserTokens { get { return Context.Set<TUserToken>(); } }
+
+        /// <summary>
+        /// Creates a new entity to represent a user role.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="role"></param>
+        /// <returns></returns>
+        protected abstract TUserRole CreateUserRole(TUser user, TRole role);
+
+        /// <summary>
+        /// Create a new entity representing a user claim.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="claim"></param>
+        /// <returns></returns>
+        protected abstract TUserClaim CreateUserClaim(TUser user, Claim claim);
+
+        /// <summary>
+        /// Create a new entity representing a user login.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="login"></param>
+        /// <returns></returns>
+        protected abstract TUserLogin CreateUserLogin(TUser user, UserLoginInfo login);
+
+        /// <summary>
+        /// Create a new entity representing a user token.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="loginProvider"></param>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        protected abstract TUserToken CreateUserToken(TUser user, string loginProvider, string name, string value);
+
         /// <summary>
         /// Gets or sets a flag indicating if changes should be persisted after CreateAsync, UpdateAsync and DeleteAsync are called.
         /// </summary>
@@ -109,7 +209,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <summary>Saves the current store.</summary>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        private Task SaveChanges(CancellationToken cancellationToken)
+        protected Task SaveChanges(CancellationToken cancellationToken)
         {
             return AutoSaveChanges ? Context.SaveChangesAsync(cancellationToken) : Task.FromResult(0);
         }
@@ -418,8 +518,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.RoleNotFound, normalizedRoleName));
             }
-            var ur = new IdentityUserRole<TKey> { UserId = user.Id, RoleId = roleEntity.Id };
-            UserRoles.Add(ur);
+            UserRoles.Add(CreateUserRole(user, roleEntity));
         }
 
         /// <summary>
@@ -520,12 +619,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             _disposed = true;
         }
 
-        private DbSet<TRole> Roles { get { return Context.Set<TRole>(); } }
-        private DbSet<IdentityUserClaim<TKey>> UserClaims { get { return Context.Set<IdentityUserClaim<TKey>>(); } }
-        private DbSet<IdentityUserRole<TKey>> UserRoles { get { return Context.Set<IdentityUserRole<TKey>>(); } }
-        private DbSet<IdentityUserLogin<TKey>> UserLogins { get { return Context.Set<IdentityUserLogin<TKey>>(); } }
-        private DbSet<IdentityUserToken<TKey>> UserTokens { get { return Context.Set<IdentityUserToken<TKey>>(); } }
-
         /// <summary>
         /// Get the claims associated with the specified <paramref name="user"/> as an asynchronous operation.
         /// </summary>
@@ -540,7 +633,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(user));
             }
 
-            return await UserClaims.Where(uc => uc.UserId.Equals(user.Id)).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToListAsync(cancellationToken);
+            return await UserClaims.Where(uc => uc.UserId.Equals(user.Id)).Select(c => c.ToClaim()).ToListAsync(cancellationToken);
         }
 
         /// <summary>
@@ -563,7 +656,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             }
             foreach (var claim in claims)
             {
-                UserClaims.Add(new IdentityUserClaim<TKey> { UserId = user.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
+                UserClaims.Add(CreateUserClaim(user, claim));
             }
             return Task.FromResult(false);
         }
@@ -648,14 +741,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             {
                 throw new ArgumentNullException(nameof(login));
             }
-            var l = new IdentityUserLogin<TKey>
-            {
-                UserId = user.Id,
-                ProviderKey = login.ProviderKey,
-                LoginProvider = login.LoginProvider,
-                ProviderDisplayName = login.ProviderDisplayName
-            };
-            UserLogins.Add(l);
+            UserLogins.Add(CreateUserLogin(user, login));
             return Task.FromResult(false);
         }
 
@@ -676,8 +762,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             {
                 throw new ArgumentNullException(nameof(user));
             }
-            var userId = user.Id;
-            var entry = await UserLogins.SingleOrDefaultAsync(l => l.UserId.Equals(userId) && l.LoginProvider == loginProvider && l.ProviderKey == providerKey, cancellationToken);
+            var entry = await UserLogins.SingleOrDefaultAsync(userLogin => userLogin.UserId.Equals(user.Id) && userLogin.LoginProvider == loginProvider && userLogin.ProviderKey == providerKey, cancellationToken);
             if (entry != null)
             {
                 UserLogins.Remove(entry);
@@ -1198,7 +1283,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             return new List<TUser>();
         }
 
-        private Task<IdentityUserToken<TKey>> FindToken(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
+        private Task<TUserToken> FindToken(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
         {
             var userId = user.Id;
             return UserTokens.SingleOrDefaultAsync(l => l.UserId.Equals(userId) && l.LoginProvider == loginProvider && l.Name == name, cancellationToken);
@@ -1218,13 +1303,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             var token = await FindToken(user, loginProvider, name, cancellationToken);
             if (token == null)
             {
-                UserTokens.Add(new IdentityUserToken<TKey>
-                {
-                    UserId = user.Id,
-                    LoginProvider = loginProvider,
-                    Name = name,
-                    Value = value
-                });
+                UserTokens.Add(CreateUserToken(user, loginProvider, name, value));
             }
             else
             {

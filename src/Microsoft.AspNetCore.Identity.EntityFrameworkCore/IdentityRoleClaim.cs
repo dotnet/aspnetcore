@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Claims;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
 {
@@ -30,5 +31,16 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// Gets or sets the claim value for this claim.
         /// </summary>
         public virtual string ClaimValue { get; set; }
+
+        public virtual Claim ToClaim()
+        {
+            return new Claim(ClaimType, ClaimValue);
+        }
+
+        public virtual void InitializeFromClaim(Claim other)
+        {
+            ClaimType = other?.Type;
+            ClaimValue = other?.Value;
+        }
     }
 }

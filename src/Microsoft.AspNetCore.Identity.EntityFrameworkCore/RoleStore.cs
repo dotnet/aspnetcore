@@ -40,12 +40,39 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TRole">The type of the class representing a role.</typeparam>
     /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
     /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
-    public class RoleStore<TRole, TContext, TKey> :
+    public class RoleStore<TRole, TContext, TKey> : RoleStore<TRole, TContext, TKey, IdentityUserRole<TKey>, IdentityRoleClaim<TKey>>,
         IQueryableRoleStore<TRole>,
         IRoleClaimStore<TRole>
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
         where TContext : DbContext
+    {
+        public RoleStore(TContext context, IdentityErrorDescriber describer = null) : base(context, describer)
+        {
+        }
+
+        protected override IdentityRoleClaim<TKey> CreateRoleClaim(TRole role, Claim claim)
+        {
+            return new IdentityRoleClaim<TKey> { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value };
+        }
+    }
+
+    /// <summary>
+    /// Creates a new instance of a persistence store for roles.
+    /// </summary>
+    /// <typeparam name="TRole">The type of the class representing a role.</typeparam>
+    /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
+    /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+    /// <typeparam name="TUserRole">The type of the class representing a user role.</typeparam>
+    /// <typeparam name="TRoleClaim">The type of the class representing a role claim.</typeparam>
+    public abstract class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
+        IQueryableRoleStore<TRole>,
+        IRoleClaimStore<TRole>
+        where TRole : IdentityRole<TKey, TUserRole, TRoleClaim>
+        where TKey : IEquatable<TKey>
+        where TContext : DbContext
+        where TUserRole : IdentityUserRole<TKey>
+        where TRoleClaim : IdentityRoleClaim<TKey>
     {
         public RoleStore(TContext context, IdentityErrorDescriber describer = null)
         {
@@ -358,8 +385,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(claim));
             }
 
-            RoleClaims.Add(new IdentityRoleClaim<TKey> { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
-
+            RoleClaims.Add(CreateRoleClaim(role, claim));
             return Task.FromResult(false);
         }
 
@@ -396,6 +422,14 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             get { return Context.Set<TRole>(); }
         }
 
-        private DbSet<IdentityRoleClaim<TKey>> RoleClaims { get { return Context.Set<IdentityRoleClaim<TKey>>(); } }
+        private DbSet<TRoleClaim> RoleClaims { get { return Context.Set<TRoleClaim>(); } }
+
+        /// <summary>
+        /// Creates a entity representing a role claim.
+        /// </summary>
+        /// <param name="role"></param>
+        /// <param name="claim"></param>
+        /// <returns></returns>
+        protected abstract TRoleClaim CreateRoleClaim(TRole role, Claim claim);
     }
 }
