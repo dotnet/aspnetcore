@@ -21,8 +21,15 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
-    public class HttpsConnectionFilterTests
+    public class HttpsConnectionFilterTests: IDisposable
     {
+        private static string _serverAddress = "https://127.0.0.1:0/";
+        private static RemoteCertificateValidationCallback _alwaysValidCallback =
+                    (sender, cert, chain, sslPolicyErrors) => true;
+        private static X509Certificate2 _x509Certificate2 = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword");
+
+        private HttpMessageHandler _handler;
+
 #if NET451
         static HttpsConnectionFilterTests()
         {
@@ -33,22 +40,24 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 #endif
 
-        private async Task App(HttpContext httpContext)
+        public HttpsConnectionFilterTests()
         {
-            var request = httpContext.Request;
-            var response = httpContext.Response;
-            response.Headers.Clear();
-            while (true)
-            {
-                var buffer = new byte[8192];
-                var count = await request.Body.ReadAsync(buffer, 0, buffer.Length);
-                if (count == 0)
-                {
-                    break;
-                }
-                await response.Body.WriteAsync(buffer, 0, count);
-            }
+#if NET451
+            _handler = new HttpClientHandler();
+            ServicePointManager.ServerCertificateValidationCallback += _alwaysValidCallback;
+#else
+            var handler = new WinHttpHandler();
+            handler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+            _handler = handler;
+#endif
         }
+
+        public void Dispose()
+            {
+#if NET451
+            ServicePointManager.ServerCertificateValidationCallback -= _alwaysValidCallback;
+#endif
+                }
 
         // https://github.com/aspnet/KestrelHttpServer/issues/240
         // This test currently fails on mono because of an issue with SslStream.
@@ -57,27 +66,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "WinHttpHandler not available on non-Windows.")]
         public async Task CanReadAndWriteWithHttpsConnectionFilter()
         {
-            RemoteCertificateValidationCallback validationCallback =
-                    (sender, cert, chain, sslPolicyErrors) => true;
-
-            try
-            {
-#if NET451
-                var handler = new HttpClientHandler();
-                ServicePointManager.ServerCertificateValidationCallback += validationCallback;
-#else
-                var handler = new WinHttpHandler();
-                handler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
-#endif
                 var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
                         new HttpsConnectionFilterOptions
-                        { ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword") },
+                    { ServerCertificate = _x509Certificate2 },
                         new NoOpConnectionFilter())
                 );
 
-                using (var server = new TestServer(App, serviceContext, "https://127.0.0.1:0/"))
+            using (var server = new TestServer(App, serviceContext, _serverAddress))
                 {
-                    using (var client = new HttpClient(handler))
+                using (var client = new HttpClient(_handler))
                     {
                         var result = await client.PostAsync($"https://localhost:{server.Port}/", new FormUrlEncodedContent(new[] {
                             new KeyValuePair<string, string>("content", "Hello World?")
@@ -87,80 +84,40 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     }
                 }
             }
-            finally
-            {
-#if NET451
-                ServicePointManager.ServerCertificateValidationCallback -= validationCallback;
-#endif
-            }
-        }
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux, SkipReason = "WinHttpHandler not available on non-Windows.")]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "WinHttpHandler not available on non-Windows.")]
         public async Task RequireCertificateFailsWhenNoCertificate()
         {
-            RemoteCertificateValidationCallback validationCallback =
-                    (sender, cert, chain, sslPolicyErrors) => true;
-
-            try
-            {
-#if NET451
-                var handler = new HttpClientHandler();
-                ServicePointManager.ServerCertificateValidationCallback += validationCallback;
-#else
-                var handler = new WinHttpHandler();
-                handler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
-#endif
-
                 var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
                         new HttpsConnectionFilterOptions
                         {
-                            ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"),
+                        ServerCertificate = _x509Certificate2,
                             ClientCertificateMode = ClientCertificateMode.RequireCertificate
                         },
                         new NoOpConnectionFilter())
                 );
 
-                using (var server = new TestServer(App, serviceContext, "https://127.0.0.1:0/"))
+            using (var server = new TestServer(App, serviceContext, _serverAddress))
                 {
-                    using (var client = new HttpClient(handler))
+                using (var client = new HttpClient(_handler))
                     {
                         await Assert.ThrowsAnyAsync<Exception>(
                             () => client.GetAsync($"https://localhost:{server.Port}/"));
                     }
                 }
             }
-            finally
-            {
-#if NET451
-                ServicePointManager.ServerCertificateValidationCallback -= validationCallback;
-#endif
-            }
-        }
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux, SkipReason = "WinHttpHandler not available on non-Windows.")]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "WinHttpHandler not available on non-Windows.")]
         public async Task AllowCertificateContinuesWhenNoCertificate()
         {
-            RemoteCertificateValidationCallback validationCallback =
-                    (sender, cert, chain, sslPolicyErrors) => true;
-
-            try
-            {
-#if NET451
-                var handler = new HttpClientHandler();
-                ServicePointManager.ServerCertificateValidationCallback += validationCallback;
-#else
-                var handler = new WinHttpHandler();
-                handler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
-#endif
-
                 var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
                     new HttpsConnectionFilterOptions
                     {
-                        ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"),
+                    ServerCertificate = _x509Certificate2,
                         ClientCertificateMode = ClientCertificateMode.AllowCertificate
                     },
                     new NoOpConnectionFilter())
@@ -172,9 +129,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     return context.Response.WriteAsync("hello world");
                 };
 
-                using (var server = new TestServer(app, serviceContext, "https://127.0.0.1:0/"))
+            using (var server = new TestServer(app, serviceContext, _serverAddress))
                 {
-                    using (var client = new HttpClient(handler))
+                using (var client = new HttpClient(_handler))
                     {
                         var result = await client.GetAsync($"https://localhost:{server.Port}/");
 
@@ -182,31 +139,50 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     }
                 }
             }
-            finally
+
+        [Fact]
+        public void ThrowsWhenNoServerCertificateIsProvided()
             {
-#if NET451
-                ServicePointManager.ServerCertificateValidationCallback -= validationCallback;
-#endif
+            Assert.Throws<ArgumentException>(() => new HttpsConnectionFilter(
+                new HttpsConnectionFilterOptions(),
+                new NoOpConnectionFilter())
+                );
+            }
+
+        [Fact]
+        public async Task UsesProvidedServerCertificate()
+        {
+            var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
+                new HttpsConnectionFilterOptions
+                {
+                    ServerCertificate = _x509Certificate2
+                },
+                new NoOpConnectionFilter())
+            );
+
+            RequestDelegate app = context => Task.FromResult(0);
+            using (var server = new TestServer(app, serviceContext, _serverAddress))
+            {
+                using (var client = new TcpClient())
+                {
+                    // SslStream is used to ensure the certificate is actually passed to the server
+                    // HttpClient might not send the certificate because it is invalid or it doesn't match any
+                    // of the certificate authorities sent by the server in the SSL handshake.
+                    var stream = await OpenSslStream(client, server);
+                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
+                }
             }
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "This test currently fails on Mono because of an issue with SslStream (https://github.com/aspnet/KestrelHttpServer/issues/240).")]
+
+        [Fact]
         public async Task CertificatePassedToHttpContext()
         {
-            RemoteCertificateValidationCallback validationCallback =
-                    (sender, cert, chain, sslPolicyErrors) => true;
-
-            try
-            {
-#if NET451
-                ServicePointManager.ServerCertificateValidationCallback += validationCallback;
-#endif
-
                 var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
                     new HttpsConnectionFilterOptions
                     {
-                        ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"),
+                    ServerCertificate = _x509Certificate2,
                         ClientCertificateMode = ClientCertificateMode.RequireCertificate,
                         ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
                     },
@@ -222,68 +198,39 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     return context.Response.WriteAsync("hello world");
                 };
 
-                using (var server = new TestServer(app, serviceContext, "https://127.0.0.1:0/"))
+            using (var server = new TestServer(app, serviceContext, _serverAddress))
+                {
+                using (var client = new TcpClient())
                 {
                     // SslStream is used to ensure the certificate is actually passed to the server
                     // HttpClient might not send the certificate because it is invalid or it doesn't match any
                     // of the certificate authorities sent by the server in the SSL handshake.
-                    using (var client = new TcpClient())
-                    {
-                        await client.ConnectAsync("127.0.0.1", server.Port);
-
-                        var stream = new SslStream(client.GetStream(), false, (sender, certificate, chain, errors) => true,
-                            (sender, host, certificates, certificate, issuers) => new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"));
+                    var stream = await OpenSslStream(client, server);
                         await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
-
-                        var request = Encoding.UTF8.GetBytes("GET / HTTP/1.0\r\n\r\n");
-                        await stream.WriteAsync(request, 0, request.Length);
-
-                        var reader = new StreamReader(stream);
-                        var line = await reader.ReadLineAsync();
-                        Assert.Equal("HTTP/1.1 200 OK", line);
+                    await AssertConnectionResult(stream, true);
                     }
                 }
             }
-            finally
-            {
-#if NET451
-                ServicePointManager.ServerCertificateValidationCallback -= validationCallback;
-#endif
-            }
-        }
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux, SkipReason = "WinHttpHandler not available on non-Windows.")]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "WinHttpHandler not available on non-Windows.")]
         public async Task HttpsSchemePassedToRequestFeature()
         {
-            RemoteCertificateValidationCallback validationCallback =
-                    (sender, cert, chain, sslPolicyErrors) => true;
-
-            try
-            {
-#if NET451
-                var handler = new HttpClientHandler();
-                ServicePointManager.ServerCertificateValidationCallback += validationCallback;
-#else
-                var handler = new WinHttpHandler();
-                handler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
-#endif
-
                 var serviceContext = new TestServiceContext(
                     new HttpsConnectionFilter(
                         new HttpsConnectionFilterOptions
                         {
-                            ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword")
+                        ServerCertificate = _x509Certificate2
                         },
                         new NoOpConnectionFilter())
                 );
 
                 RequestDelegate app = context => context.Response.WriteAsync(context.Request.Scheme);
 
-                using (var server = new TestServer(app, serviceContext, "https://127.0.0.1:0/"))
+            using (var server = new TestServer(app, serviceContext, _serverAddress))
                 {
-                    using (var client = new HttpClient(handler))
+                using (var client = new HttpClient(_handler))
                     {
                         var result = await client.GetAsync($"https://localhost:{server.Port}/");
 
@@ -291,31 +238,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     }
                 }
             }
-            finally
-            {
-#if NET451
-                ServicePointManager.ServerCertificateValidationCallback -= validationCallback;
-#endif
-            }
-        }
-
 
         [Fact]
         public async Task DoesNotSupportTls10()
         {
-            RemoteCertificateValidationCallback validationCallback =
-                    (sender, cert, chain, sslPolicyErrors) => true;
-
-            try
-            {
-#if NET451
-                ServicePointManager.ServerCertificateValidationCallback += validationCallback;
-#endif
-
                 var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
                     new HttpsConnectionFilterOptions
                     {
-                        ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"),
+                    ServerCertificate = _x509Certificate2,
                         ClientCertificateMode = ClientCertificateMode.RequireCertificate,
                         ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
                     },
@@ -327,47 +257,118 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     return context.Response.WriteAsync("hello world");
                 };
 
-                using (var server = new TestServer(app, serviceContext, "https://127.0.0.1:0/"))
+            using (var server = new TestServer(app, serviceContext, _serverAddress))
                 {
                     // SslStream is used to ensure the certificate is actually passed to the server
                     // HttpClient might not send the certificate because it is invalid or it doesn't match any
                     // of the certificate authorities sent by the server in the SSL handshake.
                     using (var client = new TcpClient())
                     {
-                        await client.ConnectAsync("127.0.0.1", server.Port);
-
-                        var stream = new SslStream(client.GetStream(), false, (sender, certificate, chain, errors) => true,
-                            (sender, host, certificates, certificate, issuers) => new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"));
-                        await Assert.ThrowsAsync(typeof(IOException), async () =>
+                    var stream = await OpenSslStream(client, server);
+                    var ex =  await Assert.ThrowsAsync(typeof(IOException), async () =>
                             await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls, false));
                     }
                 }
             }
-            finally
+
+        [Theory]
+        [InlineData(ClientCertificateMode.AllowCertificate)]
+        [InlineData(ClientCertificateMode.RequireCertificate)]
+        public async Task ClientCertificateValidationGetsCalledWithNotNullParameters(ClientCertificateMode mode)
             {
-#if NET451
-                ServicePointManager.ServerCertificateValidationCallback -= validationCallback;
-#endif
+            var clientCertificateValidationCalled = false;
+            var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
+                new HttpsConnectionFilterOptions
+                {
+                    ServerCertificate = _x509Certificate2,
+                    ClientCertificateMode = mode,
+                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) =>
+                    {
+                        clientCertificateValidationCalled = true;
+                        Assert.NotNull(certificate);
+                        Assert.NotNull(chain);
+                        return true;
+            }
+                },
+                new NoOpConnectionFilter())
+            );
+
+            RequestDelegate app = context => Task.FromResult(0);
+
+            using (var server = new TestServer(app, serviceContext, _serverAddress))
+            {
+                using (var client = new TcpClient())
+                {
+                    var stream = await OpenSslStream(client, server);
+                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await AssertConnectionResult(stream, true);
+                    Assert.True(clientCertificateValidationCalled);
+        }
             }
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "This test currently fails on Mono because of an issue with SslStream (https://github.com/aspnet/KestrelHttpServer/issues/240).")]
-        public async Task CertificatePassedToHttpContextIsNotDisposed()
+        [Theory]
+        [InlineData(ClientCertificateMode.AllowCertificate)]
+        [InlineData(ClientCertificateMode.RequireCertificate)]
+        public async Task ValidationFailureRejectsConnection(ClientCertificateMode mode)
         {
-            RemoteCertificateValidationCallback validationCallback =
-                    (sender, cert, chain, sslPolicyErrors) => true;
+            var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
+                new HttpsConnectionFilterOptions
+                {
+                    ServerCertificate = _x509Certificate2,
+                    ClientCertificateMode = mode,
+                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => false
+                },
+                new NoOpConnectionFilter())
+            );
 
-            try
+            RequestDelegate app = context => Task.FromResult(0);
+
+            using (var server = new TestServer(app, serviceContext, _serverAddress))
             {
-#if NET451
-                ServicePointManager.ServerCertificateValidationCallback += validationCallback;
-#endif
+                using (var client = new TcpClient())
+                {
+                    var stream = await OpenSslStream(client, server);
+                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await AssertConnectionResult(stream, false);
+                }
+            }
+        }
 
+        [Theory]
+        [InlineData(ClientCertificateMode.AllowCertificate)]
+        [InlineData(ClientCertificateMode.RequireCertificate)]
+        public async Task RejectsConnectionOnSslPolicyErrorsWhenNoValidation(ClientCertificateMode mode)
+        {
                 var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
                     new HttpsConnectionFilterOptions
                     {
-                        ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"),
+                    ServerCertificate = _x509Certificate2,
+                    ClientCertificateMode = mode,
+                },
+                new NoOpConnectionFilter())
+            );
+
+            RequestDelegate app = context => Task.FromResult(0);
+
+            using (var server = new TestServer(app, serviceContext, _serverAddress))
+            {
+                using (var client = new TcpClient())
+                {
+                    var stream = await OpenSslStream(client, server);
+                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await AssertConnectionResult(stream, false);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CertificatePassedToHttpContextIsNotDisposed()
+        {
+            var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
+                new HttpsConnectionFilterOptions
+                {
+                    ServerCertificate = _x509Certificate2,
                         ClientCertificateMode = ClientCertificateMode.RequireCertificate,
                         ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
                     },
@@ -384,34 +385,66 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     return context.Response.WriteAsync("hello world");
                 };
 
-                using (var server = new TestServer(app, serviceContext, "https://127.0.0.1:0/"))
+            using (var server = new TestServer(app, serviceContext, _serverAddress))
                 {
                     // SslStream is used to ensure the certificate is actually passed to the server
                     // HttpClient might not send the certificate because it is invalid or it doesn't match any
                     // of the certificate authorities sent by the server in the SSL handshake.
                     using (var client = new TcpClient())
                     {
-                        await client.ConnectAsync("127.0.0.1", server.Port);
-
-                        var stream = new SslStream(client.GetStream(), false, (sender, certificate, chain, errors) => true,
-                            (sender, host, certificates, certificate, issuers) => new X509Certificate2(@"TestResources/testCert.pfx", "testPassword"));
-                        await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
-
-                        var request = Encoding.UTF8.GetBytes("GET / HTTP/1.0\r\n\r\n");
-                        await stream.WriteAsync(request, 0, request.Length);
-
-                        var reader = new StreamReader(stream);
-                        var line = await reader.ReadLineAsync();
-                        Assert.Equal("HTTP/1.1 200 OK", line);
-                    }
+                    var stream = await OpenSslStream(client, server);
+                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await AssertConnectionResult(stream, true);
                 }
             }
-            finally
+        }
+
+        private static async Task App(HttpContext httpContext)
+        {
+            var request = httpContext.Request;
+            var response = httpContext.Response;
+            response.Headers.Clear();
+            while (true)
             {
-#if NET451
-                ServicePointManager.ServerCertificateValidationCallback -= validationCallback;
-#endif
+                var buffer = new byte[8192];
+                var count = await request.Body.ReadAsync(buffer, 0, buffer.Length);
+                if (count == 0)
+                {
+                    break;
+                }
+                await response.Body.WriteAsync(buffer, 0, count);
+            }
+        }
+
+        private static async Task<SslStream> OpenSslStream(TcpClient client, TestServer server, X509Certificate2 clientCertificate = null)
+        {
+                        await client.ConnectAsync("127.0.0.1", server.Port);
+                        var stream = new SslStream(client.GetStream(), false, (sender, certificate, chain, errors) => true,
+                (sender, host, certificates, certificate, issuers) => clientCertificate ?? _x509Certificate2);
+
+            return stream;
+        }
+
+        private static async Task AssertConnectionResult(SslStream stream, bool success)
+        {
+                        var request = Encoding.UTF8.GetBytes("GET / HTTP/1.0\r\n\r\n");
+                        await stream.WriteAsync(request, 0, request.Length);
+                        var reader = new StreamReader(stream);
+            string line = null;
+            if (success)
+            {
+                line = await reader.ReadLineAsync();
+                        Assert.Equal("HTTP/1.1 200 OK", line);
+                    }
+            else
+            {
+                try
+                {
+                    line = await reader.ReadLineAsync();
+                }
+                catch (IOException) { }
+                Assert.Null(line);
+            }
             }
         }
     }
-}
