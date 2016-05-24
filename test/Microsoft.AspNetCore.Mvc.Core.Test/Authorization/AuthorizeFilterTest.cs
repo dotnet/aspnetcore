@@ -27,6 +27,35 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         }
 
         [Fact]
+        public async Task AuthorizeFilterCanAuthorizeNonAuthenticatedUser()
+        {
+            // Arrange
+            var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build());
+            var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization(), anonymous: true);
+            authorizationContext.HttpContext.User = new ClaimsPrincipal();
+
+            // Act
+            await authorizeFilter.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.Null(authorizationContext.Result);
+        }
+
+        [Fact]
+        public async Task AuthorizeFilterCanAuthorizeNullUser()
+        {
+            // Arrange
+            var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build());
+            var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization(), anonymous: true);
+
+            // Act
+            await authorizeFilter.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.Null(authorizationContext.Result);
+        }
+
+        [Fact]
         public async Task Invoke_ValidClaimShouldNotFail()
         {
             // Arrange
