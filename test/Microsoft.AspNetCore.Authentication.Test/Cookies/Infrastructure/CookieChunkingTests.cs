@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies.Infrastructure
             HttpContext context = new DefaultHttpContext();
 
             string testString = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            new ChunkingCookieManager(null) { ChunkSize = null }.AppendResponseCookie(context, "TestCookie", testString, new CookieOptions());
+            new ChunkingCookieManager() { ChunkSize = null }.AppendResponseCookie(context, "TestCookie", testString, new CookieOptions());
             var values = context.Response.Headers["Set-Cookie"];
             Assert.Equal(1, values.Count);
             Assert.Equal("TestCookie=" + testString + "; path=/", values[0]);
@@ -27,12 +27,12 @@ namespace Microsoft.AspNetCore.Authentication.Cookies.Infrastructure
             HttpContext context = new DefaultHttpContext();
 
             string testString = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            new ChunkingCookieManager(null) { ChunkSize = 30 }.AppendResponseCookie(context, "TestCookie", testString, new CookieOptions());
+            new ChunkingCookieManager() { ChunkSize = 30 }.AppendResponseCookie(context, "TestCookie", testString, new CookieOptions());
             var values = context.Response.Headers["Set-Cookie"];
             Assert.Equal(9, values.Count);
             Assert.Equal<string[]>(new[]
             {
-                "TestCookie=chunks:8; path=/",
+                "TestCookie=chunks-8; path=/",
                 "TestCookieC1=abcdefgh; path=/",
                 "TestCookieC2=ijklmnop; path=/",
                 "TestCookieC3=qrstuvwx; path=/",
@@ -45,35 +45,12 @@ namespace Microsoft.AspNetCore.Authentication.Cookies.Infrastructure
         }
 
         [Fact]
-        public void AppendLargeQuotedCookieWithLimit_QuotedChunked()
-        {
-            HttpContext context = new DefaultHttpContext();
-
-            string testString = "\"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ\"";
-            new ChunkingCookieManager(null) { ChunkSize = 32 }.AppendResponseCookie(context, "TestCookie", testString, new CookieOptions());
-            var values = context.Response.Headers["Set-Cookie"];
-            Assert.Equal(9, values.Count);
-            Assert.Equal<string[]>(new[]
-            {
-                "TestCookie=chunks:8; path=/",
-                "TestCookieC1=\"abcdefgh\"; path=/",
-                "TestCookieC2=\"ijklmnop\"; path=/",
-                "TestCookieC3=\"qrstuvwx\"; path=/",
-                "TestCookieC4=\"yz012345\"; path=/",
-                "TestCookieC5=\"6789ABCD\"; path=/",
-                "TestCookieC6=\"EFGHIJKL\"; path=/",
-                "TestCookieC7=\"MNOPQRST\"; path=/",
-                "TestCookieC8=\"UVWXYZ\"; path=/",
-            }, values);
-        }
-
-        [Fact]
         public void GetLargeChunkedCookie_Reassembled()
         {
             HttpContext context = new DefaultHttpContext();
             context.Request.Headers["Cookie"] = new[]
             {
-                "TestCookie=chunks:7",
+                "TestCookie=chunks-7",
                 "TestCookieC1=abcdefghi",
                 "TestCookieC2=jklmnopqr",
                 "TestCookieC3=stuvwxyz0",
@@ -83,29 +60,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies.Infrastructure
                 "TestCookieC7=STUVWXYZ"
             };
 
-            string result = new ChunkingCookieManager(null).GetRequestCookie(context, "TestCookie");
+            string result = new ChunkingCookieManager().GetRequestCookie(context, "TestCookie");
             string testString = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            Assert.Equal(testString, result);
-        }
-
-        [Fact]
-        public void GetLargeChunkedCookieWithQuotes_Reassembled()
-        {
-            HttpContext context = new DefaultHttpContext();
-            context.Request.Headers["Cookie"] = new[]
-            {
-                "TestCookie=chunks:7",
-                "TestCookieC1=\"abcdefghi\"",
-                "TestCookieC2=\"jklmnopqr\"",
-                "TestCookieC3=\"stuvwxyz0\"",
-                "TestCookieC4=\"123456789\"",
-                "TestCookieC5=\"ABCDEFGHI\"",
-                "TestCookieC6=\"JKLMNOPQR\"",
-                "TestCookieC7=\"STUVWXYZ\""
-            };
-
-            string result = new ChunkingCookieManager(null).GetRequestCookie(context, "TestCookie");
-            string testString = "\"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ\"";
             Assert.Equal(testString, result);
         }
 
@@ -115,7 +71,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies.Infrastructure
             HttpContext context = new DefaultHttpContext();
             context.Request.Headers["Cookie"] = new[]
             {
-                "TestCookie=chunks:7",
+                "TestCookie=chunks-7",
                 "TestCookieC1=abcdefghi",
                 // Missing chunk "TestCookieC2=jklmnopqr",
                 "TestCookieC3=stuvwxyz0",
@@ -125,7 +81,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies.Infrastructure
                 "TestCookieC7=STUVWXYZ"
             };
 
-            Assert.Throws<FormatException>(() => new ChunkingCookieManager(null).GetRequestCookie(context, "TestCookie"));
+            Assert.Throws<FormatException>(() => new ChunkingCookieManager().GetRequestCookie(context, "TestCookie"));
         }
 
         [Fact]
@@ -134,7 +90,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies.Infrastructure
             HttpContext context = new DefaultHttpContext();
             context.Request.Headers["Cookie"] = new[]
             {
-                "TestCookie=chunks:7",
+                "TestCookie=chunks-7",
                 "TestCookieC1=abcdefghi",
                 // Missing chunk "TestCookieC2=jklmnopqr",
                 "TestCookieC3=stuvwxyz0",
@@ -144,8 +100,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies.Infrastructure
                 "TestCookieC7=STUVWXYZ"
             };
 
-            string result = new ChunkingCookieManager(null) { ThrowForPartialCookies = false }.GetRequestCookie(context, "TestCookie");
-            string testString = "chunks:7";
+            string result = new ChunkingCookieManager() { ThrowForPartialCookies = false }.GetRequestCookie(context, "TestCookie");
+            string testString = "chunks-7";
             Assert.Equal(testString, result);
         }
 
@@ -153,9 +109,9 @@ namespace Microsoft.AspNetCore.Authentication.Cookies.Infrastructure
         public void DeleteChunkedCookieWithOptions_AllDeleted()
         {
             HttpContext context = new DefaultHttpContext();
-            context.Request.Headers.Append("Cookie", "TestCookie=chunks:7");
+            context.Request.Headers.Append("Cookie", "TestCookie=chunks-7");
 
-            new ChunkingCookieManager(null).DeleteCookie(context, "TestCookie", new CookieOptions() { Domain = "foo.com" });
+            new ChunkingCookieManager().DeleteCookie(context, "TestCookie", new CookieOptions() { Domain = "foo.com" });
             var cookies = context.Response.Headers["Set-Cookie"];
             Assert.Equal(8, cookies.Count);
             Assert.Equal(new[]

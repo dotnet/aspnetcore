@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             }
             if (Options.CookieManager == null)
             {
-                Options.CookieManager = new ChunkingCookieManager(urlEncoder);
+                Options.CookieManager = new ChunkingCookieManager();
             }
             if (!Options.LoginPath.HasValue)
             {

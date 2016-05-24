@@ -2,12 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Claims;
+using System.Security.Principal;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.CookiePolicy.Test
@@ -226,6 +231,100 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
 
             var transaction = await server.SendAsync("http://example.com/login");
             Assert.Equal("Done", transaction.ResponseText);
+        }
+
+        [Fact]
+        public async Task CookiePolicyAppliesToCookieAuth()
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddAuthentication();
+                })
+                .Configure(app =>
+                {
+                    app.UseCookiePolicy(new CookiePolicyOptions
+                    {
+                        HttpOnly = HttpOnlyPolicy.Always,
+                        Secure = CookieSecurePolicy.Always,
+                    });
+                    app.UseCookieAuthentication(new CookieAuthenticationOptions()
+                    {
+                        CookieName = "TestCookie",
+                        CookieHttpOnly = false,
+                        CookieSecure = CookieSecurePolicy.None,
+                    });
+                    app.Run(context =>
+                    {
+                        return context.Authentication.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                            new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("TestUser", "Cookies"))));
+                    });
+                });
+            var server = new TestServer(builder);
+
+            var transaction = await server.SendAsync("http://example.com/login");
+
+            Assert.NotNull(transaction.SetCookie);
+            Assert.Equal(1, transaction.SetCookie.Count);
+            var cookie = SetCookieHeaderValue.Parse(transaction.SetCookie[0]);
+            Assert.Equal("TestCookie", cookie.Name);
+            Assert.True(cookie.HttpOnly);
+            Assert.True(cookie.Secure);
+            Assert.Equal("/", cookie.Path);
+        }
+
+        [Fact]
+        public async Task CookiePolicyAppliesToCookieAuthChunks()
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddAuthentication();
+                })
+                .Configure(app =>
+                {
+                    app.UseCookiePolicy(new CookiePolicyOptions
+                    {
+                        HttpOnly = HttpOnlyPolicy.Always,
+                        Secure = CookieSecurePolicy.Always,
+                    });
+                    app.UseCookieAuthentication(new CookieAuthenticationOptions()
+                    {
+                        CookieName = "TestCookie",
+                        CookieHttpOnly = false,
+                        CookieSecure = CookieSecurePolicy.None,
+                    });
+                    app.Run(context =>
+                    {
+                        return context.Authentication.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                            new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity(new string('c', 1024 * 5), "Cookies"))));
+                    });
+                });
+            var server = new TestServer(builder);
+
+            var transaction = await server.SendAsync("http://example.com/login");
+
+            Assert.NotNull(transaction.SetCookie);
+            Assert.Equal(3, transaction.SetCookie.Count);
+
+            var cookie = SetCookieHeaderValue.Parse(transaction.SetCookie[0]);
+            Assert.Equal("TestCookie", cookie.Name);
+            Assert.Equal("chunks-2", cookie.Value);
+            Assert.True(cookie.HttpOnly);
+            Assert.True(cookie.Secure);
+            Assert.Equal("/", cookie.Path);
+
+            cookie = SetCookieHeaderValue.Parse(transaction.SetCookie[1]);
+            Assert.Equal("TestCookieC1", cookie.Name);
+            Assert.True(cookie.HttpOnly);
+            Assert.True(cookie.Secure);
+            Assert.Equal("/", cookie.Path);
+
+            cookie = SetCookieHeaderValue.Parse(transaction.SetCookie[2]);
+            Assert.Equal("TestCookieC2", cookie.Name);
+            Assert.True(cookie.HttpOnly);
+            Assert.True(cookie.Secure);
+            Assert.Equal("/", cookie.Path);
         }
 
         private class TestCookieFeature : IResponseCookiesFeature

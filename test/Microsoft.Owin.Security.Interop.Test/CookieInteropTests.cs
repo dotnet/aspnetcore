@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Testing;
 using Owin;
@@ -71,10 +73,71 @@ namespace Microsoft.Owin.Security.Interop
             var newServer = new AspNetCore.TestHost.TestServer(builder);
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://example.com/login");
-            request.Headers.Add("Cookie", transaction.SetCookie.Split(new[] { ';' }, 2).First());
+            foreach (var cookie in SetCookieHeaderValue.ParseList(transaction.SetCookie))
+            {
+                request.Headers.Add("Cookie", cookie.Name + "=" + cookie.Value);
+            }
             var response = await newServer.CreateClient().SendAsync(request);
 
             Assert.Equal("Alice", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task AspNetCoreWithLargeInteropCookieContainsIdentity()
+        {
+            var identity = new ClaimsIdentity("Cookies");
+            identity.AddClaim(new Claim(ClaimTypes.Name, new string('a', 1024 * 5)));
+
+            var dataProtection = DataProtectionProvider.Create(new DirectoryInfo("..\\..\\artifacts"));
+            var dataProtector = dataProtection.CreateProtector(
+                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET Core type
+                CookieAuthenticationDefaults.AuthenticationType, "v2");
+
+            var interopServer = TestServer.Create(app =>
+            {
+                app.Properties["host.AppName"] = "Microsoft.Owin.Security.Tests";
+
+                app.UseCookieAuthentication(new Cookies.CookieAuthenticationOptions
+                {
+                    TicketDataFormat = new AspNetTicketDataFormat(new DataProtectorShim(dataProtector)),
+                    CookieName = AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.CookiePrefix
+                        + AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme,
+                    CookieManager = new ChunkingCookieManager(),
+                });
+
+                app.Run(context =>
+                {
+                    context.Authentication.SignIn(identity);
+                    return Task.FromResult(0);
+                });
+            });
+
+            var transaction = await SendAsync(interopServer, "http://example.com");
+
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseCookieAuthentication(new AspNetCore.Builder.CookieAuthenticationOptions
+                    {
+                        DataProtectionProvider = dataProtection
+                    });
+                    app.Run(async context =>
+                    {
+                        var result = await context.Authentication.AuthenticateAsync("Cookies");
+                        await context.Response.WriteAsync(result.Identity.Name);
+                    });
+                })
+                .ConfigureServices(services => services.AddAuthentication());
+            var newServer = new AspNetCore.TestHost.TestServer(builder);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://example.com/login");
+            foreach (var cookie in SetCookieHeaderValue.ParseList(transaction.SetCookie))
+            {
+                request.Headers.Add("Cookie", cookie.Name + "=" + cookie.Value);
+            }
+            var response = await newServer.CreateClient().SendAsync(request);
+
+            Assert.Equal(1024 * 5, (await response.Content.ReadAsStringAsync()).Length);
         }
 
         [Fact]
@@ -102,13 +165,13 @@ namespace Microsoft.Owin.Security.Interop
                 .ConfigureServices(services => services.AddAuthentication());
             var newServer = new AspNetCore.TestHost.TestServer(builder);
 
-            var cookie = await SendAndGetCookie(newServer, "http://example.com/login");
+            var cookies = await SendAndGetCookies(newServer, "http://example.com/login");
 
             var server = TestServer.Create(app =>
             {
                 app.Properties["host.AppName"] = "Microsoft.Owin.Security.Tests";
 
-                app.UseCookieAuthentication(new Owin.Security.Cookies.CookieAuthenticationOptions
+                app.UseCookieAuthentication(new Cookies.CookieAuthenticationOptions
                 {
                     TicketDataFormat = new AspNetTicketDataFormat(new DataProtectorShim(dataProtector)),
                     CookieName = AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.CookiePrefix
@@ -122,18 +185,74 @@ namespace Microsoft.Owin.Security.Interop
                 });
             });
 
-            var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", cookie);
+            var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", cookies);
 
             Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
         }
 
-        private static async Task<string> SendAndGetCookie(AspNetCore.TestHost.TestServer server, string uri)
+        [Fact]
+        public async Task InteropWithLargeNewCookieContainsIdentity()
+        {
+            var user = new ClaimsPrincipal();
+            var identity = new ClaimsIdentity("scheme");
+            identity.AddClaim(new Claim(ClaimTypes.Name, new string('a', 1024 * 5)));
+            user.AddIdentity(identity);
+
+            var dataProtection = DataProtectionProvider.Create(new DirectoryInfo("..\\..\\artifacts"));
+            var dataProtector = dataProtection.CreateProtector(
+                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET Core type
+                CookieAuthenticationDefaults.AuthenticationType, "v2");
+
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseCookieAuthentication(new AspNetCore.Builder.CookieAuthenticationOptions
+                    {
+                        DataProtectionProvider = dataProtection
+                    });
+                    app.Run(context => context.Authentication.SignInAsync("Cookies", user));
+                })
+                .ConfigureServices(services => services.AddAuthentication());
+            var newServer = new AspNetCore.TestHost.TestServer(builder);
+
+            var cookies = await SendAndGetCookies(newServer, "http://example.com/login");
+
+            var server = TestServer.Create(app =>
+            {
+                app.Properties["host.AppName"] = "Microsoft.Owin.Security.Tests";
+
+                app.UseCookieAuthentication(new Cookies.CookieAuthenticationOptions
+                {
+                    TicketDataFormat = new AspNetTicketDataFormat(new DataProtectorShim(dataProtector)),
+                    CookieName = AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.CookiePrefix
+                        + AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme,
+                    CookieManager = new ChunkingCookieManager(),
+                });
+
+                app.Run(async context =>
+                {
+                    var result = await context.Authentication.AuthenticateAsync("Cookies");
+                    Describe(context.Response, result);
+                });
+            });
+
+            var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", cookies);
+
+            Assert.Equal(1024 * 5, FindClaimValue(transaction2, ClaimTypes.Name).Length);
+        }
+
+        private static async Task<IList<string>> SendAndGetCookies(AspNetCore.TestHost.TestServer server, string uri)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
             var response = await server.CreateClient().SendAsync(request);
             if (response.Headers.Contains("Set-Cookie"))
             {
-                return response.Headers.GetValues("Set-Cookie").ToList().First();
+                IList<string> cookieHeaders = new List<string>();
+                foreach (var cookie in SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()))
+                {
+                    cookieHeaders.Add(cookie.Name + "=" + cookie.Value);
+                }
+                return cookieHeaders;
             }
             return null;
         }
@@ -148,7 +267,7 @@ namespace Microsoft.Owin.Security.Interop
             return claim.Attribute("value").Value;
         }
 
-        private static void Describe(IOwinResponse res, Owin.Security.AuthenticateResult result)
+        private static void Describe(IOwinResponse res, AuthenticateResult result)
         {
             res.StatusCode = 200;
             res.ContentType = "text/xml";
@@ -171,12 +290,12 @@ namespace Microsoft.Owin.Security.Interop
             }
         }
 
-        private static async Task<Transaction> SendAsync(TestServer server, string uri, string cookieHeader = null, bool ajaxRequest = false)
+        private static async Task<Transaction> SendAsync(TestServer server, string uri, IList<string> cookieHeaders = null, bool ajaxRequest = false)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
-            if (!string.IsNullOrEmpty(cookieHeader))
+            if (cookieHeaders != null)
             {
-                request.Headers.Add("Cookie", cookieHeader);
+                request.Headers.Add("Cookie", cookieHeaders);
             }
             if (ajaxRequest)
             {
@@ -189,11 +308,11 @@ namespace Microsoft.Owin.Security.Interop
             };
             if (transaction.Response.Headers.Contains("Set-Cookie"))
             {
-                transaction.SetCookie = transaction.Response.Headers.GetValues("Set-Cookie").SingleOrDefault();
+                transaction.SetCookie = transaction.Response.Headers.GetValues("Set-Cookie").ToList();
             }
-            if (!string.IsNullOrEmpty(transaction.SetCookie))
+            if (transaction.SetCookie != null && transaction.SetCookie.Any())
             {
-                transaction.CookieNameValue = transaction.SetCookie.Split(new[] { ';' }, 2).First();
+                transaction.CookieNameValue = transaction.SetCookie.First().Split(new[] { ';' }, 2).First();
             }
             transaction.ResponseText = await transaction.Response.Content.ReadAsStringAsync();
 
@@ -211,7 +330,7 @@ namespace Microsoft.Owin.Security.Interop
             public HttpRequestMessage Request { get; set; }
             public HttpResponseMessage Response { get; set; }
 
-            public string SetCookie { get; set; }
+            public IList<string> SetCookie { get; set; }
             public string CookieNameValue { get; set; }
 
             public string ResponseText { get; set; }

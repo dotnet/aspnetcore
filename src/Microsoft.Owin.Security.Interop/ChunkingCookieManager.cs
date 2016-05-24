@@ -5,12 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
+using Microsoft.Owin.Infrastructure;
 
-namespace Microsoft.AspNetCore.Authentication.Cookies
+namespace Microsoft.Owin.Security.Interop
 {
+    // This MUST be kept in sync with Microsoft.AspNetCore.Authentication.Cookies.ChunkingCookieManager
     /// <summary>
     /// This handles cookies that are limited by per cookie length. It breaks down long cookies for responses, and reassembles them
     /// from requests.
@@ -65,7 +64,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// <param name="context"></param>
         /// <param name="key"></param>
         /// <returns>The reassembled cookie, if any, or null.</returns>
-        public string GetRequestCookie(HttpContext context, string key)
+        public string GetRequestCookie(IOwinContext context, string key)
         {
             if (context == null)
             {
@@ -96,7 +95,9 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                                 totalSize += chunks[i].Length;
                             }
                             throw new FormatException(
-                                string.Format(CultureInfo.CurrentCulture, Resources.Exception_ImcompleteChunkedCookie, chunkId - 1, chunksCount, totalSize));
+                                string.Format(CultureInfo.CurrentCulture, 
+                                "The chunked cookie is incomplete. Only {0} of the expected {1} chunks were found, totaling {2} characters. A client size limit may have been exceeded.",
+                                chunkId - 1, chunksCount, totalSize));
                         }
                         // Missing chunk, abort by returning the original cookie value. It may have been a false positive?
                         return value;
@@ -122,7 +123,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="options"></param>
-        public void AppendResponseCookie(HttpContext context, string key, string value, CookieOptions options)
+        public void AppendResponseCookie(IOwinContext context, string key, string value, CookieOptions options)
         {
             if (context == null)
             {
@@ -139,18 +140,16 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var template = new SetCookieHeaderValue(key)
-            {
-                Domain = options.Domain,
-                Expires = options.Expires,
-                HttpOnly = options.HttpOnly,
-                Path = options.Path,
-                Secure = options.Secure,
-            };
+            var domainHasValue = !string.IsNullOrEmpty(options.Domain);
+            var pathHasValue = !string.IsNullOrEmpty(options.Path);
+            var expiresHasValue = options.Expires.HasValue;
 
-            var templateLength = template.ToString().Length;
-
-            value = value ?? string.Empty;
+            var templateLength = key.Length + "=".Length
+                + (domainHasValue ? "; domain=".Length + options.Domain.Length : 0)
+                + (pathHasValue ? "; path=".Length + options.Path.Length : 0)
+                + (expiresHasValue ? "; expires=ddd, dd-MMM-yyyy HH:mm:ss GMT".Length : 0)
+                + (options.Secure ? "; secure".Length : 0)
+                + (options.HttpOnly ? "; HttpOnly".Length : 0);
 
             // Normal cookie
             var responseCookies = context.Response.Cookies;
@@ -162,7 +161,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 // 10 is the minimum data we want to put in an individual cookie, including the cookie chunk identifier "CXX".
                 // No room for data, we can't chunk the options and name
-                throw new InvalidOperationException(Resources.Exception_CookieLimitTooSmall);
+                throw new InvalidOperationException("The cookie key and options are larger than ChunksSize, leaving no room for data.");
             }
             else
             {
@@ -197,7 +196,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// <param name="context"></param>
         /// <param name="key"></param>
         /// <param name="options"></param>
-        public void DeleteCookie(HttpContext context, string key, CookieOptions options)
+        public void DeleteCookie(IOwinContext context, string key, CookieOptions options)
         {
             if (context == null)
             {
@@ -247,10 +246,10 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             }
 
             var responseHeaders = context.Response.Headers;
-            var existingValues = responseHeaders[Constants.Headers.SetCookie];
-            if (!StringValues.IsNullOrEmpty(existingValues))
+            string[] existingValues;
+            if (responseHeaders.TryGetValue(Constants.Headers.SetCookie, out existingValues) && existingValues != null)
             {
-                responseHeaders[Constants.Headers.SetCookie] = existingValues.Where(value => !rejectPredicate(value)).ToArray();
+                responseHeaders.SetValues(Constants.Headers.SetCookie, existingValues.Where(value => !rejectPredicate(value)).ToArray());
             }
 
             AppendResponseCookie(
