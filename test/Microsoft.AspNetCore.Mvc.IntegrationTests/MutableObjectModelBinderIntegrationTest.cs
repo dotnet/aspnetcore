@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -1887,10 +1888,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(error.Exception);
         }
 
-        // This covers the case where a key is present, but has no value. The type converter
-        // will report an error.
+        // This covers the case where a key is present, but has no value. The model binder will
+        // report and error because it's a value type (non-nullable).
         [Fact]
-        public async Task MutableObjectModelBinder_BindsPOCO_TypeConvertedPropertyWithNoValue_NoError()
+        [ReplaceCulture]
+        public async Task MutableObjectModelBinder_BindsPOCO_TypeConvertedPropertyWithEmptyValue_Error()
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
@@ -1918,9 +1920,16 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.NotNull(model);
             Assert.Equal(0, model.ProductId);
 
-            Assert.Equal(0, modelState.Count);
-            Assert.Equal(0, modelState.ErrorCount);
-            Assert.True(modelState.IsValid);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("parameter.ProductId", entry.Key);
+            Assert.Equal(string.Empty, entry.Value.AttemptedValue);
+
+            var error = Assert.Single(entry.Value.Errors);
+            Assert.Equal("The value '' is invalid.", error.ErrorMessage, StringComparer.Ordinal);
+            Assert.Null(error.Exception);
+
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
         }
 
         private static void SetJsonBodyContent(HttpRequest request, string content)
