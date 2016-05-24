@@ -58,9 +58,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         /// <returns>The value in string and byte[] format.</returns>
         public DateHeaderValues GetDateHeaderValues()
         {
-            if (!_hadRequestsSinceLastTimerTick)
+            _hadRequestsSinceLastTimerTick = !_isDisposed;
+
+            if (!_timerIsRunning)
             {
-                PrepareDateValues();
+                StartTimer();
             }
 
             return _dateValues;
@@ -148,18 +150,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 // No requests since idle threshold so stop the timer if it's still running
                 StopTimer();
-            }
-        }
-
-        /// <summary>
-        /// Starts the timer if it's turned off, or sets the datevalues to the current time if disposed. 
-        /// </summary>
-        private void PrepareDateValues()
-        {
-            _hadRequestsSinceLastTimerTick = !_isDisposed;
-            if (!_timerIsRunning)
-            {
-                StartTimer();
             }
         }
 
