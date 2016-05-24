@@ -215,6 +215,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         /// </summary>
         private class ForChunkedEncoding : MessageBody
         {
+            // This causes an InvalidProgramException if made static
+            // https://github.com/dotnet/corefx/issues/8825
             private Vector<byte> _vectorCRs = new Vector<byte>((byte)'\r');
 
             private int _inputLength;
