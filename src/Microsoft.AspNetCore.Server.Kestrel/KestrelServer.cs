@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Networking;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -94,6 +96,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 {
                     _logger.LogWarning("Unable to determine ECONNRESET value on this platform.");
                 }
+                if (!Constants.EADDRINUSE.HasValue)
+                {
+                    _logger.LogWarning("Unable to determine EADDRINUSE value on this platform.");
+                }
 
                 engine.Start(threadCount);
                 var atLeastOneListener = false;
@@ -108,8 +114,69 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     else
                     {
                         atLeastOneListener = true;
-                        _disposables.Push(engine.CreateServer(
-                            parsedAddress));
+
+                        if (!parsedAddress.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase))
+                        {
+                            _disposables.Push(engine.CreateServer(
+                                parsedAddress));
+                        }
+                        else
+                        {
+                            if (parsedAddress.Port == 0)
+                            {
+                                throw new InvalidOperationException("Dynamic port binding is not supported when binding to localhost. You must either bind to 127.0.0.1:0 or [::1]:0, or both.");
+                            }
+
+                            var ipv4Address = parsedAddress.WithHost("127.0.0.1");
+                            var exceptions = new List<UvException>();
+
+                            try
+                            {
+                                _disposables.Push(engine.CreateServer(ipv4Address));
+                            }
+                            catch (AggregateException ex)
+                            {
+                                var uvException = ex.InnerException as UvException;
+
+                                if (uvException != null && uvException.StatusCode != Constants.EADDRINUSE)
+                                {
+                                    _logger.LogWarning(0, ex, $"Unable to bind to {parsedAddress.ToString()} on the IPv4 loopback interface.");
+                                    exceptions.Add(uvException);
+                                }
+                                else
+                                {
+                                    throw;
+                                }
+                            }
+
+                            var ipv6Address = parsedAddress.WithHost("[::1]");
+
+                            try
+                            {
+                                _disposables.Push(engine.CreateServer(ipv6Address));
+                            }
+                            catch (AggregateException ex)
+                            {
+                                var uvException = ex.InnerException as UvException;
+
+                                if (uvException != null && uvException.StatusCode != Constants.EADDRINUSE)
+                                {
+                                    _logger.LogWarning(0, ex, $"Unable to bind to {parsedAddress.ToString()} on the IPv6 loopback interface.");
+                                    exceptions.Add(uvException);
+                                }
+                                else
+                                {
+                                    throw;
+                                }
+                            }
+
+                            if (exceptions.Count == 2)
+                            {
+                                var ex = new AggregateException(exceptions);
+                                _logger.LogError(0, ex, $"Unable to bind to {parsedAddress.ToString()} on any loopback interface.");
+                                throw ex;
+                            }
+                        }
 
                         // If requested port was "0", replace with assigned dynamic port.
                         _serverAddresses.Addresses.Remove(address);

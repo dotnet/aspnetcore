@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Http;
@@ -16,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
     {
         private KestrelEngine _engine;
         private IDisposable _server;
-        ServerAddress _address;
+        private ServerAddress _address;
 
         public TestServer(RequestDelegate app)
             : this(app, new TestServiceContext())
@@ -24,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         public TestServer(RequestDelegate app, ServiceContext context)
-            : this(app, context, "http://localhost:0/")
+            : this(app, context, "http://127.0.0.1:0/")
         {
         }
 

@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             testContext.App = App;
             var engine = new KestrelEngine(testContext);
             engine.Start(1);
-            var address = ServerAddress.FromUrl($"http://localhost:0/");
+            var address = ServerAddress.FromUrl("http://127.0.0.1:0/");
             var started = engine.CreateServer(address);
             started.Dispose();
             engine.Dispose();
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             testContext.App = App;
             var engine = new KestrelEngine(testContext);
             engine.Start(1);
-            var address = ServerAddress.FromUrl($"http://localhost:0/");
+            var address = ServerAddress.FromUrl("http://127.0.0.1:0/");
             var started = engine.CreateServer(address);
 
             var socket = TestConnection.CreateConnectedLoopbackSocket(address.Port);

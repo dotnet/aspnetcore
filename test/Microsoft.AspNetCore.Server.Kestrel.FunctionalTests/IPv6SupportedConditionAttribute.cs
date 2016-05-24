@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 using (var socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp))
                 {
-                    socket.Bind(new IPEndPoint(IPAddress.IPv6Loopback, 8787));
+                    socket.Bind(new IPEndPoint(IPAddress.IPv6Any, 0));
                     return true;
                 }
             }

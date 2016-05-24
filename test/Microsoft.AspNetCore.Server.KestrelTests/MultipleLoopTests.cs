@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var serverListenTcp = new UvTcpHandle(_logger);
             serverListenTcp.Init(loop, (a, b) => { });
-            var address = ServerAddress.FromUrl($"http://localhost:0/");
+            var address = ServerAddress.FromUrl($"http://127.0.0.1:0/");
             serverListenTcp.Bind(address);
             var port = serverListenTcp.GetSockIPEndPoint().Port;
             serverListenTcp.Listen(128, (_1, status, error, _2) =>

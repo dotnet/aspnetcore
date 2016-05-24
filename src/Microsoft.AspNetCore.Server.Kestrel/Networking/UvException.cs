@@ -7,6 +7,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
 {
     public class UvException : Exception
     {
-        public UvException(string message) : base(message) { }
+        public UvException(string message, int statusCode) : base(message)
+        {
+            StatusCode = statusCode;
+        }
+
+        public int StatusCode { get; }
     }
 }

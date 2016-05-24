@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         new NoOpConnectionFilter())
                 );
 
-                using (var server = new TestServer(App, serviceContext, "https://localhost:0/"))
+                using (var server = new TestServer(App, serviceContext, "https://127.0.0.1:0/"))
                 {
                     using (var client = new HttpClient(handler))
                     {
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         new NoOpConnectionFilter())
                 );
 
-                using (var server = new TestServer(App, serviceContext, "https://localhost:0/"))
+                using (var server = new TestServer(App, serviceContext, "https://127.0.0.1:0/"))
                 {
                     using (var client = new HttpClient(handler))
                     {
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     return context.Response.WriteAsync("hello world");
                 };
 
-                using (var server = new TestServer(app, serviceContext, "https://localhost:0/"))
+                using (var server = new TestServer(app, serviceContext, "https://127.0.0.1:0/"))
                 {
                     using (var client = new HttpClient(handler))
                     {
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     return context.Response.WriteAsync("hello world");
                 };
 
-                using (var server = new TestServer(app, serviceContext, "https://localhost:0/"))
+                using (var server = new TestServer(app, serviceContext, "https://127.0.0.1:0/"))
                 {
                     // SslStream is used to ensure the certificate is actually passed to the server
                     // HttpClient might not send the certificate because it is invalid or it doesn't match any
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 RequestDelegate app = context => context.Response.WriteAsync(context.Request.Scheme);
 
-                using (var server = new TestServer(app, serviceContext, "https://localhost:0/"))
+                using (var server = new TestServer(app, serviceContext, "https://127.0.0.1:0/"))
                 {
                     using (var client = new HttpClient(handler))
                     {
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     return context.Response.WriteAsync("hello world");
                 };
 
-                using (var server = new TestServer(app, serviceContext, "https://localhost:0/"))
+                using (var server = new TestServer(app, serviceContext, "https://127.0.0.1:0/"))
                 {
                     // SslStream is used to ensure the certificate is actually passed to the server
                     // HttpClient might not send the certificate because it is invalid or it doesn't match any
@@ -384,7 +384,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     return context.Response.WriteAsync("hello world");
                 };
 
-                using (var server = new TestServer(app, serviceContext, "https://localhost:0/"))
+                using (var server = new TestServer(app, serviceContext, "https://127.0.0.1:0/"))
                 {
                     // SslStream is used to ensure the certificate is actually passed to the server
                     // HttpClient might not send the certificate because it is invalid or it doesn't match any

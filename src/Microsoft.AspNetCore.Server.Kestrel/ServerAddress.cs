@@ -155,5 +155,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
             return serverAddress;
         }
+
+        internal ServerAddress WithHost(string host)
+        {
+            return new ServerAddress
+            {
+                Scheme = Scheme,
+                Host = host,
+                Port = Port,
+                PathBase = PathBase
+            };
+        }
     }
 }

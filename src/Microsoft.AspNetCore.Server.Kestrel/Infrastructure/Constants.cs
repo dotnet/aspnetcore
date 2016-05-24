@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
         public const int EOF = -4095;
         public static readonly int? ECONNRESET = GetECONNRESET();
+        public static readonly int? EADDRINUSE = GetEADDRINUSE();
 
         /// <summary>
         /// Prefix of host name used to specify Unix sockets in the configuration.
@@ -35,6 +36,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                     return -104;
                 case Platform.Darwin:
                     return -54;
+                default:
+                    return null;
+            }
+        }
+
+        private static int? GetEADDRINUSE()
+        {
+            switch (PlatformServices.Default.Runtime.OperatingSystemPlatform)
+            {
+                case Platform.Windows:
+                    return -4091;
+                case Platform.Linux:
+                    return -98;
+                case Platform.Darwin:
+                    return -48;
                 default:
                     return null;
             }

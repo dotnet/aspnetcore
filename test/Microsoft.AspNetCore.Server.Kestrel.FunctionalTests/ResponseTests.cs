@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -10,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -21,16 +19,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task LargeDownload()
         {
-            var config = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string>
-                {
-                    { "server.urls", $"http://localhost:0/" }
-                })
-                .Build();
-
             var hostBuilder = new WebHostBuilder()
-                .UseConfiguration(config)
                 .UseKestrel()
+                .UseUrls("http://127.0.0.1:0/")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -80,16 +71,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Theory, MemberData(nameof(NullHeaderData))]
         public async Task IgnoreNullHeaderValues(string headerName, StringValues headerValue, string expectedValue)
         {
-            var config = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string>
-                {
-                    { "server.urls", $"http://localhost:0/" }
-                })
-                .Build();
-
             var hostBuilder = new WebHostBuilder()
-                .UseConfiguration(config)
                 .UseKestrel()
+                .UseUrls("http://127.0.0.1:0/")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -127,19 +111,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task OnCompleteCalledEvenWhenOnStartingNotCalled()
         {
-            var config = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string>
-                {
-                    { "server.urls", $"http://localhost:0/" }
-                })
-                .Build();
-
             var onStartingCalled = false;
             var onCompletedCalled = false;
 
             var hostBuilder = new WebHostBuilder()
-                .UseConfiguration(config)
                 .UseKestrel()
+                .UseUrls("http://127.0.0.1:0/")
                 .Configure(app =>
                 {
                     app.Run(context =>

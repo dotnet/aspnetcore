@@ -7,28 +7,22 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class ThreadCountTests
     {
-        public async Task ZeroToTenThreads(int threadCount)
+        [Theory]
+        [MemberData(nameof(OneToTen))]
+        public async Task OneToTenThreads(int threadCount)
         {
-            var config = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string>
-                {
-                    { "server.urls", $"http://localhost:0/" }
-                })
-                .Build();
-
             var hostBuilder = new WebHostBuilder()
-                .UseConfiguration(config)
                 .UseKestrel(options =>
                 {
                     options.ThreadCount = threadCount;
                 })
+                .UseUrls("http://127.0.0.1:0/")
                 .Configure(app =>
                 {
                     app.Run(context =>

@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var builder = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls($"http://localhost:0/")
+                .UseUrls("http://127.0.0.1:0/")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var builder = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls($"http://localhost:0/")
+                .UseUrls("http://127.0.0.1:0/")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -117,12 +117,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [Theory]
-        [InlineData("127.0.0.1", "127.0.0.1")]
-        [InlineData("localhost", "127.0.0.1")]
-        public Task RemoteIPv4Address(string requestAddress, string expectAddress)
+        [Fact]
+        public Task RemoteIPv4Address()
         {
-            return TestRemoteIPAddress("localhost", requestAddress, expectAddress);
+            return TestRemoteIPAddress("127.0.0.1", "127.0.0.1", "127.0.0.1");
         }
 
         [ConditionalFact]
@@ -137,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var builder = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls($"http://localhost:0")
+                .UseUrls($"http://127.0.0.1:0")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -165,7 +163,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var builder = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls($"http://localhost:0/\u0041\u030A")
+                .UseUrls($"http://127.0.0.1:0/\u0041\u030A")
                 .Configure(app =>
                 {
                     app.Run(async context =>

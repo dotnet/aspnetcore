@@ -60,5 +60,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.True(serverAddres.PathBase.IsNormalized(NormalizationForm.FormC));
             Assert.Equal("/p\u00C5thbase", serverAddres.PathBase);
         }
+
+        [Fact]
+        public void WithHostReturnsNewInstanceWithDifferentHost()
+        {
+            var serverAddress = ServerAddress.FromUrl("http://localhost:8080");
+            var newAddress = serverAddress.WithHost("otherhost");
+            Assert.NotSame(serverAddress, newAddress);
+            Assert.Equal("otherhost", newAddress.Host);
+            Assert.Equal("localhost", serverAddress.Host);
+        }
     }
 }
