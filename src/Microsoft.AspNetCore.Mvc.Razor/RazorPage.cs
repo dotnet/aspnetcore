@@ -40,6 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private IViewBufferScope _bufferScope;
         private bool _ignoreBody;
         private HashSet<string> _ignoredSections;
+        private TextWriter _pageWriter;
 
         public RazorPage()
         {
@@ -229,6 +230,61 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             ViewContext.Writer = scopeInfo.Writer;
 
             return tagHelperContent;
+        }
+
+        /// <summary>
+        /// Starts a new scope for writing <see cref="ITagHelper"/> attribute values.
+        /// </summary>
+        /// <remarks>
+        /// All writes to the <see cref="Output"/> or <see cref="ViewContext.Writer"/> after calling this method will
+        /// be buffered until <see cref="EndWriteTagHelperAttribute"/> is called.
+        /// The content will be buffered using a shared <see cref="StringWriter"/> within this <see cref="RazorPage"/> 
+        /// Nesting of <see cref="BeginWriteTagHelperAttribute"/> and <see cref="EndWriteTagHelperAttribute"/> method calls
+        /// is not supported.
+        /// </remarks>
+        public void BeginWriteTagHelperAttribute()
+        {
+            if (_pageWriter != null)
+            {
+                throw new InvalidOperationException(Resources.RazorPage_NestingAttributeWritingScopesNotSupported);
+            }
+
+            _pageWriter = ViewContext.Writer;
+
+            if (_valueBuffer == null)
+            {
+                _valueBuffer = new StringWriter();
+            }
+
+            // We need to replace the ViewContext's Writer to ensure that all content (including content written
+            // from HTML helpers) is redirected.
+            ViewContext.Writer = _valueBuffer;
+
+        }
+
+        /// <summary>
+        /// Ends the current writing scope that was started by calling <see cref="BeginWriteTagHelperAttribute"/>.
+        /// </summary>
+        /// <returns>The content buffered by the shared <see cref="StringWriter"/> of this <see cref="RazorPage"/>.</returns>
+        /// <remarks>
+        /// This method assumes that there will be no nesting of <see cref="BeginWriteTagHelperAttribute"/> 
+        /// and <see cref="EndWriteTagHelperAttribute"/> method calls.
+        /// </remarks>
+        public string EndWriteTagHelperAttribute()
+        {
+            if (_pageWriter == null)
+            {
+                throw new InvalidOperationException(Resources.RazorPage_ThereIsNoActiveWritingScopeToEnd);
+            }
+
+            var content = _valueBuffer.ToString();
+            _valueBuffer.GetStringBuilder().Clear();
+
+            // Restore previous writer.
+            ViewContext.Writer = _pageWriter;
+            _pageWriter = null;
+
+            return content;
         }
 
         /// <summary>

@@ -225,6 +225,64 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             await page.ExecuteAsync();
         }
 
+        [Fact]
+        public async Task EndWriteTagHelperAttribute_RestoresPageWriter()
+        {
+            // Arrange
+            var page = CreatePage(v =>
+            {
+                v.BeginWriteTagHelperAttribute();
+                v.Write("Hello World!");
+                v.EndWriteTagHelperAttribute();
+            });
+            var originalWriter = page.Output;
+
+            // Act
+            await page.ExecuteAsync();
+
+            // Assert
+            Assert.NotNull(originalWriter);
+            Assert.Same(originalWriter, page.Output);
+        }
+
+        [Fact]
+        public async Task EndWriteTagHelperAttribute_ReturnsAppropriateContent()
+        {
+            // Arrange
+            var viewContext = CreateViewContext();
+            var page = CreatePage(v =>
+            {
+                v.HtmlEncoder = new HtmlTestEncoder();
+                v.BeginWriteTagHelperAttribute();
+                v.Write("Hello World!");
+                var returnValue = v.EndWriteTagHelperAttribute();
+
+                // Assert
+                var content = Assert.IsType<string>(returnValue);
+                Assert.Equal("HtmlEncode[[Hello World!]]", content);
+            });
+
+            // Act & Assert
+            await page.ExecuteAsync();
+        }
+
+        [Fact]
+        public async Task BeginWriteTagHelperAttribute_NestingWritingScopesThrows()
+        {
+            // Arrange
+            var viewContext = CreateViewContext();
+            var page = CreatePage(v =>
+            {
+                v.BeginWriteTagHelperAttribute();
+                v.BeginWriteTagHelperAttribute();
+                v.Write("Hello World!");
+            });
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => page.ExecuteAsync());
+            Assert.Equal("Nesting of TagHelper attribute writing scopes is not supported.", ex.Message);
+        }
+
         // This is an integration test for ensuring that ViewBuffer segments used by
         // TagHelpers can be merged back into the 'main' segment where possible.
         [Fact]

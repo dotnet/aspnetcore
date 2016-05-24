@@ -478,6 +478,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return string.Format(CultureInfo.CurrentCulture, GetString("ViewLocationFormatsIsRequired"), p0);
         }
 
+        /// <summary>
+        /// Nesting of TagHelper attribute writing scopes is not supported.
+        /// </summary>
+        internal static string RazorPage_NestingAttributeWritingScopesNotSupported
+        {
+            get { return GetString("RazorPage_NestingAttributeWritingScopesNotSupported"); }
+        }
+
+        /// <summary>
+        /// Nesting of TagHelper attribute writing scopes is not supported.
+        /// </summary>
+        internal static string FormatRazorPage_NestingAttributeWritingScopesNotSupported()
+        {
+            return GetString("RazorPage_NestingAttributeWritingScopesNotSupported");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

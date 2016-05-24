@@ -106,6 +106,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     FormatInvalidIndexerAssignmentMethodName = "InvalidTagHelperIndexerAssignment",
                     StartTagHelperWritingScopeMethodName = "StartTagHelperWritingScope",
                     EndTagHelperWritingScopeMethodName = "EndTagHelperWritingScope",
+                    BeginWriteTagHelperAttributeMethodName = "BeginWriteTagHelperAttribute",
+                    EndWriteTagHelperAttributeMethodName = "EndWriteTagHelperAttribute",
 
                     // Can't use nameof because IHtmlHelper is (also) not accessible here.
                     MarkAsHtmlEncodedMethodName = HtmlHelperPropertyName + ".Raw",
