@@ -89,12 +89,12 @@ namespace OpenIdConnect.AzureAdSample
                         var request = context.HttpContext.Request;
                         var currentUri = UriHelper.Encode(request.Scheme, request.Host, request.PathBase, request.Path);
                         var credential = new ClientCredential(clientId, clientSecret);                                 
-                        var authContext = new AuthenticationContext(authority, new AuthPropertiesTokenCache(context.Properties));
+                        var authContext = new AuthenticationContext(authority, AuthPropertiesTokenCache.ForCodeRedemption(context.Properties));
 
                         var result = await authContext.AcquireTokenByAuthorizationCodeAsync(
                             context.ProtocolMessage.Code, new Uri(currentUri), credential, resource);
 
-                        context.HandleCodeRedemption(result.AccessToken, result.IdToken);
+                        context.HandleCodeRedemption();
                     }
                 }
             });
@@ -128,23 +128,11 @@ namespace OpenIdConnect.AzureAdSample
                 await context.Response.WriteAsync("Tokens:<br>" + Environment.NewLine);
                 try
                 {
-                    // Retrieve the auth session with the cached tokens
-                    var authenticateContext = new AuthenticateContext(CookieAuthenticationDefaults.AuthenticationScheme);
-                    await context.Authentication.AuthenticateAsync(authenticateContext);
-                    var authProperties = new AuthenticationProperties(authenticateContext.Properties);
-                    var tokenCache = new AuthPropertiesTokenCache(authProperties);
-
                     // Use ADAL to get the right token
-                    var authContext = new AuthenticationContext(authority, tokenCache);
+                    var authContext = new AuthenticationContext(authority, AuthPropertiesTokenCache.ForApiCalls(context, CookieAuthenticationDefaults.AuthenticationScheme));
                     var credential = new ClientCredential(clientId, clientSecret);
                     string userObjectID = context.User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier").Value;
-                    var result = authContext.AcquireTokenSilent(resource, credential, new UserIdentifier(userObjectID, UserIdentifierType.UniqueId));
-
-                    // Update the cookie with the modified tokens
-                    if (tokenCache.HasCacheChanged)
-                    {
-                        await context.Authentication.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, authenticateContext.Principal, authProperties);
-                    }
+                    var result = await authContext.AcquireTokenSilentAsync(resource, credential, new UserIdentifier(userObjectID, UserIdentifierType.UniqueId));
 
                     await context.Response.WriteAsync($"access_token: {result.AccessToken}<br>{Environment.NewLine}");
                 }

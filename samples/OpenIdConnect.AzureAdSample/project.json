@@ -5,13 +5,24 @@
     "Microsoft.AspNetCore.Authentication.OpenIdConnect": "1.0.0-*",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
     "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
-    "Microsoft.IdentityModel.Clients.ActiveDirectory": "2.22.302111727",
-    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*"
+    "Microsoft.IdentityModel.Clients.ActiveDirectory": "3.9.302261508-alpha"
   },
   "frameworks": {
-    "net451": {}
+    "net451": { },
+    "netcoreapp1.0": {
+      "imports": [
+        "dnxcore50"
+      ],
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        }
+      }
+    }
   },
   "buildOptions": {
     "emitEntryPoint": true
