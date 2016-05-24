@@ -295,7 +295,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
 
             var inheritedChunkTrees = GetInheritedChunkTrees(sourceFileName);
-
             return new MvcRazorParser(razorParser, inheritedChunkTrees, DefaultInheritedChunks, ModelExpressionType);
         }
 
@@ -343,11 +342,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     ModelExpressionProviderPropertyName = ModelExpressionProviderProperty,
                     ViewDataPropertyName = ViewDataProperty,
                 });
-        }
-
-        public void Dispose()
-        {
-            _chunkTreeCache.Dispose();
         }
 
         private IReadOnlyList<ChunkTree> GetInheritedChunkTrees(string sourceFileName)

@@ -32,83 +32,81 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Directives
                 new UsingChunk { Namespace = "AppNamespace.Model" },
             };
             var cache = new DefaultChunkTreeCache(fileProvider);
-            using (var host = new MvcRazorHost(cache, new TagHelperDescriptorResolver(designTime: false)))
-            {
-                var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
+            var host = new MvcRazorHost(cache, new TagHelperDescriptorResolver(designTime: false));
+            var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
 
-                // Act
-                var chunkTreeResults = utility.GetInheritedChunkTreeResults(
-                    PlatformNormalizer.NormalizePath(@"Views\home\Index.cshtml"));
+            // Act
+            var chunkTreeResults = utility.GetInheritedChunkTreeResults(
+                PlatformNormalizer.NormalizePath(@"Views\home\Index.cshtml"));
 
-                // Assert
-                Assert.Collection(chunkTreeResults,
-                    chunkTreeResult =>
-                    {
-                        var viewImportsPath = @"/Views/_ViewImports.cshtml";
-                        Assert.Collection(chunkTreeResult.ChunkTree.Children,
-                            chunk =>
-                            {
-                                Assert.IsType<LiteralChunk>(chunk);
-                                Assert.Equal(viewImportsPath, chunk.Start.FilePath);
-                            },
-                            chunk =>
-                            {
-                                var injectChunk = Assert.IsType<InjectChunk>(chunk);
-                                Assert.Equal("MyHelper<TModel>", injectChunk.TypeName);
-                                Assert.Equal("Helper", injectChunk.MemberName);
-                                Assert.Equal(viewImportsPath, chunk.Start.FilePath);
-                            },
-                            chunk =>
-                            {
-                                Assert.IsType<LiteralChunk>(chunk);
-                                Assert.Equal(viewImportsPath, chunk.Start.FilePath);
-                            },
-                            chunk =>
-                            {
-                                var setBaseTypeChunk = Assert.IsType<SetBaseTypeChunk>(chunk);
-                                Assert.Equal("MyBaseType", setBaseTypeChunk.TypeName);
-                                Assert.Equal(viewImportsPath, chunk.Start.FilePath);
-                            },
-                            chunk =>
-                            {
-                                Assert.IsType<LiteralChunk>(chunk);
-                                Assert.Equal(viewImportsPath, chunk.Start.FilePath);
-                            },
-                            chunk =>
-                            {
-                                Assert.IsType<StatementChunk>(chunk);
-                                Assert.Equal(viewImportsPath, chunk.Start.FilePath);
-                            },
-                            chunk =>
-                            {
-                                Assert.IsType<LiteralChunk>(chunk);
-                                Assert.Equal(viewImportsPath, chunk.Start.FilePath);
-                            });
-                        Assert.Equal(viewImportsPath, chunkTreeResult.FilePath);
-                    },
-                    chunkTreeResult =>
-                    {
-                        var viewImportsPath = "/Views/home/_ViewImports.cshtml";
-                        Assert.Collection(chunkTreeResult.ChunkTree.Children,
-                            chunk =>
-                            {
-                                Assert.IsType<LiteralChunk>(chunk);
-                                Assert.Equal(viewImportsPath, chunk.Start.FilePath);
-                            },
-                            chunk =>
-                            {
-                                var usingChunk = Assert.IsType<UsingChunk>(chunk);
-                                Assert.Equal("MyNamespace", usingChunk.Namespace);
-                                Assert.Equal(viewImportsPath, chunk.Start.FilePath);
-                            },
-                            chunk =>
-                            {
-                                Assert.IsType<LiteralChunk>(chunk);
-                                Assert.Equal(viewImportsPath, chunk.Start.FilePath);
-                            });
-                        Assert.Equal(viewImportsPath, chunkTreeResult.FilePath);
-                    });
-            }
+            // Assert
+            Assert.Collection(chunkTreeResults,
+                chunkTreeResult =>
+                {
+                    var viewImportsPath = @"/Views/_ViewImports.cshtml";
+                    Assert.Collection(chunkTreeResult.ChunkTree.Children,
+                        chunk =>
+                        {
+                            Assert.IsType<LiteralChunk>(chunk);
+                            Assert.Equal(viewImportsPath, chunk.Start.FilePath);
+                        },
+                        chunk =>
+                        {
+                            var injectChunk = Assert.IsType<InjectChunk>(chunk);
+                            Assert.Equal("MyHelper<TModel>", injectChunk.TypeName);
+                            Assert.Equal("Helper", injectChunk.MemberName);
+                            Assert.Equal(viewImportsPath, chunk.Start.FilePath);
+                        },
+                        chunk =>
+                        {
+                            Assert.IsType<LiteralChunk>(chunk);
+                            Assert.Equal(viewImportsPath, chunk.Start.FilePath);
+                        },
+                        chunk =>
+                        {
+                            var setBaseTypeChunk = Assert.IsType<SetBaseTypeChunk>(chunk);
+                            Assert.Equal("MyBaseType", setBaseTypeChunk.TypeName);
+                            Assert.Equal(viewImportsPath, chunk.Start.FilePath);
+                        },
+                        chunk =>
+                        {
+                            Assert.IsType<LiteralChunk>(chunk);
+                            Assert.Equal(viewImportsPath, chunk.Start.FilePath);
+                        },
+                        chunk =>
+                        {
+                            Assert.IsType<StatementChunk>(chunk);
+                            Assert.Equal(viewImportsPath, chunk.Start.FilePath);
+                        },
+                        chunk =>
+                        {
+                            Assert.IsType<LiteralChunk>(chunk);
+                            Assert.Equal(viewImportsPath, chunk.Start.FilePath);
+                        });
+                    Assert.Equal(viewImportsPath, chunkTreeResult.FilePath);
+                },
+                chunkTreeResult =>
+                {
+                    var viewImportsPath = "/Views/home/_ViewImports.cshtml";
+                    Assert.Collection(chunkTreeResult.ChunkTree.Children,
+                        chunk =>
+                        {
+                            Assert.IsType<LiteralChunk>(chunk);
+                            Assert.Equal(viewImportsPath, chunk.Start.FilePath);
+                        },
+                        chunk =>
+                        {
+                            var usingChunk = Assert.IsType<UsingChunk>(chunk);
+                            Assert.Equal("MyNamespace", usingChunk.Namespace);
+                            Assert.Equal(viewImportsPath, chunk.Start.FilePath);
+                        },
+                        chunk =>
+                        {
+                            Assert.IsType<LiteralChunk>(chunk);
+                            Assert.Equal(viewImportsPath, chunk.Start.FilePath);
+                        });
+                    Assert.Equal(viewImportsPath, chunkTreeResult.FilePath);
+                });
         }
 
         [Fact]
@@ -120,21 +118,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Directives
             fileProvider.AddFile(@"/Views/_Layout.cshtml", string.Empty);
             fileProvider.AddFile(@"/Views/home/_not-viewimports.cshtml", string.Empty);
             var cache = new DefaultChunkTreeCache(fileProvider);
-            using (var host = new MvcRazorHost(cache, new TagHelperDescriptorResolver(designTime: false)))
+            var host = new MvcRazorHost(cache, new TagHelperDescriptorResolver(designTime: false));
+            var defaultChunks = new Chunk[]
             {
-                var defaultChunks = new Chunk[]
-                {
                 new InjectChunk("MyTestHtmlHelper", "Html"),
                 new UsingChunk { Namespace = "AppNamespace.Model" },
-                };
-                var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
+            };
+            var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
 
-                // Act
-                var chunkTrees = utility.GetInheritedChunkTreeResults(PlatformNormalizer.NormalizePath(@"Views\home\Index.cshtml"));
+            // Act
+            var chunkTrees = utility.GetInheritedChunkTreeResults(PlatformNormalizer.NormalizePath(@"Views\home\Index.cshtml"));
 
-                // Assert
-                Assert.Empty(chunkTrees);
-            }
+            // Assert
+            Assert.Empty(chunkTrees);
         }
 
         [Fact]
@@ -145,15 +141,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Directives
             fileProvider.AddFile(@"/Views/_ViewImports.cshtml",
                                "@inject DifferentHelper<TModel> Html");
             var cache = new DefaultChunkTreeCache(fileProvider);
-            using (var host = new MvcRazorHost(cache, new TagHelperDescriptorResolver(designTime: false)))
+            var host = new MvcRazorHost(cache, new TagHelperDescriptorResolver(designTime: false));
+            var defaultChunks = new Chunk[]
             {
-                var defaultChunks = new Chunk[]
-                {
                 new InjectChunk("MyTestHtmlHelper", "Html"),
                 new UsingChunk { Namespace = "AppNamespace.Model" },
-                };
-                var inheritedChunkTrees = new ChunkTree[]
-                {
+            };
+            var inheritedChunkTrees = new ChunkTree[]
+            {
                 new ChunkTree
                 {
                     Children = new Chunk[]
@@ -169,20 +164,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Directives
                         new UsingChunk { Namespace = "AppNamespace.Model" },
                     }
                 }
-                };
+            };
 
-                var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
-                var chunkTree = new ChunkTree();
+            var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
+            var chunkTree = new ChunkTree();
 
-                // Act
-                utility.MergeInheritedChunkTrees(chunkTree, inheritedChunkTrees, "dynamic");
+            // Act
+            utility.MergeInheritedChunkTrees(chunkTree, inheritedChunkTrees, "dynamic");
 
-                // Assert
-                Assert.Collection(chunkTree.Children,
-                    chunk => Assert.Same(defaultChunks[1], chunk),
-                    chunk => Assert.Same(inheritedChunkTrees[0].Children[0], chunk),
-                    chunk => Assert.Same(defaultChunks[0], chunk));
-            }
+            // Assert
+            Assert.Collection(chunkTree.Children,
+                chunk => Assert.Same(defaultChunks[1], chunk),
+                chunk => Assert.Same(inheritedChunkTrees[0].Children[0], chunk),
+                chunk => Assert.Same(defaultChunks[0], chunk));
         }
     }
 }
