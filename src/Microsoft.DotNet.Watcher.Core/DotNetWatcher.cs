@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Watcher.Core.Internal;
@@ -18,8 +19,6 @@ namespace Microsoft.DotNet.Watcher.Core
 
         private readonly ILogger _logger;
 
-        public bool ExitOnChange { get; set; }
-
         public DotNetWatcher(
             Func<IFileWatcher> fileWatcherFactory,
             Func<IProcessWatcher> processWatcherFactory,
@@ -34,32 +33,23 @@ namespace Microsoft.DotNet.Watcher.Core
             _logger = _loggerFactory.CreateLogger(nameof(DotNetWatcher));
         }
 
-        public async Task WatchAsync(string projectFile, string command, string[] dotnetArguments, string workingDir, CancellationToken cancellationToken)
+        public async Task WatchAsync(string projectFile, string[] dotnetArguments, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(projectFile))
             {
                 throw new ArgumentNullException(nameof(projectFile));
             }
-            if (string.IsNullOrEmpty(command))
-            {
-                throw new ArgumentNullException(nameof(command));
-            }
             if (dotnetArguments == null)
             {
                 throw new ArgumentNullException(nameof(dotnetArguments));
-            }
-            if (string.IsNullOrEmpty(workingDir))
-            {
-                throw new ArgumentNullException(nameof(workingDir));
             }
             if (cancellationToken == null)
             {
                 throw new ArgumentNullException(nameof(cancellationToken));
             }
 
-            var fullDotnetArgs = new string[dotnetArguments.Length + 1];
-            fullDotnetArgs[0] = command;
-
+            // If any argument has spaces then quote it because we're going to convert everything
+            // to string
             for (var i = 0; i < dotnetArguments.Length; i++)
             {
                 var arg = dotnetArguments[i];
@@ -72,11 +62,12 @@ namespace Microsoft.DotNet.Watcher.Core
                         break;
                     }
                 }
-                fullDotnetArgs[i + 1] = arg;
+                dotnetArguments[i] = arg;
             }
-            dotnetArguments = fullDotnetArgs;
 
             var dotnetArgumentsAsString = string.Join(" ", dotnetArguments);
+
+            var workingDir = Path.GetDirectoryName(projectFile);
 
             while (true)
             {
@@ -116,11 +107,6 @@ namespace Microsoft.DotNet.Watcher.Core
                             _logger.LogError($"dotnet exit code: {dotnetExitCode}");
                         }
 
-                        if (ExitOnChange)
-                        {
-                            break;
-                        }
-
                         _logger.LogInformation("Waiting for a file to change before restarting dotnet...");
                         // Now wait for a file to change before restarting dotnet
                         await WaitForProjectFileToChangeAsync(projectFile, cancellationToken);
@@ -130,11 +116,6 @@ namespace Microsoft.DotNet.Watcher.Core
                         // This is a file watcher task
                         string changedFile = fileWatchingTask.Result;
                         _logger.LogInformation($"File changed: {fileWatchingTask.Result}");
-
-                        if (ExitOnChange)
-                        {
-                            break;
-                        }
                     }
                 }
             }

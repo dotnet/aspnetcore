@@ -185,7 +185,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 // Wait for the process to start
                 using (var wait = new WaitForFileToChange(StartedFile))
                 {
-                    RunDotNetWatch(StatusFile, Path.Combine(_scenario.WorkFolder, TestAppName));
+                    RunDotNetWatch($"run {StatusFile}", Path.Combine(_scenario.WorkFolder, TestAppName));
 
                     wait.Wait(_defaultTimeout,
                         expectedToChange: true,

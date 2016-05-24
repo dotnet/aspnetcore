@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 // Wait for the process to start
                 using (var wait = new WaitForFileToChange(scenario.StartedFile))
                 {
-                    scenario.RunDotNetWatch($"{scenario.StatusFile} --no-exit");
+                    scenario.RunDotNetWatch($"run {scenario.StatusFile} --no-exit");
 
                     wait.Wait(_defaultTimeout,
                         expectedToChange: true,
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 // Wait for the process to start
                 using (var wait = new WaitForFileToChange(scenario.StartedFile))
                 {
-                    scenario.RunDotNetWatch(scenario.StatusFile);
+                    scenario.RunDotNetWatch($"run {scenario.StatusFile}");
 
                     wait.Wait(_defaultTimeout,
                         expectedToChange: true,
@@ -87,44 +87,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                         expectedToChange: true,
                         errorMessage: $"Process did not restart because {scenario.StartedFile} was not changed");
                 }
-            }
-        }
-
-
-        [Fact]
-        public void ExitOnChange()
-        {
-            using (var scenario = new NoDepsAppScenario())
-            {
-                // Wait for the process to start
-                using (var wait = new WaitForFileToChange(scenario.StartedFile))
-                {
-                    scenario.RunDotNetWatch($"--exit-on-change -- {scenario.StatusFile} --no-exit");
-
-                    wait.Wait(_defaultTimeout,
-                        expectedToChange: true,
-                        errorMessage: $"File not created: {scenario.StartedFile}");
-                }
-
-                // Change a file
-                var fileToChange = Path.Combine(scenario.TestAppFolder, "Program.cs");
-                var programCs = File.ReadAllText(fileToChange);
-                File.WriteAllText(fileToChange, programCs);
-
-                Waiters.WaitForProcessToStop(
-                    scenario.WatcherProcess.Id,
-                    _defaultTimeout,
-                    expectedToStop: true,
-                    errorMessage: "The watcher did not stop");
-
-                // Check that the first child process is no longer running
-                var ids = File.ReadAllLines(scenario.StatusFile);
-                var firstProcessId = int.Parse(ids[0]);
-                Waiters.WaitForProcessToStop(
-                    firstProcessId,
-                    TimeSpan.FromSeconds(1),
-                    expectedToStop: true,
-                    errorMessage: $"PID: {firstProcessId} is still alive");
             }
         }
 
