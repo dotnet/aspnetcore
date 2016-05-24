@@ -58,9 +58,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void SeekWorksAcrossBlocks()
         {
-            Console.WriteLine($"Vector.IsHardwareAccelerated == {Vector.IsHardwareAccelerated}");
-            Console.WriteLine($"Vector<byte>.Count == {Vector<byte>.Count}");
-
             using (var pool = new MemoryPool())
             {
                 var block1 = pool.Lease();
