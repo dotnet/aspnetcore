@@ -96,24 +96,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                         response = await httpClient.GetAsync("/AutoForbid");
                         responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-
-                        response = await httpClient.GetAsync("/Restricted");
-                        responseText = await response.Content.ReadAsStringAsync();
-                        Assert.Equal("Kerberos", responseText);
-
-                        response = await httpClient.GetAsync("/RestrictedNegotiate");
-                        responseText = await response.Content.ReadAsStringAsync();
-                        // This is Forbidden because we authenticate with Kerberos and challenge for Negotiate.
-                        // Note we can't restrict a challenge to a specific auth type, the native auth modules always add themselves,
-                        // so both Negotiate and NTLM get sent again.
-                        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-
-                        response = await httpClient.GetAsync("/RestrictedNTLM");
-                        responseText = await response.Content.ReadAsStringAsync();
-                        // This is Forbidden because we authenticate with Kerberos and challenge for NTLM.
-                        // Note we can't restrict a challenge to a specific auth type, the native auth modules always add themselves,
-                        // so both Negotiate and NTLM get sent again.
-                        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
                     }
                     catch (XunitException)
                     {
