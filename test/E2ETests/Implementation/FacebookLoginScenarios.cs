@@ -31,7 +31,7 @@ namespace E2ETests
 
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = await DoPostAsync("Account/ExternalLogin", content);
-            Assert.StartsWith("https://www.facebook.com/v2.5/dialog/oauth", response.Headers.Location.ToString());
+            Assert.StartsWith("https://www.facebook.com/v2.6/dialog/oauth", response.Headers.Location.ToString());
             var queryItems = new QueryCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
             Assert.Equal<string>("code", queryItems["response_type"]);
             Assert.Equal<string>("[AppId]", queryItems["client_id"]);

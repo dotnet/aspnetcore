@@ -19,7 +19,7 @@ namespace MusicStore.Mocks.Google
         {
             var response = new HttpResponseMessage();
 
-            if (request.RequestUri.AbsoluteUri.StartsWith("https://www.googleapis.com/oauth2/v3/token"))
+            if (request.RequestUri.AbsoluteUri.StartsWith("https://www.googleapis.com/oauth2/v4/token"))
             {
                 var formData = new FormCollection(await new FormReader(await request.Content.ReadAsStreamAsync()).ReadFormAsync());
                 if (formData["grant_type"] == "authorization_code")
