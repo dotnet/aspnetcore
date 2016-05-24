@@ -15,24 +15,24 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// <summary>
         /// Initializes a new instance of <see cref="MvcRazorMvcViewOptionsSetup"/>.
         /// </summary>
-        /// <param name="serviceProvider">The application's <see cref="IServiceProvider"/>.</param>
-        public MvcRazorMvcViewOptionsSetup(IServiceProvider serviceProvider)
-            : base(options => ConfigureMvc(serviceProvider, options))
+        /// <param name="razorViewEngine">The <see cref="IRazorViewEngine"/>.</param>
+        public MvcRazorMvcViewOptionsSetup(IRazorViewEngine razorViewEngine)
+            : base(options => ConfigureMvc(razorViewEngine, options))
         {
         }
 
         /// <summary>
         /// Configures <paramref name="options"/> to use <see cref="RazorViewEngine"/>.
         /// </summary>
-        /// <param name="serviceProvider">The application's <see cref="IServiceProvider"/>.</param>
+        /// <param name="razorViewEngine">The <see cref="IRazorViewEngine"/>.</param>
         /// <param name="options">The <see cref="MvcViewOptions"/> to configure.</param>
         public static void ConfigureMvc(
-            IServiceProvider serviceProvider,
+            IRazorViewEngine razorViewEngine,
             MvcViewOptions options)
         {
-            if (serviceProvider == null)
+            if (razorViewEngine == null)
             {
-                throw new ArgumentNullException(nameof(serviceProvider));
+                throw new ArgumentNullException(nameof(razorViewEngine));
             }
 
             if (options == null)
@@ -40,7 +40,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var razorViewEngine = serviceProvider.GetRequiredService<IRazorViewEngine>();
             options.ViewEngines.Add(razorViewEngine);
         }
     }
