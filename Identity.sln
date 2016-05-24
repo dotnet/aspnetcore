@@ -29,7 +29,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Identi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interop4.5", "samples\Interop4.5\Interop4.5.csproj", "{4D30B14B-20FC-4DDA-97C5-B32D13FE2578}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.CoreCompat", "src\Microsoft.AspNet.Identity.CoreCompat\Microsoft.AspNet.Identity.CoreCompat.xproj", "{6A74C6EA-B241-4D6B-BCE4-BF89EC1D2475}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.AspNetCoreCompat", "src\Microsoft.AspNet.Identity.AspNetCoreCompat\Microsoft.AspNet.Identity.AspNetCoreCompat.xproj", "{6A74C6EA-B241-4D6B-BCE4-BF89EC1D2475}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
