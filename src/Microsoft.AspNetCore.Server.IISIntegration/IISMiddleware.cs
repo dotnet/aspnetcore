@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Security.Principal;
 using System.Threading.Tasks;
@@ -58,6 +59,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 _logger.LogError($"'{MSAspNetCoreToken}' does not match the expected pairing token '{_pairingToken}', request rejected.");
                 httpContext.Response.StatusCode = 400;
+                return;
+            }
+
+            if (Debugger.IsAttached && string.Equals("DEBUG", httpContext.Request.Method, StringComparison.OrdinalIgnoreCase))
+            {
+                // The Visual Studio debugger tooling sends a DEBUG request to make IIS & AspNetCoreModule launch the process
+                // so the debugger can attach. Filter out this request from the app.
                 return;
             }
 
