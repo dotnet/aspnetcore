@@ -4,13 +4,14 @@
     "anonymousAuthentication": true,
     "iisExpress": {
       "applicationUrl": "http://localhost:42023",
-      "sslPort": 0
+      "sslPort": 44318
     }
   },
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
+      "launchUrl": "https://localhost:44318/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
@@ -18,10 +19,10 @@
     "OpenIdConnectSample": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "http://localhost:42023",
+      "launchUrl": "https://localhost:44318/",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_SERVER.URLS": "http://localhost:42023"
+        "ASPNETCORE_URLS": "https://localhost:44318/",
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }

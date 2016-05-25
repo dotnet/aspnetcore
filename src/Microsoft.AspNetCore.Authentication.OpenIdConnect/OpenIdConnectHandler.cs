@@ -62,6 +62,33 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             HtmlEncoder = htmlEncoder;
         }
 
+        public override async Task<bool> HandleRequestAsync()
+        {
+            if (Options.RemoteSignOutPath.HasValue && Options.RemoteSignOutPath == Request.Path)
+            {
+                var remoteSignOutContext = new RemoteSignOutContext(Context, Options);
+                await Options.Events.RemoteSignOut(remoteSignOutContext);
+
+                if (remoteSignOutContext.HandledResponse)
+                {
+                    Logger.RemoteSignOutHandledResponse();
+                    return true;
+                }
+                if (remoteSignOutContext.Skipped)
+                {
+                    Logger.RemoteSignOutSkipped();
+                    return false;
+                }
+
+                Logger.RemoteSignOut();
+
+                // We've received a remote sign-out request
+                await Context.Authentication.SignOutAsync(Options.SignOutScheme ?? Options.SignInScheme);
+                return true;
+            }
+            return await base.HandleRequestAsync();
+        }
+
         /// <summary>
         /// Handles Signout
         /// </summary>

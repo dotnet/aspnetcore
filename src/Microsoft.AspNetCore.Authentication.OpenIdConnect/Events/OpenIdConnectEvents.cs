@@ -37,6 +37,11 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public Func<RedirectContext, Task> OnRedirectToIdentityProviderForSignOut { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
+        /// Invoked when a request is received on the RemoteSignOutPath.
+        /// </summary>
+        public Func<RemoteSignOutContext, Task> OnRemoteSignOut { get; set; } = context => Task.FromResult(0);
+
+        /// <summary>
         /// Invoked after "authorization code" is redeemed for tokens at the token endpoint.
         /// </summary>
         public Func<TokenResponseReceivedContext, Task> OnTokenResponseReceived { get; set; } = context => Task.FromResult(0);
@@ -60,6 +65,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public virtual Task RedirectToIdentityProvider(RedirectContext context) => OnRedirectToIdentityProvider(context);
 
         public virtual Task RedirectToIdentityProviderForSignOut(RedirectContext context) => OnRedirectToIdentityProviderForSignOut(context);
+
+        public virtual Task RemoteSignOut(RemoteSignOutContext context) => OnRemoteSignOut(context);
 
         public virtual Task TokenResponseReceived(TokenResponseReceivedContext context) => OnTokenResponseReceived(context);
 

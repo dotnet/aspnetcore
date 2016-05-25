@@ -47,6 +47,9 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, string, Exception> _invalidSecurityTokenType;
         private static Action<ILogger, string, Exception> _unableToValidateIdToken;
         private static Action<ILogger, string, Exception> _postAuthenticationLocalRedirect;
+        private static Action<ILogger, Exception> _remoteSignOutHandledResponse;
+        private static Action<ILogger, Exception> _remoteSignOutSkipped;
+        private static Action<ILogger, Exception> _remoteSignOut;
 
         static LoggingExtensions()
         {
@@ -211,6 +214,18 @@ namespace Microsoft.Extensions.Logging
                eventId: 43,
                logLevel: LogLevel.Error,
                formatString: "Unable to read the 'id_token', no suitable ISecurityTokenValidator was found for: '{IdToken}'.");
+            _remoteSignOutHandledResponse = LoggerMessage.Define(
+               eventId: 44,
+               logLevel: LogLevel.Debug,
+               formatString: "RemoteSignOutContext.HandledResponse");
+            _remoteSignOutSkipped = LoggerMessage.Define(
+               eventId: 45,
+               logLevel: LogLevel.Debug,
+               formatString: "RemoteSignOutContext.Skipped");
+            _remoteSignOut = LoggerMessage.Define(
+               eventId: 46,
+               logLevel: LogLevel.Information,
+               formatString: "Remote signout request processed.");
         }
 
         public static void UpdatingConfiguration(this ILogger logger)
@@ -411,6 +426,21 @@ namespace Microsoft.Extensions.Logging
         public static void PostAuthenticationLocalRedirect(this ILogger logger, string redirectUri)
         {
             _postAuthenticationLocalRedirect(logger, redirectUri, null);
+        }
+
+        public static void RemoteSignOutHandledResponse(this ILogger logger)
+        {
+            _remoteSignOutHandledResponse(logger, null);
+        }
+
+        public static void RemoteSignOutSkipped(this ILogger logger)
+        {
+            _remoteSignOutSkipped(logger, null);
+        }
+
+        public static void RemoteSignOut(this ILogger logger)
+        {
+            _remoteSignOut(logger, null);
         }
     }
 }

@@ -78,6 +78,14 @@ namespace OpenIdConnectSample
 
             app.Run(async context =>
             {
+                if (context.Request.Path.Equals("/signedout"))
+                {
+                    context.Response.ContentType = "text/html";
+                    await context.Response.WriteAsync($"<html><body>You have been signed out.<br>{Environment.NewLine}");
+                    await context.Response.WriteAsync("<a href=\"/\">Sign In</a>");
+                    await context.Response.WriteAsync($"</body></html>");
+                    return;
+                }
                 if (context.Request.Path.Equals("/signout"))
                 {
                     await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -85,6 +93,16 @@ namespace OpenIdConnectSample
                     await context.Response.WriteAsync($"<html><body>Signed out {context.User.Identity.Name}<br>{Environment.NewLine}");
                     await context.Response.WriteAsync("<a href=\"/\">Sign In</a>");
                     await context.Response.WriteAsync($"</body></html>");
+                    return;
+                }
+                if (context.Request.Path.Equals("/signout-remote"))
+                {
+                    // Redirects
+                    await context.Authentication.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties()
+                    {
+                        RedirectUri = "/signedout"
+                    });
+                    await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     return;
                 }
                 if (context.Request.Path.Equals("/Account/AccessDenied"))
@@ -134,6 +152,7 @@ namespace OpenIdConnectSample
                 }
                 await context.Response.WriteAsync("<a href=\"/restricted\">Restricted</a><br>");
                 await context.Response.WriteAsync("<a href=\"/signout\">Sign Out</a><br>");
+                await context.Response.WriteAsync("<a href=\"/signout-remote\">Sign Out Remote</a><br>");
                 await context.Response.WriteAsync($"</body></html>");
             });
         }

@@ -11,8 +11,6 @@ namespace SocialSample
     {
         public static void Main(string[] args)
         {
-            var config = new ConfigurationBuilder().AddEnvironmentVariables("ASPNETCORE_").Build();
-
             var host = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
@@ -20,7 +18,6 @@ namespace SocialSample
                     var serverCertificate = LoadCertificate();
                     options.UseHttps(serverCertificate);
                 })
-                .UseConfiguration(config)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()

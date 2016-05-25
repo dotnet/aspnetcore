@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Builder
             AutomaticChallenge = true;
             DisplayName = OpenIdConnectDefaults.Caption;
             CallbackPath = new PathString("/signin-oidc");
+            RemoteSignOutPath = new PathString("/signout-oidc");
             Events = new OpenIdConnectEvents();
             Scope.Add("openid");
             Scope.Add("profile");
@@ -154,6 +155,17 @@ namespace Microsoft.AspNetCore.Builder
         /// Gets the list of permissions to request.
         /// </summary>
         public ICollection<string> Scope { get; } = new HashSet<string>();
+
+        /// <summary>
+        /// Requests received on this path will cause the middleware to invoke SignOut using the SignInScheme.
+        /// </summary>
+        public PathString RemoteSignOutPath { get; set; }
+
+        /// <summary>
+        /// The Authentication Scheme to use with SignOut on the SignOutPath. SignInScheme will be used if this
+        /// is not set.
+        /// </summary>
+        public string SignOutScheme { get; set; }
 
         /// <summary>
         /// Gets or sets the type used to secure data handled by the middleware.

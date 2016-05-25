@@ -36,6 +36,11 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         Task RedirectToIdentityProviderForSignOut(RedirectContext context);
 
         /// <summary>
+        /// Invoked when a request is received on the RemoteSignOutPath.
+        /// </summary>
+        Task RemoteSignOut(RemoteSignOutContext context);
+
+        /// <summary>
         /// Invoked after "authorization code" is redeemed for tokens at the token endpoint.
         /// </summary>
         Task TokenResponseReceived(TokenResponseReceivedContext context);
