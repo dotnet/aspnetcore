@@ -97,6 +97,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 throw new ArgumentNullException(nameof(context));
             }
 
+            // This GetRequiredService call is by design. ViewBufferScope is a scoped service, RazorViewEngine
+            // is the component responsible for creating RazorViews and it is a Singleton service. It doesn't
+            // have access to the RequestServices so requiring the service when we render the page is the best
+            // we can do.
             _bufferScope = context.HttpContext.RequestServices.GetRequiredService<IViewBufferScope>();
             var bodyWriter = await RenderPageAsync(RazorPage, context, invokeViewStarts: true);
             await RenderLayoutAsync(context, bodyWriter);
