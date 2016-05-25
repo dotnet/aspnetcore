@@ -50,9 +50,9 @@ namespace Microsoft.AspNetCore.AngularServices
         private static string FormatAsScript(string url, HttpStatusCode responseStatusCode, string responseBody)
             =>
                 "<script>" +
-                "window.__preCachedResponses = window.__preCachedResponses || {{}}; " +
-                $"window.__preCachedResponses[{JsonConvert.SerializeObject(url)}] " +
-                $"= {JsonConvert.SerializeObject(new { statusCode = responseStatusCode, body = responseBody })};" +
+                    "window.__preCachedResponses = window.__preCachedResponses || {}; " +
+                    $"window.__preCachedResponses[{JsonConvert.SerializeObject(url)}] " +
+                        $"= {JsonConvert.SerializeObject(new { statusCode = responseStatusCode, body = responseBody })};" +
                 "</script>";
     }
 }
