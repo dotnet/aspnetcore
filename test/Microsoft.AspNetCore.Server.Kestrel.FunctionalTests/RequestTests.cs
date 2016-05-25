@@ -4,8 +4,6 @@
 using System;
 using System.Globalization;
 using System.Net.Http;
-using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -155,50 +153,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 var response = await client.GetAsync($"http://localhost:{host.GetPort()}/");
                 response.EnsureSuccessStatusCode();
-            }
-        }
-
-        [Fact]
-        public void RequestPathIsNormalized()
-        {
-            var builder = new WebHostBuilder()
-                .UseKestrel()
-                .UseUrls($"http://127.0.0.1:0/\u0041\u030A")
-                .Configure(app =>
-                {
-                    app.Run(async context =>
-                    {
-                        var connection = context.Connection;
-                        Assert.Equal("/\u00C5", context.Request.PathBase.Value);
-                        Assert.Equal("/B/\u00C5", context.Request.Path.Value);
-                        await context.Response.WriteAsync("hello, world");
-                    });
-                });
-
-            using (var host = builder.Build())
-            {
-                host.Start();
-
-                using (var socket = TestConnection.CreateConnectedLoopbackSocket(host.GetPort()))
-                {
-                    socket.Send(Encoding.ASCII.GetBytes("GET /%41%CC%8A/A/../B/%41%CC%8A HTTP/1.1\r\n\r\n"));
-                    socket.Shutdown(SocketShutdown.Send);
-
-                    var response = new StringBuilder();
-                    var buffer = new byte[4096];
-                    while (true)
-                    {
-                        var length = socket.Receive(buffer);
-                        if (length == 0)
-                        {
-                            break;
-                        }
-
-                        response.Append(Encoding.ASCII.GetString(buffer, 0, length));
-                    }
-
-                    Assert.StartsWith("HTTP/1.1 200 OK", response.ToString());
-                }
             }
         }
 

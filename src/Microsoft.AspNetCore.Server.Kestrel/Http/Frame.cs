@@ -84,6 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         public string PathBase { get; set; }
         public string Path { get; set; }
         public string QueryString { get; set; }
+        public string RawTarget { get; set; }
         public string HttpVersion
         {
             get
@@ -860,6 +861,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     queryString = begin.GetAsciiString(scan);
                 }
 
+                var queryEnd = scan;
+
                 if (pathBegin.Peek() == ' ')
                 {
                     RejectRequest("Missing request target.");
@@ -907,8 +910,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
                 // then encoded/escaped to ASCII  https://www.ietf.org/rfc/rfc3987.txt "Mapping of IRIs to URIs"
                 string requestUrlPath;
+                string rawTarget;
                 if (needDecode)
                 {
+                    // Read raw target before mutating memory.
+                    rawTarget = pathBegin.GetAsciiString(queryEnd);
+
                     // URI was encoded, unescape and then parse as utf8
                     pathEnd = UrlPathDecoder.Unescape(pathBegin, pathEnd);
                     requestUrlPath = pathBegin.GetUtf8String(pathEnd);
@@ -918,27 +925,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     // URI wasn't encoded, parse as ASCII
                     requestUrlPath = pathBegin.GetAsciiString(pathEnd);
+
+                    if (queryString.Length == 0)
+                    {
+                        // No need to allocate an extra string if the path didn't need
+                        // decoding and there's no query string following it.
+                        rawTarget = requestUrlPath;
+                    }
+                    else
+                    {
+                        rawTarget = pathBegin.GetAsciiString(queryEnd);
+                    }
                 }
 
-                requestUrlPath = PathNormalizer.RemoveDotSegments(requestUrlPath);
+                var normalizedTarget = PathNormalizer.RemoveDotSegments(requestUrlPath);
 
                 consumed = scan;
                 Method = method;
                 QueryString = queryString;
+                RawTarget = rawTarget;
                 HttpVersion = httpVersion;
 
                 bool caseMatches;
-
-                if (!string.IsNullOrEmpty(_pathBase) &&
-                    (requestUrlPath.Length == _pathBase.Length || (requestUrlPath.Length > _pathBase.Length && requestUrlPath[_pathBase.Length] == '/')) &&
-                    RequestUrlStartsWithPathBase(requestUrlPath, out caseMatches))
+                if (RequestUrlStartsWithPathBase(normalizedTarget, out caseMatches))
                 {
-                    PathBase = caseMatches ? _pathBase : requestUrlPath.Substring(0, _pathBase.Length);
-                    Path = requestUrlPath.Substring(_pathBase.Length);
+                    PathBase = caseMatches ? _pathBase : normalizedTarget.Substring(0, _pathBase.Length);
+                    Path = normalizedTarget.Substring(_pathBase.Length);
+                }
+                else if (rawTarget[0] == '/') // check rawTarget since normalizedTarget can be "" or "/" after dot segment removal
+                {
+                    Path = normalizedTarget;
                 }
                 else
                 {
-                    Path = requestUrlPath;
+                    Path = string.Empty;
+                    PathBase = string.Empty;
+                    QueryString = string.Empty;
                 }
 
                 return RequestLineStatus.Done;
@@ -977,6 +999,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private bool RequestUrlStartsWithPathBase(string requestUrl, out bool caseMatches)
         {
             caseMatches = true;
+
+            if (string.IsNullOrEmpty(_pathBase))
+            {
+                return false;
+            }
+
+            if (requestUrl.Length < _pathBase.Length || (requestUrl.Length > _pathBase.Length && requestUrl[_pathBase.Length] != '/'))
+            {
+                return false;
+            }
 
             for (var i = 0; i < _pathBase.Length; i++)
             {
