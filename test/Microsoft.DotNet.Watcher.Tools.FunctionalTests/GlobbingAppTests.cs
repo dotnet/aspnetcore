@@ -85,6 +85,24 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             }
         }
 
+        // Delete an entire folder
+        [Fact]
+        public void DeleteSourceFolder()
+        {
+            using (var scenario = new GlobbingAppScenario())
+            using (var wait = new WaitForFileToChange(scenario.StartedFile))
+            {
+                scenario.Start();
+
+                var folderToDelete = Path.Combine(scenario.TestAppFolder, "include");
+                Directory.Delete(folderToDelete, recursive: true);
+
+                wait.Wait(_defaultTimeout,
+                    expectedToChange: true,
+                    errorMessage: $"Process did not restart because {scenario.StartedFile} was not changed");
+            }
+        }
+
         // Rename a file included in compilation
         [Fact]
         public void RenameCompiledFile()

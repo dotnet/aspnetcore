@@ -1,15 +1,17 @@
 {
   "version": "1.0.0-*",
   "buildOptions": {
-    "emitEntryPoint": true
+    "emitEntryPoint": true,
+    "compile": {
+      "include": [
+        "Program.cs",
+        "include/*.cs"
+      ],
+      "exclude": [
+        "exclude/*"
+      ]
+    }
   },
-  "compile": [
-    "Program.cs",
-    "include/*.cs"
-  ],
-  "exclude": [
-    "exclude/*"
-  ],
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {

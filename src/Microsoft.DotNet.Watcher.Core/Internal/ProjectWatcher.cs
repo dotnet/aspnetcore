@@ -107,6 +107,10 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
                 foreach (var file in project.Files)
                 {
                     closure.Add(file);
+
+                    // We need to add the folder because folder deletions only trigger 
+                    // for the folder, not for the files inside it
+                    closure.Add(Path.GetDirectoryName(file));
                 }
 
                 foreach (var dependency in project.ProjectDependencies)

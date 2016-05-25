@@ -1,9 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.DotNet.ProjectModel.Files;
 using Microsoft.DotNet.ProjectModel.Graph;
 
 namespace Microsoft.DotNet.Watcher.Core.Internal
@@ -15,15 +17,34 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
             ProjectFile = runtimeProject.ProjectFilePath;
             ProjectDirectory = runtimeProject.ProjectDirectory;
 
-            Files = runtimeProject.Files.SourceFiles.Concat(
-                    runtimeProject.Files.ResourceFiles.Values.Concat(
-                    runtimeProject.Files.PreprocessSourceFiles.Concat(
-                    runtimeProject.Files.SharedFiles))).Concat(
-                    new string[] { runtimeProject.ProjectFilePath })
-                .ToList();
+            var compilerOptions = runtimeProject.GetCompilerOptions(targetFramework: null, configurationName: null);
+
+            var filesToWatch = new List<string>() { runtimeProject.ProjectFilePath };
+            if (compilerOptions?.CompileInclude != null)
+            {
+                filesToWatch.AddRange(compilerOptions.CompileInclude.ResolveFiles());
+            }
+            else
+            {
+                filesToWatch.AddRange(runtimeProject.Files.SourceFiles);
+            }
+
+            if (compilerOptions?.EmbedInclude != null)
+            {
+                filesToWatch.AddRange(compilerOptions.EmbedInclude.ResolveFiles());
+            }
+            else
+            {
+                filesToWatch.AddRange(runtimeProject.Files.ResourceFiles.Values);
+            }
+
+            filesToWatch.AddRange(runtimeProject.Files.SharedFiles);
+            filesToWatch.AddRange(runtimeProject.Files.PreprocessSourceFiles);
+
+            Files = filesToWatch;
 
             var projectLockJsonPath = Path.Combine(runtimeProject.ProjectDirectory, "project.lock.json");
-            
+
             if (File.Exists(projectLockJsonPath))
             {
                 var lockFile = LockFileReader.Read(projectLockJsonPath, designTime: false);
