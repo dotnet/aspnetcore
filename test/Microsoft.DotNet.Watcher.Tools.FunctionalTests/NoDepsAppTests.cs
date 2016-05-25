@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using Xunit;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
@@ -79,6 +80,11 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 // Then wait for it to restart when we change a file
                 using (var wait = new WaitForFileToChange(scenario.StartedFile))
                 {
+                    // On Unix the file write time is in 1s increments;
+                    // if we don't wait, there's a chance that the polling
+                    // watcher will not detect the change
+                    Thread.Sleep(1000);
+
                     var fileToChange = Path.Combine(scenario.TestAppFolder, "Program.cs");
                     var programCs = File.ReadAllText(fileToChange);
                     File.WriteAllText(fileToChange, programCs);

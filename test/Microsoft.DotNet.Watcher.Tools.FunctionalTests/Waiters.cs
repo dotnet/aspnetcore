@@ -44,6 +44,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         public static void WaitForProcessToStop(int processId, TimeSpan timeout, bool expectedToStop, string errorMessage)
         {
+            Console.WriteLine($"Waiting for process {processId} to stop...");
+
             Process process = null;
 
             try
@@ -52,8 +54,11 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             }
             catch (Exception e)
             {
-                Console.WriteLine("Could not get process id:");
-                Console.WriteLine(e);
+                // If we expect the process to stop, then it might have stopped already
+                if (!expectedToStop)
+                {
+                    Console.WriteLine($"Could not find process {processId}: {e}");
+                }
             }
 
             var watch = new Stopwatch();
@@ -62,6 +67,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             {
                 if (process == null || process.HasExited)
                 {
+                    Console.WriteLine($"Process {processId} is no longer running");
                     break;
                 }
                 Thread.Sleep(500);
