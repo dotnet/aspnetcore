@@ -8,7 +8,7 @@ namespace TestOutput
     {
         #line hidden
         #pragma warning disable 0414
-        private global::Microsoft.AspNetCore.Razor.TagHelperContent __tagHelperStringValueBuffer = null;
+        private string __tagHelperStringValueBuffer = null;
         #pragma warning restore 0414
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperExecutionContext __tagHelperExecutionContext = null;
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperRunner __tagHelperRunner = null;
@@ -77,15 +77,15 @@ namespace TestOutput
                 );
                 __TestNamespace_MyTagHelper = CreateTagHelper<global::TestNamespace.MyTagHelper>();
                 __tagHelperExecutionContext.Add(__TestNamespace_MyTagHelper);
-                StartTagHelperWritingScope(null);
+                BeginWriteTagHelperAttribute();
                 WriteLiteral("Current Time: ");
 #line 9 "TagHelpersInSection.cshtml"
                                       WriteLiteral(DateTime.Now);
 
 #line default
 #line hidden
-                __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-                __TestNamespace_MyTagHelper.BoundProperty = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
+                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
+                __TestNamespace_MyTagHelper.BoundProperty = __tagHelperStringValueBuffer;
                 __tagHelperExecutionContext.AddTagHelperAttribute("boundproperty", __TestNamespace_MyTagHelper.BoundProperty);
                 BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unboundproperty", 3);
                 AddHtmlAttributeValue("", 186, "Current", 186, 7, true);

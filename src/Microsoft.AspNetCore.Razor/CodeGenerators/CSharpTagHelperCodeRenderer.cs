@@ -687,7 +687,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                 // Scopes are a runtime feature.
                 if (!_designTimeMode)
                 {
-                    _writer.WriteMethodInvocation(_tagHelperContext.StartTagHelperWritingScopeMethodName, "null");
+                    _writer.WriteMethodInvocation(_tagHelperContext.BeginWriteTagHelperAttributeMethodName);
                 }
 
                 var visitor = htmlEncodeValues ? _bodyVisitor : _literalBodyVisitor;
@@ -698,7 +698,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                 {
                     _writer
                         .WriteStartAssignment(StringValueBufferVariableName)
-                        .WriteMethodInvocation(_tagHelperContext.EndTagHelperWritingScopeMethodName);
+                        .WriteMethodInvocation(_tagHelperContext.EndWriteTagHelperAttributeMethodName);
                 }
             }
             finally
@@ -733,11 +733,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
             }
             else
             {
-                writer.WriteInstanceMethodInvocation(
-                    StringValueBufferVariableName,
-                    _tagHelperContext.TagHelperContentGetContentMethodName,
-                    endLine: false,
-                    parameters: _tagHelperContext.HtmlEncoderPropertyName);
+                writer.Write(StringValueBufferVariableName);
             }
         }
 

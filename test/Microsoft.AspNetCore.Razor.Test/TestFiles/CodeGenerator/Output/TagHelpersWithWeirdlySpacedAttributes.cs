@@ -8,7 +8,7 @@ namespace TestOutput
     {
         #line hidden
         #pragma warning disable 0414
-        private global::Microsoft.AspNetCore.Razor.TagHelperContent __tagHelperStringValueBuffer = null;
+        private string __tagHelperStringValueBuffer = null;
         #pragma warning restore 0414
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperExecutionContext __tagHelperExecutionContext = null;
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperRunner __tagHelperRunner = null;
@@ -48,14 +48,14 @@ __TestNamespace_PTagHelper.Age = 1337;
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age);
-            StartTagHelperWritingScope(null);
+            BeginWriteTagHelperAttribute();
 #line 7 "TagHelpersWithWeirdlySpacedAttributes.cshtml"
              Write(true);
 
 #line default
 #line hidden
-            __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-            __tagHelperExecutionContext.AddHtmlAttribute("data-content", Html.Raw(__tagHelperStringValueBuffer.GetContent(HtmlEncoder)));
+            __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
+            __tagHelperExecutionContext.AddHtmlAttribute("data-content", Html.Raw(__tagHelperStringValueBuffer));
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {

@@ -7,7 +7,7 @@ namespace TestOutput
     {
         #line hidden
         #pragma warning disable 0414
-        private global::Microsoft.AspNetCore.Razor.TagHelperContent __tagHelperStringValueBuffer = null;
+        private string __tagHelperStringValueBuffer = null;
         #pragma warning restore 0414
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperExecutionContext __tagHelperExecutionContext = null;
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperRunner __tagHelperRunner = null;
@@ -56,7 +56,7 @@ namespace TestOutput
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
                 __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
-                StartTagHelperWritingScope(null);
+                BeginWriteTagHelperAttribute();
                 WriteLiteral("2000 + ");
 #line 6 "BasicTagHelpers.cshtml"
                                 Write(ViewBag.DefaultInterval);
@@ -64,8 +64,8 @@ namespace TestOutput
 #line default
 #line hidden
                 WriteLiteral(" + 1");
-                __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-                __tagHelperExecutionContext.AddHtmlAttribute("data-interval", Html.Raw(__tagHelperStringValueBuffer.GetContent(HtmlEncoder)));
+                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
+                __tagHelperExecutionContext.AddHtmlAttribute("data-interval", Html.Raw(__tagHelperStringValueBuffer));
                 __TestNamespace_InputTagHelper.Type = **From custom attribute code renderer**: "text";
                 __tagHelperExecutionContext.AddTagHelperAttribute("type", __TestNamespace_InputTagHelper.Type);
                 __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;

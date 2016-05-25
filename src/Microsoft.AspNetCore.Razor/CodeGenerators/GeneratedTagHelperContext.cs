@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
             MarkAsHtmlEncodedMethodName = "Html.Raw";
             StartTagHelperWritingScopeMethodName = "StartTagHelperWritingScope";
             EndTagHelperWritingScopeMethodName = "EndTagHelperWritingScope";
+            BeginWriteTagHelperAttributeMethodName = "BeginWriteTagHelperAttribute";
+            EndWriteTagHelperAttributeMethodName = "EndWriteTagHelperAttribute";
             RunnerTypeName = "Microsoft.AspNetCore.Razor.Runtime.TagHelperRunner";
             ScopeManagerTypeName = "Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager";
             ExecutionContextTypeName = "Microsoft.AspNetCore.Razor.Runtime.TagHelperExecutionContext";
@@ -161,6 +163,16 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
         /// The name of the method used to end a writing scope.
         /// </summary>
         public string EndTagHelperWritingScopeMethodName { get; set; }
+
+        /// <summary>
+        /// The name of the method used to begin an attribute writing scope.
+        /// </summary>
+        public string BeginWriteTagHelperAttributeMethodName { get; set; }
+
+        /// <summary>
+        /// The name of the method used to end an attribute writing scope.
+        /// </summary>
+        public string EndWriteTagHelperAttributeMethodName { get; set; }
 
         /// <summary>
         /// The name of the type used to run tag helpers.

@@ -8,7 +8,7 @@ namespace TestOutput
     {
         #line hidden
         #pragma warning disable 0414
-        private global::Microsoft.AspNetCore.Razor.TagHelperContent __tagHelperStringValueBuffer = null;
+        private string __tagHelperStringValueBuffer = null;
         #pragma warning restore 0414
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperExecutionContext __tagHelperExecutionContext = null;
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperRunner __tagHelperRunner = null;
@@ -127,14 +127,14 @@ namespace TestOutput
                     __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
                     __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
                     __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
-                    StartTagHelperWritingScope(null);
+                    BeginWriteTagHelperAttribute();
 #line 16 "ComplexTagHelpers.cshtml"
                                  WriteLiteral(checkbox);
 
 #line default
 #line hidden
-                    __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-                    __TestNamespace_InputTagHelper.Type = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
+                    __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
+                    __TestNamespace_InputTagHelper.Type = __tagHelperStringValueBuffer;
                     __tagHelperExecutionContext.AddTagHelperAttribute("type", __TestNamespace_InputTagHelper.Type);
                     __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
 #line 16 "ComplexTagHelpers.cshtml"
@@ -171,14 +171,14 @@ namespace TestOutput
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
                 __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
-                StartTagHelperWritingScope(null);
+                BeginWriteTagHelperAttribute();
 #line 17 "ComplexTagHelpers.cshtml"
                   WriteLiteral(true ? "checkbox" : "anything");
 
 #line default
 #line hidden
-                __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-                __TestNamespace_InputTagHelper.Type = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
+                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
+                __TestNamespace_InputTagHelper.Type = __tagHelperStringValueBuffer;
                 __tagHelperExecutionContext.AddTagHelperAttribute("tYPe", __TestNamespace_InputTagHelper.Type);
                 __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
@@ -196,7 +196,7 @@ namespace TestOutput
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
                 __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
-                StartTagHelperWritingScope(null);
+                BeginWriteTagHelperAttribute();
 #line 18 "ComplexTagHelpers.cshtml"
                               if(true) {
 
@@ -217,8 +217,8 @@ namespace TestOutput
 #line default
 #line hidden
 
-                __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-                __TestNamespace_InputTagHelper.Type = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
+                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
+                __TestNamespace_InputTagHelper.Type = __tagHelperStringValueBuffer;
                 __tagHelperExecutionContext.AddTagHelperAttribute("type", __TestNamespace_InputTagHelper.Type);
                 __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);

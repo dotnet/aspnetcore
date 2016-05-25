@@ -8,7 +8,7 @@ namespace TestOutput
     {
         #line hidden
         #pragma warning disable 0414
-        private global::Microsoft.AspNetCore.Razor.TagHelperContent __tagHelperStringValueBuffer = null;
+        private string __tagHelperStringValueBuffer = null;
         #pragma warning restore 0414
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperExecutionContext __tagHelperExecutionContext = null;
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperRunner __tagHelperRunner = null;
@@ -104,7 +104,7 @@ WriteTo(__razor_attribute_value_writer, string.Empty);
             );
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
-            StartTagHelperWritingScope(null);
+            BeginWriteTagHelperAttribute();
             WriteLiteral("prefix ");
 #line 7 "DynamicAttributeTagHelpers.cshtml"
          WriteLiteral(DateTime.Now);
@@ -112,8 +112,8 @@ WriteTo(__razor_attribute_value_writer, string.Empty);
 #line default
 #line hidden
             WriteLiteral(" suffix");
-            __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-            __TestNamespace_InputTagHelper.Bound = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
+            __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
+            __TestNamespace_InputTagHelper.Bound = __tagHelperStringValueBuffer;
             __tagHelperExecutionContext.AddTagHelperAttribute("bound", __TestNamespace_InputTagHelper.Bound);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 3);
             AddHtmlAttributeValue("", 204, "prefix", 204, 6, true);
@@ -137,7 +137,7 @@ AddHtmlAttributeValue(" ", 210, DateTime.Now, 211, 14, false);
             );
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
-            StartTagHelperWritingScope(null);
+            BeginWriteTagHelperAttribute();
 #line 9 "DynamicAttributeTagHelpers.cshtml"
   WriteLiteral(long.MinValue);
 
@@ -178,8 +178,8 @@ AddHtmlAttributeValue(" ", 210, DateTime.Now, 211, 14, false);
 
 #line default
 #line hidden
-            __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-            __TestNamespace_InputTagHelper.Bound = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
+            __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
+            __TestNamespace_InputTagHelper.Bound = __tagHelperStringValueBuffer;
             __tagHelperExecutionContext.AddTagHelperAttribute("bound", __TestNamespace_InputTagHelper.Bound);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 3);
 #line 10 "DynamicAttributeTagHelpers.cshtml"

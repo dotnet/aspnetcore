@@ -8,7 +8,7 @@ namespace TestOutput
     {
         #line hidden
         #pragma warning disable 0414
-        private global::Microsoft.AspNetCore.Razor.TagHelperContent __tagHelperStringValueBuffer = null;
+        private string __tagHelperStringValueBuffer = null;
         #pragma warning restore 0414
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperExecutionContext __tagHelperExecutionContext = null;
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperRunner __tagHelperRunner = null;
@@ -177,7 +177,7 @@ __TestNamespace_InputTagHelper1.IntDictionaryProperty["salt"] = 37;
             __TestNamespace_InputTagHelper1.StringDictionaryProperty["paprika"] = "another string";
             __tagHelperExecutionContext.AddTagHelperAttribute("string-prefix-paprika", __TestNamespace_InputTagHelper1.StringDictionaryProperty["paprika"]);
             __TestNamespace_InputTagHelper2.StringDictionaryProperty["paprika"] = __TestNamespace_InputTagHelper1.StringDictionaryProperty["paprika"];
-            StartTagHelperWritingScope(null);
+            BeginWriteTagHelperAttribute();
             WriteLiteral("literate ");
 #line 21 "PrefixedAttributeTagHelpers.cshtml"
                              WriteLiteral(literate);
@@ -185,8 +185,8 @@ __TestNamespace_InputTagHelper1.IntDictionaryProperty["salt"] = 37;
 #line default
 #line hidden
             WriteLiteral("?");
-            __tagHelperStringValueBuffer = EndTagHelperWritingScope();
-            __TestNamespace_InputTagHelper1.StringDictionaryProperty["cumin"] = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
+            __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
+            __TestNamespace_InputTagHelper1.StringDictionaryProperty["cumin"] = __tagHelperStringValueBuffer;
             __tagHelperExecutionContext.AddTagHelperAttribute("string-prefix-cumin", __TestNamespace_InputTagHelper1.StringDictionaryProperty["cumin"]);
             __TestNamespace_InputTagHelper2.StringDictionaryProperty["cumin"] = __TestNamespace_InputTagHelper1.StringDictionaryProperty["cumin"];
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
