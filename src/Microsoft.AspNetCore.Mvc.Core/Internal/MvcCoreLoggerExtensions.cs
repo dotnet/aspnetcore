@@ -87,12 +87,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _actionMethodExecuting = LoggerMessage.Define<string, string[], ModelValidationState>(
                 LogLevel.Information,
                 1,
-                "Executing action method {ActionName} with arguments ({Arguments}) - ModelState is {ValidationState}'");
+                "Executing action method {ActionName} with arguments ({Arguments}) - ModelState is {ValidationState}");
 
             _actionMethodExecuted = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
                 2,
-                "Executed action method {ActionName}, returned result {ActionResult}.'");
+                "Executed action method {ActionName}, returned result {ActionResult}.");
 
             _ambiguousActions = LoggerMessage.Define<string>(
                 LogLevel.Error,

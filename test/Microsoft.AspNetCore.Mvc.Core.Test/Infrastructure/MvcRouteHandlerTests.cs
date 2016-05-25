@@ -20,37 +20,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     public class MvcRouteHandlerTests
     {
         [Fact]
-        public async Task RouteHandler_Success_LogsCorrectValues()
-        {
-            // Arrange
-            var sink = new TestSink();
-            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-
-            var displayName = "A.B.C";
-            var actionDescriptor = new Mock<ActionDescriptor>();
-            actionDescriptor
-                .SetupGet(ad => ad.DisplayName)
-                .Returns(displayName);
-
-            var context = CreateRouteContext();
-
-            var handler = CreateMvcRouteHandler(actionDescriptor: actionDescriptor.Object, loggerFactory: loggerFactory);
-            await handler.RouteAsync(context);
-
-            // Act
-            await context.Handler(context.HttpContext);
-
-            // Assert
-            Assert.Single(sink.Scopes);
-            Assert.Equal(displayName, sink.Scopes[0].Scope?.ToString());
-
-            Assert.Equal(2, sink.Writes.Count);
-            Assert.Equal($"Executing action {displayName}", sink.Writes[0].State?.ToString());
-            // This message has the execution time embedded, which we don't want to verify.
-            Assert.StartsWith($"Executed action {displayName} ", sink.Writes[1].State?.ToString());
-        }
-
-        [Fact]
         public async Task RouteAsync_FailOnNoAction_LogsCorrectValues()
         {
             // Arrange
@@ -110,51 +79,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
 
             Assert.False(context.RouteData.Values.ContainsKey(TreeRouter.RouteGroupKey));
-        }
-
-        [Fact]
-        public async Task RouteHandler_WritesDiagnostic_ActionSelected()
-        {
-            // Arrange
-            var listener = new TestDiagnosticListener();
-
-            var context = CreateRouteContext();
-            context.RouteData.Values.Add("tag", "value");
-
-            var handler = CreateMvcRouteHandler(diagnosticListener: listener);
-            await handler.RouteAsync(context);
-
-            // Act
-            await context.Handler(context.HttpContext);
-
-            // Assert
-            Assert.NotNull(listener.BeforeAction?.ActionDescriptor);
-            Assert.NotNull(listener.BeforeAction?.HttpContext);
-
-            var routeValues = listener.BeforeAction?.RouteData?.Values;
-            Assert.NotNull(routeValues);
-
-            Assert.Equal(1, routeValues.Count);
-            Assert.Contains(routeValues, kvp => kvp.Key == "tag" && string.Equals(kvp.Value, "value"));
-        }
-
-        [Fact]
-        public async Task RouteHandler_WritesDiagnostic_ActionInvoked()
-        {
-            // Arrange
-            var listener = new TestDiagnosticListener();
-
-            var context = CreateRouteContext();
-
-            var handler = CreateMvcRouteHandler(diagnosticListener: listener);
-            await handler.RouteAsync(context);
-
-            // Act
-            await context.Handler(context.HttpContext);
-
-            // Assert
-            Assert.NotNull(listener.AfterAction?.ActionDescriptor);
-            Assert.NotNull(listener.AfterAction?.HttpContext);
         }
 
         private MvcRouteHandler CreateMvcRouteHandler(

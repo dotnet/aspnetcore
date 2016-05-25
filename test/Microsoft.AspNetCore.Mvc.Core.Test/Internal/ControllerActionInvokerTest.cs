@@ -2480,6 +2480,123 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal(5, context.Object.Items["Result"]);
         }
 
+        [Fact]
+        public async Task Invoke_Success_LogsCorrectValues()
+        {
+            // Arrange
+            var sink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+            var logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
+
+            var displayName = "A.B.C";
+            var mockActionDescriptor = new Mock<ControllerActionDescriptor>();
+            mockActionDescriptor
+                .SetupGet(ad => ad.DisplayName)
+                .Returns(displayName);
+            var actionDescriptor = mockActionDescriptor.Object;
+            actionDescriptor.MethodInfo = typeof(ControllerActionInvokerTest).GetMethod(
+                    nameof(ControllerActionInvokerTest.ActionMethod));
+            actionDescriptor.ControllerTypeInfo = typeof(ControllerActionInvokerTest).GetTypeInfo();
+            actionDescriptor.FilterDescriptors = new List<FilterDescriptor>();
+            actionDescriptor.Parameters = new List<ParameterDescriptor>();
+
+            var filter = Mock.Of<IFilterMetadata>();
+            var invoker = CreateInvoker(
+                new[] { filter },
+                actionDescriptor,
+                controllerArgumentBinder: null,
+                controller: null,
+                logger: logger);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            Assert.Single(sink.Scopes);
+            Assert.Equal(displayName, sink.Scopes[0].Scope?.ToString());
+
+            Assert.Equal(4, sink.Writes.Count);
+            Assert.Equal($"Executing action {displayName}", sink.Writes[0].State?.ToString());
+            Assert.Equal($"Executing action method {displayName} with arguments () - ModelState is Valid", sink.Writes[1].State?.ToString());
+            Assert.Equal($"Executed action method {displayName}, returned result Microsoft.AspNetCore.Mvc.ContentResult.", sink.Writes[2].State?.ToString());
+            // This message has the execution time embedded, which we don't want to verify.
+            Assert.StartsWith($"Executed action {displayName} ", sink.Writes[3].State?.ToString());
+        }
+
+        [Fact]
+        public async Task Invoke_WritesDiagnostic_ActionSelected()
+        {
+            // Arrange
+            var actionDescriptor = new ControllerActionDescriptor()
+            {
+                FilterDescriptors = new List<FilterDescriptor>(),
+                Parameters = new List<ParameterDescriptor>(),
+            };
+
+            actionDescriptor.MethodInfo = typeof(ControllerActionInvokerTest).GetMethod(
+                    nameof(ControllerActionInvokerTest.ActionMethod));
+            actionDescriptor.ControllerTypeInfo = typeof(ControllerActionInvokerTest).GetTypeInfo();
+
+            var listener = new TestDiagnosticListener();
+
+            var routeData = new RouteData();
+            routeData.Values.Add("tag", "value");
+
+            var filter = Mock.Of<IFilterMetadata>();
+            var invoker = CreateInvoker(
+                new[] { filter },
+                actionDescriptor,
+                controllerArgumentBinder: null,
+                controller: null,
+                diagnosticListener: listener,
+                routeData: routeData);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            Assert.NotNull(listener.BeforeAction?.ActionDescriptor);
+            Assert.NotNull(listener.BeforeAction?.HttpContext);
+
+            var routeValues = listener.BeforeAction?.RouteData?.Values;
+            Assert.NotNull(routeValues);
+
+            Assert.Equal(1, routeValues.Count);
+            Assert.Contains(routeValues, kvp => kvp.Key == "tag" && string.Equals(kvp.Value, "value"));
+        }
+
+        [Fact]
+        public async Task Invoke_WritesDiagnostic_ActionInvoked()
+        {
+            // Arrange
+            var actionDescriptor = new ControllerActionDescriptor()
+            {
+                FilterDescriptors = new List<FilterDescriptor>(),
+                Parameters = new List<ParameterDescriptor>(),
+            };
+
+            actionDescriptor.MethodInfo = typeof(ControllerActionInvokerTest).GetMethod(
+                    nameof(ControllerActionInvokerTest.ActionMethod));
+            actionDescriptor.ControllerTypeInfo = typeof(ControllerActionInvokerTest).GetTypeInfo();
+
+            var listener = new TestDiagnosticListener();
+
+            var filter = Mock.Of<IFilterMetadata>();
+            var invoker = CreateInvoker(
+                new[] { filter },
+                actionDescriptor,
+                controllerArgumentBinder: null,
+                controller: null,
+                diagnosticListener: listener);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            Assert.NotNull(listener.AfterAction?.ActionDescriptor);
+            Assert.NotNull(listener.AfterAction?.HttpContext);
+        }
+
         private TestControllerActionInvoker CreateInvoker(
             IFilterMetadata filter,
             bool actionThrows = false,
@@ -2543,7 +2660,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             IControllerArgumentBinder controllerArgumentBinder,
             object controller,
             int maxAllowedErrorsInModelState = 200,
-            List<IValueProviderFactory> valueProviderFactories = null)
+            List<IValueProviderFactory> valueProviderFactories = null,
+            RouteData routeData = null,
+            ILogger logger = null,
+            object diagnosticListener = null)
         {
             var httpContext = new Mock<HttpContext>(MockBehavior.Loose);
 
@@ -2593,9 +2713,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     new TestHttpResponseStreamWriterFactory(),
                     NullLoggerFactory.Instance));
 
+            if (routeData == null)
+            {
+                routeData = new RouteData();
+            }
+
             var actionContext = new ActionContext(
                 httpContext: httpContext.Object,
-                routeData: new RouteData(),
+                routeData: routeData,
                 actionDescriptor: actionDescriptor);
 
             var filterProvider = new Mock<IFilterProvider>(MockBehavior.Strict);
@@ -2643,12 +2768,23 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 valueProviderFactories = new List<IValueProviderFactory>();
             }
 
+            if (logger == null)
+            {
+                logger = new NullLoggerFactory().CreateLogger<ControllerActionInvoker>();
+            }
+
+            var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
+            if (diagnosticListener != null)
+            {
+                diagnosticSource.SubscribeWithAdapter(diagnosticListener);
+            }
+
             var invoker = new TestControllerActionInvoker(
                 new[] { filterProvider.Object },
                 new MockControllerFactory(controller ?? this),
                 argumentBinder,
-                new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
-                new DiagnosticListener("Microsoft.AspNetCore"),
+                logger,
+                diagnosticSource,
                 actionContext,
                 valueProviderFactories.AsReadOnly(),
                 maxAllowedErrorsInModelState);

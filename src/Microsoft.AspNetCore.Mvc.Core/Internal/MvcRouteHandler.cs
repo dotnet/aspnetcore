@@ -4,8 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
@@ -87,46 +85,28 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 context.RouteData.Values.Remove(TreeRouter.RouteGroupKey);
             }
 
-            context.Handler = (c) => InvokeActionAsync(c, actionDescriptor);
-            return TaskCache.CompletedTask;
-        }
-
-        private async Task InvokeActionAsync(HttpContext httpContext, ActionDescriptor actionDescriptor)
-        {
-            var routeData = httpContext.GetRouteData();
-            try
+            context.Handler = async (c) =>
             {
-                _diagnosticSource.BeforeAction(actionDescriptor, httpContext, routeData);
+                var routeData = c.GetRouteData();
 
-                using (_logger.ActionScope(actionDescriptor))
+                var actionContext = new ActionContext(context.HttpContext, routeData, actionDescriptor);
+                if (_actionContextAccessor != null)
                 {
-                    _logger.ExecutingAction(actionDescriptor);
-
-                    var startTimestamp = _logger.IsEnabled(LogLevel.Information) ? Stopwatch.GetTimestamp() : 0;
-
-                    var actionContext = new ActionContext(httpContext, routeData, actionDescriptor);
-                    if (_actionContextAccessor != null)
-                    {
-                        _actionContextAccessor.ActionContext = actionContext;
-                    }
-
-                    var invoker = _actionInvokerFactory.CreateInvoker(actionContext);
-                    if (invoker == null)
-                    {
-                        throw new InvalidOperationException(
-                            Resources.FormatActionInvokerFactory_CouldNotCreateInvoker(
-                                actionDescriptor.DisplayName));
-                    }
-
-                    await invoker.InvokeAsync();
-
-                    _logger.ExecutedAction(actionDescriptor, startTimestamp);
+                    _actionContextAccessor.ActionContext = actionContext;
                 }
-            }
-            finally
-            {
-                _diagnosticSource.AfterAction(actionDescriptor, httpContext, routeData);
-            }
+
+                var invoker = _actionInvokerFactory.CreateInvoker(actionContext);
+                if (invoker == null)
+                {
+                    throw new InvalidOperationException(
+                        Resources.FormatActionInvokerFactory_CouldNotCreateInvoker(
+                            actionDescriptor.DisplayName));
+                }
+
+                await invoker.InvokeAsync();
+            };
+
+            return TaskCache.CompletedTask;
         }
     }
 }

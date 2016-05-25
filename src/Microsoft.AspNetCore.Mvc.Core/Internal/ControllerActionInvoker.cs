@@ -112,45 +112,69 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public virtual async Task InvokeAsync()
         {
-            await InvokeAllAuthorizationFiltersAsync();
-
-            // If Authorization Filters return a result, it's a short circuit because
-            // authorization failed. We don't execute Result Filters around the result.
-            Debug.Assert(_authorizationContext != null);
-            if (_authorizationContext.Result != null)
-            {
-                await InvokeResultAsync(_authorizationContext.Result);
-                return;
-            }
-
             try
             {
-                await InvokeAllResourceFiltersAsync();
+                _diagnosticSource.BeforeAction(
+                    _controllerContext.ActionDescriptor,
+                    _controllerContext.HttpContext,
+                    _controllerContext.RouteData);
+
+                using (_logger.ActionScope(_controllerContext.ActionDescriptor))
+                {
+                    _logger.ExecutingAction(_controllerContext.ActionDescriptor);
+
+                    var startTimestamp = _logger.IsEnabled(LogLevel.Information) ? Stopwatch.GetTimestamp() : 0;
+
+                    await InvokeAllAuthorizationFiltersAsync();
+
+                    // If Authorization Filters return a result, it's a short circuit because
+                    // authorization failed. We don't execute Result Filters around the result.
+                    Debug.Assert(_authorizationContext != null);
+                    if (_authorizationContext.Result != null)
+                    {
+                        await InvokeResultAsync(_authorizationContext.Result);
+                        return;
+                    }
+
+                    try
+                    {
+                        await InvokeAllResourceFiltersAsync();
+                    }
+                    finally
+                    {
+                        // Release the instance after all filters have run. We don't need to surround
+                        // Authorizations filters because the instance will be created much later than
+                        // that.
+                        if (_controller != null)
+                        {
+                            _controllerFactory.ReleaseController(_controllerContext, _controller);
+                        }
+                    }
+
+                    // We've reached the end of resource filters. If there's an unhandled exception on the context then
+                    // it should be thrown and middleware has a chance to handle it.
+                    Debug.Assert(_resourceExecutedContext != null);
+                    if (_resourceExecutedContext.Exception != null && !_resourceExecutedContext.ExceptionHandled)
+                    {
+                        if (_resourceExecutedContext.ExceptionDispatchInfo == null)
+                        {
+                            throw _resourceExecutedContext.Exception;
+                        }
+                        else
+                        {
+                            _resourceExecutedContext.ExceptionDispatchInfo.Throw();
+                        }
+                    }
+
+                    _logger.ExecutedAction(_controllerContext.ActionDescriptor, startTimestamp);
+                }
             }
             finally
             {
-                // Release the instance after all filters have run. We don't need to surround
-                // Authorizations filters because the instance will be created much later than
-                // that.
-                if (_controller != null)
-                {
-                    _controllerFactory.ReleaseController(_controllerContext, _controller);
-                }
-            }
-
-            // We've reached the end of resource filters. If there's an unhandled exception on the context then
-            // it should be thrown and middleware has a chance to handle it.
-            Debug.Assert(_resourceExecutedContext != null);
-            if (_resourceExecutedContext.Exception != null && !_resourceExecutedContext.ExceptionHandled)
-            {
-                if (_resourceExecutedContext.ExceptionDispatchInfo == null)
-                {
-                    throw _resourceExecutedContext.Exception;
-                }
-                else
-                {
-                    _resourceExecutedContext.ExceptionDispatchInfo.Throw();
-                }
+                _diagnosticSource.AfterAction(
+                    _controllerContext.ActionDescriptor,
+                    _controllerContext.HttpContext,
+                    _controllerContext.RouteData);
             }
         }
 
