@@ -2,13 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -61,31 +58,8 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger<RedirectToRouteResult>();
-
-            var urlHelper = GetUrlHelper(context);
-
-            var destinationUrl = urlHelper.RouteUrl(RouteName, RouteValues);
-            if (string.IsNullOrEmpty(destinationUrl))
-            {
-                throw new InvalidOperationException(Resources.NoRoutesMatched);
-            }
-
-            logger.RedirectToRouteResultExecuting(destinationUrl, RouteName);
-            context.HttpContext.Response.Redirect(destinationUrl, Permanent);
-        }
-
-        private IUrlHelper GetUrlHelper(ActionContext context)
-        {
-            var urlHelper = UrlHelper;
-            if (urlHelper == null)
-            {
-                var services = context.HttpContext.RequestServices;
-                urlHelper = services.GetRequiredService<IUrlHelperFactory>().GetUrlHelper(context);
-            }
-
-            return urlHelper;
+            var executor = context.HttpContext.RequestServices.GetRequiredService<RedirectToRouteResultExecutor>();
+            executor.Execute(context, this);
         }
     }
 }

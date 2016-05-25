@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -78,15 +79,15 @@ namespace Microsoft.AspNetCore.Mvc
         public async Task ExecuteResultAsync_DoesNotSetContentDisposition_IfNotSpecified()
         {
             // Arrange
-            var httpContext = new Mock<HttpContext>(MockBehavior.Strict);
+            var provider = new ServiceCollection()
+                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
+                .AddSingleton<EmptyFileResultExecutor>()
+                .BuildServiceProvider();
 
-            httpContext.SetupSet(c => c.Response.ContentType = "application/my-type").Verifiable();
-            httpContext.Setup(c => c.Response.Body).Returns(Stream.Null);
-            httpContext
-                .Setup(c => c.RequestServices.GetService(typeof(ILoggerFactory)))
-                .Returns(NullLoggerFactory.Instance);
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = provider;
 
-            var actionContext = CreateActionContext(httpContext.Object);
+            var actionContext = CreateActionContext(httpContext);
 
             var result = new EmptyFileResult("application/my-type");
 
@@ -95,7 +96,8 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             Assert.True(result.WasWriteFileCalled);
-            httpContext.Verify();
+            Assert.Equal("application/my-type", httpContext.Response.ContentType);
+            Assert.Equal(Stream.Null, httpContext.Response.Body);
         }
 
         [Fact]
@@ -140,6 +142,7 @@ namespace Microsoft.AspNetCore.Mvc
             var services = new ServiceCollection();
             var loggerSink = new TestSink();
             services.AddSingleton<ILoggerFactory>(new TestLoggerFactory(loggerSink, true));
+            services.AddSingleton<EmptyFileResultExecutor>();
             httpContext.RequestServices = services.BuildServiceProvider();
 
             var actionContext = CreateActionContext(httpContext);
@@ -249,6 +252,7 @@ namespace Microsoft.AspNetCore.Mvc
         private static IServiceCollection CreateServices()
         {
             var services = new ServiceCollection();
+            services.AddSingleton<EmptyFileResultExecutor>();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             return services;
         }
@@ -282,9 +286,24 @@ namespace Microsoft.AspNetCore.Mvc
             {
             }
 
-            protected override Task WriteFileAsync(HttpResponse response)
+            public override Task ExecuteResultAsync(ActionContext context)
             {
-                WasWriteFileCalled = true;
+                var executor = context.HttpContext.RequestServices.GetRequiredService<EmptyFileResultExecutor>();
+                return executor.ExecuteAsync(context, this);
+            }
+        }
+
+        private class EmptyFileResultExecutor : FileResultExecutorBase
+        {
+            public EmptyFileResultExecutor(ILoggerFactory loggerFactory)
+                :base(CreateLogger<EmptyFileResultExecutor>(loggerFactory))
+            {
+            }
+
+            public Task ExecuteAsync(ActionContext context, EmptyFileResult result)
+            {
+                SetHeadersAndLog(context, result);
+                result.WasWriteFileCalled = true;
                 return Task.FromResult(0);
             }
         }

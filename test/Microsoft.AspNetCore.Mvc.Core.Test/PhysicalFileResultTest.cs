@@ -6,9 +6,11 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc
             var path = Path.GetFullPath("helllo.txt");
 
             // Act
-            var result = new PhysicalFileResult(path, "text/plain");
+            var result = new TestPhysicalFileResult(path, "text/plain");
 
             // Assert
             Assert.Equal(path, result.FileName);
@@ -43,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc
             var expectedMediaType = contentType;
 
             // Act
-            var result = new PhysicalFileResult(path, contentType);
+            var result = new TestPhysicalFileResult(path, contentType);
 
             // Assert
             Assert.Equal(path, result.FileName);
@@ -75,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));
-            var result = new PhysicalFileResult(path, "text/plain");
+            var result = new TestPhysicalFileResult(path, "text/plain");
             var sendFileMock = new Mock<IHttpSendFileFeature>();
             sendFileMock
                 .Setup(s => s.SendFileAsync(path, 0, null, CancellationToken.None))
@@ -204,6 +206,23 @@ namespace Microsoft.AspNetCore.Mvc
             {
             }
 
+            public override Task ExecuteResultAsync(ActionContext context)
+            {
+                var executor = context.HttpContext.RequestServices.GetRequiredService<TestPhysicalFileResultExecutor>();
+                executor.IsAscii = IsAscii;
+                return executor.ExecuteAsync(context, this);
+            }
+
+            public bool IsAscii { get; set; } = false;
+        }
+
+        private class TestPhysicalFileResultExecutor : PhysicalFileResultExecutor
+        {
+            public TestPhysicalFileResultExecutor(ILoggerFactory loggerFactory)
+                : base(loggerFactory)
+            {
+            }
+
             public bool IsAscii { get; set; } = false;
 
             protected override Stream GetFileStream(string path)
@@ -222,6 +241,7 @@ namespace Microsoft.AspNetCore.Mvc
         private static IServiceCollection CreateServices()
         {
             var services = new ServiceCollection();
+            services.AddSingleton<TestPhysicalFileResultExecutor>();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             return services;
         }

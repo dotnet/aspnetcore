@@ -4,10 +4,8 @@
 using System;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -68,32 +66,8 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger<RedirectResult>();
-
-            var urlHelper = GetUrlHelper(context);
-
-            // IsLocalUrl is called to handle  Urls starting with '~/'.
-            var destinationUrl = Url;
-            if (urlHelper.IsLocalUrl(destinationUrl))
-            {
-                destinationUrl = urlHelper.Content(Url);
-            }
-
-            logger.RedirectResultExecuting(destinationUrl);
-            context.HttpContext.Response.Redirect(destinationUrl, Permanent);
-        }
-
-        private IUrlHelper GetUrlHelper(ActionContext context)
-        {
-            var urlHelper = UrlHelper;
-            if (urlHelper == null)
-            {
-                var services = context.HttpContext.RequestServices;
-                urlHelper = services.GetRequiredService<IUrlHelperFactory>().GetUrlHelper(context);
-            }
-
-            return urlHelper;
+            var executor = context.HttpContext.RequestServices.GetRequiredService<RedirectResultExecutor>();
+            executor.Execute(context, this);
         }
     }
 }

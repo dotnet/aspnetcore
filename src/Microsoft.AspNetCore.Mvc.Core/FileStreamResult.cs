@@ -3,10 +3,9 @@
 
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -17,9 +16,6 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class FileStreamResult : FileResult
     {
-        // default buffer size as defined in BufferedStream type
-        private const int BufferSize = 0x1000;
-
         private Stream _fileStream;
 
         /// <summary>
@@ -73,17 +69,15 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <inheritdoc />
-        protected async override Task WriteFileAsync(HttpResponse response)
+        public override Task ExecuteResultAsync(ActionContext context)
         {
-            var outputStream = response.Body;
-
-            using (FileStream)
+            if (context == null)
             {
-                var bufferingFeature = response.HttpContext.Features.Get<IHttpBufferingFeature>();
-                bufferingFeature?.DisableResponseBuffering();
-
-                await FileStream.CopyToAsync(outputStream, BufferSize);
+                throw new ArgumentNullException(nameof(context));
             }
+
+            var executor = context.HttpContext.RequestServices.GetRequiredService<FileStreamResultExecutor>();
+            return executor.ExecuteAsync(context, this);
         }
     }
 }

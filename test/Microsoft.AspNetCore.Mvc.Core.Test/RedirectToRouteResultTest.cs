@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
@@ -99,16 +100,8 @@ namespace Microsoft.AspNetCore.Mvc
             factory
                 .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
                 .Returns(urlHelper.Object);
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider
-                .Setup(sp => sp.GetService(typeof(IUrlHelperFactory)))
-                .Returns(factory.Object);
-            serviceProvider
-                .Setup(sp => sp.GetService(typeof(ILoggerFactory)))
-                .Returns(NullLoggerFactory.Instance);
 
-            var httpContext = GetHttpContext();
-            httpContext.RequestServices = serviceProvider.Object;
+            var httpContext = GetHttpContext(factory.Object);
 
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
             var result = new RedirectToRouteResult(routeName, new { id = 10 });
@@ -123,9 +116,9 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(locationUrl, httpContext.Response.Headers["Location"]);
         }
 
-        private static HttpContext GetHttpContext()
+        private static HttpContext GetHttpContext(IUrlHelperFactory factory = null)
         {
-            var services = CreateServices();
+            var services = CreateServices(factory);
 
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = services.BuildServiceProvider();
@@ -133,9 +126,20 @@ namespace Microsoft.AspNetCore.Mvc
             return httpContext;
         }
 
-        private static IServiceCollection CreateServices()
+        private static IServiceCollection CreateServices(IUrlHelperFactory factory = null)
         {
             var services = new ServiceCollection();
+            services.AddSingleton<RedirectToRouteResultExecutor>();
+
+            if (factory != null)
+            {
+                services.AddSingleton(factory);
+            }
+            else
+            {
+                services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
+            }
+
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             return services;
         }

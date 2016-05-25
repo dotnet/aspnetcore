@@ -3,12 +3,9 @@
 
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Net.Http.Headers;
@@ -21,7 +18,6 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class VirtualFileResult : FileResult
     {
-        private const int DefaultBufferSize = 0x1000;
         private string _fileName;
 
         /// <summary>
@@ -83,71 +79,15 @@ namespace Microsoft.AspNetCore.Mvc
         public IFileProvider FileProvider { get; set; }
 
         /// <inheritdoc />
-        protected override async Task WriteFileAsync(HttpResponse response)
+        public override Task ExecuteResultAsync(ActionContext context)
         {
-            var fileProvider = GetFileProvider(response.HttpContext.RequestServices);
-
-            var normalizedPath = FileName;
-            if (normalizedPath.StartsWith("~", StringComparison.Ordinal))
+            if (context == null)
             {
-                normalizedPath = normalizedPath.Substring(1);
+                throw new ArgumentNullException(nameof(context));
             }
 
-            var fileInfo = fileProvider.GetFileInfo(normalizedPath);
-            if (fileInfo.Exists)
-            {
-                var physicalPath = fileInfo.PhysicalPath;
-                var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();
-                if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
-                {
-                    await sendFile.SendFileAsync(
-                        physicalPath,
-                        offset: 0,
-                        count: null,
-                        cancellation: default(CancellationToken));
-                }
-                else
-                {
-                    var fileStream = GetFileStream(fileInfo);
-                    using (fileStream)
-                    {
-                        await fileStream.CopyToAsync(response.Body, DefaultBufferSize);
-                    }
-                }
-            }
-            else
-            {
-                throw new FileNotFoundException(
-                    Resources.FormatFileResult_InvalidPath(FileName), FileName);
-            }
-        }
-
-        /// <summary>
-        /// Returns <see cref="Stream"/> for the specified <paramref name="fileInfo"/>.
-        /// </summary>
-        /// <param name="fileInfo">The <see cref="IFileInfo"/> for which the stream is needed.</param>
-        /// <returns><see cref="Stream"/> for the specified <paramref name="fileInfo"/>.</returns>
-        protected virtual Stream GetFileStream(IFileInfo fileInfo)
-        {
-            if (fileInfo == null)
-            {
-                throw new ArgumentNullException(nameof(fileInfo));
-            }
-
-            return fileInfo.CreateReadStream();
-        }
-
-        private IFileProvider GetFileProvider(IServiceProvider requestServices)
-        {
-            if (FileProvider != null)
-            {
-                return FileProvider;
-            }
-
-            var hostingEnvironment = requestServices.GetService<IHostingEnvironment>();
-            FileProvider = hostingEnvironment.WebRootFileProvider;
-
-            return FileProvider;
+            var executor = context.HttpContext.RequestServices.GetRequiredService<VirtualFileResultExecutor>();
+            return executor.ExecuteAsync(context, this);
         }
     }
 }

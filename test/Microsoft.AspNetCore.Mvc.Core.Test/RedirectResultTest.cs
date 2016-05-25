@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -110,6 +111,7 @@ namespace Microsoft.AspNetCore.Mvc
         private static IServiceProvider GetServiceProvider()
         {
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<RedirectResultExecutor>();
             serviceCollection.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
             serviceCollection.AddTransient<ILoggerFactory, LoggerFactory>();
             return serviceCollection.BuildServiceProvider();

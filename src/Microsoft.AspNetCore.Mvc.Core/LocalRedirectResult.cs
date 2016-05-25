@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -82,19 +81,8 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger<LocalRedirectResult>();
-
-            var urlHelper = GetUrlHelper(context);
-
-            if (!urlHelper.IsLocalUrl(Url))
-            {
-                throw new InvalidOperationException(Resources.UrlNotLocal);
-            }
-
-            var destinationUrl = urlHelper.Content(Url);
-            logger.LocalRedirectResultExecuting(destinationUrl);
-            context.HttpContext.Response.Redirect(destinationUrl, Permanent);
+            var executor = context.HttpContext.RequestServices.GetRequiredService<LocalRedirectResultExecutor>();
+            executor.Execute(context, this);
         }
 
         private IUrlHelper GetUrlHelper(ActionContext context)

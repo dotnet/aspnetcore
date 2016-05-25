@@ -4,10 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -47,44 +43,5 @@ namespace Microsoft.AspNetCore.Mvc
             get { return _fileDownloadName ?? string.Empty; }
             set { _fileDownloadName = value; }
         }
-
-        /// <inheritdoc />
-        public override Task ExecuteResultAsync(ActionContext context)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger<FileResult>();
-
-            var response = context.HttpContext.Response;
-            response.ContentType = ContentType.ToString();
-
-            if (!string.IsNullOrEmpty(FileDownloadName))
-            {
-                // From RFC 2183, Sec. 2.3:
-                // The sender may want to suggest a filename to be used if the entity is
-                // detached and stored in a separate file. If the receiving MUA writes
-                // the entity to a file, the suggested filename should be used as a
-                // basis for the actual filename, where possible.
-                var contentDisposition = new ContentDispositionHeaderValue("attachment");
-                contentDisposition.SetHttpFileName(FileDownloadName);
-                context.HttpContext.Response.Headers[HeaderNames.ContentDisposition] = contentDisposition.ToString();
-            }
-
-            logger.FileResultExecuting(FileDownloadName);
-            return WriteFileAsync(response);
-        }
-
-        /// <summary>
-        /// Writes the file to the specified <paramref name="response"/>.
-        /// </summary>
-        /// <param name="response">The <see cref="HttpResponse"/>.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that will complete when the file has been written to the response.
-        /// </returns>
-        protected abstract Task WriteFileAsync(HttpResponse response);
     }
 }
