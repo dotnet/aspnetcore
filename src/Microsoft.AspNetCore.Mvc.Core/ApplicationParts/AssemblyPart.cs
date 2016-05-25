@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyModel;
 
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
     /// <summary>
     /// An <see cref="ApplicationPart"/> backed by an <see cref="Assembly"/>.
     /// </summary>
-    public class AssemblyPart : ApplicationPart, IApplicationPartTypeProvider, ICompilationLibrariesProvider
+    public class AssemblyPart : ApplicationPart, IApplicationPartTypeProvider, ICompilationReferencesProvider
     {
         /// <summary>
         /// Initalizes a new <see cref="AssemblyPart"/> instance.
@@ -41,15 +42,19 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         public IEnumerable<TypeInfo> Types => Assembly.DefinedTypes;
 
         /// <inheritdoc />
-        public IReadOnlyList<CompilationLibrary> GetCompilationLibraries()
+        public IEnumerable<string> GetReferencePaths()
         {
             var dependencyContext = DependencyContext.Load(Assembly);
             if (dependencyContext != null)
             {
-                return dependencyContext.CompileLibraries;
+                return dependencyContext.CompileLibraries.SelectMany(library => library.ResolveReferencePaths());
             }
 
-            return new CompilationLibrary[0];
+            // If an application has been compiled without preserveCompilationContext, return the path to the assembly
+            // as a reference. For runtime compilation, this will allow the compilation to succeed as long as it least
+            // one application part has been compiled with preserveCompilationContext and contains a super set of types
+            // required for the compilation to succeed.
+            return new[] { Assembly.Location };
         }
     }
 }

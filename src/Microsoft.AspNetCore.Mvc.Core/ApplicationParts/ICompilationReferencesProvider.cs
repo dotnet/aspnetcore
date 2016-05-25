@@ -2,18 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 {
     /// <summary>
-    /// Exposes <see cref="CompilationLibrary"/> instances from an <see cref="ApplicationPart"/>.
+    /// Exposes one or more reference paths from an <see cref="ApplicationPart"/>.
     /// </summary>
-    public interface ICompilationLibrariesProvider
+    public interface ICompilationReferencesProvider
     {
         /// <summary>
-        /// Gets the sequence of <see cref="CompilationLibrary"/> instances.
+        /// Gets reference paths used to perform runtime compilation.
         /// </summary>
-        IReadOnlyList<CompilationLibrary> GetCompilationLibraries();
+        IEnumerable<string> GetReferencePaths();
     }
 }

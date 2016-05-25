@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using System.Reflection;
 using Xunit;
 
@@ -45,6 +46,37 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 
             // Act & Assert
             Assert.Equal(part.Assembly, assembly);
+        }
+
+        [Fact]
+        public void GetReferencePaths_ReturnsReferencesFromDependencyContext_IfPreserveCompilationContextIsSet()
+        {
+            // Arrange
+            var assembly = GetType().GetTypeInfo().Assembly;
+            var part = new AssemblyPart(assembly);
+
+            // Act
+            var references = part.GetReferencePaths().ToList();
+
+            // Assert
+            Assert.Contains(assembly.Location, references);
+            Assert.Contains(typeof(AssemblyPart).GetTypeInfo().Assembly.Location, references);
+        }
+
+        [Fact]
+        public void GetReferencePaths_ReturnsAssebmlyLocation_IfPreserveCompilationContextIsNotSet()
+        {
+            // Arrange
+            // src projects do not have preserveCompilationContext specified.
+            var assembly = typeof(AssemblyPart).GetTypeInfo().Assembly;
+            var part = new AssemblyPart(assembly);
+
+            // Act
+            var references = part.GetReferencePaths().ToList();
+
+            // Assert
+            var actual = Assert.Single(references);
+            Assert.Equal(assembly.Location, actual);
         }
     }
 }

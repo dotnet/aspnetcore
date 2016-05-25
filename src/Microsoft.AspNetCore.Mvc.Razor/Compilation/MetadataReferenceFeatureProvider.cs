@@ -33,21 +33,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             }
 
             var libraryPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var providerPart in parts.OfType<ICompilationLibrariesProvider>())
+            foreach (var providerPart in parts.OfType<ICompilationReferencesProvider>())
             {
-                var compileLibraries = providerPart.GetCompilationLibraries();
-
-                for (var i = 0; i < compileLibraries.Count; i++)
+                var referencePaths = providerPart.GetReferencePaths();
+                foreach (var path in referencePaths)
                 {
-                    var library = compileLibraries[i];
-                    var referencePaths = library.ResolveReferencePaths();
-                    foreach (var path in referencePaths)
+                    if (libraryPaths.Add(path))
                     {
-                        if (libraryPaths.Add(path))
-                        {
-                            var metadataReference = CreateMetadataReference(path);
-                            feature.MetadataReferences.Add(metadataReference);
-                        }
+                        var metadataReference = CreateMetadataReference(path);
+                        feature.MetadataReferences.Add(metadataReference);
                     }
                 }
             }

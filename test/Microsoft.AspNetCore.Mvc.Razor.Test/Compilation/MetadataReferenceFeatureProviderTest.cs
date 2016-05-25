@@ -27,23 +27,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         }
 
         [Fact]
-        public void PopulateFeature_ReturnsEmptySequence_IfAssemblyDoesNotPreserveCompilationContext()
-        {
-            // Arrange
-            var applicationPartManager = new ApplicationPartManager();
-            var assemblyPart = new AssemblyPart(typeof(MetadataReferenceFeatureProvider).GetTypeInfo().Assembly);
-            applicationPartManager.ApplicationParts.Add(assemblyPart);
-            applicationPartManager.FeatureProviders.Add(new MetadataReferenceFeatureProvider());
-            var feature = new MetadataReferenceFeature();
-
-            // Act
-            applicationPartManager.PopulateFeature(feature);
-
-            // Assert
-            Assert.Empty(feature.MetadataReferences);
-        }
-
-        [Fact]
         public void PopulateFeature_AddsMetadataReferenceForAssemblyPartsWithDependencyContext()
         {
             // Arrange
