@@ -207,6 +207,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton(ArrayPool<byte>.Shared);
             services.TryAddSingleton(ArrayPool<char>.Shared);
             services.TryAddSingleton<ObjectResultExecutor>();
+
+            //
+            // Setup default handler
+            //
+            services.TryAddSingleton<MvcRouteHandler>();
         }
 
         private static void ConfigureDefaultServices(IServiceCollection services)

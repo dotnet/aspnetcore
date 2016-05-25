@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Builder
 
             var routes = new RouteBuilder(app)
             {
-                DefaultHandler = new MvcRouteHandler(),
+                DefaultHandler = app.ApplicationServices.GetRequiredService<MvcRouteHandler>(),
             };
 
             configureRoutes(routes);

@@ -32,9 +32,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 .SetupGet(ad => ad.DisplayName)
                 .Returns(displayName);
 
-            var context = CreateRouteContext(actionDescriptor: actionDescriptor.Object, loggerFactory: loggerFactory);
+            var context = CreateRouteContext();
 
-            var handler = new MvcRouteHandler();
+            var handler = CreateMvcRouteHandler(actionDescriptor: actionDescriptor.Object, loggerFactory: loggerFactory);
             await handler.RouteAsync(context);
 
             // Act
@@ -62,11 +62,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 .Setup(a => a.Select(It.IsAny<RouteContext>()))
                 .Returns<ActionDescriptor>(null);
 
-            var context = CreateRouteContext(
+            var context = CreateRouteContext();
+
+            var handler = CreateMvcRouteHandler(
                 actionSelector: mockActionSelector.Object,
                 loggerFactory: loggerFactory);
 
-            var handler = new MvcRouteHandler();
             var expectedMessage = "No actions matched the current request";
 
             // Act
@@ -95,8 +96,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     return invoker.Object;
                 });
 
-            var context = CreateRouteContext(invokerFactory: invokerFactory.Object);
-            var handler = new MvcRouteHandler();
+            var context = CreateRouteContext();
+            var handler = CreateMvcRouteHandler(invokerFactory: invokerFactory.Object);
 
             var originalRouteData = context.RouteData;
             originalRouteData.Values.Add(TreeRouter.RouteGroupKey, "/Home/Test");
@@ -117,10 +118,10 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             // Arrange
             var listener = new TestDiagnosticListener();
 
-            var context = CreateRouteContext(diagnosticListener: listener);
+            var context = CreateRouteContext();
             context.RouteData.Values.Add("tag", "value");
 
-            var handler = new MvcRouteHandler();
+            var handler = CreateMvcRouteHandler(diagnosticListener: listener);
             await handler.RouteAsync(context);
 
             // Act
@@ -143,9 +144,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             // Arrange
             var listener = new TestDiagnosticListener();
 
-            var context = CreateRouteContext(diagnosticListener: listener);
+            var context = CreateRouteContext();
 
-            var handler = new MvcRouteHandler();
+            var handler = CreateMvcRouteHandler(diagnosticListener: listener);
             await handler.RouteAsync(context);
 
             // Act
@@ -156,14 +157,15 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Assert.NotNull(listener.AfterAction?.HttpContext);
         }
 
-        private RouteContext CreateRouteContext(
+        private MvcRouteHandler CreateMvcRouteHandler(
             ActionDescriptor actionDescriptor = null,
             IActionSelector actionSelector = null,
             IActionInvokerFactory invokerFactory = null,
             ILoggerFactory loggerFactory = null,
-            IOptions<MvcOptions> optionsAccessor = null,
             object diagnosticListener = null)
         {
+            var actionContextAccessor = new ActionContextAccessor();
+
             if (actionDescriptor == null)
             {
                 var mockAction = new Mock<ActionDescriptor>();
@@ -175,8 +177,18 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 var mockActionSelector = new Mock<IActionSelector>();
                 mockActionSelector.Setup(a => a.Select(It.IsAny<RouteContext>()))
                     .Returns(actionDescriptor);
-
                 actionSelector = mockActionSelector.Object;
+            }
+
+            if (loggerFactory == null)
+            {
+                loggerFactory = NullLoggerFactory.Instance;
+            }
+
+            var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
+            if (diagnosticListener != null)
+            {
+                diagnosticSource.SubscribeWithAdapter(diagnosticListener);
             }
 
             if (invokerFactory == null)
@@ -192,46 +204,19 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 invokerFactory = mockInvokerFactory.Object;
             }
 
-            if (loggerFactory == null)
-            {
-                loggerFactory = NullLoggerFactory.Instance;
-            }
+            return new MvcRouteHandler(
+                invokerFactory,
+                actionSelector,
+                diagnosticSource,
+                loggerFactory,
+                actionContextAccessor);
+        }
 
-            if (optionsAccessor == null)
-            {
-                optionsAccessor = new TestOptionsManager<MvcOptions>();
-            }
-
-            var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
-            if (diagnosticListener != null)
-            {
-                diagnosticSource.SubscribeWithAdapter(diagnosticListener);
-            }
-
+        private RouteContext CreateRouteContext()
+        {
             var routingFeature = new RoutingFeature();
 
             var httpContext = new Mock<HttpContext>();
-            httpContext
-                .Setup(h => h.RequestServices.GetService(typeof(IActionContextAccessor)))
-                .Returns(new ActionContextAccessor());
-            httpContext
-                .Setup(h => h.RequestServices.GetService(typeof(IActionSelector)))
-                .Returns(actionSelector);
-            httpContext
-                .Setup(h => h.RequestServices.GetService(typeof(IActionInvokerFactory)))
-                .Returns(invokerFactory);
-            httpContext
-                .Setup(h => h.RequestServices.GetService(typeof(ILoggerFactory)))
-                .Returns(loggerFactory);
-            httpContext
-                .Setup(h => h.RequestServices.GetService(typeof(MvcMarkerService)))
-                .Returns(new MvcMarkerService());
-            httpContext
-                .Setup(h => h.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
-                .Returns(optionsAccessor);
-            httpContext
-                .Setup(h => h.RequestServices.GetService(typeof(DiagnosticSource)))
-                .Returns(diagnosticSource);
             httpContext
                 .Setup(h => h.Features[typeof(IRoutingFeature)])
                 .Returns(routingFeature);

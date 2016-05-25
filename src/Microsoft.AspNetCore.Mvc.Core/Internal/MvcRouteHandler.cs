@@ -10,20 +10,43 @@ using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Tree;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class MvcRouteHandler : IRouter
     {
-        private bool _servicesRetrieved;
-
         private IActionContextAccessor _actionContextAccessor;
         private IActionInvokerFactory _actionInvokerFactory;
         private IActionSelector _actionSelector;
         private ILogger _logger;
         private DiagnosticSource _diagnosticSource;
+
+        public MvcRouteHandler(
+            IActionInvokerFactory actionInvokerFactory,
+            IActionSelector actionSelector,
+            DiagnosticSource diagnosticSource,
+            ILoggerFactory loggerFactory)
+            : this(actionInvokerFactory, actionSelector, diagnosticSource, loggerFactory, actionContextAccessor: null)
+        {
+        }
+
+        public MvcRouteHandler(
+            IActionInvokerFactory actionInvokerFactory,
+            IActionSelector actionSelector,
+            DiagnosticSource diagnosticSource,
+            ILoggerFactory loggerFactory,
+            IActionContextAccessor actionContextAccessor)
+        {
+            // The IActionContextAccessor is optional. We want to avoid the overhead of using CallContext
+            // if possible.
+            _actionContextAccessor = actionContextAccessor;
+
+            _actionInvokerFactory = actionInvokerFactory;
+            _actionSelector = actionSelector;
+            _diagnosticSource = diagnosticSource;
+            _logger = loggerFactory.CreateLogger<MvcRouteHandler>();
+        }
 
         public VirtualPathData GetVirtualPath(VirtualPathContext context)
         {
@@ -42,8 +65,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 throw new ArgumentNullException(nameof(context));
             }
-
-            EnsureServices(context.HttpContext);
 
             var actionDescriptor = _actionSelector.Select(context);
             if (actionDescriptor == null)
@@ -106,29 +127,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 _diagnosticSource.AfterAction(actionDescriptor, httpContext, routeData);
             }
-        }
-
-        private void EnsureServices(HttpContext context)
-        {
-            if (_servicesRetrieved)
-            {
-                return;
-            }
-
-            var services = context.RequestServices;
-
-            // The IActionContextAccessor is optional. We want to avoid the overhead of using CallContext
-            // if possible.
-            _actionContextAccessor = services.GetService<IActionContextAccessor>();
-
-            _actionInvokerFactory = services.GetRequiredService<IActionInvokerFactory>();
-            _actionSelector = services.GetRequiredService<IActionSelector>();
-            _diagnosticSource = services.GetRequiredService<DiagnosticSource>();
-
-            var factory = services.GetRequiredService<ILoggerFactory>();
-            _logger = factory.CreateLogger<MvcRouteHandler>();
-
-            _servicesRetrieved = true;
         }
     }
 }
