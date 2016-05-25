@@ -61,11 +61,13 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override int Read(byte[] buffer, int offset, int count)
         {
+            count = Math.Max(count, 1);
             return _inner.Read(buffer, offset, count);
         }
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
+            count = Math.Max(count, 1);
             return _inner.ReadAsync(buffer, offset, count, cancellationToken);
         }
     }

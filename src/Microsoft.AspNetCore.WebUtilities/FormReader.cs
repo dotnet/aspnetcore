@@ -28,6 +28,9 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly StringBuilder _builder = new StringBuilder();
         private int _bufferOffset;
         private int _bufferCount;
+        private string _currentKey;
+        private string _currentValue;
+        private bool _endOfStream;
         private bool _disposed;
 
         public FormReader(string data)
@@ -97,13 +100,29 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <returns>The next key value pair, or null when the end of the form is reached.</returns>
         public KeyValuePair<string, string>? ReadNextPair()
         {
-            var key = ReadWord('=', KeyLengthLimit);
-            if (string.IsNullOrEmpty(key) && _bufferCount == 0)
+            ReadNextPairImpl();
+            if (ReadSucceded())
             {
-                return null;
+                return new KeyValuePair<string, string>(_currentKey, _currentValue);
             }
-            var value = ReadWord('&', ValueLengthLimit);
-            return new KeyValuePair<string, string>(key, value);
+            return null;
+        }
+
+        private void ReadNextPairImpl()
+        {
+            StartReadNextPair();
+            while (!_endOfStream)
+            {
+                // Empty
+                if (_bufferCount == 0)
+                {
+                    Buffer();
+                }
+                if (TryReadNextPair())
+                {
+                    break;
+                }
+            }
         }
 
         // Format: key1=value1&key2=value2
@@ -114,49 +133,72 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <returns>The next key value pair, or null when the end of the form is reached.</returns>
         public async Task<KeyValuePair<string, string>?> ReadNextPairAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            var key = await ReadWordAsync('=', KeyLengthLimit, cancellationToken);
-            if (string.IsNullOrEmpty(key) && _bufferCount == 0)
+            await ReadNextPairAsyncImpl(cancellationToken);
+            if (ReadSucceded())
             {
-                return null;
+                return new KeyValuePair<string, string>(_currentKey, _currentValue);
             }
-            var value = await ReadWordAsync('&', ValueLengthLimit, cancellationToken);
-            return new KeyValuePair<string, string>(key, value);
+            return null;
         }
 
-        private string ReadWord(char seperator, int limit)
+        private async Task ReadNextPairAsyncImpl(CancellationToken cancellationToken = new CancellationToken())
         {
-            while (true)
-            {
-                // Empty
-                if (_bufferCount == 0)
-                {
-                    Buffer();
-                }
-
-                string word;
-                if (ReadChar(seperator, limit, out word))
-                {
-                    return word;
-                }
-            }
-        }
-
-        private async Task<string> ReadWordAsync(char seperator, int limit, CancellationToken cancellationToken)
-        {
-            while (true)
+            StartReadNextPair();
+            while (!_endOfStream)
             {
                 // Empty
                 if (_bufferCount == 0)
                 {
                     await BufferAsync(cancellationToken);
                 }
-
-                string word;
-                if (ReadChar(seperator, limit, out word))
+                if (TryReadNextPair())
                 {
-                    return word;
+                    break;
                 }
             }
+        }
+
+        private void StartReadNextPair()
+        {
+            _currentKey = null;
+            _currentValue = null;
+        }
+
+        private bool TryReadNextPair()
+        {
+            if (_currentKey == null)
+            {
+                if (!TryReadWord('=', KeyLengthLimit, out _currentKey))
+                {
+                    return false;
+                }
+
+                if (_bufferCount == 0)
+                {
+                    return false;
+                }
+            }
+
+            if (_currentValue == null)
+            {
+                if (!TryReadWord('&', ValueLengthLimit, out _currentValue))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private bool TryReadWord(char seperator, int limit, out string value)
+        {
+            do
+            {
+                if (ReadChar(seperator, limit, out value))
+                {
+                    return true;
+                }
+            } while (_bufferCount > 0);
+            return false;
         }
 
         private bool ReadChar(char seperator, int limit, out string word)
@@ -198,6 +240,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             _bufferOffset = 0;
             _bufferCount = _reader.Read(_buffer, 0, _buffer.Length);
+            _endOfStream = _bufferCount == 0;
         }
 
         private async Task BufferAsync(CancellationToken cancellationToken)
@@ -206,6 +249,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             cancellationToken.ThrowIfCancellationRequested();
             _bufferOffset = 0;
             _bufferCount = await _reader.ReadAsync(_buffer, 0, _buffer.Length);
+            _endOfStream = _bufferCount == 0;
         }
 
         /// <summary>
@@ -215,17 +259,11 @@ namespace Microsoft.AspNetCore.WebUtilities
         public Dictionary<string, StringValues> ReadForm()
         {
             var accumulator = new KeyValueAccumulator();
-            var pair = ReadNextPair();
-            while (pair.HasValue)
+            while (!_endOfStream)
             {
-                accumulator.Append(pair.Value.Key, pair.Value.Value);
-                if (accumulator.Count > KeyCountLimit)
-                {
-                    throw new InvalidDataException($"Form key count limit {KeyCountLimit} exceeded.");
-                }
-                pair = ReadNextPair();
+                ReadNextPairImpl();
+                Append(ref accumulator);
             }
-
             return accumulator.GetResults();
         }
 
@@ -237,18 +275,29 @@ namespace Microsoft.AspNetCore.WebUtilities
         public async Task<Dictionary<string, StringValues>> ReadFormAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             var accumulator = new KeyValueAccumulator();
-            var pair = await ReadNextPairAsync(cancellationToken);
-            while (pair.HasValue)
+            while (!_endOfStream)
             {
-                accumulator.Append(pair.Value.Key, pair.Value.Value);
+                await ReadNextPairAsyncImpl(cancellationToken);
+                Append(ref accumulator);
+            }
+            return accumulator.GetResults();
+        }
+
+        private bool ReadSucceded()
+        {
+            return _currentKey != null && _currentValue != null;
+        }
+
+        private void Append(ref KeyValueAccumulator accumulator)
+        {
+            if (ReadSucceded())
+            {
+                accumulator.Append(_currentKey, _currentValue);
                 if (accumulator.Count > KeyCountLimit)
                 {
                     throw new InvalidDataException($"Form key count limit {KeyCountLimit} exceeded.");
                 }
-                pair = await ReadNextPairAsync(cancellationToken);
             }
-
-            return accumulator.GetResults();
         }
 
         public void Dispose()
