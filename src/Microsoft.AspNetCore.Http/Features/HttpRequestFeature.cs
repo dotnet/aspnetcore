@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Http.Features
             PathBase = string.Empty;
             Path = string.Empty;
             QueryString = string.Empty;
+            RawTarget = string.Empty;
         }
 
         public string Protocol { get; set; }
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.Http.Features
         public string PathBase { get; set; }
         public string Path { get; set; }
         public string QueryString { get; set; }
+        public string RawTarget { get; set; }
         public IHeaderDictionary Headers { get; set; }
         public Stream Body { get; set; }
     }

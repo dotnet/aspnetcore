@@ -49,6 +49,17 @@ namespace Microsoft.AspNetCore.Http.Features
         string QueryString { get; set; }
 
         /// <summary>
+        /// The request target as it was sent in the HTTP request. This property contains the
+        /// raw path and full query, as well as other request targets such as * for OPTIONS
+        /// requests (https://tools.ietf.org/html/rfc7230#section-5.3).
+        /// </summary>
+        /// <remarks>
+        /// This property is not used internally for routing or authorization decisions. It has not
+        /// been UrlDecoded and care should be taken in its use.
+        /// </remarks>
+        string RawTarget { get; set; }
+
+        /// <summary>
         /// Headers included in the request, aggregated by header name. The values are not split
         /// or merged across header lines. E.g. The following headers:
         /// HeaderA: value1, value2

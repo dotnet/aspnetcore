@@ -102,6 +102,12 @@ namespace Microsoft.AspNetCore.Owin
             set { Prop(OwinConstants.RequestQueryString, Utilities.RemoveQuestionMark(value)); }
         }
 
+        string IHttpRequestFeature.RawTarget
+        {
+            get { return string.Empty; }
+            set { throw new NotSupportedException(); }
+        }
+
         IHeaderDictionary IHttpRequestFeature.Headers
         {
             get { return Utilities.MakeHeaderDictionary(Prop<IDictionary<string, string[]>>(OwinConstants.RequestHeaders)); }
