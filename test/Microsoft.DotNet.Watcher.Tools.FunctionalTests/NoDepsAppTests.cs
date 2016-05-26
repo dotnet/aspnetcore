@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             }
         }
 
-        [Fact(Skip = "aspnet/dotnet-watch#98")]
+        [Fact]
         public void RestartProcessThatTerminatesAfterFileChange()
         {
             using (var scenario = new NoDepsAppScenario())
