@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// <summary>
     /// Extension methods for setting up antiforgery services in an <see cref="IServiceCollection" />.
     /// </summary>
-    public static class ServiceCollectionExtensions
+    public static class AntiforgeryServiceCollectionExtensions
     {
         /// <summary>
         /// Adds antiforgery services to the specified <see cref="IServiceCollection" />.
