@@ -2,7 +2,10 @@
 param(
 	[Parameter(Mandatory=$true)]
 	[string]$executablePath,
-	
+
+	[Parameter(Mandatory=$false)]
+	[string]$executableParameters,
+
 	[Parameter(Mandatory=$true)]
 	[string]$serverType,
 
@@ -28,19 +31,28 @@ IF (-Not [string]::IsNullOrWhitespace($environmentVariables))
 	}
 }
 
+# Temporary workaround for issue https://github.com/dotnet/cli/issues/2967
+if ($executablePath -ne "dotnet.exe"){
+    $destinationDir = Split-Path $executablePath
+    Copy-Item C:\Windows\System32\forwarders\shell32.dll $destinationDir
+}
+
+$command = $executablePath + " " + $executableParameters + " --server.urls " + $applicationBaseUrl
 if ($serverType -eq "IIS")
 {
 	throw [System.NotImplementedException] "IIS deployment scenarios not yet implemented."
 }
 elseif ($serverType -eq "Kestrel")
 {
-	Write-Host "Starting the process '$executablePath'"
-	& $executablePath --server.urls $applicationBaseUrl
+	$command = $command + " --server Microsoft.AspNetCore.Server.Kestrel"
+	Write-Host "Executing the command '$command'"
+	Invoke-Expression $command
 }
 elseif ($serverType -eq "WebListener")
 {
-	Write-Host "Starting the process '$executablePath'"
-	& $executablePath --server.urls $applicationBaseUrl --server "Microsoft.AspNetCore.Server.WebListener"
+	$command = $command + " --server Microsoft.AspNetCore.Server.WebListener"
+	Write-Host "Executing the command '$command'"
+	Invoke-Expression $command
 }
 else
 {

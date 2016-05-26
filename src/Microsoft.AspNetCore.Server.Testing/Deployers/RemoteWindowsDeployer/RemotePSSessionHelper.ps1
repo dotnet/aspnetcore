@@ -5,13 +5,16 @@ param(
 
 	[Parameter(Mandatory=$true)]
 	[string]$accountName,
-	
+
 	[Parameter(Mandatory=$true)]
 	[string]$accountPassword,
-	
+
 	[Parameter(Mandatory=$true)]
 	[string]$executablePath,
-	
+
+	[Parameter(Mandatory=$false)]
+	[string]$executableParameters,
+
 	[Parameter(Mandatory=$true)]
 	[string]$serverType,
 
@@ -37,7 +40,7 @@ if ($serverAction -eq "StartServer")
 {
 	Write-Host "Starting the application on machine '$serverName'"
 	$startServerScriptPath = "$PSScriptRoot\StartServer.ps1"
-	$remoteResult=Invoke-Command -Session $psSession -FilePath $startServerScriptPath -ArgumentList $executablePath, $serverType, $serverName, $applicationBaseUrl, $environmentVariables
+	$remoteResult=Invoke-Command -Session $psSession -FilePath $startServerScriptPath -ArgumentList $executablePath, $executableParameters, $serverType, $serverName, $applicationBaseUrl, $environmentVariables
 }
 else
 {
@@ -50,6 +53,6 @@ else
 Remove-PSSession $psSession
 
 # NOTE: Currenty there is no straight forward way to get the exit code from a remotely executing session, so
-# we print out the exit code in the remote script and capture it's output to get the exit code. 
+# we print out the exit code in the remote script and capture it's output to get the exit code.
 $finalExitCode=$remoteResult[$remoteResult.Length-1]
 exit $finalExitCode

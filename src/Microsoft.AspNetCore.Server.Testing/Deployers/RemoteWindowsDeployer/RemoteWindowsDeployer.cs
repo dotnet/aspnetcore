@@ -138,10 +138,12 @@ namespace Microsoft.AspNetCore.Server.Testing
             var remotePSSessionHelperScript = _scripts.Value.RemotePSSessionHelper;
 
             string executablePath = null;
+            string executableParameters = null;
             var applicationName = new DirectoryInfo(DeploymentParameters.ApplicationPath).Name;
             if (DeploymentParameters.ApplicationType == ApplicationType.Portable)
             {
-                executablePath = $"dotnet {applicationName}.dll";
+                executablePath = "dotnet.exe";
+                executableParameters = Path.Combine(_deployedFolderPathInFileShare, applicationName + ".dll");
             }
             else
             {
@@ -153,7 +155,13 @@ namespace Microsoft.AspNetCore.Server.Testing
             parameterBuilder.Append($" -serverName {_deploymentParameters.ServerName}");
             parameterBuilder.Append($" -accountName {_deploymentParameters.ServerAccountName}");
             parameterBuilder.Append($" -accountPassword {_deploymentParameters.ServerAccountPassword}");
-            parameterBuilder.Append($" -executablePath \'{executablePath}\'");
+            parameterBuilder.Append($" -executablePath \"{executablePath}\"");
+
+            if (!string.IsNullOrEmpty(executableParameters))
+            {
+                parameterBuilder.Append($" -executableParameters \"{executableParameters}\"");
+            }
+
             parameterBuilder.Append($" -serverType {_deploymentParameters.ServerType}");
             parameterBuilder.Append($" -serverAction {serverAction}");
             parameterBuilder.Append($" -applicationBaseUrl {_deploymentParameters.ApplicationBaseUriHint}");
