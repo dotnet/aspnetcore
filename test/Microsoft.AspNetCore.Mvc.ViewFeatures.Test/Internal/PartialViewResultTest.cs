@@ -199,7 +199,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 new CompositeViewEngine(options),
                 new TempDataDictionaryFactory(new SessionStateTempDataProvider()),
                 new DiagnosticListener("Microsoft.AspNetCore"),
-                NullLoggerFactory.Instance);
+                NullLoggerFactory.Instance,
+                new EmptyModelMetadataProvider());
 
             var services = new ServiceCollection();
             services.AddSingleton(viewExecutor);

@@ -364,7 +364,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 new TestHttpResponseStreamWriterFactory(),
                 new Mock<ICompositeViewEngine>(MockBehavior.Strict).Object,
                 new TempDataDictionaryFactory(new SessionStateTempDataProvider()),
-                diagnosticSource);
+                diagnosticSource,
+                new EmptyModelMetadataProvider());
         }
     }
 }

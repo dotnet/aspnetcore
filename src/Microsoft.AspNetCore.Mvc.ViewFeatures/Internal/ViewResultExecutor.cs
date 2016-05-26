@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Logging;
@@ -31,14 +32,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         /// <param name="tempDataFactory">The <see cref="ITempDataDictionaryFactory"/>.</param>
         /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         public ViewResultExecutor(
             IOptions<MvcViewOptions> viewOptions,
             IHttpResponseStreamWriterFactory writerFactory,
             ICompositeViewEngine viewEngine,
             ITempDataDictionaryFactory tempDataFactory,
             DiagnosticSource diagnosticSource,
-            ILoggerFactory loggerFactory)
-            : base(viewOptions, writerFactory, viewEngine, tempDataFactory, diagnosticSource)
+            ILoggerFactory loggerFactory,
+            IModelMetadataProvider modelMetadataProvider)
+            : base(viewOptions, writerFactory, viewEngine, tempDataFactory, diagnosticSource, modelMetadataProvider)
         {
             if (loggerFactory == null)
             {
