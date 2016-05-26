@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
     {
         public static IFileSystemWatcher CreateWatcher(string watchedDirectory)
         {
-            var envVar = Environment.GetEnvironmentVariable("USE_POLLING_FILE_WATCHER");
+            var envVar = Environment.GetEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER");
             var usePollingWatcher =
                 envVar != null &&
                 (envVar.Equals("1", StringComparison.OrdinalIgnoreCase) ||

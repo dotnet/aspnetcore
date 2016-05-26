@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             {
                 envVariables = new Dictionary<string, string>()
                 {
-                    ["USE_POLLING_FILE_WATCHER"] = "true"
+                    ["DOTNET_USE_POLLING_FILE_WATCHER"] = "true"
                 };
             }
 
