@@ -14,7 +14,8 @@ default BUILD_DIR_LOCAL='${Path.Combine(TARGET_DIR_LOCAL, "build")}'
 default SRC_PROJECT_GLOB_LOCAL="src/*/project.json"
 default TEST_PROJECT_GLOB_LOCAL="test/*/project.json"
 
-#build-compile target='compile'
+// Don't remove the if clause - removing it will break the CI test runs.
+#build-compile target='compile' if='Directory.Exists("src")'
   @{
     Directory.CreateDirectory(TARGET_DIR_LOCAL);
 
