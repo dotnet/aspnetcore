@@ -22,15 +22,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
         }
 
-        public TestServer(RequestDelegate app, ServiceContext context)
+        public TestServer(RequestDelegate app, TestServiceContext context)
             : this(app, context, "http://127.0.0.1:0/")
         {
         }
 
-        public int Port => _address.Port;
-
-        public TestServer(RequestDelegate app, ServiceContext context, string serverAddress)
+        public TestServer(RequestDelegate app, TestServiceContext context, string serverAddress)
         {
+            Context = context;
+
             context.FrameFactory = connectionContext =>
             {
                 return new Frame<HttpContext>(new DummyApplication(app), connectionContext);
@@ -49,6 +49,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 _engine?.Dispose();
                 throw;
             }
+        }
+
+        public int Port => _address.Port;
+
+        public TestServiceContext Context { get; }
+
+        public TestConnection CreateConnection()
+        {
+            return new TestConnection(this);
         }
 
         public void Dispose()

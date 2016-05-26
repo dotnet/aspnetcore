@@ -20,11 +20,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
     /// </summary>
     public class EngineTests
     {
-        public static TheoryData<ServiceContext> ConnectionFilterData
+        public static TheoryData<TestServiceContext> ConnectionFilterData
         {
             get
             {
-                return new TheoryData<ServiceContext>
+                return new TheoryData<TestServiceContext>
                 {
                     {
                         new TestServiceContext()
@@ -40,7 +40,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var request = httpContext.Request;
             var response = httpContext.Response;
-            response.Headers.Clear();
             while (true)
             {
                 var buffer = new byte[8192];
@@ -61,20 +60,18 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await request.Body.CopyToAsync(data);
             var bytes = data.ToArray();
 
-            response.Headers.Clear();
             response.Headers["Content-Length"] = bytes.Length.ToString();
             await response.Body.WriteAsync(bytes, 0, bytes.Length);
         }
 
         private Task EmptyApp(HttpContext httpContext)
         {
-            httpContext.Response.Headers.Clear();
             return Task.FromResult<object>(null);
         }
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public void EngineCanStartAndStop(ServiceContext testContext)
+        public void EngineCanStartAndStop(TestServiceContext testContext)
         {
             var engine = new KestrelEngine(testContext);
             engine.Start(1);
@@ -121,11 +118,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task Http10RequestReceivesHttp11Response(ServiceContext testContext)
+        public async Task Http10RequestReceivesHttp11Response(TestServiceContext testContext)
         {
             using (var server = new TestServer(App, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "POST / HTTP/1.0",
@@ -133,6 +130,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Hello World");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "Hello World");
                 }
@@ -142,11 +140,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task Http11(ServiceContext testContext)
+        public async Task Http11(TestServiceContext testContext)
         {
             using (var server = new TestServer(AppChunked, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -157,10 +155,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Goodbye");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
                         "",
                         "HTTP/1.1 200 OK",
                         "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 7",
                         "",
                         "Goodbye");
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task HeadersAndStreamsAreReused(ServiceContext testContext)
+        public async Task HeadersAndStreamsAreReused(TestServiceContext testContext)
         {
             var streamCount = 0;
             var requestHeadersCount = 0;
@@ -198,21 +198,35 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                             lastResponseHeaders = context.Response.Headers;
                             responseHeadersCount++;
                         }
-                        context.Response.Headers.Clear();
                         return context.Request.Body.CopyToAsync(context.Response.Body);
                     },
                     testContext))
             {
 
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     var requestData =
                         Enumerable.Repeat("GET / HTTP/1.1\r\n", loopCount)
                             .Concat(new[] { "GET / HTTP/1.1\r\nConnection: close\r\n\r\nGoodbye" });
 
+                    var response = string.Join("\r\n", new string[] {
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        ""});
+
+                    var lastResponse = string.Join("\r\n", new string[]
+                    {
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "",
+                        "Goodbye"
+                    });
+
                     var responseData =
-                        Enumerable.Repeat("HTTP/1.1 200 OK\r\nContent-Length: 0\r\n", loopCount)
-                            .Concat(new[] { "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\nGoodbye" });
+                        Enumerable.Repeat(response, loopCount)
+                            .Concat(new[] { lastResponse });
 
                     await connection.SendEnd(requestData.ToArray());
 
@@ -227,11 +241,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task Http10ContentLength(ServiceContext testContext)
+        public async Task Http10ContentLength(TestServiceContext testContext)
         {
             using (var server = new TestServer(App, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "POST / HTTP/1.0",
@@ -240,6 +254,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Hello World");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "Hello World");
                 }
@@ -248,11 +263,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task Http10KeepAlive(ServiceContext testContext)
+        public async Task Http10KeepAlive(TestServiceContext testContext)
         {
             using (var server = new TestServer(AppChunked, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.0",
@@ -264,10 +279,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         "Connection: keep-alive",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
                         "\r\n");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 7",
                         "",
                         "Goodbye");
@@ -277,11 +294,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task Http10KeepAliveNotUsedIfResponseContentLengthNotSet(ServiceContext testContext)
+        public async Task Http10KeepAliveNotUsedIfResponseContentLengthNotSet(TestServiceContext testContext)
         {
             using (var server = new TestServer(App, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.0",
@@ -295,10 +312,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         "Connection: keep-alive",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
                         "\r\n");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "Goodbye");
                 }
@@ -307,11 +326,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task Http10KeepAliveContentLength(ServiceContext testContext)
+        public async Task Http10KeepAliveContentLength(TestServiceContext testContext)
         {
             using (var server = new TestServer(AppChunked, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "POST / HTTP/1.0",
@@ -324,11 +343,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         "Connection: keep-alive",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
                         "",
                         "Hello World");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 7",
                         "",
                         "Goodbye");
@@ -338,11 +359,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task Expect100ContinueForBody(ServiceContext testContext)
+        public async Task Expect100ContinueForBody(TestServiceContext testContext)
         {
             using (var server = new TestServer(AppChunked, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
@@ -355,6 +376,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
                         "",
                         "Hello World");
@@ -364,7 +386,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task DisconnectingClient(ServiceContext testContext)
+        public async Task DisconnectingClient(TestServiceContext testContext)
         {
             using (var server = new TestServer(App, testContext))
             {
@@ -373,13 +395,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 socket.Dispose();
 
                 await Task.Delay(200);
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.0",
                         "\r\n");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "\r\n");
                 }
             }
@@ -387,11 +410,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ZeroContentLengthSetAutomaticallyAfterNoWrites(ServiceContext testContext)
+        public async Task ZeroContentLengthSetAutomaticallyAfterNoWrites(TestServiceContext testContext)
         {
             using (var server = new TestServer(EmptyApp, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -402,10 +425,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
                         "",
                         "HTTP/1.1 200 OK",
                         "Connection: keep-alive",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
                         "",
                         "");
@@ -415,11 +440,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ZeroContentLengthNotSetAutomaticallyForNonKeepAliveRequests(ServiceContext testContext)
+        public async Task ZeroContentLengthNotSetAutomaticallyForNonKeepAliveRequests(TestServiceContext testContext)
         {
             using (var server = new TestServer(EmptyApp, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -429,11 +454,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "");
                 }
 
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.0",
@@ -441,6 +467,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -449,11 +476,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ZeroContentLengthNotSetAutomaticallyForHeadRequests(ServiceContext testContext)
+        public async Task ZeroContentLengthNotSetAutomaticallyForHeadRequests(TestServiceContext testContext)
         {
             using (var server = new TestServer(EmptyApp, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "HEAD / HTTP/1.1",
@@ -461,6 +488,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "");
                 }
@@ -469,13 +497,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ZeroContentLengthNotSetAutomaticallyForCertainStatusCodes(ServiceContext testContext)
+        public async Task ZeroContentLengthNotSetAutomaticallyForCertainStatusCodes(TestServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
             {
                 var request = httpContext.Request;
                 var response = httpContext.Response;
-                response.Headers.Clear();
 
                 using (var reader = new StreamReader(request.Body, Encoding.ASCII))
                 {
@@ -484,7 +511,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             }, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "POST / HTTP/1.1",
@@ -505,14 +532,19 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "200");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 101 Switching Protocols",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "HTTP/1.1 204 No Content",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "HTTP/1.1 205 Reset Content",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "HTTP/1.1 304 Not Modified",
+                        $"Date: {testContext.DateHeaderValue}",
                         "",
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
                         "",
                         "");
@@ -522,7 +554,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ThrowingResultsIn500Response(ServiceContext testContext)
+        public async Task ThrowingResultsIn500Response(TestServiceContext testContext)
         {
             bool onStartingCalled = false;
 
@@ -539,12 +571,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }, null);
 
                 // Anything added to the ResponseHeaders dictionary is ignored
-                response.Headers.Clear();
                 response.Headers["Content-Length"] = "11";
                 throw new Exception();
             }, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -556,19 +587,17 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     await connection.Receive(
                         "HTTP/1.1 500 Internal Server Error",
                         "");
-                    await connection.ReceiveStartsWith("Date:");
                     await connection.Receive(
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
-                        "Server: Kestrel",
                         "",
                         "HTTP/1.1 500 Internal Server Error",
                         "");
                     await connection.Receive("Connection: close",
                         "");
-                    await connection.ReceiveStartsWith("Date:");
                     await connection.ReceiveEnd(
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
-                        "Server: Kestrel",
                         "",
                         "");
 
@@ -580,7 +609,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ThrowingAfterWritingKillsConnection(ServiceContext testContext)
+        public async Task ThrowingAfterWritingKillsConnection(TestServiceContext testContext)
         {
             bool onStartingCalled = false;
 
@@ -596,13 +625,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     return Task.FromResult<object>(null);
                 }, null);
 
-                response.Headers.Clear();
                 response.Headers["Content-Length"] = new[] { "11" };
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11);
                 throw new Exception();
             }, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
@@ -610,6 +638,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
                     await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
                         "",
                         "Hello World");
@@ -622,7 +651,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ThrowingAfterPartialWriteKillsConnection(ServiceContext testContext)
+        public async Task ThrowingAfterPartialWriteKillsConnection(TestServiceContext testContext)
         {
             bool onStartingCalled = false;
 
@@ -638,13 +667,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     return Task.FromResult<object>(null);
                 }, null);
 
-                response.Headers.Clear();
                 response.Headers["Content-Length"] = new[] { "11" };
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello"), 0, 5);
                 throw new Exception();
             }, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
@@ -652,6 +680,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
                     await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
                         "",
                         "Hello");
@@ -664,11 +693,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ConnectionClosesWhenFinReceived(ServiceContext testContext)
+        public async Task ConnectionClosesWhenFinReceived(TestServiceContext testContext)
         {
             using (var server = new TestServer(AppChunked, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -679,9 +708,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Goodbye");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
                         "",
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 7",
                         "",
                         "Goodbye");
@@ -691,49 +722,45 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ConnectionClosesWhenFinReceivedBeforeRequestCompletes(ServiceContext testContext)
+        public async Task ConnectionClosesWhenFinReceivedBeforeRequestCompletes(TestServiceContext testContext)
         {
             using (var server = new TestServer(AppChunked, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
                         "",
                         "POST / HTTP/1.1");
-                    await connection.Receive(
+                    await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
                         "",
                         "HTTP/1.1 400 Bad Request",
                         "Connection: close",
-                        "");
-                    await connection.ReceiveStartsWith("Date:");
-                    await connection.ReceiveForcedEnd(
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
-                        "Server: Kestrel",
                         "",
                         "");
                 }
 
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
                         "",
                         "POST / HTTP/1.1",
                         "Content-Length: 7");
-                    await connection.Receive(
+                    await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
                         "",
                         "HTTP/1.1 400 Bad Request",
                         "Connection: close",
-                        "");
-                    await connection.ReceiveStartsWith("Date:");
-                    await connection.ReceiveForcedEnd(
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
-                        "Server: Kestrel",
                         "",
                         "");
                 }
@@ -742,7 +769,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ThrowingInOnStartingResultsInFailedWritesAnd500Response(ServiceContext testContext)
+        public async Task ThrowingInOnStartingResultsInFailedWritesAnd500Response(TestServiceContext testContext)
         {
             var onStartingCallCount1 = 0;
             var onStartingCallCount2 = 0;
@@ -767,7 +794,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     throw onStartingException;
                 }, null);
 
-                response.Headers.Clear();
                 response.Headers["Content-Length"] = new[] { "11" };
 
                 var writeException = await Assert.ThrowsAsync<ObjectDisposedException>(async () =>
@@ -778,7 +804,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 failedWriteCount++;
             }, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -790,18 +816,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     await connection.Receive(
                         "HTTP/1.1 500 Internal Server Error",
                         "");
-                    await connection.ReceiveStartsWith("Date:");
                     await connection.Receive(
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
-                        "Server: Kestrel",
                         "",
                         "HTTP/1.1 500 Internal Server Error",
                         "Connection: close",
                         "");
-                    await connection.ReceiveStartsWith("Date:");
                     await connection.ReceiveEnd(
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
-                        "Server: Kestrel",
                         "",
                         "");
 
@@ -815,7 +839,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ThrowingInOnCompletedIsLoggedAndClosesConnection(ServiceContext testContext)
+        public async Task ThrowingInOnCompletedIsLoggedAndClosesConnection(TestServiceContext testContext)
         {
             var onCompletedCalled1 = false;
             var onCompletedCalled2 = false;
@@ -837,13 +861,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     throw new Exception();
                 }, null);
 
-                response.Headers.Clear();
                 response.Headers["Content-Length"] = new[] { "11" };
 
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11);
             }, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
@@ -851,6 +874,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
                     await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
                         "",
                         "Hello World");
@@ -865,7 +889,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task RequestsCanBeAbortedMidRead(ServiceContext testContext)
+        public async Task RequestsCanBeAbortedMidRead(TestServiceContext testContext)
         {
             var readTcs = new TaskCompletionSource<object>();
             var registrationTcs = new TaskCompletionSource<int>();
@@ -883,7 +907,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 if (requestId == 1)
                 {
-                    response.Headers.Clear();
                     response.Headers["Content-Length"] = new[] { "5" };
 
                     await response.WriteAsync("World");
@@ -908,7 +931,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             }, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     // Never send the body so CopyToAsync always fails.
                     await connection.Send(
@@ -922,6 +945,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                     await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 5",
                         "",
                         "World");
@@ -937,7 +961,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task FailedWritesResultInAbortedRequest(ServiceContext testContext)
+        public async Task FailedWritesResultInAbortedRequest(TestServiceContext testContext)
         {
             // This should match _maxBytesPreCompleted in SocketOutput
             var maxBytesPreCompleted = 65536;
@@ -959,8 +983,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await request.Body.CopyToAsync(Stream.Null);
                 connectionCloseWh.Wait();
 
-                response.Headers.Clear();
-
                 try
                 {
                     // Ensure write is long enough to disable write-behind buffering
@@ -979,7 +1001,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 writeTcs.SetException(new Exception("This shouldn't be reached."));
             }, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
@@ -1000,7 +1022,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task NoErrorsLoggedWhenServerEndsConnectionBeforeClient(ServiceContext testContext)
+        public async Task NoErrorsLoggedWhenServerEndsConnectionBeforeClient(TestServiceContext testContext)
         {
             var testLogger = new TestApplicationErrorLogger();
             testContext.Log = new KestrelTrace(testLogger);
@@ -1008,12 +1030,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                response.Headers.Clear();
                 response.Headers["Content-Length"] = new[] { "11" };
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11);
             }, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.Send(
                         "GET / HTTP/1.0",
@@ -1021,6 +1042,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
                     await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
                         "",
                         "Hello World");
@@ -1032,7 +1054,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task NoResponseSentWhenConnectionIsClosedByServerBeforeClientFinishesSendingRequest(ServiceContext testContext)
+        public async Task NoResponseSentWhenConnectionIsClosedByServerBeforeClientFinishesSendingRequest(TestServiceContext testContext)
         {
             var testLogger = new TestApplicationErrorLogger();
             testContext.Log = new KestrelTrace(testLogger);
@@ -1043,7 +1065,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 return Task.FromResult(0);
             }, testContext))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.Send(
                         "POST / HTTP/1.0",

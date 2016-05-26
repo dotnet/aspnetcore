@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Filter;
 using Microsoft.AspNetCore.Server.Kestrel.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
@@ -19,9 +20,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             AppLifetime = new LifetimeNotImplemented();
             Log = new TestKestrelTrace();
             ThreadPool = new LoggingThreadPool(Log);
-            DateHeaderValueManager = new DateHeaderValueManager();
-
-            ServerOptions = new KestrelServerOptions();
+            DateHeaderValueManager = new DateHeaderValueManager(systemClock: new MockSystemClock());
+            DateHeaderValue = DateHeaderValueManager.GetDateHeaderValues().String;
+            ServerOptions = new KestrelServerOptions { AddServerHeader = false };
             ServerOptions.ShutdownTimeout = TimeSpan.FromSeconds(5);
         }
 
@@ -30,6 +31,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             ServerOptions.ConnectionFilter = filter;
         }
+
+        public string DateHeaderValue { get; }
 
         public RequestDelegate App
         {

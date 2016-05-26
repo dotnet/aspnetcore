@@ -396,7 +396,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var request = httpContext.Request;
             var response = httpContext.Response;
-            response.Headers.Clear();
             while (true)
             {
                 var buffer = new byte[8192];

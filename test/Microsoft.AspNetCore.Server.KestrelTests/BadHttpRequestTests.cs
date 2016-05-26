@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(context => { return Task.FromResult(0); }))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(request);
                     await ReceiveBadRequestResponse(connection);
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(context => { return Task.FromResult(0); }))
             {
-                using (var connection = new TestConnection(server.Port))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.Send(request);
                     await ReceiveBadRequestResponse(connection);
@@ -103,10 +103,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await connection.Receive(
                 "Connection: close",
                 "");
-            await connection.ReceiveStartsWith("Date: ");
             await connection.ReceiveEnd(
+                $"Date: {connection.Server.Context.DateHeaderValue}",
                 "Content-Length: 0",
-                "Server: Kestrel",
                 "",
                 "");
         }
