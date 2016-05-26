@@ -4,6 +4,7 @@
     "AccountName": "",
     "AccountPassword": "",
     "FileSharePath": "",
-    "ExecutableRelativePath": ""
+    "DotnetRuntimeFolderPath": "",
+    "DotnetRuntimeZipFilePath": ""
   }
 }
