@@ -34,7 +34,7 @@
         <MakeDir Directories="$(OutputPath)" />
         <MakeDir Directories="$(CoherenceDestinationDir)" />
 
-        <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MIR /MT $(DropSource) $(CoherenceDestinationDir) /XD build
+        <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MIR /MT $(DropSource) $(CoherenceDestinationDir) /XD build packages-expanded
                        IF %ERRORLEVEL% LEQ 1 exit 0" />
 
         <ItemGroup>
