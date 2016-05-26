@@ -296,15 +296,15 @@ namespace Microsoft.Net.Http.Server
                 return _sslStatus != SslStatus.Insecure;
             }
         }
-        /*
-        internal string RawUrl
+        
+        public string RawUrl
         {
             get
             {
                 return _rawUrl;
             }
         }
-        */
+        
         public Version ProtocolVersion
         {
             get

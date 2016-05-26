@@ -51,6 +51,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
                     Assert.Equal("/basepath", requestInfo.PathBase);
                     Assert.Equal("/SomePath", requestInfo.Path);
                     Assert.Equal("?SomeQuery", requestInfo.QueryString);
+                    Assert.Equal("/basepath/SomePath?SomeQuery", requestInfo.RawTarget);
                     Assert.Equal("HTTP/1.1", requestInfo.Protocol);
 
                     // Server Keys
@@ -87,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         [InlineData("/basepath/", "/basepath", "/basepath", "")]
         [InlineData("/basepath/", "/basepath/", "/basepath", "/")]
         [InlineData("/basepath/", "/basepath/subpath", "/basepath", "/subpath")]
-        [InlineData("/base path/", "/base%20path/sub path", "/base path", "/sub path")]
+        [InlineData("/base path/", "/base%20path/sub%20path", "/base path", "/sub path")]
         [InlineData("/base葉path/", "/base%E8%91%89path/sub%E8%91%89path", "/base葉path", "/sub葉path")]
         [InlineData("/basepath/", "/basepath/sub%2Fpath", "/basepath", "/sub%2Fpath")]
         public async Task Request_PathSplitting(string pathBase, string requestPath, string expectedPathBase, string expectedPath)
@@ -106,6 +107,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
                     Assert.Equal(expectedPath, requestInfo.Path);
                     Assert.Equal(expectedPathBase, requestInfo.PathBase);
                     Assert.Equal(string.Empty, requestInfo.QueryString);
+                    Assert.Equal(requestPath, requestInfo.RawTarget);
 
                     // Trace identifier
                     Assert.NotNull(requestIdentifierFeature);
@@ -132,6 +134,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             {
                 var requestInfo = httpContext.Features.Get<IHttpRequestFeature>();
                 Assert.Equal("/%2F", requestInfo.Path);
+                Assert.Equal("/%252F", requestInfo.RawTarget);
                 return Task.FromResult(0);
             }))
             {
@@ -165,6 +168,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 {
                     Assert.Equal(expectedPath, requestInfo.Path);
                     Assert.Equal(expectedPathBase, requestInfo.PathBase);
+                    Assert.Equal(requestPath, requestInfo.RawTarget);
 
                     // Trace identifier
                     Assert.NotNull(requestIdentifierFeature);

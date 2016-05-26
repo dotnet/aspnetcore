@@ -62,6 +62,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         private string _query;
         private string _pathBase;
         private string _path;
+        private string _rawTarget;
         private IPAddress _remoteIpAddress;
         private IPAddress _localIpAddress;
         private int? _remotePort;
@@ -205,6 +206,19 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 return _query;
             }
             set { _query = value; }
+        }
+
+        string IHttpRequestFeature.RawTarget
+        {
+            get
+            {
+                if (_rawTarget == null)
+                {
+                    _rawTarget = Request.RawUrl;
+                }
+                return _rawTarget;
+            }
+            set { _rawTarget = value; }
         }
 
         string IHttpRequestFeature.Scheme
