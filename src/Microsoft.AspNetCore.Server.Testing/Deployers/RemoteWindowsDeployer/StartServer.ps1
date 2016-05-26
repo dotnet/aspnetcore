@@ -1,5 +1,8 @@
 ﻿[CmdletBinding()]
 param(
+	[Parameter(Mandatory=$false)]
+	[string]$dotnetRuntimePath,
+
 	[Parameter(Mandatory=$true)]
 	[string]$executablePath,
 
@@ -31,8 +34,19 @@ IF (-Not [string]::IsNullOrWhitespace($environmentVariables))
 	}
 }
 
-# Temporary workaround for issue https://github.com/dotnet/cli/issues/2967
-if ($executablePath -ne "dotnet.exe"){
+if ($executablePath -eq "dotnet.exe")
+{
+    Write-Host "Setting the dotnet runtime path to the PATH environment variable"
+    [Environment]::SetEnvironmentVariable("PATH", "$dotnetRuntimePath")
+}
+
+Write-Host "Copying shell32.dll as a temporary workaround for issue https://github.com/dotnet/cli/issues/2967"
+if ($executablePath -eq "dotnet.exe")
+{
+    Copy-Item C:\Windows\System32\forwarders\shell32.dll $dotnetRuntimePath
+}
+else
+{
     $destinationDir = Split-Path $executablePath
     Copy-Item C:\Windows\System32\forwarders\shell32.dll $destinationDir
 }

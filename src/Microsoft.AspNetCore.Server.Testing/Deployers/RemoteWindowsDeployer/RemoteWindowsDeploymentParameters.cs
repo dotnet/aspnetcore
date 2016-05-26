@@ -7,6 +7,7 @@ namespace Microsoft.AspNetCore.Server.Testing
     {
         public RemoteWindowsDeploymentParameters(
             string applicationPath,
+            string dotnetRuntimePath,
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture runtimeArchitecture,
@@ -20,6 +21,7 @@ namespace Microsoft.AspNetCore.Server.Testing
             ServerName = remoteServerName;
             ServerAccountName = remoteServerAccountName;
             ServerAccountPassword = remoteServerAccountPassword;
+            DotnetRuntimePath = dotnetRuntimePath;
         }
 
         public string ServerName { get; }
@@ -27,6 +29,8 @@ namespace Microsoft.AspNetCore.Server.Testing
         public string ServerAccountName { get; }
 
         public string ServerAccountPassword { get; }
+
+        public string DotnetRuntimePath { get; }
 
         /// <summary>
         /// The full path to the remote server's file share
