@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
-    public class DataProtectionExtensionsTests
+    public class DataProtectionAdvancedExtensionsTests
     {
         private const string SampleEncodedString = "AQI"; // = WebEncoders.Base64UrlEncode({ 0x01, 0x02 })
 

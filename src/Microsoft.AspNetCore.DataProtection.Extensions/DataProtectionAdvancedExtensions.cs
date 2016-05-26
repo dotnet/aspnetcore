@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
-    public static class DataProtectionExtensions
+    public static class DataProtectionAdvancedExtensions
     {
         /// <summary>
         /// Cryptographically protects a piece of plaintext data, expiring the data after

@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
-    public class DataProtectionExtensionsTests
+    public class DataProtectionUtilityExtensionsTests
     {
         [Theory]
         [InlineData(" discriminator", "app-path ", "discriminator")] // normalized trim

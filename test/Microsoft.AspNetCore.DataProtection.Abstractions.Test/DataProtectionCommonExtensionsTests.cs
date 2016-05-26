@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
-    public class DataProtectionExtensionsTests
+    public class DataProtectionCommonExtensionsTests
     {
         [Theory]
         [InlineData(new object[] { new string[0] })]
@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.DataProtection
             mockProtector.Setup(p => p.Unprotect(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05 })).Returns(new byte[] { 0x48, 0x65, 0x6c, 0x6c, 0x6f });
 
             // Act
-            string retVal = DataProtectionExtensions.Unprotect(mockProtector.Object, "AQIDBAU");
+            string retVal = DataProtectionCommonExtensions.Unprotect(mockProtector.Object, "AQIDBAU");
 
             // Assert
             Assert.Equal("Hello", retVal);

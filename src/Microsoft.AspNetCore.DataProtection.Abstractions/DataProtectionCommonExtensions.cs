@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.DataProtection
     /// <summary>
     /// Helpful extension methods for data protection APIs.
     /// </summary>
-    public static class DataProtectionExtensions
+    public static class DataProtectionCommonExtensions
     {
         /// <summary>
         /// Creates an <see cref="IDataProtector"/> given a list of purposes.

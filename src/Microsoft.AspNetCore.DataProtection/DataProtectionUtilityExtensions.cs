@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
-    public static class DataProtectionExtensions
+    public static class DataProtectionUtilityExtensions
     {
         /// <summary>
         /// Returns a unique identifier for this application.
