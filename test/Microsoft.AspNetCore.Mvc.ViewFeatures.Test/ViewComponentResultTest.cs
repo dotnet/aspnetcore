@@ -532,6 +532,7 @@ namespace Microsoft.AspNetCore.Mvc
             services.AddSingleton<ITempDataProvider, SessionStateTempDataProvider>();
             services.AddSingleton<HtmlEncoder, HtmlTestEncoder>();
             services.AddSingleton<IViewBufferScope, TestViewBufferScope>();
+            services.AddSingleton<ViewComponentResultExecutor>();
 
             return services;
         }
