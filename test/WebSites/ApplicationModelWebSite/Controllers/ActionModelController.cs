@@ -14,7 +14,7 @@ namespace ApplicationModelWebSite
         [ActionName2("ActionName")]
         public string GetActionName()
         {
-            return ControllerContext.ActionDescriptor.Name;
+            return ControllerContext.ActionDescriptor.ActionName;
         }
 
         private class ActionName2Attribute : Attribute, IActionModelConvention

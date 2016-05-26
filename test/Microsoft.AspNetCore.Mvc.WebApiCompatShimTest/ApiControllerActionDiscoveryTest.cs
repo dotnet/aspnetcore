@@ -272,7 +272,7 @@ namespace System.Web.Http
             var controllerType = typeof(TestControllers.EmployeesController).GetTypeInfo();
             var actions = results
                 .Where(ad => ad.ControllerTypeInfo == controllerType)
-                .Where(ad => ad.Name == "Get")
+                .Where(ad => ad.ActionName == "Get")
                 .ToArray();
 
             Assert.NotEmpty(actions);
@@ -301,7 +301,7 @@ namespace System.Web.Http
             var controllerType = typeof(TestControllers.EmployeesController).GetTypeInfo();
             var actions = results
                 .Where(ad => ad.ControllerTypeInfo == controllerType)
-                .Where(ad => ad.Name == "Put")
+                .Where(ad => ad.ActionName == "Put")
                 .ToArray();
 
             Assert.NotEmpty(actions);
@@ -328,7 +328,7 @@ namespace System.Web.Http
             var controllerType = typeof(TestControllers.EmployeesController).GetTypeInfo();
             var actions = results
                 .Where(ad => ad.ControllerTypeInfo == controllerType)
-                .Where(ad => ad.Name == "Post")
+                .Where(ad => ad.ActionName == "Post")
                 .ToArray();
 
             Assert.NotEmpty(actions);
@@ -357,7 +357,7 @@ namespace System.Web.Http
             var controllerType = typeof(TestControllers.EventsController).GetTypeInfo();
             var actions = results
                 .Where(ad => ad.ControllerTypeInfo == controllerType)
-                .Where(ad => ad.Name == name)
+                .Where(ad => ad.ActionName == name)
                 .ToArray();
 
             Assert.NotEmpty(actions);

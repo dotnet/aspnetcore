@@ -398,7 +398,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var result = InvokeActionSelector(routeContext);
 
             // Assert
-            Assert.Equal("Patch", result.Name);
+            Assert.Equal("Patch", result.ActionName);
         }
 
         [Theory]
@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var result = InvokeActionSelector(routeContext);
 
             // Assert
-            Assert.Equal("Put", result.Name);
+            Assert.Equal("Put", result.ActionName);
         }
 
         [Theory]
@@ -451,7 +451,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             // Act
             var result = actionDescriptorProvider
                 .GetDescriptors()
-                .FirstOrDefault(x => x.ControllerName == "NonAction" && x.Name == actionName);
+                .FirstOrDefault(x => x.ControllerName == "NonAction" && x.ActionName == actionName);
 
             // Assert
             Assert.Null(result);
@@ -504,10 +504,10 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var result = InvokeActionSelector(routeContext);
 
             // Assert
-            Assert.Equal(actionName, result.Name);
+            Assert.Equal(actionName, result.ActionName);
         }
 
-        private ActionDescriptor InvokeActionSelector(RouteContext context)
+        private ControllerActionDescriptor InvokeActionSelector(RouteContext context)
         {
             var actionDescriptorProvider = GetActionDescriptorProvider();
 
@@ -533,7 +533,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 GetActionConstraintCache(actionConstraintProviders),
                 NullLoggerFactory.Instance);
 
-            return defaultActionSelector.Select(context);
+            return (ControllerActionDescriptor)defaultActionSelector.Select(context);
         }
 
         private ControllerActionDescriptorProvider GetActionDescriptorProvider()
@@ -664,9 +664,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private static ActionDescriptor CreateAction(string area, string controller, string action)
         {
-            var actionDescriptor = new ActionDescriptor()
+            var actionDescriptor = new ControllerActionDescriptor()
             {
-                Name = string.Format("Area: {0}, Controller: {1}, Action: {2}", area, controller, action),
+                ActionName = string.Format("Area: {0}, Controller: {1}, Action: {2}", area, controller, action),
                 Parameters = new List<ParameterDescriptor>(),
             };
 

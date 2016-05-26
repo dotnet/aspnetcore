@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Act
             var descriptors = provider.GetDescriptors();
-            var actionNames = descriptors.Select(ad => ad.Name);
+            var actionNames = descriptors.Select(ad => ad.ActionName);
 
             // Assert
             Assert.Equal(new[] { "GetPerson", "ShowPeople", }, actionNames);
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Act
             var descriptors = provider.GetDescriptors();
-            var descriptor = descriptors.Single(ad => ad.Name == nameof(PersonController.GetPerson));
+            var descriptor = descriptors.Single(ad => ad.ActionName == nameof(PersonController.GetPerson));
 
             // Assert
             Assert.Equal($"{controllerTypeInfo.FullName}.{nameof(PersonController.GetPerson)} ({controllerTypeInfo.Assembly.GetName().Name})", descriptor.DisplayName);
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var descriptor = Assert.Single(descriptors);
 
             // Assert
-            Assert.Equal("OnlyPost", descriptor.Name);
+            Assert.Equal("OnlyPost", descriptor.ActionName);
 
             var constraint = Assert.IsType<HttpMethodActionConstraint>(Assert.Single(descriptor.ActionConstraints));
             Assert.Equal(new string[] { "POST" }, constraint.HttpMethods);
@@ -123,8 +123,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 typeof(ActionParametersController).GetTypeInfo());
 
             // Assert
-            var main = Assert.Single(descriptors,
-                d => d.Name.Equals(nameof(ActionParametersController.RequiredInt)));
+            var main = Assert.Single(descriptors.Cast<ControllerActionDescriptor>(),
+                d => d.ActionName.Equals(nameof(ActionParametersController.RequiredInt)));
 
             Assert.NotNull(main.Parameters);
             var id = Assert.Single(main.Parameters);
@@ -142,8 +142,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 typeof(ActionParametersController).GetTypeInfo());
 
             // Assert
-            var main = Assert.Single(descriptors,
-                d => d.Name.Equals(nameof(ActionParametersController.MultipleParameters)));
+            var main = Assert.Single(descriptors.Cast<ControllerActionDescriptor>(),
+                d => d.ActionName.Equals(nameof(ActionParametersController.MultipleParameters)));
 
             Assert.NotNull(main.Parameters);
             var id = Assert.Single(main.Parameters, p => p.Name == "id");
@@ -167,8 +167,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 typeof(ActionParametersController).GetTypeInfo());
 
             // Assert
-            var main = Assert.Single(descriptors,
-                d => d.Name.Equals(nameof(ActionParametersController.DifferentCasing)));
+            var main = Assert.Single(descriptors.Cast<ControllerActionDescriptor>(),
+                d => d.ActionName.Equals(nameof(ActionParametersController.DifferentCasing)));
 
             Assert.NotNull(main.Parameters);
             var id = Assert.Single(main.Parameters, p => p.Name == "id");
@@ -200,8 +200,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 typeof(ActionParametersController).GetTypeInfo());
 
             // Assert
-            var fromBody = Assert.Single(descriptors,
-                d => d.Name.Equals(actionName));
+            var fromBody = Assert.Single(descriptors.Cast<ControllerActionDescriptor>(),
+                d => d.ActionName.Equals(actionName));
 
             Assert.NotNull(fromBody.Parameters);
             var entity = Assert.Single(fromBody.Parameters);
@@ -221,8 +221,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 typeof(ActionParametersController).GetTypeInfo());
 
             // Assert
-            var notFromBody = Assert.Single(descriptors,
-                d => d.Name.Equals(actionName));
+            var notFromBody = Assert.Single(descriptors.Cast<ControllerActionDescriptor>(),
+                d => d.ActionName.Equals(actionName));
 
             Assert.NotNull(notFromBody.Parameters);
             var entity = Assert.Single(notFromBody.Parameters);
@@ -470,12 +470,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var descriptors = provider.GetDescriptors();
 
             // Assert
-            var actions = descriptors.Where(d => d.Name == "MultipleHttpGet");
+            var actions = descriptors.Where(d => d.ActionName == "MultipleHttpGet");
             Assert.Equal(4, actions.Count());
 
             foreach (var action in actions)
             {
-                Assert.Equal("MultipleHttpGet", action.Name);
+                Assert.Equal("MultipleHttpGet", action.ActionName);
                 Assert.Equal("MultiRouteAttributes", action.ControllerName);
             }
 
@@ -495,7 +495,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var descriptors = provider.GetDescriptors();
 
             // Assert
-            var actions = descriptors.Where(d => d.Name == nameof(MultiRouteAttributesController.AcceptVerbs));
+            var actions = descriptors.Where(d => d.ActionName == nameof(MultiRouteAttributesController.AcceptVerbs));
             Assert.Equal(2, actions.Count());
 
             foreach (var action in actions)
@@ -523,7 +523,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var descriptors = provider.GetDescriptors();
 
             // Assert
-            var action = Assert.Single(descriptors, d => d.Name == "AcceptVerbsOverride");
+            var action = Assert.Single(descriptors, d => d.ActionName == "AcceptVerbsOverride");
 
             Assert.Equal("MultiRouteAttributes", action.ControllerName);
 
@@ -547,7 +547,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var descriptors = provider.GetDescriptors();
 
             // Assert
-            var actions = descriptors.Where(d => d.Name == "AcceptVerbsRouteAttributeAndHttpPut");
+            var actions = descriptors.Where(d => d.ActionName == "AcceptVerbsRouteAttributeAndHttpPut");
             Assert.Equal(4, actions.Count());
 
             foreach (var action in actions)
@@ -586,7 +586,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var descriptors = provider.GetDescriptors();
 
             // Assert
-            var actions = descriptors.Where(d => d.Name == "AcceptVerbsRouteAttributeWithTemplateAndHttpPut");
+            var actions = descriptors.Where(d => d.ActionName == "AcceptVerbsRouteAttributeWithTemplateAndHttpPut");
             Assert.Equal(6, actions.Count());
 
             foreach (var action in actions)
@@ -633,10 +633,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actions = provider.GetDescriptors();
 
             // Assert
-            var controllerAndAction = Assert.Single(actions, a => a.Name.Equals(firstActionName));
+            var controllerAndAction = Assert.Single(actions, a => a.ActionName.Equals(firstActionName));
             Assert.NotNull(controllerAndAction.AttributeRouteInfo);
 
-            var controllerActionAndOverride = Assert.Single(actions, a => a.Name.Equals(secondActionName));
+            var controllerActionAndOverride = Assert.Single(actions, a => a.ActionName.Equals(secondActionName));
             Assert.NotNull(controllerActionAndOverride.AttributeRouteInfo);
 
             Assert.Equal(
@@ -656,7 +656,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var descriptors = provider.GetDescriptors();
 
             // Assert
-            var actions = descriptors.Where(d => d.Name.Equals(actionName));
+            var actions = descriptors.Where(d => d.ActionName.Equals(actionName));
             Assert.Equal(5, actions.Count());
 
             foreach (var method in new[] { "GET", "POST", "PUT", "PATCH", "DELETE" })
@@ -759,7 +759,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             var action = Assert.Single(actions);
 
-            Assert.Equal("Action", action.Name);
+            Assert.Equal("Action", action.ActionName);
             Assert.Equal("OnlyRoute", action.ControllerName);
 
             Assert.NotNull(action.AttributeRouteInfo);
@@ -842,7 +842,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actions = provider.GetDescriptors();
 
             // Assert
-            var getActions = actions.Where(a => a.Name.Equals(getActionName));
+            var getActions = actions.Where(a => a.ActionName.Equals(getActionName));
             Assert.Equal(2, getActions.Count());
 
             foreach (var getAction in getActions)
@@ -852,7 +852,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 Assert.Equal("Products_Get", getAction.AttributeRouteInfo.Name, StringComparer.OrdinalIgnoreCase);
             }
 
-            var editAction = Assert.Single(actions, a => a.Name.Equals(editActionName));
+            var editAction = Assert.Single(actions, a => a.ActionName.Equals(editActionName));
             Assert.NotNull(editAction.AttributeRouteInfo);
             Assert.Equal("Products/Edit", editAction.AttributeRouteInfo.Template, StringComparer.OrdinalIgnoreCase);
             Assert.Equal("Products_Edit", editAction.AttributeRouteInfo.Name, StringComparer.OrdinalIgnoreCase);
@@ -870,7 +870,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actions = provider.GetDescriptors();
 
             // Assert
-            var getActions = actions.Where(a => a.Name.Equals(getActionName));
+            var getActions = actions.Where(a => a.ActionName.Equals(getActionName));
             Assert.Equal(2, getActions.Count());
 
             foreach (var getAction in getActions)
@@ -884,7 +884,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     getAction.AttributeRouteInfo.Name, StringComparer.OrdinalIgnoreCase);
             }
 
-            var editAction = Assert.Single(actions, a => a.Name.Equals(editActionName));
+            var editAction = Assert.Single(actions, a => a.ActionName.Equals(editActionName));
             Assert.NotNull(editAction.AttributeRouteInfo);
             Assert.Equal(
                 "ControllerActionRouteNameTemplates/Edit",
@@ -955,7 +955,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.NotNull(actionDescriptors);
             Assert.Equal(4, actionDescriptors.Count());
 
-            var indexAction = Assert.Single(actionDescriptors, ad => ad.Name.Equals("Index"));
+            var indexAction = Assert.Single(actionDescriptors, ad => ad.ActionName.Equals("Index"));
 
             Assert.Equal(1, indexAction.RouteValues.Count);
 
@@ -1058,10 +1058,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             Assert.Equal(2, actions.Count());
 
-            var action = Assert.Single(actions, a => a.Name == "Edit");
+            var action = Assert.Single(actions, a => a.ActionName == "Edit");
             Assert.NotNull(action.GetProperty<ApiDescriptionActionData>());
 
-            action = Assert.Single(actions, a => a.Name == "Create");
+            action = Assert.Single(actions, a => a.ActionName == "Create");
             Assert.Null(action.GetProperty<ApiDescriptionActionData>());
         }
 
@@ -1138,10 +1138,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             Assert.Equal(2, actions.Count());
 
-            var action = Assert.Single(actions, a => a.Name == "Edit");
+            var action = Assert.Single(actions, a => a.ActionName == "Edit");
             Assert.Equal("Blog", action.GetProperty<ApiDescriptionActionData>().GroupName);
 
-            action = Assert.Single(actions, a => a.Name == "Create");
+            action = Assert.Single(actions, a => a.ActionName == "Create");
             Assert.Equal("Store", action.GetProperty<ApiDescriptionActionData>().GroupName);
         }
 
@@ -1331,7 +1331,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = GetProvider(typeof(MultipleRouteProviderOnActionAndControllerController).GetTypeInfo());
 
             // Act
-            var actions = provider.GetDescriptors().Where(a => a.Name == actionName);
+            var actions = provider.GetDescriptors().Where(a => a.ActionName == actionName);
 
             // Assert
             Assert.Equal(2, actions.Count());
@@ -1358,7 +1358,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = GetProvider(typeof(MultipleRouteProviderOnActionAndControllerController).GetTypeInfo());
 
             // Act
-            var actions = provider.GetDescriptors().Where(a => a.Name == actionName);
+            var actions = provider.GetDescriptors().Where(a => a.ActionName == actionName);
 
             // Assert
             Assert.Equal(4, actions.Count());
@@ -1397,7 +1397,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = GetProvider(typeof(MultipleRouteProviderOnActionAndControllerController).GetTypeInfo());
 
             // Act
-            var actions = provider.GetDescriptors().Where(a => a.Name == actionName);
+            var actions = provider.GetDescriptors().Where(a => a.ActionName == actionName);
 
             // Assert
             Assert.Equal(1, actions.Count());

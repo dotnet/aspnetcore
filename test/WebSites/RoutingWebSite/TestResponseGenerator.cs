@@ -51,7 +51,7 @@ namespace RoutingWebSite
                 routeName = attributeRoutingInfo == null ? null : attributeRoutingInfo.Name,
                 routeValues = new Dictionary<string, object>(_actionContext.RouteData.Values),
 
-                action = _actionContext.ActionDescriptor.Name,
+                action = ((ControllerActionDescriptor) _actionContext.ActionDescriptor).ActionName,
                 controller = ((ControllerActionDescriptor)_actionContext.ActionDescriptor).ControllerName,
 
                 link,

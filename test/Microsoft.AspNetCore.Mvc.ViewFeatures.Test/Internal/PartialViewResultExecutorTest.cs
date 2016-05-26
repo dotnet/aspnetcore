@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
@@ -57,11 +58,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         public void FindView_UsesActionDescriptorName_IfViewNameIsNull()
         {
             // Arrange
-            var context = GetActionContext();
-            var executor = GetViewExecutor();
-
             var viewName = "some-view-name";
-            context.ActionDescriptor.Name = viewName;
+            var context = GetActionContext(viewName);
+            var executor = GetViewExecutor();
 
             var viewResult = new PartialViewResult
             {
@@ -309,9 +308,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             Assert.Equal(404, context.HttpContext.Response.StatusCode);
         }
 
-        private ActionContext GetActionContext()
+        private ActionContext GetActionContext(string actionName = null)
         {
-            return new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+            var routeData = new RouteData();
+            routeData.Values["action"] = actionName;
+
+            return new ActionContext(new DefaultHttpContext(), routeData, new ControllerActionDescriptor() { ActionName = actionName });
         }
 
         private PartialViewResultExecutor GetViewExecutor(DiagnosticSource diagnosticSource = null)

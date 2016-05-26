@@ -20,7 +20,7 @@ namespace WebApiCompatShimWebSite
                 {
                     JsonConvert.SerializeObject(new
                     {
-                        ActionName = action.Name,
+                        ActionName = action.ActionName,
                         ControllerName = action.ControllerName
                     })
                 });

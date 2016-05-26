@@ -24,8 +24,6 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         /// </summary>
         public string Id { get; }
 
-        public virtual string Name { get; set; }
-
         /// <summary>
         /// Gets or sets the collection of route values that must be provided by routing
         /// for the action to be selected.

@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace BasicWebSite
@@ -29,7 +30,7 @@ namespace BasicWebSite
         {
             if (!context.RouteData.DataTokens.ContainsKey("actionName"))
             {
-                context.RouteData.DataTokens.Add("actionName", context.ActionDescriptor.Name);
+                context.RouteData.DataTokens.Add("actionName", ((ControllerActionDescriptor)context.ActionDescriptor).ActionName);
             }
         }
 

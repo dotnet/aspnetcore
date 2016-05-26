@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var actionDescriptor = new ControllerActionDescriptor()
             {
-                Name = action.ActionName,
+                ActionName = action.ActionName,
                 MethodInfo = action.ActionMethod,
                 Parameters = parameterDescriptors,
                 AttributeRouteInfo = CreateAttributeRouteInfo(actionAttributeRoute, controllerAttributeRoute)

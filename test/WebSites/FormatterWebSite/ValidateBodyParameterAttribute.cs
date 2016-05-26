@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -27,7 +28,7 @@ namespace FormatterWebSite
                     {
                         var errorInfo = new ErrorInfo
                         {
-                            ActionName = context.ActionDescriptor.Name,
+                            ActionName = ((ControllerActionDescriptor)context.ActionDescriptor).ActionName,
                             ParameterName = bodyParameter.Name,
                             Errors = parameterBindingErrors.Select(x => x.ErrorMessage).ToList(),
                             Source = "filter"

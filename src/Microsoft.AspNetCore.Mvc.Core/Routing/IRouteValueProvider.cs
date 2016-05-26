@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     /// <para>
     /// The typical scheme for action selection in an MVC application is that an action will require the
     /// matching values for its <see cref="ControllerActionDescriptor.ControllerName"/> and
-    /// <see cref="ActionDescriptor.Name"/>
+    /// <see cref="ControllerActionDescriptor.ActionName"/>
     /// </para>
     /// <example>
     /// For an action like <code>MyApp.Controllers.HomeController.Index()</code>, in order to be selected, the

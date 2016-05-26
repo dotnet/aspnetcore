@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
@@ -184,9 +185,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private static ActionDescriptor CreateActionDescriptor(string area, string controller, string action)
         {
-            var actionDescriptor = new ActionDescriptor()
+            var actionDescriptor = new ControllerActionDescriptor()
             {
-                Name = string.Format("Area: {0}, Controller: {1}, Action: {2}", area, controller, action),
+                ActionName = string.Format("Area: {0}, Controller: {1}, Action: {2}", area, controller, action),
             };
 
             actionDescriptor.RouteValues.Add("area", area);
