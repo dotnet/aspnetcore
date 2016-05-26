@@ -38,7 +38,7 @@
         "System.Xml": ""
       }
     },
-    "netstandard1.5": {
+    "netstandard1.6": {
       "imports": [
         "portable-net451+win8"
       ],

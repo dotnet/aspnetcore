@@ -52,7 +52,7 @@
   },
   "frameworks": {
     "net451": {},
-    "netstandard1.5": {
+    "netstandard1.6": {
       "dependencies": {
         "System.Runtime.Serialization.Primitives": "4.1.1-*"
       },

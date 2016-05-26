@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-#if NETSTANDARD1_5
+#if NETSTANDARD1_6
 using System.Reflection;
 #endif
 using System.Threading.Tasks;

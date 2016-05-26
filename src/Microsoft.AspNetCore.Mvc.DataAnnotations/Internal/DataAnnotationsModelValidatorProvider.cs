@@ -3,7 +3,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
-#if NETSTANDARD1_5
+#if NETSTANDARD1_6
 using System.Reflection;
 #endif
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
