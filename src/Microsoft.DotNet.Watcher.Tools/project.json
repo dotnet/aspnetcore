@@ -18,6 +18,7 @@
     "xmlDoc": true
   },
   "dependencies": {
+    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-*",
     "Microsoft.DotNet.Watcher.Core": "1.0.0-*",
     "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
     "Microsoft.Extensions.Logging": "1.0.0-*",

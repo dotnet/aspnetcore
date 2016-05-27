@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public CommandOutputProvider()
         {
-            _isWindows = PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Windows;
+            _isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         }
 
         public ILogger CreateLogger(string name)

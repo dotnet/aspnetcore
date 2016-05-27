@@ -19,7 +19,6 @@
     "Microsoft.DotNet.ProjectModel": "1.0.0-*",
     "Microsoft.Extensions.FileProviders.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.FileProviders.Physical": "1.0.0-*",
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.FileSystemGlobbing": "1.0.0-*",
     "NETStandard.Library": "1.5.0-*",
