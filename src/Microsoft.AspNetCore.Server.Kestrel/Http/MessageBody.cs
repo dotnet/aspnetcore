@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 var limit = buffer.Array == null ? inputLengthLimit : Math.Min(buffer.Count, inputLengthLimit);
                 if (limit == 0)
                 {
-                    return 0;
+                    return new ValueTask<int>(0);
                 }
 
                 var task = _context.SocketInput.ReadAsync(buffer.Array, buffer.Offset, limit);
@@ -189,11 +189,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     {
                         _context.RejectRequest("Unexpected end of request content");
                     }
-                    return actual;
+                    return new ValueTask<int>(actual);
                 }
                 else
                 {
-                    return ReadAsyncAwaited(task.AsTask());
+                    return new ValueTask<int>(ReadAsyncAwaited(task.AsTask()));
                 }
             }
 
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
             public override ValueTask<int> ReadAsyncImplementation(ArraySegment<byte> buffer, CancellationToken cancellationToken)
             {
-                return ReadStateMachineAsync(_context.SocketInput, buffer, cancellationToken);
+                return new ValueTask<int>(ReadStateMachineAsync(_context.SocketInput, buffer, cancellationToken));
             }
 
             private async Task<int> ReadStateMachineAsync(SocketInput input, ArraySegment<byte> buffer, CancellationToken cancellationToken)
