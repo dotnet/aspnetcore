@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private readonly object _onStartingSync = new Object();
         private readonly object _onCompletedSync = new Object();
 
-        private bool _requestRejected;
+        protected bool _requestRejected;
         private Streams _frameStreams;
 
         protected List<KeyValuePair<Func<object, Task>, object>> _onStarting;
@@ -1176,11 +1176,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public void RejectRequest(string message)
         {
+            var ex = new BadHttpRequestException(message);
+            SetBadRequestState(ex);
+            throw ex;
+        }
+
+        public void SetBadRequestState(BadHttpRequestException ex)
+        {
             _requestProcessingStopping = true;
             _requestRejected = true;
-            var ex = new BadHttpRequestException(message);
             Log.ConnectionBadRequest(ConnectionId, ex);
-            throw ex;
         }
 
         protected void ReportApplicationError(Exception ex)

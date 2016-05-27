@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Server.Kestrel.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Http
@@ -143,6 +144,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     }
 
                     Reset();
+                }
+            }
+            catch (BadHttpRequestException ex)
+            {
+                if (!_requestRejected)
+                {
+                    SetBadRequestState(ex);
+                    Log.LogWarning(0, ex, "Connection processing ended abnormally");
                 }
             }
             catch (Exception ex)

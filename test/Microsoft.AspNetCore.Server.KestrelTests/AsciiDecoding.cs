@@ -3,17 +3,18 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Server.Kestrel.Exceptions;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
-    public class AsciiDecoderTests
+    public class AsciiDecodingTests
     {
         [Fact]
-        private void FullByteRangeSupported()
+        private void FullAsciiRangeSupported()
         {
-            var byteRange = Enumerable.Range(0, 256).Select(x => (byte)x).ToArray();
+            var byteRange = Enumerable.Range(1, 127).Select(x => (byte)x).ToArray();
             using (var pool = new MemoryPool())
             {
                 var mem = pool.Lease();
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 Assert.Equal(s.Length, byteRange.Length);
 
-                for (var i = 0; i < byteRange.Length; i++)
+                for (var i = 1; i < byteRange.Length; i++)
                 {
                     var sb = (byte)s[i];
                     var b = byteRange[i];
@@ -38,10 +39,36 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
+        [Theory]
+        [InlineData(0x00)]
+        [InlineData(0x80)]
+        private void ExceptionThrownForZeroOrNonAscii(byte b)
+        {
+            for (var length = 1; length < 16; length++)
+            {
+                for (var position = 0; position < length; position++)
+                {
+                    var byteRange = Enumerable.Range(1, length).Select(x => (byte)x).ToArray();
+                    byteRange[position] = b;
+
+                    using (var pool = new MemoryPool())
+                    {
+                        var mem = pool.Lease();
+                        mem.GetIterator().CopyFrom(byteRange);
+
+                        var begin = mem.GetIterator();
+                        var end = GetIterator(begin, byteRange.Length);
+
+                        Assert.Throws<BadHttpRequestException>(() => begin.GetAsciiString(end));
+                    }
+                }
+            }
+        }
+
         [Fact]
         private void MultiBlockProducesCorrectResults()
         {
-            var byteRange = Enumerable.Range(0, 512 + 64).Select(x => (byte)x).ToArray();
+            var byteRange = Enumerable.Range(0, 512 + 64).Select(x => (byte)((x & 0x7f) | 0x01)).ToArray();
             var expectedByteRange = byteRange
                                     .Concat(byteRange)
                                     .Concat(byteRange)
@@ -72,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 for (var i = 0; i < expectedByteRange.Length; i++)
                 {
-                    var sb = (byte)s[i];
+                    var sb = (byte)((s[i] & 0x7f) | 0x01);
                     var b = expectedByteRange[i];
 
                     Assert.Equal(sb, b);
@@ -88,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         private void LargeAllocationProducesCorrectResults()
         {
-            var byteRange = Enumerable.Range(0, 16384 + 64).Select(x => (byte)x).ToArray();
+            var byteRange = Enumerable.Range(0, 16384 + 64).Select(x => (byte)((x & 0x7f) | 0x01)).ToArray();
             var expectedByteRange = byteRange.Concat(byteRange).ToArray();
             using (var pool = new MemoryPool())
             {
@@ -113,7 +140,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 for (var i = 0; i < expectedByteRange.Length; i++)
                 {
-                    var sb = (byte)s[i];
+                    var sb = (byte)((s[i] & 0x7f) | 0x01);
                     var b = expectedByteRange[i];
 
                     Assert.Equal(sb, b);

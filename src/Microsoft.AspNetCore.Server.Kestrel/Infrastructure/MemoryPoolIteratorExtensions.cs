@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Text;
+using Microsoft.AspNetCore.Server.Kestrel.Exceptions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 {
@@ -93,10 +94,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                 return null;
             }
 
-            // Bytes out of the range of ascii are treated as "opaque data"
-            // and kept in string as a char value that casts to same input byte value
-            // https://tools.ietf.org/html/rfc7230#section-3.2.4
-
             var inputOffset = start.Index;
             var block = start.Block;
 
@@ -117,7 +114,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
                     if (following > 0)
                     {
-                        AsciiUtilities.GetAsciiString(block.DataFixedPtr + inputOffset, output + outputOffset, following);
+                        if (!AsciiUtilities.TryGetAsciiString(block.DataFixedPtr + inputOffset, output + outputOffset, following))
+                        {
+                            throw new BadHttpRequestException("The input string contains non-ASCII or null characters.");
+                        }
+
                         outputOffset += following;
                         remaining -= following;
                     }

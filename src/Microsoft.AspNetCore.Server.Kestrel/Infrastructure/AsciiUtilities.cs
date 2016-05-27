@@ -5,11 +5,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 {
     internal class AsciiUtilities
     {
-        public static unsafe void GetAsciiString(byte* input, char* output, int count)
+        public static unsafe bool TryGetAsciiString(byte* input, char* output, int count)
         {
             var i = 0;
+            int orValue = 0;
+            bool hasZero = false;
             while (i < count - 11)
             {
+                orValue |= *input | *(input + 1) | *(input + 2) | *(input + 3) | *(input + 4) | *(input + 5) |
+                    *(input + 6) | *(input + 7) | *(input + 8) | *(input + 9) | *(input + 10) | *(input + 11);
+                hasZero = hasZero || *input == 0 || *(input + 1) == 0 || *(input + 2) == 0 || *(input + 3) == 0 ||
+                    *(input + 4) == 0 || *(input + 5) == 0 || *(input + 6) == 0 || *(input + 7) == 0 ||
+                    *(input + 8) == 0 || *(input + 9) == 0 || *(input + 10) == 0 || *(input + 11) == 0;
+
                 i += 12;
                 *(output) = (char)*(input);
                 *(output + 1) = (char)*(input + 1);
@@ -28,6 +36,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             }
             if (i < count - 5)
             {
+                orValue |= *input | *(input + 1) | *(input + 2) | *(input + 3) | *(input + 4) | *(input + 5);
+                hasZero = hasZero || *input == 0 || *(input + 1) == 0 || *(input + 2) == 0 || *(input + 3) == 0 ||
+                    *(input + 4) == 0 || *(input + 5) == 0;
+
                 i += 6;
                 *(output) = (char)*(input);
                 *(output + 1) = (char)*(input + 1);
@@ -40,6 +52,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
             }
             if (i < count - 3)
             {
+                orValue |= *input | *(input + 1) | *(input + 2) | *(input + 3);
+                hasZero = hasZero || *input == 0 || *(input + 1) == 0 || *(input + 2) == 0 || *(input + 3) == 0;
+
                 i += 4;
                 *(output) = (char)*(input);
                 *(output + 1) = (char)*(input + 1);
@@ -48,13 +63,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                 output += 4;
                 input += 4;
             }
+
             while (i < count)
             {
+                orValue |= *input;
+                hasZero = hasZero || *input == 0;
                 i++;
                 *output = (char)*input;
                 output++;
                 input++;
             }
+
+            return (orValue & 0x80) == 0 && !hasZero;
         }
     }
 }
