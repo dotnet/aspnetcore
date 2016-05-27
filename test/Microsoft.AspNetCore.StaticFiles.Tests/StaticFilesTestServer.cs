@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.StaticFiles
 {
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.StaticFiles
     {
         public static TestServer Create(Action<IApplicationBuilder> configureApp, Action<IServiceCollection> configureServices = null)
         {
-            var contentRootNet451 = PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Windows ?
+            var contentRootNet451 = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
                 "." : "../../../../test/Microsoft.AspNetCore.StaticFiles.Tests";
             Action<IServiceCollection> defaultConfigureServices = services => { };
             var configuration = new ConfigurationBuilder()
