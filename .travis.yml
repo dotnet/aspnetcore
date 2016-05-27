@@ -22,5 +22,7 @@ branches:
     - release
     - dev
     - /^(.*\/)?ci-.*$/
+before_install:
+  - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl; brew link --force openssl; fi
 script:
   - ./build.sh --quiet verify
