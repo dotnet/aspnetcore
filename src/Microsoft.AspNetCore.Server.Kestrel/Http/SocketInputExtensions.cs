@@ -21,15 +21,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                 if (actual != 0)
                 {
-                    return actual;
+                    return new ValueTask<int>(actual);
                 }
                 else if (fin)
                 {
-                    return 0;
+                    return new ValueTask<int>(0);
                 }
             }
 
-            return input.ReadAsyncAwaited(buffer, offset, count);
+            return new ValueTask<int>(input.ReadAsyncAwaited(buffer, offset, count));
         }
 
         private static async Task<int> ReadAsyncAwaited(this SocketInput input, byte[] buffer, int offset, int count)
