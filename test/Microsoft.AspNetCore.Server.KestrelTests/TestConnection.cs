@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public async Task Send(params string[] lines)
         {
             var text = String.Join("\r\n", lines);
-            var writer = new StreamWriter(_stream, Encoding.ASCII);
+            var writer = new StreamWriter(_stream, Encoding.GetEncoding("iso-8859-1"));
             for (var index = 0; index < text.Length; index++)
             {
                 var ch = text[index];

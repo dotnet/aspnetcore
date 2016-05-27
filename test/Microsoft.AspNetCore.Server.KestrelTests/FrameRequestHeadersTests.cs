@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
+using Microsoft.AspNetCore.Server.Kestrel.Exceptions;
 using Microsoft.AspNetCore.Server.Kestrel.Http;
 using Microsoft.Extensions.Primitives;
 using Xunit;
@@ -232,6 +234,17 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             Assert.Null(entries[3].Key);
             Assert.Equal(new StringValues(), entries[0].Value);
+        }
+
+        [Fact]
+        public void AppendThrowsWhenHeaderValueContainsNonASCIICharacters()
+        {
+            var headers = new FrameRequestHeaders();
+            const string key = "\u00141ód\017c";
+
+            var encoding = Encoding.GetEncoding("iso-8859-1");
+            Assert.Throws<BadHttpRequestException>(
+                () => headers.Append(encoding.GetBytes(key), 0, encoding.GetByteCount(key), key));
         }
     }
 }

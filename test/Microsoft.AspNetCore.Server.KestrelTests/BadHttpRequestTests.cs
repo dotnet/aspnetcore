@@ -172,6 +172,23 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
+        [Fact]
+        public async Task BadRequestWhenNameHeaderNamesContainsNonASCIICharacters()
+        {
+            using (var server = new TestServer(context => { return Task.FromResult(0); }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "Hëädër: value",
+                        "",
+                        "");
+                    await ReceiveBadRequestResponse(connection);
+                }
+            }
+        }
+
         private async Task ReceiveBadRequestResponse(TestConnection connection)
         {
             await connection.Receive(
