@@ -1,5 +1,7 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -39,19 +41,22 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         }
 
-        [Fact(Skip = "Test needs to be fixed (UvException: Error -4082 EBUSY resource busy or locked from loop_close)")]
+        [Fact]
         public void ServerPipeListenForConnections()
         {
+            const string pipeName = @"\\.\pipe\ServerPipeListenForConnections";
+
             var loop = new UvLoopHandle(_logger);
             var serverListenPipe = new UvPipeHandle(_logger);
 
             loop.Init(_uv);
             serverListenPipe.Init(loop, (a, b) => { }, false);
-            serverListenPipe.Bind(@"\\.\pipe\ServerPipeListenForConnections");
-            serverListenPipe.Listen(128, (_1, status, error, _2) =>
+            serverListenPipe.Bind(pipeName);
+            serverListenPipe.Listen(128, (backlog, status, error, state) =>
             {
                 var serverConnectionPipe = new UvPipeHandle(_logger);
                 serverConnectionPipe.Init(loop, (a, b) => { }, true);
+
                 try
                 {
                     serverListenPipe.Accept(serverConnectionPipe);
@@ -73,10 +78,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var end = new MemoryPoolIterator(block, block.Data.Count);
                 writeRequest.Write(
                     serverConnectionPipe,
-                    start, 
+                    start,
                     end,
                     1,
-                    (_3, status2, error2, _4) =>
+                    (handle, status2, error2, state2) =>
                     {
                         writeRequest.Dispose();
                         serverConnectionPipe.Dispose();
@@ -85,7 +90,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         pool.Dispose();
                     },
                     null);
-
             }, null);
 
             var worker = new Thread(() =>
@@ -97,16 +101,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 loop2.Init(_uv);
                 clientConnectionPipe.Init(loop2, (a, b) => { }, true);
                 connect.Init(loop2);
-                connect.Connect(clientConnectionPipe, @"\\.\pipe\ServerPipeListenForConnections", (_1, status, error, _2) =>
+                connect.Connect(clientConnectionPipe, pipeName, (handle, status, error, state) =>
                 {
                     var buf = loop2.Libuv.buf_init(Marshal.AllocHGlobal(8192), 8192);
-
                     connect.Dispose();
+
                     clientConnectionPipe.ReadStart(
-                        (_3, cb, _4) => buf,
-                        (_3, status2, _4) =>
+                        (handle2, cb, state2) => buf,
+                        (handle2, status2, state2) =>
                         {
-                            if (status2 == 0)
+                            if (status2 == Constants.EOF)
                             {
                                 clientConnectionPipe.Dispose();
                             }
@@ -122,8 +126,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             worker.Join();
         }
 
-
-        [Fact(Skip = "Test needs to be fixed (UvException: Error -4088 EAGAIN resource temporarily unavailable from accept)")]
+        [Fact]
         public void ServerPipeDispatchConnections()
         {
             var pipeName = @"\\.\pipe\ServerPipeDispatchConnections" + Guid.NewGuid().ToString("n");
@@ -138,10 +141,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var serverListenPipe = new UvPipeHandle(_logger);
             serverListenPipe.Init(loop, (a, b) => { }, false);
             serverListenPipe.Bind(pipeName);
-            serverListenPipe.Listen(128, (_1, status, error, _2) =>
+            serverListenPipe.Listen(128, (handle, status, error, state) =>
             {
                 serverConnectionPipe = new UvPipeHandle(_logger);
                 serverConnectionPipe.Init(loop, (a, b) => { }, true);
+
                 try
                 {
                     serverListenPipe.Accept(serverConnectionPipe);
@@ -160,7 +164,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var address = ServerAddress.FromUrl($"http://127.0.0.1:0/");
             serverListenTcp.Bind(address);
             var port = serverListenTcp.GetSockIPEndPoint().Port;
-            serverListenTcp.Listen(128, (_1, status, error, _2) =>
+            serverListenTcp.Listen(128, (handle, status, error, state) =>
             {
                 var serverConnectionTcp = new UvTcpHandle(_logger);
                 serverConnectionTcp.Init(loop, (a, b) => { });
@@ -174,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     serverConnectionPipe,
                     new ArraySegment<ArraySegment<byte>>(new ArraySegment<byte>[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }) }),
                     serverConnectionTcp,
-                    (_3, status2, error2, _4) =>
+                    (handle2, status2, error2, state2) =>
                     {
                         writeRequest.Dispose();
                         serverConnectionTcp.Dispose();
@@ -195,7 +199,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 loop2.Init(_uv);
                 clientConnectionPipe.Init(loop2, (a, b) => { }, true);
                 connect.Init(loop2);
-                connect.Connect(clientConnectionPipe, pipeName, (_1, status, error, _2) =>
+                connect.Connect(clientConnectionPipe, pipeName, (handle, status, error, state) =>
                 {
                     connect.Dispose();
 
@@ -204,23 +208,24 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     serverConnectionTcpDisposedEvent.WaitOne();
 
                     clientConnectionPipe.ReadStart(
-                        (_3, cb, _4) => buf,
-                        (_3, status2, _4) =>
+                        (handle2, cb, state2) => buf,
+                        (handle2, status2, state2) =>
                         {
-                            if (status2 == 0)
+                            if (status2 == Constants.EOF)
                             {
                                 clientConnectionPipe.Dispose();
                                 return;
                             }
+
                             var clientConnectionTcp = new UvTcpHandle(_logger);
                             clientConnectionTcp.Init(loop2, (a, b) => { });
                             clientConnectionPipe.Accept(clientConnectionTcp);
                             var buf2 = loop2.Libuv.buf_init(Marshal.AllocHGlobal(64), 64);
                             clientConnectionTcp.ReadStart(
-                                (_5, cb, _6) => buf2,
-                                (_5, status3, _6) =>
+                                (handle3, cb, state3) => buf2,
+                                (handle3, status3, state3) =>
                                 {
-                                    if (status3 == 0)
+                                    if (status3 == Constants.EOF)
                                     {
                                         clientConnectionTcp.Dispose();
                                     }
@@ -245,7 +250,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     var cb = socket.Receive(new byte[64]);
                     socket.Dispose();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine(ex);
                 }
