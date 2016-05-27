@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
+using Microsoft.AspNetCore.Server.Kestrel.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using Xunit;
 
@@ -1057,9 +1058,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [MemberData(nameof(ConnectionFilterData))]
         public async Task NoResponseSentWhenConnectionIsClosedByServerBeforeClientFinishesSendingRequest(TestServiceContext testContext)
         {
-            var testLogger = new TestApplicationErrorLogger();
-            testContext.Log = new KestrelTrace(testLogger);
-
             using (var server = new TestServer(httpContext =>
             {
                 httpContext.Abort();
@@ -1074,6 +1072,100 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "");
                     await connection.ReceiveForcedEnd();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task RequestHeadersAreResetOnEachRequest(TestServiceContext testContext)
+        {
+            IHeaderDictionary originalRequestHeaders = null;
+            var firstRequest = true;
+
+            using (var server = new TestServer(httpContext =>
+            {
+                var requestFeature = httpContext.Features.Get<IHttpRequestFeature>();
+
+                if (firstRequest)
+                {
+                    originalRequestHeaders = requestFeature.Headers;
+                    requestFeature.Headers = new FrameRequestHeaders();
+                    firstRequest = false;
+                }
+                else
+                {
+                    Assert.Same(originalRequestHeaders, requestFeature.Headers);
+                }
+
+                return TaskUtilities.CompletedTask;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "",
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task ResponseHeadersAreResetOnEachRequest(TestServiceContext testContext)
+        {
+            IHeaderDictionary originalResponseHeaders = null;
+            var firstRequest = true;
+
+            using (var server = new TestServer(httpContext =>
+            {
+                var responseFeature = httpContext.Features.Get<IHttpResponseFeature>();
+
+                if (firstRequest)
+                {
+                    originalResponseHeaders = responseFeature.Headers;
+                    responseFeature.Headers = new FrameResponseHeaders();
+                    firstRequest = false;
+                }
+                else
+                {
+                    Assert.Same(originalResponseHeaders, responseFeature.Headers);
+                }
+
+                return TaskUtilities.CompletedTask;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "",
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
                 }
             }
         }

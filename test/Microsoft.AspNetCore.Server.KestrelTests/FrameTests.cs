@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Http;
@@ -114,6 +115,52 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             // Assert
             Assert.True(frame.HasResponseStarted);
             Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)frame).ReasonPhrase = "Reason phrase");
+        }
+
+        [Fact]
+        public void InitializeHeadersResetsRequestHeaders()
+        {
+            // Arrange
+            var connectionContext = new ConnectionContext()
+            {
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                ServerOptions = new KestrelServerOptions(),
+                SocketOutput = new MockSocketOuptut()
+            };
+            var frame = new Frame<object>(application: null, context: connectionContext);
+            frame.InitializeHeaders();
+
+            // Act
+            var originalRequestHeaders = frame.RequestHeaders;
+            frame.RequestHeaders = new FrameRequestHeaders();
+            frame.InitializeHeaders();
+
+            // Assert
+            Assert.Same(originalRequestHeaders, frame.RequestHeaders);
+        }
+
+        [Fact]
+        public void InitializeHeadersResetsResponseHeaders()
+        {
+            // Arrange
+            var connectionContext = new ConnectionContext()
+            {
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                ServerOptions = new KestrelServerOptions(),
+                SocketOutput = new MockSocketOuptut()
+            };
+            var frame = new Frame<object>(application: null, context: connectionContext);
+            frame.InitializeHeaders();
+
+            // Act
+            var originalResponseHeaders = frame.ResponseHeaders;
+            frame.ResponseHeaders = new FrameResponseHeaders();
+            frame.InitializeHeaders();
+
+            // Assert
+            Assert.Same(originalResponseHeaders, frame.ResponseHeaders);
         }
     }
 }

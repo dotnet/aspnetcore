@@ -11,7 +11,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Exceptions;
 using Microsoft.Extensions.Logging;
@@ -217,13 +216,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             if (FrameRequestHeaders == null)
             {
-                RequestHeaders = FrameRequestHeaders = new FrameRequestHeaders();
+                FrameRequestHeaders = new FrameRequestHeaders();
             }
+
+            RequestHeaders = FrameRequestHeaders;
 
             if (FrameResponseHeaders == null)
             {
-                ResponseHeaders = FrameResponseHeaders = new FrameResponseHeaders();
+                FrameResponseHeaders = new FrameResponseHeaders();
             }
+
+            ResponseHeaders = FrameResponseHeaders;
         }
 
         public void InitializeStreams(MessageBody messageBody)
@@ -646,8 +649,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     responseHeaders.SetRawServer(Constants.ServerName, _bytesServer);
                 }
-
-                ResponseHeaders = responseHeaders;
             }
 
             if (!HasResponseStarted)
