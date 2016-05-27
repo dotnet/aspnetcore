@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         Task IFrameControl.WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
-            return Task.FromResult(0);
+            return TaskUtilities.CompletedTask;
         }
 
         void IFrameControl.Flush()
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         Task IFrameControl.FlushAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult(0);
+            return TaskUtilities.CompletedTask;
         }
 
         public void Dispose()

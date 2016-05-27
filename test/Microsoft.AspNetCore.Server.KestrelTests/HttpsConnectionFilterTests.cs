@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Filter;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -116,13 +117,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 new NoOpConnectionFilter())
             );
 
-            RequestDelegate app = context =>
-            {
-                Assert.Equal(context.Features.Get<ITlsConnectionFeature>(), null);
-                return context.Response.WriteAsync("hello world");
-            };
-
-            using (var server = new TestServer(app, serviceContext, _serverAddress))
+            using (var server = new TestServer(context =>
+                {
+                    Assert.Equal(context.Features.Get<ITlsConnectionFeature>(), null);
+                    return context.Response.WriteAsync("hello world");
+                },
+                serviceContext, _serverAddress))
             {
                 using (var client = new HttpClient(GetHandler()))
                 {
@@ -153,8 +153,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 new NoOpConnectionFilter())
             );
 
-            RequestDelegate app = context => Task.FromResult(0);
-            using (var server = new TestServer(app, serviceContext, _serverAddress))
+            using (var server = new TestServer(context => TaskUtilities.CompletedTask, serviceContext, _serverAddress))
             {
                 using (var client = new TcpClient())
                 {
@@ -182,16 +181,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 new NoOpConnectionFilter())
             );
 
-            RequestDelegate app = context =>
-            {
-                var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
-                Assert.NotNull(tlsFeature);
-                Assert.NotNull(tlsFeature.ClientCertificate);
-                Assert.NotNull(context.Connection.ClientCertificate);
-                return context.Response.WriteAsync("hello world");
-            };
-
-            using (var server = new TestServer(app, serviceContext, _serverAddress))
+            using (var server = new TestServer(context =>
+                {
+                    var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+                    Assert.NotNull(tlsFeature);
+                    Assert.NotNull(tlsFeature.ClientCertificate);
+                    Assert.NotNull(context.Connection.ClientCertificate);
+                    return context.Response.WriteAsync("hello world");
+                },
+                serviceContext, _serverAddress))
             {
                 using (var client = new TcpClient())
                 {
@@ -219,9 +217,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     new NoOpConnectionFilter())
             );
 
-            RequestDelegate app = context => context.Response.WriteAsync(context.Request.Scheme);
-
-            using (var server = new TestServer(app, serviceContext, _serverAddress))
+            using (var server = new TestServer(context => context.Response.WriteAsync(context.Request.Scheme), serviceContext, _serverAddress))
             {
                 using (var client = new HttpClient(GetHandler()))
                 {
@@ -245,12 +241,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 new NoOpConnectionFilter())
             );
 
-            RequestDelegate app = context =>
-            {
-                return context.Response.WriteAsync("hello world");
-            };
-
-            using (var server = new TestServer(app, serviceContext, _serverAddress))
+            using (var server = new TestServer(context => context.Response.WriteAsync("hello world"), serviceContext, _serverAddress))
             {
                 // SslStream is used to ensure the certificate is actually passed to the server
                 // HttpClient might not send the certificate because it is invalid or it doesn't match any
@@ -286,9 +277,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 new NoOpConnectionFilter())
             );
 
-            RequestDelegate app = context => Task.FromResult(0);
-
-            using (var server = new TestServer(app, serviceContext, _serverAddress))
+            using (var server = new TestServer(context => TaskUtilities.CompletedTask, serviceContext, _serverAddress))
             {
                 using (var client = new TcpClient())
                 {
@@ -315,9 +304,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 new NoOpConnectionFilter())
             );
 
-            RequestDelegate app = context => Task.FromResult(0);
-
-            using (var server = new TestServer(app, serviceContext, _serverAddress))
+            using (var server = new TestServer(context => TaskUtilities.CompletedTask, serviceContext, _serverAddress))
             {
                 using (var client = new TcpClient())
                 {
@@ -342,9 +329,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 new NoOpConnectionFilter())
             );
 
-            RequestDelegate app = context => Task.FromResult(0);
-
-            using (var server = new TestServer(app, serviceContext, _serverAddress))
+            using (var server = new TestServer(context => TaskUtilities.CompletedTask, serviceContext, _serverAddress))
             {
                 using (var client = new TcpClient())
                 {

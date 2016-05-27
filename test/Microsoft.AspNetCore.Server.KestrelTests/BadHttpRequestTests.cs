@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("GET / HTTP/1.0\rA")]
         public async Task TestBadRequestLines(string request)
         {
-            using (var server = new TestServer(context => { return Task.FromResult(0); }))
+            using (var server = new TestServer(context => TaskUtilities.CompletedTask))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("GET / HTTP/1.0\rA")]
         public async Task ServerClosesConnectionAsSoonAsBadRequestLineIsDetected(string request)
         {
-            using (var server = new TestServer(context => { return Task.FromResult(0); }))
+            using (var server = new TestServer(context => TaskUtilities.CompletedTask))
             {
                 using (var connection = server.CreateConnection())
                 {

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -1062,7 +1063,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             using (var server = new TestServer(httpContext =>
             {
                 httpContext.Abort();
-                return Task.FromResult(0);
+                return TaskUtilities.CompletedTask;
             }, testContext))
             {
                 using (var connection = server.CreateConnection())

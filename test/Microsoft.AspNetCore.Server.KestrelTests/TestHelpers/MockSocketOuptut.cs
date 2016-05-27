@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 
         public Task WriteAsync(ArraySegment<byte> buffer, bool chunk = false, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult(0);
+            return TaskUtilities.CompletedTask;
         }
     }
 }
