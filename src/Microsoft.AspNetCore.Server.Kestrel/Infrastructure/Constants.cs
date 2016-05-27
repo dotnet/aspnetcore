@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.PlatformAbstractions;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 {
@@ -28,32 +28,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
         private static int? GetECONNRESET()
         {
-            switch (PlatformServices.Default.Runtime.OperatingSystemPlatform)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                case Platform.Windows:
-                    return -4077;
-                case Platform.Linux:
-                    return -104;
-                case Platform.Darwin:
-                    return -54;
-                default:
-                    return null;
+               return -4077;
             }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return -104;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return -54;
+            }
+            return null;
         }
 
         private static int? GetEADDRINUSE()
         {
-            switch (PlatformServices.Default.Runtime.OperatingSystemPlatform)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                case Platform.Windows:
-                    return -4091;
-                case Platform.Linux:
-                    return -98;
-                case Platform.Darwin:
-                    return -48;
-                default:
-                    return null;
+               return -4091;
             }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return -98;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return -48;
+            }
+            return null;
         }
     }
 }

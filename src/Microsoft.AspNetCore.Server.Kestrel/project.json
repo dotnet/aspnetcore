@@ -14,11 +14,11 @@
   "dependencies": {
     "System.Buffers": "4.0.0-*",
     "System.Numerics.Vectors": "4.1.1-*",
+    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-*",
     "System.Threading.Tasks.Extensions": "4.0.0-*",
     "Libuv": "1.9.0-*",
     "Microsoft.AspNetCore.Hosting": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
+    "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*"
   },
   "frameworks": {
     "net451": {
