@@ -44,7 +44,7 @@
     "netstandard1.3": {
       "dependencies": {
         "Microsoft.CSharp": "4.0.1-*",
-        "System.ComponentModel.TypeConverter": "4.0.1-*",
+        "System.ComponentModel.TypeConverter": "4.1.0-*",
         "System.Reflection.Extensions": "4.0.1-*",
         "System.Text.Encoding.Extensions": "4.0.11-*"
       }
