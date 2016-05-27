@@ -13,7 +13,11 @@
     "repository": {
       "type": "git",
       "url": "git://github.com/aspnet/IISIntegration"
-    }
+    },
+    "tags": [
+      "aspnetcore",
+      "iis"
+    ]
   },
   "dependencies": {
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*",

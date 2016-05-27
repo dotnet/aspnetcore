@@ -1,4 +1,4 @@
-ASP.NET IIS Integration 
+ASP.NET Core IIS Integration
 ========
 
 This repo hosts the ASP.NET Core middleware for IIS integration.
