@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         // Missing method
         [InlineData(" ")]
         // Missing second space
-        [InlineData("/ HTTP/1.1\r\n\r\n")]
+        [InlineData("/ ")] // This fails trying to read the '/' because that's invalid for an HTTP method
         [InlineData("GET /\r\n")]
         // Missing target
         [InlineData("GET  ")]
@@ -67,13 +67,33 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("GET / 8charact\r")]
         // Missing LF
         [InlineData("GET / HTTP/1.0\rA")]
+        // Bad HTTP Methods (invalid according to RFC)
+        [InlineData("( / HTTP/1.0\r\n")]
+        [InlineData(") / HTTP/1.0\r\n")]
+        [InlineData("< / HTTP/1.0\r\n")]
+        [InlineData("> / HTTP/1.0\r\n")]
+        [InlineData("@ / HTTP/1.0\r\n")]
+        [InlineData(", / HTTP/1.0\r\n")]
+        [InlineData("; / HTTP/1.0\r\n")]
+        [InlineData(": / HTTP/1.0\r\n")]
+        [InlineData("\\ / HTTP/1.0\r\n")]
+        [InlineData("\" / HTTP/1.0\r\n")]
+        [InlineData("/ / HTTP/1.0\r\n")]
+        [InlineData("[ / HTTP/1.0\r\n")]
+        [InlineData("] / HTTP/1.0\r\n")]
+        [InlineData("? / HTTP/1.0\r\n")]
+        [InlineData("= / HTTP/1.0\r\n")]
+        [InlineData("{ / HTTP/1.0\r\n")]
+        [InlineData("} / HTTP/1.0\r\n")]
+        [InlineData("get@ / HTTP/1.0\r\n")]
+        [InlineData("post= / HTTP/1.0\r\n")]
         public async Task TestBadRequestLines(string request)
         {
             using (var server = new TestServer(context => TaskUtilities.CompletedTask))
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(request);
+                    await connection.SendAllEnd(request);
                     await ReceiveBadRequestResponse(connection);
                 }
             }
@@ -84,6 +104,26 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("GET  ")]
         [InlineData("GET / HTTP/1.2\r")]
         [InlineData("GET / HTTP/1.0\rA")]
+        // Bad HTTP Methods (invalid according to RFC)
+        [InlineData("( ")]
+        [InlineData(") ")]
+        [InlineData("< ")]
+        [InlineData("> ")]
+        [InlineData("@ ")]
+        [InlineData(", ")]
+        [InlineData("; ")]
+        [InlineData(": ")]
+        [InlineData("\\ ")]
+        [InlineData("\" ")]
+        [InlineData("/ ")]
+        [InlineData("[ ")]
+        [InlineData("] ")]
+        [InlineData("? ")]
+        [InlineData("= ")]
+        [InlineData("{ ")]
+        [InlineData("} ")]
+        [InlineData("get@ ")]
+        [InlineData("post= ")]
         public async Task ServerClosesConnectionAsSoonAsBadRequestLineIsDetected(string request)
         {
             using (var server = new TestServer(context => TaskUtilities.CompletedTask))

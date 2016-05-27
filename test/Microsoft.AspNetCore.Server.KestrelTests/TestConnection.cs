@@ -43,6 +43,21 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             _socket.Dispose();
         }
 
+        public async Task SendAll(params string[] lines)
+        {
+            var text = String.Join("\r\n", lines);
+            var writer = new StreamWriter(_stream, Encoding.ASCII);
+            await writer.WriteAsync(text);
+            writer.Flush();
+            _stream.Flush();
+        }
+
+        public async Task SendAllEnd(params string[] lines)
+        {
+            await SendAll(lines);
+            _socket.Shutdown(SocketShutdown.Send);
+        }
+
         public async Task Send(params string[] lines)
         {
             var text = String.Join("\r\n", lines);

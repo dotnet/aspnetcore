@@ -807,9 +807,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     }
 
                     method = begin.GetAsciiString(scan);
+
                     if (method == null)
                     {
                         RejectRequest("Missing method.");
+                    }
+
+                    // Note: We're not in the fast path any more (GetKnownMethod should have handled any HTTP Method we're aware of)
+                    // So we can be a tiny bit slower and more careful here.
+                    for (int i = 0; i < method.Length; i++)
+                    {
+                        if (!IsValidTokenChar(method[i]))
+                        {
+                            RejectRequest("Invalid method.");
+                        }
                     }
                 }
                 else
@@ -936,6 +947,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 input.ConsumingComplete(consumed, scan);
             }
+        }
+
+        private static bool IsValidTokenChar(char c)
+        {
+            // Determines if a character is valid as a 'token' as defined in the
+            // HTTP spec: https://tools.ietf.org/html/rfc7230#section-3.2.6
+            return
+                (c >= '0' && c <= '9') ||
+                (c >= 'A' && c <= 'Z') ||
+                (c >= 'a' && c <= 'z') ||
+                c == '!' ||
+                c == '#' ||
+                c == '$' ||
+                c == '%' ||
+                c == '&' ||
+                c == '\'' ||
+                c == '*' ||
+                c == '+' ||
+                c == '-' ||
+                c == '.' ||
+                c == '^' ||
+                c == '_' ||
+                c == '`' ||
+                c == '|' ||
+                c == '~';
         }
 
         private bool RequestUrlStartsWithPathBase(string requestUrl, out bool caseMatches)
