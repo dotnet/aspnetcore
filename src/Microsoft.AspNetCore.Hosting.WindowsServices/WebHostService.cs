@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Hosting.WindowsServices
 {
     /// <summary>
-    ///     Provides an implementation of a Windows service that hosts ASP.NET.
+    ///     Provides an implementation of a Windows service that hosts ASP.NET Core.
     /// </summary>
     public class WebHostService : ServiceBase
     {
@@ -53,23 +53,23 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices
         }
 
         /// <summary>
-        /// Executes before ASP.NET starts.
+        /// Executes before ASP.NET Core starts.
         /// </summary>
         /// <param name="args">The command line arguments passed to the service.</param>
         protected virtual void OnStarting(string[] args) { }
 
         /// <summary>
-        /// Executes after ASP.NET starts.
+        /// Executes after ASP.NET Core starts.
         /// </summary>
         protected virtual void OnStarted() { }
 
         /// <summary>
-        /// Executes before ASP.NET shuts down.
+        /// Executes before ASP.NET Core shuts down.
         /// </summary>
         protected virtual void OnStopping() { }
 
         /// <summary>
-        /// Executes after ASP.NET shuts down.
+        /// Executes after ASP.NET Core shuts down.
         /// </summary>
         protected virtual void OnStopped() { }
     }

@@ -8,12 +8,16 @@
     ],
     "xmlDoc": true
   },
-  "description": "ASP.NET 5 Hosting server abstractions.",
+  "description": "ASP.NET Core hosting server abstractions for web applications.",
   "packOptions": {
     "repository": {
       "type": "git",
       "url": "git://github.com/aspnet/hosting"
-    }
+    },
+    "tags": [
+      "aspnetcore",
+      "hosting"
+    ]
   },
   "dependencies": {
     "Microsoft.AspNetCore.Http.Features": "1.0.0-*",

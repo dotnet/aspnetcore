@@ -18,7 +18,7 @@ using Context = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context
 namespace Microsoft.AspNetCore.TestHost
 {
     /// <summary>
-    /// This adapts HttpRequestMessages to ASP.NET requests, dispatches them through the pipeline, and returns the
+    /// This adapts HttpRequestMessages to ASP.NET Core requests, dispatches them through the pipeline, and returns the
     /// associated HttpResponseMessage.
     /// </summary>
     public class ClientHandler : HttpMessageHandler
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         /// <summary>
-        /// This adapts HttpRequestMessages to ASP.NET requests, dispatches them through the pipeline, and returns the
+        /// This adapts HttpRequestMessages to ASP.NET Core requests, dispatches them through the pipeline, and returns the
         /// associated HttpResponseMessage.
         /// </summary>
         /// <param name="request"></param>

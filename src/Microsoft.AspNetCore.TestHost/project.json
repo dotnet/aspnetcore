@@ -8,12 +8,17 @@
     ],
     "xmlDoc": true
   },
-  "description": "ASP.NET 5 web server for writing and running tests.",
+  "description": "ASP.NET Core web server for writing and running tests.",
   "packOptions": {
     "repository": {
       "type": "git",
       "url": "git://github.com/aspnet/hosting"
-    }
+    },
+    "tags": [
+      "aspnetcore",
+      "hosting",
+      "testing"
+    ]
   },
   "dependencies": {
     "Microsoft.AspNetCore.Hosting": "1.0.0-*"
