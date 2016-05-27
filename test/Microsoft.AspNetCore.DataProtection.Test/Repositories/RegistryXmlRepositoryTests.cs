@@ -3,9 +3,9 @@
 
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Win32;
 using Xunit;
 
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
         private class ConditionalRunTestOnlyIfHkcuRegistryAvailable : Attribute, ITestCondition
         {
-            public bool IsMet => (PlatformServices.Default.Runtime.OperatingSystem == "Windows" && LazyHkcuTempKey.Value != null);
+            public bool IsMet => (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && LazyHkcuTempKey.Value != null);
 
             public string SkipReason { get; } = "HKCU registry couldn't be opened.";
         }
