@@ -22,7 +22,7 @@
       "launchUrl": "https://localhost:44318/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_SERVER.URLS": "https://localhost:44318/"
+        "ASPNETCORE_URLS": "https://localhost:44318/"
       }
     }
   }
