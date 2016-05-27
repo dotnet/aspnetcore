@@ -188,6 +188,20 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         }
 
         /// <summary>
+        /// Tracks the <see cref="ITagHelper"/> bound attribute.
+        /// </summary>
+        /// <param name="attribute">The bound attribute.</param>
+        public void AddTagHelperAttribute(TagHelperAttribute attribute)
+        {
+            if (attribute == null)
+            {
+                throw new ArgumentNullException(nameof(attribute));
+            }
+
+            _allAttributes.Add(attribute);
+        }
+
+        /// <summary>
         /// Clears the <see cref="TagHelperExecutionContext"/> and updates its state with the provided values.
         /// </summary>
         /// <param name="tagName">The tag name to use.</param>

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Internal;
 
@@ -95,24 +96,28 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
 
             if (!Context.Host.DesignTimeMode)
             {
-                PreAllocateUnboundTagHelperAttributes(chunk);
+                PreAllocateTagHelperAttributes(chunk);
             }
 
             // We need to dive deeper to ensure we pick up any nested tag helpers.
             Accept(chunk.Children);
         }
 
-        private void PreAllocateUnboundTagHelperAttributes(TagHelperChunk chunk)
+        private void PreAllocateTagHelperAttributes(TagHelperChunk chunk)
         {
             var boundAttributes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             for (var i = 0; i < chunk.Attributes.Count; i++)
             {
                 var attribute = chunk.Attributes[i];
-                var hasAssociatedDescriptors = chunk.Descriptors.Any(descriptor =>
-                    descriptor.Attributes.Any(attributeDescriptor => attributeDescriptor.IsNameMatch(attribute.Name)));
+                var associatedAttributeDescriptors = chunk.Descriptors.SelectMany(descriptor => descriptor.Attributes)
+                    .Where(attributeDescriptor => attributeDescriptor.IsNameMatch(attribute.Name));
 
-                // If there's no descriptors associated or we're hitting a bound attribute a second time.
-                if (!hasAssociatedDescriptors || !boundAttributes.Add(attribute.Name))
+                // If there's no descriptors associated or is a repeated attribute with same name as a bound attribute, 
+                // it is considered as an unbound attribute.
+                var isUnBoundAttribute = !associatedAttributeDescriptors.Any() || !boundAttributes.Add(attribute.Name);
+
+                // Perf: We will preallocate TagHelperAttribute for unbound attributes and simple bound string valued attributes.
+                if (isUnBoundAttribute || CanPreallocateBoundAttribute(associatedAttributeDescriptors, attribute))
                 {
                     string preAllocatedAttributeVariableName = null;
 
@@ -120,7 +125,11 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
                     {
                         Debug.Assert(attribute.Value == null);
 
-                        var preAllocatedAttributeKey = new TagHelperAttributeKey(attribute.Name, value: null, valueStyle: attribute.ValueStyle);
+                        var preAllocatedAttributeKey = new TagHelperAttributeKey(
+                            attribute.Name, 
+                            value: null, 
+                            unBoundAttribute: isUnBoundAttribute, 
+                            valueStyle: attribute.ValueStyle);
                         if (TryCachePreallocatedVariableName(preAllocatedAttributeKey, out preAllocatedAttributeVariableName))
                         {
                             Writer
@@ -141,7 +150,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
                         string plainText;
                         if (CSharpTagHelperCodeRenderer.TryGetPlainTextValue(attribute.Value, out plainText))
                         {
-                            var preAllocatedAttributeKey = new TagHelperAttributeKey(attribute.Name, plainText, attribute.ValueStyle);
+                            var preAllocatedAttributeKey = new TagHelperAttributeKey(attribute.Name, plainText, isUnBoundAttribute, attribute.ValueStyle);
                             if (TryCachePreallocatedVariableName(preAllocatedAttributeKey, out preAllocatedAttributeVariableName))
                             {
                                 Writer
@@ -152,10 +161,23 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
                                     .Write(" = ")
                                     .WriteStartNewObject("global::" + _tagHelperContext.TagHelperAttributeTypeName)
                                     .WriteStringLiteral(attribute.Name)
-                                    .WriteParameterSeparator()
-                                    .WriteStartNewObject("global::" + _tagHelperContext.EncodedHtmlStringTypeName)
-                                    .WriteStringLiteral(plainText)
-                                    .WriteEndMethodInvocation(endLine: false)
+                                    .WriteParameterSeparator();
+
+                                if (isUnBoundAttribute)
+                                {
+                                    // For unbound attributes, we need to create HtmlString.
+                                    Writer
+                                        .WriteStartNewObject("global::" + _tagHelperContext.EncodedHtmlStringTypeName)
+                                        .WriteStringLiteral(plainText)
+                                        .WriteEndMethodInvocation(endLine: false);
+                                }
+                                else
+                                {
+                                    Writer.WriteStringLiteral(plainText);
+                                    
+                                }
+
+                                Writer
                                     .WriteParameterSeparator()
                                     .Write($"global::{typeof(HtmlAttributeValueStyle).FullName}.{attribute.ValueStyle}")
                                     .WriteEndMethodInvocation();
@@ -175,6 +197,24 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
                     }
                 }
             }
+        }
+
+        private static bool CanPreallocateBoundAttribute(
+            IEnumerable<TagHelperAttributeDescriptor> associatedAttributeDescriptors,
+            TagHelperAttributeTracker attribute)
+        {
+            // If the attribute value is a Dynamic value, it cannot be preallocated.
+            if (CSharpTagHelperCodeRenderer.IsDynamicAttributeValue(attribute.Value))
+            {
+                return false;
+            }
+
+            // Only attributes that are associated with string typed properties can be preallocated.
+            var attributeName = attribute.Name;
+            var allStringProperties = associatedAttributeDescriptors
+                .All(attributeDescriptor => attributeDescriptor.IsStringProperty);
+
+            return allStringProperties;
         }
 
         public override void Accept(Chunk chunk)
@@ -224,16 +264,19 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
 
         private struct TagHelperAttributeKey : IEquatable<TagHelperAttributeKey>
         {
-            public TagHelperAttributeKey(string name, string value, HtmlAttributeValueStyle valueStyle)
+            public TagHelperAttributeKey(string name, string value, bool unBoundAttribute, HtmlAttributeValueStyle valueStyle)
             {
                 Name = name;
                 Value = value;
+                UnBoundAttribute = unBoundAttribute;
                 ValueStyle = valueStyle;
             }
 
             public string Name { get; }
 
             public string Value { get; }
+
+            public bool UnBoundAttribute { get; }
 
             public HtmlAttributeValueStyle ValueStyle { get; }
 
@@ -242,6 +285,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
                 var hashCodeCombiner = HashCodeCombiner.Start();
                 hashCodeCombiner.Add(Name, StringComparer.Ordinal);
                 hashCodeCombiner.Add(Value, StringComparer.Ordinal);
+                hashCodeCombiner.Add(UnBoundAttribute);
                 hashCodeCombiner.Add(ValueStyle);
 
                 return hashCodeCombiner.CombinedHash;
@@ -263,6 +307,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
             {
                 return string.Equals(Name, other.Name, StringComparison.Ordinal) &&
                     string.Equals(Value, other.Value, StringComparison.Ordinal) &&
+                    UnBoundAttribute == other.UnBoundAttribute &&
                     ValueStyle == other.ValueStyle;
             }
         }

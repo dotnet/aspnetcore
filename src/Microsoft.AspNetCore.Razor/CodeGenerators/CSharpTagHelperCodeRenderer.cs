@@ -331,6 +331,15 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
             // If this attribute value has not been seen before, need to record its value.
             if (previousValueAccessor == null)
             {
+                var preallocatedAttributeValueChunk = attribute.Value as PreallocatedTagHelperAttributeChunk;
+
+                if (preallocatedAttributeValueChunk != null)
+                {
+                    RenderBoundPreAllocatedAttribute(preallocatedAttributeValueChunk, currentValueAccessor);
+
+                    return currentValueAccessor;
+                }
+
                 // Bufferable attributes are attributes that can have Razor code inside of them. Such
                 // attributes have string values and may be calculated using a temporary TextWriter or other
                 // buffer.
@@ -374,6 +383,37 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
 
                 return previousValueAccessor;
             }
+        }
+
+        // Render bound attributes that are of string type and are preallocated.
+        private void RenderBoundPreAllocatedAttribute(
+            PreallocatedTagHelperAttributeChunk preallocatedAttributeValueChunk,
+            string valueAccessor)
+        {
+            var attributeValueAccessor = string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}.{1}",
+                preallocatedAttributeValueChunk.AttributeVariableAccessor,
+                _tagHelperContext.TagHelperAttributeValuePropertyName);
+
+            _writer
+                .WriteStartAssignment(valueAccessor)
+                .Write("(string)")
+                .Write(attributeValueAccessor)
+                .WriteLine(";");
+
+            if (_designTimeMode)
+            {
+                // Execution contexts are a runtime feature.
+                return;
+            }
+
+            _writer
+                .WriteStartInstanceMethodInvocation(
+                    ExecutionContextVariableName,
+                    _tagHelperContext.ExecutionContextAddTagHelperAttributeMethodName)
+                .Write(preallocatedAttributeValueChunk.AttributeVariableAccessor)
+                .WriteEndMethodInvocation();
         }
 
         // Render assignment of attribute value to the value accessor.
@@ -735,7 +775,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
             return false;
         }
 
-        private static bool IsDynamicAttributeValue(Chunk attributeValueChunk)
+        public static bool IsDynamicAttributeValue(Chunk attributeValueChunk)
         {
             var parentChunk = attributeValueChunk as ParentChunk;
             if (parentChunk != null)
