@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             int schemeDelimiterStart = url.IndexOf("://", StringComparison.Ordinal);
             if (schemeDelimiterStart < 0)
             {
-                return null;
+                throw new FormatException($"Invalid URL: {url}");
             }
             int schemeDelimiterEnd = schemeDelimiterStart + "://".Length;
 

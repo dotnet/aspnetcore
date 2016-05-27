@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var exception = Assert.Throws<FormatException>(() => StartDummyApplication(server));
 
-            Assert.Contains("Unrecognized listening address", exception.Message);
+            Assert.Contains("Invalid URL", exception.Message);
         }
 
         [Fact]

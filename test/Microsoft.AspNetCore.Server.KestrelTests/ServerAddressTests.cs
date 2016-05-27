@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("")]
         [InlineData("5000")]
         [InlineData("//noscheme")]
-        public void FromUriReturnsNullForSchemelessUrls(string url)
+        public void FromUriThrowsForSchemelessUrls(string url)
         {
-            Assert.Null(ServerAddress.FromUrl(url));
+            Assert.Throws<FormatException>(() => ServerAddress.FromUrl(url));
         }
 
         [Theory]
