@@ -24,5 +24,8 @@ namespace ErrorPageMiddlewareWebSite
         {
             return View("~/Views/ErrorFromViewImports/Index.cshtml");
         }
+
+        [HttpGet("/RuntimeError")]
+        public IActionResult RuntimeError() => View();
     }
 }
