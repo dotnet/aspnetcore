@@ -11,7 +11,7 @@ addons:
     - libunwind8
     - zlib1g
 before_install:
-  - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install icu4c; fi
+  - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install icu4c; brew install openssl; brew link --force openssl; fi
 env:
   - KOREBUILD_TEST_DNXCORE=true NO_PARALLEL_TEST_PROJECTS=E2ETests
 install:
