@@ -82,7 +82,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         public int LocalPort { get; set; }
         public string Scheme { get; set; }
         public string Method { get; set; }
-        public string RequestUri { get; set; }
         public string PathBase { get; set; }
         public string Path { get; set; }
         public string QueryString { get; set; }
@@ -276,7 +275,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
             Scheme = null;
             Method = null;
-            RequestUri = null;
             PathBase = null;
             Path = null;
             QueryString = null;
@@ -914,7 +912,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                 consumed = scan;
                 Method = method;
-                RequestUri = requestUrlPath;
                 QueryString = queryString;
                 HttpVersion = httpVersion;
 
