@@ -6,7 +6,7 @@ addons:
     packages:
     - libunwind8
 before_install:
-  - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install nginx; fi
+  - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install nginx; brew install openssl; brew link --force openssl; fi
 install:
   - curl -sSL http://nginx.org/download/nginx-1.8.0.tar.gz | tar zxfv - -C /tmp && cd /tmp/nginx-1.8.0/
   - ./configure --prefix=$HOME/nginxinstall --with-http_ssl_module
