@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 var cookieOptions = BuildCookieOptions();
                 if (ticket.Properties.IsPersistent && _refreshExpiresUtc.HasValue)
                 {
-                    cookieOptions.Expires = _refreshExpiresUtc.Value.ToUniversalTime().DateTime;
+                    cookieOptions.Expires = _refreshExpiresUtc.Value.ToUniversalTime();
                 }
 
                 Options.CookieManager.AppendResponseCookie(
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             if (signInContext.Properties.IsPersistent)
             {
                 var expiresUtc = signInContext.Properties.ExpiresUtc ?? issuedUtc.Add(Options.ExpireTimeSpan);
-                signInContext.CookieOptions.Expires = expiresUtc.ToUniversalTime().DateTime;
+                signInContext.CookieOptions.Expires = expiresUtc.ToUniversalTime();
             }
 
             var ticket = new AuthenticationTicket(signInContext.Principal, signInContext.Properties, signInContext.AuthenticationScheme);
