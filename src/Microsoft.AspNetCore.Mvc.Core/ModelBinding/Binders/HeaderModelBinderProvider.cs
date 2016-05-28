@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.BindingInfo?.BindingSource != null &&
+            if (context.BindingInfo.BindingSource != null &&
                 context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.Header))
             {
                 // We only support strings and collections of strings. Some cases can fail

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract IModelBinder CreateBinder(ModelMetadata metadata);
 
         /// <summary>
-        /// Gets the <see cref="BindingInfo"/>. May be <c>null</c>.
+        /// Gets the <see cref="BindingInfo"/>.
         /// </summary>
         public abstract BindingInfo BindingInfo { get; }
 

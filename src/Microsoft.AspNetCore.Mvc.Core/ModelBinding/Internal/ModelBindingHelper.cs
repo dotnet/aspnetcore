@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Internal
     {
         /// <summary>
         /// Updates the specified <paramref name="model"/> instance using the specified
-        /// <paramref name="modelBinderFactory"/> and the specified <paramref name="valueProvider"/> and executes 
+        /// <paramref name="modelBinderFactory"/> and the specified <paramref name="valueProvider"/> and executes
         /// validation using the specified <paramref name="objectModelValidator"/>.
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>
@@ -476,8 +476,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Internal
 
             if (expression.NodeType != ExpressionType.MemberAccess)
             {
-                throw new InvalidOperationException(Resources.FormatInvalid_IncludePropertyExpression(
-                        expression.NodeType));
+                throw new InvalidOperationException(
+                    Resources.FormatInvalid_IncludePropertyExpression(expression.NodeType));
             }
 
             var memberExpression = (MemberExpression)expression;
@@ -488,7 +488,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Internal
                 {
                     // Chained expressions and non parameter based expressions are not supported.
                     throw new InvalidOperationException(
-                    Resources.FormatInvalid_IncludePropertyExpression(expression.NodeType));
+                        Resources.FormatInvalid_IncludePropertyExpression(expression.NodeType));
                 }
 
                 return memberInfo.Name;
@@ -496,8 +496,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Internal
             else
             {
                 // Fields are also not supported.
-                throw new InvalidOperationException(Resources.FormatInvalid_IncludePropertyExpression(
-                    expression.NodeType));
+                throw new InvalidOperationException(
+                    Resources.FormatInvalid_IncludePropertyExpression(expression.NodeType));
             }
         }
 

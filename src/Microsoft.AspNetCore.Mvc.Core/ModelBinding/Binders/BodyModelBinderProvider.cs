@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.BindingInfo?.BindingSource != null &&
+            if (context.BindingInfo.BindingSource != null &&
                 context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.Body))
             {
                 return new BodyModelBinder(_formatters, _readerFactory);

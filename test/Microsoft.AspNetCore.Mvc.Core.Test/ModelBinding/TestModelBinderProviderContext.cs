@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         // Has to be internal because TestModelMetadataProvider is 'shared' code.
         internal static readonly TestModelMetadataProvider CachedMetadataProvider = new TestModelMetadataProvider();
 
-        private readonly List<Func<ModelMetadata, IModelBinder>> _binderCreators = 
+        private readonly List<Func<ModelMetadata, IModelBinder>> _binderCreators =
             new List<Func<ModelMetadata, IModelBinder>>();
 
         public TestModelBinderProviderContext(Type modelType)
@@ -31,7 +31,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public TestModelBinderProviderContext(ModelMetadata metadata, BindingInfo bindingInfo)
         {
             Metadata = metadata;
-            BindingInfo = bindingInfo;
+            BindingInfo = bindingInfo ?? new BindingInfo
+            {
+                BinderModelName = metadata.BinderModelName,
+                BinderType = metadata.BinderType,
+                BindingSource = metadata.BindingSource,
+                PropertyFilterProvider = metadata.PropertyFilterProvider,
+            };
 
             MetadataProvider = CachedMetadataProvider;
         }

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.BindingInfo?.BinderType != null)
+            if (context.BindingInfo.BinderType != null)
             {
                 return new BinderTypeModelBinder(context.BindingInfo.BinderType);
             }

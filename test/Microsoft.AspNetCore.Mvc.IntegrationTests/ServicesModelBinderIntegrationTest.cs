@@ -183,5 +183,89 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 () => argumentBinder.BindModelAsync(parameter, testContext));
             Assert.Contains(typeof(IActionResult).FullName, exception.Message);
         }
+
+        private class Person
+        {
+            public JsonOutputFormatter Service { get; set; }
+        }
+
+        // [FromServices] cannot be associated with a type. But a [FromServices] or [ModelBinder] subclass or custom
+        // IBindingSourceMetadata implementation might not have the same restriction. Make sure the metadata is honored
+        // when such an attribute is associated with a type somewhere in the type hierarchy of an action parameter.
+        [Theory]
+        [MemberData(
+            nameof(BinderTypeBasedModelBinderIntegrationTest.NullAndEmptyBindingInfo),
+            MemberType = typeof(BinderTypeBasedModelBinderIntegrationTest))]
+        public async Task FromServicesOnPropertyType_WithData_Succeeds(BindingInfo bindingInfo)
+        {
+            // Arrange
+            // Similar to a custom IBindingSourceMetadata implementation or [ModelBinder] subclass on a custom service.
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForProperty<Person>(nameof(Person.Service))
+                .BindingDetails(binding => binding.BindingSource = BindingSource.Services);
+
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(metadataProvider);
+            var parameter = new ParameterDescriptor
+            {
+                Name = "parameter-name",
+                BindingInfo = bindingInfo,
+                ParameterType = typeof(Person),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext();
+            testContext.MetadataProvider = metadataProvider;
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            var person = Assert.IsType<Person>(modelBindingResult.Model);
+            Assert.NotNull(person.Service);
+
+            Assert.True(modelState.IsValid);
+            Assert.Empty(modelState);
+        }
+
+        // [FromServices] cannot be associated with a type. But a [FromServices] or [ModelBinder] subclass or custom
+        // IBindingSourceMetadata implementation might not have the same restriction. Make sure the metadata is honored
+        // when such an attribute is associated with an action parameter's type.
+        [Theory]
+        [MemberData(
+            nameof(BinderTypeBasedModelBinderIntegrationTest.NullAndEmptyBindingInfo),
+            MemberType = typeof(BinderTypeBasedModelBinderIntegrationTest))]
+        public async Task FromServicesOnParameterType_WithData_Succeeds(BindingInfo bindingInfo)
+        {
+            // Arrange
+            // Similar to a custom IBindingSourceMetadata implementation or [ModelBinder] subclass on a custom service.
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForType<JsonOutputFormatter>()
+                .BindingDetails(binding => binding.BindingSource = BindingSource.Services);
+
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(metadataProvider);
+            var parameter = new ParameterDescriptor
+            {
+                Name = "parameter-name",
+                BindingInfo = bindingInfo,
+                ParameterType = typeof(JsonOutputFormatter),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext();
+            testContext.MetadataProvider = metadataProvider;
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            Assert.IsType<JsonOutputFormatter>(modelBindingResult.Model);
+
+            Assert.True(modelState.IsValid);
+            Assert.Empty(modelState);
+        }
     }
 }

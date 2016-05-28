@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
@@ -152,7 +151,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 _factory = factory;
                 Metadata = factoryContext.Metadata;
-                BindingInfo = factoryContext.BindingInfo;
+                BindingInfo = new BindingInfo
+                {
+                    BinderModelName = factoryContext.BindingInfo?.BinderModelName ?? Metadata.BinderModelName,
+                    BinderType = factoryContext.BindingInfo?.BinderType ?? Metadata.BinderType,
+                    BindingSource = factoryContext.BindingInfo?.BindingSource ?? Metadata.BindingSource,
+                    PropertyFilterProvider =
+                        factoryContext.BindingInfo?.PropertyFilterProvider ?? Metadata.PropertyFilterProvider,
+                };
 
                 MetadataProvider = _factory._metadataProvider;
                 Stack = new List<KeyValuePair<Key, PlaceholderBinder>>();

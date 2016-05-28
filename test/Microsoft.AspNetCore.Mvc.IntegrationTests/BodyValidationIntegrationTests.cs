@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
@@ -15,18 +16,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 {
     public class BodyValidationIntegrationTests
     {
-        private class Person
-        {
-            [FromBody]
-            [Required]
-            public Address Address { get; set; }
-        }
-
-        private class Address
-        {
-            public string Street { get; set; }
-        }
-
         [Fact]
         public async Task ModelMetadataTypeAttribute_ValidBaseClass_NoModelStateErrors()
         {
@@ -352,6 +341,18 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelStateErrors = CreateValidationDictionary(modelState);
             Assert.Single(modelStateErrors);
             Assert.Equal("Product must be made in the USA if it is not named.", modelStateErrors[""]);
+        }
+
+        private class Person
+        {
+            [FromBody]
+            [Required]
+            public Address Address { get; set; }
+        }
+
+        private class Address
+        {
+            public string Street { get; set; }
         }
 
         [Fact]
@@ -685,6 +686,107 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
             Assert.IsType<Person3>(modelBindingResult.Model);
+
+            Assert.True(modelState.IsValid);
+            Assert.Empty(modelState);
+        }
+
+        private class Person6
+        {
+            public Address6 Address { get; set; }
+        }
+
+        private class Address6
+        {
+            public string Street { get; set; }
+        }
+
+        // [FromBody] cannot be associated with a type. But a [FromBody] or [ModelBinder] subclass or custom
+        // IBindingSourceMetadata implementation might not have the same restriction. Make sure the metadata is honored
+        // when such an attribute is associated with a class somewhere in the type hierarchy of an action parameter.
+        [Theory]
+        [MemberData(
+            nameof(BinderTypeBasedModelBinderIntegrationTest.NullAndEmptyBindingInfo),
+            MemberType = typeof(BinderTypeBasedModelBinderIntegrationTest))]
+        public async Task FromBodyOnPropertyType_WithData_Succeeds(BindingInfo bindingInfo)
+        {
+            // Arrange
+            var inputText = "{ \"Street\" : \"someStreet\" }";
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForProperty<Person6>(nameof(Person6.Address))
+                .BindingDetails(binding => binding.BindingSource = BindingSource.Body);
+
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(metadataProvider);
+            var parameter = new ParameterDescriptor
+            {
+                Name = "parameter-name",
+                BindingInfo = bindingInfo,
+                ParameterType = typeof(Person6),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes(inputText));
+                    request.ContentType = "application/json";
+                });
+            testContext.MetadataProvider = metadataProvider;
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            var person = Assert.IsType<Person6>(modelBindingResult.Model);
+            Assert.NotNull(person.Address);
+            Assert.Equal("someStreet", person.Address.Street, StringComparer.Ordinal);
+
+            Assert.True(modelState.IsValid);
+            Assert.Empty(modelState);
+        }
+
+        // [FromBody] cannot be associated with a type. But a [FromBody] or [ModelBinder] subclass or custom
+        // IBindingSourceMetadata implementation might not have the same restriction. Make sure the metadata is honored
+        // when such an attribute is associated with an action parameter's type.
+        [Theory]
+        [MemberData(
+            nameof(BinderTypeBasedModelBinderIntegrationTest.NullAndEmptyBindingInfo),
+            MemberType = typeof(BinderTypeBasedModelBinderIntegrationTest))]
+        public async Task FromBodyOnParameterType_WithData_Succeeds(BindingInfo bindingInfo)
+        {
+            // Arrange
+            var inputText = "{ \"Street\" : \"someStreet\" }";
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForType<Address6>()
+                .BindingDetails(binding => binding.BindingSource = BindingSource.Body);
+
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(metadataProvider);
+            var parameter = new ParameterDescriptor
+            {
+                Name = "parameter-name",
+                BindingInfo = bindingInfo,
+                ParameterType = typeof(Address6),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes(inputText));
+                    request.ContentType = "application/json";
+                });
+            testContext.MetadataProvider = metadataProvider;
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            var address = Assert.IsType<Address6>(modelBindingResult.Model);
+            Assert.Equal("someStreet", address.Street, StringComparer.Ordinal);
 
             Assert.True(modelState.IsValid);
             Assert.Empty(modelState);

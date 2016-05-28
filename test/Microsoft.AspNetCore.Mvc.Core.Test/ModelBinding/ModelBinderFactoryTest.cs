@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Moq;
 using Xunit;
 
@@ -233,6 +234,112 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.Same(result1, result2);
+        }
+
+        public static TheoryData BindingInfoData
+        {
+            get
+            {
+                var propertyFilterProvider = Mock.Of<IPropertyFilterProvider>();
+
+                var emptyBindingInfo = new BindingInfo();
+                var halfBindingInfo = new BindingInfo
+                {
+                    BinderModelName = "expected name",
+                    BinderType = typeof(Widget),
+                };
+                var fullBindingInfo = new BindingInfo
+                {
+                    BinderModelName = "expected name",
+                    BinderType = typeof(Widget),
+                    BindingSource = BindingSource.Services,
+                    PropertyFilterProvider = propertyFilterProvider,
+                };
+
+                var emptyBindingMetadata = new BindingMetadata();
+                var differentBindingMetadata = new BindingMetadata
+                {
+                    BinderModelName = "not the expected name",
+                    BinderType = typeof(WidgetId),
+                    BindingSource = BindingSource.ModelBinding,
+                    PropertyFilterProvider = Mock.Of<IPropertyFilterProvider>(),
+                };
+                var secondHalfBindingMetadata = new BindingMetadata
+                {
+                    BindingSource = BindingSource.Services,
+                    PropertyFilterProvider = propertyFilterProvider,
+                };
+                var fullBindingMetadata = new BindingMetadata
+                {
+                    BinderModelName = "expected name",
+                    BinderType = typeof(Widget),
+                    BindingSource = BindingSource.Services,
+                    PropertyFilterProvider = propertyFilterProvider,
+                };
+
+                // parameterBindingInfo, bindingMetadata, expectedInfo
+                return new TheoryData<BindingInfo, BindingMetadata, BindingInfo>
+                {
+                    { emptyBindingInfo, emptyBindingMetadata, emptyBindingInfo },
+                    { fullBindingInfo, emptyBindingMetadata, fullBindingInfo },
+                    { emptyBindingInfo, fullBindingMetadata, fullBindingInfo },
+                    // Resulting BindingInfo combines two inputs
+                    { halfBindingInfo, secondHalfBindingMetadata, fullBindingInfo },
+                    // Parameter information has precedence over type metadata
+                    { fullBindingInfo, differentBindingMetadata, fullBindingInfo },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(BindingInfoData))]
+        public void CreateBinder_PassesExpectedBindingInfo(
+            BindingInfo parameterBindingInfo,
+            BindingMetadata bindingMetadata,
+            BindingInfo expectedInfo)
+        {
+            // Arrange
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider.ForType<Employee>().BindingDetails(binding =>
+            {
+                binding.BinderModelName = bindingMetadata.BinderModelName;
+                binding.BinderType = bindingMetadata.BinderType;
+                binding.BindingSource = bindingMetadata.BindingSource;
+                if (bindingMetadata.PropertyFilterProvider != null)
+                {
+                    binding.PropertyFilterProvider = bindingMetadata.PropertyFilterProvider;
+                }
+            });
+
+            var modelBinder = Mock.Of<IModelBinder>();
+            var modelBinderProvider = new TestModelBinderProvider(context =>
+            {
+                Assert.Equal(typeof(Employee), context.Metadata.ModelType);
+
+                Assert.NotNull(context.BindingInfo);
+                Assert.Equal(expectedInfo.BinderModelName, context.BindingInfo.BinderModelName, StringComparer.Ordinal);
+                Assert.Equal(expectedInfo.BinderType, context.BindingInfo.BinderType);
+                Assert.Equal(expectedInfo.BindingSource, context.BindingInfo.BindingSource);
+                Assert.Same(expectedInfo.PropertyFilterProvider, context.BindingInfo.PropertyFilterProvider);
+
+                return modelBinder;
+            });
+
+            var options = new TestOptionsManager<MvcOptions>();
+            options.Value.ModelBinderProviders.Insert(0, modelBinderProvider);
+
+            var factory = new ModelBinderFactory(metadataProvider, options);
+            var factoryContext = new ModelBinderFactoryContext
+            {
+                BindingInfo = parameterBindingInfo,
+                Metadata = metadataProvider.GetMetadataForType(typeof(Employee)),
+            };
+
+            // Act & Assert
+            var result = factory.CreateBinder(factoryContext);
+
+            // Confirm our IModelBinderProvider was called.
+            Assert.Same(modelBinder, result);
         }
 
         private class Widget

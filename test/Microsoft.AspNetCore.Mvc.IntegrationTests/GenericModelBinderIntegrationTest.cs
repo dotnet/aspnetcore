@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         {
             public IModelBinder GetBinder(ModelBinderProviderContext context)
             {
-                var allowedBindingSource = context.BindingInfo?.BindingSource;
+                var allowedBindingSource = context.BindingInfo.BindingSource;
                 if (allowedBindingSource?.CanAcceptDataFrom(BindAddressAttribute.Source) == true)
                 {
                     // Binding Sources are opt-in. This model either didn't specify one or specified something

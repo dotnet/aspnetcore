@@ -156,6 +156,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterType);
+            var binder = _modelBinderFactory.CreateBinder(new ModelBinderFactoryContext()
+            {
+                BindingInfo = parameter.BindingInfo,
+                Metadata = metadata,
+                CacheToken = parameter,
+            });
+
             var modelBindingContext = DefaultModelBindingContext.CreateBindingContext(
                 controllerContext,
                 valueProvider,
@@ -163,10 +170,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 parameter.BindingInfo,
                 parameter.Name);
 
-            if (parameter.BindingInfo?.BinderModelName != null)
+            var parameterModelName = parameter.BindingInfo?.BinderModelName ?? metadata.BinderModelName;
+            if (parameterModelName != null)
             {
                 // The name was set explicitly, always use that as the prefix.
-                modelBindingContext.ModelName = parameter.BindingInfo.BinderModelName;
+                modelBindingContext.ModelName = parameterModelName;
             }
             else if (modelBindingContext.ValueProvider.ContainsPrefix(parameter.Name))
             {
@@ -178,13 +186,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 // No match, fallback to empty string as the prefix.
                 modelBindingContext.ModelName = string.Empty;
             }
-
-            var binder = _modelBinderFactory.CreateBinder(new ModelBinderFactoryContext()
-            {
-                BindingInfo = parameter.BindingInfo,
-                Metadata = metadata,
-                CacheToken = parameter,
-            });
 
             await binder.BindModelAsync(modelBindingContext);
 
