@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
@@ -356,27 +357,42 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             Assert.True(tagHelperContent.IsModified);
         }
 
+        public static TheoryData<string> EmptyOrWhiteSpaceData
+        {
+            get
+            {
+                return new TheoryData<string>
+                {
+                    string.Empty,
+                    " ",
+                    "\n",
+                    "\t",
+                    "\r",
+                    "\r\n",
+                    "\u2000",
+                    "\u205f",
+                    "\u3000",
+                    " \u200a \t",
+                };
+            }
+        }
+
         [Theory]
-        [InlineData("")]
-        [InlineData(" ")]
-        [InlineData("\n")]
-        [InlineData("\t")]
-        [InlineData("\r")]
-        public void CanIdentifyEmptyOrWhiteSpace(string data)
+        [MemberData(nameof(EmptyOrWhiteSpaceData))]
+        public void IsEmptyOrWhiteSpace_TrueAfterSetContent(string data)
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
 
             // Act
-            tagHelperContent.SetContent("  ");
-            tagHelperContent.Append(data);
+            tagHelperContent.SetContent(data);
 
             // Assert
             Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
         }
 
         [Fact]
-        public void CanIdentifyWhiteSpace_WithoutIgnoringStrings()
+        public void IsEmptyOrWhiteSpace_FalseAfterLaterAppend()
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
@@ -400,28 +416,59 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
         }
 
-        [Fact]
-        public void IsEmptyOrWhiteSpace_TrueAfterSetEmptyContent()
+        [Theory]
+        [MemberData(nameof(EmptyOrWhiteSpaceData))]
+        public void IsEmptyOrWhiteSpace_TrueAfterAppend(string data)
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
 
             // Act
-            tagHelperContent.SetContent(string.Empty);
+            tagHelperContent.Append(data);
 
             // Assert
             Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
         }
 
-        [Fact]
-        public void IsEmptyOrWhiteSpace_TrueAfterAppendEmptyContent()
+        [Theory]
+        [MemberData(nameof(EmptyOrWhiteSpaceData))]
+        public void IsEmptyOrWhiteSpace_TrueAfterAppendTwice(string data)
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
 
             // Act
-            tagHelperContent.Append(string.Empty);
-            tagHelperContent.Append(string.Empty);
+            tagHelperContent.Append(data);
+            tagHelperContent.Append(data);
+
+            // Assert
+            Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
+        }
+
+        [Theory]
+        [MemberData(nameof(EmptyOrWhiteSpaceData))]
+        public void IsEmptyOrWhiteSpace_TrueAfterAppendHtml(string data)
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+
+            // Act
+            tagHelperContent.AppendHtml(data);
+
+            // Assert
+            Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
+        }
+
+        [Theory]
+        [MemberData(nameof(EmptyOrWhiteSpaceData))]
+        public void IsEmptyOrWhiteSpace_TrueAfterAppendHtmlTwice(string data)
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+
+            // Act
+            tagHelperContent.AppendHtml(data);
+            tagHelperContent.AppendHtml(data);
 
             // Assert
             Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
@@ -436,10 +483,134 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
             // Act
             tagHelperContent.AppendHtml(copiedTagHelperContent);
-            tagHelperContent.Append(string.Empty);
 
             // Assert
             Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
+        }
+
+        [Fact]
+        public void IsEmptyOrWhiteSpace_TrueAfterAppendEmptyTagHelperContentTwice()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            var copiedTagHelperContent = new DefaultTagHelperContent();
+
+            // Act
+            tagHelperContent.AppendHtml(copiedTagHelperContent);
+            tagHelperContent.AppendHtml(copiedTagHelperContent);
+
+            // Assert
+            Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
+        }
+
+        [Theory]
+        [MemberData(nameof(EmptyOrWhiteSpaceData))]
+        public void IsEmptyOrWhiteSpace_TrueAfterAppendTagHelperContent(string data)
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            var copiedTagHelperContent = new DefaultTagHelperContent();
+            copiedTagHelperContent.AppendHtml(data);
+
+            // Act
+            tagHelperContent.AppendHtml(copiedTagHelperContent);
+
+            // Assert
+            Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
+        }
+
+        [Theory]
+        [MemberData(nameof(EmptyOrWhiteSpaceData))]
+        public void IsEmptyOrWhiteSpace_TrueAfterAppendTagHelperContentTwice(string data)
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            var copiedTagHelperContent = new DefaultTagHelperContent();
+            copiedTagHelperContent.AppendHtml(data);
+
+            // Act
+            tagHelperContent.AppendHtml(copiedTagHelperContent);
+            tagHelperContent.AppendHtml(copiedTagHelperContent);
+
+            // Assert
+            Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
+        }
+
+        [Theory]
+        [MemberData(nameof(EmptyOrWhiteSpaceData))]
+        public void IsEmptyOrWhiteSpace_TrueAfterAppendTagHelperContent_WithDataToEncode(string data)
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            var copiedTagHelperContent = new DefaultTagHelperContent();
+            copiedTagHelperContent.Append(data);
+
+            // Act
+            tagHelperContent.AppendHtml(copiedTagHelperContent);
+
+            // Assert
+            Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
+        }
+
+        [Theory]
+        [MemberData(nameof(EmptyOrWhiteSpaceData))]
+        public void IsEmptyOrWhiteSpace_TrueAfterAppendTagHelperContentTwice_WithDataToEncode(string data)
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            var copiedTagHelperContent = new DefaultTagHelperContent();
+            copiedTagHelperContent.Append(data);
+
+            // Act
+            tagHelperContent.AppendHtml(copiedTagHelperContent);
+            tagHelperContent.AppendHtml(copiedTagHelperContent);
+
+            // Assert
+            Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
+        }
+
+        [Fact]
+        public void IsEmptyOrWhiteSpace_TrueAfterAppendTagHelperContent_WithCharByCharWriteTo()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            var copiedTagHelperContent = new CharByCharWhiteSpaceHtmlContent();
+
+            // Act
+            tagHelperContent.AppendHtml(copiedTagHelperContent);
+
+            // Assert
+            Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
+        }
+
+        [Fact]
+        public void IsEmptyOrWhiteSpace_TrueAfterAppendTagHelperContentTwice_WithCharByCharWriteTo()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            var copiedTagHelperContent = new CharByCharWhiteSpaceHtmlContent();
+
+            // Act
+            tagHelperContent.AppendHtml(copiedTagHelperContent);
+            tagHelperContent.AppendHtml(copiedTagHelperContent);
+
+            // Assert
+            Assert.True(tagHelperContent.IsEmptyOrWhiteSpace);
+        }
+
+        [Fact]
+        public void IsEmptyOrWhiteSpace_FalseAfterAppendTagHelperContentTwice_WithCharByCharWriteTo()
+        {
+            // Arrange
+            var tagHelperContent = new DefaultTagHelperContent();
+            var copiedTagHelperContent = new CharByCharNonWhiteSpaceHtmlContent();
+
+            // Act
+            tagHelperContent.AppendHtml(copiedTagHelperContent);
+            tagHelperContent.AppendHtml(copiedTagHelperContent);
+
+            // Assert
+            Assert.False(tagHelperContent.IsEmptyOrWhiteSpace);
         }
 
         [Fact]
@@ -483,7 +654,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         }
 
         [Fact]
-        public void IsEmptyOrWhiteSpace_FalseAfterAppendTagHelper()
+        public void IsEmptyOrWhiteSpace_FalseAfterAppendTagHelperContent()
         {
             // Arrange
             var tagHelperContent = new DefaultTagHelperContent();
@@ -632,6 +803,39 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
             // Assert
             Assert.Equal("Hi", writer.ToString());
+        }
+
+        private class CharByCharWhiteSpaceHtmlContent : IHtmlContent
+        {
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+            {
+                writer.Write(' ');
+                writer.Write('\n');
+                writer.Write('\t');
+                writer.Write('\r');
+                writer.Write('\u2000');
+                writer.Write('\u205f');
+                writer.Write('\u3000');
+            }
+        }
+
+        private class CharByCharNonWhiteSpaceHtmlContent : IHtmlContent
+        {
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+            {
+                writer.Write('\u2000');
+                writer.Write('h');
+                writer.Write('e');
+                writer.Write('l');
+                writer.Write('l');
+                writer.Write('o');
+                writer.Write('\u200a');
+                writer.Write('É');
+                writer.Write('r');
+                writer.Write('i');
+                writer.Write('c');
+                writer.Write('\u3000');
+            }
         }
     }
 }

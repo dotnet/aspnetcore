@@ -288,6 +288,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             var stringValue = entry as string;
             if (stringValue != null)
             {
+                // Do not encode the string because encoded value remains whitespace from user's POV.
                 if (!string.IsNullOrWhiteSpace(stringValue))
                 {
                     return false;
@@ -295,7 +296,8 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             }
             else
             {
-                ((IHtmlContent)entry).WriteTo(writer, HtmlEncoder.Default);
+                // Use NullHtmlEncoder to avoid treating encoded whitespace as non-whitespace e.g. "\t" as "&#x9;".
+                ((IHtmlContent)entry).WriteTo(writer, NullHtmlEncoder.Default);
                 if (!writer.IsEmptyOrWhiteSpace)
                 {
                     return false;
@@ -341,13 +343,13 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
             public bool IsEmptyOrWhiteSpace { get; private set; } = true;
 
-#if NETSTANDARD1_5
-            // This is an abstract method in DNXCore
             public override void Write(char value)
             {
-                throw new NotImplementedException();
+                if (IsEmptyOrWhiteSpace && !char.IsWhiteSpace(value))
+                {
+                    IsEmptyOrWhiteSpace = false;
+                }
             }
-#endif
 
             public override void Write(string value)
             {
