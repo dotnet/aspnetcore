@@ -161,18 +161,6 @@ namespace Microsoft.AspNetCore.Identity
         {
             return Task.FromResult(false);
         }
-
-        /// <summary>
-        /// Creates a notification for the specified <paramref name="user"/> based on the supplied <paramref name="token"/> as an asynchronous operation.
-        /// </summary>
-        /// <param name="token">The token to generate notifications for.</param>
-        /// <param name="manager">The <see cref="UserManager{TUser}"/> to retrieve user properties from.</param>
-        /// <param name="user">The <typeparamref name="TUser"/> the token was generated for.</param>
-        /// <returns>A <see cref="Task{TResult}"/> that represents the asynchronous notification.</returns>
-        public virtual Task NotifyAsync(string token, UserManager<TUser> manager, TUser user)
-        {
-            return Task.FromResult(0);
-        }
     }
 
     /// <summary>

@@ -826,11 +826,6 @@ namespace Microsoft.AspNetCore.Identity.Test
                 return token == MakeToken(purpose, await manager.GetUserIdAsync(user));
             }
 
-            public Task NotifyAsync(string token, UserManager<TUser> manager, TUser user)
-            {
-                return Task.FromResult(0);
-            }
-
             public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
             {
                 return Task.FromResult(true);
