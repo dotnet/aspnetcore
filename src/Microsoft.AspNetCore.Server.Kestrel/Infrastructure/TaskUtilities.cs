@@ -29,6 +29,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         public static Task<int> GetCancelledZeroTask(CancellationToken cancellationToken = default(CancellationToken))
         {
 #if NETSTANDARD1_3
+            // Make sure cancellationToken is cancelled before passing to Task.FromCanceled
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                cancellationToken = new CancellationToken(true);
+            }
             return Task.FromCanceled<int>(cancellationToken);
 #else
             var tcs = new TaskCompletionSource<int>();

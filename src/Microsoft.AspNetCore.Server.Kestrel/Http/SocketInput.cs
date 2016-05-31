@@ -27,8 +27,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private MemoryPoolBlock _tail;
         private MemoryPoolBlock _pinned;
 
-        private int _consumingState;
         private object _sync = new object();
+
+        private bool _consuming;
+        private bool _disposed;
 
         public SocketInput(MemoryPool memory, IThreadPool threadPool)
         {
@@ -163,12 +165,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public MemoryPoolIterator ConsumingStart()
         {
-            if (Interlocked.CompareExchange(ref _consumingState, 1, 0) != 0)
+            lock (_sync)
             {
-                throw new InvalidOperationException("Already consuming input.");
+                if (_consuming)
+                {
+                    throw new InvalidOperationException("Already consuming input.");
+                }
+                _consuming = true;
+                return new MemoryPoolIterator(_head);
             }
-
-            return new MemoryPoolIterator(_head);
         }
 
         public void ConsumingComplete(
@@ -180,38 +185,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
             lock (_sync)
             {
-                if (!consumed.IsDefault)
+                if (!_disposed)
+                {
+                    if (!consumed.IsDefault)
+                    {
+                        returnStart = _head;
+                        returnEnd = consumed.Block;
+                        _head = consumed.Block;
+                        _head.Start = consumed.Index;
+                    }
+
+                    if (!examined.IsDefault &&
+                        examined.IsEnd &&
+                        RemoteIntakeFin == false &&
+                        _awaitableError == null)
+                    {
+                        _manualResetEvent.Reset();
+
+                        Interlocked.CompareExchange(
+                            ref _awaitableState,
+                            _awaitableIsNotCompleted,
+                            _awaitableIsCompleted);
+                    }
+                }
+                else
                 {
                     returnStart = _head;
-                    returnEnd = consumed.Block;
-                    _head = consumed.Block;
-                    _head.Start = consumed.Index;
+                    returnEnd = null;
+                    _head = null;
+                    _tail = null;
                 }
 
-                if (!examined.IsDefault &&
-                    examined.IsEnd &&
-                    RemoteIntakeFin == false &&
-                    _awaitableError == null)
+                ReturnBlocks(returnStart, returnEnd);
+
+                if (!_consuming)
                 {
-                    _manualResetEvent.Reset();
-
-                    Interlocked.CompareExchange(
-                        ref _awaitableState,
-                        _awaitableIsNotCompleted,
-                        _awaitableIsCompleted);
+                    throw new InvalidOperationException("No ongoing consuming operation to complete.");
                 }
-            }
-
-            while (returnStart != returnEnd)
-            {
-                var returnBlock = returnStart;
-                returnStart = returnStart.Next;
-                returnBlock.Pool.Return(returnBlock);
-            }
-
-            if (Interlocked.CompareExchange(ref _consumingState, 0, 1) != 1)
-            {
-                throw new InvalidOperationException("No ongoing consuming operation to complete.");
+                _consuming = false;
             }
         }
 
@@ -286,20 +297,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public void Dispose()
         {
-            AbortAwaiting();
+            lock (_sync)
+            {
+                AbortAwaiting();
 
-            // Return all blocks
-            var block = _head;
-            while (block != null)
+                if (!_consuming)
+                {
+                    ReturnBlocks(_head, null);
+                    _head = null;
+                    _tail = null;
+                }
+                _disposed = true;
+            }
+        }
+
+        private static void ReturnBlocks(MemoryPoolBlock block, MemoryPoolBlock end)
+        {
+            while (block != end)
             {
                 var returnBlock = block;
                 block = block.Next;
 
                 returnBlock.Pool.Return(returnBlock);
             }
-
-            _head = null;
-            _tail = null;
         }
     }
 }

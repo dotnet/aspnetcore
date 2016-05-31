@@ -104,5 +104,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var stream = new FrameRequestStream();
             await stream.FlushAsync();
         }
+
+        [Fact]
+        public void AbortCausesReadToCancel()
+        {
+            var stream = new FrameRequestStream();
+            stream.StartAcceptingReads(null);
+            stream.Abort();
+            var task = stream.ReadAsync(new byte[1], 0, 1);
+            Assert.True(task.IsCanceled);
+        }
     }
 }
