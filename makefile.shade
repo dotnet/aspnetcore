@@ -855,7 +855,16 @@ functions
 
         static void GetDependencies(string projectJsonPath, HashSet<string> dependencies)
         {
-            var project = (JsonObject)Json.Deserialize(File.ReadAllText(projectJsonPath));
+            JsonObject project;
+            try
+            {
+                project = (JsonObject)Json.Deserialize(File.ReadAllText(projectJsonPath));
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Failed to parse project at path " + projectJsonPath + Environment.NewLine + ex.Message);
+                throw;
+            }
             var dependenciesNode = project.ValueAsJsonObject("dependencies");
             AddKeys(dependencies, dependenciesNode);
 
