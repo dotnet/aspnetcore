@@ -1146,11 +1146,6 @@ namespace Microsoft.AspNetCore.Identity.Test
                 return Task.FromResult(true);
             }
 
-            public Task NotifyAsync(string token, UserManager<TestUser> manager, TestUser user)
-            {
-                return Task.FromResult(0);
-            }
-
             public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TestUser> manager, TestUser user)
             {
                 return Task.FromResult(true);
