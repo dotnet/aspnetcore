@@ -22,7 +22,12 @@ namespace Microsoft.AspNetCore.Authorization
             }
 
             _options = options.Value;
-        } 
+        }
+
+        public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
+        {
+            return Task.FromResult(_options.DefaultPolicy);
+        }
 
         /// <summary>
         /// Gets a <see cref="AuthorizationPolicy"/> from the given <paramref name="policyName"/>

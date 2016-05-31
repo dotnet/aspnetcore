@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authorization.Test
@@ -28,9 +29,12 @@ namespace Microsoft.AspNetCore.Authorization.Test
         }
 
         [Fact]
-        public void AuthorizeCombineThrowsOnUnknownPolicy()
+        public async Task AuthorizeCombineThrowsOnUnknownPolicy()
         {
-            Assert.Throws<InvalidOperationException>(() => AuthorizationPolicy.Combine(new AuthorizationOptions(), new AuthorizeAttribute[] {
+            var provider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
+
+            // Act
+            await Assert.ThrowsAsync<InvalidOperationException>(() => AuthorizationPolicy.CombineAsync(provider, new AuthorizeAttribute[] {
                 new AuthorizeAttribute { Policy = "Wut" }
             }));
         }
@@ -944,6 +948,11 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
         public class StaticPolicyProvider : IAuthorizationPolicyProvider
         {
+            public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
+            {
+                return Task.FromResult(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+            }
+
             public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
             {
                 return Task.FromResult(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
@@ -973,6 +982,11 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
         public class DynamicPolicyProvider : IAuthorizationPolicyProvider
         {
+            public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
+            {
+                return Task.FromResult(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+            }
+
             public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
             {
                 return Task.FromResult(new AuthorizationPolicyBuilder().RequireClaim(policyName).Build());

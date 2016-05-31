@@ -3,8 +3,10 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authroization.Test
@@ -18,7 +20,7 @@ namespace Microsoft.AspNetCore.Authroization.Test
         }
 
         [Fact]
-        public void CanCombineAuthorizeAttributes()
+        public async Task CanCombineAuthorizeAttributes()
         {
             // Arrange
             var attributes = new AuthorizeAttribute[] {
@@ -31,8 +33,10 @@ namespace Microsoft.AspNetCore.Authroization.Test
             options.AddPolicy("1", policy => policy.RequireClaim("1"));
             options.AddPolicy("2", policy => policy.RequireClaim("2"));
 
+            var provider = new DefaultAuthorizationPolicyProvider(Options.Create(options));
+
             // Act
-            var combined = AuthorizationPolicy.Combine(options, attributes);
+            var combined = await AuthorizationPolicy.CombineAsync(provider, attributes);
 
             // Assert
             Assert.Equal(2, combined.AuthenticationSchemes.Count());
@@ -45,7 +49,7 @@ namespace Microsoft.AspNetCore.Authroization.Test
         }
 
         [Fact]
-        public void CanReplaceDefaultPolicy()
+        public async Task CanReplaceDefaultPolicy()
         {
             // Arrange
             var attributes = new AuthorizeAttribute[] {
@@ -56,8 +60,10 @@ namespace Microsoft.AspNetCore.Authroization.Test
             options.DefaultPolicy = new AuthorizationPolicyBuilder("default").RequireClaim("default").Build();
             options.AddPolicy("2", policy => policy.RequireClaim("2"));
 
+            var provider = new DefaultAuthorizationPolicyProvider(Options.Create(options));
+
             // Act
-            var combined = AuthorizationPolicy.Combine(options, attributes);
+            var combined = await AuthorizationPolicy.CombineAsync(provider, attributes);
 
             // Assert
             Assert.Equal(2, combined.AuthenticationSchemes.Count());
@@ -69,16 +75,17 @@ namespace Microsoft.AspNetCore.Authroization.Test
         }
 
         [Fact]
-        public void CombineMustTrimRoles()
+        public async Task CombineMustTrimRoles()
         {
             // Arrange
             var attributes = new AuthorizeAttribute[] {
                 new AuthorizeAttribute() { Roles = "r1 , r2" }
             };
             var options = new AuthorizationOptions();
+            var provider = new DefaultAuthorizationPolicyProvider(Options.Create(options));
 
             // Act
-            var combined = AuthorizationPolicy.Combine(options, attributes);
+            var combined = await AuthorizationPolicy.CombineAsync(provider, attributes);
 
             // Assert
             Assert.True(combined.Requirements.Any(r => r is RolesAuthorizationRequirement));
@@ -89,7 +96,7 @@ namespace Microsoft.AspNetCore.Authroization.Test
         }
 
         [Fact]
-        public void CombineMustTrimAuthenticationScheme()
+        public async Task CombineMustTrimAuthenticationScheme()
         {
             // Arrange
             var attributes = new AuthorizeAttribute[] {
@@ -97,8 +104,10 @@ namespace Microsoft.AspNetCore.Authroization.Test
             };
             var options = new AuthorizationOptions();
 
+            var provider = new DefaultAuthorizationPolicyProvider(Options.Create(options));
+
             // Act
-            var combined = AuthorizationPolicy.Combine(options, attributes);
+            var combined = await AuthorizationPolicy.CombineAsync(provider, attributes);
 
             // Assert
             Assert.Equal(2, combined.AuthenticationSchemes.Count());
@@ -107,7 +116,7 @@ namespace Microsoft.AspNetCore.Authroization.Test
         }
         
         [Fact]
-        public void CombineMustIgnoreEmptyAuthenticationScheme()
+        public async Task CombineMustIgnoreEmptyAuthenticationScheme()
         {
             // Arrange
             var attributes = new AuthorizeAttribute[] {
@@ -115,8 +124,10 @@ namespace Microsoft.AspNetCore.Authroization.Test
             };
             var options = new AuthorizationOptions();
 
+            var provider = new DefaultAuthorizationPolicyProvider(Options.Create(options));
+
             // Act
-            var combined = AuthorizationPolicy.Combine(options, attributes);
+            var combined = await AuthorizationPolicy.CombineAsync(provider, attributes);
 
             // Assert
             Assert.Equal(2, combined.AuthenticationSchemes.Count());
@@ -125,16 +136,17 @@ namespace Microsoft.AspNetCore.Authroization.Test
         }
         
         [Fact]
-        public void CombineMustIgnoreEmptyRoles()
+        public async Task CombineMustIgnoreEmptyRoles()
         {
             // Arrange
             var attributes = new AuthorizeAttribute[] {
                 new AuthorizeAttribute() { Roles = "r1 , ,, , r2" }
             };
             var options = new AuthorizationOptions();
+            var provider = new DefaultAuthorizationPolicyProvider(Options.Create(options));
 
             // Act
-            var combined = AuthorizationPolicy.Combine(options, attributes);
+            var combined = await AuthorizationPolicy.CombineAsync(provider, attributes);
 
             // Assert
             Assert.True(combined.Requirements.Any(r => r is RolesAuthorizationRequirement));

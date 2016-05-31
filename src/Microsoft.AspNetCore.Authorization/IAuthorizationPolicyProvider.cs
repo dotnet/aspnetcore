@@ -16,5 +16,11 @@ namespace Microsoft.AspNetCore.Authorization
         /// <param name="policyName"></param>
         /// <returns></returns>
         Task<AuthorizationPolicy> GetPolicyAsync(string policyName);
+
+        /// <summary>
+        /// Returns the default <see cref="AuthorizationPolicy"/>.
+        /// </summary>
+        /// <returns></returns>
+        Task<AuthorizationPolicy> GetDefaultPolicyAsync();
     }
 }
