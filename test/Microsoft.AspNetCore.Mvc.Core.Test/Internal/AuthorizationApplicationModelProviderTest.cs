@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void CreateControllerModel_AuthorizeAttributeAddsAuthorizeFilter()
         {
             // Arrange
-            var provider = new AuthorizationApplicationModelProvider(new TestOptionsManager<AuthorizationOptions>());
+            var provider = new AuthorizationApplicationModelProvider(new DefaultAuthorizationPolicyProvider(new TestOptionsManager<AuthorizationOptions>()));
             var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
 
             var context = new ApplicationModelProviderContext(new[] { typeof(AccountController).GetTypeInfo() });
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             options.Value.AddPolicy("Base", policy => policy.RequireClaim("Basic").RequireClaim("Basic2"));
             options.Value.AddPolicy("Derived", policy => policy.RequireClaim("Derived"));
 
-            var provider = new AuthorizationApplicationModelProvider(options);
+            var provider = new AuthorizationApplicationModelProvider(new DefaultAuthorizationPolicyProvider(options));
             var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
 
             var context = new ApplicationModelProviderContext(new[] { typeof(DerivedController).GetTypeInfo() });
@@ -56,14 +56,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Empty(attributeRoutes);
             var authorizeFilters = action.Filters.OfType<AuthorizeFilter>();
             Assert.Single(authorizeFilters);
-            Assert.Equal(3, authorizeFilters.First().Policy.Requirements.Count);
+
+            Assert.NotNull(authorizeFilters.First().PolicyProvider);
+            Assert.Equal(3, authorizeFilters.First().AuthorizeData.Count());
         }
 
         [Fact]
         public void CreateControllerModelAndActionModel_AllowAnonymousAttributeAddsAllowAnonymousFilter()
         {
             // Arrange
-            var provider = new AuthorizationApplicationModelProvider(new TestOptionsManager<AuthorizationOptions>());
+            var provider = new AuthorizationApplicationModelProvider(new DefaultAuthorizationPolicyProvider(new TestOptionsManager<AuthorizationOptions>()));
             var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
 
             var context = new ApplicationModelProviderContext(new[] { typeof(AnonymousController).GetTypeInfo() });

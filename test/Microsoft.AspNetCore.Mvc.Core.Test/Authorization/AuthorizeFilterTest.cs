@@ -42,6 +42,31 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         }
 
         [Fact]
+        public async Task AuthorizeFilterWillCallPolicyProviderOnAuthorization()
+        {
+            // Arrange
+            var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+            var getPolicyCount = 0;
+            policyProvider.Setup(p => p.GetPolicyAsync(It.IsAny<string>())).ReturnsAsync(new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build())
+                .Callback(() => getPolicyCount++);
+            var authorizeFilter = new AuthorizeFilter(policyProvider.Object, new AuthorizeAttribute[] { new AuthorizeAttribute("whatever") });
+            var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization());
+
+            // Act
+            await authorizeFilter.OnAuthorizationAsync(authorizationContext);
+            Assert.Equal(1, getPolicyCount);
+            Assert.Null(authorizationContext.Result);
+
+            await authorizeFilter.OnAuthorizationAsync(authorizationContext);
+            Assert.Equal(2, getPolicyCount);
+            Assert.Null(authorizationContext.Result);
+
+            await authorizeFilter.OnAuthorizationAsync(authorizationContext);
+            Assert.Equal(3, getPolicyCount);
+            Assert.Null(authorizationContext.Result);
+        }
+
+        [Fact]
         public async Task AuthorizeFilterCanAuthorizeNullUser()
         {
             // Arrange

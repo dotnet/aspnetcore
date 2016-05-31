@@ -2,21 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class AuthorizationApplicationModelProvider : IApplicationModelProvider
     {
-        private readonly AuthorizationOptions _authorizationOptions;
+        private readonly IAuthorizationPolicyProvider _policyProvider;
 
-        public AuthorizationApplicationModelProvider(IOptions<AuthorizationOptions> authorizationOptionsAccessor)
+        public AuthorizationApplicationModelProvider(IAuthorizationPolicyProvider policyProvider)
         {
-            _authorizationOptions = authorizationOptionsAccessor.Value;
+            _policyProvider = policyProvider;
         }
 
         public int Order { get { return -1000 + 10; } }
@@ -33,18 +34,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(context));
             }
 
-            AuthorizationPolicy policy;
-
             foreach (var controllerModel in context.Result.Controllers)
             {
-                policy = AuthorizationPolicy.Combine(
-                    _authorizationOptions,
-                    controllerModel.Attributes.OfType<IAuthorizeData>());
-                if (policy != null)
-                {
-                    controllerModel.Filters.Add(new AuthorizeFilter(policy));
-                }
-
+                controllerModel.Filters.Add(new AuthorizeFilter(_policyProvider, controllerModel.Attributes.OfType<IAuthorizeData>()));
                 foreach (var attribute in controllerModel.Attributes.OfType<IAllowAnonymous>())
                 {
                     controllerModel.Filters.Add(new AllowAnonymousFilter());
@@ -52,14 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                 foreach (var actionModel in controllerModel.Actions)
                 {
-                    policy = AuthorizationPolicy.Combine(
-                        _authorizationOptions,
-                        actionModel.Attributes.OfType<IAuthorizeData>());
-                    if (policy != null)
-                    {
-                        actionModel.Filters.Add(new AuthorizeFilter(policy));
-                    }
-
+                    actionModel.Filters.Add(new AuthorizeFilter(_policyProvider, actionModel.Attributes.OfType<IAuthorizeData>()));
                     foreach (var attribute in actionModel.Attributes.OfType<IAllowAnonymous>())
                     {
                         actionModel.Filters.Add(new AllowAnonymousFilter());
