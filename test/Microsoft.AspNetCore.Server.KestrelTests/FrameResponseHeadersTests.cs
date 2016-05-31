@@ -49,12 +49,27 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("Server\r", "Data")]
         [InlineData("Ser\0ver", "Data")]
         [InlineData("Server\r\n", "Data")]
+        [InlineData("\u0000Server", "Data")]
+        [InlineData("Server", "Data\u0000")]
         [InlineData("\u001FServer", "Data")]
         [InlineData("Unknown-Header\r\n", "Data")]
         [InlineData("\0Unknown-Header", "Data")]
         [InlineData("Unknown\r-Header", "Data")]
         [InlineData("Unk\nown-Header", "Data")]
-        public void AddingControlCharactersToHeadersThrows(string key, string value)
+        [InlineData("Server", "Da\u007Fta")]
+        [InlineData("Unknown\u007F-Header", "Data")]
+        [InlineData("Ser\u0080ver", "Data")]
+        [InlineData("Server", "Da\u0080ta")]
+        [InlineData("Unknown\u0080-Header", "Data")]
+        [InlineData("Ser™ver", "Data")]
+        [InlineData("Server", "Da™ta")]
+        [InlineData("Unknown™-Header", "Data")]
+        [InlineData("Ser™ver", "Data")]
+        [InlineData("šerver", "Data")]
+        [InlineData("Server", "Dašta")]
+        [InlineData("Unknownš-Header", "Data")]
+        [InlineData("Seršver", "Data")]
+        public void AddingControlOrNonAsciiCharactersToHeadersThrows(string key, string value)
         {
             var responseHeaders = new FrameResponseHeaders();
 

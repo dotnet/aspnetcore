@@ -224,9 +224,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 foreach (var ch in headerCharacters)
                 {
-                    if (ch < 0x20)
+                    if (ch < 0x20 || ch > 0x7E)
                     {
-                        throw new InvalidOperationException(string.Format("Invalid control character in header: 0x{0:X2}", (byte)ch));
+                        throw new InvalidOperationException(string.Format("Invalid non-ASCII or control character in header: 0x{0:X4}", (ushort)ch));
                     }
                 }
             }
