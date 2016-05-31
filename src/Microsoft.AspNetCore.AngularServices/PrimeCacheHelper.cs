@@ -25,16 +25,14 @@ namespace Microsoft.AspNetCore.AngularServices
             try
             {
                 var request = html.ViewContext.HttpContext.Request;
-                var baseUri =
-                    new Uri(
-                        string.Concat(
-                            request.Scheme,
-                            "://",
-                            request.Host.ToUriComponent(),
-                            request.PathBase.ToUriComponent(),
-                            request.Path.ToUriComponent(),
-                            request.QueryString.ToUriComponent()));
-                var fullUri = new Uri(baseUri, url);
+                var baseUriString = string.Concat(
+                    request.Scheme,
+                    "://",
+                    request.Host.ToUriComponent(),
+                    request.PathBase.ToUriComponent(),
+                    request.Path.ToUriComponent(),
+                    request.QueryString.ToUriComponent());
+                var fullUri = new Uri(new Uri(baseUriString), url);
                 var response = await new HttpClient().GetAsync(fullUri.ToString());
                 var responseBody = await response.Content.ReadAsStringAsync();
                 return new HtmlString(FormatAsScript(url, response.StatusCode, responseBody));
@@ -48,11 +46,13 @@ namespace Microsoft.AspNetCore.AngularServices
         }
 
         private static string FormatAsScript(string url, HttpStatusCode responseStatusCode, string responseBody)
-            =>
-                "<script>" +
-                    "window.__preCachedResponses = window.__preCachedResponses || {}; " +
-                    $"window.__preCachedResponses[{JsonConvert.SerializeObject(url)}] " +
-                        $"= {JsonConvert.SerializeObject(new { statusCode = responseStatusCode, body = responseBody })};" +
-                "</script>";
+        {
+            var preCachedUrl = JsonConvert.SerializeObject(url);
+            var preCachedJson = JsonConvert.SerializeObject(new { statusCode = responseStatusCode, body = responseBody });
+            return "<script>"
+                + "window.__preCachedResponses = window.__preCachedResponses || {};"
+                + $"window.__preCachedResponses[{preCachedUrl}] = {preCachedJson};"
+                + "</script>";
+        }
     }
 }

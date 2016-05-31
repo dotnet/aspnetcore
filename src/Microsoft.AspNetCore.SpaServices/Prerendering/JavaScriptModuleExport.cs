@@ -4,7 +4,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
     {
         public JavaScriptModuleExport(string moduleName)
         {
-            this.ModuleName = moduleName;
+            ModuleName = moduleName;
         }
 
         public string ModuleName { get; private set; }

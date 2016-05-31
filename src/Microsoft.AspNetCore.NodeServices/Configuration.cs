@@ -1,11 +1,9 @@
+using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.NodeServices
 {
-    using System;
-
     public static class Configuration
     {
         private static readonly string[] DefaultWatchFileExtensions = {".js", ".jsx", ".ts", ".tsx", ".json", ".html"};
@@ -20,15 +18,18 @@ namespace Microsoft.AspNetCore.NodeServices
             => AddNodeServices(serviceCollection, DefaultOptions);
 
         public static void AddNodeServices(this IServiceCollection serviceCollection, NodeServicesOptions options)
-            => serviceCollection.AddSingleton(typeof(INodeServices), serviceProvider =>
+        {
+            serviceCollection.AddSingleton(typeof(INodeServices), serviceProvider =>
             {
                 var hostEnv = serviceProvider.GetRequiredService<IHostingEnvironment>();
                 if (string.IsNullOrEmpty(options.ProjectPath))
                 {
                     options.ProjectPath = hostEnv.ContentRootPath;
                 }
+
                 return CreateNodeServices(options);
             });
+        }
 
         public static INodeServices CreateNodeServices(NodeServicesOptions options)
         {

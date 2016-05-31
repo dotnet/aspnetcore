@@ -24,9 +24,14 @@ namespace Microsoft.AspNetCore.SpaServices
             string routeKey,
             RouteValueDictionary values,
             RouteDirection routeDirection)
-            => !HasDotInLastSegment(values[_clientRouteTokenName] as string ?? string.Empty);
+        {
+            return !HasDotInLastSegment(values[_clientRouteTokenName] as string ?? string.Empty);
+        }
 
         private bool HasDotInLastSegment(string uri)
-            => uri.IndexOf('.', uri.LastIndexOf('/') + 1) >= 0;
+        {
+            var lastSegmentStartPos = uri.LastIndexOf('/');
+            return uri.IndexOf('.', lastSegmentStartPos + 1) >= 0;
+        }
     }
 }

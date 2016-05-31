@@ -64,12 +64,14 @@ namespace Microsoft.AspNetCore.NodeServices
                 {
                     return JsonConvert.DeserializeObject<T>(responseString);
                 }
+
                 if (typeof(T) != typeof(string))
                 {
                     throw new ArgumentException(
                         "Node module responded with non-JSON string. This cannot be converted to the requested generic type: " +
                         typeof(T).FullName);
                 }
+
                 return (T)(object)responseString;
             }
         }

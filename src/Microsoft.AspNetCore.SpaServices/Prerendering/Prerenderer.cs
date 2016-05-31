@@ -17,18 +17,20 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
             });
         }
 
-        public static async Task<RenderToStringResult> RenderToString(
+        public static Task<RenderToStringResult> RenderToString(
             string applicationBasePath,
             INodeServices nodeServices,
             JavaScriptModuleExport bootModule,
             string requestAbsoluteUrl,
             string requestPathAndQuery)
-            => await nodeServices.InvokeExport<RenderToStringResult>(
+        {
+            return nodeServices.InvokeExport<RenderToStringResult>(
                 NodeScript.Value.FileName,
                 "renderToString",
                 applicationBasePath,
                 bootModule,
                 requestAbsoluteUrl,
                 requestPathAndQuery);
+        }
     }
 }

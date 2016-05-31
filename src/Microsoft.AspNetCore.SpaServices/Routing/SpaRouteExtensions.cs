@@ -17,13 +17,15 @@ namespace Microsoft.AspNetCore.Builder
             object defaults,
             object constraints = null,
             object dataTokens = null)
-            => MapSpaFallbackRoute(
+        {
+            MapSpaFallbackRoute(
                 routeBuilder,
                 name,
                 /* templatePrefix */ null,
                 defaults,
                 constraints,
                 dataTokens);
+        }
 
         public static void MapSpaFallbackRoute(
             this IRouteBuilder routeBuilder,
@@ -34,7 +36,6 @@ namespace Microsoft.AspNetCore.Builder
             object dataTokens = null)
         {
             var template = CreateRouteTemplate(templatePrefix);
-
             var constraintsDict = ObjectToDictionary(constraints);
             constraintsDict.Add(ClientRouteTokenName, new SpaRouteConstraint(ClientRouteTokenName));
 

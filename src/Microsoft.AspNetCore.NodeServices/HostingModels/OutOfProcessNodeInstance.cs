@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.NodeServices
         private readonly object _childProcessLauncherLock;
         private readonly string _commandLineArguments;
         private readonly StringAsTempFile _entryPointScript;
+        private Process _nodeProcess;
         private TaskCompletionSource<bool> _nodeProcessIsReadySource;
         private readonly string _projectPath;
         private bool _disposed;
@@ -27,18 +28,28 @@ namespace Microsoft.AspNetCore.NodeServices
             _commandLineArguments = commandLineArguments ?? string.Empty;
         }
 
-        protected Process NodeProcess { get; private set; }
+        protected Process NodeProcess
+        {
+            get
+            {
+                // This is only exposed to support the unreliable InputOutputStreamNodeInstance, which is just to verify that
+                // other hosting/transport mechanisms are possible. This shouldn't really be exposed, and will be removed.
+                return this._nodeProcess;
+            }
+        }
 
         public Task<T> Invoke<T>(string moduleName, params object[] args)
             => InvokeExport<T>(moduleName, null, args);
 
         public Task<T> InvokeExport<T>(string moduleName, string exportedFunctionName, params object[] args)
-            => Invoke<T>(new NodeInvocationInfo
+        {
+            return Invoke<T>(new NodeInvocationInfo
             {
                 ModuleName = moduleName,
                 ExportedFunctionName = exportedFunctionName,
                 Args = args
             });
+        }
 
         public void Dispose()
         {
@@ -52,7 +63,7 @@ namespace Microsoft.AspNetCore.NodeServices
         {
             lock (_childProcessLauncherLock)
             {
-                if (NodeProcess == null || NodeProcess.HasExited)
+                if (_nodeProcess == null || _nodeProcess.HasExited)
                 {
                     var startInfo = new ProcessStartInfo("node")
                     {
@@ -79,7 +90,7 @@ namespace Microsoft.AspNetCore.NodeServices
 #endif
 
                     OnBeforeLaunchProcess();
-                    NodeProcess = Process.Start(startInfo);
+                    _nodeProcess = Process.Start(startInfo);
                     ConnectToInputOutputStreams();
                 }
             }
@@ -98,7 +109,7 @@ namespace Microsoft.AspNetCore.NodeServices
             var initializationIsCompleted = false; // TODO: Make this thread-safe? (Interlocked.Exchange etc.)
             _nodeProcessIsReadySource = new TaskCompletionSource<bool>();
 
-            NodeProcess.OutputDataReceived += (sender, evt) =>
+            _nodeProcess.OutputDataReceived += (sender, evt) =>
             {
                 if (evt.Data == "[Microsoft.AspNetCore.NodeServices:Listening]" && !initializationIsCompleted)
                 {
@@ -111,7 +122,7 @@ namespace Microsoft.AspNetCore.NodeServices
                 }
             };
 
-            NodeProcess.ErrorDataReceived += (sender, evt) =>
+            _nodeProcess.ErrorDataReceived += (sender, evt) =>
             {
                 if (evt.Data != null)
                 {
@@ -124,8 +135,8 @@ namespace Microsoft.AspNetCore.NodeServices
                 }
             };
 
-            NodeProcess.BeginOutputReadLine();
-            NodeProcess.BeginErrorReadLine();
+            _nodeProcess.BeginOutputReadLine();
+            _nodeProcess.BeginErrorReadLine();
         }
 
         protected virtual void OnBeforeLaunchProcess()
@@ -151,9 +162,9 @@ namespace Microsoft.AspNetCore.NodeServices
                     _entryPointScript.Dispose();
                 }
 
-                if (NodeProcess != null && !NodeProcess.HasExited)
+                if (_nodeProcess != null && !_nodeProcess.HasExited)
                 {
-                    NodeProcess.Kill();
+                    _nodeProcess.Kill();
                     // TODO: Is there a more graceful way to end it? Or does this still let it perform any cleanup?
                 }
 

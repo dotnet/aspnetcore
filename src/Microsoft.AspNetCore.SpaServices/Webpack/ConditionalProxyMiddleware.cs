@@ -67,10 +67,10 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
             requestMessage.Method = new HttpMethod(context.Request.Method);
 
             using (
-                var responseMessage =
-                    await
-                        _httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead,
-                            context.RequestAborted))
+                var responseMessage = await _httpClient.SendAsync(
+                    requestMessage,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    context.RequestAborted))
             {
                 if (responseMessage.StatusCode == HttpStatusCode.NotFound)
                 {
