@@ -84,8 +84,18 @@ namespace E2ETests
         // Copies dotnet runtime to the target server's file share.
         public class DotnetRuntimeSetupTestFixture : IDisposable
         {
+            private bool copiedDotnetRuntime;
+
             public DotnetRuntimeSetupTestFixture()
             {
+                var runNanoServerTests = Environment.GetEnvironmentVariable("RUN_TESTS_ON_NANO");
+                if (string.IsNullOrWhiteSpace(runNanoServerTests)
+                    || string.IsNullOrEmpty(runNanoServerTests)
+                    || runNanoServerTests.ToLower() == "false")
+                {
+                    return;
+                }
+
                 RemoteDeploymentConfig = RemoteDeploymentConfigHelper.GetConfiguration();
 
                 DotnetRuntimePathOnShare = Path.Combine(RemoteDeploymentConfig.FileSharePath, "dotnet");
@@ -117,6 +127,7 @@ namespace E2ETests
                     }
 
                     ZipFile.ExtractToDirectory(ZippedDotnetRuntimePathOnShare, DotnetRuntimePathOnShare);
+                    copiedDotnetRuntime = true;
                     Console.WriteLine($"Extracted dotnet runtime to folder '{DotnetRuntimePathOnShare}'");
                 }
                 else if (!string.IsNullOrEmpty(RemoteDeploymentConfig.DotnetRuntimeFolderPath))
@@ -131,6 +142,7 @@ namespace E2ETests
                     Console.WriteLine("This could take some time.");
 
                     DirectoryCopy(RemoteDeploymentConfig.DotnetRuntimeFolderPath, DotnetRuntimePathOnShare, copySubDirs: true);
+                    copiedDotnetRuntime = true;
                 }
                 else
                 {
@@ -182,6 +194,11 @@ namespace E2ETests
 
             public void Dispose()
             {
+                if (!copiedDotnetRuntime)
+                {
+                    return;
+                }
+
                 // In case the source is provided as a folder itself, then we wouldn't have the zip file to begin with.
                 if (!string.IsNullOrEmpty(ZippedDotnetRuntimePathOnShare))
                 {
