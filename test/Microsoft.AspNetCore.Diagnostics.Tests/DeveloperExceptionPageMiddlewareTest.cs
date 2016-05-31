@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Threading;
@@ -16,7 +17,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -38,9 +38,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                     "TestFiles/SourceFile.txt"
                 };
 
-                var OSPlatform = PlatformServices.Default.Runtime.OperatingSystemPlatform;
-
-                if (!(OSPlatform == Platform.Linux || OSPlatform == Platform.Darwin))
+                if (!(RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX)))
                 {
                     data.Add(@"TestFiles\SourceFile.txt");
                 }

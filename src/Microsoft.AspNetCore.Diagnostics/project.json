@@ -31,7 +31,6 @@
     "Microsoft.Extensions.FileProviders.Physical": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Options": "1.0.0-*",
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "System.Diagnostics.DiagnosticSource": "4.0.0-*"
   },
   "frameworks": {
