@@ -33,10 +33,10 @@ namespace Microsoft.AspNetCore.Http.Features
         public long BufferBodyLengthLimit { get; set; } = DefaultBufferBodyLengthLimit;
 
         /// <summary>
-        /// A limit for the number of form entries to allow. Entries with the same key will be combined.
+        /// A limit for the number of form entries to allow.
         /// Forms that exceed this limit will throw an <see cref="InvalidDataException"/> when parsed.
         /// </summary>
-        public int KeyCountLimit { get; set; } = FormReader.DefaultKeyCountLimit;
+        public int ValueCountLimit { get; set; } = FormReader.DefaultValueCountLimit;
 
         /// <summary>
         /// A limit on the length of individual keys. Forms containing keys that exceed this limit will

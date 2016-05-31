@@ -59,11 +59,15 @@ namespace Microsoft.AspNetCore.WebUtilities
                 // First value for this key
                 _accumulator[key] = new StringValues(value);
             }
+
+            ValueCount++;
         }
 
-        public bool HasValues => _accumulator != null;
+        public bool HasValues => ValueCount > 0;
 
-        public int Count => _accumulator?.Count ?? 0;
+        public int KeyCount => _accumulator?.Count ?? 0;
+
+        public int ValueCount { get; private set; }
 
         public Dictionary<string, StringValues> GetResults()
         {

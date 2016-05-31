@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.WebUtilities
     /// </summary>
     public class FormReader : IDisposable
     {
-        public const int DefaultKeyCountLimit = 1024;
+        public const int DefaultValueCountLimit = 1024;
         public const int DefaultKeyLengthLimit = 1024 * 2;
         public const int DefaultValueLengthLimit = 1024 * 1024 * 4;
 
@@ -78,9 +78,9 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         /// <summary>
-        /// The limit on the number of form keys to allow in ReadForm or ReadFormAsync.
+        /// The limit on the number of form values to allow in ReadForm or ReadFormAsync.
         /// </summary>
-        public int KeyCountLimit { get; set; } = DefaultKeyCountLimit;
+        public int ValueCountLimit { get; set; } = DefaultValueCountLimit;
 
         /// <summary>
         /// The limit on the length of form keys.
@@ -293,9 +293,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             if (ReadSucceded())
             {
                 accumulator.Append(_currentKey, _currentValue);
-                if (accumulator.Count > KeyCountLimit)
+                if (accumulator.ValueCount > ValueCountLimit)
                 {
-                    throw new InvalidDataException($"Form key count limit {KeyCountLimit} exceeded.");
+                    throw new InvalidDataException($"Form value count limit {ValueCountLimit} exceeded.");
                 }
             }
         }

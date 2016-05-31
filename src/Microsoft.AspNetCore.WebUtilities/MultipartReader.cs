@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 var name = line.Substring(0, splitIndex);
                 var value = line.Substring(splitIndex + 1, line.Length - splitIndex - 1).Trim();
                 accumulator.Append(name, value);
-                if (accumulator.Count > HeadersCountLimit)
+                if (accumulator.KeyCount > HeadersCountLimit)
                 {
                     throw new InvalidDataException($"Multipart headers count limit {HeadersCountLimit} exceeded.");
                 }

@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Http.Features
                     var encoding = FilterEncoding(contentType.Encoding);
                     using (var formReader = new FormReader(_request.Body, encoding)
                     {
-                        KeyCountLimit = _options.KeyCountLimit,
+                        ValueCountLimit = _options.ValueCountLimit,
                         KeyLengthLimit = _options.KeyLengthLimit,
                         ValueLengthLimit = _options.ValueLengthLimit,
                     })
@@ -200,9 +200,9 @@ namespace Microsoft.AspNetCore.Http.Features
                             {
                                 files = new FormFileCollection();
                             }
-                            if (files.Count >= _options.KeyCountLimit)
+                            if (files.Count >= _options.ValueCountLimit)
                             {
-                                throw new InvalidDataException($"Form key count limit {_options.KeyCountLimit} exceeded.");
+                                throw new InvalidDataException($"Form value count limit {_options.ValueCountLimit} exceeded.");
                             }
                             files.Add(file);
                         }
@@ -222,9 +222,9 @@ namespace Microsoft.AspNetCore.Http.Features
                                 // The value length limit is enforced by MultipartBodyLengthLimit
                                 var value = await reader.ReadToEndAsync();
                                 formAccumulator.Append(key, value);
-                                if (formAccumulator.Count > _options.KeyCountLimit)
+                                if (formAccumulator.ValueCount > _options.ValueCountLimit)
                                 {
-                                    throw new InvalidDataException($"Form key count limit {_options.KeyCountLimit} exceeded.");
+                                    throw new InvalidDataException($"Form value count limit {_options.ValueCountLimit} exceeded.");
                                 }
                             }
                         }

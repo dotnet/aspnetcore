@@ -65,28 +65,40 @@ namespace Microsoft.AspNetCore.WebUtilities
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task ReadFormAsync_KeyCountLimitMet_Success(bool bufferRequest)
+        public async Task ReadFormAsync_ValueCountLimitMet_Success(bool bufferRequest)
         {
-            var body = MakeStream(bufferRequest, "foo=1&bar=2&baz=3&baz=4");
+            var body = MakeStream(bufferRequest, "foo=1&bar=2&baz=3");
 
-            var formCollection = await ReadFormAsync(new FormReader(body) { KeyCountLimit = 3 });
+            var formCollection = await ReadFormAsync(new FormReader(body) { ValueCountLimit = 3 });
 
             Assert.Equal("1", formCollection["foo"].ToString());
             Assert.Equal("2", formCollection["bar"].ToString());
-            Assert.Equal("3,4", formCollection["baz"].ToString());
+            Assert.Equal("3", formCollection["baz"].ToString());
             Assert.Equal(3, formCollection.Count);
         }
 
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task ReadFormAsync_KeyCountLimitExceeded_Throw(bool bufferRequest)
+        public async Task ReadFormAsync_ValueCountLimitExceeded_Throw(bool bufferRequest)
         {
             var body = MakeStream(bufferRequest, "foo=1&baz=2&bar=3&baz=4&baf=5");
 
             var exception = await Assert.ThrowsAsync<InvalidDataException>(
-                () => ReadFormAsync(new FormReader(body) { KeyCountLimit = 3 }));
-            Assert.Equal("Form key count limit 3 exceeded.", exception.Message);
+                () => ReadFormAsync(new FormReader(body) { ValueCountLimit = 3 }));
+            Assert.Equal("Form value count limit 3 exceeded.", exception.Message);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadFormAsync_ValueCountLimitExceededSameKey_Throw(bool bufferRequest)
+        {
+            var body = MakeStream(bufferRequest, "baz=1&baz=2&baz=3&baz=4");
+
+            var exception = await Assert.ThrowsAsync<InvalidDataException>(
+                () => ReadFormAsync(new FormReader(body) { ValueCountLimit = 3 }));
+            Assert.Equal("Form value count limit 3 exceeded.", exception.Message);
         }
 
         [Theory]

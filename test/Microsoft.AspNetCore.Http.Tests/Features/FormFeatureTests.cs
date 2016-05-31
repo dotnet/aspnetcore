@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Features
@@ -48,33 +48,35 @@ namespace Microsoft.AspNetCore.Http.Features
         }
 
         private const string MultipartContentType = "multipart/form-data; boundary=WebKitFormBoundary5pDRpGheQXaM8k3T";
-        private const string EmptyMultipartForm =
-"--WebKitFormBoundary5pDRpGheQXaM8k3T--";
+
+        private const string EmptyMultipartForm = "--WebKitFormBoundary5pDRpGheQXaM8k3T--";
+
         // Note that CRLF (\r\n) is required. You can't use multi-line C# strings here because the line breaks on Linux are just LF.
+        private const string MultipartFormEnd = "--WebKitFormBoundary5pDRpGheQXaM8k3T--\r\n";
+
+        private const string MultipartFormField = "--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
+"Content-Disposition: form-data; name=\"description\"\r\n" +
+"\r\n" +
+"Foo\r\n";
+
+        private const string MultipartFormFile = "--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
+"Content-Disposition: form-data; name=\"myfile1\"; filename=\"temp.html\"\r\n" +
+"Content-Type: text/html\r\n" +
+"\r\n" +
+"<html><body>Hello World</body></html>\r\n";
+
         private const string MultipartFormWithField =
-"--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
-"Content-Disposition: form-data; name=\"description\"\r\n" +
-"\r\n" +
-"Foo\r\n" +
-"--WebKitFormBoundary5pDRpGheQXaM8k3T--";
+            MultipartFormField +
+            MultipartFormEnd;
+
         private const string MultipartFormWithFile =
-"--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
-"Content-Disposition: form-data; name=\"myfile1\"; filename=\"temp.html\"\r\n" +
-"Content-Type: text/html\r\n" +
-"\r\n" +
-"<html><body>Hello World</body></html>\r\n" +
-"--WebKitFormBoundary5pDRpGheQXaM8k3T--";
+            MultipartFormFile +
+            MultipartFormEnd;
+
         private const string MultipartFormWithFieldAndFile =
-"--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
-"Content-Disposition: form-data; name=\"description\"\r\n" +
-"\r\n" +
-"Foo\r\n" +
-"--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
-"Content-Disposition: form-data; name=\"myfile1\"; filename=\"temp.html\"\r\n" +
-"Content-Type: text/html\r\n" +
-"\r\n" +
-"<html><body>Hello World</body></html>\r\n" +
-"--WebKitFormBoundary5pDRpGheQXaM8k3T--";
+            MultipartFormField +
+            MultipartFormFile +
+            MultipartFormEnd;
 
         [Theory]
         [InlineData(true)]
@@ -244,6 +246,55 @@ namespace Microsoft.AspNetCore.Http.Features
         }
 
         [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadFormAsync_ValueCountLimitExceeded_Throw(bool bufferRequest)
+        {
+            var formContent = new List<byte>();
+            formContent.AddRange(Encoding.UTF8.GetBytes(MultipartFormField));
+            formContent.AddRange(Encoding.UTF8.GetBytes(MultipartFormField));
+            formContent.AddRange(Encoding.UTF8.GetBytes(MultipartFormField));
+            formContent.AddRange(Encoding.UTF8.GetBytes(MultipartFormEnd));
+
+            var context = new DefaultHttpContext();
+            var responseFeature = new FakeResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
+            context.Request.ContentType = MultipartContentType;
+            context.Request.Body = new NonSeekableReadStream(formContent.ToArray());
+
+            IFormFeature formFeature = new FormFeature(context.Request, new FormOptions() { BufferBody = bufferRequest, ValueCountLimit = 2 });
+            context.Features.Set<IFormFeature>(formFeature);
+
+            var exception = await Assert.ThrowsAsync<InvalidDataException> (() => context.Request.ReadFormAsync());
+            Assert.Equal(exception.Message, "Form value count limit 2 exceeded.");
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadFormAsync_ValueCountLimitExceededWithFiles_Throw(bool bufferRequest)
+        {
+            var formContent = new List<byte>();
+            formContent.AddRange(Encoding.UTF8.GetBytes(MultipartFormFile));
+            formContent.AddRange(Encoding.UTF8.GetBytes(MultipartFormFile));
+            formContent.AddRange(Encoding.UTF8.GetBytes(MultipartFormFile));
+            formContent.AddRange(Encoding.UTF8.GetBytes(MultipartFormEnd));
+
+
+            var context = new DefaultHttpContext();
+            var responseFeature = new FakeResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
+            context.Request.ContentType = MultipartContentType;
+            context.Request.Body = new NonSeekableReadStream(formContent.ToArray());
+
+            IFormFeature formFeature = new FormFeature(context.Request, new FormOptions() { BufferBody = bufferRequest, ValueCountLimit = 2 });
+            context.Features.Set<IFormFeature>(formFeature);
+
+            var exception = await Assert.ThrowsAsync<InvalidDataException> (() => context.Request.ReadFormAsync());
+            Assert.Equal(exception.Message, "Form value count limit 2 exceeded.");
+        }
+
+        [Theory]
         // FileBufferingReadStream transitions to disk storage after 30kb, and stops pooling buffers at 1mb.
         [InlineData(true, 1024)]
         [InlineData(false, 1024)]
@@ -313,10 +364,7 @@ namespace Microsoft.AspNetCore.Http.Features
         {
             var stream = new MemoryStream();
             var header =
-"--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
-"Content-Disposition: form-data; name=\"description\"\r\n" +
-"\r\n" +
-"Foo\r\n" +
+MultipartFormField +
 "--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
 "Content-Disposition: form-data; name=\"myfile1\"; filename=\"temp.html\"\r\n" +
 "Content-Type: text/html\r\n" +
