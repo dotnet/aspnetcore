@@ -174,6 +174,17 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests
         }
 
         [Fact]
+        public void WebConfigTransform_overwrites_stdoutLogPath_for_Azure()
+        {
+            var input = WebConfigTemplate;
+            var output = WebConfigTransform.Transform(input, "test.exe", configureForAzure: true, isPortable: false);
+
+            Assert.Equal(
+                @"\\?\%home%\LogFiles\stdout",
+                (string)output.Descendants("aspNetCore").Single().Attribute("stdoutLogFile"));
+        }
+
+        [Fact]
         public void WebConfigTransform_configures_portable_apps_correctly()
         {
             var aspNetCoreElement =
