@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Fakes;
@@ -398,7 +399,7 @@ namespace Microsoft.AspNetCore.Hosting
         [Fact]
         public void RelativeContentRootIsResolved()
         {
-            var contentRootNet451 = PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Windows ?
+            var contentRootNet451 = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
                 "testroot" : "../../../../test/Microsoft.AspNetCore.Hosting.Tests/testroot";
 
             var host = new WebHostBuilder()

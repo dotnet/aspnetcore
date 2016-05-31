@@ -4,10 +4,10 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Server.Testing
 {
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Testing
         // app being run when running dotnet run
         public static readonly string DotnetArgumentSeparator = "--";
         private static readonly bool IsWindows =
-            PlatformServices.Default.Runtime.OperatingSystem.Equals("Windows", StringComparison.OrdinalIgnoreCase);
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         private readonly Stopwatch _stopwatch = new Stopwatch();
 
@@ -200,14 +200,19 @@ namespace Microsoft.AspNetCore.Server.Testing
 
         protected static string GetOSPrefix()
         {
-            switch (PlatformServices.Default.Runtime.OperatingSystemPlatform)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                case Platform.Linux: return "linux";
-                case Platform.Darwin: return "darwin";
-                case Platform.Windows: return "win";
-                default:
-                    throw new InvalidOperationException("Unrecognized operating system");
+                return "win";
             }
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return "linux";
+            }
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return "darwin";
+            }
+            throw new InvalidOperationException("Unrecognized operating system");
         }
     }
 }

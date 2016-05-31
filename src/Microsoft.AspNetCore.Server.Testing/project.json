@@ -11,7 +11,7 @@
       "Deployers/RemoteWindowsDeployer/RemotePSSessionHelper.ps1",
       "Deployers/RemoteWindowsDeployer/StartServer.ps1",
       "Deployers/RemoteWindowsDeployer/StopServer.ps1"
-    ],
+    ]
   },
   "description": "ASP.NET Core helpers to deploy applications to IIS Express, IIS, WebListener and Kestrel for testing.",
   "packOptions": {
@@ -25,10 +25,10 @@
     ]
   },
   "dependencies": {
+    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*",
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "Microsoft.Extensions.Process.Sources": {
       "type": "build",
       "version": "1.0.0-*"
