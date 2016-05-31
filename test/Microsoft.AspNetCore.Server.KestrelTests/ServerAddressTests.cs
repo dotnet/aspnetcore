@@ -14,13 +14,29 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("")]
         [InlineData("5000")]
         [InlineData("//noscheme")]
-        public void FromUriThrowsForSchemelessUrls(string url)
+        public void FromUriThrowsForUrlsWithoutSchemeDelimiter(string url)
+        {
+            Assert.Throws<FormatException>(() => ServerAddress.FromUrl(url));
+        }
+
+        [Theory]
+        [InlineData("://")]
+        [InlineData("://:5000")]
+        [InlineData("http://")]
+        [InlineData("http://:5000")]
+        [InlineData("http:///")]
+        [InlineData("http:///:5000")]
+        [InlineData("http:////")]
+        [InlineData("http:////:5000")]
+        public void FromUriThrowsForUrlsWithoutHost(string url)
         {
             Assert.Throws<FormatException>(() => ServerAddress.FromUrl(url));
         }
 
         [Theory]
         [InlineData("://emptyscheme", "", "emptyscheme", 0, "", "://emptyscheme:0")]
+        [InlineData("http://+", "http", "+", 80, "", "http://+:80")]
+        [InlineData("http://*", "http", "*", 80, "", "http://*:80")]
         [InlineData("http://localhost", "http", "localhost", 80, "", "http://localhost:80")]
         [InlineData("http://www.example.com", "http", "www.example.com", 80, "", "http://www.example.com:80")]
         [InlineData("https://www.example.com", "https", "www.example.com", 443, "", "https://www.example.com:443")]
