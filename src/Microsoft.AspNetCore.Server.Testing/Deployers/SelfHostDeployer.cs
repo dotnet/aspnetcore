@@ -56,8 +56,8 @@ namespace Microsoft.AspNetCore.Server.Testing
                     DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? ".exe" :
                     DeploymentParameters.ApplicationType == ApplicationType.Portable ? ".dll" : "";
                 var executable = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, new DirectoryInfo(DeploymentParameters.ApplicationPath).Name + executableExtension);
-                
-                if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+
+                if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     executableName = "mono";
                     executableArgs = executable;
