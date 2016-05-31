@@ -45,7 +45,7 @@ namespace OpenIdConnect.AzureAdSample
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
-            loggerfactory.AddConsole(LogLevel.Information);
+            loggerfactory.AddConsole(Microsoft.Extensions.Logging.LogLevel.Information);
 
             // Simple error page
             app.Use(async (context, next) =>
