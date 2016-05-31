@@ -100,6 +100,10 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             {
                 throw new ArgumentException("Options.SignInScheme is required.");
             }
+            if (string.IsNullOrEmpty(Options.SignOutScheme))
+            {
+                Options.SignOutScheme = Options.SignInScheme;
+            }
 
             HtmlEncoder = htmlEncoder;
 

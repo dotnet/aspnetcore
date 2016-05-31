@@ -66,27 +66,74 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         {
             if (Options.RemoteSignOutPath.HasValue && Options.RemoteSignOutPath == Request.Path)
             {
-                var remoteSignOutContext = new RemoteSignOutContext(Context, Options);
-                await Options.Events.RemoteSignOut(remoteSignOutContext);
-
-                if (remoteSignOutContext.HandledResponse)
-                {
-                    Logger.RemoteSignOutHandledResponse();
-                    return true;
-                }
-                if (remoteSignOutContext.Skipped)
-                {
-                    Logger.RemoteSignOutSkipped();
-                    return false;
-                }
-
-                Logger.RemoteSignOut();
-
-                // We've received a remote sign-out request
-                await Context.Authentication.SignOutAsync(Options.SignOutScheme ?? Options.SignInScheme);
-                return true;
+                return await HandleRemoteSignOutAsync();
             }
             return await base.HandleRequestAsync();
+        }
+
+        protected virtual async Task<bool> HandleRemoteSignOutAsync()
+        {
+            OpenIdConnectMessage message = null;
+
+            if (string.Equals(Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
+            {
+                message = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
+            }
+            // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
+            else if (string.Equals(Request.Method, "POST", StringComparison.OrdinalIgnoreCase)
+              && !string.IsNullOrEmpty(Request.ContentType)
+              // May have media/type; charset=utf-8, allow partial match.
+              && Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
+              && Request.Body.CanRead) {
+                var form = await Request.ReadFormAsync();
+                message = new OpenIdConnectMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
+            }
+
+            var remoteSignOutContext = new RemoteSignOutContext(Context, Options, message);
+            await Options.Events.RemoteSignOut(remoteSignOutContext);
+
+            if (remoteSignOutContext.HandledResponse)
+            {
+                Logger.RemoteSignOutHandledResponse();
+                return true;
+            }
+            if (remoteSignOutContext.Skipped)
+            {
+                Logger.RemoteSignOutSkipped();
+                return false;
+            }
+
+            if (message == null)
+            {
+                return false;
+            }
+
+            // Try to extract the session identifier from the authentication ticket persisted by the sign-in handler.
+            // If the identifier cannot be found, bypass the session identifier checks: this may indicate that the
+            // authentication cookie was already cleared, that the session identifier was lost because of a lossy
+            // external/application cookie conversion or that the identity provider doesn't support sessions.
+            var sid = (await Context.Authentication.AuthenticateAsync(Options.SignOutScheme))?.FindFirst("sid")?.Value;
+            if (!string.IsNullOrEmpty(sid))
+            {
+                // Ensure a 'sid' parameter was sent by the identity provider.
+                if (string.IsNullOrEmpty(message.GetParameter("sid")))
+                {
+                    Logger.RemoteSignOutSessionIdMissing();
+                    return true;
+                }
+                // Ensure the 'sid' parameter corresponds to the 'sid' stored in the authentication ticket.
+                if (!string.Equals(sid, message.GetParameter("sid"), StringComparison.Ordinal))
+                {
+                    Logger.RemoteSignOutSessionIdInvalid();
+                    return true;
+                }
+            }
+
+            Logger.RemoteSignOut();
+
+            // We've received a remote sign-out request
+            await Context.Authentication.SignOutAsync(Options.SignOutScheme);
+            return true;
         }
 
         /// <summary>
@@ -132,7 +179,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                     message.PostLogoutRedirectUri = logoutRedirectUri;
                 }
 
-                message.IdTokenHint = await Context.Authentication.GetTokenAsync(OpenIdConnectParameterNames.IdToken);
+                // Attach the identity token to the logout request when possible.
+                message.IdTokenHint = await Context.Authentication.GetTokenAsync(Options.SignOutScheme, OpenIdConnectParameterNames.IdToken);
+
                 var redirectContext = new RedirectContext(Context, Options, properties)
                 {
                     ProtocolMessage = message

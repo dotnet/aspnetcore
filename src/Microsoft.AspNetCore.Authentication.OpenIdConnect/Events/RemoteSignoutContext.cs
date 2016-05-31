@@ -3,14 +3,19 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 {
     public class RemoteSignOutContext : BaseOpenIdConnectContext
     {
-        public RemoteSignOutContext(HttpContext context, OpenIdConnectOptions options)
+        public RemoteSignOutContext(
+            HttpContext context,
+            OpenIdConnectOptions options,
+            OpenIdConnectMessage message)
             : base(context, options)
         {
+            ProtocolMessage = message;
         }
     }
 }

@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -42,6 +41,7 @@ namespace OpenIdConnectSample
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
             loggerfactory.AddConsole(LogLevel.Information);
+            loggerfactory.AddDebug(LogLevel.Information);
 
             // Simple error page
             app.Use(async (context, next) =>
@@ -98,11 +98,11 @@ namespace OpenIdConnectSample
                 if (context.Request.Path.Equals("/signout-remote"))
                 {
                     // Redirects
+                    await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     await context.Authentication.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties()
                     {
                         RedirectUri = "/signedout"
                     });
-                    await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     return;
                 }
                 if (context.Request.Path.Equals("/Account/AccessDenied"))

@@ -50,6 +50,8 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, Exception> _remoteSignOutHandledResponse;
         private static Action<ILogger, Exception> _remoteSignOutSkipped;
         private static Action<ILogger, Exception> _remoteSignOut;
+        private static Action<ILogger, Exception> _remoteSignOutSessionIdMissing;
+        private static Action<ILogger, Exception> _remoteSignOutSessionIdInvalid;
 
         static LoggingExtensions()
         {
@@ -226,6 +228,16 @@ namespace Microsoft.Extensions.Logging
                eventId: 46,
                logLevel: LogLevel.Information,
                formatString: "Remote signout request processed.");
+            _remoteSignOutSessionIdMissing = LoggerMessage.Define(
+               eventId: 47,
+               logLevel: LogLevel.Error,
+               formatString: "The remote signout request was ignored because the 'sid' parameter " +
+                             "was missing, which may indicate an unsolicited logout.");
+            _remoteSignOutSessionIdInvalid = LoggerMessage.Define(
+               eventId: 48,
+               logLevel: LogLevel.Error,
+               formatString: "The remote signout request was ignored because the 'sid' parameter didn't match " +
+                             "the expected value, which may indicate an unsolicited logout.");
         }
 
         public static void UpdatingConfiguration(this ILogger logger)
@@ -441,6 +453,16 @@ namespace Microsoft.Extensions.Logging
         public static void RemoteSignOut(this ILogger logger)
         {
             _remoteSignOut(logger, null);
+        }
+
+        public static void RemoteSignOutSessionIdMissing(this ILogger logger)
+        {
+            _remoteSignOutSessionIdMissing(logger, null);
+        }
+
+        public static void RemoteSignOutSessionIdInvalid(this ILogger logger)
+        {
+            _remoteSignOutSessionIdInvalid(logger, null);
         }
     }
 }
