@@ -54,8 +54,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private Task _requestProcessingTask;
         protected volatile bool _requestProcessingStopping; // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
         protected int _requestAborted;
-        protected CancellationTokenSource _abortedCts;
-        protected CancellationToken? _manuallySetRequestAbortToken;
+        private CancellationTokenSource _abortedCts;
+        private CancellationToken? _manuallySetRequestAbortToken;
 
         protected RequestProcessingStatus _requestProcessingStatus;
         protected bool _keepAlive;
@@ -196,7 +196,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 // Get the abort token, lazily-initializing it if necessary.
                 // Make sure it's canceled if an abort request already came in.
-                var cts = LazyInitializer.EnsureInitialized(ref _abortedCts, () => new CancellationTokenSource());
+
+                // EnsureInitialized can return null since _abortedCts is reset to null
+                // after it's already been initialized to a non-null value.
+                // If EnsureInitialized does return null, this property was accessed between
+                // requests so it's safe to return an ephemeral CancellationTokenSource.
+                var cts = LazyInitializer.EnsureInitialized(ref _abortedCts, () => new CancellationTokenSource())
+                            ?? new CancellationTokenSource();
+
                 if (Volatile.Read(ref _requestAborted) == 1)
                 {
                     cts.Cancel();

@@ -87,9 +87,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                         InitializeStreams(messageBody);
 
-                        _abortedCts = null;
-                        _manuallySetRequestAbortToken = null;
-
                         var context = _application.CreateContext(this);
                         try
                         {
@@ -163,8 +160,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 try
                 {
                     await TryProduceInvalidRequestResponse();
-
-                    _abortedCts = null;
 
                     // If _requestAborted is set, the connection has already been closed.
                     if (Volatile.Read(ref _requestAborted) == 0)
