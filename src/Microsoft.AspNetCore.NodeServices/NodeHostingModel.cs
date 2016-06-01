@@ -4,5 +4,6 @@ namespace Microsoft.AspNetCore.NodeServices
     {
         Http,
         InputOutputStream,
+        Socket,
     }
 }

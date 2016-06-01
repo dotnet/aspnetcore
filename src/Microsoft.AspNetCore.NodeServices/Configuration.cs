@@ -39,6 +39,8 @@ namespace Microsoft.AspNetCore.NodeServices
             {
                 case NodeHostingModel.Http:
                     return new HttpNodeInstance(options.ProjectPath, /* port */ 0, watchFileExtensions);
+                case NodeHostingModel.Socket:
+                    return new SocketNodeInstance(options.ProjectPath, watchFileExtensions);
                 case NodeHostingModel.InputOutputStream:
                     return new InputOutputStreamNodeInstance(options.ProjectPath);
                 default:

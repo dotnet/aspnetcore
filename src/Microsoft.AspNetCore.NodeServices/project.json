@@ -10,6 +10,7 @@
       "version": "1.0.0-rc2-*",
       "type": "platform"
     },
+    "System.IO.Pipes": "4.0.0-*",
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
@@ -17,7 +18,7 @@
     "Newtonsoft.Json": "8.0.3"
   },
   "frameworks": {
-    "netcoreapp1.0": {
+    "netstandard1.3": {
       "imports": [
         "dotnet5.6",
         "dnxcore50",

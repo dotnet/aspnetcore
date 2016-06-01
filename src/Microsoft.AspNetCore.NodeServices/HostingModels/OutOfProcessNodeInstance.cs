@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.NodeServices
     public abstract class OutOfProcessNodeInstance : INodeServices
     {
         private readonly object _childProcessLauncherLock;
-        private readonly string _commandLineArguments;
+        private string _commandLineArguments;
         private readonly StringAsTempFile _entryPointScript;
         private Process _nodeProcess;
         private TaskCompletionSource<bool> _nodeProcessIsReadySource;
@@ -26,6 +26,12 @@ namespace Microsoft.AspNetCore.NodeServices
             _entryPointScript = new StringAsTempFile(entryPointScript);
             _projectPath = projectPath;
             _commandLineArguments = commandLineArguments ?? string.Empty;
+        }
+        
+        public string CommandLineArguments
+        {
+            get { return _commandLineArguments; }
+            set { _commandLineArguments = value; }
         }
 
         protected Process NodeProcess
@@ -59,12 +65,23 @@ namespace Microsoft.AspNetCore.NodeServices
 
         public abstract Task<T> Invoke<T>(NodeInvocationInfo invocationInfo);
 
+        protected void ExitNodeProcess()
+        {
+            if (_nodeProcess != null && !_nodeProcess.HasExited)
+            {
+                // TODO: Is there a more graceful way to end it? Or does this still let it perform any cleanup?
+                _nodeProcess.Kill();
+            }
+        }
+
         protected async Task EnsureReady()
         {
             lock (_childProcessLauncherLock)
             {
                 if (_nodeProcess == null || _nodeProcess.HasExited)
                 {
+                    this.OnBeforeLaunchProcess();
+
                     var startInfo = new ProcessStartInfo("node")
                     {
                         Arguments = "\"" + _entryPointScript.FileName + "\" " + _commandLineArguments,
@@ -89,7 +106,6 @@ namespace Microsoft.AspNetCore.NodeServices
                     startInfo.Environment.Add("NODE_PATH", nodePathValue);
 #endif
 
-                    OnBeforeLaunchProcess();
                     _nodeProcess = Process.Start(startInfo);
                     ConnectToInputOutputStreams();
                 }
@@ -162,11 +178,7 @@ namespace Microsoft.AspNetCore.NodeServices
                     _entryPointScript.Dispose();
                 }
 
-                if (_nodeProcess != null && !_nodeProcess.HasExited)
-                {
-                    _nodeProcess.Kill();
-                    // TODO: Is there a more graceful way to end it? Or does this still let it perform any cleanup?
-                }
+                ExitNodeProcess();
 
                 _disposed = true;
             }
