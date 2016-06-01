@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await connection.Receive(
                 "Connection: close",
                 "");
-            await connection.ReceiveEnd(
+            await connection.ReceiveForcedEnd(
                 $"Date: {connection.Server.Context.DateHeaderValue}",
                 "Content-Length: 0",
                 "",
