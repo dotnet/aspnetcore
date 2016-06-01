@@ -1170,5 +1170,33 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             }
         }
+
+        [Theory]
+        [InlineData("/%%2000", "/% 00")]
+        [InlineData("/%25%30%30", "/%00")]
+        public async Task PathEscapeTests(string inputPath, string expectedPath)
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                var path = httpContext.Request.Path.Value;
+                httpContext.Response.Headers["Content-Length"] = new[] {path.Length.ToString() };
+                await httpContext.Response.WriteAsync(path);
+            }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEnd(
+                        $"GET {inputPath} HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {connection.Server.Context.DateHeaderValue}",
+                        $"Content-Length: {expectedPath.Length.ToString()}",
+                        "",
+                        $"{expectedPath}");
+                }
+            }
+        }
     }
 }

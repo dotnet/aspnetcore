@@ -189,6 +189,36 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
+        [Theory]
+        [InlineData("\0")]
+        [InlineData("%00")]
+        [InlineData("/\0")]
+        [InlineData("/%00")]
+        [InlineData("/\0\0")]
+        [InlineData("/%00%00")]
+        [InlineData("/%C8\0")]
+        [InlineData("/%E8%00%84")]
+        [InlineData("/%E8%85%00")]
+        [InlineData("/%F3%00%82%86")]
+        [InlineData("/%F3%85%00%82")]
+        [InlineData("/%F3%85%82%00")]
+        [InlineData("/%E8%85%00")]
+        [InlineData("/%E8%01%00")]
+        public async Task BadRequestIfPathContainsNullCharacters(string path)
+        {
+            using (var server = new TestServer(context => { return Task.FromResult(0); }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEnd(
+                        $"GET {path} HTTP/1.1",
+                        "",
+                        "");
+                    await ReceiveBadRequestResponse(connection);
+                }
+            }
+        }
+
         private async Task ReceiveBadRequestResponse(TestConnection connection)
         {
             await connection.Receive(

@@ -138,7 +138,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     app.Run(async context =>
                     {
-                        var connection = context.Connection;
                         await context.Response.WriteAsync("hello, world");
                     });
                 });

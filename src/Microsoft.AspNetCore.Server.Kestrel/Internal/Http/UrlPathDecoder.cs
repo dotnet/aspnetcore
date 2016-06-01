@@ -64,6 +64,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             // preserves the original head. if the percent-encodings cannot be interpreted as sequence of UTF-8 octets,
             // bytes from this till the last scanned one will be copied to the memory pointed by writer.
             var byte1 = UnescapePercentEncoding(ref reader, end);
+
+            if (byte1 == 0)
+            {
+                throw new BadHttpRequestException("The path contains null characters.");
+            }
+
             if (byte1 == -1)
             {
                 return false;
