@@ -117,7 +117,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     TagHelperOutputIsContentModifiedPropertyName = nameof(TagHelperOutput.IsContentModified),
                     TagHelperOutputContentPropertyName = nameof(TagHelperOutput.Content),
                     ExecutionContextSetOutputContentAsyncMethodName = nameof(TagHelperExecutionContext.SetOutputContentAsync),
-                })
+                    TagHelperAttributeValuePropertyName = nameof(TagHelperAttribute.Value),
+        })
             {
                 BeginContextMethodName = "BeginContext",
                 EndContextMethodName = "EndContext"
