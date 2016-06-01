@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 context.Response.Headers["Content-Length"] = new[] { "11" };
                 await context.Response.WriteAsync("Hello World");
-            }, testContext, "http://127.0.0.1/\u0041\u030A"))
+            }, testContext, "http://127.0.0.1:0/\u0041\u030A"))
             {
                 using (var connection = server.CreateConnection())
                 {
