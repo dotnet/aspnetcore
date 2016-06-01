@@ -27,21 +27,11 @@ namespace Microsoft.AspNetCore.NodeServices
             _projectPath = projectPath;
             _commandLineArguments = commandLineArguments ?? string.Empty;
         }
-        
+
         public string CommandLineArguments
         {
             get { return _commandLineArguments; }
             set { _commandLineArguments = value; }
-        }
-
-        protected Process NodeProcess
-        {
-            get
-            {
-                // This is only exposed to support the unreliable InputOutputStreamNodeInstance, which is just to verify that
-                // other hosting/transport mechanisms are possible. This shouldn't really be exposed, and will be removed.
-                return this._nodeProcess;
-            }
         }
 
         public Task<T> Invoke<T>(string moduleName, params object[] args)
