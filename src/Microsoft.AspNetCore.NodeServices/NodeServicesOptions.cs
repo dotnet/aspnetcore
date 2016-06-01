@@ -4,7 +4,7 @@ namespace Microsoft.AspNetCore.NodeServices
     {
         public NodeServicesOptions()
         {
-            HostingModel = NodeHostingModel.Http;
+            HostingModel = Configuration.DefaultNodeHostingModel;
         }
 
         public NodeHostingModel HostingModel { get; set; }

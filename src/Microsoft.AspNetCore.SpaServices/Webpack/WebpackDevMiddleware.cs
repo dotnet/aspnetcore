@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Builder
             var hostEnv = (IHostingEnvironment)appBuilder.ApplicationServices.GetService(typeof(IHostingEnvironment));
             var nodeServices = Configuration.CreateNodeServices(new NodeServicesOptions
             {
-                HostingModel = NodeHostingModel.Http,
+                HostingModel = Configuration.DefaultNodeHostingModel,
                 ProjectPath = hostEnv.ContentRootPath,
                 WatchFileExtensions = new string[] { } // Don't watch anything
             });

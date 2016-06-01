@@ -6,11 +6,12 @@ namespace Microsoft.AspNetCore.NodeServices
 {
     public static class Configuration
     {
-        private static readonly string[] DefaultWatchFileExtensions = {".js", ".jsx", ".ts", ".tsx", ".json", ".html"};
+        public const NodeHostingModel DefaultNodeHostingModel = NodeHostingModel.Http;
 
+        private static readonly string[] DefaultWatchFileExtensions = {".js", ".jsx", ".ts", ".tsx", ".json", ".html"};
         private static readonly NodeServicesOptions DefaultOptions = new NodeServicesOptions
         {
-            HostingModel = NodeHostingModel.Http,
+            HostingModel = DefaultNodeHostingModel,
             WatchFileExtensions = DefaultWatchFileExtensions
         };
 

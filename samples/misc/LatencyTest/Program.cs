@@ -8,11 +8,11 @@ namespace ConsoleApplication
 {
     // This project is a micro-benchmark for .NET->Node RPC via NodeServices. It doesn't reflect
     // real-world usage patterns (you're not likely to make hundreds of sequential calls like this),
-    // but is a starting point for comparing the overhead of different hosting models and transports. 
+    // but is a starting point for comparing the overhead of different hosting models and transports.
     public class Program
     {
         public static void Main(string[] args) {
-            using (var nodeServices = CreateNodeServices(NodeHostingModel.Http)) {                
+            using (var nodeServices = CreateNodeServices(Configuration.DefaultNodeHostingModel)) {
                 MeasureLatency(nodeServices).Wait();
             }
         }
@@ -21,7 +21,7 @@ namespace ConsoleApplication
             // Ensure the connection is open, so we can measure per-request timings below
             var response = await nodeServices.Invoke<string>("latencyTest", "C#");
             Console.WriteLine(response);
-            
+
             // Now perform a series of requests, capturing the time taken
             const int requestCount = 100;
             var watch = Stopwatch.StartNew();
