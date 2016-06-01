@@ -36,5 +36,7 @@ namespace Microsoft.AspNetCore.TestHost
         public string QueryString { get; set; }
 
         public string Scheme { get; set; }
+
+        public string RawTarget { get; set; }
     }
 }

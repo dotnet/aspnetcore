@@ -613,6 +613,8 @@ namespace Microsoft.AspNetCore.Hosting
 
             public string QueryString { get; set; }
 
+            public string RawTarget { get; set; }
+
             public string ReasonPhrase { get; set; }
 
             public string Scheme { get; set; }
