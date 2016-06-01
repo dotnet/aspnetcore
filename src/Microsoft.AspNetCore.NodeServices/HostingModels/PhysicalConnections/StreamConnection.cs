@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.NodeServices.HostingModels.PhysicalConnections
@@ -12,7 +11,11 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels.PhysicalConnections
 
         public static StreamConnection Create()
         {
-            var useNamedPipes = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+#if NET451
+            return new NamedPipeConnection();
+#else
+            var useNamedPipes = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+                System.Runtime.InteropServices.OSPlatform.Windows);
             if (useNamedPipes)
             {
                 return new NamedPipeConnection();
@@ -21,6 +24,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels.PhysicalConnections
             {
                 return new UnixDomainSocketConnection();
             }
+#endif
         }
     }
 }

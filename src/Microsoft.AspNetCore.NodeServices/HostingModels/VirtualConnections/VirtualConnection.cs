@@ -12,6 +12,11 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels.VirtualConnections
     /// </summary>
     internal class VirtualConnection : Stream
     {
+#if NET451
+        private readonly static Task CompletedTask = Task.FromResult((object)null);
+#else
+        private readonly static Task CompletedTask = Task.CompletedTask;
+#endif
         private VirtualConnectionClient _host;
         private readonly BufferBlock<byte[]> _receivedDataQueue = new BufferBlock<byte[]>();
         private ArraySegment<byte> _receivedDataNotYetUsed;
@@ -109,7 +114,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels.VirtualConnections
                 throw new InvalidOperationException("The connection was already closed by the remote party");
             }
 
-            return count > 0 ? _host.WriteAsync(Id, buffer, offset, count, cancellationToken) : Task.CompletedTask;
+            return count > 0 ? _host.WriteAsync(Id, buffer, offset, count, cancellationToken) : CompletedTask;
         }
 
         public override int Read(byte[] buffer, int offset, int count)

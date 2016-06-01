@@ -59,7 +59,11 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels.PhysicalConnections
             }
             else
             {
+#if NET451
+                _encodedPath = new byte[0];
+#else
                 _encodedPath = Array.Empty<byte>();
+#endif
                 _path = string.Empty;
             }
         }

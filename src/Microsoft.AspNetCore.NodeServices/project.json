@@ -15,7 +15,10 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Net.Http": "4.0.0.0"
+        "System.Net.Http": "4.0.0-*"
+      },
+      "dependencies": {
+        "Microsoft.Tpl.Dataflow": "4.5.24"
       }
     },
     "netstandard1.3": {
@@ -27,8 +30,11 @@
       "dependencies": {
         "System.Console": "4.0.0-*",
         "System.Diagnostics.Process": "4.1.0-*",
+        "System.IO.Pipes": "4.0.0-*",
         "System.Net.Http": "4.0.1-*",
-        "System.Text.RegularExpressions": "4.0.12-*"
+        "System.Net.Sockets": "4.1.0-*",
+        "System.Text.RegularExpressions": "4.0.12-*",
+        "System.Threading.Tasks.Dataflow": "4.5.25-*"
       }
     }
   },
