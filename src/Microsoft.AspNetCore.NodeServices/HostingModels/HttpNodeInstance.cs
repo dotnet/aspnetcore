@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -19,6 +18,8 @@ namespace Microsoft.AspNetCore.NodeServices
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
 
+	    private HttpClient _client;
+        private bool _disposed;
         private int _portNumber;
 
         public HttpNodeInstance(string projectPath, int port = 0, string[] watchFileExtensions = null)
@@ -29,7 +30,8 @@ namespace Microsoft.AspNetCore.NodeServices
                 projectPath,
                 MakeCommandLineOptions(port, watchFileExtensions))
         {
-        }
+            _client = new HttpClient();
+		}
 
         private static string MakeCommandLineOptions(int port, string[] watchFileExtensions)
         {
@@ -46,34 +48,31 @@ namespace Microsoft.AspNetCore.NodeServices
         {
             await EnsureReady();
 
-            using (var client = new HttpClient())
+            // TODO: Use System.Net.Http.Formatting (PostAsJsonAsync etc.)
+            var payloadJson = JsonConvert.SerializeObject(invocationInfo, JsonSerializerSettings);
+            var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
+            var response = await _client.PostAsync("http://localhost:" + _portNumber, payload);
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
             {
-                // TODO: Use System.Net.Http.Formatting (PostAsJsonAsync etc.)
-                var payloadJson = JsonConvert.SerializeObject(invocationInfo, JsonSerializerSettings);
-                var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
-                var response = await client.PostAsync("http://localhost:" + _portNumber, payload);
-                var responseString = await response.Content.ReadAsStringAsync();
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception("Call to Node module failed with error: " + responseString);
-                }
-
-                var responseIsJson = response.Content.Headers.ContentType.MediaType == "application/json";
-                if (responseIsJson)
-                {
-                    return JsonConvert.DeserializeObject<T>(responseString);
-                }
-
-                if (typeof(T) != typeof(string))
-                {
-                    throw new ArgumentException(
-                        "Node module responded with non-JSON string. This cannot be converted to the requested generic type: " +
-                        typeof(T).FullName);
-                }
-
-                return (T)(object)responseString;
+                throw new Exception("Call to Node module failed with error: " + responseString);
             }
+
+            var responseIsJson = response.Content.Headers.ContentType.MediaType == "application/json";
+            if (responseIsJson)
+            {
+                return JsonConvert.DeserializeObject<T>(responseString);
+            }
+
+            if (typeof(T) != typeof(string))
+            {
+                throw new ArgumentException(
+                    "Node module responded with non-JSON string. This cannot be converted to the requested generic type: " +
+                    typeof(T).FullName);
+            }
+
+            return (T)(object)responseString;
         }
 
         protected override void OnOutputDataReceived(string outputData)
@@ -94,5 +93,19 @@ namespace Microsoft.AspNetCore.NodeServices
             // Prepare to receive a new port number
             _portNumber = 0;
         }
-    }
+
+	    protected override void Dispose(bool disposing) {
+	        base.Dispose(disposing);
+
+	        if (!_disposed)
+            {
+	            if (disposing)
+                {
+	                _client.Dispose();
+	            }
+
+	            _disposed = true;
+	        }
+	    }
+	}
 }
