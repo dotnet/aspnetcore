@@ -12,12 +12,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
         private bool _stopLoop;
         private readonly ManualResetEventSlim _loopWh = new ManualResetEventSlim();
 
-        private Func<UvStreamHandle, int, Action<int>, int> _onWrite;
-
         unsafe public MockLibuv()
             : base(onlyForTesting: true)
         {
-            _onWrite = (socket, buffers, triggerCompleted) =>
+            OnWrite = (socket, buffers, triggerCompleted) =>
             {
                 triggerCompleted(0);
                 return 0;
@@ -80,17 +78,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
             _uv_read_stop = handle => 0;
         }
 
-        public Func<UvStreamHandle, int, Action<int>, int> OnWrite
-        {
-            get
-            {
-                return _onWrite;
-            }
-            set
-            {
-                _onWrite = value;
-            }
-        }
+        public Func<UvStreamHandle, int, Action<int>, int> OnWrite { get; set; }
 
         public uv_alloc_cb AllocCallback { get; set; }
 
@@ -107,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 
         unsafe private int UvWrite(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, uv_write_cb cb)
         {
-            return _onWrite(handle, nbufs, status => cb(req.InternalGetHandle(), status));
+            return OnWrite(handle, nbufs, status => cb(req.InternalGetHandle(), status));
         }
     }
 }

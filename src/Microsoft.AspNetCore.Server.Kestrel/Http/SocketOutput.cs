@@ -248,7 +248,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public void ProducingComplete(MemoryPoolIterator end)
         {
-            Debug.Assert(!_lastStart.IsDefault);
+            if(_lastStart.IsDefault)
+            {
+                return;
+            }
 
             int bytesProduced, buffersIncluded;
             BytesBetween(_lastStart, end, out bytesProduced, out buffersIncluded);
@@ -265,9 +268,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             MemoryPoolBlock blockToReturn = null;
 
-
             lock (_returnLock)
             {
+                // Both ProducingComplete and WriteAsync should not call this method
+                // if _lastStart was not set.
                 Debug.Assert(!_lastStart.IsDefault);
 
                 // If the socket has been closed, return the produced blocks

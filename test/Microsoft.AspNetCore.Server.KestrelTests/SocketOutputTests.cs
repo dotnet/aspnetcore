@@ -24,14 +24,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             // _maxBytesPreCompleted even after the write actually completed.
 
             // Arrange
-            var mockLibuv = new MockLibuv
-            {
-                OnWrite = (socket, buffers, triggerCompleted) =>
-                {
-                    triggerCompleted(0);
-                    return 0;
-                }
-            };
+            var mockLibuv = new MockLibuv();
 
             using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
@@ -659,6 +652,38 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 // Cleanup
                 var cleanupTask = socketOutput.WriteAsync(
                     default(ArraySegment<byte>), default(CancellationToken), socketDisconnect: true);
+            }
+        }
+
+        [Fact]
+        public void ProducingStartAndProducingCompleteCanBeCalledAfterConnectionClose()
+        {
+            var mockLibuv = new MockLibuv();
+
+            using (var memory = new MemoryPool())
+            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
+            {
+                kestrelEngine.Start(count: 1);
+
+                var kestrelThread = kestrelEngine.Threads[0];
+                var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
+                var trace = new KestrelTrace(new TestKestrelTrace());
+                var ltp = new LoggingThreadPool(trace);
+                var connection = new MockConnection();
+                var socketOutput = new SocketOutput(kestrelThread, socket, memory, connection, "0", trace, ltp, new Queue<UvWriteReq>());
+
+                // Close SocketOutput
+                var cleanupTask = socketOutput.WriteAsync(
+                    default(ArraySegment<byte>), default(CancellationToken), socketDisconnect: true);
+
+                Assert.True(connection.SocketClosed.Wait(1000));
+
+                var start = socketOutput.ProducingStart();
+
+                Assert.True(start.IsDefault);
+                // ProducingComplete should not throw given a default iterator
+                socketOutput.ProducingComplete(start);
+
             }
         }
     }

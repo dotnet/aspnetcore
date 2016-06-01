@@ -3,12 +3,15 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Http;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 {
     public class MockConnection : Connection, IDisposable
     {
+        private TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>();
+
         public MockConnection()
         {
             RequestAbortedSource = new CancellationTokenSource();
@@ -24,9 +27,18 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 
         public override void OnSocketClosed()
         {
+            _socketClosedTcs.SetResult(null);
         }
 
         public CancellationTokenSource RequestAbortedSource { get; }
+
+        public Task SocketClosed
+        {
+            get
+            {
+                return _socketClosedTcs.Task;
+            }
+        }
 
         public void Dispose()
         {
