@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.FileProviders;
 
@@ -89,6 +90,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </para>
         /// </remarks>
         public IList<string> AreaViewLocationFormats { get; } = new List<string>();
+
+        /// <summary>
+        /// Gets the <see cref="MetadataReference" /> instances that should be included in Razor compilation, along with
+        /// those discovered by <see cref="MetadataReferenceFeatureProvider" />s.
+        /// </summary>
+        public IList<MetadataReference> AdditionalCompilationReferences { get; } = new List<MetadataReference>();
 
         /// <summary>
         /// Gets or sets the callback that is used to customize Razor compilation

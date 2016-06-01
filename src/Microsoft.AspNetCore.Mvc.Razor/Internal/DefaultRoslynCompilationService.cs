@@ -32,10 +32,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private readonly Action<RoslynCompilationContext> _compilationCallback;
         private readonly CSharpParseOptions _parseOptions;
         private readonly CSharpCompilationOptions _compilationOptions;
+        private readonly IList<MetadataReference> _additionalMetadataReferences;
         private readonly ILogger _logger;
-        private object _applicationReferencesLock = new object();
-        private bool _applicationReferencesInitialized;
-        private IList<MetadataReference> _applicationReferences;
+        private object _compilationReferencesLock = new object();
+        private bool _compilationReferencesInitialized;
+        private IList<MetadataReference> _compilationReferences;
 
         /// <summary>
         /// Initalizes a new instance of the <see cref="DefaultRoslynCompilationService"/> class.
@@ -55,18 +56,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             _compilationCallback = optionsAccessor.Value.CompilationCallback;
             _parseOptions = optionsAccessor.Value.ParseOptions;
             _compilationOptions = optionsAccessor.Value.CompilationOptions;
+            _additionalMetadataReferences = optionsAccessor.Value.AdditionalCompilationReferences;
             _logger = loggerFactory.CreateLogger<DefaultRoslynCompilationService>();
         }
 
-        private IList<MetadataReference> ApplicationReferences
+        private IList<MetadataReference> CompilationReferences
         {
             get
             {
                 return LazyInitializer.EnsureInitialized(
-                    ref _applicationReferences,
-                    ref _applicationReferencesInitialized,
-                    ref _applicationReferencesLock,
-                    GetApplicationReferences);
+                    ref _compilationReferences,
+                    ref _compilationReferencesInitialized,
+                    ref _compilationReferencesLock,
+                    GetCompilationReferences);
             }
         }
 
@@ -99,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 assemblyName,
                 options: _compilationOptions,
                 syntaxTrees: new[] { syntaxTree },
-                references: ApplicationReferences);
+                references: CompilationReferences);
 
             compilation = Rewrite(compilation);
 
@@ -118,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
                     if (!result.Success)
                     {
-                        if (!compilation.References.Any() && !ApplicationReferences.Any())
+                        if (!compilation.References.Any() && !CompilationReferences.Any())
                         {
                             // DependencyModel had no references specified and the user did not use the
                             // CompilationCallback to add extra references. It is likely that the user did not specify
@@ -153,11 +155,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// Gets the sequence of <see cref="MetadataReference"/> instances used for compilation.
         /// </summary>
         /// <returns>The <see cref="MetadataReference"/> instances.</returns>
-        protected virtual IList<MetadataReference> GetApplicationReferences()
+        protected virtual IList<MetadataReference> GetCompilationReferences()
         {
             var feature = new MetadataReferenceFeature();
             _partManager.PopulateFeature(feature);
-            return feature.MetadataReferences;
+            var applicationReferences = feature.MetadataReferences;
+
+            if (_additionalMetadataReferences.Count == 0)
+            {
+                return applicationReferences;
+            }
+
+            var compilationReferences = new List<MetadataReference>(applicationReferences.Count + _additionalMetadataReferences.Count);
+            compilationReferences.AddRange(applicationReferences);
+            compilationReferences.AddRange(_additionalMetadataReferences);
+
+            return compilationReferences;
         }
 
         private Assembly LoadStream(MemoryStream assemblyStream, MemoryStream pdbStream)
