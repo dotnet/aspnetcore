@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public void ProducingComplete(MemoryPoolIterator end)
         {
-            if(_lastStart.IsDefault)
+            if (_lastStart.IsDefault)
             {
                 return;
             }
@@ -560,7 +560,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
             public int WriteStatus;
             public Exception WriteError;
-            public int ShutdownSendStatus;
 
             public WriteContext(SocketOutput self)
             {
@@ -625,15 +624,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                 var shutdownReq = new UvShutdownReq(Self._log);
                 shutdownReq.Init(Self._thread.Loop);
-                shutdownReq.Shutdown(Self._socket, (_shutdownReq, status, state) =>
+                shutdownReq.Shutdown(Self._socket, (req, status, state) =>
                 {
-                    _shutdownReq.Dispose();
-                    var _this = (WriteContext)state;
-                    _this.ShutdownSendStatus = status;
+                    req.Dispose();
 
-                    _this.Self._log.ConnectionWroteFin(_this.Self._connectionId, status);
-
-                    _this.DoDisconnectIfNeeded();
+                    var writeContext = (WriteContext)state;
+                    writeContext.Self._log.ConnectionWroteFin(writeContext.Self._connectionId, status);
+                    writeContext.DoDisconnectIfNeeded();
                 }, this);
             }
 
@@ -762,8 +759,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                 WriteStatus = 0;
                 WriteError = null;
-
-                ShutdownSendStatus = 0;
             }
         }
 

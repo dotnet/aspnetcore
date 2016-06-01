@@ -683,7 +683,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 Assert.True(start.IsDefault);
                 // ProducingComplete should not throw given a default iterator
                 socketOutput.ProducingComplete(start);
-
             }
         }
     }
