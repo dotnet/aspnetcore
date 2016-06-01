@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private static Vector<byte> _vectorCRs = new Vector<byte>((byte)'\r');
         private static Vector<byte> _vectorColons = new Vector<byte>((byte)':');
         private static Vector<byte> _vectorSpaces = new Vector<byte>((byte)' ');
+        private static Vector<byte> _vectorTabs = new Vector<byte>((byte)'\t');
         private static Vector<byte> _vectorQuestionMarks = new Vector<byte>((byte)'?');
         private static Vector<byte> _vectorPercentages = new Vector<byte>((byte)'%');
 
@@ -1033,10 +1034,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             var consumed = scan;
             try
             {
-                int chFirst;
-                int chSecond;
                 while (!scan.IsEnd)
                 {
+                    var ch = scan.Peek();
+                    if (ch == -1)
+                    {
+                        return false;
+                    }
+                    else if (ch == '\r')
+                    {
+                        // Check for final CRLF.
+                        scan.Take();
+                        ch = scan.Take();
+
+                        if (ch == -1)
+                        {
+                            return false;
+                        }
+                        else if (ch == '\n')
+                        {
+                            consumed = scan;
+                            return true;
+                        }
+
+                        // Headers don't end in CRLF line.
+                        RejectRequest("Headers corrupted, invalid header sequence.");
+                    }
+                    else if (ch == ' ' || ch == '\t')
+                    {
+                        RejectRequest("Header line must not start with whitespace.");
+                    }
+
                     var beginName = scan;
                     if (scan.Seek(ref _vectorColons, ref _vectorCRs) == -1)
                     {
@@ -1044,118 +1072,113 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     }
                     var endName = scan;
 
-                    chFirst = scan.Take();
-                    var beginValue = scan;
-                    chSecond = scan.Take();
+                    ch = scan.Take();
+                    if (ch != ':')
+                    {
+                        RejectRequest("No ':' character found in header line.");
+                    }
 
-                    if (chFirst == -1 || chSecond == -1)
+                    var validateName = beginName;
+                    if (validateName.Seek(ref _vectorSpaces, ref _vectorTabs, ref _vectorColons) != ':')
+                    {
+                        RejectRequest("Whitespace is not allowed in header name.");
+                    }
+
+                    var beginValue = scan;
+                    ch = scan.Peek();
+
+                    if (ch == -1)
                     {
                         return false;
                     }
-                    if (chFirst == '\r')
+
+                    // Skip header value leading whitespace.
+                    while (ch == ' ' || ch == '\t')
                     {
-                        if (chSecond == '\n')
-                        {
-                            consumed = scan;
-                            return true;
-                        }
-
-                        RejectRequest("Headers corrupted, invalid header sequence.");
-                        // Headers corrupted, parsing headers is complete
-                        return true;
-                    }
-
-                    while (
-                        chSecond == ' ' ||
-                        chSecond == '\t' ||
-                        chSecond == '\r' ||
-                        chSecond == '\n')
-                    {
-                        if (chSecond == '\r')
-                        {
-                            var scanAhead = scan;
-                            var chAhead = scanAhead.Take();
-                            if (chAhead == -1)
-                            {
-                                return false;
-                            }
-                            else if (chAhead == '\n')
-                            {
-                                chAhead = scanAhead.Take();
-                                if (chAhead == -1)
-                                {
-                                    return false;
-                                }
-                                else if (chAhead != ' ' && chAhead != '\t')
-                                {
-                                    // If the "\r\n" isn't part of "linear whitespace",
-                                    // then this header has no value.
-                                    break;
-                                }
-                            }
-                        }
-
+                        scan.Take();
                         beginValue = scan;
-                        chSecond = scan.Take();
 
-                        if (chSecond == -1)
+                        ch = scan.Peek();
+                        if (ch == -1)
                         {
                             return false;
                         }
                     }
+
                     scan = beginValue;
-
-                    var wrapping = false;
-                    while (!scan.IsEnd)
+                    if (scan.Seek(ref _vectorCRs) == -1)
                     {
-                        if (scan.Seek(ref _vectorCRs) == -1)
-                        {
-                            // no "\r" in sight, burn used bytes and go back to await more data
-                            return false;
-                        }
-
-                        var endValue = scan;
-                        chFirst = scan.Take(); // expecting: \r
-                        chSecond = scan.Take(); // expecting: \n
-
-                        if (chSecond == -1)
-                        {
-                            return false;
-                        }
-                        else if (chSecond != '\n')
-                        {
-                            // "\r" was all by itself, move just after it and try again
-                            scan = endValue;
-                            scan.Take();
-                            continue;
-                        }
-
-                        var chThird = scan.Peek();
-                        if (chThird == -1)
-                        {
-                            return false;
-                        }
-                        else if (chThird == ' ' || chThird == '\t')
-                        {
-                            // special case, "\r\n " or "\r\n\t".
-                            // this is considered wrapping"linear whitespace" and is actually part of the header value
-                            // continue past this for the next
-                            wrapping = true;
-                            continue;
-                        }
-
-                        var name = beginName.GetArraySegment(endName);
-                        var value = beginValue.GetAsciiString(endValue);
-                        if (wrapping)
-                        {
-                            value = value.Replace("\r\n", " ");
-                        }
-
-                        consumed = scan;
-                        requestHeaders.Append(name.Array, name.Offset, name.Count, value);
-                        break;
+                        // no "\r" in sight, burn used bytes and go back to await more data
+                        return false;
                     }
+
+                    scan.Take(); // we know this is '\r'
+                    ch = scan.Take(); // expecting '\n'
+
+                    if (ch == -1)
+                    {
+                        return false;
+                    }
+                    else if (ch != '\n')
+                    {
+                        RejectRequest("Header line must end in CRLF; only CR found.");
+                    }
+
+                    var next = scan.Peek();
+                    if (next == -1)
+                    {
+                        return false;
+                    }
+                    else if (next == ' ' || next == '\t')
+                    {
+                        // From https://tools.ietf.org/html/rfc7230#section-3.2.4:
+                        //
+                        // Historically, HTTP header field values could be extended over
+                        // multiple lines by preceding each extra line with at least one space
+                        // or horizontal tab (obs-fold).  This specification deprecates such
+                        // line folding except within the message/http media type
+                        // (Section 8.3.1).  A sender MUST NOT generate a message that includes
+                        // line folding (i.e., that has any field-value that contains a match to
+                        // the obs-fold rule) unless the message is intended for packaging
+                        // within the message/http media type.
+                        //
+                        // A server that receives an obs-fold in a request message that is not
+                        // within a message/http container MUST either reject the message by
+                        // sending a 400 (Bad Request), preferably with a representation
+                        // explaining that obsolete line folding is unacceptable, or replace
+                        // each received obs-fold with one or more SP octets prior to
+                        // interpreting the field value or forwarding the message downstream.
+                        RejectRequest("Header value line folding not supported.");
+                    }
+
+                    // Trim trailing whitespace from header value by repeatedly advancing to next
+                    // whitespace or CR.
+                    // 
+                    // - If CR is found, this is the end of the header value.
+                    // - If whitespace is found, this is the _tentative_ end of the header value.
+                    //   If non-whitespace is found after it and it's not CR, seek again to the next
+                    //   whitespace or CR for a new (possibly tentative) end of value.
+                    var ws = beginValue;
+                    var endValue = scan;
+                    do
+                    {
+                        ws.Seek(ref _vectorSpaces, ref _vectorTabs, ref _vectorCRs);
+                        endValue = ws;
+
+                        ch = ws.Take();
+                        while (ch == ' ' || ch == '\t')
+                        {
+                            ch = ws.Take();
+                        }
+                    } while (ch != '\r');
+
+                    var name = beginName.GetArraySegment(endName);
+                    var value = beginValue.GetAsciiString(endValue);
+
+                    consumed = scan;
+                    requestHeaders.Append(name.Array, name.Offset, name.Count, value);
                 }
+
                 return false;
             }
             finally

@@ -136,6 +136,42 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
+        [Theory]
+        // Missing final CRLF
+        [InlineData("Header-1: value1\r\nHeader-2: value2\r\n")]
+        // Leading whitespace
+        [InlineData(" Header-1: value1\r\nHeader-2: value2\r\n\r\n")]
+        [InlineData("\tHeader-1: value1\r\nHeader-2: value2\r\n\r\n")]
+        [InlineData("Header-1: value1\r\n Header-2: value2\r\n\r\n")]
+        [InlineData("Header-1: value1\r\n\tHeader-2: value2\r\n\r\n")]
+        // Missing LF
+        [InlineData("Header-1: value1\rHeader-2: value2\r\n\r\n")]
+        [InlineData("Header-1: value1\r\nHeader-2: value2\r\r\n")]
+        // Line folding
+        [InlineData("Header-1: multi\r\n line\r\nHeader-2: value2\r\n\r\n")]
+        [InlineData("Header-1: value1\r\nHeader-2: multi\r\n line\r\n\r\n")]
+        // Missing ':'
+        [InlineData("Header-1 value1\r\nHeader-2: value2\r\n\r\n")]
+        [InlineData("Header-1: value1\r\nHeader-2 value2\r\n\r\n")]
+        // Whitespace in header name
+        [InlineData("Header 1: value1\r\nHeader-2: value2\r\n\r\n")]
+        [InlineData("Header-1: value1\r\nHeader 2: value2\r\n\r\n")]
+        [InlineData("Header-1 : value1\r\nHeader-2: value2\r\n\r\n")]
+        [InlineData("Header-1\t: value1\r\nHeader-2: value2\r\n\r\n")]
+        [InlineData("Header-1: value1\r\nHeader-2 : value2\r\n\r\n")]
+        [InlineData("Header-1: value1\r\nHeader-2\t: value2\r\n\r\n")]
+        public async Task TestInvalidHeaders(string rawHeaders)
+        {
+            using (var server = new TestServer(context => TaskUtilities.CompletedTask))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendAllEnd($"GET / HTTP/1.1\r\n{rawHeaders}");
+                    await ReceiveBadRequestResponse(connection);
+                }
+            }
+        }
+
         private async Task ReceiveBadRequestResponse(TestConnection connection)
         {
             await connection.Receive(
