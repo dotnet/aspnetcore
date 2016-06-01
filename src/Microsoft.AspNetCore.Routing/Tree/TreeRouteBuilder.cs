@@ -13,6 +13,9 @@ using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing.Tree
 {
+    /// <summary>
+    /// Builder for <see cref="TreeRouter"/> instances.
+    /// </summary>
     public class TreeRouteBuilder
     {
         private readonly ILogger _logger;
@@ -21,6 +24,13 @@ namespace Microsoft.AspNetCore.Routing.Tree
         private readonly ObjectPool<UriBuildingContext> _objectPool;
         private readonly IInlineConstraintResolver _constraintResolver;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="TreeRouteBuilder"/>.
+        /// </summary>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="urlEncoder">The <see cref="UrlEncoder"/>.</param>
+        /// <param name="objectPool">The <see cref="ObjectPool{UrlBuildingContext}"/>.</param>
+        /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/>.</param>
         public TreeRouteBuilder(
             ILoggerFactory loggerFactory,
             UrlEncoder urlEncoder,
@@ -55,6 +65,14 @@ namespace Microsoft.AspNetCore.Routing.Tree
             _constraintLogger = loggerFactory.CreateLogger(typeof(RouteConstraintMatcher).FullName);
         }
 
+        /// <summary>
+        /// Adds a new inbound route to the <see cref="TreeRouter"/>.
+        /// </summary>
+        /// <param name="handler">The <see cref="IRouter"/> for handling the route.</param>
+        /// <param name="routeTemplate">The <see cref="RouteTemplate"/> of the route.</param>
+        /// <param name="routeName">The route name.</param>
+        /// <param name="order">The route order.</param>
+        /// <returns>The <see cref="InboundRouteEntry"/>.</returns>
         public InboundRouteEntry MapInbound(
             IRouter handler,
             RouteTemplate routeTemplate,
@@ -112,6 +130,15 @@ namespace Microsoft.AspNetCore.Routing.Tree
             return entry;
         }
 
+        /// <summary>
+        /// Adds a new outbound route to the <see cref="TreeRouter"/>.
+        /// </summary>
+        /// <param name="handler">The <see cref="IRouter"/> for handling the link generation.</param>
+        /// <param name="routeTemplate">The <see cref="RouteTemplate"/> of the route.</param>
+        /// <param name="requiredLinkValues">The <see cref="RouteValueDictionary"/> containing the route values.</param>
+        /// <param name="routeName">The route name.</param>
+        /// <param name="order">The route order.</param>
+        /// <returns>The <see cref="OutboundRouteEntry"/>.</returns>
         public OutboundRouteEntry MapOutbound(
             IRouter handler,
             RouteTemplate routeTemplate,
@@ -176,17 +203,37 @@ namespace Microsoft.AspNetCore.Routing.Tree
             return entry;
         }
 
+        /// <summary>
+        /// Gets the list of <see cref="InboundRouteEntry"/>.
+        /// </summary>
         public IList<InboundRouteEntry> InboundEntries { get; } = new List<InboundRouteEntry>();
 
+        /// <summary>
+        /// Gets the list of <see cref="OutboundRouteEntry"/>.
+        /// </summary>
         public IList<OutboundRouteEntry> OutboundEntries { get; } = new List<OutboundRouteEntry>();
 
+        /// <summary>
+        /// Builds a <see cref="TreeRouter"/> with the <see cref="InboundEntries"/>
+        /// and <see cref="OutboundEntries"/> defined in this <see cref="TreeRouteBuilder"/>.
+        /// </summary>
+        /// <returns>The <see cref="TreeRouter"/>.</returns>
         public TreeRouter Build()
         {
             return Build(version: 0);
         }
 
+        /// <summary>
+        /// Builds a <see cref="TreeRouter"/> with the <see cref="InboundEntries"/>
+        /// and <see cref="OutboundEntries"/> defined in this <see cref="TreeRouteBuilder"/>.
+        /// </summary>
+        /// <param name="version">The version of the <see cref="TreeRouter"/>.</param>
+        /// <returns>The <see cref="TreeRouter"/>.</returns>
         public TreeRouter Build(int version)
         {
+            // Tree route builder builds a tree for each of the different route orders defined by
+            // the user. When a route needs to be matched, the matching algorithm in tree router
+            // just iterates over the trees in ascending order when it tries to match the route.
             var trees = new Dictionary<int, UrlMatchingTree>();
 
             foreach (var entry in InboundEntries)
@@ -211,6 +258,10 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 version);
         }
 
+        /// <summary>
+        /// Removes all <see cref="InboundEntries"/> and <see cref="OutboundEntries"/> from this
+        /// <see cref="TreeRouteBuilder"/>.
+        /// </summary>
         public void Clear()
         {
             InboundEntries.Clear();
@@ -219,8 +270,37 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
         private void AddEntryToTree(UrlMatchingTree tree, InboundRouteEntry entry)
         {
-            var current = tree.Root;
+            // The url matching tree represents all the routes asociated with a given
+            // order. Each node in the tree represents all the different categories
+            // a segment can have for which there is a defined inbound route entry.
+            // Each node contains a set of Matches that indicate all the routes for which
+            // a URL is a potential match. This list contains the routes with the same
+            // number of segments and the routes with the same number of segments plus an
+            // additional catch all parameter (as it can be empty).
+            // For example, for a set of routes like:
+            // 'Customer/Index/{id}'
+            // '{Controller}/{Action}/{*parameters}'
+            //
+            // The route tree will look like:
+            // Root ->
+            //     Literals: Customer ->
+            //                   Literals: Index ->
+            //                                Parameters: {id}
+            //                                                Matches: 'Customer/Index/{id}'
+            //     Parameters: {Controller} ->
+            //                     Parameters: {Action} ->
+            //                                     Matches: '{Controller}/{Action}/{*parameters}'
+            //                                     CatchAlls: {*parameters}
+            //                                                    Matches: '{Controller}/{Action}/{*parameters}'
+            //
+            // When the tree router tries to match a route, it iterates the list of url matching trees
+            // in ascending order. For each tree it traverses each node starting from the root in the
+            // following order: Literals, constrained parameters, parameters, constrained catch all routes, catch alls.
+            // When it gets to a node of the same length as the route its trying to match, it simply looks at the list of
+            // candidates (which is in precence order) and tries to match the url against it.
+            //
 
+            var current = tree.Root;
             var matcher = new TemplateMatcher(entry.RouteTemplate, entry.Defaults);
 
             for (var i = 0; i < entry.RouteTemplate.Segments.Count; i++)

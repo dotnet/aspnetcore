@@ -65,6 +65,95 @@ namespace Microsoft.AspNetCore.Routing.Tree
         }
 
         [Theory]
+        [InlineData("/", "")]
+        [InlineData("/Literal1", "Literal1")]
+        [InlineData("/Literal1/Literal2", "Literal1/Literal2")]
+        [InlineData("/Literal1/Literal2/Literal3", "Literal1/Literal2/Literal3")]
+        [InlineData("/Literal1/Literal2/Literal3/4", "Literal1/Literal2/Literal3/{*constrainedCatchAll:int}")]
+        [InlineData("/Literal1/Literal2/Literal3/Literal4", "Literal1/Literal2/Literal3/{*catchAll}")]
+        [InlineData("/1", "{constrained1:int}")]
+        [InlineData("/1/2", "{constrained1:int}/{constrained2:int}")]
+        [InlineData("/1/2/3", "{constrained1:int}/{constrained2:int}/{constrained3:int}")]
+        [InlineData("/1/2/3/4", "{constrained1:int}/{constrained2:int}/{constrained3:int}/{*constrainedCatchAll:int}")]
+        [InlineData("/1/2/3/CatchAll4", "{constrained1:int}/{constrained2:int}/{constrained3:int}/{*catchAll}")]
+        [InlineData("/parameter1", "{parameter1}")]
+        [InlineData("/parameter1/parameter2", "{parameter1}/{parameter2}")]
+        [InlineData("/parameter1/parameter2/parameter3", "{parameter1}/{parameter2}/{parameter3}")]
+        [InlineData("/parameter1/parameter2/parameter3/4", "{parameter1}/{parameter2}/{parameter3}/{*constrainedCatchAll:int}")]
+        [InlineData("/parameter1/parameter2/parameter3/CatchAll4", "{parameter1}/{parameter2}/{parameter3}/{*catchAll}")]
+        public async Task TreeRouter_RouteAsync_MatchesRouteWithTheRightLength(string url, string expected)
+        {
+            // Arrange
+            var routes = new[] {
+                "",
+                "Literal1",
+                "Literal1/Literal2",
+                "Literal1/Literal2/Literal3",
+                "Literal1/Literal2/Literal3/{*constrainedCatchAll:int}",
+                "Literal1/Literal2/Literal3/{*catchAll}",
+                "{constrained1:int}",
+                "{constrained1:int}/{constrained2:int}",
+                "{constrained1:int}/{constrained2:int}/{constrained3:int}",
+                "{constrained1:int}/{constrained2:int}/{constrained3:int}/{*constrainedCatchAll:int}",
+                "{constrained1:int}/{constrained2:int}/{constrained3:int}/{*catchAll}",
+                "{parameter1}",
+                "{parameter1}/{parameter2}",
+                "{parameter1}/{parameter2}/{parameter3}",
+                "{parameter1}/{parameter2}/{parameter3}/{*constrainedCatchAll:int}",
+                "{parameter1}/{parameter2}/{parameter3}/{*catchAll}",
+            };
+
+            var expectedRouteGroup = CreateRouteGroup(0, expected);
+
+            var builder = CreateBuilder();
+
+            // We setup the route entries in reverse order of precedence to ensure that when we
+            // try to route the request, the route with a higher precedence gets tried first.
+            foreach (var template in routes.Reverse())
+            {
+                MapInboundEntry(builder, template);
+            }
+
+            var route = builder.Build();
+
+            var context = CreateRouteContext(url);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Equal(expectedRouteGroup, context.RouteData.Values["test_route_group"]);
+        }
+
+        [Fact]
+        public async Task TreeRouter_RouteAsync_DoesNotMatchShorterUrl()
+        {
+            // Arrange
+            var routes = new[] {
+                "Literal1/Literal2/Literal3",
+            };
+
+            var builder = CreateBuilder();
+
+            // We setup the route entries in reverse order of precedence to ensure that when we
+            // try to route the request, the route with a higher precedence gets tried first.
+            foreach (var template in routes.Reverse())
+            {
+                MapInboundEntry(builder, template);
+            }
+
+            var route = builder.Build();
+
+            var context = CreateRouteContext("/Literal1");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Null(context.Handler);
+        }
+
+        [Theory]
         [InlineData("template/5", "template/{parameter:int}")]
         [InlineData("template/5", "template/{parameter}")]
         [InlineData("template/5", "template/{*parameter:int}")]
@@ -623,7 +712,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         {
             // Arrange
             var builder = CreateBuilder();
-            
+
             // We setup the route entries with a lower relative order first to ensure that when
             // we try to generate a link, the route with the higher relative order gets tried first.
             MapOutboundEntry(builder, firstTemplate, requiredValues: null, order: 1);
@@ -653,7 +742,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         {
             // Arrange
             var builder = CreateBuilder();
-            
+
             // We setup the route entries with a lower relative template order first to ensure that when
             // we try to generate a link, the route with the higher template order gets tried first.
             MapOutboundEntry(builder, secondTemplate, requiredValues: null, order: 0);
@@ -716,7 +805,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         {
             // Arrange
             var builder = CreateBuilder();
-            
+
             // The named route has a lower order which will ensure that we aren't trying the route as
             // if it were an unnamed route.
             MapOutboundEntry(builder, "named", requiredValues: null, order: 1, name: "NamedRoute");
@@ -774,7 +863,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         {
             // Arrange
             var builder = CreateBuilder();
-            
+
             // The named route has a lower order which will ensure that we aren't trying the route as
             // if it were an unnamed route.
             MapOutboundEntry(builder, template, requiredValues: null, order: 1, name: "NamedRoute");
@@ -899,7 +988,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         {
             // Arrange
             var builder = CreateBuilder();
-            MapOutboundEntry(builder, 
+            MapOutboundEntry(builder,
                 "api/{area}/dosomething/{controller}/{action}",
                 new { action = "Index", controller = "Store", area = "AwesomeCo" });
 
@@ -1438,9 +1527,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
             IRouter handler = null)
         {
             var entry = builder.MapInbound(
-                handler ?? new StubRouter(), 
-                TemplateParser.Parse(template), 
-                routeName: null, 
+                handler ?? new StubRouter(),
+                TemplateParser.Parse(template),
+                routeName: null,
                 order: order);
 
             // Add a generated 'route group' so we can identify later which entry matched.

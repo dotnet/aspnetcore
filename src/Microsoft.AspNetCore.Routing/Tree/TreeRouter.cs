@@ -4,8 +4,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Logging;
 using Microsoft.AspNetCore.Routing.Template;
@@ -174,7 +176,6 @@ namespace Microsoft.AspNetCore.Routing.Tree
             foreach (var tree in _trees)
             {
                 var tokenizer = new PathTokenizer(context.HttpContext.Request.Path);
-                var enumerator = tokenizer.GetEnumerator();
                 var root = tree.Root;
 
                 var treeEnumerator = new TreeEnumerator(root, tokenizer);
@@ -235,14 +236,11 @@ namespace Microsoft.AspNetCore.Routing.Tree
             private readonly Stack<UrlMatchingNode> _stack;
             private readonly PathTokenizer _tokenizer;
 
-            private int _segmentIndex;
-
             public TreeEnumerator(UrlMatchingNode root, PathTokenizer tokenizer)
             {
                 _stack = new Stack<UrlMatchingNode>();
                 _tokenizer = tokenizer;
                 Current = null;
-                _segmentIndex = -1;
 
                 _stack.Push(root);
             }
@@ -275,19 +273,23 @@ namespace Microsoft.AspNetCore.Routing.Tree
                         Current = next;
                         return true;
                     }
-                    else if (++_segmentIndex >= _tokenizer.Count)
+                    // Next template has the same length as the url we are trying to match
+                    // The only possible matching segments are either our current matches or
+                    // any catch-all segment after this segment in which the catch all is empty.
+                    else if (next.Depth == _tokenizer.Count)
                     {
-                        _segmentIndex--;
                         if (next.Matches.Count > 0)
                         {
                             Current = next;
                             return true;
                         }
-                    }
-
-                    if (_tokenizer.Count == 0)
-                    {
-                        continue;
+                        else
+                        {
+                            // We can stop looking as any other child node from this node will be
+                            // either a literal, a constrained parameter or a parameter.
+                            // (Catch alls and constrained catch alls will show up as candidate matches).
+                            continue;
+                        }
                     }
 
                     if (next.CatchAlls != null)
@@ -313,7 +315,8 @@ namespace Microsoft.AspNetCore.Routing.Tree
                     if (next.Literals.Count > 0)
                     {
                         UrlMatchingNode node;
-                        if (next.Literals.TryGetValue(_tokenizer[_segmentIndex].Value, out node))
+                        Debug.Assert(next.Depth < _tokenizer.Count);
+                        if (next.Literals.TryGetValue(_tokenizer[next.Depth].Value, out node))
                         {
                             _stack.Push(node);
                         }
@@ -327,7 +330,6 @@ namespace Microsoft.AspNetCore.Routing.Tree
             {
                 _stack.Clear();
                 Current = null;
-                _segmentIndex = -1;
             }
         }
 
