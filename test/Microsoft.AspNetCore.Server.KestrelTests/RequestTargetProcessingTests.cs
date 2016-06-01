@@ -17,17 +17,17 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var server = new TestServer(async context =>
             {
-                Assert.Equal("/\u00C5", context.Request.PathBase.Value);
-                Assert.Equal("/B/\u00C5", context.Request.Path.Value);
+                Assert.Equal("/A", context.Request.PathBase.Value);
+                Assert.Equal("/B/C", context.Request.Path.Value);
 
                 context.Response.Headers["Content-Length"] = new[] { "11" };
                 await context.Response.WriteAsync("Hello World");
-            }, testContext, "http://127.0.0.1:0/\u0041\u030A"))
+            }, testContext, "http://127.0.0.1:0/A"))
             {
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
-                        "GET /%41%CC%8A/A/../B/%41%CC%8A HTTP/1.0",
+                        "GET /A/0/../B/C HTTP/1.0",
                         "",
                         "");
                     await connection.ReceiveEnd(

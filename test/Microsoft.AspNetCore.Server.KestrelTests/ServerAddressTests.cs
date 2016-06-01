@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Xunit;
 
@@ -66,15 +65,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.Equal(pathBase, serverAddress.PathBase);
 
             Assert.Equal(toString ?? url, serverAddress.ToString());
-        }
-
-        [Fact]
-        public void PathBaseIsNormalized()
-        {
-            var serverAddres = ServerAddress.FromUrl("http://localhost:8080/p\u0041\u030Athbase");
-
-            Assert.True(serverAddres.PathBase.IsNormalized(NormalizationForm.FormC));
-            Assert.Equal("/p\u00C5thbase", serverAddres.PathBase);
         }
 
         [Fact]

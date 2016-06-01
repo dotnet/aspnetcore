@@ -156,8 +156,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 serverAddress.PathBase = url.Substring(pathDelimiterEnd);
             }
 
-            serverAddress.PathBase = PathNormalizer.NormalizeToNFC(serverAddress.PathBase);
-
             return serverAddress;
         }
 

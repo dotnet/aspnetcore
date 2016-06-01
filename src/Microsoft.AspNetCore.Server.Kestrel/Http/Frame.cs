@@ -919,7 +919,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     // URI was encoded, unescape and then parse as utf8
                     pathEnd = UrlPathDecoder.Unescape(pathBegin, pathEnd);
                     requestUrlPath = pathBegin.GetUtf8String(pathEnd);
-                    requestUrlPath = PathNormalizer.NormalizeToNFC(requestUrlPath);
                 }
                 else
                 {

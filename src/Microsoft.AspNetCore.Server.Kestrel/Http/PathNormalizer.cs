@@ -9,16 +9,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
     public static class PathNormalizer
     {
-        public static string NormalizeToNFC(string path)
-        {
-            if (!path.IsNormalized(NormalizationForm.FormC))
-            {
-                path = path.Normalize(NormalizationForm.FormC);
-            }
-
-            return path;
-        }
-
         public static string RemoveDotSegments(string path)
         {
             if (ContainsDotSegments(path))

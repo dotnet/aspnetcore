@@ -51,13 +51,5 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var result = PathNormalizer.RemoveDotSegments(input);
             Assert.Equal(expected, result);
         }
-
-        [Fact]
-        public void NormalizesToNFC()
-        {
-            var result = PathNormalizer.NormalizeToNFC("/\u0041\u030A");
-            Assert.True(result.IsNormalized(NormalizationForm.FormC));
-            Assert.Equal("/\u00C5", result);
-        }
     }
 }
