@@ -45,7 +45,7 @@ namespace PushCoherence
                                 await packageUpdateResource.Push(
                                     packagePath,
                                     symbolsSource: null,
-                                    timeoutInSecond: 30,
+                                    timeoutInSecond: 60,
                                     disableBuffering: false,
                                     getApiKey: _ => apiKey,
                                     log: NullLogger.Instance);
@@ -55,6 +55,7 @@ namespace PushCoherence
                             catch (Exception ex) when (attempt < 9)
                             {
                                 Console.Error.WriteLine($"Attempt {(10 - attempt)} failed.{Environment.NewLine}{ex}{Environment.NewLine}Retrying...");
+                                await Task.Delay(TimeSpan.FromSeconds(attempt));
                             }
                         }
                     }
