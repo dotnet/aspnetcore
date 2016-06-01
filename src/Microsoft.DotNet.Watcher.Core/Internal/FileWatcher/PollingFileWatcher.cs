@@ -117,13 +117,20 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
                 {
                     var fileMeta = _knownEntities[fullFilePath];
 
-                    if (fileMeta.FileInfo.LastWriteTime != f.LastWriteTime)
+                    try
                     {
-                        // File changed
-                        RecordChange(f);
-                    }
+                        if (fileMeta.FileInfo.LastWriteTime != f.LastWriteTime)
+                        {
+                            // File changed
+                            RecordChange(f);
+                        }
 
-                    _knownEntities[fullFilePath] = new FileMeta(fileMeta.FileInfo, true);
+                        _knownEntities[fullFilePath] = new FileMeta(fileMeta.FileInfo, true);
+                    }
+                    catch(FileNotFoundException)
+                    {
+                        _knownEntities[fullFilePath] = new FileMeta(fileMeta.FileInfo, false);
+                    }
                 }
 
                 _tempDictionary.Add(f.FullName, new FileMeta(f));
