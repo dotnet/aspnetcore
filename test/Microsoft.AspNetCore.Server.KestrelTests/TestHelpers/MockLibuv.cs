@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 
             _uv_async_send = postHandle =>
             {
+                PostCount++;
                 _loopWh.Set();
 
                 return 0;
@@ -94,6 +95,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
         public uv_alloc_cb AllocCallback { get; set; }
 
         public uv_read_cb ReadCallback { get; set; }
+
+        public int PostCount { get; set; }
 
         private int UvReadStart(UvStreamHandle handle, uv_alloc_cb allocCallback, uv_read_cb readCallback)
         {

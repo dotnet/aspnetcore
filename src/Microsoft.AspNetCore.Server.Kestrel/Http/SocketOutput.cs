@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
     {
         public const int MaxPooledWriteReqs = 1024;
 
+        private const int _maxPendingWrites = 3;
         private const int _maxBytesPreCompleted = 65536;
         private const int _initialTaskQueues = 64;
         private const int _maxPooledWriteContexts = 32;
@@ -44,7 +45,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         // The number of write operations that have been scheduled so far
         // but have not completed.
-        private bool _writePending = false;
+        private int _ongoingWrites = 0;
+        // Whether or not a write operation is pending to start on the uv thread.
+        // If this is true, there is no reason to schedule another write even if
+        // there aren't yet three ongoing write operations.
+        private bool _postingWrite = false;
+
         private bool _cancelled = false;
         private int _numBytesPreCompleted = 0;
         private Exception _lastWriteError;
@@ -185,9 +191,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     }
                 }
 
-                if (!_writePending)
+                if (!_postingWrite && _ongoingWrites < _maxPendingWrites)
                 {
-                    _writePending = true;
+                    _postingWrite = true;
+                    _ongoingWrites++;
                     scheduleWrite = true;
                 }
             }
@@ -325,12 +332,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
             if (Monitor.TryEnter(_contextLock))
             {
-                _writePending = false;
+                _postingWrite = false;
 
                 if (_nextWriteContext != null)
                 {
                     writingContext = _nextWriteContext;
                     _nextWriteContext = null;
+                }
+                else
+                {
+                    _ongoingWrites--;
                 }
 
                 Monitor.Exit(_contextLock);
@@ -378,6 +389,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 CompleteAllWrites();
                 _log.ConnectionError(_connectionId, error);
+            }
+
+            if (!_postingWrite && _nextWriteContext != null)
+            {
+                _postingWrite = true;
+                ScheduleWrite();
+            }
+            else
+            {
+                _ongoingWrites--;
             }
         }
 

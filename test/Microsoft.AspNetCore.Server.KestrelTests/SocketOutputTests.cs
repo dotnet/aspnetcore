@@ -544,5 +544,122 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     default(ArraySegment<byte>), default(CancellationToken), socketDisconnect: true);
             }
         }
+
+        [Fact]
+        public void OnlyAllowsUpToThreeConcurrentWrites()
+        {
+            var writeWh = new ManualResetEventSlim();
+            var completeQueue = new Queue<Action<int>>();
+
+            var mockLibuv = new MockLibuv
+            {
+                OnWrite = (socket, buffers, triggerCompleted) =>
+                {
+                    writeWh.Set();
+                    completeQueue.Enqueue(triggerCompleted);
+                    return 0;
+                }
+            };
+
+            using (var memory = new MemoryPool())
+            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
+            {
+                kestrelEngine.Start(count: 1);
+
+                var kestrelThread = kestrelEngine.Threads[0];
+                var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
+                var trace = new KestrelTrace(new TestKestrelTrace());
+                var ltp = new LoggingThreadPool(trace);
+                var socketOutput = new SocketOutput(kestrelThread, socket, memory, new MockConnection(), "0", trace, ltp, new Queue<UvWriteReq>());
+
+                var buffer = new ArraySegment<byte>(new byte[1]);
+
+                // First three writes trigger uv_write
+                socketOutput.WriteAsync(buffer, CancellationToken.None);
+                Assert.True(writeWh.Wait(1000));
+                writeWh.Reset();
+                socketOutput.WriteAsync(buffer, CancellationToken.None);
+                Assert.True(writeWh.Wait(1000));
+                writeWh.Reset();
+                socketOutput.WriteAsync(buffer, CancellationToken.None);
+                Assert.True(writeWh.Wait(1000));
+                writeWh.Reset();
+
+                // The fourth write won't trigger uv_write since the first three haven't completed
+                socketOutput.WriteAsync(buffer, CancellationToken.None);
+                Assert.False(writeWh.Wait(1000));
+
+                // Complete 1st write allowing uv_write to be triggered again
+                completeQueue.Dequeue()(0);
+                Assert.True(writeWh.Wait(1000));
+
+                // Cleanup
+                var cleanupTask = socketOutput.WriteAsync(
+                    default(ArraySegment<byte>), default(CancellationToken), socketDisconnect: true);
+
+                foreach (var triggerCompleted in completeQueue)
+                {
+                    triggerCompleted(0);
+                }
+            }
+        }
+
+        [Fact]
+        public void WritesAreAggregated()
+        {
+            var writeWh = new ManualResetEventSlim();
+            var writeCount = 0;
+
+            var mockLibuv = new MockLibuv
+            {
+                OnWrite = (socket, buffers, triggerCompleted) =>
+                {
+                    writeCount++;
+                    triggerCompleted(0);
+                    writeWh.Set();
+                    return 0;
+                }
+            };
+
+            using (var memory = new MemoryPool())
+            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
+            {
+                kestrelEngine.Start(count: 1);
+
+                var kestrelThread = kestrelEngine.Threads[0];
+                var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
+                var trace = new KestrelTrace(new TestKestrelTrace());
+                var ltp = new LoggingThreadPool(trace);
+                var socketOutput = new SocketOutput(kestrelThread, socket, memory, new MockConnection(), "0", trace, ltp, new Queue<UvWriteReq>());
+
+                var blockThreadWh = new ManualResetEventSlim();
+                kestrelThread.Post(_ =>
+                {
+                    blockThreadWh.Wait();
+                }, state: null);
+
+                var buffer = new ArraySegment<byte>(new byte[1]);
+
+                // Two calls to WriteAsync trigger uv_write once if both calls
+                // are made before write is scheduled
+                socketOutput.WriteAsync(buffer, CancellationToken.None);
+                socketOutput.WriteAsync(buffer, CancellationToken.None);
+
+                blockThreadWh.Set();
+
+                Assert.True(writeWh.Wait(1000));
+                writeWh.Reset();
+
+                // Write isn't called twice after the thread is unblocked
+                Assert.False(writeWh.Wait(1000));
+                Assert.Equal(1, writeCount);
+                // One call to ScheduleWrite + One call to Post to block the thread
+                Assert.Equal(2, mockLibuv.PostCount);
+
+                // Cleanup
+                var cleanupTask = socketOutput.WriteAsync(
+                    default(ArraySegment<byte>), default(CancellationToken), socketDisconnect: true);
+            }
+        }
     }
 }
