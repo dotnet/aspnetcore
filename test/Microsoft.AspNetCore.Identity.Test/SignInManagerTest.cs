@@ -407,6 +407,7 @@ namespace Microsoft.AspNetCore.Identity.Test
                 // REVIEW: restore ability to test is persistent
                 //It.Is<AuthenticationProperties>(v => v.IsPersistent == isPersistent))).Verifiable();
                 auth.Setup(a => a.SignOutAsync(helper.Options.Cookies.ExternalCookieAuthenticationScheme)).Returns(Task.FromResult(0)).Verifiable();
+                auth.Setup(a => a.SignOutAsync(helper.Options.Cookies.TwoFactorUserIdCookieAuthenticationScheme)).Returns(Task.FromResult(0)).Verifiable();
             }
             else
             {

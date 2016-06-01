@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Identity
 
             ExternalCookie = new CookieAuthenticationOptions
             {
+                AutomaticAuthenticate = false,
                 AuthenticationScheme = DefaultExternalScheme,
                 CookieName = DefaultExternalScheme,
                 ExpireTimeSpan = TimeSpan.FromMinutes(5)
@@ -43,17 +44,18 @@ namespace Microsoft.AspNetCore.Identity
 
             TwoFactorRememberMeCookie = new CookieAuthenticationOptions
             {
+                AutomaticAuthenticate = false,
                 AuthenticationScheme = DefaultTwoFactorRememberMeScheme,
                 CookieName = DefaultTwoFactorRememberMeScheme
             };
 
             TwoFactorUserIdCookie = new CookieAuthenticationOptions
             {
+                AutomaticAuthenticate = false,
                 AuthenticationScheme = DefaultTwoFactorUserIdScheme,
                 CookieName = DefaultTwoFactorUserIdScheme,
                 ExpireTimeSpan = TimeSpan.FromMinutes(5)
-                };
-
+            };
         }
 
         public CookieAuthenticationOptions ApplicationCookie { get; set; }

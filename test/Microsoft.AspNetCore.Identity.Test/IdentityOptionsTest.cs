@@ -35,6 +35,11 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(ClaimTypes.Name, options.ClaimsIdentity.UserNameClaimType);
             Assert.Equal(ClaimTypes.NameIdentifier, options.ClaimsIdentity.UserIdClaimType);
             Assert.Equal("AspNet.Identity.SecurityStamp", options.ClaimsIdentity.SecurityStampClaimType);
+
+            Assert.True(options.Cookies.ApplicationCookie.AutomaticAuthenticate);
+            Assert.False(options.Cookies.ExternalCookie.AutomaticAuthenticate);
+            Assert.False(options.Cookies.TwoFactorRememberMeCookie.AutomaticAuthenticate);
+            Assert.False(options.Cookies.TwoFactorUserIdCookie.AutomaticAuthenticate);
         }
 
         [Fact]

@@ -365,6 +365,8 @@ namespace Microsoft.AspNetCore.Identity
                 {
                     await Context.Authentication.SignOutAsync(Options.Cookies.ExternalCookieAuthenticationScheme);
                 }
+                // Cleanup two factor user id cookie
+                await Context.Authentication.SignOutAsync(Options.Cookies.TwoFactorUserIdCookieAuthenticationScheme);
                 if (rememberClient)
                 {
                     await RememberTwoFactorClientAsync(user);
