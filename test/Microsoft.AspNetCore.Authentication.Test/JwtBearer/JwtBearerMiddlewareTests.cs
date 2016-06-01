@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -30,7 +31,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         {
             var options = new JwtBearerOptions
             {
-                AutomaticAuthenticate = true,
                 Authority = "https://login.windows.net/tushartest.onmicrosoft.com",
                 Audience = "https://TusharTest.onmicrosoft.com/TodoListService-ManualJwt"
             };
@@ -45,10 +45,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         [Fact]
         public async Task SignInThrows()
         {
-            var server = CreateServer(new JwtBearerOptions
-            {
-                AutomaticAuthenticate = true
-            });
+            var server = CreateServer(new JwtBearerOptions());
             var transaction = await server.SendAsync("https://example.com/signIn");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
@@ -56,10 +53,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         [Fact]
         public async Task SignOutThrows()
         {
-            var server = CreateServer(new JwtBearerOptions
-            {
-                AutomaticAuthenticate = true
-            });
+            var server = CreateServer(new JwtBearerOptions());
             var transaction = await server.SendAsync("https://example.com/signOut");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
@@ -70,7 +64,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         {
             var server = CreateServer(new JwtBearerOptions
             {
-                AutomaticAuthenticate = true,
                 Events = new JwtBearerEvents()
                 {
                     OnMessageReceived = context =>
@@ -117,10 +110,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         [Fact]
         public async Task UnrecognizedTokenReceived()
         {
-            var server = CreateServer(new JwtBearerOptions
-            {
-                AutomaticAuthenticate = true
-            });
+            var server = CreateServer(new JwtBearerOptions());
 
             var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
             Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
@@ -130,16 +120,67 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         [Fact]
         public async Task InvalidTokenReceived()
         {
-            var options = new JwtBearerOptions
-            {
-                AutomaticAuthenticate = true
-            };
+            var options = new JwtBearerOptions();
             options.SecurityTokenValidators.Clear();
             options.SecurityTokenValidators.Add(new InvalidTokenValidator());
             var server = CreateServer(options);
 
             var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
             Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+            Assert.Equal("Bearer", response.Response.Headers.WwwAuthenticate.First().ToString());
+            Assert.Equal("", response.ResponseText);
+        }
+
+        [Theory]
+        [InlineData(typeof(SecurityTokenInvalidAudienceException), "The audience is invalid")]
+        [InlineData(typeof(SecurityTokenInvalidIssuerException), "The issuer is invalid")]
+        [InlineData(typeof(SecurityTokenNoExpirationException), "The token has no expiration")]
+        [InlineData(typeof(SecurityTokenInvalidLifetimeException), "The token lifetime is invalid")]
+        [InlineData(typeof(SecurityTokenNotYetValidException), "The token is not valid yet")]
+        [InlineData(typeof(SecurityTokenExpiredException), "The token is expired")]
+        [InlineData(typeof(SecurityTokenInvalidSignatureException), "The signature is invalid")]
+        [InlineData(typeof(SecurityTokenSignatureKeyNotFoundException), "The signature key was not found")]
+        public async Task ExceptionReportedInHeaderForAuthenticationFailures(Type errorType, string message)
+        {
+            var options = new JwtBearerOptions();
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new InvalidTokenValidator(errorType));
+            var server = CreateServer(options);
+
+            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+            Assert.Equal($"Bearer error=\"invalid_token\", error_description=\"{message}\"", response.Response.Headers.WwwAuthenticate.First().ToString());
+            Assert.Equal("", response.ResponseText);
+        }
+
+        [Theory]
+        [InlineData(typeof(ArgumentException))]
+        public async Task ExceptionNotReportedInHeaderForOtherFailures(Type errorType)
+        {
+            var options = new JwtBearerOptions();
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new InvalidTokenValidator(errorType));
+            var server = CreateServer(options);
+
+            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+            Assert.Equal("Bearer", response.Response.Headers.WwwAuthenticate.First().ToString());
+            Assert.Equal("", response.ResponseText);
+        }
+
+        [Fact]
+        public async Task ExceptionsReportedInHeaderForMultipleAuthenticationFailures()
+        {
+            var options = new JwtBearerOptions();
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new InvalidTokenValidator(typeof(SecurityTokenInvalidAudienceException)));
+            options.SecurityTokenValidators.Add(new InvalidTokenValidator(typeof(SecurityTokenSignatureKeyNotFoundException)));
+            var server = CreateServer(options);
+
+            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+            Assert.Equal($"Bearer error=\"invalid_token\", error_description=\"The audience is invalid; The signature key was not found\"",
+                response.Response.Headers.WwwAuthenticate.First().ToString());
             Assert.Equal("", response.ResponseText);
         }
 
@@ -148,7 +189,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         {
             var options = new JwtBearerOptions
             {
-                AutomaticAuthenticate = true,
                 Events = new JwtBearerEvents()
                 {
                     OnTokenValidated = context =>
@@ -185,7 +225,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         {
             var options = new JwtBearerOptions()
             {
-                AutomaticAuthenticate = true,
                 Events = new JwtBearerEvents()
                 {
                     OnMessageReceived = context =>
@@ -233,7 +272,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         {
             var server = CreateServer(new JwtBearerOptions
             {
-                AutomaticAuthenticate = true,
                 Events = new JwtBearerEvents()
                 {
                     OnMessageReceived = context =>
@@ -266,7 +304,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         {
             var options = new JwtBearerOptions
             {
-                AutomaticAuthenticate = true,
                 Events = new JwtBearerEvents()
                 {
                     OnTokenValidated = context =>
@@ -298,7 +335,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         {
             var options = new JwtBearerOptions
             {
-                AutomaticAuthenticate = true,
                 Events = new JwtBearerEvents()
                 {
                     OnTokenValidated = context =>
@@ -330,8 +366,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         {
             var server = CreateServer(new JwtBearerOptions
             {
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true,
                 Events = new JwtBearerEvents()
                 {
                     OnChallenge = context =>
@@ -352,7 +386,15 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         {
             public InvalidTokenValidator()
             {
+                ExceptionType = typeof(SecurityTokenException);
             }
+
+            public InvalidTokenValidator(Type exceptionType)
+            {
+                ExceptionType = exceptionType;
+            }
+
+            public Type ExceptionType { get; set; }
 
             public bool CanValidateToken => true;
 
@@ -366,7 +408,9 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
             public ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
             {
-                throw new SecurityTokenException("InvalidToken");
+                var constructor = ExceptionType.GetTypeInfo().GetConstructor(new[] { typeof(string) });
+                var exception = (Exception)constructor.Invoke(new[] { ExceptionType.Name });
+                throw exception;
             }
         }
 

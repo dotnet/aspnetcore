@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
@@ -16,5 +17,10 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         }
 
         public AuthenticationProperties Properties { get; }
+
+        /// <summary>
+        /// Any failures encountered during the authentication process.
+        /// </summary>
+        public Exception AuthenticateFailure { get; set; }
     }
 }

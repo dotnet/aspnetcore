@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -103,7 +104,8 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                             Logger.TokenValidationFailed(token, ex);
 
                             // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the event.
-                            if (Options.RefreshOnIssuerKeyNotFound && ex.GetType().Equals(typeof(SecurityTokenSignatureKeyNotFoundException)))
+                            if (Options.RefreshOnIssuerKeyNotFound && Options.ConfigurationManager != null
+                                && ex is SecurityTokenSignatureKeyNotFoundException)
                             {
                                 Options.ConfigurationManager.RequestRefresh();
                             }
@@ -183,7 +185,12 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
         protected override async Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
         {
-            var eventContext = new JwtBearerChallengeContext(Context, Options, new AuthenticationProperties(context.Properties));
+            var authResult = await HandleAuthenticateOnceAsync();
+
+            var eventContext = new JwtBearerChallengeContext(Context, Options, new AuthenticationProperties(context.Properties))
+            {
+                AuthenticateFailure = authResult?.Failure,
+            };
             await Options.Events.Challenge(eventContext);
             if (eventContext.HandledResponse)
             {
@@ -195,9 +202,92 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             }
 
             Response.StatusCode = 401;
-            Response.Headers.Append(HeaderNames.WWWAuthenticate, Options.Challenge);
+
+            var errorDescription = CreateErrorDescription(eventContext.AuthenticateFailure);
+
+            if (errorDescription.Length == 0)
+            {
+                Response.Headers.Append(HeaderNames.WWWAuthenticate, Options.Challenge);
+            }
+            else
+            {
+                // https://tools.ietf.org/html/rfc6750#section-3.1
+                // WWW-Authenticate: Bearer realm="example", error="invalid_token", error_description="The access token expired"
+                var builder = new StringBuilder(Options.Challenge);
+                if (Options.Challenge.IndexOf(" ", StringComparison.Ordinal) > 0)
+                {
+                    // Only add a comma after the first param, if any
+                    builder.Append(',');
+                }
+                builder.Append(" error=\"invalid_token\", error_description=\"");
+                builder.Append(errorDescription);
+                builder.Append('\"');
+
+                Response.Headers.Append(HeaderNames.WWWAuthenticate, builder.ToString());
+            }
 
             return false;
+        }
+
+        private static string CreateErrorDescription(Exception authFailure)
+        {
+            if (authFailure == null)
+            {
+                return string.Empty;
+            }
+
+            IEnumerable<Exception> exceptions;
+            if (authFailure is AggregateException)
+            {
+                var agEx = authFailure as AggregateException;
+                exceptions = agEx.InnerExceptions;
+            }
+            else
+            {
+                exceptions = new[] { authFailure };
+            }
+
+            var messages = new List<string>();
+
+            foreach (var ex in exceptions)
+            {
+                // Order sensitive, some of these exceptions derive from others
+                // and we want to display the most specific message possible.
+                if (ex is SecurityTokenInvalidAudienceException)
+                {
+                    messages.Add("The audience is invalid");
+                }
+                else if (ex is SecurityTokenInvalidIssuerException)
+                {
+                    messages.Add("The issuer is invalid");
+                }
+                else if (ex is SecurityTokenNoExpirationException)
+                {
+                    messages.Add("The token has no expiration");
+                }
+                else if (ex is SecurityTokenInvalidLifetimeException)
+                {
+                    messages.Add("The token lifetime is invalid");
+                }
+                else if (ex is SecurityTokenNotYetValidException)
+                {
+                    messages.Add("The token is not valid yet");
+                }
+                else if (ex is SecurityTokenExpiredException)
+                {
+                    messages.Add("The token is expired");
+                }
+                else if (ex is SecurityTokenSignatureKeyNotFoundException)
+                {
+                    messages.Add("The signature key was not found");
+                }
+                else if (ex is SecurityTokenInvalidSignatureException)
+                {
+                    messages.Add("The signature is invalid");
+                }
+            }
+
+            return string.Join("; ", messages);
         }
 
         protected override Task HandleSignOutAsync(SignOutContext context)
