@@ -11,23 +11,23 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
     public class RequestTargetProcessingTests
     {
         [Fact]
-        public async Task RequestPathIsNormalized()
+        public async Task RequestPathIsNotNormalized()
         {
             var testContext = new TestServiceContext();
 
             using (var server = new TestServer(async context =>
             {
-                Assert.Equal("/A", context.Request.PathBase.Value);
-                Assert.Equal("/B/C", context.Request.Path.Value);
+                Assert.Equal("/\u0041\u030A", context.Request.PathBase.Value);
+                Assert.Equal("/B/\u0041\u030A", context.Request.Path.Value);
 
                 context.Response.Headers["Content-Length"] = new[] { "11" };
                 await context.Response.WriteAsync("Hello World");
-            }, testContext, "http://127.0.0.1:0/A"))
+            }, testContext, "http://127.0.0.1:0/\u0041\u030A"))
             {
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
-                        "GET /A/0/../B/C HTTP/1.0",
+                        "GET /%41%CC%8A/A/../B/%41%CC%8A HTTP/1.0",
                         "",
                         "");
                     await connection.ReceiveEnd(
