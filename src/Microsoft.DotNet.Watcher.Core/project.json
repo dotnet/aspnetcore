@@ -21,7 +21,7 @@
     "Microsoft.Extensions.FileProviders.Physical": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.FileSystemGlobbing": "1.0.0-*",
-    "NETStandard.Library": "1.5.0-*",
+    "NETStandard.Library": "1.6.0-*",
     "Microsoft.Extensions.Process.Sources": {
       "type": "build",
       "version": "1.0.0-*"
