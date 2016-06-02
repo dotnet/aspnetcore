@@ -43,7 +43,9 @@
         "System.Net.Http": "",
         "System.Runtime": {
           "type": "build"
-        }
+        },
+        "System.Xml": "",
+        "System.Xml.Linq": ""
       }
     },
     "netstandard1.3": {
@@ -56,7 +58,8 @@
         "System.Runtime.Extensions": "4.1.0-*",
         "System.Text.RegularExpressions": "4.1.0-*",
         "System.Threading": "4.0.11-*",
-        "System.Threading.Thread": "4.0.0-*"
+        "System.Threading.Thread": "4.0.0-*",
+        "System.Xml.XDocument": "4.0.11-*"
       },
       "imports": [
         "portable-net45+win8"

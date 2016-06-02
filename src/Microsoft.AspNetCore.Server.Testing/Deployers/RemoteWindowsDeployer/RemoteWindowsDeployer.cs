@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Xml.Linq;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 
@@ -82,6 +83,11 @@ namespace Microsoft.AspNetCore.Server.Testing
             // Publish the app to a local temp folder on the machine where the test is running
             DotnetPublish();
 
+            if (_deploymentParameters.ServerType == ServerType.IIS)
+            {
+                UpdateWebConfig();
+            }
+
             var folderId = Guid.NewGuid().ToString();
             _deployedFolderPathInFileShare = Path.Combine(_deploymentParameters.RemoteServerFileSharePath, folderId);
 
@@ -140,6 +146,42 @@ namespace Microsoft.AspNetCore.Server.Testing
             }
         }
 
+        private void UpdateWebConfig()
+        {
+            var webConfigFilePath = Path.Combine(_deploymentParameters.PublishedApplicationRootPath, "web.config");
+            var webConfig = XDocument.Load(webConfigFilePath);
+            var aspNetCoreSection = webConfig.Descendants("aspNetCore")
+                .Single();
+
+            // if the dotnet runtime path is specified, update the published web.config file to have that path
+            if (!string.IsNullOrEmpty(_deploymentParameters.DotnetRuntimePath))
+            {
+                aspNetCoreSection.SetAttributeValue(
+                    "processPath",
+                    Path.Combine(_deploymentParameters.DotnetRuntimePath, "dotnet.exe"));
+            }
+
+            var environmentVariablesSection = aspNetCoreSection.Elements("environmentVariables").FirstOrDefault();
+            if (environmentVariablesSection == null)
+            {
+                environmentVariablesSection = new XElement("environmentVariables");
+                aspNetCoreSection.Add(environmentVariablesSection);
+            }
+
+            foreach (var envVariablePair in _deploymentParameters.EnvironmentVariables)
+            {
+                var environmentVariable = new XElement("environmentVariable");
+                environmentVariable.SetAttributeValue("name", envVariablePair.Key);
+                environmentVariable.SetAttributeValue("value", envVariablePair.Value);
+                environmentVariablesSection.Add(environmentVariable);
+            }
+
+            using (var fileStream = File.Open(webConfigFilePath, FileMode.Open))
+            {
+                webConfig.Save(fileStream);
+            }
+        }
+
         private void RunScript(string serverAction)
         {
             var remotePSSessionHelperScript = _scripts.Value.RemotePSSessionHelper;
@@ -162,6 +204,7 @@ namespace Microsoft.AspNetCore.Server.Testing
             parameterBuilder.Append($" -serverName {_deploymentParameters.ServerName}");
             parameterBuilder.Append($" -accountName {_deploymentParameters.ServerAccountName}");
             parameterBuilder.Append($" -accountPassword {_deploymentParameters.ServerAccountPassword}");
+            parameterBuilder.Append($" -deployedFolderPath {_deployedFolderPathInFileShare}");
 
             if (!string.IsNullOrEmpty(_deploymentParameters.DotnetRuntimePath))
             {

@@ -9,6 +9,9 @@ param(
 	[Parameter(Mandatory=$true)]
 	[string]$accountPassword,
 
+	[Parameter(Mandatory=$true)]
+	[string]$deployedFolderPath,
+
 	[Parameter(Mandatory=$false)]
 	[string]$dotnetRuntimePath = "",
 
@@ -43,14 +46,14 @@ if ($serverAction -eq "StartServer")
 {
 	Write-Host "Starting the application on machine '$serverName'"
 	$startServerScriptPath = "$PSScriptRoot\StartServer.ps1"
-	$remoteResult=Invoke-Command -Session $psSession -FilePath $startServerScriptPath -ArgumentList $dotnetRuntimePath, $executablePath, $executableParameters, $serverType, $serverName, $applicationBaseUrl, $environmentVariables
+	$remoteResult=Invoke-Command -Session $psSession -FilePath $startServerScriptPath -ArgumentList $deployedFolderPath, $dotnetRuntimePath, $executablePath, $executableParameters, $serverType, $serverName, $applicationBaseUrl, $environmentVariables
 }
 else
 {
 	Write-Host "Stopping the application on machine '$serverName'"
 	$stopServerScriptPath = "$PSScriptRoot\StopServer.ps1"
 	$serverProcessName = [System.IO.Path]::GetFileNameWithoutExtension($executablePath)
-	$remoteResult=Invoke-Command -Session $psSession -FilePath $stopServerScriptPath -ArgumentList $serverProcessName, $serverType, $serverName
+	$remoteResult=Invoke-Command -Session $psSession -FilePath $stopServerScriptPath -ArgumentList $deployedFolderPath, $serverProcessName, $serverType, $serverName
 }
 
 Remove-PSSession $psSession
