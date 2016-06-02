@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Builder;
@@ -127,7 +128,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
             var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
             Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
-            Assert.Equal("Bearer", response.Response.Headers.WwwAuthenticate.First().ToString());
+            Assert.Equal("Bearer error=\"invalid_token\"", response.Response.Headers.WwwAuthenticate.First().ToString());
             Assert.Equal("", response.ResponseText);
         }
 
@@ -164,7 +165,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
             var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
             Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
-            Assert.Equal("Bearer", response.Response.Headers.WwwAuthenticate.First().ToString());
+            Assert.Equal("Bearer error=\"invalid_token\"", response.Response.Headers.WwwAuthenticate.First().ToString());
             Assert.Equal("", response.ResponseText);
         }
 
@@ -179,8 +180,97 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
             var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
             Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
-            Assert.Equal($"Bearer error=\"invalid_token\", error_description=\"The audience is invalid; The signature key was not found\"",
+            Assert.Equal("Bearer error=\"invalid_token\", error_description=\"The audience is invalid; The signature key was not found\"",
                 response.Response.Headers.WwwAuthenticate.First().ToString());
+            Assert.Equal("", response.ResponseText);
+        }
+
+        [Theory]
+        [InlineData("custom_error", "custom_description", "custom_uri")]
+        [InlineData("custom_error", "custom_description", null)]
+        [InlineData("custom_error", null, null)]
+        [InlineData(null, "custom_description", "custom_uri")]
+        [InlineData(null, "custom_description", null)]
+        [InlineData(null, null, "custom_uri")]
+        public async Task ExceptionsReportedInHeaderExposesUserDefinedError(string error, string description, string uri)
+        {
+            var options = new JwtBearerOptions
+            {
+                Events = new JwtBearerEvents
+                {
+                    OnChallenge = context =>
+                    {
+                        context.Error = error;
+                        context.ErrorDescription = description;
+                        context.ErrorUri = uri;
+
+                        return Task.FromResult(0);
+                    }
+                }
+            };
+            var server = CreateServer(options);
+
+            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+            Assert.Equal("", response.ResponseText);
+
+            var builder = new StringBuilder(options.Challenge);
+
+            if (!string.IsNullOrEmpty(error))
+            {
+                builder.Append(" error=\"");
+                builder.Append(error);
+                builder.Append("\"");
+            }
+            if (!string.IsNullOrEmpty(description))
+            {
+                if (!string.IsNullOrEmpty(error))
+                {
+                    builder.Append(",");
+                }
+
+                builder.Append(" error_description=\"");
+                builder.Append(description);
+                builder.Append('\"');
+            }
+            if (!string.IsNullOrEmpty(uri))
+            {
+                if (!string.IsNullOrEmpty(error) ||
+                    !string.IsNullOrEmpty(description))
+                {
+                    builder.Append(",");
+                }
+
+                builder.Append(" error_uri=\"");
+                builder.Append(uri);
+                builder.Append('\"');
+            }
+
+            Assert.Equal(builder.ToString(), response.Response.Headers.WwwAuthenticate.First().ToString());
+        }
+
+        [Fact]
+        public async Task ExceptionNotReportedInHeaderWhenIncludeErrorDetailsIsFalse()
+        {
+            var server = CreateServer(new JwtBearerOptions
+            {
+                IncludeErrorDetails = false
+            });
+
+            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+            Assert.Equal("Bearer", response.Response.Headers.WwwAuthenticate.First().ToString());
+            Assert.Equal("", response.ResponseText);
+        }
+
+        [Fact]
+        public async Task ExceptionNotReportedInHeaderWhenTokenWasMissing()
+        {
+            var server = CreateServer(new JwtBearerOptions());
+
+            var response = await SendAsync(server, "http://example.com/oauth");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+            Assert.Equal("Bearer", response.Response.Headers.WwwAuthenticate.First().ToString());
             Assert.Equal("", response.ResponseText);
         }
 

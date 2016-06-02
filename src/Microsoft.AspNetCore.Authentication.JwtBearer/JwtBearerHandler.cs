@@ -191,6 +191,14 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             {
                 AuthenticateFailure = authResult?.Failure,
             };
+
+            // Avoid returning error=invalid_token if the error is not caused by an authentication failure (e.g missing token).
+            if (Options.IncludeErrorDetails && eventContext.AuthenticateFailure != null)
+            {
+                eventContext.Error = "invalid_token";
+                eventContext.ErrorDescription = CreateErrorDescription(eventContext.AuthenticateFailure);
+            }
+
             await Options.Events.Challenge(eventContext);
             if (eventContext.HandledResponse)
             {
@@ -203,9 +211,9 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
             Response.StatusCode = 401;
 
-            var errorDescription = CreateErrorDescription(eventContext.AuthenticateFailure);
-
-            if (errorDescription.Length == 0)
+            if (string.IsNullOrEmpty(eventContext.Error) &&
+                string.IsNullOrEmpty(eventContext.ErrorDescription) &&
+                string.IsNullOrEmpty(eventContext.ErrorUri))
             {
                 Response.Headers.Append(HeaderNames.WWWAuthenticate, Options.Challenge);
             }
@@ -219,9 +227,35 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                     // Only add a comma after the first param, if any
                     builder.Append(',');
                 }
-                builder.Append(" error=\"invalid_token\", error_description=\"");
-                builder.Append(errorDescription);
-                builder.Append('\"');
+                if (!string.IsNullOrEmpty(eventContext.Error))
+                {
+                    builder.Append(" error=\"");
+                    builder.Append(eventContext.Error);
+                    builder.Append("\"");
+                }
+                if (!string.IsNullOrEmpty(eventContext.ErrorDescription))
+                {
+                    if (!string.IsNullOrEmpty(eventContext.Error))
+                    {
+                        builder.Append(",");
+                    }
+
+                    builder.Append(" error_description=\"");
+                    builder.Append(eventContext.ErrorDescription);
+                    builder.Append('\"');
+                }
+                if (!string.IsNullOrEmpty(eventContext.ErrorUri))
+                {
+                    if (!string.IsNullOrEmpty(eventContext.Error) ||
+                        !string.IsNullOrEmpty(eventContext.ErrorDescription))
+                    {
+                        builder.Append(",");
+                    }
+
+                    builder.Append(" error_uri=\"");
+                    builder.Append(eventContext.ErrorUri);
+                    builder.Append('\"');
+                }
 
                 Response.Headers.Append(HeaderNames.WWWAuthenticate, builder.ToString());
             }
@@ -231,11 +265,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
         private static string CreateErrorDescription(Exception authFailure)
         {
-            if (authFailure == null)
-            {
-                return string.Empty;
-            }
-
             IEnumerable<Exception> exceptions;
             if (authFailure is AggregateException)
             {

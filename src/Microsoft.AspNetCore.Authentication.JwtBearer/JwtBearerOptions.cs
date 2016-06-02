@@ -118,5 +118,12 @@ namespace Microsoft.AspNetCore.Builder
         /// <see cref="Http.Authentication.AuthenticationProperties"/> after a successful authorization.
         /// </summary>
         public bool SaveToken { get; set; } = true;
+
+        /// <summary>
+        /// Defines whether the token validation errors should be returned to the caller.
+        /// Enabled by default, this option can be disabled to prevent the JWT middleware
+        /// from returning an error and an error_description in the WWW-Authenticate header.
+        /// </summary>
+        public bool IncludeErrorDetails { get; set; } = true;
     }
 }
