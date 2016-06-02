@@ -24,6 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
+            services.AddSingleton<IActivator, RC1ForwardingActivator>();
             services.AddOptions();
             services.TryAdd(DataProtectionServices.GetDefaultServices());
 
