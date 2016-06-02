@@ -4,8 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,7 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using StackFrame = Microsoft.AspNetCore.Diagnostics.Views.StackFrame;
+using Microsoft.Extensions.StackTrace.Sources;
 
 namespace Microsoft.AspNetCore.Diagnostics
 {
@@ -27,10 +25,9 @@ namespace Microsoft.AspNetCore.Diagnostics
     {
         private readonly RequestDelegate _next;
         private readonly DeveloperExceptionPageOptions _options;
-        private static readonly bool IsMono = Type.GetType("Mono.Runtime") != null;
         private readonly ILogger _logger;
         private readonly IFileProvider _fileProvider;
-        private readonly DiagnosticSource _diagnosticSource;
+        private readonly System.Diagnostics.DiagnosticSource _diagnosticSource;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeveloperExceptionPageMiddleware"/> class
@@ -45,7 +42,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             IOptions<DeveloperExceptionPageOptions> options,
             ILoggerFactory loggerFactory,
             IHostingEnvironment hostingEnvironment,
-            DiagnosticSource diagnosticSource)
+            System.Diagnostics.DiagnosticSource diagnosticSource)
         {
             if (next == null)
             {
@@ -122,7 +119,7 @@ namespace Microsoft.AspNetCore.Diagnostics
 
         private Task DisplayCompilationException(
             HttpContext context,
-                                                 ICompilationException compilationException)
+            ICompilationException compilationException)
         {
             var model = new CompilationErrorPageModel
             {
@@ -187,75 +184,40 @@ namespace Microsoft.AspNetCore.Diagnostics
         {
             for (var scan = ex; scan != null; scan = scan.InnerException)
             {
+                var stackTrace = ex.StackTrace;
                 yield return new ErrorDetails
                 {
                     Error = scan,
-                    StackFrames = StackFrames(scan)
+                    StackFrames = StackTraceHelper.GetFrames(ex)
+                        .Select(frame => GetStackFrame(frame.Method, frame.FilePath, frame.LineNumber))
                 };
-            }
-        }
-
-        private IEnumerable<StackFrame> StackFrames(Exception ex)
-        {
-            var stackTrace = ex.StackTrace;
-            if (!string.IsNullOrEmpty(stackTrace))
-            {
-                var heap = new Chunk { Text = stackTrace + Environment.NewLine, End = stackTrace.Length + Environment.NewLine.Length };
-                for (var line = heap.Advance(Environment.NewLine); line.HasValue; line = heap.Advance(Environment.NewLine))
-                {
-                    yield return StackFrame(line);
-                }
-            }
-        }
-
-        private StackFrame StackFrame(Chunk line)
-        {
-            line.Advance("  at ");
-            string function = line.Advance(" in ").ToString();
-
-            //exception message line format differences in .net and mono
-            //On .net : at ConsoleApplication.Program.Main(String[] args) in D:\Program.cs:line 16
-            //On Mono : at ConsoleApplication.Program.Main(String[] args) in d:\Program.cs:16
-            string file = !IsMono ?
-                line.Advance(":line ").ToString() :
-                line.Advance(":").ToString();
-
-            int lineNumber = line.ToInt32();
-
-            if (string.IsNullOrEmpty(file))
-            {
-                return GetStackFrame(
-                    // Handle stack trace lines like
-                    // "--- End of stack trace from previous location where exception from thrown ---"
-                    string.IsNullOrEmpty(function) ? line.ToString() : function,
-                    file: string.Empty,
-                    lineNumber: 0);
-            }
-            else
-            {
-                return GetStackFrame(function, file, lineNumber);
-            }
+            };
         }
 
         // make it internal to enable unit testing
-        internal StackFrame GetStackFrame(string function, string file, int lineNumber)
+        internal StackFrame GetStackFrame(string method, string filePath, int lineNumber)
         {
-            var frame = new StackFrame { Function = function, File = file, Line = lineNumber };
-
-            if (string.IsNullOrEmpty(file))
+            var stackFrame = new StackFrame
             {
-                return frame;
+                Function = method,
+                File = filePath,
+                Line = lineNumber
+            };
+
+            if (string.IsNullOrEmpty(stackFrame.File))
+            {
+                return stackFrame;
             }
 
             IEnumerable<string> lines = null;
-            if (File.Exists(file))
+            if (File.Exists(stackFrame.File))
             {
-                lines = File.ReadLines(file);
+                lines = File.ReadLines(stackFrame.File);
             }
             else
             {
                 // Handle relative paths and embedded files
-                var fileInfo = _fileProvider.GetFileInfo(file);
+                var fileInfo = _fileProvider.GetFileInfo(stackFrame.File);
                 if (fileInfo.Exists)
                 {
                     // ReadLines doesn't accept a stream. Use ReadLines as its more efficient
@@ -273,10 +235,10 @@ namespace Microsoft.AspNetCore.Diagnostics
 
             if (lines != null)
             {
-                ReadFrameContent(frame, lines, lineNumber, lineNumber);
+                ReadFrameContent(stackFrame, lines, stackFrame.Line, stackFrame.Line);
             }
 
-            return frame;
+            return stackFrame;
         }
 
         // make it internal to enable unit testing
@@ -317,43 +279,6 @@ namespace Microsoft.AspNetCore.Diagnostics
                 {
                     yield return line;
                 }
-            }
-        }
-
-        internal class Chunk
-        {
-            public string Text { get; set; }
-            public int Start { get; set; }
-            public int End { get; set; }
-
-            public bool HasValue => Text != null;
-
-            public Chunk Advance(string delimiter)
-            {
-                int indexOf = HasValue ? Text.IndexOf(delimiter, Start, End - Start, StringComparison.Ordinal) : -1;
-                if (indexOf < 0)
-                {
-                    return new Chunk();
-                }
-
-                var chunk = new Chunk { Text = Text, Start = Start, End = indexOf };
-                Start = indexOf + delimiter.Length;
-                return chunk;
-            }
-
-            public override string ToString()
-            {
-                return HasValue ? Text.Substring(Start, End - Start) : string.Empty;
-            }
-
-            public int ToInt32()
-            {
-                int value;
-                return HasValue && int.TryParse(
-                    Text.Substring(Start, End - Start),
-                    NumberStyles.Integer,
-                    CultureInfo.InvariantCulture,
-                    out value) ? value : 0;
             }
         }
     }

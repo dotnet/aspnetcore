@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,14 +15,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Xunit;
-using StackFrame = Microsoft.AspNetCore.Diagnostics.Views.StackFrame;
 using Moq;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics
 {
@@ -273,7 +271,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         {
             // Arrange
             var middleware = GetErrorPageMiddleware();
-            var stackFrame = new StackFrame();
+            var stackFrame = new Views.StackFrame();
 
             // Act
             middleware.ReadFrameContent(

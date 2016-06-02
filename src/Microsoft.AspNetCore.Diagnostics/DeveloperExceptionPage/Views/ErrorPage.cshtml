@@ -33,16 +33,11 @@
         {
             <div class="titleerror">@errorDetail.Error.GetType().Name: @{ Output.Write(HtmlEncodeAndReplaceLineBreaks(errorDetail.Error.Message)); }</div>
             @{
-                StackFrame firstFrame = null;
-                firstFrame = errorDetail.StackFrames.FirstOrDefault();
+                var firstFrame = errorDetail.StackFrames.FirstOrDefault();
                 if (firstFrame != null)
                 {
                     location = firstFrame.Function;
-                }/* TODO: TargetSite is not defined
-                else if (errorDetail.Error.TargetSite != null && errorDetail.Error.TargetSite.DeclaringType != null)
-                {
-                    location = errorDetail.Error.TargetSite.DeclaringType.FullName + "." + errorDetail.Error.TargetSite.Name;
-                }*/
+                }
             }
             if (!string.IsNullOrEmpty(location) && firstFrame != null && !string.IsNullOrEmpty(firstFrame.File))
             {
