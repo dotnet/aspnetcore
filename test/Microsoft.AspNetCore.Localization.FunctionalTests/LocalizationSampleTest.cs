@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(RuntimeFlavor.Clr, "http://localhost:5080/", RuntimeArchitecture.x64)]
+        //[InlineData(RuntimeFlavor.Clr, "http://localhost:5080/", RuntimeArchitecture.x64)] // Disabled due to https://github.com/dotnet/corefx/issues/9012
         [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5081/", RuntimeArchitecture.x64)]
         public Task RunSite_NonWindowsOnly(RuntimeFlavor runtimeFlavor, string applicationBaseUrl, RuntimeArchitecture runtimeArchitecture)
         {
