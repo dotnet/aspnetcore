@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             return result.Substring(startIndex, subStringLength);
         }
 
-        public static string ReplaceTokens(string template, IDictionary<string, object> values)
+        public static string ReplaceTokens(string template, IDictionary<string, string> values)
         {
             var builder = new StringBuilder();
             var state = TemplateParserState.Plaintext;
@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                                 .Replace("[[", "[")
                                 .Replace("]]", "]");
 
-                            object value;
+                            string value;
                             if (!values.TryGetValue(token, out value))
                             {
                                 // Value not found

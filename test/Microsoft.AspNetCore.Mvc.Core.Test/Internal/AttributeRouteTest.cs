@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public async Task AttributeRoute_UsesUpdatedActionDescriptors()
         {
             // Arrange
-            var handler = CreateHandler();
+            ActionDescriptor selected = null;
 
             var actions = new List<ActionDescriptor>()
             {
@@ -40,28 +40,45 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 {
                     AttributeRouteInfo = new AttributeRouteInfo()
                     {
-                        Template = "api/Blog/{id}"
-                    },
-                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        { TreeRouter.RouteGroupKey, "1" }
+                        Template = "api/Blog/{key1}"
                     },
                 },
                 new ActionDescriptor()
                 {
                     AttributeRouteInfo = new AttributeRouteInfo()
                     {
-                        Template = "api/Store/Buy/{id}"
-                    },
-                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        { TreeRouter.RouteGroupKey, "2" }
+                        Template = "api/Store/Buy/{key2}"
                     },
                 },
             };
 
+
+            Func<ActionDescriptor[], IRouter> handlerFactory = (_) =>
+            {
+                var handler = new Mock<IRouter>();
+                handler
+                    .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                    .Returns<RouteContext>(routeContext =>
+                    {
+                        if (routeContext.RouteData.Values.ContainsKey("key1"))
+                        {
+                            selected = actions[0];
+                        }
+                        else if (routeContext.RouteData.Values.ContainsKey("key2"))
+                        {
+                            selected = actions[1];
+                        }
+
+                        routeContext.Handler = (c) => TaskCache.CompletedTask;
+
+                        return TaskCache.CompletedTask;
+
+                    });
+                return handler.Object;
+            };
+
             var actionDescriptorProvider = CreateActionDescriptorProvider(actions);
-            var route = CreateRoute(handler.Object, actionDescriptorProvider.Object);
+            var route = CreateRoute(handlerFactory, actionDescriptorProvider.Object);
 
             var requestServices = new Mock<IServiceProvider>(MockBehavior.Strict);
             requestServices
@@ -79,12 +96,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert 1
             Assert.NotNull(context.Handler);
-            Assert.Equal("5", context.RouteData.Values["id"]);
-            Assert.Equal("2", context.RouteData.Values[TreeRouter.RouteGroupKey]);
-
-            handler.Verify(h => h.RouteAsync(It.IsAny<RouteContext>()), Times.Once());
-
+            Assert.Equal("5", context.RouteData.Values["key2"]);
+            Assert.Same(actions[1], selected);
+            
             // Arrange 2 - remove the action and update the collection
+            selected = null;
             actions.RemoveAt(1);
             actionDescriptorProvider
                 .SetupGet(ad => ad.ActionDescriptors)
@@ -98,8 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert 2
             Assert.Null(context.Handler);
             Assert.Empty(context.RouteData.Values);
-
-            handler.Verify(h => h.RouteAsync(It.IsAny<RouteContext>()), Times.Once());
+            Assert.Null(selected);
         }
 
         [Fact]
@@ -117,10 +132,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Order = 17,
                     },
                     RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        { TreeRouter.RouteGroupKey, "1" }
-                    },
-                    RouteValueDefaults = new Dictionary<string, object>()
                     {
                         { "controller", "Blog" },
                         { "action", "Index" },
@@ -145,7 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     Assert.Equal(RoutePrecedence.ComputeOutbound(e.RouteTemplate), e.Precedence);
                     Assert.Equal("BLOG_INDEX", e.RouteName);
                     Assert.Equal(17, e.Order);
-                    Assert.Equal(actions[0].RouteValueDefaults.ToArray(), e.RequiredLinkValues.ToArray());
+                    Assert.Equal(ToRouteValueDictionary(actions[0].RouteValues), e.RequiredLinkValues);
                     Assert.Equal("api/Blog/{id}", e.RouteTemplate.TemplateText);
                 });
         }
@@ -165,10 +176,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Order = 17,
                     },
                     RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        { TreeRouter.RouteGroupKey, "1" }
-                    },
-                    RouteValueDefaults = new Dictionary<string, object>()
                     {
                         { "controller", "Blog" },
                         { "action", "Index" },
@@ -193,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     Assert.Equal(RoutePrecedence.ComputeOutbound(e.RouteTemplate), e.Precedence);
                     Assert.Equal("BLOG_INDEX", e.RouteName);
                     Assert.Equal(17, e.Order);
-                    Assert.Equal(actions[0].RouteValueDefaults.ToArray(), e.RequiredLinkValues.ToArray());
+                    Assert.Equal(ToRouteValueDictionary(actions[0].RouteValues), e.RequiredLinkValues);
                     Assert.Equal("api/Blog/{id:int}", e.RouteTemplate.TemplateText);
                 });
         }
@@ -213,10 +220,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Order = 17,
                     },
                     RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        { TreeRouter.RouteGroupKey, "1" }
-                    },
-                    RouteValueDefaults = new Dictionary<string, object>()
                     {
                         { "controller", "Blog" },
                         { "action", "Index" },
@@ -241,7 +244,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     Assert.Equal(RoutePrecedence.ComputeOutbound(e.RouteTemplate), e.Precedence);
                     Assert.Equal("BLOG_INDEX", e.RouteName);
                     Assert.Equal(17, e.Order);
-                    Assert.Equal(actions[0].RouteValueDefaults.ToArray(), e.RequiredLinkValues.ToArray());
+                    Assert.Equal(ToRouteValueDictionary(actions[0].RouteValues), e.RequiredLinkValues);
                     Assert.Equal("api/Blog/{*slug=hello}", e.RouteTemplate.TemplateText);
                 });
         }
@@ -265,10 +268,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     },
                     RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
-                        { TreeRouter.RouteGroupKey, "1" }
-                    },
-                    RouteValueDefaults = new Dictionary<string, object>()
-                    {
                         { "controller", "Blog" },
                         { "action", "Index" },
                     },
@@ -282,10 +281,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Order = 17,
                     },
                     RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        { TreeRouter.RouteGroupKey, "1" }
-                    },
-                    RouteValueDefaults = new Dictionary<string, object>()
                     {
                         { "controller", "Blog" },
                         { "action", "Index2" },
@@ -310,7 +305,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     Assert.Equal(RoutePrecedence.ComputeOutbound(e.RouteTemplate), e.Precedence);
                     Assert.Equal("BLOG_INDEX", e.RouteName);
                     Assert.Equal(17, e.Order);
-                    Assert.Equal(actions[0].RouteValueDefaults.ToArray(), e.RequiredLinkValues.ToArray());
+                    Assert.Equal(ToRouteValueDictionary(actions[0].RouteValues), e.RequiredLinkValues);
                     Assert.Equal("api/Blog/{id}", e.RouteTemplate.TemplateText);
                 },
                 e =>
@@ -320,7 +315,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     Assert.Equal(RoutePrecedence.ComputeOutbound(e.RouteTemplate), e.Precedence);
                     Assert.Equal("BLOG_INDEX", e.RouteName);
                     Assert.Equal(17, e.Order);
-                    Assert.Equal(actions[1].RouteValueDefaults.ToArray(), e.RequiredLinkValues.ToArray());
+                    Assert.Equal(ToRouteValueDictionary(actions[1].RouteValues), e.RequiredLinkValues);
                     Assert.Equal("api/Blog/{id}", e.RouteTemplate.TemplateText);
                 });
         }
@@ -340,10 +335,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Order = 17,
                     },
                     RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        { TreeRouter.RouteGroupKey, "1" }
-                    },
-                    RouteValueDefaults = new Dictionary<string, object>()
                     {
                         { "controller", "Blog" },
                         { "action", "Index" },
@@ -368,9 +359,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     Assert.Equal(RoutePrecedence.ComputeInbound(e.RouteTemplate), e.Precedence);
                     Assert.Equal("BLOG_INDEX", e.RouteName);
                     Assert.Equal("api/Blog/{id}", e.RouteTemplate.TemplateText);
-                    Assert.Collection(
-                        e.Defaults.OrderBy(kvp => kvp.Key),
-                        kvp => Assert.Equal(new KeyValuePair<string, object>(TreeRouter.RouteGroupKey, "1"), kvp));
+                    Assert.Empty(e.Defaults);
                 });
         }
 
@@ -389,10 +378,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Order = 17,
                     },
                     RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        { TreeRouter.RouteGroupKey, "1" }
-                    },
-                    RouteValueDefaults = new Dictionary<string, object>()
                     {
                         { "controller", "Blog" },
                         { "action", "Index" },
@@ -417,9 +402,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     Assert.Equal(RoutePrecedence.ComputeInbound(e.RouteTemplate), e.Precedence);
                     Assert.Equal("BLOG_INDEX", e.RouteName);
                     Assert.Equal("api/Blog/{id:int}", e.RouteTemplate.TemplateText);
-                    Assert.Collection(
-                        e.Defaults.OrderBy(kvp => kvp.Key),
-                        kvp => Assert.Equal(new KeyValuePair<string, object>(TreeRouter.RouteGroupKey, "1"), kvp));
+                    Assert.Empty(e.Defaults);
                 });
         }
 
@@ -438,10 +421,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Order = 17,
                     },
                     RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        { TreeRouter.RouteGroupKey, "1" }
-                    },
-                    RouteValueDefaults = new Dictionary<string, object>()
                     {
                         { "controller", "Blog" },
                         { "action", "Index" },
@@ -468,7 +447,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     Assert.Equal("api/Blog/{*slug=hello}", e.RouteTemplate.TemplateText);
                     Assert.Collection(
                         e.Defaults.OrderBy(kvp => kvp.Key),
-                        kvp => Assert.Equal(new KeyValuePair<string, object>(TreeRouter.RouteGroupKey, "1"), kvp),
                         kvp => Assert.Equal(new KeyValuePair<string, object>("slug", "hello"), kvp));
                 });
         }
@@ -492,10 +470,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     },
                     RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
-                        { TreeRouter.RouteGroupKey, "1" }
-                    },
-                    RouteValueDefaults = new Dictionary<string, object>()
-                    {
                         { "controller", "Blog" },
                         { "action", "Index" },
                     },
@@ -509,10 +483,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Order = 17,
                     },
                     RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        { TreeRouter.RouteGroupKey, "1" }
-                    },
-                    RouteValueDefaults = new Dictionary<string, object>()
                     {
                         { "controller", "Blog" },
                         { "action", "Index2" },
@@ -537,9 +507,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     Assert.Equal(RoutePrecedence.ComputeInbound(e.RouteTemplate), e.Precedence);
                     Assert.Equal("BLOG_INDEX", e.RouteName);
                     Assert.Equal("api/Blog/{id}", e.RouteTemplate.TemplateText);
-                    Assert.Collection(
-                        e.Defaults.OrderBy(kvp => kvp.Key),
-                        kvp => Assert.Equal(new KeyValuePair<string, object>(TreeRouter.RouteGroupKey, "1"), kvp));
+                    Assert.Empty(e.Defaults);
                 });
         }
 
@@ -581,6 +549,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             IRouter handler, 
             IActionDescriptorCollectionProvider actionDescriptorProvider)
         {
+            return CreateRoute((_) => handler, actionDescriptorProvider);
+        }
+
+        private static AttributeRoute CreateRoute(
+            Func<ActionDescriptor[], IRouter> handlerFactory,
+            IActionDescriptorCollectionProvider actionDescriptorProvider)
+        {
             var services = new ServiceCollection()
                 .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
@@ -588,7 +563,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .AddRouting()
                 .AddOptions()
                 .BuildServiceProvider();
-            return new AttributeRoute(handler, actionDescriptorProvider, services);
+            return new AttributeRoute(actionDescriptorProvider, services, handlerFactory);
+        }
+
+        // Needed because new RouteValueDictionary(values) would give us all the properties of
+        // the Dictionary class.
+        private static RouteValueDictionary ToRouteValueDictionary(IDictionary<string, string> values)
+        {
+            var result = new RouteValueDictionary();
+            foreach (var kvp in values)
+            {
+                result.Add(kvp.Key, kvp.Value);
+            }
+
+            return result;
         }
     }
 }

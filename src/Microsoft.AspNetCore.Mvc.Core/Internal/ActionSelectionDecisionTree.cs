@@ -6,9 +6,9 @@ using System.Collections.Generic;
 #if NET451
 using System.ComponentModel;
 #endif
+using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.DecisionTree;
 
@@ -27,8 +27,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             Version = actions.Version;
 
+            var conventionalRoutedActions = actions.Items.Where(a => a.AttributeRouteInfo?.Template == null).ToArray();
             _root = DecisionTreeBuilder<ActionDescriptor>.GenerateTree(
-                actions.Items,
+                conventionalRoutedActions,
                 new ActionDescriptorClassifier());
         }
 

@@ -217,9 +217,10 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<RedirectToRouteResultExecutor>();
 
             //
-            // Setup default handler
+            // Route Handlers
             //
-            services.TryAddSingleton<MvcRouteHandler>();
+            services.TryAddSingleton<MvcRouteHandler>(); // Only one per app
+            services.TryAddTransient<MvcAttributeRouteHandler>(); // Many per app
         }
 
         private static void ConfigureDefaultServices(IServiceCollection services)

@@ -39,8 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _actionConstraintCache = actionConstraintCache;
         }
 
-        /// <inheritdoc />
-        public ActionDescriptor Select(RouteContext context)
+        public IReadOnlyList<ActionDescriptor> SelectCandidates(RouteContext context)
         {
             if (context == null)
             {
@@ -48,35 +47,24 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             var tree = _decisionTreeProvider.DecisionTree;
-            var matchingRouteValues = tree.Select(context.RouteData.Values);
+            return tree.Select(context.RouteData.Values);
+        }
 
-            var candidates = new List<ActionSelectorCandidate>();
-
-            // Perf: Avoid allocations
-            for (var i = 0; i < matchingRouteValues.Count; i++)
+        public ActionDescriptor SelectBestCandidate(RouteContext context, IReadOnlyList<ActionDescriptor> candidates)
+        {
+            if (context == null)
             {
-                var action = matchingRouteValues[i];
-                var constraints = _actionConstraintCache.GetActionConstraints(context.HttpContext, action);
-                candidates.Add(new ActionSelectorCandidate(action, constraints));
+                throw new ArgumentNullException(nameof(context));
             }
 
-            var matchingActionConstraints =
-                EvaluateActionConstraints(context, candidates, startingOrder: null);
-
-            List<ActionDescriptor> matchingActions = null;
-            if (matchingActionConstraints != null)
+            if (candidates == null)
             {
-                matchingActions = new List<ActionDescriptor>(matchingActionConstraints.Count);
-                // Perf: Avoid allocations
-                for (var i = 0; i < matchingActionConstraints.Count; i++)
-                {
-                    var candidate = matchingActionConstraints[i];
-                    matchingActions.Add(candidate.Action);
-                }
+                throw new ArgumentNullException(nameof(candidates));
             }
 
-            var finalMatches = SelectBestActions(matchingActions);
+            var matches = EvaluateActionConstraints(context, candidates);
 
+            var finalMatches = SelectBestActions(matches);
             if (finalMatches == null || finalMatches.Count == 0)
             {
                 return null;
@@ -113,7 +101,38 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return actions;
         }
 
-        private IReadOnlyList<ActionSelectorCandidate> EvaluateActionConstraints(
+        private IReadOnlyList<ActionDescriptor> EvaluateActionConstraints(
+            RouteContext context,
+            IReadOnlyList<ActionDescriptor> actions)
+        {
+            var candidates = new List<ActionSelectorCandidate>();
+
+            // Perf: Avoid allocations
+            for (var i = 0; i < actions.Count; i++)
+            {
+                var action = actions[i];
+                var constraints = _actionConstraintCache.GetActionConstraints(context.HttpContext, action);
+                candidates.Add(new ActionSelectorCandidate(action, constraints));
+            }
+
+            var matches = EvaluateActionConstraintsCore(context, candidates, startingOrder: null);
+
+            List<ActionDescriptor> results = null;
+            if (matches != null)
+            {
+                results = new List<ActionDescriptor>(matches.Count);
+                // Perf: Avoid allocations
+                for (var i = 0; i < matches.Count; i++)
+                {
+                    var candidate = matches[i];
+                    results.Add(candidate.Action);
+                }
+            }
+
+            return results;
+        }
+
+        private IReadOnlyList<ActionSelectorCandidate> EvaluateActionConstraintsCore(
             RouteContext context,
             IReadOnlyList<ActionSelectorCandidate> candidates,
             int? startingOrder)
@@ -198,7 +217,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // If we have matches with constraints, those are 'better' so try to keep processing those
             if (actionsWithConstraint.Count > 0)
             {
-                var matches = EvaluateActionConstraints(context, actionsWithConstraint, order);
+                var matches = EvaluateActionConstraintsCore(context, actionsWithConstraint, order);
                 if (matches?.Count > 0)
                 {
                     return matches;
@@ -212,7 +231,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
             else
             {
-                return EvaluateActionConstraints(context, actionsWithoutConstraint, order);
+                return EvaluateActionConstraintsCore(context, actionsWithoutConstraint, order);
             }
         }
     }

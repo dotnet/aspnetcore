@@ -36,7 +36,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             var actions = new List<ControllerActionDescriptor>();
 
-            var hasAttributeRoutes = false;
             var routeValueKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             var methodInfoMap = new MethodToActionMap();
@@ -71,21 +70,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         AddProperties(actionDescriptor, action, controller, application);
 
                         actionDescriptor.BoundProperties = controllerPropertyDescriptors;
+
                         if (IsAttributeRoutedAction(actionDescriptor))
                         {
-                            hasAttributeRoutes = true;
-
-                            // An attribute routed action will ignore conventional routed constraints. We still
-                            // want to provide these values as ambient values for link generation.
-                            AddRouteValuesAsDefaultRouteValues(actionDescriptor);
-
                             // Replaces tokens like [controller]/[action] in the route template with the actual values
                             // for this action.
                             ReplaceAttributeRouteTokens(actionDescriptor, routeTemplateErrors);
-
-                            // Attribute routed actions will ignore conventional routed values. Instead they have
-                            // a single route value "RouteGroup" associated with it.
-                            ReplaceRouteValues(actionDescriptor);
                         }
                     }
 
@@ -113,44 +103,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     validatedMethods.Add(actionDescriptor.MethodInfo);
                 }
 
-                if (!IsAttributeRoutedAction(actionDescriptor))
+                var attributeRouteInfo = actionDescriptor.AttributeRouteInfo;
+                if (attributeRouteInfo?.Name != null)
                 {
-                    // Any attribute routes are in use, then non-attribute-routed action descriptors can't be
-                    // selected when a route group returned by the route.
-                    if (hasAttributeRoutes)
-                    {
-                        actionDescriptor.RouteValues.Add(TreeRouter.RouteGroupKey, string.Empty);
-                    }
-
-                    // Add a route value with 'null' for each user-defined route value in the set to all the
-                    // actions that don't have that value. For example, if a controller defines
-                    // an area, all actions that don't belong to an area must have a route
-                    // value that prevents them from matching an incoming request when area is specified.
-                    AddGlobalRouteValues(actionDescriptor, routeValueKeys);
+                    // Build a map of attribute route name to action descriptors to ensure that all
+                    // attribute routes with a given name have the same template.
+                    AddActionToNamedGroup(actionsByRouteName, attributeRouteInfo.Name, actionDescriptor);
                 }
-                else
-                {
-                    var attributeRouteInfo = actionDescriptor.AttributeRouteInfo;
-                    if (attributeRouteInfo.Name != null)
-                    {
-                        // Build a map of attribute route name to action descriptors to ensure that all
-                        // attribute routes with a given name have the same template.
-                        AddActionToNamedGroup(actionsByRouteName, attributeRouteInfo.Name, actionDescriptor);
-                    }
 
-                    // We still want to add a 'null' for any constraint with DenyKey so that link generation
-                    // works properly.
-                    //
-                    // Consider an action like { area = "", controller = "Home", action = "Index" }. Even if
-                    // it's attribute routed, it needs to know that area must be null to generate a link.
-                    foreach (var key in routeValueKeys)
-                    {
-                        if (!actionDescriptor.RouteValueDefaults.ContainsKey(key))
-                        {
-                            actionDescriptor.RouteValueDefaults.Add(key, value: null);
-                        }
-                    }
-                }
+                // Add a route value with 'null' for each user-defined route value in the set to all the
+                // actions that don't have that value. For example, if a controller defines
+                // an area, all actions that don't belong to an area must have a route
+                // value that prevents them from matching an incoming request when area is specified.
+                AddGlobalRouteValues(actionDescriptor, routeValueKeys);
             }
 
             if (attributeRoutingConfigurationErrors.Any())
@@ -459,7 +424,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             foreach (var kvp in action.RouteValues)
             {
                 keys.Add(kvp.Key);
-                
+
                 // Skip duplicates
                 if (!actionDescriptor.RouteValues.ContainsKey(kvp.Key))
                 {
@@ -490,16 +455,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private static void ReplaceRouteValues(ControllerActionDescriptor actionDescriptor)
-        {
-            var routeGroupValue = GetRouteGroupValue(
-                actionDescriptor.AttributeRouteInfo.Order,
-                actionDescriptor.AttributeRouteInfo.Template);
-
-            actionDescriptor.RouteValues.Clear();
-            actionDescriptor.RouteValues.Add(TreeRouter.RouteGroupKey, routeGroupValue);
-        }
-
         private static void ReplaceAttributeRouteTokens(
             ControllerActionDescriptor actionDescriptor,
             IList<string> routeTemplateErrors)
@@ -508,13 +463,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 actionDescriptor.AttributeRouteInfo.Template = AttributeRouteModel.ReplaceTokens(
                     actionDescriptor.AttributeRouteInfo.Template,
-                    actionDescriptor.RouteValueDefaults);
+                    actionDescriptor.RouteValues);
 
                 if (actionDescriptor.AttributeRouteInfo.Name != null)
                 {
                     actionDescriptor.AttributeRouteInfo.Name = AttributeRouteModel.ReplaceTokens(
                         actionDescriptor.AttributeRouteInfo.Name,
-                        actionDescriptor.RouteValueDefaults);
+                        actionDescriptor.RouteValues);
                 }
             }
             catch (InvalidOperationException ex)
@@ -527,14 +482,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     ex.Message);
 
                 routeTemplateErrors.Add(message);
-            }
-        }
-
-        private static void AddRouteValuesAsDefaultRouteValues(ControllerActionDescriptor actionDescriptor)
-        {
-            foreach (var kvp in actionDescriptor.RouteValues)
-            {
-                actionDescriptor.RouteValueDefaults.Add(kvp.Key, kvp.Value);
             }
         }
 
@@ -729,12 +676,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 Environment.NewLine,
                 string.Join(Environment.NewLine + Environment.NewLine, errorMessages));
             return message;
-        }
-
-        private static string GetRouteGroupValue(int order, string template)
-        {
-            var group = string.Format(CultureInfo.InvariantCulture, "{0}-{1}", order, template);
-            return ("__route__" + group).ToUpperInvariant();
         }
 
         // We need to build a map of methods to reflected actions and reflected actions to

@@ -1,9 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
@@ -11,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
-    public class MvcRouteHandler : IRouter
+    public class MvcAttributeRouteHandler : IRouter
     {
         private IActionContextAccessor _actionContextAccessor;
         private IActionInvokerFactory _actionInvokerFactory;
@@ -19,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private ILogger _logger;
         private DiagnosticSource _diagnosticSource;
 
-        public MvcRouteHandler(
+        public MvcAttributeRouteHandler(
             IActionInvokerFactory actionInvokerFactory,
             IActionSelector actionSelector,
             DiagnosticSource diagnosticSource,
@@ -28,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
         }
 
-        public MvcRouteHandler(
+        public MvcAttributeRouteHandler(
             IActionInvokerFactory actionInvokerFactory,
             IActionSelector actionSelector,
             DiagnosticSource diagnosticSource,
@@ -42,8 +44,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _actionInvokerFactory = actionInvokerFactory;
             _actionSelector = actionSelector;
             _diagnosticSource = diagnosticSource;
-            _logger = loggerFactory.CreateLogger<MvcRouteHandler>();
+            _logger = loggerFactory.CreateLogger<MvcAttributeRouteHandler>();
         }
+
+        public ActionDescriptor[] Actions { get; set; }
 
         public VirtualPathData GetVirtualPath(VirtualPathContext context)
         {
@@ -63,18 +67,27 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var candidates = _actionSelector.SelectCandidates(context);
-            if (candidates == null || candidates.Count == 0)
+            if (Actions == null)
+            {
+                var message = Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(Actions), 
+                    nameof(MvcAttributeRouteHandler));
+                throw new InvalidOperationException(message);
+            }
+
+            var actionDescriptor = _actionSelector.SelectBestCandidate(context, Actions);
+            if (actionDescriptor == null)
             {
                 _logger.NoActionsMatched();
                 return TaskCache.CompletedTask;
             }
 
-            var actionDescriptor = _actionSelector.SelectBestCandidate(context, candidates);
-            if (actionDescriptor == null)
+            foreach (var kvp in actionDescriptor.RouteValues)
             {
-                _logger.NoActionsMatched();
-                return TaskCache.CompletedTask;
+                if (!string.IsNullOrEmpty(kvp.Value))
+                {
+                    context.RouteData.Values[kvp.Key] = kvp.Value;
+                }
             }
 
             context.Handler = (c) =>

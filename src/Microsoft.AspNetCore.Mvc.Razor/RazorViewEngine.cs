@@ -91,8 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <remarks>
         /// The casing of a route value in <see cref="ActionContext.RouteData"/> is determined by the client.
         /// This making constructing paths for view locations in a case sensitive file system unreliable. Using the
-        /// <see cref="Abstractions.ActionDescriptor.RouteValueDefaults"/> for attribute routes and
-        /// <see cref="Abstractions.ActionDescriptor.RouteValues"/> for traditional routes to get route values
+        /// <see cref="Abstractions.ActionDescriptor.RouteValues"/> to get route values
         /// produces consistently cased results.
         /// </remarks>
         public static string GetNormalizedRouteValue(ActionContext context, string key)
@@ -115,22 +114,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             var actionDescriptor = context.ActionDescriptor;
             string normalizedValue = null;
-            if (actionDescriptor.AttributeRouteInfo != null)
+
+            string value;
+            if (actionDescriptor.RouteValues.TryGetValue(key, out value) &&
+                !string.IsNullOrEmpty(value))
             {
-                object match;
-                if (actionDescriptor.RouteValueDefaults.TryGetValue(key, out match))
-                {
-                    normalizedValue = match?.ToString();
-                }
-            }
-            else
-            {
-                string value;
-                if (actionDescriptor.RouteValues.TryGetValue(key, out value) &&
-                    !string.IsNullOrEmpty(value))
-                {
-                    normalizedValue = value;
-                }
+                normalizedValue = value;
             }
 
             var stringRouteValue = routeValue?.ToString();

@@ -146,17 +146,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         [Theory]
         [MemberData(nameof(ReplaceTokens_ValueValuesData))]
-        public void ReplaceTokens_ValidValues(string template, object values, string expected)
+        public void ReplaceTokens_ValidValues(string template, Dictionary<string, string> values, string expected)
         {
             // Arrange
-            var valuesDictionary = values as IDictionary<string, object>;
-            if (valuesDictionary == null)
-            {
-                valuesDictionary = new RouteValueDictionary(values);
-            }
-
             // Act
-            var result = AttributeRouteModel.ReplaceTokens(template, valuesDictionary);
+            var result = AttributeRouteModel.ReplaceTokens(template, values);
 
             // Assert
             Assert.Equal(expected, result);
@@ -164,15 +158,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         [Theory]
         [MemberData(nameof(ReplaceTokens_InvalidFormatValuesData))]
-        public void ReplaceTokens_InvalidFormat(string template, object values, string reason)
+        public void ReplaceTokens_InvalidFormat(string template, Dictionary<string, string> values, string reason)
         {
             // Arrange
-            var valuesDictionary = values as IDictionary<string, object>;
-            if (valuesDictionary == null)
-            {
-                valuesDictionary = new RouteValueDictionary(values);
-            }
-
             var expected = string.Format(
                 "The route template '{0}' has invalid syntax. {1}",
                 template,
@@ -180,7 +168,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(
-                () => { AttributeRouteModel.ReplaceTokens(template, valuesDictionary); });
+                () => { AttributeRouteModel.ReplaceTokens(template, values); });
 
             // Assert
             Assert.Equal(expected, ex.Message);
@@ -191,7 +179,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             // Arrange
             var template = "[area]/[controller]/[action2]";
-            var values = new RouteValueDictionary()
+            var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 { "area", "Help" },
                 { "controller", "Admin" },
@@ -428,49 +416,73 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 yield return new object[]
                 {
                     "[controller]/[action]",
-                    new { controller = "Home", action = "Index" },
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
                     "Home/Index"
                 };
 
                 yield return new object[]
                 {
                     "[controller]",
-                    new { controller = "Home", action = "Index" },
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
                     "Home"
                 };
 
                 yield return new object[]
                 {
                     "[controller][[",
-                    new { controller = "Home", action = "Index" },
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
                     "Home["
                 };
 
                 yield return new object[]
                 {
                     "[coNTroller]",
-                    new { contrOLler = "Home", action = "Index" },
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
                     "Home"
                 };
 
                 yield return new object[]
                 {
                     "thisisSomeText[action]",
-                    new { controller = "Home", action = "Index" },
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
                     "thisisSomeTextIndex"
                 };
 
                 yield return new object[]
                 {
                     "[[-]][[/[[controller]]",
-                    new { controller = "Home", action = "Index" },
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
                     "[-][/[controller]"
                 };
 
                 yield return new object[]
                 {
                     "[contr[[oller]/[act]]ion]",
-                    new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
                         { "contr[oller", "Home" },
                         { "act]ion", "Index" }
@@ -481,7 +493,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 yield return new object[]
                 {
                     "[controller][action]",
-                    new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
                         { "controller", "Home" },
                         { "action", "Index" }
@@ -492,7 +504,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 yield return new object[]
                 {
                     "[contr}oller]/[act{ion]/{id}",
-                    new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
                         { "contr}oller", "Home" },
                         { "act{ion", "Index" }
@@ -509,35 +521,35 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 yield return new object[]
                 {
                     "[",
-                    new { },
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
                     "A replacement token is not closed."
                 };
 
                 yield return new object[]
                 {
                     "text]",
-                    new { },
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
                     "Token delimiters ('[', ']') are imbalanced.",
                 };
 
                 yield return new object[]
                 {
                     "text]morecooltext",
-                    new { },
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
                     "Token delimiters ('[', ']') are imbalanced.",
                 };
 
                 yield return new object[]
                 {
                     "[action",
-                    new { },
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
                     "A replacement token is not closed.",
                 };
 
                 yield return new object[]
                 {
                     "[action]]][",
-                    new RouteValueDictionary()
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
                         { "action]", "Index" }
                     },
@@ -547,21 +559,21 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 yield return new object[]
                 {
                     "[action]]",
-                    new { },
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
                     "A replacement token is not closed."
                 };
 
                 yield return new object[]
                 {
                     "[ac[tion]",
-                    new { },
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
                     "An unescaped '[' token is not allowed inside of a replacement token. Use '[[' to escape."
                 };
 
                 yield return new object[]
                 {
                     "[]",
-                    new { },
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
                     "An empty replacement token ('[]') is not allowed.",
                 };
             }

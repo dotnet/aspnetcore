@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             var firstCandidate = context.Candidates[0];
-            if (firstCandidate != context.CurrentCandidate)
+            if (firstCandidate.Action != context.CurrentCandidate.Action)
             {
                 // If the current candidate is not same as the first candidate,
                 // we need not probe other candidates to see if they apply.
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc
             // 3). If we have no matches, then we choose the first constraint to return true.It will later return a 415
             foreach (var candidate in context.Candidates)
             {
-                if (candidate == firstCandidate)
+                if (candidate.Action == firstCandidate.Action)
                 {
                     continue;
                 }

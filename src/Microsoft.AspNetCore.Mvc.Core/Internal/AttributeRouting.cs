@@ -13,25 +13,24 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         /// <summary>
         /// Creates an attribute route using the provided services and provided target router.
         /// </summary>
-        /// <param name="target">The router to invoke when a route entry matches.</param>
         /// <param name="services">The application services.</param>
         /// <returns>An attribute route.</returns>
-        public static IRouter CreateAttributeMegaRoute(IRouter target, IServiceProvider services)
+        public static IRouter CreateAttributeMegaRoute(IServiceProvider services)
         {
-            if (target == null)
-            {
-                throw new ArgumentNullException(nameof(target));
-            }
-
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
 
             return new AttributeRoute(
-                target,
                 services.GetRequiredService<IActionDescriptorCollectionProvider>(),
-                services);
+                services,
+                actions => 
+                {
+                    var handler = services.GetRequiredService<MvcAttributeRouteHandler>();
+                    handler.Actions = actions;
+                    return handler;
+                });
         }
     }
 }

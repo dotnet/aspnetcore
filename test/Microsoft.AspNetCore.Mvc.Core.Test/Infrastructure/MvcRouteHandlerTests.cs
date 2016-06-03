@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -28,8 +29,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var mockActionSelector = new Mock<IActionSelector>();
             mockActionSelector
-                .Setup(a => a.Select(It.IsAny<RouteContext>()))
-                .Returns<ActionDescriptor>(null);
+                .Setup(a => a.SelectCandidates(It.IsAny<RouteContext>()))
+                .Returns(new ActionDescriptor[0]);
 
             var context = CreateRouteContext();
 
@@ -46,39 +47,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Assert.Empty(sink.Scopes);
             Assert.Single(sink.Writes);
             Assert.Equal(expectedMessage, sink.Writes[0].State?.ToString());
-        }
-
-        [Fact]
-        public async Task RouteHandler_RemovesRouteGroupFromRouteValues()
-        {
-            // Arrange
-            var invoker = new Mock<IActionInvoker>();
-            invoker
-                .Setup(i => i.InvokeAsync())
-                .Returns(Task.FromResult(true));
-
-            var invokerFactory = new Mock<IActionInvokerFactory>();
-            invokerFactory
-                .Setup(f => f.CreateInvoker(It.IsAny<ActionContext>()))
-                .Returns<ActionContext>((c) =>
-                {
-                    return invoker.Object;
-                });
-
-            var context = CreateRouteContext();
-            var handler = CreateMvcRouteHandler(invokerFactory: invokerFactory.Object);
-
-            var originalRouteData = context.RouteData;
-            originalRouteData.Values.Add(TreeRouter.RouteGroupKey, "/Home/Test");
-
-            // Act
-            await handler.RouteAsync(context);
-
-            // Assert
-            Assert.Same(originalRouteData, context.RouteData);
-
-
-            Assert.False(context.RouteData.Values.ContainsKey(TreeRouter.RouteGroupKey));
         }
 
         private MvcRouteHandler CreateMvcRouteHandler(
@@ -99,7 +67,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             if (actionSelector == null)
             {
                 var mockActionSelector = new Mock<IActionSelector>();
-                mockActionSelector.Setup(a => a.Select(It.IsAny<RouteContext>()))
+                mockActionSelector
+                    .Setup(a => a.SelectCandidates(It.IsAny<RouteContext>()))
+                    .Returns(new ActionDescriptor[] { actionDescriptor });
+
+                mockActionSelector
+                    .Setup(a => a.SelectBestCandidate(It.IsAny<RouteContext>(), It.IsAny<IReadOnlyList<ActionDescriptor>>()))
                     .Returns(actionDescriptor);
                 actionSelector = mockActionSelector.Object;
             }

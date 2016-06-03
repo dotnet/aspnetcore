@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
             Id = Guid.NewGuid().ToString();
             Properties = new Dictionary<object, object>();
             RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            RouteValueDefaults = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -31,8 +30,6 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         public IDictionary<string, string> RouteValues { get; set; }
 
         public AttributeRouteInfo AttributeRouteInfo { get; set; }
-
-        public IDictionary<string, object> RouteValueDefaults { get; set; }
 
         /// <summary>
         /// The set of constraints for this action. Must all be satisfied for the action to be selected.

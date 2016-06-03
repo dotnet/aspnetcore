@@ -179,22 +179,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             var actionDescriptor = context.ActionDescriptor;
             string normalizedValue = null;
-            if (actionDescriptor.AttributeRouteInfo != null)
+            string value;
+            if (actionDescriptor.RouteValues.TryGetValue(ActionNameKey, out value) &&
+                !string.IsNullOrEmpty(value))
             {
-                object match;
-                if (actionDescriptor.RouteValueDefaults.TryGetValue(ActionNameKey, out match))
-                {
-                    normalizedValue = match?.ToString();
-                }
-            }
-            else
-            {
-                string value;
-                if (actionDescriptor.RouteValues.TryGetValue(ActionNameKey, out value) &&
-                    !string.IsNullOrEmpty(value))
-                {
-                    normalizedValue = value;
-                }
+                normalizedValue = value;
             }
 
             var stringRouteValue = routeValue?.ToString();

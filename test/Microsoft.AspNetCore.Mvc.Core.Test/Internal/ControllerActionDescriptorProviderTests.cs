@@ -261,12 +261,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             var action = Assert.Single(descriptors);
 
-            Assert.Equal(TreeRouter.RouteGroupKey, Assert.Single(action.RouteValues).Key);
-
-            var controller = Assert.Single(action.RouteValueDefaults, kvp => kvp.Key.Equals("controller"));
+            var controller = Assert.Single(action.RouteValues, kvp => kvp.Key.Equals("controller"));
             Assert.Equal("AttributeRouted", controller.Value);
 
-            var actionConstraint = Assert.Single(action.RouteValueDefaults, kvp => kvp.Key.Equals("action"));
+            var actionConstraint = Assert.Single(action.RouteValues, kvp => kvp.Key.Equals("action"));
             Assert.Equal(nameof(AttributeRoutedController.AttributeRoutedAction), actionConstraint.Value);
         }
 
@@ -917,30 +915,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void AttributeRouting_RouteGroupConstraint_IsAddedOnceForNonAttributeRoutes()
-        {
-            // Arrange
-            var provider = GetProvider(
-                typeof(ConventionalAndAttributeRoutedActionsWithAreaController).GetTypeInfo(),
-                typeof(ConstrainedController).GetTypeInfo());
-
-            // Act
-            var actionDescriptors = provider.GetDescriptors();
-
-            // Assert
-            Assert.NotNull(actionDescriptors);
-            Assert.Equal(4, actionDescriptors.Count());
-
-            foreach (var actionDescriptor in actionDescriptors.Where(ad => ad.AttributeRouteInfo == null))
-            {
-                Assert.Equal(6, actionDescriptor.RouteValues.Count);
-                Assert.Single(
-                    actionDescriptor.RouteValues,
-                    kvp => kvp.Key.Equals(TreeRouter.RouteGroupKey) && string.IsNullOrEmpty(kvp.Value));
-            }
-        }
-
-        [Fact]
         public void AttributeRouting_AddsDefaultRouteValues_ForAttributeRoutedActions()
         {
             // Arrange
@@ -957,27 +931,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var indexAction = Assert.Single(actionDescriptors, ad => ad.ActionName.Equals("Index"));
 
-            Assert.Equal(1, indexAction.RouteValues.Count);
+            Assert.Equal(5, indexAction.RouteValues.Count);
 
-            var routeGroup = Assert.Single(indexAction.RouteValues, kvp => kvp.Key.Equals(TreeRouter.RouteGroupKey));
-            Assert.NotNull(routeGroup.Value);
-
-            Assert.Equal(5, indexAction.RouteValueDefaults.Count);
-
-            var controllerDefault = Assert.Single(indexAction.RouteValueDefaults, rd => rd.Key.Equals("controller", StringComparison.OrdinalIgnoreCase));
+            var controllerDefault = Assert.Single(indexAction.RouteValues, rd => rd.Key.Equals("controller", StringComparison.OrdinalIgnoreCase));
             Assert.Equal("ConventionalAndAttributeRoutedActionsWithArea", controllerDefault.Value);
 
-            var actionDefault = Assert.Single(indexAction.RouteValueDefaults, rd => rd.Key.Equals("action", StringComparison.OrdinalIgnoreCase));
+            var actionDefault = Assert.Single(indexAction.RouteValues, rd => rd.Key.Equals("action", StringComparison.OrdinalIgnoreCase));
             Assert.Equal("Index", actionDefault.Value);
 
-            var areaDefault = Assert.Single(indexAction.RouteValueDefaults, rd => rd.Key.Equals("area", StringComparison.OrdinalIgnoreCase));
+            var areaDefault = Assert.Single(indexAction.RouteValues, rd => rd.Key.Equals("area", StringComparison.OrdinalIgnoreCase));
             Assert.Equal("Home", areaDefault.Value);
 
-            var mvRouteValueDefault = Assert.Single(indexAction.RouteValueDefaults, rd => rd.Key.Equals("key", StringComparison.OrdinalIgnoreCase));
-            Assert.Null(mvRouteValueDefault.Value);
+            var mvRouteValueDefault = Assert.Single(indexAction.RouteValues, rd => rd.Key.Equals("key", StringComparison.OrdinalIgnoreCase));
+            Assert.Equal(string.Empty, mvRouteValueDefault.Value);
 
-            var anotherRouteValue = Assert.Single(indexAction.RouteValueDefaults, rd => rd.Key.Equals("second", StringComparison.OrdinalIgnoreCase));
-            Assert.Null(anotherRouteValue.Value);
+            var anotherRouteValue = Assert.Single(indexAction.RouteValues, rd => rd.Key.Equals("second", StringComparison.OrdinalIgnoreCase));
+            Assert.Equal(string.Empty, anotherRouteValue.Value);
         }
 
         [Fact]
@@ -992,29 +961,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             var action = Assert.Single(actions);
             Assert.Equal("stub/ThisIsAnAction", action.AttributeRouteInfo.Template);
-        }
-
-        // Token replacement happens before we 'group' routes. So two route templates
-        // that are equivalent after token replacement go to the same 'group'.
-        [Fact]
-        public void AttributeRouting_TokenReplacement_BeforeGroupId()
-        {
-            // Arrange
-            var provider = GetProvider(typeof(SameGroupIdController).GetTypeInfo());
-
-            // Act
-            var actions = provider.GetDescriptors().ToArray();
-
-            var groupIds = actions.Select(
-                a => a.RouteValues
-                    .Where(kvp => kvp.Key == TreeRouter.RouteGroupKey)
-                    .Select(kvp => kvp.Value)
-                    .Single())
-                .ToArray();
-
-            // Assert
-            Assert.Equal(2, groupIds.Length);
-            Assert.Equal(groupIds[0], groupIds[1]);
         }
 
         // Parameters are validated later. This action uses the forbidden {action} and {controller}

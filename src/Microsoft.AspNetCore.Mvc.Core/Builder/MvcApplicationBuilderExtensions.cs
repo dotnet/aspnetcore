@@ -3,9 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -94,11 +92,7 @@ namespace Microsoft.AspNetCore.Builder
 
             configureRoutes(routes);
 
-            // Adding the attribute route comes after running the user-code because
-            // we want to respect any changes to the DefaultHandler.
-            routes.Routes.Insert(0, AttributeRouting.CreateAttributeMegaRoute(
-                routes.DefaultHandler,
-                app.ApplicationServices));
+            routes.Routes.Insert(0, AttributeRouting.CreateAttributeMegaRoute(app.ApplicationServices));
 
             return app.UseRouter(routes.Build());
         }

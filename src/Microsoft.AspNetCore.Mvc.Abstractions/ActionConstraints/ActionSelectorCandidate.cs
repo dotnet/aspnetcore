@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
     /// <summary>
     /// A candidate action for action selection.
     /// </summary>
-    public class ActionSelectorCandidate
+    public struct ActionSelectorCandidate
     {
         /// <summary>
         /// Creates a new <see cref="ActionSelectorCandidate"/>.
@@ -33,11 +33,11 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
         /// <summary>
         /// The <see cref="ActionDescriptor"/> representing a candiate for selection.
         /// </summary>
-        public ActionDescriptor Action { get; private set; }
+        public ActionDescriptor Action { get; }
 
         /// <summary>
         /// The list of <see cref="IActionConstraint"/> instances associated with <see name="Action"/>.
         /// </summary>
-        public IReadOnlyList<IActionConstraint> Constraints { get; private set; }
+        public IReadOnlyList<IActionConstraint> Constraints { get; }
     }
 }
