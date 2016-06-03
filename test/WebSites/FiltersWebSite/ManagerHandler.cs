@@ -11,12 +11,13 @@ namespace FiltersWebSite
 {
     public class ManagerHandler : AuthorizationHandler<OperationAuthorizationRequirement>
     {
-        protected override void Handle(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement)
         {
             if (context.User.HasClaim("Manager", "yes"))
             {
                 context.Succeed(requirement);
             }
+            return Task.FromResult(0);
         }
     }
 }
