@@ -58,11 +58,17 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 {
                     var filesChanged = new HashSet<string>();
 
-                    watcher.OnFileChange += (_, f) =>
+                    EventHandler<string> handler = null;
+                    handler = (_, f) =>
                     {
+                        watcher.EnableRaisingEvents = false;
+                        watcher.OnFileChange -= handler;
+
                         filesChanged.Add(f);
                         changedEv.Set();
                     };
+
+                    watcher.OnFileChange += handler;
                     watcher.EnableRaisingEvents = true;
 
                     // On Unix the file write time is in 1s increments;
@@ -94,18 +100,21 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 {
                     var filesChanged = new HashSet<string>();
 
-                    var changeCount = 0;
-                    watcher.OnFileChange += (_, f) =>
+                    EventHandler<string> handler = null;
+                    handler = (_, f) =>
                     {
                         filesChanged.Add(f);
 
-                        changeCount++;
-
-                        if (changeCount >= 2)
+                        if (filesChanged.Count >= 2)
                         {
+                            watcher.EnableRaisingEvents = false;
+                            watcher.OnFileChange -= handler;
+
                             changedEv.Set();
                         }
                     };
+
+                    watcher.OnFileChange += handler;
                     watcher.EnableRaisingEvents = true;
 
                     File.Move(srcFile, dstFile);
@@ -133,17 +142,20 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 {
                     var filesChanged = new HashSet<string>();
 
-                    var totalChanges = 0;
-                    watcher.OnFileChange += (_, f) =>
+                    EventHandler<string> handler = null;
+                    handler = (_, f) =>
                     {
                         filesChanged.Add(f);
 
-                        totalChanges++;
-                        if (totalChanges >= 2)
+                        if (filesChanged.Count >= 2)
                         {
+                            watcher.EnableRaisingEvents = false;
+                            watcher.OnFileChange -= handler;
                             changedEv.Set();
                         }
                     };
+
+                    watcher.OnFileChange += handler;
                     watcher.EnableRaisingEvents = true;
 
                     // On Unix the file write time is in 1s increments;
@@ -235,11 +247,16 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 {
                     var filesChanged = new HashSet<string>();
 
-                    watcher.OnFileChange += (_, f) =>
+                    EventHandler<string> handler = null;
+                    handler = (_, f) =>
                     {
+                        watcher.EnableRaisingEvents = false;
+                        watcher.OnFileChange -= handler;
                         filesChanged.Add(f);
                         changedEv.Set();
                     };
+
+                    watcher.OnFileChange += handler;
                     watcher.EnableRaisingEvents = true;
 
                     // On Unix the file write time is in 1s increments;
@@ -267,11 +284,14 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 {
                     var filesChanged = new HashSet<string>();
 
-                    watcher.OnFileChange += (_, f) =>
+                    EventHandler<string> handler = null;
+                    handler = (_, f) =>
                     {
                         filesChanged.Add(f);
                         changedEv.Set();
                     };
+
+                    watcher.OnFileChange += handler;
                     watcher.EnableRaisingEvents = true;
 
                     // On Unix the file write time is in 1s increments;
@@ -315,6 +335,9 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     File.WriteAllText(testFileFullPath, string.Empty);
                     Assert.True(changedEv.WaitOne(DefaultTimeout));
                     Assert.Equal(testFileFullPath, filesChanged.Single());
+
+                    watcher.EnableRaisingEvents = false;
+                    watcher.OnFileChange -= handler;
                 }
             });
         }
@@ -342,17 +365,20 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 {
                     var filesChanged = new HashSet<string>();
 
-                    var totalChanges = 0;
-                    watcher.OnFileChange += (_, f) =>
+                    EventHandler<string> handler = null;
+                    handler = (_, f) =>
                     {
                         filesChanged.Add(f);
 
-                        totalChanges++;
-                        if (totalChanges >= 4)
+                        if (filesChanged.Count >= 4)
                         {
+                            watcher.EnableRaisingEvents = false;
+                            watcher.OnFileChange -= handler;
                             changedEv.Set();
                         }
                     };
+
+                    watcher.OnFileChange += handler;
                     watcher.EnableRaisingEvents = true;
 
                     Directory.Delete(subdir, recursive: true);
