@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Authorization.Infrastructure
 {
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
         public string ClaimType { get; }
         public IEnumerable<string> AllowedValues { get; }
 
-        protected override void Handle(AuthorizationHandlerContext context, ClaimsAuthorizationRequirement requirement)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, ClaimsAuthorizationRequirement requirement)
         {
             if (context.User != null)
             {
@@ -44,6 +45,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
                     context.Succeed(requirement);
                 }
             }
+            return Task.FromResult(0);
         }
     }
 }

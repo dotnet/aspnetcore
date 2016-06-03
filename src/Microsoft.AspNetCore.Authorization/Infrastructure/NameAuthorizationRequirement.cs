@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Authorization.Infrastructure
 {
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
 
         public string RequiredName { get; }
 
-        protected override void Handle(AuthorizationHandlerContext context, NameAuthorizationRequirement requirement)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, NameAuthorizationRequirement requirement)
         {
             if (context.User != null)
             {
@@ -33,6 +34,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
                     context.Succeed(requirement);
                 }
             }
+            return Task.FromResult(0);
         }
     }
 }

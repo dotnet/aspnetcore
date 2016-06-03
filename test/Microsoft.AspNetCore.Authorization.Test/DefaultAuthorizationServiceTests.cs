@@ -584,9 +584,10 @@ namespace Microsoft.AspNetCore.Authorization.Test
         public class CustomRequirement : IAuthorizationRequirement { }
         public class CustomHandler : AuthorizationHandler<CustomRequirement>
         {
-            protected override void Handle(AuthorizationHandlerContext context, CustomRequirement requirement)
+            protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, CustomRequirement requirement)
             {
                 context.Succeed(requirement);
+                return Task.FromResult(0);
             }
         }
 
@@ -640,11 +641,12 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
             public bool Succeed { get; set; }
 
-            protected override void Handle(AuthorizationHandlerContext context, PassThroughRequirement requirement)
+            protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, PassThroughRequirement requirement)
             {
                 if (Succeed) {
                     context.Succeed(requirement);
                 }
+                return Task.FromResult(0);
             }
         }
 
@@ -770,23 +772,25 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
             private IEnumerable<OperationAuthorizationRequirement> _allowed;
 
-            protected override void Handle(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement, ExpenseReport resource)
+            protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement, ExpenseReport resource)
             {
                 if (_allowed.Contains(requirement))
                 {
                     context.Succeed(requirement);
                 }
+                return Task.FromResult(0);
             }
         }
 
         public class SuperUserHandler : AuthorizationHandler<OperationAuthorizationRequirement>
         {
-            protected override void Handle(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement)
+            protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement)
             {
                 if (context.User.HasClaim("SuperUser", "yes"))
                 {
                     context.Succeed(requirement);
                 }
+                return Task.FromResult(0);
             }
         }
 
@@ -816,7 +820,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
         public class NotCalledHandler : AuthorizationHandler<OperationAuthorizationRequirement, string>
         {
-            protected override void Handle(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement, string resource)
+            protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement, string resource)
             {
                 throw new NotImplementedException();
             }
@@ -824,12 +828,13 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
         public class EvenHandler : AuthorizationHandler<OperationAuthorizationRequirement, int>
         {
-            protected override void Handle(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement, int id)
+            protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement, int id)
             {
                 if (id % 2 == 0)
                 {
                     context.Succeed(requirement);
                 }
+                return Task.FromResult(0);
             }
         }
 

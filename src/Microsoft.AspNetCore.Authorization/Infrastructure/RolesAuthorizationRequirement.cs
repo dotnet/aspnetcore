@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Authorization.Infrastructure
 {
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
 
         public IEnumerable<string> AllowedRoles { get; }
 
-        protected override void Handle(AuthorizationHandlerContext context, RolesAuthorizationRequirement requirement)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RolesAuthorizationRequirement requirement)
         {
             if (context.User != null)
             {
@@ -45,6 +46,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
                     context.Succeed(requirement);
                 }
             }
+            return Task.FromResult(0);
         }
 
     }
