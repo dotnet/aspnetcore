@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
-                        "Hëädër: value",
+                        "H\u00eb\u00e4d\u00ebr: value",
                         "",
                         "");
                     await ReceiveBadRequestResponse(connection);
