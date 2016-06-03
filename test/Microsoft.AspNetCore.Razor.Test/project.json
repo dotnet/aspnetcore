@@ -9,7 +9,7 @@
       "type": "build"
     },
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
-    "Newtonsoft.Json": "8.0.3",
+    "Newtonsoft.Json": "9.0.1-beta1",
     "xunit": "2.1.0"
   },
   "testRunner": "xunit",
