@@ -8,4 +8,4 @@ k-standard-goals
 custom-goals
 
 #initialize if='Directory.Exists("src")'
-  exec program='dotnet' commandline='run -p ../../tools/Microsoft.AspNetCore.Server.Kestrel.GeneratedCode Http/FrameHeaders.Generated.cs Http/Frame.Generated.cs' workingdir='${kestrelSrcDir}'
+  exec program='dotnet' commandline='run -p ../../tools/Microsoft.AspNetCore.Server.Kestrel.GeneratedCode Internal/Http/FrameHeaders.Generated.cs Internal/Http/Frame.Generated.cs' workingdir='${kestrelSrcDir}'

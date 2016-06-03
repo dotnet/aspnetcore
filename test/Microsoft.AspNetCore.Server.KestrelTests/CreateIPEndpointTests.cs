@@ -3,7 +3,7 @@
 
 using System.Net;
 using Microsoft.AspNetCore.Server.Kestrel;
-using Microsoft.AspNetCore.Server.Kestrel.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests

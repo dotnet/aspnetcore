@@ -8,7 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests

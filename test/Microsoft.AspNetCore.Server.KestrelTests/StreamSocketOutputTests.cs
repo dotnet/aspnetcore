@@ -4,7 +4,8 @@
 using System;
 using System.IO;
 using Microsoft.AspNetCore.Server.Kestrel.Filter;
-using Microsoft.AspNetCore.Server.Kestrel.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Filter.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests

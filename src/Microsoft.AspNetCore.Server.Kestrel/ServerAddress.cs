@@ -4,8 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.AspNetCore.Server.Kestrel.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel
 {

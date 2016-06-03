@@ -6,8 +6,9 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel;
-using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests

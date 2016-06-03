@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.AspNetCore.Server.Kestrel.Exceptions;
-using Microsoft.AspNetCore.Server.Kestrel.Http;
+using Microsoft.AspNetCore.Server.Kestrel;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 

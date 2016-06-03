@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Filter;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -32,10 +32,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 #if NET451
         static HttpsConnectionFilterTests()
         {
-            // SecurityProtocolType values below not available in Mono < 4.3 
+            // SecurityProtocolType values below not available in Mono < 4.3
             const int SecurityProtocolTypeTls11 = 768;
             const int SecurityProtocolTypeTls12 = 3072;
-            ServicePointManager.SecurityProtocol |= (SecurityProtocolType)(SecurityProtocolTypeTls12 | SecurityProtocolTypeTls11); 
+            ServicePointManager.SecurityProtocol |= (SecurityProtocolType)(SecurityProtocolTypeTls12 | SecurityProtocolTypeTls11);
         }
 #endif
 

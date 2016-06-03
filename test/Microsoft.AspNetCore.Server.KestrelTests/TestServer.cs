@@ -4,7 +4,8 @@
 using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
-using Microsoft.AspNetCore.Server.Kestrel.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {

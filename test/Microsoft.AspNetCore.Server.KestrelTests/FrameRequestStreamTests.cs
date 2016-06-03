@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests

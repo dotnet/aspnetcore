@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using System.Numerics;
 using Xunit;
 

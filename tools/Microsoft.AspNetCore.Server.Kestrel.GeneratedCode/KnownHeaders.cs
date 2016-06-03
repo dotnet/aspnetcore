@@ -199,11 +199,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
             return $@"
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Server.Kestrel.Exceptions;
-using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {{
 {Each(loops, loop => $@"
     public partial class {loop.ClassName}

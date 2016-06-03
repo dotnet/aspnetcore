@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Server.Kestrel.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 

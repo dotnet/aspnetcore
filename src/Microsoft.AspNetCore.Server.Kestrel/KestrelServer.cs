@@ -4,15 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

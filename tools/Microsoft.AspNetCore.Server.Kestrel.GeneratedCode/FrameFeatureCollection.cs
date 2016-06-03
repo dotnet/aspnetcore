@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {{
     public partial class Frame
     {{{Each(allFeatures, feature => $@"

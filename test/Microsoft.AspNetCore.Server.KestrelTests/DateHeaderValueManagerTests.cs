@@ -3,8 +3,8 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Xunit;
 

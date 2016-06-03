@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {

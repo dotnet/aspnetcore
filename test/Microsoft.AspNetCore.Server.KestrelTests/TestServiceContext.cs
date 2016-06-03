@@ -5,8 +5,9 @@ using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Filter;
-using Microsoft.AspNetCore.Server.Kestrel.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests

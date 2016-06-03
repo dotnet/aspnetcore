@@ -1,9 +1,10 @@
 ﻿using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
-using Microsoft.AspNetCore.Server.Kestrel.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Xunit;
 
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public void DoesNotEndConnectionOnZeroRead()
         {
             var mockLibuv = new MockLibuv();
-            
+
             using (var memory = new MemoryPool())
             using (var engine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {

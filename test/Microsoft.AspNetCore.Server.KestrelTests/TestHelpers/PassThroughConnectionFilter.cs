@@ -3,7 +3,8 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Filter;
-using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Filter.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {

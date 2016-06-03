@@ -1,6 +1,6 @@
 using System;
 using System.Threading;
-using Microsoft.AspNetCore.Server.Kestrel.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 {
