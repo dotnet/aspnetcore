@@ -8,12 +8,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.PlatformAbstractions;
+using Microsoft.Extensions.StackTrace.Sources;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -54,12 +54,12 @@ namespace Microsoft.AspNetCore.Hosting
             return Encoding.UTF8.GetBytes(string.Format(CultureInfo.InvariantCulture, _errorPageFormatString, builder, rawExceptionDetails, footer));
         }
 
-        private static string BuildCodeSnippetDiv(StackFrame frame)
+        private static string BuildCodeSnippetDiv(StackFrameInfo frameInfo)
         {
-            var filename = frame.GetFileName();
+            var filename = frameInfo.FilePath;
             if (!string.IsNullOrEmpty(filename))
             {
-                int failingLineNumber = frame.GetFileLineNumber();
+                int failingLineNumber = frameInfo.LineNumber;
                 if (failingLineNumber >= 1)
                 {
                     var lines = GetFailingCallSiteInFile(filename, failingLineNumber);
@@ -76,10 +76,11 @@ namespace Microsoft.AspNetCore.Hosting
             return null;
         }
 
-        private static string BuildLineForStackFrame(StackFrame frame)
+        private static string BuildLineForStackFrame(StackFrameInfo frameInfo)
         {
             var builder = new StringBuilder("<pre>");
-            var method = frame.GetMethod();
+            var stackFrame = frameInfo.StackFrame;
+            var method = stackFrame.GetMethod();
 
             // Special case: no method available
             if (method == null)
@@ -116,12 +117,12 @@ namespace Microsoft.AspNetCore.Hosting
             builder.AppendFormat(CultureInfo.InvariantCulture, @"<span class=""faded"">{0}</span>", HtmlEncodeAndReplaceLineBreaks(BuildMethodParametersUnescaped(method)));
 
             // Do we have source information for this frame?
-            if (frame.GetILOffset() != -1)
+            if (stackFrame.GetILOffset() != -1)
             {
-                var filename = frame.GetFileName();
+                var filename = frameInfo.FilePath;
                 if (!string.IsNullOrEmpty(filename))
                 {
-                    builder.AppendFormat(CultureInfo.InvariantCulture, " in {0}:line {1:D}", HtmlEncodeAndReplaceLineBreaks(filename), frame.GetFileLineNumber());
+                    builder.AppendFormat(CultureInfo.InvariantCulture, " in {0}:line {1:D}", HtmlEncodeAndReplaceLineBreaks(filename), frameInfo.LineNumber);
                 }
             }
 
@@ -235,7 +236,7 @@ namespace Microsoft.AspNetCore.Hosting
             var environment = PlatformServices.Default.Runtime;
             var runtimeType = HtmlEncodeAndReplaceLineBreaks(environment.RuntimeType);
             var runtimeDisplayName = runtimeType == "CoreCLR" ? ".NET Core" : runtimeType == "CLR" ? ".NET Framework" : "Mono";
-#if NETCOREAPP1_0 || NETSTANDARD1_3
+#if NETSTANDARD1_5
             var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;
             var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName).Version.ToString();
             var clrVersion = HtmlEncodeAndReplaceLineBreaks(assemblyVersion);
@@ -276,21 +277,20 @@ namespace Microsoft.AspNetCore.Hosting
             // First, build the stack trace
             var firstStackFrame = true;
             var stackTraceBuilder = new StringBuilder();
-            var needFileInfo = true;
-            foreach (var frame in new StackTrace(ex, needFileInfo).GetFrames() ?? Enumerable.Empty<StackFrame>())
+            foreach (var frameInfo in StackTraceHelper.GetFrames(ex))
             {
                 if (!firstStackFrame)
                 {
                     stackTraceBuilder.Append("<br />");
                 }
                 firstStackFrame = false;
-                var thisFrameLine = BuildLineForStackFrame(frame);
+                var thisFrameLine = BuildLineForStackFrame(frameInfo);
                 stackTraceBuilder.AppendLine(thisFrameLine);
 
                 // Try to include the source code in the error page if we can.
                 if (!wasFailingCallSiteSourceWritten && inlineSourceDiv == null)
                 {
-                    inlineSourceDiv = BuildCodeSnippetDiv(frame);
+                    inlineSourceDiv = BuildCodeSnippetDiv(frameInfo);
                     if (inlineSourceDiv != null)
                     {
                         wasFailingCallSiteSourceWritten = true;
