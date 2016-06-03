@@ -22,19 +22,14 @@
 
     </Target>
 
-    <Target Name="FindLatestDropShare">
-        <FindLatestDrop RootPath="$(RootDrop)">
-            <Output TaskParameter="LatestPath" PropertyName="DropSource"/>
-        </FindLatestDrop>
-
-        <Message Text="$(DropSource)" />
-    </Target>
-
-    <Target Name="CopyAndExtractUnsignedPackages" DependsOnTargets="FindLatestDropShare;$(Clean)">
+    <Target Name="CopyAndExtractUnsignedPackages" DependsOnTargets="$(Clean)">
         <MakeDir Directories="$(OutputPath)" />
         <MakeDir Directories="$(CoherenceDestinationDir)" />
 
-        <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MIR /MT $(DropSource) $(CoherenceDestinationDir) /XD build packages-expanded
+        <Error Text="COHERENCE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence\{build-number}"
+            Condition=" '$(COHERENCE_DROP_LOCATION)' == '' " />
+
+        <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MIR /MT $(COHERENCE_DROP_LOCATION) $(CoherenceDestinationDir) /XD build packages-expanded
                        IF %ERRORLEVEL% LEQ 1 exit 0" />
 
         <ItemGroup>
@@ -541,48 +536,6 @@
                 }
 
                 d.Save(NuSpec);
-            }
-            catch (Exception ex)
-            {
-                Log.LogErrorFromException(ex);
-            }
-
-            return !Log.HasLoggedErrors;
-        ]]>
-            </Code>
-        </Task>
-    </UsingTask>
-
-    <UsingTask TaskName="FindLatestDrop" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
-        <ParameterGroup>
-            <RootPath ParameterType="System.String" Required="true" />
-            <SubFolder ParameterType="System.String" Required="false" />
-            <LatestPath ParameterType="System.String" Output="true" />
-        </ParameterGroup>
-        <Task>
-            <Reference Include="System.Xml" />
-            <Reference Include="System.Core" />
-            <Using Namespace="System" />
-            <Using Namespace="System.Collections.Generic" />
-            <Using Namespace="System.Diagnostics" />
-            <Using Namespace="System.IO" />
-            <Using Namespace="System.Linq" />
-            <Using Namespace="System.Xml" />
-            <Using Namespace="Microsoft.Build.Framework" />
-            <Using Namespace="Microsoft.Build.Utilities" />
-            <Code Type="Fragment" Language="cs">
-                <![CDATA[
-            try
-            {
-                var dirs = Directory.GetDirectories(RootPath);
-                int i;
-                var buildDirs = from d in dirs
-                                where Int32.TryParse(Path.GetFileName(d), out i)
-                                select Convert.ToInt32(Path.GetFileName(d));
-
-                var latestDirValue = buildDirs.OrderByDescending(o => o).First();
-                SubFolder = SubFolder ?? String.Empty;
-                LatestPath = Path.Combine(RootPath, Convert.ToString(latestDirValue), SubFolder)+"\\";
             }
             catch (Exception ex)
             {
