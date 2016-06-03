@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
         [Fact]
         public void EncodeEmptyPartialUrl()
         {
-            var result = UriHelper.Encode();
+            var result = UriHelper.BuildRelative();
 
             Assert.Equal("/", result);
         }
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
         [Fact]
         public void EncodePartialUrl()
         {
-            var result = UriHelper.Encode(new PathString("/un?escaped/base"), new PathString("/un?escaped"),
+            var result = UriHelper.BuildRelative(new PathString("/un?escaped/base"), new PathString("/un?escaped"),
                 new QueryString("?name=val%23ue"), new FragmentString("#my%20value"));
 
             Assert.Equal("/un%3Fescaped/base/un%3Fescaped?name=val%23ue#my%20value", result);
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
         [Fact]
         public void EncodeEmptyFullUrl()
         {
-            var result = UriHelper.Encode("http", new HostString(string.Empty));
+            var result = UriHelper.BuildAbsolute("http", new HostString(string.Empty));
 
             Assert.Equal("http:///", result);
         }
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
         [Fact]
         public void EncodeFullUrl()
         {
-            var result = UriHelper.Encode("http", new HostString("my.HoΨst:80"), new PathString("/un?escaped/base"), new PathString("/un?escaped"),
+            var result = UriHelper.BuildAbsolute("http", new HostString("my.HoΨst:80"), new PathString("/un?escaped/base"), new PathString("/un?escaped"),
                 new QueryString("?name=val%23ue"), new FragmentString("#my%20value"));
 
             Assert.Equal("http://my.xn--host-cpd:80/un%3Fescaped/base/un%3Fescaped?name=val%23ue#my%20value", result);

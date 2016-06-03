@@ -1,12 +1,24 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
-    "Microsoft.AspNetCore.Http": "1.0.0-*"
-  },
-  "commands": {
-    "SampleApp": "SampleApp"
+    "Microsoft.AspNetCore.Http": "1.0.0-*",
+    "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {}
+    "net451": { },
+    "netcoreapp1.0": {
+      "imports": [
+        "dnxcore50"
+      ],
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        }
+      }
+    }
+  },
+  "buildOptions": {
+    "emitEntryPoint": true
   }
 }

@@ -16,12 +16,12 @@ namespace Microsoft.AspNetCore.Http.Extensions
         /// <summary>
         /// Combines the given URI components into a string that is properly encoded for use in HTTP headers.
         /// </summary>
-        /// <param name="pathBase"></param>
-        /// <param name="path"></param>
-        /// <param name="query"></param>
-        /// <param name="fragment"></param>
+        /// <param name="pathBase">The first portion of the request path associated with application root.</param>
+        /// <param name="path">The portion of the request path that identifies the requested resource.</param>
+        /// <param name="query">The query, if any.</param>
+        /// <param name="fragment">The fragment, if any.</param>
         /// <returns></returns>
-        public static string Encode(
+        public static string BuildRelative(
             PathString pathBase = new PathString(),
             PathString path = new PathString(),
             QueryString query = new QueryString(),
@@ -35,14 +35,14 @@ namespace Microsoft.AspNetCore.Http.Extensions
         /// Combines the given URI components into a string that is properly encoded for use in HTTP headers.
         /// Note that unicode in the HostString will be encoded as punycode.
         /// </summary>
-        /// <param name="scheme"></param>
-        /// <param name="host"></param>
-        /// <param name="pathBase"></param>
-        /// <param name="path"></param>
-        /// <param name="query"></param>
-        /// <param name="fragment"></param>
+        /// <param name="scheme">http, https, etc.</param>
+        /// <param name="host">The host portion of the uri normally included in the Host header. This may include the port.</param>
+        /// <param name="pathBase">The first portion of the request path associated with application root.</param>
+        /// <param name="path">The portion of the request path that identifies the requested resource.</param>
+        /// <param name="query">The query, if any.</param>
+        /// <param name="fragment">The fragment, if any.</param>
         /// <returns></returns>
-        public static string Encode(
+        public static string BuildAbsolute(
             string scheme,
             HostString host,
             PathString pathBase = new PathString(),
@@ -74,13 +74,13 @@ namespace Microsoft.AspNetCore.Http.Extensions
         /// Generates a string from the given absolute or relative Uri that is appropriately encoded for use in
         /// HTTP headers. Note that a unicode host name will be encoded as punycode.
         /// </summary>
-        /// <param name="uri"></param>
+        /// <param name="uri">The Uri to encode.</param>
         /// <returns></returns>
         public static string Encode(Uri uri)
         {
             if (uri.IsAbsoluteUri)
             {
-                return Encode(
+                return BuildAbsolute(
                     scheme: uri.Scheme,
                     host: HostString.FromUriComponent(uri),
                     pathBase: PathString.FromUriComponent(uri),
@@ -97,18 +97,18 @@ namespace Microsoft.AspNetCore.Http.Extensions
         /// Returns the combined components of the request URL in a fully escaped form suitable for use in HTTP headers
         /// and other HTTP operations.
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="request">The request to assemble the uri pieces from.</param>
         /// <returns></returns>
         public static string GetEncodedUrl(this HttpRequest request)
         {
-            return Encode(request.Scheme, request.Host, request.PathBase, request.Path, request.QueryString);
+            return BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path, request.QueryString);
         }
 
         /// <summary>
         /// Returns the combined components of the request URL in a fully un-escaped form (except for the QueryString)
         /// suitable only for display. This format should not be used in HTTP headers or other HTTP operations.
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="request">The request to assemble the uri pieces from.</param>
         /// <returns></returns>
         public static string GetDisplayUrl(this HttpRequest request)
         {
