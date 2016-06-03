@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Identity.CoreCompat
         where TUser : IdentityUser
     {
         /// <summary>
-        ///     Default constuctor which uses a new instance of a default EntityDbContext
+        ///     Default constuctor which uses a new instance of a default EntityDbContext.
         /// </summary>
         public UserStore()
             : this(new IdentityDbContext<TUser>())
