@@ -80,7 +80,7 @@ namespace OpenIdConnect.AzureAdSample
                 ClientId = clientId,
                 ClientSecret = clientSecret, // for code flow
                 Authority = authority,
-                ResponseType = OpenIdConnectResponseTypes.CodeIdToken,
+                ResponseType = OpenIdConnectResponseType.CodeIdToken,
                 // GetClaimsFromUserInfoEndpoint = true,
                 Events = new OpenIdConnectEvents()
                 {

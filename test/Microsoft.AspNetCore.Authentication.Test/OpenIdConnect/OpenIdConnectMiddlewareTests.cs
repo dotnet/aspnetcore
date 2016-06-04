@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
 
             var queryValues = new ExpectedQueryValues(DefaultAuthority, configuration)
             {
-                RequestType = OpenIdConnectRequestType.AuthenticationRequest
+                RequestType = OpenIdConnectRequestType.Authentication
             };
             var server = CreateServer(GetProtocolMessageOptions());
             var transaction = await SendAsync(server, DefaultHost + Challenge);
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
 
             var queryValues = new ExpectedQueryValues(DefaultAuthority, configuration)
             {
-                RequestType = OpenIdConnectRequestType.LogoutRequest
+                RequestType = OpenIdConnectRequestType.Logout
             };
             var server = CreateServer(GetProtocolMessageOptions());
             var transaction = await SendAsync(server, DefaultHost + Signout);

@@ -25,8 +25,8 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         public static ExpectedQueryValues Defaults(string authority)
         {
             var result = new ExpectedQueryValues(authority);
-            result.Scope = OpenIdConnectScopes.OpenIdProfile;
-            result.ResponseType = OpenIdConnectResponseTypes.CodeIdToken;
+            result.Scope = OpenIdConnectScope.OpenIdProfile;
+            result.ResponseType = OpenIdConnectResponseType.CodeIdToken;
             return result;
         }
 
@@ -111,11 +111,11 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
 
         public string RedirectUri { get; set; } = Guid.NewGuid().ToString();
 
-        public OpenIdConnectRequestType RequestType { get; set; } = OpenIdConnectRequestType.AuthenticationRequest;
+        public OpenIdConnectRequestType RequestType { get; set; } = OpenIdConnectRequestType.Authentication;
 
         public string Resource { get; set; } = Guid.NewGuid().ToString();
 
-        public string ResponseMode { get; set; } = OpenIdConnectResponseModes.FormPost;
+        public string ResponseMode { get; set; } = OpenIdConnectResponseMode.FormPost;
 
         public string ResponseType { get; set; } = Guid.NewGuid().ToString();
 
@@ -127,11 +127,11 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         {
             get
             {
-                if (RequestType == OpenIdConnectRequestType.TokenRequest)
+                if (RequestType == OpenIdConnectRequestType.Token)
                 {
                     return Configuration?.EndSessionEndpoint ?? Authority + @"/oauth2/token";
                 }
-                else if (RequestType == OpenIdConnectRequestType.LogoutRequest)
+                else if (RequestType == OpenIdConnectRequestType.Logout)
                 {
                     return Configuration?.TokenEndpoint ?? Authority + @"/oauth2/logout";
                 }

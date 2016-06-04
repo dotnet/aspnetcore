@@ -72,7 +72,7 @@ namespace OpenIdConnectSample
                 ClientId = Configuration["oidc:clientid"],
                 ClientSecret = Configuration["oidc:clientsecret"], // for code flow
                 Authority = Configuration["oidc:authority"],
-                ResponseType = OpenIdConnectResponseTypes.Code,
+                ResponseType = OpenIdConnectResponseType.Code,
                 GetClaimsFromUserInfoEndpoint = true
             });
 

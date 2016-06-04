@@ -38,8 +38,8 @@ namespace Microsoft.AspNetCore.Builder
         /// <para>Caption: <see cref="OpenIdConnectDefaults.Caption"/>.</para>
         /// <para>ProtocolValidator: new <see cref="OpenIdConnectProtocolValidator"/>.</para>
         /// <para>RefreshOnIssuerKeyNotFound: true</para>
-        /// <para>ResponseType: <see cref="OpenIdConnectResponseTypes.CodeIdToken"/></para>
-        /// <para>Scope: <see cref="OpenIdConnectScopes.OpenIdProfile"/>.</para>
+        /// <para>ResponseType: <see cref="OpenIdConnectResponseType.CodeIdToken"/></para>
+        /// <para>Scope: <see cref="OpenIdConnectScope.OpenIdProfile"/>.</para>
         /// <para>TokenValidationParameters: new <see cref="TokenValidationParameters"/> with AuthenticationScheme = authenticationScheme.</para>
         /// <para>UseTokenLifetime: false.</para>
         /// </remarks>
@@ -144,12 +144,12 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Gets or sets the 'response_mode'.
         /// </summary>
-        public string ResponseMode { get; set; } = OpenIdConnectResponseModes.FormPost;
+        public string ResponseMode { get; set; } = OpenIdConnectResponseMode.FormPost;
 
         /// <summary>
         /// Gets or sets the 'response_type'.
         /// </summary>
-        public string ResponseType { get; set; } = OpenIdConnectResponseTypes.IdToken;
+        public string ResponseType { get; set; } = OpenIdConnectResponseType.IdToken;
 
         /// <summary>
         /// Gets the list of permissions to request.

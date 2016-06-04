@@ -286,8 +286,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             // Omitting the response_mode parameter when it already corresponds to the default
             // response_mode used for the specified response_type is recommended by the specifications.
             // See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#ResponseModes
-            if (!string.Equals(Options.ResponseType, OpenIdConnectResponseTypes.Code, StringComparison.Ordinal) ||
-                !string.Equals(Options.ResponseMode, OpenIdConnectResponseModes.Query, StringComparison.Ordinal))
+            if (!string.Equals(Options.ResponseType, OpenIdConnectResponseType.Code, StringComparison.Ordinal) ||
+                !string.Equals(Options.ResponseMode, OpenIdConnectResponseMode.Query, StringComparison.Ordinal))
             {
                 message.ResponseMode = Options.ResponseMode;
             }
