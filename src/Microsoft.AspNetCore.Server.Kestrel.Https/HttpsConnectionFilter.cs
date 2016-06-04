@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                 return certificate2;
             }
 
-#if NETSTANDARD1_3
+#if NETSTANDARD1_5
             // conversion X509Certificate to X509Certificate2 not supported
             // https://github.com/dotnet/corefx/issues/4510
             return null;

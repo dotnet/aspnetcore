@@ -23,7 +23,7 @@
   },
   "frameworks": {
     "net451": {},
-    "netstandard1.3": {
+    "netstandard1.5": {
       "dependencies": {
         "System.Net.Security": "4.0.0-*"
       },
