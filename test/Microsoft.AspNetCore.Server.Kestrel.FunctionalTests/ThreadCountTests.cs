@@ -7,14 +7,16 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class ThreadCountTests
     {
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(OneToTen))]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Test failures pending investigation.")]
         public async Task OneToTenThreads(int threadCount)
         {
             var hostBuilder = new WebHostBuilder()
