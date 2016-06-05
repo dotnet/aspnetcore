@@ -117,7 +117,7 @@ namespace MusicStore
                 BackchannelHttpHandler = new OpenIdConnectBackChannelHttpHandler(),
                 StringDataFormat = new CustomStringDataFormat(),
                 StateDataFormat = new CustomStateDataFormat(),
-                ResponseType = OpenIdConnectResponseTypes.CodeIdToken,
+                ResponseType = OpenIdConnectResponseType.CodeIdToken,
                 UseTokenLifetime = false,
 
                 Events = new OpenIdConnectEvents

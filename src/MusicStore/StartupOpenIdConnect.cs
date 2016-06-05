@@ -129,7 +129,7 @@ namespace MusicStore
             {
                 Authority = "https://login.windows.net/[tenantName].onmicrosoft.com",
                 ClientId = "[ClientId]",
-                ResponseType = OpenIdConnectResponseTypes.CodeIdToken,
+                ResponseType = OpenIdConnectResponseType.CodeIdToken,
             });
 
             // Add MVC to the request pipeline

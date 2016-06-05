@@ -52,7 +52,7 @@ namespace MusicStore.Mocks.OpenIdConnect
         {
             eventsFired.Add(nameof(RedirectToIdentityProvider));
 
-            if (context.ProtocolMessage.RequestType == OpenIdConnectRequestType.LogoutRequest)
+            if (context.ProtocolMessage.RequestType == OpenIdConnectRequestType.Logout)
             {
                 context.ProtocolMessage.PostLogoutRedirectUri =
                     context.Request.Scheme + "://" + context.Request.Host + context.Request.PathBase + new PathString("/Account/Login");
