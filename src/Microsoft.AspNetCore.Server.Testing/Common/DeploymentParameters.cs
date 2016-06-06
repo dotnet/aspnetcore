@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.Testing
 
         /// <summary>
         /// Suggested base url for the deployed application. The final deployed url could be
-        /// different than this. Use <see cref="DeploymentResult.ApplicationBaseUri"/> for the 
+        /// different than this. Use <see cref="DeploymentResult.ApplicationBaseUri"/> for the
         /// deployed url.
         /// </summary>
         public string ApplicationBaseUriHint { get; set; }
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Testing
 
         public string SiteName { get; set; }
 
-        public string ApplicationPath { get; set; }
+        public string ApplicationPath { get; }
 
         public string TargetFramework { get; set; }
 
@@ -95,9 +95,9 @@ namespace Microsoft.AspNetCore.Server.Testing
         {
             return string.Format(
                     "[Variation] :: ServerType={0}, Runtime={1}, Arch={2}, BaseUrlHint={3}, Publish={4}",
-                    ServerType, 
-                    RuntimeFlavor, 
-                    RuntimeArchitecture, 
+                    ServerType,
+                    RuntimeFlavor,
+                    RuntimeArchitecture,
                     ApplicationBaseUriHint,
                     PublishApplicationBeforeDeployment);
         }

@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Testing
 
             return new DeploymentResult
             {
-                WebRootLocation = DeploymentParameters.ApplicationPath,
+                ContentRoot = DeploymentParameters.PublishedApplicationRootPath,
                 DeploymentParameters = DeploymentParameters,
                 // Accomodate the vdir name.
                 ApplicationBaseUri = uri.ToString(),

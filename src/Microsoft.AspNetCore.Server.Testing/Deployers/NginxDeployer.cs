@@ -53,10 +53,10 @@ namespace Microsoft.AspNetCore.Server.Testing
                     throw new InvalidOperationException("Deploy failed");
                 }
             }
-            
+
             return new DeploymentResult
             {
-                WebRootLocation = DeploymentParameters.ApplicationPath,
+                ContentRoot = DeploymentParameters.ApplicationPath,
                 DeploymentParameters = DeploymentParameters,
                 ApplicationBaseUri = uri.ToString(),
                 HostShutdownToken = exitToken

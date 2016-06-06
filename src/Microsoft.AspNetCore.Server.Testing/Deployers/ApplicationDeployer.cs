@@ -76,12 +76,6 @@ namespace Microsoft.AspNetCore.Server.Testing
                 throw new Exception($"{DotnetCommandName} publish exited with exit code : {hostProcess.ExitCode}");
             }
 
-            DeploymentParameters.ApplicationPath =
-                (DeploymentParameters.ServerType == ServerType.IISExpress ||
-                 DeploymentParameters.ServerType == ServerType.IIS) ?
-                DeploymentParameters.PublishedApplicationRootPath :
-                DeploymentParameters.ApplicationPath;
-
             Logger.LogInformation($"{DotnetCommandName} publish finished with exit code : {hostProcess.ExitCode}");
         }
 
