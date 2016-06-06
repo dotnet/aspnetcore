@@ -40,7 +40,7 @@
   },
   "frameworks": {
     "net451": {},
-    "netstandard1.5": {
+    "netstandard1.3": {
       "dependencies": {
         "System.Diagnostics.StackTrace": "4.0.1-*",
         "System.Reflection.Extensions": "4.0.1-*"
