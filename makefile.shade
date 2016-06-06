@@ -706,9 +706,8 @@ functions
 
         static IEnumerable<string> GetRepositoriesToBuild()
         {
-            IEnumerable<string> reposToBuild = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
-                // The repos list is topologically sorted based on build order
-                "libuv-package",
+            IEnumerable<string> reposToBuild = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
                 "PlatformAbstractions",
                 "Common",
                 "JsonPatch",
