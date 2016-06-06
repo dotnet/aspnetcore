@@ -210,10 +210,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
-                        $"GET {path} HTTP/1.1",
-                        "",
-                        "");
+                    await connection.SendEnd($"GET {path} HTTP/1.1\r\n");
                     await ReceiveBadRequestResponse(connection);
                 }
             }
