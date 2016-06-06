@@ -87,7 +87,7 @@ namespace OpenIdConnect.AzureAdSample
                     OnAuthorizationCodeReceived = async context =>
                     {
                         var request = context.HttpContext.Request;
-                        var currentUri = UriHelper.Encode(request.Scheme, request.Host, request.PathBase, request.Path);
+                        var currentUri = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path);
                         var credential = new ClientCredential(clientId, clientSecret);                                 
                         var authContext = new AuthenticationContext(authority, AuthPropertiesTokenCache.ForCodeRedemption(context.Properties));
 
