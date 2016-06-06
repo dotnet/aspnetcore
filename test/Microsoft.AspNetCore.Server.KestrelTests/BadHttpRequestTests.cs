@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendAllEnd(request);
+                    await connection.SendAllTryEnd(request);
                     await ReceiveBadRequestResponse(connection);
                 }
             }
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.Send(request);
+                    await connection.SendAll(request);
                     await ReceiveBadRequestResponse(connection);
                 }
             }
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendAllEnd($"GET / HTTP/1.1\r\n{rawHeaders}");
+                    await connection.SendAllTryEnd($"GET / HTTP/1.1\r\n{rawHeaders}");
                     await ReceiveBadRequestResponse(connection);
                 }
             }
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.SendAllTryEnd(
                         "GET / HTTP/1.1",
                         "H\u00eb\u00e4d\u00ebr: value",
                         "",
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd($"GET {path} HTTP/1.1\r\n");
+                    await connection.SendAllTryEnd($"GET {path} HTTP/1.1\r\n");
                     await ReceiveBadRequestResponse(connection);
                 }
             }

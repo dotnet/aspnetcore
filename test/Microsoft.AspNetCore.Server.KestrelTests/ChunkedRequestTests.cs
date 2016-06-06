@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -365,7 +364,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.Send(
+                    await connection.SendAll(
                         "POST / HTTP/1.1",
                         "Transfer-Encoding: chunked",
                         "",
@@ -407,7 +406,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.Send(
+                    await connection.SendAll(
                         "POST / HTTP/1.1",
                         "Transfer-Encoding: chunked",
                         "",

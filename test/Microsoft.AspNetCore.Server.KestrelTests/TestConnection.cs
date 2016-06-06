@@ -46,16 +46,26 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public async Task SendAll(params string[] lines)
         {
             var text = String.Join("\r\n", lines);
-            var writer = new StreamWriter(_stream, Encoding.ASCII);
+            var writer = new StreamWriter(_stream, Encoding.GetEncoding("iso-8859-1"));
             await writer.WriteAsync(text);
             writer.Flush();
             _stream.Flush();
         }
 
-        public async Task SendAllEnd(params string[] lines)
+        public async Task SendAllTryEnd(params string[] lines)
         {
             await SendAll(lines);
-            _socket.Shutdown(SocketShutdown.Send);
+
+            try
+            {
+                _socket.Shutdown(SocketShutdown.Send);
+            }
+            catch (IOException)
+            {
+                // The server may forcefully close the connection (usually due to a bad request),
+                // so an IOException: "An existing connection was forcibly closed by the remote host"
+                // isn't guaranteed but not unexpected.
+            }
         }
 
         public async Task Send(params string[] lines)
