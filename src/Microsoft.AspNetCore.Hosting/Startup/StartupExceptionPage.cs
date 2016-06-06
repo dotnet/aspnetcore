@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Hosting
             var environment = PlatformServices.Default.Runtime;
             var runtimeType = HtmlEncodeAndReplaceLineBreaks(environment.RuntimeType);
             var runtimeDisplayName = runtimeType == "CoreCLR" ? ".NET Core" : runtimeType == "CLR" ? ".NET Framework" : "Mono";
-#if NETSTANDARD1_5
+#if NETSTANDARD1_3
             var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;
             var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName).Version.ToString();
             var clrVersion = HtmlEncodeAndReplaceLineBreaks(assemblyVersion);
