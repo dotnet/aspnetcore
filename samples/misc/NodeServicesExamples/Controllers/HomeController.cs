@@ -15,6 +15,11 @@ namespace NodeServicesExamples.Controllers
             return View();
         }
 
+        public IActionResult ImageResizing()
+        {
+            return View();
+        }
+
         public IActionResult Error()
         {
             return View("~/Views/Shared/Error.cshtml");
