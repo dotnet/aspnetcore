@@ -9,10 +9,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.StackTrace.Sources;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -233,8 +233,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         private static string GenerateFooterEncoded()
         {
-            var environment = PlatformServices.Default.Runtime;
-            var runtimeType = HtmlEncodeAndReplaceLineBreaks(environment.RuntimeType);
+            var runtimeType = HtmlEncodeAndReplaceLineBreaks(Microsoft.Extensions.Internal.RuntimeEnvironment.RuntimeType);
             var runtimeDisplayName = runtimeType == "CoreCLR" ? ".NET Core" : runtimeType == "CLR" ? ".NET Framework" : "Mono";
 #if NETSTANDARD1_3
             var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;
@@ -243,13 +242,28 @@ namespace Microsoft.AspNetCore.Hosting
 #else
             var clrVersion = HtmlEncodeAndReplaceLineBreaks(Environment.Version.ToString());
 #endif
-            var runtimeArch = HtmlEncodeAndReplaceLineBreaks(environment.RuntimeArchitecture);
+            var runtimeArch = HtmlEncodeAndReplaceLineBreaks(RuntimeInformation.ProcessArchitecture.ToString());
             var currentAssembly = typeof(StartupExceptionPage).GetTypeInfo().Assembly;
             var currentAssemblyVersion = currentAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
             currentAssemblyVersion = HtmlEncodeAndReplaceLineBreaks(currentAssemblyVersion);
 
-            var os = HtmlEncodeAndReplaceLineBreaks(environment.OperatingSystem);
-            var osVersion = HtmlEncodeAndReplaceLineBreaks(environment.OperatingSystemVersion);
+            var osName = string.Empty;
+            var osVersion = string.Empty;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                osName = OSPlatform.Windows.ToString();
+                osVersion = Microsoft.Extensions.Internal.RuntimeEnvironment.OperatingSystemVersion;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                osName = OSPlatform.Linux.ToString();
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                osName = OSPlatform.OSX.ToString();
+            }
+            var os = HtmlEncodeAndReplaceLineBreaks(osName);
+            osVersion = HtmlEncodeAndReplaceLineBreaks(osVersion);
 
             return string.Format(CultureInfo.InvariantCulture, _errorFooterFormatString, runtimeDisplayName, runtimeArch, clrVersion,
                 currentAssemblyVersion, os, osVersion);
