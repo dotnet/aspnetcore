@@ -28,10 +28,6 @@
   },
   "frameworks": {
     "netstandard1.6": {
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ]
     }
   }
 }
