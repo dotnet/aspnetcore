@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void SelectFormatter_NoProvidedContentTypesAndNoAcceptHeader_ChoosesFirstFormattterThatCanWrite()
+        public void SelectFormatter_NoProvidedContentTypesAndNoAcceptHeader_ChoosesFirstFormatterThatCanWrite()
         {
             // Arrange
             var executor = CreateExecutor();
@@ -276,11 +276,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             Assert.Same(formatters[1], formatter);
             Assert.Equal(new StringSegment("application/json"), context.ContentType);
-            Assert.Null(context.FailedContentNegotiation);
         }
 
         [Fact]
-        public void SelectFormatter_WithAcceptHeader_ConnegFails()
+        public void SelectFormatter_WithAcceptHeader_UsesFallback()
         {
             // Arrange
             var executor = CreateExecutor();
@@ -308,7 +307,39 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             Assert.Same(formatters[0], formatter);
             Assert.Equal(new StringSegment("application/xml"), context.ContentType);
-            Assert.True(context.FailedContentNegotiation);
+        }
+
+        [Fact]
+        public void SelectFormatter_WithAcceptHeaderAndReturnHttpNotAcceptable_DoesNotUseFallback()
+        {
+            // Arrange
+            var options = new TestOptionsManager<MvcOptions>();
+            options.Value.ReturnHttpNotAcceptable = true;
+
+            var executor = CreateExecutor(options);
+
+            var formatters = new List<IOutputFormatter>
+            {
+                new TestXmlOutputFormatter(),
+                new TestJsonOutputFormatter(),
+            };
+
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                objectType: null,
+                @object: null);
+
+            context.HttpContext.Request.Headers[HeaderNames.Accept] = "text/custom,application/custom";
+
+            // Act
+            var formatter = executor.SelectFormatter(
+                context,
+                new MediaTypeCollection { },
+                formatters);
+
+            // Assert
+            Assert.Null(formatter);
         }
 
         [Fact]

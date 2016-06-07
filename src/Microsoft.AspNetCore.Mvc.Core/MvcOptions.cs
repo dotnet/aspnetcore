@@ -124,6 +124,13 @@ namespace Microsoft.AspNetCore.Mvc
         public bool RespectBrowserAcceptHeader { get; set; }
 
         /// <summary>
+        /// Gets or sets the flag which decides whether an HTTP 406 Not Acceptable response
+        /// will be returned if no formatter has been selected to format the response.
+        /// <see langword="false"/> by default.
+        /// </summary>
+        public bool ReturnHttpNotAcceptable { get; set; }
+
+        /// <summary>
         /// Gets a list of <see cref="IValueProviderFactory"/> used by this application.
         /// </summary>
         public IList<IValueProviderFactory> ValueProviderFactories { get; }

@@ -325,29 +325,6 @@ END:VCARD
         }
 
         [Theory]
-        [InlineData("UseTheFallback_WithDefaultFormatters")]
-        [InlineData("UseTheFallback_UsingCustomFormatters")]
-        public async Task NoMatchOn_RequestContentType_FallsBackOnTypeBasedMatch_MatchFound(string actionName)
-        {
-            // Arrange
-            var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
-            var expectedBody = "1234";
-            var targetUri = "http://localhost/FallbackOnTypeBasedMatch/" + actionName + "/?input=1234";
-            var content = new StringContent("1234", Encoding.UTF8, "application/custom");
-            var request = new HttpRequestMessage(HttpMethod.Post, targetUri);
-            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/custom1"));
-            request.Content = content;
-
-            // Act
-            var response = await Client.SendAsync(request);
-
-            // Assert
-            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
-            var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedBody, body);
-        }
-
-        [Theory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task ObjectResult_WithStringReturnType_DefaultToTextPlain(bool matchFormatterOnObjectType)
@@ -386,25 +363,6 @@ END:VCARD
             Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
             var actualBody = await response.Content.ReadAsStringAsync();
             Assert.Equal("Hello World!", actualBody);
-        }
-
-        [Theory]
-        [InlineData("OverrideTheFallback_WithDefaultFormatters")]
-        [InlineData("OverrideTheFallback_UsingCustomFormatters")]
-        public async Task NoMatchOn_RequestContentType_SkipTypeMatchByAddingACustomFormatter(string actionName)
-        {
-            // Arrange
-            var targetUri = "http://localhost/FallbackOnTypeBasedMatch/" + actionName + "/?input=1234";
-            var content = new StringContent("1234", Encoding.UTF8, "application/custom");
-            var request = new HttpRequestMessage(HttpMethod.Post, targetUri);
-            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/custom1"));
-            request.Content = content;
-
-            // Act
-            var response = await Client.SendAsync(request);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
         }
 
         [Fact]

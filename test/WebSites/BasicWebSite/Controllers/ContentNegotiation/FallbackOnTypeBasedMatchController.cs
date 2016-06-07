@@ -53,7 +53,6 @@ namespace BasicWebSite.Controllers.ContentNegotiation
         public IActionResult OverrideTheFallback_UsingCustomFormatters(int input)
         {
             var objectResult = new ObjectResult(input);
-            objectResult.Formatters.Add(new HttpNotAcceptableOutputFormatter());
             objectResult.Formatters.Add(new PlainTextFormatter());
             objectResult.Formatters.Add(_jsonOutputFormatter);
 
@@ -63,7 +62,6 @@ namespace BasicWebSite.Controllers.ContentNegotiation
         public IActionResult OverrideTheFallback_WithDefaultFormatters(int input)
         {
             var objectResult = new ObjectResult(input);
-            objectResult.Formatters.Add(new HttpNotAcceptableOutputFormatter());
             foreach (var formatter in _mvcOptions.Value.OutputFormatters)
             {
                 objectResult.Formatters.Add(formatter);
@@ -73,14 +71,9 @@ namespace BasicWebSite.Controllers.ContentNegotiation
         }
 
         public IActionResult ReturnString(
-            bool matchFormatterOnObjectType,
             [FromServices] IOptions<MvcOptions> optionsAccessor)
         {
             var objectResult = new ObjectResult("Hello World!");
-            if (matchFormatterOnObjectType)
-            {
-                objectResult.Formatters.Add(new HttpNotAcceptableOutputFormatter());
-            }
 
             foreach (var formatter in optionsAccessor.Value.OutputFormatters)
             {
