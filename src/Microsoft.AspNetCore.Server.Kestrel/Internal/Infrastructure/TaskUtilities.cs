@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 {
     public static class TaskUtilities
     {
-#if NETSTANDARD1_5
+#if NETSTANDARD1_3
         public static Task CompletedTask = Task.CompletedTask;
 #else
         public static Task CompletedTask = Task.FromResult<object>(null);
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         public static Task GetCancelledTask(CancellationToken cancellationToken)
         {
-#if NETSTANDARD1_5
+#if NETSTANDARD1_3
             return Task.FromCanceled(cancellationToken);
 #else
             var tcs = new TaskCompletionSource<object>();
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         public static Task<int> GetCancelledZeroTask(CancellationToken cancellationToken = default(CancellationToken))
         {
-#if NETSTANDARD1_5
+#if NETSTANDARD1_3
             // Make sure cancellationToken is cancelled before passing to Task.FromCanceled
             if (!cancellationToken.IsCancellationRequested)
             {
