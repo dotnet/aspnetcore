@@ -11,6 +11,7 @@ namespace NodeServicesExamples.Controllers
     public class ResizeImageController : Controller
     {
         private const int MaxDimension = 1000;
+        private static string[] AllowedMimeTypes = new[] { "image/jpeg", "image/png", "image/gif" };
 
         private IHostingEnvironment _environment;
         private INodeServices _nodeServices;
@@ -25,9 +26,16 @@ namespace NodeServicesExamples.Controllers
         public async Task<IActionResult> Index(string imagePath, int maxWidth, int maxHeight)
         {
             // Validate incoming params
-            if (maxWidth > MaxDimension || maxHeight > MaxDimension || (maxHeight <= 0 && maxWidth <= 0))
+            if (maxWidth < 0 || maxHeight < 0 || maxWidth > MaxDimension || maxHeight > MaxDimension
+                || (maxWidth + maxHeight) == 0)
             {
                 return BadRequest("Invalid dimensions");
+            }
+
+            var mimeType = GetContentType(imagePath);
+            if (Array.IndexOf(AllowedMimeTypes, mimeType) < 0)
+            {
+                return BadRequest("Disallowed image format");
             }
 
             // Locate source image on disk
@@ -38,25 +46,19 @@ namespace NodeServicesExamples.Controllers
             }
 
             // Invoke Node and pipe the result to the response
-            var mimeType = GetContentType(imagePath);
-            var imageStream = await _nodeServices.Invoke<Stream>("./Node/resizeImage", fileInfo.PhysicalPath, mimeType, maxWidth, maxHeight);
+            var imageStream = await _nodeServices.Invoke<Stream>(
+                "./Node/resizeImage",
+                fileInfo.PhysicalPath,
+                mimeType,
+                maxWidth,
+                maxHeight);
             return File(imageStream, mimeType);
         }
 
         private string GetContentType(string path)
         {
             string result;
-            if (!new FileExtensionContentTypeProvider().TryGetContentType(path, out result))
-            {
-                result = "application/octet-stream";
-            }
-
-            return result;
-        }
-
-        private class ResizeImageResult
-        {
-            public string Base64 { get; set; }
+            return new FileExtensionContentTypeProvider().TryGetContentType(path, out result) ? result : null;
         }
     }
 }
