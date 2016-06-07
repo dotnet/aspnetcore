@@ -42,6 +42,19 @@ var server = http.createServer(function(req, res) {
             }
         };
 
+        // Support streamed responses
+        Object.defineProperty(callback, 'stream', {
+            enumerable: true,
+            get: function() {
+                if (!hasSentResult) {
+                    hasSentResult = true;
+                    res.setHeader('Content-Type', 'application/octet-stream');
+                }
+
+                return res;
+            }
+        });
+
         try {
             func.apply(null, [callback].concat(bodyJson.args));
         } catch (synchronousException) {

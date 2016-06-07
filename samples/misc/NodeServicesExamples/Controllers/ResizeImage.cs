@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -36,10 +37,10 @@ namespace NodeServicesExamples.Controllers
                 return NotFound();
             }
 
-            // Invoke Node and convert the base64 result back to bytes
+            // Invoke Node and pipe the result to the response
             var mimeType = GetContentType(imagePath);
-            var resizedImage = await _nodeServices.Invoke<ResizeImageResult>("./Node/resizeImage", fileInfo.PhysicalPath, mimeType, maxWidth, maxHeight);
-            return File(Convert.FromBase64String(resizedImage.Base64), mimeType);
+            var imageStream = await _nodeServices.Invoke<Stream>("./Node/resizeImage", fileInfo.PhysicalPath, mimeType, maxWidth, maxHeight);
+            return File(imageStream, mimeType);
         }
 
         private string GetContentType(string path)

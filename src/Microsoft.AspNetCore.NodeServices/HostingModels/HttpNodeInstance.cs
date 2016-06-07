@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -52,27 +53,46 @@ namespace Microsoft.AspNetCore.NodeServices
             var payloadJson = JsonConvert.SerializeObject(invocationInfo, JsonSerializerSettings);
             var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
             var response = await _client.PostAsync("http://localhost:" + _portNumber, payload);
-            var responseString = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception("Call to Node module failed with error: " + responseString);
+                var responseErrorString = await response.Content.ReadAsStringAsync();
+                throw new Exception("Call to Node module failed with error: " + responseErrorString);
             }
 
-            var responseIsJson = response.Content.Headers.ContentType.MediaType == "application/json";
-            if (responseIsJson)
+            var responseContentType = response.Content.Headers.ContentType;
+            switch (responseContentType.MediaType)
             {
-                return JsonConvert.DeserializeObject<T>(responseString);
-            }
+                case "text/plain":
+                    // String responses can skip JSON encoding/decoding
+                    if (typeof(T) != typeof(string))
+                    {
+                        throw new ArgumentException(
+                            "Node module responded with non-JSON string. This cannot be converted to the requested generic type: " +
+                            typeof(T).FullName);
+                    }
 
-            if (typeof(T) != typeof(string))
-            {
-                throw new ArgumentException(
-                    "Node module responded with non-JSON string. This cannot be converted to the requested generic type: " +
-                    typeof(T).FullName);
-            }
+                    var responseString = await response.Content.ReadAsStringAsync();
+                    return (T)(object)responseString;
 
-            return (T)(object)responseString;
+                case "application/json":
+                    var responseJson = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<T>(responseJson);
+
+                case "application/octet-stream":
+                    // Streamed responses have to be received as System.IO.Stream instances
+                    if (typeof(T) != typeof(Stream))
+                    {
+                        throw new ArgumentException(
+                            "Node module responded with binary stream. This cannot be converted to the requested generic type: " +
+                            typeof(T).FullName + ". Instead you must use the generic type System.IO.Stream.");
+                    }
+
+                    return (T)(object)(await response.Content.ReadAsStreamAsync());
+
+                default:
+                    throw new InvalidOperationException("Unexpected response content type: " + responseContentType.MediaType);
+            }
         }
 
         protected override void OnOutputDataReceived(string outputData)
