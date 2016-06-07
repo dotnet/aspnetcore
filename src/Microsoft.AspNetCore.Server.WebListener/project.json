@@ -17,7 +17,7 @@
   },
   "frameworks": {
     "net451": {},
-    "netstandard1.5": {
+    "netstandard1.3": {
       "dependencies": {
         "System.Security.Claims": "4.0.1-*"
       },
