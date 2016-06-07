@@ -247,26 +247,10 @@ namespace Microsoft.AspNetCore.Hosting
             var currentAssemblyVersion = currentAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
             currentAssemblyVersion = HtmlEncodeAndReplaceLineBreaks(currentAssemblyVersion);
 
-            var osName = string.Empty;
-            var osVersion = string.Empty;
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                osName = OSPlatform.Windows.ToString();
-                osVersion = Microsoft.Extensions.Internal.RuntimeEnvironment.OperatingSystemVersion;
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                osName = OSPlatform.Linux.ToString();
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                osName = OSPlatform.OSX.ToString();
-            }
-            var os = HtmlEncodeAndReplaceLineBreaks(osName);
-            osVersion = HtmlEncodeAndReplaceLineBreaks(osVersion);
+            var osDescription = HtmlEncodeAndReplaceLineBreaks(RuntimeInformation.OSDescription);
 
             return string.Format(CultureInfo.InvariantCulture, _errorFooterFormatString, runtimeDisplayName, runtimeArch, clrVersion,
-                currentAssemblyVersion, os, osVersion);
+                currentAssemblyVersion, osDescription);
         }
 
         private static string HtmlEncodeAndReplaceLineBreaks(string input)
