@@ -10,6 +10,11 @@ namespace NodeServicesExamples.Controllers
             return View();
         }
 
+        public IActionResult ES2015Transpilation()
+        {
+            return View();
+        }
+
         public IActionResult Error()
         {
             return View("~/Views/Shared/Error.cshtml");
