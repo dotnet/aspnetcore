@@ -9,6 +9,7 @@
     "Microsoft.AspNetCore.Server.Testing": "0.1.0-*",
     "Microsoft.Extensions.Logging": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "xunit": "2.1.0"
   },
   "frameworks": {
