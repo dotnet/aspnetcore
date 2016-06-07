@@ -380,7 +380,7 @@
         </PropertyGroup>
        
         <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre DependenciesPackager -Source $(DnxToolsFeed) -out $(CommandsPath)"/>
-        <Exec Command="$(CommandsPath)\DependenciesPackager\DependenciesPackager.exe --project $(CoherenceDestinationDir)\ship\project.json --diagnostics-project $(CoherenceDestinationDir)\ship\noimports.project.json --sources $(CoherenceSignedDestinationDir)\Packages-NoTimeStamp --sources $(CoherenceDestinationDir)\ship-ext --sources $(CoherenceDestinationDir)\ext --fallback https://api.nuget.org/v3/index.json --destination $(CoherenceSignedDestinationDir) --version $(FinalCacheVersion)"/>
+        <Exec Command="$(CommandsPath)\DependenciesPackager\DependenciesPackager.exe --project $(CoherenceDestinationDir)\ship\project.json --diagnostics-project $(CoherenceDestinationDir)\ship\noimports.project.json --sources $(CoherenceSignedDestinationDir)\Packages-NoTimeStamp --sources $(CoherenceDestinationDir)\ext --fallback https://api.nuget.org/v3/index.json --destination $(CoherenceSignedDestinationDir) --version $(FinalCacheVersion)"/>
         <RemoveDir Directories="$(CommandsPath)"/>
     </Target>
 
