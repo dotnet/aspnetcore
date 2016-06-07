@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{E6E8
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.NodeServices", "src\Microsoft.AspNetCore.NodeServices\Microsoft.AspNetCore.NodeServices.xproj", "{B0FA4175-8B29-4904-9780-28B3C24B0567}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ES2015Transpilation", "samples\misc\ES2015Transpilation\ES2015Transpilation.xproj", "{6D4BCDD6-7951-449B-BE55-CB7F014B7430}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NodeServicesExamples", "samples\misc\NodeServicesExamples\NodeServicesExamples.xproj", "{6D4BCDD6-7951-449B-BE55-CB7F014B7430}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{78DAC76C-1092-45AB-BF0D-594B8C7B6569}"
 	ProjectSection(SolutionItems) = preProject

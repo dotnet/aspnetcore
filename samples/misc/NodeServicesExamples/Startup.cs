@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.IO;
 
-namespace ES2015Example
+namespace NodeServicesExamples
 {
     public class Startup
     {
@@ -14,7 +14,7 @@ namespace ES2015Example
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            
+
             // Enable Node Services
             services.AddNodeServices();
         }

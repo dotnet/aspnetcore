@@ -1,5 +1,5 @@
 {
-  "name": "ES2015Example",
+  "name": "nodeservicesexamples",
   "version": "0.0.0",
   "dependencies": {
     "babel-core": "^6.7.4",

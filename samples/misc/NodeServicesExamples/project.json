@@ -1,7 +1,7 @@
 {
   "version": "1.0.0-*",
   "tooling": {
-    "defaultNamespace": "ES2015Example"
+    "defaultNamespace": "NodeServicesExamples"
   },
   "buildOptions": {
     "emitEntryPoint": true,
