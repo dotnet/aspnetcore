@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Hosting
         private readonly List<Action<IServiceCollection>> _configureServicesDelegates;
         private readonly List<Action<ILoggerFactory>> _configureLoggingDelegates;
 
-        private IConfiguration _config = new ConfigurationBuilder().AddInMemoryCollection().Build();
+        private IConfiguration _config;
         private ILoggerFactory _loggerFactory;
         private WebHostOptions _options;
 
@@ -40,14 +40,22 @@ namespace Microsoft.AspNetCore.Hosting
             _configureServicesDelegates = new List<Action<IServiceCollection>>();
             _configureLoggingDelegates = new List<Action<ILoggerFactory>>();
 
-            // This may end up storing null, but that's indistinguishable from not adding it.
-            UseSetting(WebHostDefaults.EnvironmentKey, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
-                // Legacy keys, never remove these.
-                ?? Environment.GetEnvironmentVariable("Hosting:Environment")
-                ?? Environment.GetEnvironmentVariable("ASPNET_ENV"));
+            _config = new ConfigurationBuilder()
+                .AddEnvironmentVariables(prefix: "ASPNETCORE_")
+                .Build();
 
-            // Add the default server.urls key
-            UseSetting(WebHostDefaults.ServerUrlsKey, Environment.GetEnvironmentVariable("ASPNETCORE_URLS"));
+            if (string.IsNullOrEmpty(GetSetting(WebHostDefaults.EnvironmentKey)))
+            {
+                // Try adding legacy environment keys, never remove these.
+                UseSetting(WebHostDefaults.EnvironmentKey, Environment.GetEnvironmentVariable("Hosting:Environment") 
+                    ?? Environment.GetEnvironmentVariable("ASPNET_ENV"));
+            }
+
+            if (string.IsNullOrEmpty(GetSetting(WebHostDefaults.ServerUrlsKey)))
+            {
+                // Try adding legacy url key, never remove this.
+                UseSetting(WebHostDefaults.ServerUrlsKey, Environment.GetEnvironmentVariable("ASPNETCORE_SERVER.URLS"));
+            }
         }
 
         /// <summary>
@@ -135,6 +143,11 @@ namespace Microsoft.AspNetCore.Hosting
             if (Environment.GetEnvironmentVariable("ASPNET_ENV") != null)
             {
                 Console.WriteLine("The environment variable 'ASPNET_ENV' is obsolete and has been replaced with 'ASPNETCORE_ENVIRONMENT'");
+            }
+
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_SERVER.URLS") != null)
+            {
+                Console.WriteLine("The environment variable 'ASPNETCORE_SERVER.URLS' is obsolete and has been replaced with 'ASPNETCORE_URLS'");
             }
 
             var hostingServices = BuildHostingServices();
