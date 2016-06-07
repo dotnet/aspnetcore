@@ -100,7 +100,7 @@ namespace E2ETests
             await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationType, applicationBaseUrl);
         }
 
-        [ConditionalTheory(Skip = "Need to wait for a new cli with rc3 packages"), Trait("E2Etests", "Smoke")]
+        [ConditionalTheory, Trait("E2Etests", "Smoke")]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable, "http://localhost:5020/")]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, "http://localhost:5021/")]
