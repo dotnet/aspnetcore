@@ -1,10 +1,17 @@
 <h1>Image Resizing</h1>
 
 <p>
-    This sample shows how the NPM module <a href="https://www.npmjs.com/package/jimp"><code>jimp</code></a>
+    This sample shows how the NPM module <a href="https://www.npmjs.com/package/sharp"><code>sharp</code></a>
     can be used for dynamic image resizing from within an ASP.NET Core application. There is one copy of the
     following image on disk, but we can set up an MVC action method that returns it resized to fit within an
     arbitrary width and height.
+</p>
+
+<p>
+    <strong>Dependencies:</strong> On Windows and Linux, there are no native dependencies. Just running
+    <code>npm install</code> is enough. On OS X, however, you need to have <code>libvips</code> installed,
+    which you can get through <a href="http://brew.sh/">Homebrew</a> by running
+    <code>brew install homebrew/science/vips</code>.
 </p>
 
 <p>

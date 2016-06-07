@@ -1,15 +1,9 @@
-var Jimp = require('jimp');
+var sharp = require('sharp');
 
 module.exports = function(cb, physicalPath, mimeType, maxWidth, maxHeight) {
-    Jimp.read(physicalPath, function (err, loadedImage) {
-        if (err) {
-            cb(err);
-        }
-
-        loadedImage
-            .contain(maxWidth > 0 ? maxWidth : Jimp.AUTO, maxHeight > 0 ? maxHeight : Jimp.AUTO)
-            .getBuffer(mimeType, function(err, buffer) {
-                cb(err, { base64: buffer && buffer.toString('base64') });
-            });
-    });
+    sharp(physicalPath)
+        .resize(maxWidth > 0 ? maxWidth : null, maxHeight > 0 ? maxHeight : null)
+        .toBuffer(function (err, buffer) {
+            cb(err, { base64: buffer && buffer.toString('base64') });
+        });
 }
