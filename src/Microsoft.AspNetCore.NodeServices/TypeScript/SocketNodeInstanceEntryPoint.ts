@@ -29,14 +29,32 @@ virtualConnectionServer.createInterface(server).on('connection', (connection: Du
             const invokedModule = dynamicRequire(path.resolve(process.cwd(), invocation.moduleName));
             const invokedFunction = invocation.exportedFunctionName ? invokedModule[invocation.exportedFunctionName] : invokedModule;
 
-            // Actually invoke it, passing the callback followed by any supplied args
+            // Prepare a callback for accepting non-streamed JSON responses
+            let hasInvokedCallback = false;
             const invocationCallback = (errorValue, successValue) => {
+                if (hasInvokedCallback) {
+                    throw new Error('Cannot supply more than one result. The callback has already been invoked,'
+                        + ' or the result stream has already been accessed');
+                }
+
+                hasInvokedCallback = true;
                 connection.end(JSON.stringify({
                     result: successValue,
                     errorMessage: errorValue && (errorValue.message || errorValue),
                     errorDetails: errorValue && (errorValue.stack || null)
                 }));
             };
+
+            // Also support streamed binary responses
+            Object.defineProperty(invocationCallback, 'stream', {
+                enumerable: true,
+                get: (): Duplex => {
+                    hasInvokedCallback = true;
+                    return connection;
+                }
+            });
+
+            // Actually invoke it, passing through any supplied args
             invokedFunction.apply(null, [invocationCallback].concat(invocation.args));
         } catch (ex) {
             connection.end(JSON.stringify({

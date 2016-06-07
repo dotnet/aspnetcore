@@ -78,14 +78,29 @@
 	            var invocation = JSON.parse(line);
 	            var invokedModule = dynamicRequire(path.resolve(process.cwd(), invocation.moduleName));
 	            var invokedFunction = invocation.exportedFunctionName ? invokedModule[invocation.exportedFunctionName] : invokedModule;
-	            // Actually invoke it, passing the callback followed by any supplied args
+	            // Prepare a callback for accepting non-streamed JSON responses
+	            var hasInvokedCallback_1 = false;
 	            var invocationCallback = function (errorValue, successValue) {
+	                if (hasInvokedCallback_1) {
+	                    throw new Error('Cannot supply more than one result. The callback has already been invoked,'
+	                        + ' or the result stream has already been accessed');
+	                }
+	                hasInvokedCallback_1 = true;
 	                connection.end(JSON.stringify({
 	                    result: successValue,
 	                    errorMessage: errorValue && (errorValue.message || errorValue),
 	                    errorDetails: errorValue && (errorValue.stack || null)
 	                }));
 	            };
+	            // Also support streamed binary responses
+	            Object.defineProperty(invocationCallback, 'stream', {
+	                enumerable: true,
+	                get: function () {
+	                    hasInvokedCallback_1 = true;
+	                    return connection;
+	                }
+	            });
+	            // Actually invoke it, passing through any supplied args
 	            invokedFunction.apply(null, [invocationCallback].concat(invocation.args));
 	        }
 	        catch (ex) {

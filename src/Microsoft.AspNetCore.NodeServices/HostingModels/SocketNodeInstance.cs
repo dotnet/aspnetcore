@@ -37,19 +37,41 @@ namespace Microsoft.AspNetCore.NodeServices
             await EnsureReady();
             var virtualConnectionClient = await GetOrCreateVirtualConnectionClientAsync();
 
-            using (var virtualConnection = _currentVirtualConnectionClient.OpenVirtualConnection())
+            bool shouldDisposeVirtualConnection = true;
+            Stream virtualConnection = null;
+            try
             {
+                virtualConnection = _currentVirtualConnectionClient.OpenVirtualConnection();
+
                 // Send request
                 await WriteJsonLineAsync(virtualConnection, invocationInfo);
 
-                // Receive response
-                var response = await ReadJsonAsync<RpcResponse<T>>(virtualConnection);
-                if (response.ErrorMessage != null)
+                // Determine what kind of response format is expected
+                if (typeof(T) == typeof(Stream))
                 {
-                    throw new NodeInvocationException(response.ErrorMessage, response.ErrorDetails);
+                    // Pass through streamed binary response
+                    // It is up to the consumer to dispose this stream, so don't do so here
+                    shouldDisposeVirtualConnection = false;
+                    return (T)(object)virtualConnection;
                 }
+                else
+                {
+                    // Parse and return non-streamed JSON response
+                    var response = await ReadJsonAsync<RpcJsonResponse<T>>(virtualConnection);
+                    if (response.ErrorMessage != null)
+                    {
+                        throw new NodeInvocationException(response.ErrorMessage, response.ErrorDetails);
+                    }
 
-                return response.Result;
+                    return response.Result;
+                }
+            }
+            finally
+            {
+                if (shouldDisposeVirtualConnection)
+                {
+                    virtualConnection.Dispose();
+                }
             }
         }
 
@@ -180,7 +202,7 @@ namespace Microsoft.AspNetCore.NodeServices
         }
 
 #pragma warning disable 649 // These properties are populated via JSON deserialization
-        private class RpcResponse<TResult>
+        private class RpcJsonResponse<TResult>
         {
             public TResult Result { get; set; }
             public string ErrorMessage { get; set; }
