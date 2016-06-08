@@ -358,13 +358,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             // Build list of all possible return types (and status codes) for an action.
             var objectTypes = new Dictionary<int, Type>();
 
-            if (type != null && type != typeof(void))
-            {
-                // This return type can be overriden by any response metadata
-                // attributes later if the user wishes to.
-                objectTypes[StatusCodes.Status200OK] = type;
-            }
-
             // Get the content type that the action explicitly set to support.
             // Walk through all 'filter' attributes in order, and allow each one to see or override
             // the results of the previous ones. This is similar to the execution path for content-negotiation.
@@ -380,6 +373,14 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                         objectTypes[metadataAttribute.StatusCode] = metadataAttribute.Type;
                     }
                 }
+            }
+
+            // Set the default status only when no status has already been set explicitly
+            if (objectTypes.Count == 0
+                && type != null
+                && type != typeof(void))
+            {
+                objectTypes[StatusCodes.Status200OK] = type;
             }
 
             if (contentTypes.Count == 0)

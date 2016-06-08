@@ -524,6 +524,133 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task ExplicitResponseTypeDecoration_SuppressesDefaultStatus()
+        {
+            // Arrange
+            var type1 = typeof(ApiExplorerWebSite.Product).FullName;
+            var type2 = typeof(ModelStateDictionary).FullName;
+            var expectedMediaTypes = new[] { "application/json", "text/json", "application/xml", "text/xml" };
+
+            // Act
+            var response = await Client.GetAsync(
+                "http://localhost/ApiExplorerResponseTypeWithAttribute/CreateProductWithDefaultResponseContentTypes");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Equal(2, description.SupportedResponseTypes.Count);
+            var responseType = description.SupportedResponseTypes[0];
+            Assert.Equal(type1, responseType.ResponseType);
+            Assert.Equal(201, responseType.StatusCode);
+            Assert.Equal(
+                expectedMediaTypes,
+                responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).ToArray());
+            responseType = description.SupportedResponseTypes[1];
+            Assert.Equal(type2, responseType.ResponseType);
+            Assert.Equal(400, responseType.StatusCode);
+            Assert.Equal(
+                expectedMediaTypes,
+                responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).ToArray());
+        }
+
+        [Fact]
+        public async Task ExplicitResponseTypeDecoration_SuppressesDefaultStatus_AlsoHonorsProducesContentTypes()
+        {
+            // Arrange
+            var type1 = typeof(ApiExplorerWebSite.Product).FullName;
+            var type2 = typeof(ModelStateDictionary).FullName;
+            var expectedMediaTypes = new[] { "text/xml" };
+
+            // Act
+            var response = await Client.GetAsync(
+                "http://localhost/ApiExplorerResponseTypeWithAttribute/CreateProductWithLimitedResponseContentTypes");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Equal(2, description.SupportedResponseTypes.Count);
+            var responseType = description.SupportedResponseTypes[0];
+            Assert.Equal(type1, responseType.ResponseType);
+            Assert.Equal(201, responseType.StatusCode);
+            Assert.Equal(
+                expectedMediaTypes,
+                responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).ToArray());
+            responseType = description.SupportedResponseTypes[1];
+            Assert.Equal(type2, responseType.ResponseType);
+            Assert.Equal(400, responseType.StatusCode);
+            Assert.Equal(
+                expectedMediaTypes,
+                responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).ToArray());
+        }
+
+        [Fact]
+        public async Task ExplicitResponseTypeDecoration_WithExplicitDefaultStatus()
+        {
+            // Arrange
+            var type1 = typeof(ApiExplorerWebSite.Product).FullName;
+            var type2 = typeof(ModelStateDictionary).FullName;
+            var expectedMediaTypes = new[] { "application/json", "text/json", "application/xml", "text/xml" };
+
+            // Act
+            var response = await Client.GetAsync(
+                "http://localhost/ApiExplorerResponseTypeWithAttribute/UpdateProductWithDefaultResponseContentTypes");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Equal(2, description.SupportedResponseTypes.Count);
+            var responseType = description.SupportedResponseTypes[0];
+            Assert.Equal(type1, responseType.ResponseType);
+            Assert.Equal(200, responseType.StatusCode);
+            Assert.Equal(
+                expectedMediaTypes,
+                responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).ToArray());
+            responseType = description.SupportedResponseTypes[1];
+            Assert.Equal(type2, responseType.ResponseType);
+            Assert.Equal(400, responseType.StatusCode);
+            Assert.Equal(
+                expectedMediaTypes,
+                responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).ToArray());
+        }
+
+        [Fact]
+        public async Task ExplicitResponseTypeDecoration_WithExplicitDefaultStatus_SpecifiedViaProducesAttribute()
+        {
+            // Arrange
+            var type1 = typeof(ApiExplorerWebSite.Product).FullName;
+            var type2 = typeof(ModelStateDictionary).FullName;
+            var expectedMediaTypes = new[] { "text/xml" };
+
+            // Act
+            var response = await Client.GetAsync(
+                "http://localhost/ApiExplorerResponseTypeWithAttribute/UpdateProductWithLimitedResponseContentTypes");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Equal(2, description.SupportedResponseTypes.Count);
+            var responseType = description.SupportedResponseTypes[0];
+            Assert.Equal(type1, responseType.ResponseType);
+            Assert.Equal(200, responseType.StatusCode);
+            Assert.Equal(
+                expectedMediaTypes,
+                responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).ToArray());
+            responseType = description.SupportedResponseTypes[1];
+            Assert.Equal(type2, responseType.ResponseType);
+            Assert.Equal(400, responseType.StatusCode);
+            Assert.Equal(
+                expectedMediaTypes,
+                responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).ToArray());
+        }
+        [Fact]
         public async Task ApiExplorer_ResponseType_InheritingFromController()
         {
             // Arrange
