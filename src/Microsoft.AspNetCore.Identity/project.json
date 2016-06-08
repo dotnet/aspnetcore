@@ -30,10 +30,7 @@
     "netstandard1.3": {
       "dependencies": {
         "System.Text.RegularExpressions": "4.1.0-*"
-      },
-      "imports": [
-        "portable-net451+win8"
-      ]
+      }
     }
   }
 }
