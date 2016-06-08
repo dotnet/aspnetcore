@@ -7,9 +7,6 @@
   "frameworks": {
     "net451": { },
     "netcoreapp1.0": {
-      "imports": [
-        "dnxcore50"
-      ],
       "dependencies": {
         "Microsoft.NETCore.App": {
           "version": "1.0.0-*",
