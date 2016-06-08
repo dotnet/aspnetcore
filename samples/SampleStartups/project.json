@@ -8,12 +8,6 @@
   },
   "frameworks": {
     "net451": {},
-    "netcoreapp1.0": {
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ],
-      "dependencies": {}
-    }
+    "netcoreapp1.0": {}
   }
 }
