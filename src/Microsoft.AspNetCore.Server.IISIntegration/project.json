@@ -36,11 +36,7 @@
     "netstandard1.3": {
       "dependencies": {
         "System.Security.Principal.Windows": "4.0.0-*"
-      },
-      "imports": [
-        "dotnet5.4",
-        "portable-net451+win8"
-      ]
+      }
     }
   }
 }

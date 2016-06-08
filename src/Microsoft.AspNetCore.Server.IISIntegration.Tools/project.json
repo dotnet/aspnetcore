@@ -28,9 +28,6 @@
   },
   "frameworks": {
     "netcoreapp1.0": {
-      "imports": [
-        "portable-dnxcore50+net45+win8+wp8+wpa81"
-      ],
       "dependencies": {
         "Microsoft.NETCore.App": {
           "type": "platform",
