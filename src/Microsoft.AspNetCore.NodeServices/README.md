@@ -1,0 +1,375 @@
+# Microsoft.AspNetCore.NodeServices
+
+This NuGet package provides a fast and robust way to invoke Node.js code from a .NET application (typically ASP.NET Core web apps). You can use this whenever you want to use Node/NPM-supplied functionality at runtime in ASP.NET. For example,
+
+ * Executing arbitrary JavaScript
+ * Runtime integration with JavaScript build or packaging tools, e.g., transpiling code via Babel
+ * Using of NPM modules for image resizing, audio compression, language recognition, etc.
+ * Calling third-party services that supply Node-based APIs but don't yet ship native .NET ones
+
+It is the underlying mechanism supporting the following packages:
+
+ * [`Microsoft.AspNetCore.SpaServices`](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.SpaServices) - builds on NodeServices, adding functionality commonly used in Single Page Applications, such as server-side prerendering, webpack middleware, and integration between server-side and client-side routing.
+ * [`Microsoft.AspNetCore.AngularServices`](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.AngularServices) and [`Microsoft.AspNetCore.ReactServices`](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.ReactServices) - these build on `SpaServices`, adding helpers specific to Angular 2 and React, such as cache priming and integrating server-side and client-side validation
+
+### Requirements
+
+* [Node.js](https://nodejs.org/en/)
+  * To test this is installed and can be found, run `node -v` on a command line
+  * Note: If you're deploying to an Azure web site, you don't need to do anything here - Node is already installed and available in the server environments
+* [.NET](https://dot.net)
+  * For .NET Core (e.g., ASP.NET Core apps), you need at least 1.0 RC2
+  * For .NET Framework, you need at least version 4.5.1.
+  
+### Installation
+
+For .NET Core apps:
+
+ * Add `Microsoft.AspNetCore.NodeServices` to the dependencies list in your `project.json` file
+ * Run `dotnet restore` (or if you use Visual Studio, just wait a moment - it will restore dependencies automatically)
+
+For .NET Framework apps:
+
+ * `nuget install Microsoft.AspNetCore.NodeServices`
+
+### Do you just want to build an ASP.NET Core app with Angular 2 / React / Knockout / etc.?
+
+In that case, you don't need to use NodeServices directly (or install it manually). You can either:
+
+* **Recommended:** Use the `aspnetcore-spa` Yeoman generator to get a ready-to-go starting point using your choice of client-side framework. [Instructions here.](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/)
+* Or set up your ASP.NET Core and client-side Angular/React/KO/etc. app manually, and then use the [`Microsoft.AspNetCore.SpaServices`](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.SpaServices) package to add features like server-side prerendering or Webpack middleware. But really, at least try using the `aspnetcore-spa` generator first.
+
+# Simple usage example
+
+## For ASP.NET Core apps
+
+ASP.NET Core has a built-in dependency injection (DI) system. NodeServices is designed to work with this, so you don't have to manage the creation or disposal of instances.
+
+Enable NodeServices in your application by first adding the following to the top of your `Startup.cs` file:
+
+```
+using Microsoft.AspNetCore.NodeServices;
+```
+
+... and then add to your `ConfigureServices` method in that file:
+
+```
+public void ConfigureServices(IServiceCollection services)
+{
+    // ... all your existing configuration is here ...
+
+    // Enable Node Services
+    services.AddNodeServices();
+}
+```
+
+Now you can receive an instance of `NodeServices` as a constructor parameter to any MVC controller, e.g.:
+
+```
+using Microsoft.AspNetCore.NodeServices;
+
+public class SomeController : Controller
+{
+    private INodeServices _nodeServices;
+
+    public SomeController(INodeServices nodeServices)
+    {
+        _nodeServices = nodeServices;
+    }
+    
+    // ... your action methods are here ...
+}
+```
+
+Then you can use this instance to make calls into Node.js code, e.g.:
+
+```
+public async Task<IActionResult> MyAction()
+{
+    var result = await _nodeServices.Invoke<int>("./addNumbers", 1, 2);
+    return Content("1 + 2 = " + result);
+}
+```
+
+Of course, you also need to supply the Node.js code you want to invoke. Create a file called `addNumber.js` at the root of your ASP.NET Core application, and add the following code:
+
+```
+module.exports = function (callback, first, second) {
+    var result = first + second;
+    callback(/* error */ null, result);
+};
+```
+
+As you can see, the exported JavaScript function will receive the arguments you pass from .NET (as long as they are JSON-serializable), along with a Node-style callback you can use to send back a result or error when you are ready.
+
+When the `Invoke<T>` method receives the result back from Node, the result will be JSON-deserialized to whatever generic type you specified when calling `Invoke<T>` (e.g., above, that type is `int`). If `Invoke<T>` receives an error from your Node code, it will throw an exception describing that error.
+
+If you want to put `addNumber.js` inside a subfolder rather than the root of your app, then also amend the path in the `_nodeServices.Invoke` call to match that path.
+
+## For non-ASP.NET apps
+
+In other types of .NET app where you don't have ASP.NET Core's DI system, you can get an instance of `NodeServices` as follows:
+
+```
+// Remember to add 'using Microsoft.AspNetCore.NodeServices;' at the top of your file
+
+var nodeServices = Configuration.CreateNodeServices(new NodeServicesOptions());
+```
+
+Besides this, the usage is the same as described for ASP.NET above, so you can now call `nodeServices.Invoke<T>(...)` etc.
+
+You can dispose the `nodeServices` object whenever you are done with it (and it will shut down the associated Node.js instance), but because these instances are expensive to create, you should whenever possible retain and reuse instances. They are thread-safe - you can call `Invoke<T>` simultaneously from multiple threads. Also, `NodeServices` instances are smart enough to detect if the associated Node instance has died and will automatically start a new Node instance if needed.
+
+
+# API Reference
+
+### AddNodeServices
+
+**Signatures:**
+
+```
+AddNodeServices()
+AddNodeServices(NodeServicesOptions options)
+```
+
+This is an extension method on `IServiceCollection`. It registers NodeServices with ASP.NET Core's DI system. Typically you should call this from the `ConfigureServices` method in your `Startup.cs` file.
+
+To access this extension method, you'll need to add the following namespace import to the top of your file:
+
+```
+using Microsoft.AspNetCore.NodeServices;
+```
+
+**Examples**
+
+Using default options:
+
+```
+services.AddNodeServices();
+```
+
+Or, specifying options:
+
+```
+services.AddNodeServices(new NodeServicesOptions
+{
+    WatchFileExtensions = new[] { ".coffee", ".sass" },
+    // ... etc. - see other properties below
+});
+```
+
+**Parameters**
+
+ * `options` - type: `NodeServicesOptions`
+   * Optional. If specified, configures how the `NodeServices` instances will work.
+   * Properties:
+     * `HostingModel` - an `NodeHostingModel` enum value. See: [hosting models](#HostingModels)
+     * `ProjectPath` - if specified, controls the working directory used when launching Node instances. This affects, for example, the location that `require` statements resolve relative paths against. If not specified, your application root directory is used.
+     * `WatchFileExtensions` - if specified, the launched Node instance will watch for changes to any files with these extensions, and auto-restarts when any are changed.
+
+If no `options` is passed, the default `WatchFileExtensions` array includes `.js`, `.jsx`, `.ts`, `.tsx`, `.json`, and `.html`.
+
+**Return type**: None. But once you've done this, you can get `NodeServices` instances out of ASP.NET's DI system. Typically it will be a singleton instance.
+
+### CreateNodeServices
+
+**Signature:**
+
+```
+CreateNodeServices(NodeServicesOptions options)
+```
+
+Directly supplies an instance of `NodeServices` without using ASP.NET's DI system.
+
+**Example**
+
+```
+var nodeServices = Configuration.CreateNodeServices(new NodeServicesOptions {
+    HostingModel = NodeHostingModel.Socket
+});
+```
+
+**Parameters**
+
+ * `options` - type: `NodeServicesOptions`.
+   * Configures the returned `NodeServices` instance.
+   * Properties:
+     * `HostingModel` - an `NodeHostingModel` enum value. See: [hosting models](#HostingModels)
+     * `ProjectPath` - if specified, controls the working directory used when launching Node instances. This affects, for example, the location that `require` statements resolve relative paths against. If not specified, your application root directory is used.
+     * `WatchFileExtensions` - if specified, the launched Node instance will watch for changes to any files with these extension, and auto-restarts when any are changed.
+     
+**Return type:** `NodeServices`
+
+If you create a `NodeServices` instance this way, you can also dispose it (call `nodeServiceInstance.Dispose();`) and it will shut down the associated Node instance. But because these instances are expensive to create, you should whenever possible retain and reuse your `NodeServices` object. They are thread-safe - you can call `nodeServiceInstance.Invoke<T>(...)` simultaneously from multiple threads.
+
+### Invoke&lt;T&gt;
+
+**Signature:**
+
+```
+Invoke<T>(string moduleName, params object[] args)
+```
+
+Asynchronously calls a JavaScript function and returns the result, or throws an exception if the result was an error.
+
+**Example 1: Getting a JSON-serializable object from Node (the most common use case)**
+
+```
+var result = await myNodeServicesInstance.Invoke<TranspilerResult>(
+    "./Node/transpile",
+    pathOfSomeFileToBeTranspiled);
+```
+
+... where `TranspilerResult` might be defined as follows:
+
+```
+public class TranspilerResult
+{
+    public string Code { get; set; }
+    public string[] Warnings { get; set;  
+}
+```
+
+... and the corresponding JavaScript module (in `Node/transpile.js`) could be implemented as follows:
+
+```
+module.exports = function (callback, filePath) {
+    // Invoke some external transpiler (e.g., an NPM module) then:
+    callback(null, {
+        code: theTranspiledCodeAsAString,
+        warnings: someArrayOfStrings
+    });
+};
+```
+
+**Example 2: Getting a stream of binary data from Node**
+
+```
+var imageStream = await myNodeServicesInstance.Invoke<Stream>(
+    "./Node/resizeImage",
+    fullImagePath,
+    width,
+    height);
+
+// In an MVC action method, you can pipe the result to the response as follows
+return File(imageStream, someContentType);
+```
+
+... where the corresponding JavaScript module (in `Node/resizeImage.js`) could be implemented as follows:
+
+```
+var sharp = require('sharp'); // A popular image manipulation package on NPM
+
+module.exports = function(result, physicalPath, maxWidth, maxHeight) {
+    // Invoke the 'sharp' NPM module, and have it pipe the resulting image data back to .NET
+    sharp(physicalPath)
+        .resize(maxWidth || null, maxHeight || null)
+        .pipe(result.stream);
+}
+```
+
+There's a working image resizing example following this approach [here](https://github.com/aspnet/JavaScriptServices/tree/master/samples/misc/NodeServicesExamples) - see the [C# code](https://github.com/aspnet/JavaScriptServices/blob/master/samples/misc/NodeServicesExamples/Controllers/ResizeImage.cs) and the [JavaScript code](https://github.com/aspnet/JavaScriptServices/blob/master/samples/misc/NodeServicesExamples/Node/resizeImage.js).
+
+**Parameters**
+
+* `moduleName` - type: `string`
+  * The name of a JavaScript module that Node.js must be able to resolve by calling `require(moduleName)`. This can be a relative path such as `"./Some/Directory/mymodule"`. If you don't specify the `.js` filename extension, Node.js will infer it anyway.
+* `params`
+  * Any set of JSON-serializable objects you want to pass to the exported JavaScript function
+
+**Return type:** `T`, which must be:
+
+ * A JSON-serializable .NET type, if your JavaScript code uses the `callback(error, result)` pattern to return an object, as in example 1 above
+ * Or, the type `System.IO.Stream`, if your JavaScript code writes data to the `result.stream` object (which is a [Node `Duplex` stream](https://nodejs.org/api/stream.html#stream_class_stream_duplex)), as in example 2 above
+
+### InvokeExport&lt;T&gt;
+
+**Signature**
+
+```
+InvokeExport<T>(string moduleName, string exportName, params object[] args)
+```
+
+This is exactly the same as `Invoke<T>`, except that it also takes an `exportName` parameter. You can use this if you want your JavaScript module to export more than one function.
+
+**Example**
+
+```
+var someString = await myNodeServicesInstance.Invoke<string>(
+    "./Node/myNodeApis",
+    "getMeAString");
+
+var someStringInFrench = await myNodeServicesInstance.Invoke<string>(
+    "./Node/myNodeApis",
+    "convertLanguage"
+    someString,
+    "fr-FR");
+```
+
+... where  the corresponding JavaScript module (in `Node/myNodeApis.js`) could be implemented as follows:
+
+```
+module.exports = {
+
+    getMeAString: function (callback) {
+        callback(null, 'Here is a string');
+    },
+
+    convertLanguage: function (callback, sourceString, targetLanguage) {
+        // Implementation detail left as an exercise for the reader
+        doMachineTranslation(sourceString, targetLanguage, function(error, result) {
+            callback(error, result);
+        });
+    }
+
+};
+```
+
+**Parameters, return type, etc.** For all other details, see the docs for [`Invoke<T>`](#Invoke)
+
+## Hosting models
+
+NodeServices has a pluggable hosting/transport mechanism, because it is an abstraction over various possible ways to invoke Node.js from .NET. This allows more high-level facilities (e.g., for Angular prerendering) to be agnostic to the details of launching Node and communicating it - those high-level facilities can just trust that *somehow* we can invoke code in Node for them.
+
+Using this abstraction, we could run Node inside the .NET process, in a separate process on the same machine, or even on a different machine altogether. At the time of writing, all the built-in hosting mechanisms work by launching Node as a separate process on the same machine as your .NET code.
+
+**What about Edge.js?**
+
+[Edge.js](http://tjanczuk.github.io/edge/#/) hosts Node.js inside a .NET process, or vice-versa, and lets you interoperate between the two.
+
+NodeServices is not meant to compete with Edge.js. Instead, NodeServices is an abstraction over all possible ways to invoke Node from .NET. Eventually we may offer an in-process Node hosting mechanism via Edge.js, without you needing to change your higher-level code. This can be done when Edge.js supports hosting Node in cross-platform .NET Core processes ([discussion](https://github.com/tjanczuk/edge/issues/279)).
+
+**What about VroomJS?**
+
+People have asked about using [VroomJS](https://github.com/fogzot/vroomjs) as a hosting mechanism. We don't currently plan to implement that, because Vroom only supplies a V8 runtime environment, not a complete Node environment. The difference is that, with a true Node environment, *all* NPM modules and Node code will work exactly as expected, whereas in a Vroom environment, code will only work if it doesn't use any Node primitives, which rules out large portions of the NPM landscape.
+
+### Built-in hosting models
+
+Normally, you can just use the default hosting model, and not worry about it. But if you have some special requirements, select a hosting model by passing an `options` parameter to `AddNodeServices` or `CreateNodeServices`, and populate its `HostingModel` property. Example:
+
+```
+services.AddNodeServices(new NodeServicesOptions
+{
+    HostingModel = NodeHostingModel.Socket
+});
+```
+
+**Available hosting models**
+
+* `Socket` (default)
+  * Launches Node as a separate process, and communicates with it using named pipes (on Windows) or domain sockets (on Linux / OS X).
+  * This is faster than `Http` because it uses a low-level binary protocol with very low overhead. It retains one continuous connection for the whole lifetime of the Node instance, so it doesn't have to keep waiting for new connections to open.
+* `Http`
+  * Launches Node as a separate process, and communicates with it by making HTTP requests.
+  * This primarily exists because it was implemented before `Socket`, but there's no particular reason to use it now that `Socket` is available. It could theoretically be useful if you wanted to run Node instances on separate servers (though there isn't currently any built-in API for configuring that).
+
+### Custom hosting models
+
+If you implement a custom hosting model (by implementing `INodeServices`), then you can get instances of that just by using your type's constructor. Or if you want to designate it as the default hosting model that higher-level services (such as those in the `SpaServices` package) should use, register it with ASP.NET Core's DI system:
+
+```
+services.AddSingleton(typeof(INodeServices), serviceProvider =>
+{
+    return new YourCustomHostingModel();
+});
+```
