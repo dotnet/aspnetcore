@@ -259,15 +259,15 @@ namespace Microsoft.AspNetCore.Session
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
                 response.EnsureSuccessStatusCode();
-
-                var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
-
-                Assert.Equal(2, sessionLogMessages.Length);
-                Assert.Contains("started", sessionLogMessages[0].State.ToString());
-                Assert.Equal(LogLevel.Information, sessionLogMessages[0].LogLevel);
-                Assert.Contains("stored", sessionLogMessages[1].State.ToString());
-                Assert.Equal(LogLevel.Debug, sessionLogMessages[1].LogLevel);
             }
+
+            var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
+
+            Assert.Equal(2, sessionLogMessages.Length);
+            Assert.Contains("started", sessionLogMessages[0].State.ToString());
+            Assert.Equal(LogLevel.Information, sessionLogMessages[0].LogLevel);
+            Assert.Contains("stored", sessionLogMessages[1].State.ToString());
+            Assert.Equal(LogLevel.Debug, sessionLogMessages[1].LogLevel);
         }
 
         [Fact]
@@ -303,6 +303,7 @@ namespace Microsoft.AspNetCore.Session
                     services.AddSession(o => o.IdleTimeout = TimeSpan.FromMilliseconds(30));
                 });
 
+            string result;
             using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
@@ -313,18 +314,19 @@ namespace Microsoft.AspNetCore.Session
                 var cookie = SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()).First();
                 client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue(cookie.Name, cookie.Value).ToString());
                 Thread.Sleep(50);
-                Assert.Equal("2", await client.GetStringAsync("/second"));
-
-                var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
-
-                Assert.Equal(3, sessionLogMessages.Length);
-                Assert.Contains("started", sessionLogMessages[0].State.ToString());
-                Assert.Contains("stored", sessionLogMessages[1].State.ToString());
-                Assert.Contains("expired", sessionLogMessages[2].State.ToString());
-                Assert.Equal(LogLevel.Information, sessionLogMessages[0].LogLevel);
-                Assert.Equal(LogLevel.Debug, sessionLogMessages[1].LogLevel);
-                Assert.Equal(LogLevel.Warning, sessionLogMessages[2].LogLevel);
+                result = await client.GetStringAsync("/second");
             }
+
+            var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
+
+            Assert.Equal("2", result);
+            Assert.Equal(3, sessionLogMessages.Length);
+            Assert.Contains("started", sessionLogMessages[0].State.ToString());
+            Assert.Contains("stored", sessionLogMessages[1].State.ToString());
+            Assert.Contains("expired", sessionLogMessages[2].State.ToString());
+            Assert.Equal(LogLevel.Information, sessionLogMessages[0].LogLevel);
+            Assert.Equal(LogLevel.Debug, sessionLogMessages[1].LogLevel);
+            Assert.Equal(LogLevel.Warning, sessionLogMessages[2].LogLevel);
         }
 
         [Fact]
@@ -527,13 +529,13 @@ namespace Microsoft.AspNetCore.Session
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
                 response.EnsureSuccessStatusCode();
-
-                var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
-
-                Assert.Equal(1, sessionLogMessages.Length);
-                Assert.Contains("Session cache read exception", sessionLogMessages[0].State.ToString());
-                Assert.Equal(LogLevel.Error, sessionLogMessages[0].LogLevel);
             }
+
+            var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
+
+            Assert.Equal(1, sessionLogMessages.Length);
+            Assert.Contains("Session cache read exception", sessionLogMessages[0].State.ToString());
+            Assert.Equal(LogLevel.Error, sessionLogMessages[0].LogLevel);
         }
 
         [Fact]
@@ -566,18 +568,18 @@ namespace Microsoft.AspNetCore.Session
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
                 response.EnsureSuccessStatusCode();
-
-                var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
-
-                Assert.Equal(1, sessionLogMessages.Length);
-                Assert.Contains("Session started", sessionLogMessages[0].State.ToString());
-                Assert.Equal(LogLevel.Information, sessionLogMessages[0].LogLevel);
-
-                var sessionMiddlewareLogMessages = sink.Writes.OnlyMessagesFromSource<SessionMiddleware>().ToArray();
-                Assert.Equal(1, sessionMiddlewareLogMessages.Length);
-                Assert.Contains("Error closing the session.", sessionMiddlewareLogMessages[0].State.ToString());
-                Assert.Equal(LogLevel.Error, sessionMiddlewareLogMessages[0].LogLevel);
             }
+
+            var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
+
+            Assert.Equal(1, sessionLogMessages.Length);
+            Assert.Contains("Session started", sessionLogMessages[0].State.ToString());
+            Assert.Equal(LogLevel.Information, sessionLogMessages[0].LogLevel);
+
+            var sessionMiddlewareLogMessages = sink.Writes.OnlyMessagesFromSource<SessionMiddleware>().ToArray();
+            Assert.Equal(1, sessionMiddlewareLogMessages.Length);
+            Assert.Contains("Error closing the session.", sessionMiddlewareLogMessages[0].State.ToString());
+            Assert.Equal(LogLevel.Error, sessionMiddlewareLogMessages[0].LogLevel);
         }
 
         [Fact]
@@ -610,13 +612,13 @@ namespace Microsoft.AspNetCore.Session
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
                 response.EnsureSuccessStatusCode();
-
-                var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<SessionMiddleware>().ToArray();
-
-                Assert.Equal(1, sessionLogMessages.Length);
-                Assert.Contains("Error closing the session.", sessionLogMessages[0].State.ToString());
-                Assert.Equal(LogLevel.Error, sessionLogMessages[0].LogLevel);
             }
+
+            var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<SessionMiddleware>().ToArray();
+
+            Assert.Equal(1, sessionLogMessages.Length);
+            Assert.Contains("Error closing the session.", sessionLogMessages[0].State.ToString());
+            Assert.Equal(LogLevel.Error, sessionLogMessages[0].LogLevel);
         }
 
         private class TestClock : ISystemClock
