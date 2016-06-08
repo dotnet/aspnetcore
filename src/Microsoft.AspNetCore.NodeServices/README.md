@@ -47,13 +47,13 @@ ASP.NET Core has a built-in dependency injection (DI) system. NodeServices is de
 
 Enable NodeServices in your application by first adding the following to the top of your `Startup.cs` file:
 
-```
+```csharp
 using Microsoft.AspNetCore.NodeServices;
 ```
 
 ... and then add to your `ConfigureServices` method in that file:
 
-```
+```csharp
 public void ConfigureServices(IServiceCollection services)
 {
     // ... all your existing configuration is here ...
@@ -65,7 +65,7 @@ public void ConfigureServices(IServiceCollection services)
 
 Now you can receive an instance of `NodeServices` as a constructor parameter to any MVC controller, e.g.:
 
-```
+```csharp
 using Microsoft.AspNetCore.NodeServices;
 
 public class SomeController : Controller
@@ -83,7 +83,7 @@ public class SomeController : Controller
 
 Then you can use this instance to make calls into Node.js code, e.g.:
 
-```
+```csharp
 public async Task<IActionResult> MyAction()
 {
     var result = await _nodeServices.Invoke<int>("./addNumbers", 1, 2);
@@ -93,7 +93,7 @@ public async Task<IActionResult> MyAction()
 
 Of course, you also need to supply the Node.js code you want to invoke. Create a file called `addNumber.js` at the root of your ASP.NET Core application, and add the following code:
 
-```
+```javascript
 module.exports = function (callback, first, second) {
     var result = first + second;
     callback(/* error */ null, result);
@@ -110,7 +110,7 @@ If you want to put `addNumber.js` inside a subfolder rather than the root of you
 
 In other types of .NET app where you don't have ASP.NET Core's DI system, you can get an instance of `NodeServices` as follows:
 
-```
+```csharp
 // Remember to add 'using Microsoft.AspNetCore.NodeServices;' at the top of your file
 
 var nodeServices = Configuration.CreateNodeServices(new NodeServicesOptions());
@@ -127,7 +127,7 @@ You can dispose the `nodeServices` object whenever you are done with it (and it 
 
 **Signatures:**
 
-```
+```csharp
 AddNodeServices()
 AddNodeServices(NodeServicesOptions options)
 ```
@@ -136,7 +136,7 @@ This is an extension method on `IServiceCollection`. It registers NodeServices w
 
 To access this extension method, you'll need to add the following namespace import to the top of your file:
 
-```
+```csharp
 using Microsoft.AspNetCore.NodeServices;
 ```
 
@@ -144,13 +144,13 @@ using Microsoft.AspNetCore.NodeServices;
 
 Using default options:
 
-```
+```csharp
 services.AddNodeServices();
 ```
 
 Or, specifying options:
 
-```
+```csharp
 services.AddNodeServices(new NodeServicesOptions
 {
     WatchFileExtensions = new[] { ".coffee", ".sass" },
@@ -163,7 +163,7 @@ services.AddNodeServices(new NodeServicesOptions
  * `options` - type: `NodeServicesOptions`
    * Optional. If specified, configures how the `NodeServices` instances will work.
    * Properties:
-     * `HostingModel` - an `NodeHostingModel` enum value. See: [hosting models](#HostingModels)
+     * `HostingModel` - an `NodeHostingModel` enum value. See: [hosting models](#hosting-models)
      * `ProjectPath` - if specified, controls the working directory used when launching Node instances. This affects, for example, the location that `require` statements resolve relative paths against. If not specified, your application root directory is used.
      * `WatchFileExtensions` - if specified, the launched Node instance will watch for changes to any files with these extensions, and auto-restarts when any are changed.
 
@@ -175,7 +175,7 @@ If no `options` is passed, the default `WatchFileExtensions` array includes `.js
 
 **Signature:**
 
-```
+```csharp
 CreateNodeServices(NodeServicesOptions options)
 ```
 
@@ -183,7 +183,7 @@ Directly supplies an instance of `NodeServices` without using ASP.NET's DI syste
 
 **Example**
 
-```
+```csharp
 var nodeServices = Configuration.CreateNodeServices(new NodeServicesOptions {
     HostingModel = NodeHostingModel.Socket
 });
@@ -194,7 +194,7 @@ var nodeServices = Configuration.CreateNodeServices(new NodeServicesOptions {
  * `options` - type: `NodeServicesOptions`.
    * Configures the returned `NodeServices` instance.
    * Properties:
-     * `HostingModel` - an `NodeHostingModel` enum value. See: [hosting models](#HostingModels)
+     * `HostingModel` - an `NodeHostingModel` enum value. See: [hosting models](#hosting-models)
      * `ProjectPath` - if specified, controls the working directory used when launching Node instances. This affects, for example, the location that `require` statements resolve relative paths against. If not specified, your application root directory is used.
      * `WatchFileExtensions` - if specified, the launched Node instance will watch for changes to any files with these extension, and auto-restarts when any are changed.
      
@@ -206,7 +206,7 @@ If you create a `NodeServices` instance this way, you can also dispose it (call 
 
 **Signature:**
 
-```
+```csharp
 Invoke<T>(string moduleName, params object[] args)
 ```
 
@@ -214,7 +214,7 @@ Asynchronously calls a JavaScript function and returns the result, or throws an 
 
 **Example 1: Getting a JSON-serializable object from Node (the most common use case)**
 
-```
+```csharp
 var result = await myNodeServicesInstance.Invoke<TranspilerResult>(
     "./Node/transpile",
     pathOfSomeFileToBeTranspiled);
@@ -222,7 +222,7 @@ var result = await myNodeServicesInstance.Invoke<TranspilerResult>(
 
 ... where `TranspilerResult` might be defined as follows:
 
-```
+```csharp
 public class TranspilerResult
 {
     public string Code { get; set; }
@@ -232,7 +232,7 @@ public class TranspilerResult
 
 ... and the corresponding JavaScript module (in `Node/transpile.js`) could be implemented as follows:
 
-```
+```javascript
 module.exports = function (callback, filePath) {
     // Invoke some external transpiler (e.g., an NPM module) then:
     callback(null, {
@@ -244,7 +244,7 @@ module.exports = function (callback, filePath) {
 
 **Example 2: Getting a stream of binary data from Node**
 
-```
+```csharp
 var imageStream = await myNodeServicesInstance.Invoke<Stream>(
     "./Node/resizeImage",
     fullImagePath,
@@ -257,7 +257,7 @@ return File(imageStream, someContentType);
 
 ... where the corresponding JavaScript module (in `Node/resizeImage.js`) could be implemented as follows:
 
-```
+```javascript
 var sharp = require('sharp'); // A popular image manipulation package on NPM
 
 module.exports = function(result, physicalPath, maxWidth, maxHeight) {
@@ -286,7 +286,7 @@ There's a working image resizing example following this approach [here](https://
 
 **Signature**
 
-```
+```csharp
 InvokeExport<T>(string moduleName, string exportName, params object[] args)
 ```
 
@@ -294,7 +294,7 @@ This is exactly the same as `Invoke<T>`, except that it also takes an `exportNam
 
 **Example**
 
-```
+```csharp
 var someString = await myNodeServicesInstance.Invoke<string>(
     "./Node/myNodeApis",
     "getMeAString");
@@ -308,7 +308,7 @@ var someStringInFrench = await myNodeServicesInstance.Invoke<string>(
 
 ... where  the corresponding JavaScript module (in `Node/myNodeApis.js`) could be implemented as follows:
 
-```
+```javascript
 module.exports = {
 
     getMeAString: function (callback) {
@@ -325,7 +325,7 @@ module.exports = {
 };
 ```
 
-**Parameters, return type, etc.** For all other details, see the docs for [`Invoke<T>`](#Invoke)
+**Parameters, return type, etc.** For all other details, see the docs for [`Invoke<T>`](#invoket)
 
 ## Hosting models
 
@@ -347,7 +347,7 @@ People have asked about using [VroomJS](https://github.com/fogzot/vroomjs) as a 
 
 Normally, you can just use the default hosting model, and not worry about it. But if you have some special requirements, select a hosting model by passing an `options` parameter to `AddNodeServices` or `CreateNodeServices`, and populate its `HostingModel` property. Example:
 
-```
+```csharp
 services.AddNodeServices(new NodeServicesOptions
 {
     HostingModel = NodeHostingModel.Socket
@@ -367,7 +367,7 @@ services.AddNodeServices(new NodeServicesOptions
 
 If you implement a custom hosting model (by implementing `INodeServices`), then you can get instances of that just by using your type's constructor. Or if you want to designate it as the default hosting model that higher-level services (such as those in the `SpaServices` package) should use, register it with ASP.NET Core's DI system:
 
-```
+```csharp
 services.AddSingleton(typeof(INodeServices), serviceProvider =>
 {
     return new YourCustomHostingModel();
