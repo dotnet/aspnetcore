@@ -374,6 +374,74 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Profession"), error.ErrorMessage);
         }
 
+        [Fact]
+        public void Validate_ComplexType_MultipleInvalidProperties()
+        {
+            // Arrange
+            var actionContext = new ActionContext();
+            var modelState = actionContext.ModelState;
+            var model = new InvalidProperties();
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry() },
+            };
+
+            var validator = CreateValidator();
+
+            // Act
+            validator.Validate(actionContext, validationState, prefix: null, model: model);
+
+            // Assert
+            Assert.Collection(
+                modelState,
+                state =>
+                {
+                    Assert.Equal("FirstName", state.Key);
+                    var error = Assert.Single(state.Value.Errors);
+                    Assert.Equal("User object lacks some data.", error.ErrorMessage);
+                },
+                state =>
+                {
+                    Assert.Equal("Address.City", state.Key);
+                    var error = Assert.Single(state.Value.Errors);
+                    Assert.Equal("User object lacks some data.", error.ErrorMessage);
+                });
+        }
+
+        [Fact]
+        public void Validate_ComplexType_MultipleInvalidProperties_WithPrefix()
+        {
+            // Arrange
+            var actionContext = new ActionContext();
+            var modelState = actionContext.ModelState;
+            var model = new InvalidProperties();
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry { Key = "invalidProperties" } },
+            };
+
+            var validator = CreateValidator();
+
+            // Act
+            validator.Validate(actionContext, validationState, prefix: "invalidProperties", model: model);
+
+            // Assert
+            Assert.Collection(
+                modelState,
+                state =>
+                {
+                    Assert.Equal("invalidProperties.FirstName", state.Key);
+                    var error = Assert.Single(state.Value.Errors);
+                    Assert.Equal("User object lacks some data.", error.ErrorMessage);
+                },
+                state =>
+                {
+                    Assert.Equal("invalidProperties.Address.City", state.Key);
+                    var error = Assert.Single(state.Value.Errors);
+                    Assert.Equal("User object lacks some data.", error.ErrorMessage);
+                });
+        }
+
         // IValidatableObject is significant because the validators are on the object
         // itself, not just the properties.
         [Fact]
@@ -435,7 +503,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             httpContext.SetupGet(x => x.RequestServices).Returns(provider);
 
             var actionContext = new ActionContext { HttpContext = httpContext.Object };
-            
+
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
 
@@ -577,7 +645,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
 
             // Act
-            validator.Validate(actionContext,  validationState, "parameter", model);
+            validator.Validate(actionContext, validationState, "parameter", model);
 
             // Assert
             Assert.True(modelState.IsValid);
@@ -727,7 +795,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             validationState.Add(model, new ValidationStateEntry()
             {
                 Key = "items",
-                
+
                 // Force the validator to treat it as the specified type.
                 Metadata = MetadataProvider.GetMetadataForType(type),
             });
@@ -750,6 +818,40 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             entry = modelState["items[2]"];
             Assert.Equal(entry.ValidationState, ModelValidationState.Valid);
             Assert.Empty(entry.Errors);
+        }
+
+        [Fact]
+        public void Validate_CollectionType_MultipleInvalidItems()
+        {
+            // Arrange
+            var actionContext = new ActionContext();
+            var modelState = actionContext.ModelState;
+            var model = new InvalidItemsContainer();
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry() },
+            };
+
+            var validator = CreateValidator();
+
+            // Act
+            validator.Validate(actionContext, validationState, prefix: null, model: model);
+
+            // Assert
+            Assert.Collection(
+                modelState,
+                state =>
+                {
+                    Assert.Equal("Items[0]", state.Key);
+                    var error = Assert.Single(state.Value.Errors);
+                    Assert.Equal("Collection contains duplicate value 'Joe'.", error.ErrorMessage);
+                },
+                state =>
+                {
+                    Assert.Equal("Items[2]", state.Key);
+                    var error = Assert.Single(state.Value.Errors);
+                    Assert.Equal("Collection contains duplicate value 'Joe'.", error.ErrorMessage);
+                });
         }
 
         [Fact]
@@ -823,7 +925,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             AssertKeysEqual(
                 modelState,
                 "[0].Key",
-                "[0].Value.Name", 
+                "[0].Value.Name",
                 "[0].Value.Profession",
                 "[1].Key",
                 "[1].Value.Name",
@@ -1087,6 +1189,51 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public interface IExampleService
         {
             void DoSomething();
+        }
+
+        // Custom validation attribute that returns multiple entries in ValidationResult.MemberNames and those member
+        // names are indexers. An example scenario is an attribute that confirms all entries in a list are unique.
+        private class InvalidItemsAttribute : ValidationAttribute
+        {
+            protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+            {
+                return new ValidationResult(
+                    "Collection contains duplicate value 'Joe'.",
+                    new[] { "[0]", "[2]" });
+            }
+        }
+
+        private class InvalidItemsContainer
+        {
+            [InvalidItems]
+            public List<string> Items { get; set; } = new List<string> { "Joe", "Fred", "Joe", "Herman" };
+        }
+
+        // Custom validation attribute that returns multiple entries in ValidationResult.MemberNames. An example
+        // scenario is an attribute that confirms all properties in a complex type are non-empty.
+        private class InvalidPropertiesAttribute : ValidationAttribute
+        {
+            protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+            {
+                return new ValidationResult(
+                    "User object lacks some data.",
+                    new[] { "FirstName", "Address.City" });
+            }
+        }
+
+        [InvalidProperties]
+        private class InvalidProperties
+        {
+            public string FirstName { get; set; }
+
+            public string LastName { get; set; } = "IsSet";
+
+            public InvalidAddress Address { get; set; }
+        }
+
+        private class InvalidAddress
+        {
+            public string City { get; set; }
         }
     }
 }

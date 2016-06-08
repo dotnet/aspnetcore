@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             }
 
             var metadata = validationContext.ModelMetadata;
-            var memberName = metadata.PropertyName ?? metadata.ModelType.Name;
+            var memberName = metadata.PropertyName;
             var container = validationContext.Container;
 
             var context = new ValidationContext(
@@ -94,31 +94,47 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var result = Attribute.GetValidationResult(validationContext.Model, context);
             if (result != ValidationResult.Success)
             {
-                // ModelValidationResult.MemberName is used by invoking validators (such as ModelValidator) to
-                // construct the ModelKey for ModelStateDictionary. When validating at type level we want to append
-                // the returned MemberNames if specified (e.g. person.Address.FirstName). For property validation, the
-                // ModelKey can be constructed using the ModelMetadata and we should ignore MemberName (we don't want
-                // (person.Name.Name). However the invoking validator does not have a way to distinguish between these
-                // two cases. Consequently we'll only set MemberName if this validation returns a MemberName that is
-                // different from the property being validated.
-
-                var errorMemberName = result.MemberNames.FirstOrDefault();
-                if (string.Equals(errorMemberName, memberName, StringComparison.Ordinal))
-                {
-                    errorMemberName = null;
-                }
-
-                string errorMessage = null;
+                string errorMessage;
                 if (_stringLocalizer != null &&
                     !string.IsNullOrEmpty(Attribute.ErrorMessage) &&
                     string.IsNullOrEmpty(Attribute.ErrorMessageResourceName) &&
                     Attribute.ErrorMessageResourceType == null)
                 {
-                    errorMessage = GetErrorMessage(validationContext);
+                    errorMessage = GetErrorMessage(validationContext) ?? result.ErrorMessage;
+                }
+                else
+                {
+                    errorMessage = result.ErrorMessage;
                 }
 
-                var validationResult = new ModelValidationResult(errorMemberName, errorMessage ?? result.ErrorMessage);
-                return new ModelValidationResult[] { validationResult };
+                var validationResults = new List<ModelValidationResult>();
+                if (result.MemberNames != null)
+                {
+                    foreach (var resultMemberName in result.MemberNames)
+                    {
+                        // ModelValidationResult.MemberName is used by invoking validators (such as ModelValidator) to
+                        // append construct the ModelKey for ModelStateDictionary. When validating at type level we
+                        // want the returned MemberNames if specified (e.g. "person.Address.FirstName"). For property
+                        // validation, the ModelKey can be constructed using the ModelMetadata and we should ignore
+                        // MemberName (we don't want "person.Name.Name"). However the invoking validator does not have
+                        // a way to distinguish between these two cases. Consequently we'll only set MemberName if this
+                        // validation returns a MemberName that is different from the property being validated.
+                        var newMemberName = string.Equals(resultMemberName, memberName, StringComparison.Ordinal) ?
+                            null :
+                            resultMemberName;
+                        var validationResult = new ModelValidationResult(newMemberName, errorMessage);
+
+                        validationResults.Add(validationResult);
+                    }
+                }
+
+                if (validationResults.Count == 0)
+                {
+                    // result.MemberNames was null or empty.
+                    validationResults.Add(new ModelValidationResult(memberName: null, message: errorMessage));
+                }
+
+                return validationResults;
             }
 
             return Enumerable.Empty<ModelValidationResult>();

@@ -1,13 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Moq;
@@ -35,31 +36,42 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             Assert.Same(attribute, validator.Attribute);
         }
 
-        public static IEnumerable<object[]> Validate_SetsMemberName_OnValidationContext_ForProperties_Data
+        public static TheoryData Validate_SetsMemberName_AsExpectedData
         {
             get
             {
-                yield return new object[]
-                {
-                    _metadataProvider.GetMetadataForType(typeof(string)).Properties["Length"],
-                    "Hello",
-                    "Hello".Length,
-                    "Length",
-                };
+                var array = new[] { new SampleModel { Name = "one" }, new SampleModel { Name = "two" } };
 
-                yield return new object[]
+                // metadata, container, model, expected MemberName
+                return new TheoryData<ModelMetadata, object, object, string>
                 {
-                    _metadataProvider.GetMetadataForType(typeof(SampleModel)),
-                    null,
-                    15,
-                    "SampleModel",
+                    {
+                        _metadataProvider.GetMetadataForProperty(typeof(string), nameof(string.Length)),
+                        "Hello",
+                        "Hello".Length,
+                        nameof(string.Length)
+                    },
+                    {
+                        // Validating a top-level model
+                        _metadataProvider.GetMetadataForType(typeof(SampleModel)),
+                        null,
+                        15,
+                        null
+                    },
+                    {
+                        // Validating an element in a collection.
+                        _metadataProvider.GetMetadataForType(typeof(SampleModel)),
+                        array,
+                        array[1],
+                        null
+                    },
                 };
             }
         }
 
         [Theory]
-        [MemberData(nameof(Validate_SetsMemberName_OnValidationContext_ForProperties_Data))]
-        public void Validate_SetsMemberName_OnValidationContext_ForProperties(
+        [MemberData(nameof(Validate_SetsMemberName_AsExpectedData))]
+        public void Validate_SetsMemberName_AsExpected(
             ModelMetadata metadata,
             object container,
             object model,
@@ -150,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             // Assert
             var validationResult = result.Single();
-            Assert.Equal("", validationResult.MemberName);
+            Assert.Empty(validationResult.MemberName);
             Assert.Equal(attribute.Object.FormatErrorMessage("Length"), validationResult.Message);
         }
 
@@ -184,25 +196,92 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             Assert.Empty(result);
         }
 
-        [Fact]
-        public void Validate_ReturnsSingleValidationResult_IfMemberNameSequenceIsEmpty()
+        public static TheoryData<string, IEnumerable<string>, IEnumerable<ModelValidationResult>>
+            Valdate_ReturnsExpectedResults_Data
+        {
+            get
+            {
+                var errorMessage = "Some error message";
+                return new TheoryData<string, IEnumerable<string>, IEnumerable<ModelValidationResult>>
+                {
+                    {
+                        errorMessage,
+                        null,
+                        new[] { new ModelValidationResult(memberName: string.Empty, message: errorMessage) } },
+                    {
+                        errorMessage,
+                        Enumerable.Empty<string>(),
+                        new[] { new ModelValidationResult(memberName: string.Empty, message: errorMessage) }
+                    },
+                    {
+                        errorMessage,
+                        new[] { (string)null },
+                        new[] { new ModelValidationResult(memberName: string.Empty, message: errorMessage) }
+                    },
+                    {
+                        errorMessage,
+                        new[] { string.Empty },
+                        new[] { new ModelValidationResult(memberName: string.Empty, message: errorMessage) }
+                    },
+                    {
+                        errorMessage,
+                        // Name matches ValidationContext.MemberName.
+                        new[] { nameof(string.Length) },
+                        new[] { new ModelValidationResult(memberName: string.Empty, message: errorMessage) }
+                    },
+                    {
+                        errorMessage,
+                        new[] { "AnotherName" },
+                        new[] { new ModelValidationResult(memberName: "AnotherName", message: errorMessage) }
+                    },
+                    {
+                        errorMessage,
+                        new[] { "[1]" },
+                        new[] { new ModelValidationResult(memberName: "[1]", message: errorMessage) }
+                    },
+                    {
+                        errorMessage,
+                        new[] { "Name1", "Name2" },
+                        new[]
+                        {
+                            new ModelValidationResult(memberName: "Name1", message: errorMessage),
+                            new ModelValidationResult(memberName: "Name2", message: errorMessage),
+                        }
+                    },
+                    {
+                        errorMessage,
+                        new[] { "[0]", "[2]" },
+                        new[]
+                        {
+                            new ModelValidationResult(memberName: "[0]", message: errorMessage),
+                            new ModelValidationResult(memberName: "[2]", message: errorMessage),
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Valdate_ReturnsExpectedResults_Data))]
+        public void Valdate_ReturnsExpectedResults(
+            string errorMessage,
+            IEnumerable<string> memberNames,
+            IEnumerable<ModelValidationResult> expectedResults)
         {
             // Arrange
-            const string errorMessage = "Some error message";
-
-            var metadata = _metadataProvider.GetMetadataForType(typeof(string));
+            var metadata = _metadataProvider.GetMetadataForProperty(typeof(string), nameof(string.Length));
             var container = "Hello";
             var model = container.Length;
 
             var attribute = new Mock<TestableValidationAttribute> { CallBase = true };
             attribute
                  .Setup(p => p.IsValidPublic(It.IsAny<object>(), It.IsAny<ValidationContext>()))
-                 .Returns(new ValidationResult(errorMessage, memberNames: null));
+                 .Returns(new ValidationResult(errorMessage, memberNames));
+
             var validator = new DataAnnotationsModelValidator(
                 new ValidationAttributeAdapterProvider(),
                 attribute.Object,
                 stringLocalizer: null);
-
             var validationContext = new ModelValidationContext(
                 actionContext: new ActionContext(),
                 modelMetadata: metadata,
@@ -214,74 +293,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var results = validator.Validate(validationContext);
 
             // Assert
-            var validationResult = Assert.Single(results);
-            Assert.Equal(errorMessage, validationResult.Message);
-            Assert.Empty(validationResult.MemberName);
-        }
-
-        [Fact]
-        public void Validate_ReturnsSingleValidationResult_IfOneMemberNameIsSpecified()
-        {
-            // Arrange
-            const string errorMessage = "A different error message";
-
-            var metadata = _metadataProvider.GetMetadataForType(typeof(object));
-            var model = new object();
-
-            var attribute = new Mock<TestableValidationAttribute> { CallBase = true };
-            attribute
-                 .Setup(p => p.IsValidPublic(It.IsAny<object>(), It.IsAny<ValidationContext>()))
-                 .Returns(new ValidationResult(errorMessage, new[] { "FirstName" }));
-
-            var validator = new DataAnnotationsModelValidator(
-                new ValidationAttributeAdapterProvider(),
-                attribute.Object,
-                stringLocalizer: null);
-            var validationContext = new ModelValidationContext(
-                actionContext: new ActionContext(),
-                modelMetadata: metadata,
-                metadataProvider: _metadataProvider,
-                container: null,
-                model: model);
-
-            // Act
-            var results = validator.Validate(validationContext);
-
-            // Assert
-            ModelValidationResult validationResult = Assert.Single(results);
-            Assert.Equal(errorMessage, validationResult.Message);
-            Assert.Equal("FirstName", validationResult.MemberName);
-        }
-
-        [Fact]
-        public void Validate_ReturnsMemberName_IfItIsDifferentFromDisplayName()
-        {
-            // Arrange
-            var metadata = _metadataProvider.GetMetadataForType(typeof(SampleModel));
-            var model = new SampleModel();
-
-            var attribute = new Mock<TestableValidationAttribute> { CallBase = true };
-            attribute
-                 .Setup(p => p.IsValidPublic(It.IsAny<object>(), It.IsAny<ValidationContext>()))
-                 .Returns(new ValidationResult("Name error", new[] { "Name" }));
-
-            var validator = new DataAnnotationsModelValidator(
-                new ValidationAttributeAdapterProvider(),
-                attribute.Object,
-                stringLocalizer: null);
-            var validationContext = new ModelValidationContext(
-                actionContext: new ActionContext(),
-                modelMetadata: metadata,
-                metadataProvider: _metadataProvider,
-                container: null,
-                model: model);
-
-            // Act
-            var results = validator.Validate(validationContext);
-
-            // Assert
-            ModelValidationResult validationResult = Assert.Single(results);
-            Assert.Equal("Name", validationResult.MemberName);
+            Assert.Equal(expectedResults, results, ModelValidationResultComparer.Instance);
         }
 
         [Fact]
@@ -314,7 +326,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             // Assert
             var validationResult = result.Single();
-            Assert.Equal("", validationResult.MemberName);
+            Assert.Empty(validationResult.MemberName);
             Assert.Equal("Longueur est invalide : 4", validationResult.Message);
         }
 
@@ -404,7 +416,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                     },
                     {
                         new StringLengthAttribute(length) { ErrorMessage = LocalizationKey, MinimumLength = 1},
-                        "",
+                        string.Empty,
                         new object[] { nameof(SampleModel), 1, length }
                     },
                     {
@@ -481,6 +493,40 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         public interface IExampleService
         {
             void DoSomething();
+        }
+
+        private class ModelValidationResultComparer : IEqualityComparer<ModelValidationResult>
+        {
+            public static readonly ModelValidationResultComparer Instance = new ModelValidationResultComparer();
+
+            private ModelValidationResultComparer()
+            {
+            }
+
+            public bool Equals(ModelValidationResult x, ModelValidationResult y)
+            {
+                if (x == null || y == null)
+                {
+                    return x == null && y == null;
+                }
+
+                return string.Equals(x.MemberName, y.MemberName, StringComparison.Ordinal) &&
+                    string.Equals(x.Message, y.Message, StringComparison.Ordinal);
+            }
+
+            public int GetHashCode(ModelValidationResult obj)
+            {
+                if (obj == null)
+                {
+                    throw new ArgumentNullException(nameof(obj));
+                }
+
+                var hashCodeCombiner = HashCodeCombiner.Start();
+                hashCodeCombiner.Add(obj.MemberName, StringComparer.Ordinal);
+                hashCodeCombiner.Add(obj.Message, StringComparer.Ordinal);
+
+                return hashCodeCombiner.CombinedHash;
+            }
         }
     }
 }

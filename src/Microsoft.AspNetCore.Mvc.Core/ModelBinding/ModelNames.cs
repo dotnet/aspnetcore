@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Globalization;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -23,14 +24,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 return propertyName ?? string.Empty;
             }
-            else if (string.IsNullOrEmpty(propertyName))
+
+            if (string.IsNullOrEmpty(propertyName))
             {
                 return prefix ?? string.Empty;
             }
-            else
+
+            if (propertyName.StartsWith("[", StringComparison.Ordinal))
             {
-                return prefix + "." + propertyName;
+                // The propertyName might represent an indexer access, in which case combining
+                // with a 'dot' would be invalid. This case occurs only when called from ValidationVisitor.
+                return prefix + propertyName;
             }
+
+            return prefix + "." + propertyName;
         }
     }
 }
