@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             OptionsFormatters = options.Value.OutputFormatters;
             RespectBrowserAcceptHeader = options.Value.RespectBrowserAcceptHeader;
+            ReturnHttpNotAcceptable = options.Value.ReturnHttpNotAcceptable;
             Logger = loggerFactory.CreateLogger<ObjectResultExecutor>();
             WriterFactory = writerFactory.CreateWriter;
         }
@@ -63,6 +64,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         /// Gets the value of <see cref="MvcOptions.RespectBrowserAcceptHeader"/>.
         /// </summary>
         protected bool RespectBrowserAcceptHeader { get; }
+
+        /// <summary>
+        /// Gets the value of <see cref="MvcOptions.ReturnHttpNotAcceptable"/>.
+        /// </summary>
+        protected bool ReturnHttpNotAcceptable { get; }
 
         /// <summary>
         /// Gets the writer factory delegate.
@@ -130,7 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 // No formatter supports this.
                 Logger.NoFormatter(formatterContext);
-
+                
                 context.HttpContext.Response.StatusCode = StatusCodes.Status406NotAcceptable;
                 return TaskCache.CompletedTask;
             }
@@ -175,71 +181,57 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(formatters));
             }
 
-            // Check if any content-type was explicitly set (for example, via ProducesAttribute
-            // or URL path extension mapping). If yes, then ignore content-negotiation and use this content-type.
-            if (contentTypes.Count == 1)
-            {
-                Logger.SkippedContentNegotiation(contentTypes[0]);
-
-                return SelectFormatterUsingAnyAcceptableContentType(formatterContext, formatters, contentTypes);
-            }
-
             var request = formatterContext.HttpContext.Request;
-
-            var mediaTypes = GetMediaTypes(contentTypes, request);
+            var acceptableMediaTypes = GetAcceptableMediaTypes(contentTypes, request);
+            var selectFormatterWithoutRegardingAcceptHeader = false;
             IOutputFormatter selectedFormatter = null;
-            if (contentTypes.Count == 0)
+
+            if (acceptableMediaTypes.Count == 0)
             {
-                // Check if we have enough information to do content-negotiation, otherwise get the first formatter
-                // which can write the type. Let the formatter choose the Content-Type.
-                if (!(mediaTypes.Count > 0))
-                {
-                    Logger.NoAcceptForNegotiation();
+                // There is either no Accept header value, or it contained */* and we
+                // are not currently respecting the 'browser accept header'.            
+                Logger.NoAcceptForNegotiation();
 
-                    return SelectFormatterNotUsingAcceptHeaders(formatterContext, formatters);
-                }
-
-                //
-                // Content-Negotiation starts from this point on.
-                //
-
-                // 1. Select based on sorted accept headers.
-                selectedFormatter = SelectFormatterUsingSortedAcceptHeaders(
-                    formatterContext,
-                    formatters,
-                    mediaTypes);
-
-                // 2. No formatter was found based on Accept header. Fallback to the first formatter which can write
-                // the type. Let the formatter choose the Content-Type.
-                if (selectedFormatter == null)
-                {
-                    Logger.NoFormatterFromNegotiation(mediaTypes);
-
-                    // Set this flag to indicate that content-negotiation has failed to let formatters decide
-                    // if they want to write the response or not.
-                    formatterContext.FailedContentNegotiation = true;
-
-                    return SelectFormatterNotUsingAcceptHeaders(formatterContext, formatters);
-                }
+                selectFormatterWithoutRegardingAcceptHeader = true;
             }
             else
             {
-                if (mediaTypes.Count > 0)
+                if (contentTypes.Count == 0)
                 {
+                    // Use whatever formatter can meet the client's request
                     selectedFormatter = SelectFormatterUsingSortedAcceptHeaders(
                         formatterContext,
                         formatters,
-                        mediaTypes);
+                        acceptableMediaTypes);
+                }
+                else
+                {
+                    // Verify that a content type from the context is compatible with the client's request
+                    selectedFormatter = SelectFormatterUsingSortedAcceptHeadersAndContentTypes(
+                        formatterContext,
+                        formatters,
+                        acceptableMediaTypes,
+                        contentTypes);
                 }
 
-                if (selectedFormatter == null)
+                if (selectedFormatter == null && !ReturnHttpNotAcceptable)
                 {
-                    // Either there were no acceptHeaders that were present OR
-                    // There were no accept headers which matched OR
-                    // There were acceptHeaders which matched but there was no formatter
-                    // which supported any of them.
-                    // In any of these cases, if the user has specified content types,
-                    // do a last effort to find a formatter which can write any of the user specified content type.
+                    Logger.NoFormatterFromNegotiation(acceptableMediaTypes);
+
+                    selectFormatterWithoutRegardingAcceptHeader = true;
+                }
+            }
+
+            if (selectFormatterWithoutRegardingAcceptHeader)
+            {
+                if (contentTypes.Count == 0)
+                {
+                    selectedFormatter = SelectFormatterNotUsingContentType(
+                        formatterContext,
+                        formatters);
+                }
+                else
+                {
                     selectedFormatter = SelectFormatterUsingAnyAcceptableContentType(
                         formatterContext,
                         formatters,
@@ -250,7 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return selectedFormatter;
         }
 
-        private List<MediaTypeSegmentWithQuality> GetMediaTypes(
+        private List<MediaTypeSegmentWithQuality> GetAcceptableMediaTypes(
             MediaTypeCollection contentTypes,
             HttpRequest request)
         {
@@ -264,36 +256,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     result.Clear();
                     return result;
                 }
-
-                if (!InAcceptableMediaTypes(result[i].MediaType, contentTypes))
-                {
-                    result.RemoveAt(i);
-                }
             }
 
             result.Sort((left, right) => left.Quality > right.Quality ? -1 : (left.Quality == right.Quality ? 0 : 1));
 
             return result;
-        }
-
-        private static bool InAcceptableMediaTypes(StringSegment mediaType, MediaTypeCollection acceptableMediaTypes)
-        {
-            if (acceptableMediaTypes.Count == 0)
-            {
-                return true;
-            }
-
-            var parsedMediaType = new MediaType(mediaType);
-            for (int i = 0; i < acceptableMediaTypes.Count; i++)
-            {
-                var acceptableMediaType = new MediaType(acceptableMediaTypes[i]);
-                if (acceptableMediaType.IsSubsetOf(parsedMediaType))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -307,7 +274,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         /// <returns>
         /// The selected <see cref="IOutputFormatter"/> or <c>null</c> if no formatter can write the response.
         /// </returns>
-        protected virtual IOutputFormatter SelectFormatterNotUsingAcceptHeaders(
+        protected virtual IOutputFormatter SelectFormatterNotUsingContentType(
             OutputFormatterWriteContext formatterContext,
             IList<IOutputFormatter> formatters)
         {
@@ -430,6 +397,53 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 }
             }
 
+            return null;
+        }
+        
+        /// <summary>
+        /// Selects the <see cref="IOutputFormatter"/> to write the response based on the content type values
+        /// present in <paramref name="sortedAcceptableContentTypes"/> and <paramref name="possibleOutputContentTypes"/>.
+        /// </summary>
+        /// <param name="formatterContext">The <see cref="OutputFormatterWriteContext"/>.</param>
+        /// <param name="formatters">
+        /// The list of <see cref="IOutputFormatter"/> instances to consider.
+        /// </param>
+        /// <param name="sortedAcceptableContentTypes">
+        /// The ordered content types from the <c>Accept</c> header, sorted by descending q-value.
+        /// </param>
+        /// <param name="possibleOutputContentTypes">
+        /// The ordered content types from <see cref="ObjectResult.ContentTypes"/> in descending priority order.
+        /// </param>
+        /// <returns>
+        /// The selected <see cref="IOutputFormatter"/> or <c>null</c> if no formatter can write the response.
+        /// </returns>
+        protected virtual IOutputFormatter SelectFormatterUsingSortedAcceptHeadersAndContentTypes(
+            OutputFormatterWriteContext formatterContext,
+            IList<IOutputFormatter> formatters,
+            IList<MediaTypeSegmentWithQuality> sortedAcceptableContentTypes,
+            MediaTypeCollection possibleOutputContentTypes)
+        {
+            for (var i = 0; i < sortedAcceptableContentTypes.Count; i++) 
+            {
+                var acceptableContentType = new MediaType(sortedAcceptableContentTypes[i].MediaType);
+                for (var j = 0; j < possibleOutputContentTypes.Count; j++) 
+                {
+                    var candidateContentType = new MediaType(possibleOutputContentTypes[j]);
+                    if (candidateContentType.IsSubsetOf(acceptableContentType)) 
+                    {
+                        for (var k = 0; k < formatters.Count; k++) 
+                        {
+                            var formatter = formatters[k];
+                            formatterContext.ContentType = new StringSegment(possibleOutputContentTypes[j]);
+                            if (formatter.CanWriteResult(formatterContext)) 
+                            {
+                                return formatter;
+                            }
+                        }
+                    }
+                }
+            }
+            
             return null;
         }
 

@@ -23,12 +23,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public virtual StringSegment ContentType { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating that content-negotiation could not find a formatter based on the 
-        /// information on the <see cref="Http.HttpRequest"/>.
-        /// </summary>
-        public virtual bool? FailedContentNegotiation { get; set; }
-
-        /// <summary>
         /// Gets or sets the object to write to the response.
         /// </summary>
         public virtual object Object { get; protected set; }
