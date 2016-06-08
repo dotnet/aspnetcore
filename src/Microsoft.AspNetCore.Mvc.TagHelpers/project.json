@@ -42,9 +42,6 @@
   "frameworks": {
     "net451": {},
     "netstandard1.6": {
-      "imports": [
-        "portable-net45+win8"
-      ]
     }
   }
 }

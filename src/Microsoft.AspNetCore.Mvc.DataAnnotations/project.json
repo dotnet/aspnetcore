@@ -38,9 +38,6 @@
       }
     },
     "netstandard1.6": {
-      "imports": [
-        "portable-net451+win8"
-      ],
       "dependencies": {
         "System.ComponentModel.Annotations": "4.1.0-*"
       }

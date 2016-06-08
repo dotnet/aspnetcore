@@ -26,24 +26,12 @@
     ]
   },
   "tools": {
-    "Microsoft.AspNetCore.Razor.Tools": {
-      "version": "1.0.0-*",
-      "imports": [
-        "portable-net45+wp80+win8+wpa81+dnxcore50"
-      ]
-    },
-    "Microsoft.DotNet.Watcher.Tools": {
-      "version": "1.0.0-*",
-      "imports": "portable-net451+win8"
-    }
+    "Microsoft.AspNetCore.Razor.Tools": "1.0.0-*",
+    "Microsoft.DotNet.Watcher.Tools": "1.0.0-*"
   },
   "frameworks": {
     "net451": {},
     "netcoreapp1.0": {
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ],
       "dependencies": {
         "Microsoft.NETCore.App": {
           "version": "1.0.0-*",

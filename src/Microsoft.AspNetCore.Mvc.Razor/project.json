@@ -45,9 +45,6 @@
       }
     },
     "netstandard1.6": {
-      "imports": [
-        "portable-net451+win8"
-      ],
       "dependencies": {
         "System.Text.Encoding": "4.0.11-*",
         "System.Runtime.Loader": "4.0.0-*"

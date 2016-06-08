@@ -39,9 +39,6 @@
       }
     },
     "netstandard1.6": {
-      "imports": [
-        "portable-net451+win8"
-      ],
       "dependencies": {
         "System.Runtime.Serialization.Xml": "4.1.1-*",
         "System.Xml.XmlSerializer": "4.0.11-*"

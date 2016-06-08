@@ -59,9 +59,6 @@
   "frameworks": {
     "net451": {},
     "netstandard1.6": {
-      "imports": [
-        "portable-net451+win8"
-      ],
       "dependencies": {
         "System.Text.Encoding": "4.0.11-*"
       }
