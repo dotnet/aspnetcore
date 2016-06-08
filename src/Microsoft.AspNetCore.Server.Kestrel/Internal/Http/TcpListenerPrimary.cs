@@ -48,13 +48,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 acceptSocket.NoDelay(ServerOptions.NoDelay);
                 listenSocket.Accept(acceptSocket);
                 DispatchConnection(acceptSocket);
-
             }
             catch (UvException ex)
             {
                 Log.LogError(0, ex, "TcpListenerPrimary.OnConnection");
                 acceptSocket.Dispose();
-                return;
             }
         }
     }

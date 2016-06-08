@@ -53,7 +53,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 Log.LogError(0, ex, "TcpListener.OnConnection");
                 acceptSocket.Dispose();
-                return;
             }
         }
     }

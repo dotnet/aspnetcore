@@ -138,8 +138,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 return;
             }
 
-            var connection = new Connection(this, acceptSocket);
-            connection.Start();
+            try
+            {
+                var connection = new Connection(this, acceptSocket);
+                connection.Start();
+            }
+            catch (UvException ex)
+            {
+                Log.LogError(0, ex, "ListenerSecondary.OnConnection");
+                acceptSocket.Dispose();
+            }
         }
 
         /// <summary>

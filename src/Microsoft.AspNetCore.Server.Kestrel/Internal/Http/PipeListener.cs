@@ -47,7 +47,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 Log.LogError(0, ex, "PipeListener.OnConnection");
                 acceptSocket.Dispose();
-                return;
             }
         }
     }
