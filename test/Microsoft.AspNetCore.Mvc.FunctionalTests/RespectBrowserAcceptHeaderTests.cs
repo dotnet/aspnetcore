@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("application/json; charset=utf-8", response.Content.Headers.ContentType.ToString());
             var responseData = await response.Content.ReadAsStringAsync();
-            Assert.Equal("{\"Id\":10,\"Name\":\"John\"}", responseData);
+            Assert.Equal("{\"id\":10,\"name\":\"John\"}", responseData);
         }
 
         [ConditionalTheory]
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 "<RespectBrowserAcceptHeaderController.Employee xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\"" +
                 " xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite.Controllers\"><Id>35</Id><Name>Jimmy" +
                 "</Name></RespectBrowserAcceptHeaderController.Employee>";
-            var expectedResponseData = @"{""Id"":35,""Name"":""Jimmy""}";
+            var expectedResponseData = @"{""id"":35,""name"":""Jimmy""}";
             var request = RequestWithAccept("http://localhost/RespectBrowserAcceptHeader/CreateEmployee", acceptHeader);
             request.Content = new StringContent(requestData, Encoding.UTF8, "application/xml");
             request.Method = HttpMethod.Post;

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Controllers;
+using Newtonsoft.Json.Serialization;
 
 namespace BasicWebSite.Controllers
 {
@@ -65,20 +65,21 @@ namespace BasicWebSite.Controllers
         {
             Person person = new Person
             {
-                Id = 9000,
-                Name = "John <b>Smith</b>"
+                id = 9000,
+                FullName = "John <b>Smith</b>"
             };
 
             return View(person);
         }
 
-        public IActionResult JsonHelperWithSettingsInView()
+        public IActionResult JsonHelperWithSettingsInView(bool snakeCase)
         {
             Person person = new Person
             {
-                Id = 9000,
-                Name = "John <b>Smith</b>"
+                id = 9000,
+                FullName = "John <b>Smith</b>"
             };
+            ViewData["naming"] = snakeCase ? (NamingStrategy)new SnakeCaseNamingStrategy() : new DefaultNamingStrategy();
 
             return View(person);
         }

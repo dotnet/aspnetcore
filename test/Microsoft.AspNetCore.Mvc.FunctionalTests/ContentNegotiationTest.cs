@@ -44,8 +44,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Arrange
             var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
-            var expectedBody = $"{{{Environment.NewLine}  \"Name\": \"My name\",{Environment.NewLine}" +
-                $"  \"Address\": \"My address\"{Environment.NewLine}}}";
+            var expectedBody = $"{{{Environment.NewLine}  \"name\": \"My name\",{Environment.NewLine}" +
+                $"  \"address\": \"My address\"{Environment.NewLine}}}";
 
             // Act
             var response = await Client.GetAsync("http://localhost/Normal/MultipleAllowedContentTypes");
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Arrange
             var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
-            var expectedOutput = "{\"Name\":\"John\",\"Address\":\"One Microsoft Way\"}";
+            var expectedOutput = "{\"name\":\"John\",\"address\":\"One Microsoft Way\"}";
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
                 "http://localhost/ContentNegotiation/UserInfo_ProducesWithTypeOnly");
@@ -287,7 +287,7 @@ END:VCARD
         {
             // Arrange
             var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
-            var expectedBody = "{\"MethodName\":\"Produces_WithNonObjectResult\"}";
+            var expectedBody = "{\"methodName\":\"Produces_WithNonObjectResult\"}";
 
             // Act
             var response = await Client.GetAsync("http://localhost/ProducesJson/Produces_WithNonObjectResult");

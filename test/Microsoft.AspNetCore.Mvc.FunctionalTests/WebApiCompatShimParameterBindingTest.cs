@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("{\"Id\":5,\"Name\":\"Test Employee\"}", content);
+            Assert.Equal("{\"id\":5,\"name\":\"Test Employee\"}", content);
         }
 
         [Fact]
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("{\"Id\":5,\"Name\":\"Test Employee\"}", content);
+            Assert.Equal("{\"id\":5,\"name\":\"Test Employee\"}", content);
         }
 
         // name is read from the url - and the rest from the body (formatters)
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("{\"Id\":5,\"Name\":\"Name_Override\"}", content);
+            Assert.Equal("{\"id\":5,\"name\":\"Name_Override\"}", content);
         }
     }
 }

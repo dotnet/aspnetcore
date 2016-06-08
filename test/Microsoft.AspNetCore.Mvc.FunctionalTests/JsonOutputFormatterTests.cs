@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Testing.xunit;
 using Newtonsoft.Json;
 using Xunit;
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 Name = "John Williams"
             };
 
-            var serializerSettings = new JsonSerializerSettings();
+            var serializerSettings = JsonSerializerSettingsProvider.CreateSerializerSettings();
             serializerSettings.Formatting = Formatting.Indented;
             var expectedBody = JsonConvert.SerializeObject(user, serializerSettings);
 

@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
-            Assert.Equal("{\"Message\":\"hello\"}", content);
+            Assert.Equal("{\"message\":\"hello\"}", content);
         }
 
         // Using an Accept header can't force Json to not be Json. If your accept header doesn't jive with the
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
-            Assert.Equal("{\"Message\":\"hello\"}", content);
+            Assert.Equal("{\"message\":\"hello\"}", content);
         }
 
         // If the object is null, it will get formatted as JSON. NOT as a 204/NoContent
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("application/message+json", response.Content.Headers.ContentType.MediaType);
-            Assert.Equal("{\"Message\":\"hello\"}", content);
+            Assert.Equal("{\"message\":\"hello\"}", content);
         }
     }
 }

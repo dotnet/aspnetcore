@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.Ambiguous, response.StatusCode);
-            Assert.Equal("{\"Name\":\"Test User\"}", content);
+            Assert.Equal("{\"name\":\"Test User\"}", content);
         }
 
         [Fact]
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            Assert.Equal("{\"Name\":\"Test User\"}", content);
+            Assert.Equal("{\"name\":\"Test User\"}", content);
             Assert.Equal("5", response.Headers.Location.OriginalString);
         }
 
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            Assert.Equal("{\"Name\":\"Test User\"}", content);
+            Assert.Equal("{\"name\":\"Test User\"}", content);
             Assert.Equal("/api/Blog/ActionResult/GetUser/5", response.Headers.Location.OriginalString);
         }
 
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            Assert.Equal("{\"Name\":\"Test User\"}", content);
+            Assert.Equal("{\"name\":\"Test User\"}", content);
             Assert.Equal("http://localhost/api/Blog/ActionResult/5", response.Headers.Location.OriginalString);
         }
 
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            Assert.Equal("{\"Name\":\"Test User\"}", content);
+            Assert.Equal("{\"name\":\"Test User\"}", content);
             Assert.Equal("/api/Blog/ActionResult/GetUser/5", response.Headers.Location.OriginalString);
         }
 
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            Assert.Equal("{\"Name\":\"Test User\"}", content);
+            Assert.Equal("{\"name\":\"Test User\"}", content);
             Assert.Equal("http://localhost/api/Blog/ActionResult/GetUser/5", response.Headers.Location.OriginalString);
         }
 
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("{\"Name\":\"Test User\"}", content);
+            Assert.Equal("{\"name\":\"Test User\"}", content);
         }
 
         [Fact]
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             var expected =
                 "{" + Environment.NewLine +
-                "  \"Name\": \"Test User\"" + Environment.NewLine +
+                "  \"name\": \"Test User\"" + Environment.NewLine +
                 "}";
 
             // Act
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             var expected =
                 "{" + Environment.NewLine +
-                "  \"Name\": \"Test User\"" + Environment.NewLine +
+                "  \"name\": \"Test User\"" + Environment.NewLine +
                 "}";
 
             // Act
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("{\"Name\":\"Test User\"}", content);
+            Assert.Equal("{\"name\":\"Test User\"}", content);
         }
 
         [Fact]

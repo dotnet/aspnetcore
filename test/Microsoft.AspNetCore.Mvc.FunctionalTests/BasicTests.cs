@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
@@ -217,15 +218,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task JsonHelper_RendersJson()
+        public async Task JsonHelper_RendersJson_WithCamelCaseNames()
         {
             // Arrange
-            var json = JsonConvert.SerializeObject(new BasicWebSite.Models.Person()
-            {
-                Id = 9000,
-                Name = "John <b>Smith</b>"
-            });
-
+            var json = "{\"id\":9000,\"fullName\":\"John <b>Smith</b>\"}";
             var expectedBody = string.Format(
                 @"<script type=""text/javascript"">
     var json = {0};
@@ -244,17 +240,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task JsonHelperWithSettings_RendersJson()
+        public async Task JsonHelperWithSettings_RendersJson_WithNamesUnchanged()
         {
             // Arrange
-            var json = JsonConvert.SerializeObject(
-                new BasicWebSite.Models.Person()
-                {
-                    Id = 9000,
-                    Name = "John <b>Smith</b>"
-                },
-                new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
-
+            var json = "{\"id\":9000,\"FullName\":\"John <b>Smith</b>\"}";
             var expectedBody = string.Format(
                 @"<script type=""text/javascript"">
     var json = {0};
@@ -262,7 +251,29 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 json);
 
             // Act
-            var response = await Client.GetAsync("Home/JsonHelperWithSettingsInView");
+            var response = await Client.GetAsync("Home/JsonHelperWithSettingsInView?snakeCase=false");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
+
+            var actualBody = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedBody, actualBody, ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public async Task JsonHelperWithSettings_RendersJson_WithSnakeCaseNames()
+        {
+            // Arrange
+            var json = "{\"id\":9000,\"full_name\":\"John <b>Smith</b>\"}";
+            var expectedBody = string.Format(
+                @"<script type=""text/javascript"">
+    var json = {0};
+</script>",
+                json);
+
+            // Act
+            var response = await Client.GetAsync("Home/JsonHelperWithSettingsInView?snakeCase=true");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
