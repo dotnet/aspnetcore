@@ -29,10 +29,7 @@
     "netstandard1.3": {
       "dependencies": {
         "System.Runtime.Serialization.Primitives": "4.1.1-*"
-      },
-      "imports": [
-        "portable-net451+win8"
-      ]
+      }
     }
   }
 }
