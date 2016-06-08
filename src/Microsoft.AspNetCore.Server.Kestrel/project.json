@@ -47,10 +47,7 @@
         "System.Threading.Thread": "4.0.0-*",
         "System.Threading.ThreadPool": "4.0.10-*",
         "System.Threading.Timer": "4.0.1-*"
-      },
-      "imports": [
-        "portable-net45+win8"
-      ]
+      }
     }
   },
   "buildOptions": {

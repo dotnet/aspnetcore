@@ -18,10 +18,7 @@
           "type": "platform"
         },
         "System.Console": "4.0.0-*"
-      },
-      "imports": [
-        "dnxcore50"
-      ]
+      }
     }
   },
   "publishOptions": {

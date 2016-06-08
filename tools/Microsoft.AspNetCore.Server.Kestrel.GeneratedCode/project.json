@@ -15,10 +15,7 @@
           "version": "1.0.0-*",
           "type": "platform"
         }
-      },
-      "imports": [
-        "dnxcore50"
-      ]
+      }
     },
     "net451": {
       "frameworkAssemblies": {

@@ -15,10 +15,7 @@
           "version": "1.0.0-*",
           "type": "platform"
         }
-      },
-      "imports": [
-        "portable-dnxcore50+net45+win8+wp8+wpa81"
-      ]
+      }
     }
   },
   "publishOptions": {
