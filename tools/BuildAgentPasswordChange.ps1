@@ -1,30 +1,48 @@
 ﻿[CmdletBinding()]
 param(
-    [string]$buildAgentFolder="C:\BuildAgent",
-    
     [string]$teamAgentServiceAccountName="redmond\asplab",
-    
+
     [Parameter(Mandatory=$true)]
     [string]$teamAgentServiceAccountPassword
 )
 
-$wrapperConfigFile="$buildAgentFolder\launcher\conf\wrapper.conf"
-$binFolder="$buildAgentFolder\bin"
+$agents = @()
+$allLines = Get-Content("$PSScriptRoot\agentlist.txt")
+foreach ($line in $allLines) 
+{
+    $line=$line.Trim()
 
-Write-Host "`nStopping TeamCity build agent service..."
-cd $binFolder
-& .\service.stop.bat
-& .\service.uninstall.bat
+    if ( -Not ([string]::IsNullOrEmpty($line)))
+    {
+        # Ignore lines which could be comments
+        if ( -Not $line.StartsWith("#"))
+        {
+            $agents=$agents + $line
+        }
+    }
+}
 
-Write-Host "`nCopying SSH keys to $env:USERPROFILE..."
-copy "$setupFilesShare\.ssh" "$env:USERPROFILE\.ssh" -Recurse -Force
+$PWord = ConvertTo-SecureString –String $teamAgentServiceAccountPassword –AsPlainText -Force
+$creds = New-Object –TypeName System.Management.Automation.PSCredential –ArgumentList $teamAgentServiceAccountName, $PWord
 
-Write-Host "`nChanging TeamCity service account password in file '$wrapperConfigFile'..."
-(Get-Content $wrapperConfigFile) | ForEach-Object { 
-    $_ -replace '#ACCOUNT_NAME#', $teamAgentServiceAccountName `
-       -replace '#ACCOUNT_PASSWORD#', $teamAgentServiceAccountPassword `
-} | Set-Content $wrapperConfigFile
+foreach ($agent in $agents)
+{
+	Write-Host "`nChanging password for agent '$agent'..."
+	
+	$psSession = New-PSSession -ComputerName $agent -credential $creds
 
-Write-Host "`nStarting TeamCity build agent service..."
-& .\service.install.bat
-& .\service.start.bat
+	$passwordChangeScript="$PSScriptRoot\ChangePassword.ps1"
+
+    try
+    {
+        Invoke-Command -Session $psSession -FilePath $passwordChangeScript -ArgumentList $teamAgentServiceAccountName, $teamAgentServiceAccountPassword
+    }
+    catch
+    {
+        Write-Error $_.Exception.Message
+    }
+    finally
+    {
+        Remove-PSSession $psSession
+    }
+}
