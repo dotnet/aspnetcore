@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 }
             }
 
-            context.Scope.Dispose();
+            context.Scope?.Dispose();
 
             _httpContextFactory.Dispose(httpContext);
         }
