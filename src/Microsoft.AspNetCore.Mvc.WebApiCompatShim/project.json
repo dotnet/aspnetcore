@@ -39,7 +39,9 @@
       }
     },
     "netstandard1.6": {
-      "imports": "portable-net45+netcore45+wp8+wp81+wpa81",
+      "imports": [
+        "portable-net451+win8"
+      ],
       "dependencies": {
         "System.Net.Http": "4.1.0-*",
         "System.Runtime.Serialization.Xml": "4.1.1-*",
