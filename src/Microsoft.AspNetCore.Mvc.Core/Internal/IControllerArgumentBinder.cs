@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Mvc.Controllers
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     /// <summary>
     /// Provides a dictionary of action arguments.

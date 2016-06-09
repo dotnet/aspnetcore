@@ -2458,7 +2458,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var metadataProvider = new EmptyModelMetadataProvider();
 
-            var argumentBinder = new ControllerArgumentBinder(
+            var argumentBinder = new DefaultControllerArgumentBinder(
                     metadataProvider,
                     TestModelBinderFactory.CreateDefault(metadataProvider),
                     new DefaultObjectValidator(metadataProvider, new IModelValidatorProvider[0]));

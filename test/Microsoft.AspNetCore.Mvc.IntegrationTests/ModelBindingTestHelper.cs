@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             return context;
         }
 
-        public static ControllerArgumentBinder GetArgumentBinder(
+        public static DefaultControllerArgumentBinder GetArgumentBinder(
             MvcOptions options = null,
             IModelBinderProvider binderProvider = null)
         {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             }
         }
 
-        public static ControllerArgumentBinder GetArgumentBinder(
+        public static DefaultControllerArgumentBinder GetArgumentBinder(
             IModelMetadataProvider metadataProvider, 
             IModelBinderProvider binderProvider = null)
         {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 options.Value.ModelBinderProviders.Insert(0, binderProvider);
             }
 
-            return new ControllerArgumentBinder(
+            return new DefaultControllerArgumentBinder(
                 metadataProvider,
                 new ModelBinderFactory(metadataProvider, options),
                 GetObjectValidator(metadataProvider, options));

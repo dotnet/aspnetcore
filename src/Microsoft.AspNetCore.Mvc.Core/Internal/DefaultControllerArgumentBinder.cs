@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -18,17 +17,17 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     /// Provides a default implementation of <see cref="IControllerArgumentBinder"/>.
     /// Uses ModelBinding to populate action parameters.
     /// </summary>
-    public class ControllerArgumentBinder : IControllerArgumentBinder
+    public class DefaultControllerArgumentBinder : IControllerArgumentBinder
     {
         private static readonly MethodInfo CallPropertyAddRangeOpenGenericMethod =
-            typeof(ControllerArgumentBinder).GetTypeInfo().GetDeclaredMethod(
+            typeof(DefaultControllerArgumentBinder).GetTypeInfo().GetDeclaredMethod(
                 nameof(CallPropertyAddRange));
 
         private readonly IModelBinderFactory _modelBinderFactory;
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly IObjectModelValidator _validator;
 
-        public ControllerArgumentBinder(
+        public DefaultControllerArgumentBinder(
             IModelMetadataProvider modelMetadataProvider,
             IModelBinderFactory modelBinderFactory,
             IObjectModelValidator validator)

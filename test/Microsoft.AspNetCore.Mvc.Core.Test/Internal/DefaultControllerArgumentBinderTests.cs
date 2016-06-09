@@ -17,7 +17,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
-    public class ControllerArgumentBinderTests
+    public class DefaultControllerArgumentBinderTests
     {
         [Fact]
         public async Task BindActionArgumentsAsync_DoesNotAddActionArguments_IfBinderReturnsNull()
@@ -645,7 +645,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 })
                 .Returns(modelBinder.Object);
 
-            var argumentBinder = new ControllerArgumentBinder(metadataProvider, factory.Object, CreateMockValidator());
+            var argumentBinder = new DefaultControllerArgumentBinder(
+                metadataProvider,
+                factory.Object, 
+                CreateMockValidator());
+
             var controllerContext = GetControllerContext();
             controllerContext.ActionDescriptor.Parameters.Add(parameterDescriptor);
 
@@ -688,7 +692,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 })
                 .Returns(modelBinder.Object);
 
-            var argumentBinder = new ControllerArgumentBinder(metadataProvider, factory.Object, CreateMockValidator());
+            var argumentBinder = new DefaultControllerArgumentBinder(
+                metadataProvider, 
+                factory.Object, 
+                CreateMockValidator());
+
             var valueProvider = new SimpleValueProvider
             {
                 { expectedModelName, new object() },
@@ -752,7 +760,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return TestModelBinderFactory.Create(provider.Object);
         }
 
-        private static ControllerArgumentBinder GetArgumentBinder(
+        private static DefaultControllerArgumentBinder GetArgumentBinder(
             IModelBinderFactory factory = null,
             IObjectModelValidator validator = null)
         {
@@ -766,7 +774,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 factory = TestModelBinderFactory.CreateDefault();
             }
 
-            return new ControllerArgumentBinder(
+            return new DefaultControllerArgumentBinder(
                 TestModelMetadataProvider.CreateDefaultProvider(),
                 factory,
                 validator);
