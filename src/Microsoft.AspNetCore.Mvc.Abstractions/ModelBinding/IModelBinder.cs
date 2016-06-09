@@ -16,15 +16,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="bindingContext">The <see cref="ModelBindingContext"/>.</param>
         /// <returns>
         /// <para>
-        /// A <see cref="Task"/> which on completion returns a <see cref="ModelBindingResult"/> which
-        /// represents the result of the model binding process.
+        /// A <see cref="Task"/> which will complete when the model binding process completes.
         /// </para>
         /// <para>
-        /// If model binding was successful, the <see cref="ModelBindingResult"/> should be a value created
-        /// with <see cref="ModelBindingResult.Success"/>. If model binding failed, the
-        /// <see cref="ModelBindingResult"/> should be a value created with <see cref="ModelBindingResult.Failed"/>.
-        /// If there was no data, or this model binder cannot handle the operation, the
-        /// <see cref="ModelBindingContext.Result"/> should be null.
+        /// If model binding was successful, the <see cref="ModelBindingContext.Result"/> should have
+        /// <see cref="ModelBindingResult.IsModelSet"/> set to <c>true</c>.
+        /// </para>
+        /// <para>
+        /// A model binder that completes successfully should set <see cref="ModelBindingContext.Result"/> to
+        /// a value returned from <see cref="ModelBindingResult.Success"/>. 
         /// </para>
         /// </returns>
         Task BindModelAsync(ModelBindingContext bindingContext);
