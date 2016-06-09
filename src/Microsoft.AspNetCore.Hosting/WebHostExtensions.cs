@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 Console.CancelKeyPress += (sender, eventArgs) =>
                 {
+                    Console.WriteLine("Application is shutting down...");
                     cts.Cancel();
 
                     // Don't terminate the process immediately, wait for the Main thread to exit gracefully.
