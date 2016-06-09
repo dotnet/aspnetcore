@@ -8,16 +8,22 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Authorization
 {
+    /// <summary>
+    /// Extension methods for <see cref="IAuthorizationService"/>.
+    /// </summary>
     public static class AuthorizationServiceExtensions
     {
         /// <summary>
         /// Checks if a user meets a specific requirement for the specified resource
         /// </summary>
-        /// <param name="service">The <see cref="IAuthorizationService"/>.</param>
-        /// <param name="user"></param>
-        /// <param name="resource"></param>
-        /// <param name="requirement"></param>
-        /// <returns></returns>
+        /// <param name="service">The <see cref="IAuthorizationService"/> providing authorization.</param>
+        /// <param name="user">The user to evaluate the policy against.</param>
+        /// <param name="resource">The resource to evaluate the policy against.</param>
+        /// <param name="requirement">The requirement to evaluate the policy against.</param>
+        /// <returns>
+        /// A flag indicating whether requirement evaluation has succeeded or failed.
+        /// This value is <value>true</value> when the user fulfills the policy otherwise <value>false</value>.
+        /// </returns>
         public static Task<bool> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, object resource, IAuthorizationRequirement requirement)
         {
             if (service == null)
@@ -34,13 +40,16 @@ namespace Microsoft.AspNetCore.Authorization
         }
 
         /// <summary>
-        /// Checks if a user meets a specific authorization policy
+        /// Checks if a user meets a specific authorization policy against the specified resource.
         /// </summary>
-        /// <param name="service">The authorization service.</param>
-        /// <param name="user">The user to check the policy against.</param>
-        /// <param name="resource">The resource the policy should be checked with.</param>
-        /// <param name="policy">The policy to check against a specific context.</param>
-        /// <returns><value>true</value> when the user fulfills the policy, <value>false</value> otherwise.</returns>
+        /// <param name="service">The <see cref="IAuthorizationService"/> providing authorization.</param>
+        /// <param name="user">The user to evaluate the policy against.</param>
+        /// <param name="resource">The resource to evaluate the policy against.</param>
+        /// <param name="policy">The policy to evaluate.</param>
+        /// <returns>
+        /// A flag indicating whether policy evaluation has succeeded or failed.
+        /// This value is <value>true</value> when the user fulfills the policy otherwise <value>false</value>.
+        /// </returns>
         public static Task<bool> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, object resource, AuthorizationPolicy policy)
         {
             if (service == null)
@@ -57,12 +66,15 @@ namespace Microsoft.AspNetCore.Authorization
         }
 
         /// <summary>
-        /// Checks if a user meets a specific authorization policy
+        /// Checks if a user meets a specific authorization policy against the specified resource.
         /// </summary>
-        /// <param name="service">The authorization service.</param>
-        /// <param name="user">The user to check the policy against.</param>
-        /// <param name="policy">The policy to check against a specific context.</param>
-        /// <returns><value>true</value> when the user fulfills the policy, <value>false</value> otherwise.</returns>
+        /// <param name="service">The <see cref="IAuthorizationService"/> providing authorization.</param>
+        /// <param name="user">The user to evaluate the policy against.</param>
+        /// <param name="policy">The policy to evaluate.</param>
+        /// <returns>
+        /// A flag indicating whether policy evaluation has succeeded or failed.
+        /// This value is <value>true</value> when the user fulfills the policy otherwise <value>false</value>.
+        /// </returns>
         public static Task<bool> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, AuthorizationPolicy policy)
         {
             if (service == null)
@@ -79,12 +91,15 @@ namespace Microsoft.AspNetCore.Authorization
         }
 
         /// <summary>
-        /// Checks if a user meets a specific authorization policy
+        /// Checks if a user meets a specific authorization policy against the specified resource.
         /// </summary>
-        /// <param name="service">The authorization service.</param>
-        /// <param name="user">The user to check the policy against.</param>
-        /// <param name="policyName">The name of the policy to check against a specific context.</param>
-        /// <returns><value>true</value> when the user fulfills the policy, <value>false</value> otherwise.</returns>
+        /// <param name="service">The <see cref="IAuthorizationService"/> providing authorization.</param>
+        /// <param name="user">The user to evaluate the policy against.</param>
+        /// <param name="policyName">The name of the policy to evaluate.</param>
+        /// <returns>
+        /// A flag indicating whether policy evaluation has succeeded or failed.
+        /// This value is <value>true</value> when the user fulfills the policy otherwise <value>false</value>.
+        /// </returns>
         public static Task<bool> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, string policyName)
         {
             if (service == null)

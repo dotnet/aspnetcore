@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// <summary>
         /// Makes a decision if authorization is allowed.
         /// </summary>
-        /// <param name="context">The authorization information.</param>
+        /// <param name="context">The authorization context.</param>
         public virtual async Task HandleAsync(AuthorizationHandlerContext context)
         {
             foreach (var req in context.Requirements.OfType<TRequirement>())
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// <summary>
         /// Makes a decision if authorization is allowed based on a specific requirement.
         /// </summary>
-        /// <param name="context">The authorization information.</param>
+        /// <param name="context">The authorization context.</param>
         /// <param name="requirement">The requirement to evaluate.</param>
         protected abstract Task HandleRequirementAsync(AuthorizationHandlerContext context, TRequirement requirement);
     }
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// <summary>
         /// Makes a decision if authorization is allowed.
         /// </summary>
-        /// <param name="context">The authorization information.</param>
+        /// <param name="context">The authorization context.</param>
         public virtual async Task HandleAsync(AuthorizationHandlerContext context)
         {
             if (context.Resource is TResource)
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// <summary>
         /// Makes a decision if authorization is allowed based on a specific requirement and resource.
         /// </summary>
-        /// <param name="context">The authorization information.</param>
+        /// <param name="context">The authorization context.</param>
         /// <param name="requirement">The requirement to evaluate.</param>
         /// <param name="resource">The resource to evaluate.</param>
         protected abstract Task HandleRequirementAsync(AuthorizationHandlerContext context, TRequirement requirement, TResource resource);

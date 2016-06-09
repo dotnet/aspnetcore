@@ -8,10 +8,19 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Authorization.Infrastructure
 {
-    // Must contain a claim with the specified name, and at least one of the required values
-    // If AllowedValues is null or empty, that means any claim is valid
+    /// <summary>
+    /// Implements an <see cref="IAuthorizationHandler"/> and <see cref="IAuthorizationRequirement"/>
+    /// which requires at least one instance of the specified claim type, and, if allowed values are specified, 
+    /// the claim value must be any of the allowed values.
+    /// </summary>
     public class ClaimsAuthorizationRequirement : AuthorizationHandler<ClaimsAuthorizationRequirement>, IAuthorizationRequirement
     {
+        /// <summary>
+        /// Creates a new instance of <see cref="ClaimsAuthorizationRequirement"/>.
+        /// </summary>
+        /// <param name="claimType">The claim type that must be present.</param>
+        /// <param name="allowedValues">The optional list of claim values, which, if present, 
+        /// the claim must match.</param>
         public ClaimsAuthorizationRequirement(string claimType, IEnumerable<string> allowedValues)
         {
             if (claimType == null)
@@ -23,9 +32,22 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
             AllowedValues = allowedValues;
         }
 
+        /// <summary>
+        /// Gets the claim type that must be present.
+        /// </summary>
         public string ClaimType { get; }
+
+        /// <summary>
+        /// Gets the optional list of claim values, which, if present, 
+        /// the claim must match.
+        /// </summary>
         public IEnumerable<string> AllowedValues { get; }
 
+        /// <summary>
+        /// Makes a decision if authorization is allowed based on the claims requirements specified.
+        /// </summary>
+        /// <param name="context">The authorization context.</param>
+        /// <param name="requirement">The requirement to evaluate.</param>
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, ClaimsAuthorizationRequirement requirement)
         {
             if (context.User != null)

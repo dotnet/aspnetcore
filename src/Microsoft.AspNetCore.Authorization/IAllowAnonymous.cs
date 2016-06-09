@@ -3,6 +3,9 @@
 
 namespace Microsoft.AspNetCore.Authorization
 {
+    /// <summary>
+    /// Marker interface to enable the <see cref="AllowAnonymousAttribute"/>.
+    /// </summary>
     public interface IAllowAnonymous
     {
     }

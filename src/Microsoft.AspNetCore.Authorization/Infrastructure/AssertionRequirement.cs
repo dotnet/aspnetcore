@@ -6,33 +6,49 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Authorization.Infrastructure
 {
+    /// <summary>
+    /// Implements an <see cref="IAuthorizationHandler"/> and <see cref="IAuthorizationRequirement"/>
+    /// that takes an user specified assertion.
+    /// </summary>
     public class AssertionRequirement : IAuthorizationHandler, IAuthorizationRequirement
     {
         /// <summary>
-        /// Function that is called to handle this requirement
+        /// Function that is called to handle this requirement.
         /// </summary>
         public Func<AuthorizationHandlerContext, Task<bool>> Handler { get; }
 
-        public AssertionRequirement(Func<AuthorizationHandlerContext, bool> assert)
+        /// <summary>
+        /// Creates a new instance of <see cref="AssertionRequirement"/>.
+        /// </summary>
+        /// <param name="handler">Function that is called to handle this requirement.</param>
+        public AssertionRequirement(Func<AuthorizationHandlerContext, bool> handler)
         {
-            if (assert == null)
+            if (handler == null)
             {
-                throw new ArgumentNullException(nameof(assert));
+                throw new ArgumentNullException(nameof(handler));
             }
 
-            Handler = context => Task.FromResult(assert(context));
+            Handler = context => Task.FromResult(handler(context));
         }
 
-        public AssertionRequirement(Func<AuthorizationHandlerContext, Task<bool>> assert)
+        /// <summary>
+        /// Creates a new instance of <see cref="AssertionRequirement"/>.
+        /// </summary>
+        /// <param name="handler">Function that is called to handle this requirement.</param>
+        public AssertionRequirement(Func<AuthorizationHandlerContext, Task<bool>> handler)
         {
-            if (assert == null)
+            if (handler == null)
             {
-                throw new ArgumentNullException(nameof(assert));
+                throw new ArgumentNullException(nameof(handler));
             }
 
-            Handler = assert;
+            Handler = handler;
         }
 
+        /// <summary>
+        /// Calls <see cref="AssertionRequirement.Handler"/> to see if authorization is allowed.
+        /// </summary>
+        /// <param name="context">The authorization information.</param>
         public async Task HandleAsync(AuthorizationHandlerContext context)
         {
             if (await Handler(context))

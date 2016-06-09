@@ -8,10 +8,16 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Authorization.Infrastructure
 {
-    // Must belong to with one of specified roles
-    // If AllowedRoles is null or empty, that means any role is valid
+    /// <summary>
+    /// Implements an <see cref="IAuthorizationHandler"/> and <see cref="IAuthorizationRequirement"/>
+    /// which requires at least one role claim whose value must be any of the allowed roles.
+    /// </summary>
     public class RolesAuthorizationRequirement : AuthorizationHandler<RolesAuthorizationRequirement>, IAuthorizationRequirement
     {
+        /// <summary>
+        /// Creates a new instance of <see cref="RolesAuthorizationRequirement"/>.
+        /// </summary>
+        /// <param name="allowedRoles">A collection of allowed roles.</param>
         public RolesAuthorizationRequirement(IEnumerable<string> allowedRoles)
         {
             if (allowedRoles == null)
@@ -26,7 +32,16 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
             AllowedRoles = allowedRoles;
         }
 
+        /// <summary>
+        /// Gets the collection of allowed roles.
+        /// </summary>
         public IEnumerable<string> AllowedRoles { get; }
+
+        /// <summary>
+        /// Makes a decision if authorization is allowed based on a specific requirement.
+        /// </summary>
+        /// <param name="context">The authorization context.</param>
+        /// <param name="requirement">The requirement to evaluate.</param>
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RolesAuthorizationRequirement requirement)
         {

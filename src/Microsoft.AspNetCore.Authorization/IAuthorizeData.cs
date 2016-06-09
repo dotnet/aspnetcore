@@ -14,10 +14,13 @@ namespace Microsoft.AspNetCore.Authorization
         string Policy { get; set; }
 
         /// <summary>
-        /// Gets or sets a comma-separated list of roles that are allowed to access the resource.
+        /// Gets or sets a comma delimited list of roles that are allowed to access the resource.
         /// </summary>
         string Roles { get; set; }
 
+        /// <summary>
+        /// Gets or sets a comma delimited list of schemes from which user information is constructed.
+        /// </summary>
         string ActiveAuthenticationSchemes { get; set; }
     }
 }

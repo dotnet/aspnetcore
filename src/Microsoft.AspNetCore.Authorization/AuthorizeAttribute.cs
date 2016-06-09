@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Authorization
         public string Policy { get; set; }
 
         /// <inheritdoc />
-        // REVIEW: can we get rid of the , deliminated in Roles/AuthTypes
         public string Roles { get; set; }
 
         /// <inheritdoc />

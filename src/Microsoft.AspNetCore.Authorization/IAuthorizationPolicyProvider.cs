@@ -13,14 +13,14 @@ namespace Microsoft.AspNetCore.Authorization
         /// <summary>
         /// Gets a <see cref="AuthorizationPolicy"/> from the given <paramref name="policyName"/>
         /// </summary>
-        /// <param name="policyName"></param>
-        /// <returns></returns>
+        /// <param name="policyName">The policy name to retrieve.</param>
+        /// <returns>The named <see cref="AuthorizationPolicy"/>.</returns>
         Task<AuthorizationPolicy> GetPolicyAsync(string policyName);
 
         /// <summary>
-        /// Returns the default <see cref="AuthorizationPolicy"/>.
+        /// Gets the default authorization policy.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The default authorization policy.</returns>
         Task<AuthorizationPolicy> GetDefaultPolicyAsync();
     }
 }

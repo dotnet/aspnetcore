@@ -8,8 +8,23 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Authorization
 {
+    /// <summary>
+    /// Represents a collection of authorization requirements and the scheme or 
+    /// schemes they are evaluated against, all of which must succeed
+    /// for authorization to succeed.
+    /// </summary>
     public class AuthorizationPolicy
     {
+        /// <summary>
+        /// Creates a new instance of <see cref="AuthorizationPolicy"/>.
+        /// </summary>
+        /// <param name="requirements">
+        /// The list of <see cref="IAuthorizationRequirement"/>s which must succeed for
+        /// this policy to be successful.
+        /// </param>
+        /// <param name="authenticationSchemes">
+        /// The authentication schemes the <paramref name="requirements"/> are evaluated against.
+        /// </param>
         public AuthorizationPolicy(IEnumerable<IAuthorizationRequirement> requirements, IEnumerable<string> authenticationSchemes)
         {
             if (requirements == null)
@@ -30,9 +45,26 @@ namespace Microsoft.AspNetCore.Authorization
             AuthenticationSchemes = new List<string>(authenticationSchemes).AsReadOnly();
         }
 
+        /// <summary>
+        /// Gets a readonly list of <see cref="IAuthorizationRequirement"/>s which must succeed for
+        /// this policy to be successful.
+        /// </summary>
         public IReadOnlyList<IAuthorizationRequirement> Requirements { get; }
+
+        /// <summary>
+        /// Gets a readonly list of rhe authentication schemes the <see cref="AuthorizationPolicy.Requirements"/> 
+        /// are evaluated against.
+        /// </summary>
         public IReadOnlyList<string> AuthenticationSchemes { get; }
 
+        /// <summary>
+        /// Combines the specified <see cref="AuthorizationPolicy"/> into a single policy.
+        /// </summary>
+        /// <param name="policies">The authorization policies to combine.</param>
+        /// <returns>
+        /// A new <see cref="AuthorizationPolicy"/> which represents the combination of the
+        /// specified <paramref name="policies"/>.
+        /// </returns>
         public static AuthorizationPolicy Combine(params AuthorizationPolicy[] policies)
         {
             if (policies == null)
@@ -43,6 +75,14 @@ namespace Microsoft.AspNetCore.Authorization
             return Combine((IEnumerable<AuthorizationPolicy>)policies);
         }
 
+        /// <summary>
+        /// Combines the specified <see cref="AuthorizationPolicy"/> into a single policy.
+        /// </summary>
+        /// <param name="policies">The authorization policies to combine.</param>
+        /// <returns>
+        /// A new <see cref="AuthorizationPolicy"/> which represents the combination of the
+        /// specified <paramref name="policies"/>.
+        /// </returns>
         public static AuthorizationPolicy Combine(IEnumerable<AuthorizationPolicy> policies)
         {
             if (policies == null)
@@ -58,6 +98,16 @@ namespace Microsoft.AspNetCore.Authorization
             return builder.Build();
         }
 
+        /// <summary>
+        /// Combines the <see cref="AuthorizationPolicy"/> provided by the specified
+        /// <paramref name="policyProvider"/>
+        /// </summary>
+        /// <param name="policyProvider">A <see cref="IAuthorizationPolicyProvider"/> which provides the policies to combine.</param>
+        /// <param name="authorizeData">A collection of authorization data used to apply authorization to a resource.</param>
+        /// <returns>
+        /// A new <see cref="AuthorizationPolicy"/> which represents the combination of the
+        /// authorization policies provided by specified <paramref name="policyProvider"/>.
+        /// </returns>
         public static async Task<AuthorizationPolicy> CombineAsync(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizeData> authorizeData)
         {
             if (policyProvider == null)
