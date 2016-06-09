@@ -15,7 +15,7 @@ aspnetci-a17
 ASPNETCI-A18
 PROJECTK-TC-AG1
 PROJECTK-TC-AG2
-PROJECTK-TC-AG3
+# PROJECTK-TC-AG3 - This agent uses a 'code signing' account and must not be changed
 PROJECTK-TC-AG4
 PROJECTK-TC-AG5
 aspnetci-a-100
