@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
@@ -354,7 +353,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             Result = _exceptionContext.Result,
                         };
                     }
-                    else if (_exceptionContext.Exception != null)
+                    else if (_exceptionContext.Exception != null && !_exceptionContext.ExceptionHandled)
                     {
                         // If we get here, this means that we have an unhandled exception.
                         // Exception filted didn't handle this, so send it on to resource filters.
@@ -412,7 +411,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 await InvokeExceptionFilterAsync();
 
                 Debug.Assert(_exceptionContext != null);
-                if (_exceptionContext.Exception != null)
+                if (_exceptionContext.Exception != null && !_exceptionContext.ExceptionHandled)
                 {
                     _diagnosticSource.BeforeOnExceptionAsync(_exceptionContext, current.FilterAsync);
 
@@ -422,7 +421,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                     _diagnosticSource.AfterOnExceptionAsync(_exceptionContext, current.FilterAsync);
 
-                    if (_exceptionContext.Exception == null)
+                    if (_exceptionContext.Exception == null || _exceptionContext.ExceptionHandled)
                     {
                         _logger.ExceptionFilterShortCircuited(current.FilterAsync);
                     }
@@ -435,7 +434,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 await InvokeExceptionFilterAsync();
 
                 Debug.Assert(_exceptionContext != null);
-                if (_exceptionContext.Exception != null)
+                if (_exceptionContext.Exception != null && !_exceptionContext.ExceptionHandled)
                 {
                     _diagnosticSource.BeforeOnException(_exceptionContext, current.Filter);
 
@@ -445,7 +444,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                     _diagnosticSource.AfterOnException(_exceptionContext, current.Filter);
 
-                    if (_exceptionContext.Exception == null)
+                    if (_exceptionContext.Exception == null || _exceptionContext.ExceptionHandled)
                     {
                         _logger.ExceptionFilterShortCircuited(current.Filter);
                     }

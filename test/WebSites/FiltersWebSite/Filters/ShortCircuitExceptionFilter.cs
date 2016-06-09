@@ -9,7 +9,7 @@ namespace FiltersWebSite
     {
         public override void OnException(ExceptionContext context)
         {
-            context.Exception = null;
+            context.ExceptionHandled = true;
         }
     }
 }
