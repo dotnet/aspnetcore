@@ -25,10 +25,17 @@
     ]
   },
   "frameworks": {
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Runtime": ""
-      }
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        }
+      },
+      "imports": [
+        "dnxcore50",
+        "portable-net451+win8"
+      ]
     }
   }
 }
