@@ -5,6 +5,10 @@ using System;
 
 namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
+    /// <summary>
+    /// Indicates the model binding system should use WebAPI conventions for parameters of a controller's actions. For
+    /// example, bind simple types from the URI.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class UseWebApiParameterConventionsAttribute : Attribute, IUseWebApiParameterConventions
     {

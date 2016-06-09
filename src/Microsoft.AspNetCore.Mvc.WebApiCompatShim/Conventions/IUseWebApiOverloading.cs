@@ -3,6 +3,10 @@
 
 namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
+    /// <summary>
+    /// Indicates actions in a controller should be selected only if all non-optional parameters are satisfied. Applies
+    /// the <see cref="OverloadActionConstraint"/> to all actions in the controller.
+    /// </summary>
     public interface IUseWebApiOverloading
     {
     }

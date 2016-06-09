@@ -14,10 +14,16 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
+    /// <summary>
+    /// An <see cref="IActionConstraint"/> limiting candidate actions to those for which the request satisfies all
+    /// non-optional parameters.
+    /// </summary>
     public class OverloadActionConstraint : IActionConstraint
     {
+        /// <inheritdoc />
         public int Order { get; } = int.MaxValue;
 
+        /// <inheritdoc />
         public bool Accept(ActionConstraintContext context)
         {
             var candidates = context.Candidates.Select(c => new

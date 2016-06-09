@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using WebApiShimResources = Microsoft.AspNetCore.Mvc.WebApiCompatShim.Resources;
 
@@ -21,8 +20,10 @@ namespace System.Web.Http
             new BindingSource[] { BindingSource.Path, BindingSource.Query },
             WebApiShimResources.BindingSource_URL);
 
+        /// <inheritdoc />
         public BindingSource BindingSource { get { return FromUriSource; } }
 
+        /// <inheritdoc />
         public bool IsOptional { get; set; }
 
         /// <inheritdoc />

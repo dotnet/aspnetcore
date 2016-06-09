@@ -3,6 +3,10 @@
 
 namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
+    /// <summary>
+    /// Indicates the model binding system should use WebAPI conventions for parameters of a controller's actions. For
+    /// example, bind simple types from the URI.
+    /// </summary>
     public interface IUseWebApiParameterConventions
     {
     }

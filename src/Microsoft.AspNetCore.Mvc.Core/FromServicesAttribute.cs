@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <example>
     /// In this example an implementation of IProductModelRequestService is registered as a service.
     /// Then in the GetProduct action, the parameter is bound to an instance of IProductModelRequestService
-    /// which is resolved from the the request services.
+    /// which is resolved from the request services.
     ///
     /// <code>
     /// [HttpGet]
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc
     ///     return productModelReqest.Value;
     /// }
     /// </code>
-    /// </example> 
+    /// </example>
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
     public class FromServicesAttribute : Attribute, IBindingSourceMetadata
     {

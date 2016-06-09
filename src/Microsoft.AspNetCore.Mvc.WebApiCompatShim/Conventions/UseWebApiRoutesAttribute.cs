@@ -5,6 +5,9 @@ using System;
 
 namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
+    /// <summary>
+    /// Indicates the controller is in the "api" area.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class UseWebApiRoutesAttribute : Attribute, IUseWebApiRoutes
     {

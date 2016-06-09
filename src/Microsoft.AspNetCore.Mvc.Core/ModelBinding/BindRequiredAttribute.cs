@@ -5,9 +5,15 @@ using System;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
+    /// <summary>
+    /// Indicates that the property is required for model binding.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public sealed class BindRequiredAttribute : BindingBehaviorAttribute
     {
+        /// <summary>
+        /// Initializes a new <see cref="BindRequiredAttribute"/> instance.
+        /// </summary>
         public BindRequiredAttribute()
             : base(BindingBehavior.Required)
         {

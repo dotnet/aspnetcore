@@ -6,14 +6,18 @@ using System;
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
     /// <summary>
+    /// <para>
     /// An attribute which specifies a required route value for an action or controller.
-    ///
+    /// </para>
+    /// <para>
     /// When placed on an action, the route data of a request must match the expectations of the route
     /// constraint in order for the action to be selected. See <see cref="IRouteValueProvider"/> for
     /// the expectations that must be satisfied by the route data.
-    ///
+    /// </para>
+    /// <para>
     /// When placed on a controller, unless overridden by the action, the constraint applies to all
     /// actions defined by the controller.
+    /// </para>
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public abstract class RouteValueAttribute : Attribute, IRouteValueProvider

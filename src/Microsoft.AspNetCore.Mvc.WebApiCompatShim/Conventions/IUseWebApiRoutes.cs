@@ -3,6 +3,9 @@
 
 namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
+    /// <summary>
+    /// Indicates the controller is in the "api" area.
+    /// </summary>
     public interface IUseWebApiRoutes
     {
     }
