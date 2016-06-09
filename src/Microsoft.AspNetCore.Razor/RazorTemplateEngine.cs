@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Razor
         }
 
         // See ParseTemplate(ITextBuffer, CancellationToken?),
-        // this overload simply wraps a TextReader in a TextBuffer (see ITextBuffer and BufferingTextReader)
+        // this overload simply wraps a TextReader in a TextBuffer (see ITextBuffer)
         public ParserResults ParseTemplate(TextReader input, string sourceFileName)
         {
             if (input == null)
