@@ -1272,7 +1272,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 },
                 options =>
                 {
-                    options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(Address)));
+                    options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Address)));
                     testOptions = options;
                 });
 

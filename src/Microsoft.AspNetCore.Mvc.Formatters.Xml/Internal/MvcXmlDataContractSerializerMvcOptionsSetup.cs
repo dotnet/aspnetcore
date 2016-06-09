@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
@@ -32,8 +32,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
             options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
             options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter());
 
-            options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter("System.Xml.Linq.XObject"));
-            options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter("System.Xml.XmlNode"));
+            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider("System.Xml.Linq.XObject"));
+            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider("System.Xml.XmlNode"));
         }
     }
 }

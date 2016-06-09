@@ -1068,10 +1068,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private static DefaultObjectValidator CreateValidator(Type excludedType)
         {
-            var excludeFilters = new List<ValidationExcludeFilter>();
+            var excludeFilters = new List<SuppressChildValidationMetadataProvider>();
             if (excludedType != null)
             {
-                excludeFilters.Add(new ValidationExcludeFilter(excludedType));
+                excludeFilters.Add(new SuppressChildValidationMetadataProvider(excludedType));
             }
 
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider(excludeFilters.ToArray());

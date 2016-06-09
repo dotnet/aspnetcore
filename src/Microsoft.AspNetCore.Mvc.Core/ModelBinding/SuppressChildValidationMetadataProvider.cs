@@ -6,22 +6,22 @@ using System.Diagnostics;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
     /// An <see cref="IValidationMetadataProvider"/> which configures <see cref="ModelMetadata.ValidateChildren"/> to
     /// <c>false</c> for matching types.
     /// </summary>
-    public class ValidationExcludeFilter : IValidationMetadataProvider
+    public class SuppressChildValidationMetadataProvider : IValidationMetadataProvider
     {
         /// <summary>
-        /// Creates a new <see cref="ValidationExcludeFilter"/> for the given <paramref name="type"/>.
+        /// Creates a new <see cref="SuppressChildValidationMetadataProvider"/> for the given <paramref name="type"/>.
         /// </summary>
         /// <param name="type">
         /// The <see cref="Type"/>. This <see cref="Type"/> and all assignable values will have
         /// <see cref="ModelMetadata.ValidateChildren"/> set to <c>false</c>.
         /// </param>
-        public ValidationExcludeFilter(Type type)
+        public SuppressChildValidationMetadataProvider(Type type)
         {
             if (type == null)
             {
@@ -32,13 +32,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         }
 
         /// <summary>
-        /// Creates a new <see cref="ValidationExcludeFilter"/> for the given <paramref name="fullTypeName"/>.
+        /// Creates a new <see cref="SuppressChildValidationMetadataProvider"/> for the given <paramref name="fullTypeName"/>.
         /// </summary>
         /// <param name="fullTypeName">
         /// The type full name. This type and all of its subclasses will have
         /// <see cref="ModelMetadata.ValidateChildren"/> set to <c>false</c>.
         /// </param>
-        public ValidationExcludeFilter(string fullTypeName)
+        public SuppressChildValidationMetadataProvider(string fullTypeName)
         {
             if (fullTypeName == null)
             {

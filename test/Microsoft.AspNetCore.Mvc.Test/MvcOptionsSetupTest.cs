@@ -162,44 +162,44 @@ namespace Microsoft.AspNetCore.Mvc
                 provider => Assert.IsType<DefaultValidationMetadataProvider>(provider),
                 provider =>
                 {
-                    var excludeFilter = Assert.IsType<ValidationExcludeFilter>(provider);
+                    var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
                     Assert.Equal(typeof(Type), excludeFilter.Type);
                 },
                 provider =>
                 {
-                    var excludeFilter = Assert.IsType<ValidationExcludeFilter>(provider);
+                    var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
                     Assert.Equal(typeof(Uri), excludeFilter.Type);
                 },
                 provider =>
                 {
-                    var excludeFilter = Assert.IsType<ValidationExcludeFilter>(provider);
+                    var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
                     Assert.Equal(typeof(CancellationToken), excludeFilter.Type);
                 },
                 provider =>
                 {
-                    var excludeFilter = Assert.IsType<ValidationExcludeFilter>(provider);
+                    var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
                     Assert.Equal(typeof(IFormFile), excludeFilter.Type);
                 },
                 provider =>
                 {
-                    var excludeFilter = Assert.IsType<ValidationExcludeFilter>(provider);
+                    var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
                     Assert.Equal(typeof(IFormCollection), excludeFilter.Type);
                 },
                 provider => Assert.IsType<DataAnnotationsMetadataProvider>(provider),
                 provider =>
                 {
-                    var excludeFilter = Assert.IsType<ValidationExcludeFilter>(provider);
+                    var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
                     Assert.Equal(typeof(JToken), excludeFilter.Type);
                 },
                 provider => Assert.IsType<DataMemberRequiredBindingMetadataProvider>(provider),
                 provider =>
                 {
-                    var excludeFilter = Assert.IsType<ValidationExcludeFilter>(provider);
+                    var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
                     Assert.Equal(typeof(XObject).FullName, excludeFilter.FullTypeName);
                 },
                 provider =>
                 {
-                    var excludeFilter = Assert.IsType<ValidationExcludeFilter>(provider);
+                    var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
                     Assert.Equal(typeof(XmlNode).FullName, excludeFilter.FullTypeName);
                 });
         }

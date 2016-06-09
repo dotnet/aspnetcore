@@ -86,11 +86,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             options.ModelValidatorProviders.Add(new DefaultModelValidatorProvider());
 
             // Add types to be excluded from Validation
-            options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(Type)));
-            options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(Uri)));
-            options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(CancellationToken)));
-            options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(IFormFile)));
-            options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(IFormCollection)));
+            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Type)));
+            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Uri)));
+            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(CancellationToken)));
+            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(IFormFile)));
+            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(IFormCollection)));
         }
     }
 }
