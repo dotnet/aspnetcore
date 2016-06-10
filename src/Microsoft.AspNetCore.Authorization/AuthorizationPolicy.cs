@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Authorization
         public IReadOnlyList<IAuthorizationRequirement> Requirements { get; }
 
         /// <summary>
-        /// Gets a readonly list of rhe authentication schemes the <see cref="AuthorizationPolicy.Requirements"/> 
+        /// Gets a readonly list of the authentication schemes the <see cref="AuthorizationPolicy.Requirements"/> 
         /// are evaluated against.
         /// </summary>
         public IReadOnlyList<string> AuthenticationSchemes { get; }
@@ -100,13 +100,13 @@ namespace Microsoft.AspNetCore.Authorization
 
         /// <summary>
         /// Combines the <see cref="AuthorizationPolicy"/> provided by the specified
-        /// <paramref name="policyProvider"/>
+        /// <paramref name="policyProvider"/>.
         /// </summary>
         /// <param name="policyProvider">A <see cref="IAuthorizationPolicyProvider"/> which provides the policies to combine.</param>
         /// <param name="authorizeData">A collection of authorization data used to apply authorization to a resource.</param>
         /// <returns>
         /// A new <see cref="AuthorizationPolicy"/> which represents the combination of the
-        /// authorization policies provided by specified <paramref name="policyProvider"/>.
+        /// authorization policies provided by the specified <paramref name="policyProvider"/>.
         /// </returns>
         public static async Task<AuthorizationPolicy> CombineAsync(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizeData> authorizeData)
         {

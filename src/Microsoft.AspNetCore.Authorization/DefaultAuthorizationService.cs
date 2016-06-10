@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// Creates a new instance of <see cref="DefaultAuthorizationService"/>.
         /// </summary>
         /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/> used to provide policies.</param>
-        /// <param name="handlers">The handlers used to fufills <see cref="IAuthorizationRequirement"/>s.</param>
+        /// <param name="handlers">The handlers used to fulfill <see cref="IAuthorizationRequirement"/>s.</param>
         /// <param name="logger">The logger used to log messages, warnings and errors.</param>  
         public DefaultAuthorizationService(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizationHandler> handlers, ILogger<DefaultAuthorizationService> logger)
         {
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Authorization
         }
 
         /// <summary>
-        /// Checks if a user meets a specific set of requirements for the specified resource
+        /// Checks if a user meets a specific set of requirements for the specified resource.
         /// </summary>
         /// <param name="user">The user to evaluate the requirements against.</param>
         /// <param name="resource">The resource to evaluate the requirements against.</param>
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Authorization
         }
 
         /// <summary>
-        /// Checks if a user meets a specific authorization policy
+        /// Checks if a user meets a specific authorization policy.
         /// </summary>
         /// <param name="user">The user to check the policy against.</param>
         /// <param name="resource">The resource the policy should be checked with.</param>

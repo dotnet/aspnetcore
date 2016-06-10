@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Authorization
         public object Resource { get; }
 
         /// <summary>
-        /// Gets the requirements that have not yet been succeeded.
+        /// Gets the requirements that have not yet been marked as succeeded.
         /// </summary>
         public IEnumerable<IAuthorizationRequirement> PendingRequirements { get { return _pendingRequirements; } }
 

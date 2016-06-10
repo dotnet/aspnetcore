@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
 {
     /// <summary>
     /// Implements an <see cref="IAuthorizationHandler"/> and <see cref="IAuthorizationRequirement"/>
-    /// that takes an user specified assertion.
+    /// that takes a user specified assertion.
     /// </summary>
     public class AssertionRequirement : IAuthorizationHandler, IAuthorizationRequirement
     {
