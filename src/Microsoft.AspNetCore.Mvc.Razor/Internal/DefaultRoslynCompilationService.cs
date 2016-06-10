@@ -27,9 +27,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     /// </summary>
     public class DefaultRoslynCompilationService : ICompilationService
     {
-        private readonly DebugInformationFormat _pdbFormat = SymbolsUtility.SupportsFullPdbGeneration() ?
-            DebugInformationFormat.Pdb :
+        private readonly DebugInformationFormat _pdbFormat =
+#if NET451
+            SymbolsUtility.SupportsFullPdbGeneration() ?
+                DebugInformationFormat.Pdb :
+                DebugInformationFormat.PortablePdb;
+#else
             DebugInformationFormat.PortablePdb;
+#endif
         private readonly ApplicationPartManager _partManager;
         private readonly IFileProvider _fileProvider;
         private readonly Action<RoslynCompilationContext> _compilationCallback;
