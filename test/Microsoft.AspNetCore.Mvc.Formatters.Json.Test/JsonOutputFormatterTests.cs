@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -51,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public async Task ChangesTo_SerializerSettings_AffectSerialization()
         {
             // Arrange
-            var person = new User() { Name = "John", Age = 35 };
+            var person = new User() { FullName = "John", age = 35 };
             var outputFormatterContext = GetOutputFormatterContext(person, typeof(User));
 
             var settings = new JsonSerializerSettings
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public async Task ChangesTo_SerializerSettings_AfterSerialization_DoNotAffectSerialization()
         {
             // Arrange
-            var person = new User() { Name = "John", Age = 35 };
+            var person = new User() { FullName = "John", age = 35 };
             var expectedOutput = JsonConvert.SerializeObject(person, new JsonSerializerSettings());
 
             var jsonFormatter = new TestableJsonOutputFormatter(new JsonSerializerSettings());
@@ -105,6 +106,172 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var content = new StreamReader(body, Encoding.UTF8).ReadToEnd();
             Assert.Equal(expectedOutput, content);
+        }
+
+        public static TheoryData<NamingStrategy, string> NamingStrategy_AffectsSerializationData
+        {
+            get
+            {
+                return new TheoryData<NamingStrategy, string>
+                {
+                    { new CamelCaseNamingStrategy(), "{\"fullName\":\"John\",\"age\":35}" },
+                    { new DefaultNamingStrategy(), "{\"FullName\":\"John\",\"age\":35}" },
+                    { new SnakeCaseNamingStrategy(), "{\"full_name\":\"John\",\"age\":35}" },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NamingStrategy_AffectsSerializationData))]
+        public async Task NamingStrategy_AffectsSerialization(NamingStrategy strategy, string expected)
+        {
+            // Arrange
+            var user = new User { FullName = "John", age = 35 };
+            var context = GetOutputFormatterContext(user, typeof(User));
+
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = strategy,
+                },
+            };
+            var formatter = new TestableJsonOutputFormatter(settings);
+
+            // Act
+            await formatter.WriteResponseBodyAsync(context, Encoding.UTF8);
+
+            // Assert
+            var body = context.HttpContext.Response.Body;
+
+            Assert.NotNull(body);
+            body.Position = 0;
+
+            var content = new StreamReader(body, Encoding.UTF8).ReadToEnd();
+            Assert.Equal(expected, content);
+        }
+
+        public static TheoryData<NamingStrategy> NamingStrategy_DoesNotAffectSerializationData
+        {
+            get
+            {
+                return new TheoryData<NamingStrategy>
+                {
+                    { new CamelCaseNamingStrategy() },
+                    { new DefaultNamingStrategy() },
+                    { new SnakeCaseNamingStrategy() },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NamingStrategy_DoesNotAffectSerializationData))]
+        public async Task NamingStrategy_DoesNotAffectDictionarySerialization(NamingStrategy strategy)
+        {
+            // Arrange
+            var dictionary = new Dictionary<string, int>(StringComparer.Ordinal)
+            {
+                { "id", 12 },
+                { "Id", 12 },
+                { "fullName", 12 },
+                { "full-name", 12 },
+                { "FullName", 12 },
+                { "full_Name", 12 },
+            };
+            var expected = "{\"id\":12,\"Id\":12,\"fullName\":12,\"full-name\":12,\"FullName\":12,\"full_Name\":12}";
+            var context = GetOutputFormatterContext(dictionary, typeof(Dictionary<string, int>));
+
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = strategy,
+                },
+            };
+            var formatter = new TestableJsonOutputFormatter(settings);
+
+            // Act
+            await formatter.WriteResponseBodyAsync(context, Encoding.UTF8);
+
+            // Assert
+            var body = context.HttpContext.Response.Body;
+
+            Assert.NotNull(body);
+            body.Position = 0;
+
+            var content = new StreamReader(body, Encoding.UTF8).ReadToEnd();
+            Assert.Equal(expected, content);
+        }
+
+        [Theory]
+        [MemberData(nameof(NamingStrategy_DoesNotAffectSerializationData))]
+        public async Task NamingStrategy_DoesNotAffectSerialization_WithJsonProperty(NamingStrategy strategy)
+        {
+            // Arrange
+            var user = new UserWithJsonProperty
+            {
+                Name = "Joe",
+                AnotherName = "Joe",
+                ThirdName = "Joe",
+            };
+            var expected = "{\"ThisIsTheFullName\":\"Joe\",\"another_name\":\"Joe\",\"ThisIsTheThirdName\":\"Joe\"}";
+            var context = GetOutputFormatterContext(user, typeof(UserWithJsonProperty));
+
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = strategy,
+                },
+            };
+            var formatter = new TestableJsonOutputFormatter(settings);
+
+            // Act
+            await formatter.WriteResponseBodyAsync(context, Encoding.UTF8);
+
+            // Assert
+            var body = context.HttpContext.Response.Body;
+
+            Assert.NotNull(body);
+            body.Position = 0;
+
+            var content = new StreamReader(body, Encoding.UTF8).ReadToEnd();
+            Assert.Equal(expected, content);
+        }
+
+        [Theory]
+        [MemberData(nameof(NamingStrategy_DoesNotAffectSerializationData))]
+        public async Task NamingStrategy_DoesNotAffectSerialization_WithJsonObject(NamingStrategy strategy)
+        {
+            // Arrange
+            var user = new UserWithJsonObject
+            {
+                age = 35,
+                FullName = "John",
+            };
+            var expected = "{\"age\":35,\"full_name\":\"John\"}";
+            var context = GetOutputFormatterContext(user, typeof(UserWithJsonProperty));
+
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = strategy,
+                },
+            };
+            var formatter = new TestableJsonOutputFormatter(settings);
+
+            // Act
+            await formatter.WriteResponseBodyAsync(context, Encoding.UTF8);
+
+            // Assert
+            var body = context.HttpContext.Response.Body;
+
+            Assert.NotNull(body);
+            body.Position = 0;
+
+            var content = new StreamReader(body, Encoding.UTF8).ReadToEnd();
+            Assert.Equal(expected, content);
         }
 
         [Fact]
@@ -269,9 +436,30 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         private sealed class User
         {
+            public string FullName { get; set; }
+
+            public int age { get; set; }
+        }
+
+        private class UserWithJsonProperty
+        {
+            [JsonProperty("ThisIsTheFullName")]
             public string Name { get; set; }
 
-            public int Age { get; set; }
+            [JsonProperty(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
+            public string AnotherName { get; set; }
+
+            // NamingStrategyType should be ignored with an explicit name.
+            [JsonProperty("ThisIsTheThirdName", NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
+            public string ThirdName { get; set; }
+        }
+
+        [JsonObject(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
+        private class UserWithJsonObject
+        {
+            public int age { get; set; }
+
+            public string FullName { get; set; }
         }
     }
 }
