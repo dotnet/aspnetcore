@@ -3,16 +3,16 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore.Razor.Parser;
 using Microsoft.AspNetCore.Razor.Parser.Internal;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Test.Framework;
+using Microsoft.AspNetCore.Razor.Test.Utils;
 using Microsoft.AspNetCore.Razor.Text;
 using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Test.Parser
+namespace Microsoft.AspNetCore.Razor.Parser
 {
     public class ParserContextTest
     {

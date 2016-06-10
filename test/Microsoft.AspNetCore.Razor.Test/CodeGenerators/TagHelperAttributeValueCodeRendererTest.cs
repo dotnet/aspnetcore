@@ -5,13 +5,13 @@ using System;
 #if NETCOREAPP1_0
 using System.Reflection;
 #endif
-using Microsoft.AspNetCore.Razor.CodeGenerators;
 using Microsoft.AspNetCore.Razor.CodeGenerators.Visitors;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Xunit;
+using Microsoft.AspNetCore.Razor.Test.CodeGenerators;
 
-namespace Microsoft.AspNetCore.Razor.Test.Generator
+namespace Microsoft.AspNetCore.Razor.CodeGenerators
 {
     public class TagHelperAttributeValueCodeRendererTest : TagHelperTestBase
     {

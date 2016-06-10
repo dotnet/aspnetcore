@@ -48,19 +48,19 @@ __TestNamespace_InputTagHelper.Value = MyEnum.MyValue;
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
 #line 9 "EnumTagHelpers.cshtml"
-__TestNamespace_InputTagHelper.Value = global::Microsoft.AspNetCore.Razor.Test.Generator.MyEnum.MyValue;
+__TestNamespace_InputTagHelper.Value = global::Microsoft.AspNetCore.Razor.Test.CodeGenerators.MyEnum.MyValue;
 
 #line default
 #line hidden
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
 #line 10 "EnumTagHelpers.cshtml"
-__TestNamespace_InputTagHelper.Value = global::Microsoft.AspNetCore.Razor.Test.Generator.MyEnum.MySecondValue;
+__TestNamespace_InputTagHelper.Value = global::Microsoft.AspNetCore.Razor.Test.CodeGenerators.MyEnum.MySecondValue;
 
 #line default
 #line hidden
 #line 10 "EnumTagHelpers.cshtml"
-__TestNamespace_CatchAllTagHelper.CatchAll = global::Microsoft.AspNetCore.Razor.Test.Generator.MyEnum.MyValue;
+__TestNamespace_CatchAllTagHelper.CatchAll = global::Microsoft.AspNetCore.Razor.Test.CodeGenerators.MyEnum.MyValue;
 
 #line default
 #line hidden

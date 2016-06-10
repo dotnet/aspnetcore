@@ -3,7 +3,7 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Test
+namespace Microsoft.AspNetCore.Razor
 {
     public class RazorCodeLanguageTest
     {

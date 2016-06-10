@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Test.Generator
+namespace Microsoft.AspNetCore.Razor.Test.CodeGenerators
 {
     public class CSharpTagHelperRenderingTest : TagHelperTestBase
     {
@@ -1832,31 +1832,31 @@ namespace Microsoft.AspNetCore.Razor.Test.Generator
                                 documentAbsoluteIndex: 169,
                                 documentLineIndex: 8,
                                 documentCharacterOffsetIndex: 14,
-                                generatedAbsoluteIndex: 1929,
+                                generatedAbsoluteIndex: 1934,
                                 generatedLineIndex: 50,
-                                generatedCharacterOffsetIndex: 96,
+                                generatedCharacterOffsetIndex: 101,
                                 contentLength: 7),
                             BuildLineMapping(
                                 documentAbsoluteIndex: 196,
                                 documentLineIndex: 9,
                                 documentCharacterOffsetIndex: 14,
-                                generatedAbsoluteIndex: 2312,
+                                generatedAbsoluteIndex: 2322,
                                 generatedLineIndex: 57,
-                                generatedCharacterOffsetIndex: 96,
+                                generatedCharacterOffsetIndex: 101,
                                 contentLength: 13),
                             BuildLineMapping(
                                 documentAbsoluteIndex: 222,
                                 documentLineIndex: 9,
                                 documentCharacterOffsetIndex: 40,
-                                generatedAbsoluteIndex: 2495,
+                                generatedAbsoluteIndex: 2510,
                                 generatedLineIndex: 62,
-                                generatedCharacterOffsetIndex: 102,
+                                generatedCharacterOffsetIndex: 107,
                                 contentLength: 7),
                             BuildLineMapping(
                                 documentAbsoluteIndex: 249,
                                 documentLineIndex: 10,
                                 documentCharacterOffsetIndex: 15,
-                                generatedAbsoluteIndex: 2821,
+                                generatedAbsoluteIndex: 2836,
                                 generatedLineIndex: 69,
                                 generatedCharacterOffsetIndex: 39,
                                 contentLength: 9),
@@ -1864,7 +1864,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Generator
                                 documentAbsoluteIndex: 272,
                                 documentLineIndex: 10,
                                 documentCharacterOffsetIndex: 38,
-                                generatedAbsoluteIndex: 2943,
+                                generatedAbsoluteIndex: 2958,
                                 generatedLineIndex: 74,
                                 generatedCharacterOffsetIndex: 45,
                                 contentLength: 9),

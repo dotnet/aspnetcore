@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Razor.Test.Generator
+namespace Microsoft.AspNetCore.Razor.Test.CodeGenerators
 {
     public class TestSpan
     {

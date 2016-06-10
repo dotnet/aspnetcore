@@ -3,10 +3,9 @@
 
 using System;
 using System.Text;
-using Microsoft.AspNetCore.Razor.Text;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Test.Text
+namespace Microsoft.AspNetCore.Razor.Text
 {
     public abstract class LookaheadTextReaderTestBase
     {

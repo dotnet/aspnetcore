@@ -5,8 +5,7 @@
 using System;
 #endif
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
-using Microsoft.AspNetCore.Razor.Test;
-using Microsoft.AspNetCore.Razor.Test.Generator;
+using Microsoft.AspNetCore.Razor.Test.CodeGenerators;
 using Microsoft.AspNetCore.Razor.Test.Utils;
 using Moq;
 using Xunit;

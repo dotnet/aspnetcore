@@ -3,11 +3,11 @@
 
 using System;
 using System.Web.WebPages.TestUtils;
-using Microsoft.AspNetCore.Razor.Text;
+using Microsoft.AspNetCore.Razor.Test.Utils;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Test.Text
+namespace Microsoft.AspNetCore.Razor.Text
 {
     public class TextChangeTest
     {

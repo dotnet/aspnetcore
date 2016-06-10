@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Parser;
 using Microsoft.AspNetCore.Razor.Parser.Internal;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Test
+namespace Microsoft.AspNetCore.Razor
 {
     public class RazorEngineHostTest
     {

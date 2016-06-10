@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Razor.CodeGenerators;
 using Microsoft.AspNetCore.Razor.Parser;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Test
+namespace Microsoft.AspNetCore.Razor
 {
     public class CSharpRazorCodeLanguageTest
     {

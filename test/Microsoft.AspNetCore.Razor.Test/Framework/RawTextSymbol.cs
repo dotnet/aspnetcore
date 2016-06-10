@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
 
 namespace Microsoft.AspNetCore.Razor.Test.Framework
 {
-    internal class RawTextSymbol : ISymbol
+    public class RawTextSymbol : ISymbol
     {
         public SourceLocation Start { get; private set; }
         public string Content { get; }

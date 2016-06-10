@@ -4,7 +4,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Test
+namespace Microsoft.AspNetCore.Razor.Test.Utils
 {
     public static class ExceptionHelpers
     {

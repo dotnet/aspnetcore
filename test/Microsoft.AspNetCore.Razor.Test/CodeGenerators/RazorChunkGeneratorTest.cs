@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Razor.Test.Utils;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Test.Generator
+namespace Microsoft.AspNetCore.Razor.Test.CodeGenerators
 {
     public abstract class RazorCodeGeneratorTest<TLanguage>
         where TLanguage : RazorCodeLanguage, new()

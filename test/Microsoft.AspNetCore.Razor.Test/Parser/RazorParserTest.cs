@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
-using Microsoft.AspNetCore.Razor.Parser;
 using Microsoft.AspNetCore.Razor.Parser.Internal;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Test.Framework;
@@ -14,7 +13,7 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Test.Parser
+namespace Microsoft.AspNetCore.Razor.Parser
 {
     public class RazorParserTest
     {

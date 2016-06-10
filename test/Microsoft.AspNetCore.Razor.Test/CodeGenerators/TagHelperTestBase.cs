@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.CodeGenerators;
 using Microsoft.AspNetCore.Razor.CodeGenerators.Visitors;
-using Microsoft.AspNetCore.Razor.Parser;
 using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Parser;
 
-namespace Microsoft.AspNetCore.Razor.Test.Generator
+namespace Microsoft.AspNetCore.Razor.Test.CodeGenerators
 {
-    public class TagHelperTestBase : RazorCodeGeneratorTest
+    public class TagHelperTestBase : CSharpRazorCodeGeneratorTest
     {
         protected void RunTagHelperTest(string testName,
                                         string baseLineName = null,

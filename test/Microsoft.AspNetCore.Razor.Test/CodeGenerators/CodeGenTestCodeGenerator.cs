@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Razor.CodeGenerators;
 
-namespace Microsoft.AspNetCore.Razor.Test.Generator
+namespace Microsoft.AspNetCore.Razor.Test.CodeGenerators
 {
     public class CodeGenTestCodeGenerator : CSharpCodeGenerator
     {

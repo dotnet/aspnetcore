@@ -3,13 +3,12 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Razor.Parser;
-using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Test.Parser
+namespace Microsoft.AspNetCore.Razor.Parser
 {
     public class ParserVisitorExtensionsTest
     {

@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Razor.Editor;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Parser.SyntaxTree
+namespace Microsoft.AspNetCore.Razor.Editor
 {
     public class ImplicitExpressionEditHandlerTest
     {

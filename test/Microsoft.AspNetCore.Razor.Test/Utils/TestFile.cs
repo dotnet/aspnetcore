@@ -6,7 +6,7 @@ using System.IO;
 using System.Reflection;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Test
+namespace Microsoft.AspNetCore.Razor.Test.Utils
 {
     public class TestFile
     {
