@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
     /// <summary>
-    /// Indicates actions without attribute routes in a controller use WebAPI routing conventions.                                                                                                          w
+    /// Indicates actions without attribute routes in a controller use ASP.NET Web API routing conventions.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class UseWebApiActionConventionsAttribute : Attribute, IUseWebApiActionConventions
