@@ -41,14 +41,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Generator = generator;
         }
 
+        // This TagHelper's order must be lower than the RenderAtEndOfFormTagHelper. I.e it must be executed before
+        // RenderAtEndOfFormTagHelper does.
         /// <inheritdoc />
-        public override int Order
-        {
-            get
-            {
-                return -1000;
-            }
-        }
+        public override int Order => -1000;
 
         [HtmlAttributeNotBound]
         [ViewContext]
