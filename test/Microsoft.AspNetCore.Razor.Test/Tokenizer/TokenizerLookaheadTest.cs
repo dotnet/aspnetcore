@@ -7,7 +7,9 @@ using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Text;
 using Microsoft.AspNetCore.Razor.Tokenizer;
+using Microsoft.AspNetCore.Razor.Tokenizer.Internal;
 using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
+using Microsoft.AspNetCore.Razor.Tokenizer.Symbols.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Test.Tokenizer

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Razor.Text;
 using Xunit;
 using Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal;
 using Microsoft.AspNetCore.Razor.Parser.TagHelpers;
+using Microsoft.AspNetCore.Razor.Parser.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Test.TagHelpers
 {

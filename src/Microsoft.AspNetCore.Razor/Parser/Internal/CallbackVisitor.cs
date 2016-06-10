@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 
-namespace Microsoft.AspNetCore.Razor.Parser
+namespace Microsoft.AspNetCore.Razor.Parser.Internal
 {
     public class CallbackVisitor : ParserVisitor
     {

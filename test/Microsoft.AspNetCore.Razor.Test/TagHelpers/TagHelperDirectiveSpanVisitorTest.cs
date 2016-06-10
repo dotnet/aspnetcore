@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Razor.Parser;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Parser.TagHelpers;
 using Microsoft.AspNetCore.Razor.Test.Framework;
-using Microsoft.AspNetCore.Razor.Tokenizer;
+using Microsoft.AspNetCore.Razor.Tokenizer.Internal;
 using Microsoft.Extensions.Internal;
 using Moq;
 using Xunit;

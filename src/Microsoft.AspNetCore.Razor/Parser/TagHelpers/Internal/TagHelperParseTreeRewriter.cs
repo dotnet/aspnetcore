@@ -9,7 +9,7 @@ using System.Text;
 using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
+using Microsoft.AspNetCore.Razor.Tokenizer.Symbols.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
 {

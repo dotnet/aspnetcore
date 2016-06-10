@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Utils
+namespace Microsoft.AspNetCore.Razor.Parser
 {
     internal class DisposableAction : IDisposable
     {

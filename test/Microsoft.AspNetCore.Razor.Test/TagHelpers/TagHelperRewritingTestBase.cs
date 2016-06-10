@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Microsoft.AspNetCore.Razor.Test.Framework;
 using Microsoft.AspNetCore.Razor.Text;
 using Microsoft.AspNetCore.Razor.Tokenizer;
+using Microsoft.AspNetCore.Razor.Tokenizer.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Test.TagHelpers
 {

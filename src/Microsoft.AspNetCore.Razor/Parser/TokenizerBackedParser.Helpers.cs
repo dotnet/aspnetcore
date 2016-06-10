@@ -7,10 +7,10 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Chunks.Generators;
 using Microsoft.AspNetCore.Razor.Editor;
+using Microsoft.AspNetCore.Razor.Parser.Internal;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Tokenizer;
 using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
-using Microsoft.AspNetCore.Razor.Utils;
 
 namespace Microsoft.AspNetCore.Razor.Parser
 {

@@ -8,9 +8,9 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Parser.Internal;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Text;
-using Microsoft.AspNetCore.Razor.Utils;
 
 namespace Microsoft.AspNetCore.Razor.Parser
 {

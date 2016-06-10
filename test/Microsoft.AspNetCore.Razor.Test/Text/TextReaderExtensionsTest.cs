@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Parser.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Test.Text

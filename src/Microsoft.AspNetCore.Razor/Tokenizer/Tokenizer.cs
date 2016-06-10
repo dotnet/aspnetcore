@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Razor.Tokenizer
                     CurrentState = next.State;
                     CurrentSymbol = next.Result;
                 }
-                while (CurrentState != null && CurrentSymbol == null); 
+                while (CurrentState != null && CurrentSymbol == null);
 
                 if (CurrentState == null)
                 {

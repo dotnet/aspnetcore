@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.Tokenizer.Symbols
+namespace Microsoft.AspNetCore.Razor.Tokenizer.Symbols.Internal
 {
     public class HtmlSymbol : SymbolBase<HtmlSymbolType>
     {

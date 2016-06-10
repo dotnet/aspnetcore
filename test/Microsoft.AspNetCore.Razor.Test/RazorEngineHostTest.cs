@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Razor.Chunks.Generators;
 using Microsoft.AspNetCore.Razor.CodeGenerators;
 using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Parser.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Test

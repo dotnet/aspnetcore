@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Tokenizer.Symbols
+namespace Microsoft.AspNetCore.Razor.Tokenizer.Symbols.Internal
 {
     [Flags]
     public enum HtmlSymbolType

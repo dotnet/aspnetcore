@@ -7,8 +7,9 @@ using System.Linq;
 using Microsoft.AspNetCore.Razor.Chunks.Generators;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
+using Microsoft.AspNetCore.Razor.Tokenizer.Symbols.Internal;
 
-namespace Microsoft.AspNetCore.Razor.Parser
+namespace Microsoft.AspNetCore.Razor.Parser.Internal
 {
     public partial class HtmlMarkupParser
     {

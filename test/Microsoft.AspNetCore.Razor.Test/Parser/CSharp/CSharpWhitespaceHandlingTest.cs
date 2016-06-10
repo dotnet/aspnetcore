@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Razor.Parser;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Test.Framework;
 using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
+using Microsoft.AspNetCore.Razor.Tokenizer.Symbols.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Test.Parser.CSharp

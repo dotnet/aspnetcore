@@ -1,14 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Parser;
 using Microsoft.AspNetCore.Razor.Text;
-using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
+using Microsoft.AspNetCore.Razor.Tokenizer.Symbols.Internal;
 
-namespace Microsoft.AspNetCore.Razor.Tokenizer
+namespace Microsoft.AspNetCore.Razor.Tokenizer.Internal
 {
     // Tokenizer _loosely_ based on http://dev.w3.org/html5/spec/Overview.html#tokenization
     public class HtmlTokenizer : Tokenizer<HtmlSymbol, HtmlSymbolType>

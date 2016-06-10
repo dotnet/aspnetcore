@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Razor.Parser;
 using Microsoft.AspNetCore.Razor.Text;
 using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
 
-namespace Microsoft.AspNetCore.Razor.Tokenizer
+namespace Microsoft.AspNetCore.Razor.Tokenizer.Internal
 {
     public class CSharpTokenizer : Tokenizer<CSharpSymbol, CSharpSymbolType>
     {

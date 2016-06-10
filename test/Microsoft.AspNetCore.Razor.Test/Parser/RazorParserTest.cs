@@ -5,9 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.AspNetCore.Razor.Parser;
-using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Parser.Internal;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Test.Framework;
 using Moq;
 using Moq.Protected;
@@ -69,16 +70,16 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser
         {
             // Arrange
             var factory = SpanFactory.CreateCsHtml();
-            var parser = new Mock<RazorParser>(new CSharpCodeParser(),
-                                               new HtmlMarkupParser(),
-                                               Mock.Of<ITagHelperDescriptorResolver>());
+            var parser = new Mock<RazorParser>(
+                new CSharpCodeParser(),
+                new HtmlMarkupParser(),
+                Mock.Of<ITagHelperDescriptorResolver>());
             parser.CallBase = true;
-            parser.Protected()
-                  .Setup<IEnumerable<TagHelperDescriptor>>("GetTagHelperDescriptors", 
-                                                           ItExpr.IsAny<Block>(), 
-                                                           ItExpr.IsAny<ErrorSink>())
-                  .Returns(Enumerable.Empty<TagHelperDescriptor>())
-                  .Verifiable();
+            parser
+                .Protected()
+                .Setup<IEnumerable<TagHelperDescriptor>>("GetTagHelperDescriptors", ItExpr.IsAny<Block>(), ItExpr.IsAny<ErrorSink>())
+                .Returns(Enumerable.Empty<TagHelperDescriptor>())
+                .Verifiable();
 
             // Act
             parser.Object.Parse(new StringReader("<p>Hello world. The time is @DateTime.UtcNow</p>"));

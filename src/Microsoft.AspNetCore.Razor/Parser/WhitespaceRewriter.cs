@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Parser.Internal;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 
 namespace Microsoft.AspNetCore.Razor.Parser
@@ -23,36 +24,6 @@ namespace Microsoft.AspNetCore.Razor.Parser
         {
             return block.Type == BlockType.Expression && Parent != null;
         }
-
-        //public override void VisitBlock(Block block)
-        //{
-        //    BlockBuilder parent = null;
-        //    if (_blocks.Count > 0)
-        //    {
-        //        parent = _blocks.Peek();
-        //    }
-        //    BlockBuilder newBlock = new BlockBuilder(block);
-        //    newBlock.Children.Clear();
-        //    _blocks.Push(newBlock);
-        //    if (block.Type == BlockType.Expression && parent != null)
-        //    {
-        //        VisitExpressionBlock(block, parent);
-        //    }
-        //    else
-        //    {
-        //        base.VisitBlock(block);
-        //    }
-        //    if (_blocks.Count > 1)
-        //    {
-        //        parent.Children.Add(_blocks.Pop().Build());
-        //    }
-        //}
-
-        //public override void VisitSpan(Span span)
-        //{
-        //    Debug.Assert(_blocks.Count > 0);
-        //    _blocks.Peek().Children.Add(span);
-        //}
 
         protected override SyntaxTreeNode RewriteBlock(BlockBuilder parent, Block block)
         {

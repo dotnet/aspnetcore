@@ -9,9 +9,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.Parser;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Text;
-using Microsoft.AspNetCore.Razor.Utils;
 
 namespace Microsoft.AspNetCore.Razor.Editor
 {

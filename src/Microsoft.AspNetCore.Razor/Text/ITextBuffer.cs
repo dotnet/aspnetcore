@@ -10,10 +10,4 @@ namespace Microsoft.AspNetCore.Razor.Text
         int Read();
         int Peek();
     }
-
-    // TextBuffer with Location tracking
-    public interface ITextDocument : ITextBuffer
-    {
-        SourceLocation Location { get; }
-    }
 }

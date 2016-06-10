@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Razor.Text;
 using Microsoft.AspNetCore.Razor.Tokenizer;
+using Microsoft.AspNetCore.Razor.Tokenizer.Internal;
 using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
 
 namespace Microsoft.AspNetCore.Razor.Test.Tokenizer

@@ -3,7 +3,7 @@
 
 using System;
 using System.Text;
-using Microsoft.AspNetCore.Razor.Utils;
+using Microsoft.AspNetCore.Razor.Parser;
 
 namespace Microsoft.AspNetCore.Razor.Test.Framework
 {
