@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Testing
                 try
                 {
                     logger.LogWarning("Retry count {retryCount}..", retry + 1);
-                    var response = await retryBlock();
+                    var response = await retryBlock().ConfigureAwait(false);
 
                     if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
                     {

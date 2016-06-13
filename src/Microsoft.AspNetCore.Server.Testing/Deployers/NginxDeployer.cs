@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Testing
                 var response = RetryHelper.RetryRequest(() =>
                 {
                     return httpClient.GetAsync(redirectUri);
-                }, Logger).Result;
+                }, Logger, exitToken).Result;
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -68,6 +68,8 @@ namespace Microsoft.AspNetCore.Server.Testing
             // copy nginx.conf template and replace pertinent information
             DeploymentParameters.ServerConfigTemplateContent = DeploymentParameters.ServerConfigTemplateContent
                 .Replace("[user]", Environment.GetEnvironmentVariable("LOGNAME"))
+                .Replace("[errorlog]", Path.Combine(DeploymentParameters.ApplicationPath, "nginx.error.log"))
+                .Replace("[accesslog]", Path.Combine(DeploymentParameters.ApplicationPath, "nginx.access.log"))
                 .Replace("[listenPort]", originalUri.Port.ToString())
                 .Replace("[redirectUri]", redirectUri)
                 .Replace("[pidFile]", Path.Combine(DeploymentParameters.ApplicationPath, Guid.NewGuid().ToString()));
