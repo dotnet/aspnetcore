@@ -4,7 +4,7 @@ If you're building an ASP.NET Core application, and want to use Angular 2, React
 
 This package enables:
 
- * [**Server-side prerendering**](#server-sideprerendering) for *universal* (a.k.a. *isomorphic*) applications, where your Angular 2 / React / etc. components are first rendered on the server, and then transferred to the client where execution continues
+ * [**Server-side prerendering**](#server-side-prerendering) for *universal* (a.k.a. *isomorphic*) applications, where your Angular 2 / React / etc. components are first rendered on the server, and then transferred to the client where execution continues
  * [**Webpack middleware**](#webpack-dev-middleware) so that, during development, any webpack-build resources will be generated on demand, without you having to run webpack manually or compile files to disk
  * [**Hot module replacement**](#webpack-hot-module-replacement) so that, during development, your code and markup changes will be sent to your browser and updated in the running application, without even needing to reload the page
  * [**Routing helpers**](#routing-helper-mapspafallbackroute) for integrating server-side routing with client-side routing
@@ -59,7 +59,7 @@ If you run your application now, and browse to whatever page renders the view yo
 
 Create a JavaScript file at the path matching the `asp-prerender-module` value you specified above. In this example, that means creating a folder called `ClientApp` at the root of your project, and creating a file inside it called `boot-server.js`. Try putting the following into it:
 
-```
+```javascript
 module.exports = function(params) {
     return new Promise(function (resolve, reject) {
         var result = '<h1>Hello world!</h1>'
@@ -80,13 +80,15 @@ As you can see, your JavaScript code receives context information (such as the U
 
 If you want to pass some contextual data from your server-side code to your client-side code (for example, to avoid having to load the same data you just loaded on the server again on the client), you can supply a `globals` object alongside the initial `html`, e.g.:
 
-    resolve({
-        html: result,
-        globals: {
-            albumsList: someDataHere,
-            userData: someMoreDataHere
-        }
-    });
+```javascript
+resolve({
+    html: result,
+    globals: {
+        albumsList: someDataHere,
+        userData: someMoreDataHere
+    }
+});
+```
 
 When the `aspnet-prerender-*` tag helper emits this result into the document, as well as injecting the `html` string, it will also emit code that populates `window.albumsList` and `window.userData` with JSON-serialized copies of the objects you passed.
 
@@ -118,7 +120,7 @@ Let's say you want to write your boot module and SPA code in TypeScript. First e
 
 Next, create a file `webpack.config.js` at the root of your project, containing:
 
-```
+```javascript
 module.exports = {
     resolve: { extensions: [ '', '.js', '.ts' ] },
     module: {
@@ -133,7 +135,7 @@ This tells webpack that it should compile `.ts` files using TypeScript, and that
 
 Now you can delete `ClientApp/boot-server.js`, and in its place, create `ClientApp/boot-server.ts`, containing the TypeScript equivalent of what you had before:
 
-```
+```javascript
 export default function (params: any): Promise<{ html: string}> {
     return new Promise((resolve, reject) => {
         const html = `
@@ -181,7 +183,7 @@ React components can be executed synchronously on the server quite easily, altho
 
 Let's say you want to write a React component in ES2015 code. You might install the NPM modules `react react-dom babel-loader babel-preset-react babel-preset-es2015`, and then prepare Webpack to build `.jsx` files by creating `webpack.config.js` in your project root, containing:
 
-```
+```javascript
 var path = require('path');
 
 module.exports = {
@@ -203,7 +205,7 @@ module.exports = {
 
 You will also need a `.babelrc` file in your project root, containing:
 
-```
+```javascript
 {
     "presets": ["es2015", "react"]
 }
@@ -211,7 +213,7 @@ You will also need a `.babelrc` file in your project root, containing:
 
 This is enough to be able to build ES2015 `.jsx` files via Webpack. Now you could implement a simple React component, for example the following at `ClientApp/react-app.jsx`:
 
-```
+```javascript
 import * as React from 'react';
 
 export class HelloMessage extends React.Component
@@ -224,7 +226,7 @@ export class HelloMessage extends React.Component
 
 ... and the following code to run it in a browser at `ClientApp/boot-client.jsx`:
 
-```
+```javascript
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { HelloMessage } from './react-app';
@@ -232,13 +234,13 @@ import { HelloMessage } from './react-app';
 ReactDOM.render(<HelloMessage message="World" />, document.getElementById('my-spa'));
 ```
 
-At this stage, run `webpack` on the command line to build `wwwroot/dist/main.js`. Or, to avoid having to do this manually, you could use the `SpaServices` package to enable Webpack dev middleware.
+At this stage, run `webpack` on the command line to build `wwwroot/dist/main.js`. Or, to avoid having to do this manually, you could use the `SpaServices` package to [enable Webpack dev middleware](#webpack-dev-middleware).
 
 You can now run your React code on the client by adding the following to one of your MVC views:
 
     <div id="my-spa"></div>
     <script src="/dist/main.js"></script>
-    
+
 #### Running React code on the server
 
 Now you have React code being built using Webpack, you can enable server-side prerendering using the `aspnet-prerender-*` tag helpers as follows:
@@ -248,7 +250,7 @@ Now you have React code being built using Webpack, you can enable server-side pr
 
 ... along with the following boot module at `ClientApp/boot-server.jsx`:
 
-```
+```javascript
 import * as React from 'react';
 import { renderToString } from 'react-dom/server';
 import { HelloMessage } from './react-app';
@@ -292,7 +294,7 @@ It lets you work as if the browser natively understands whatever file types you 
 
 After installing the `Microsoft.AspNetCore.SpaServices` NuGet package and the `aspnet-webpack` NPM package, go to your `Startup.cs` file, and **before your call to `UseStaticFiles`**, add the following:
 
-```
+```csharp
 if (env.IsDevelopment()) {
     app.UseWebpackDevMiddleware();
 }
@@ -302,7 +304,7 @@ if (env.IsDevelopment()) {
 
 You will also need to edit your webpack configuration at `webpack.config.js`. Since `UseWebpackDevMiddleware` needs to know which incoming requests to intercept, specify a `publicPath` value on your `output`, for example:
 
-```
+```javascript
 module.exports = {
     // ... rest of your webpack config is here ...
 
@@ -336,13 +338,13 @@ npm install --save webpack-hot-middleware
 
 At the top of your `Startup.cs` file, add the following namespace reference:
 
-```
+```csharp
 using Microsoft.AspNetCore.SpaServices.Webpack;
 ```
 
 Now amend your call to `UseWebpackDevMiddleware` as follows:
 
-```
+```csharp
 app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
     HotModuleReplacement = true
 });
@@ -350,7 +352,7 @@ app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
 
 Also, to work around a temporary issue in `SpaServices`, you must ensure that your Webpack config includes a `plugins` array, even if it's empty. For example, in `webpack.config.js`:
 
-```
+```javascript
 module.exports = {
     // ... rest of your webpack config is here ...
 
@@ -372,7 +374,7 @@ If you edit any of your source files that get built by webpack, the result will 
 
 Webpack has built-in support for updating React components in place. To enable this, amend your `UseWebpackDevMiddleware` call further as follows:
 
-```
+```csharp
 app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
     HotModuleReplacement = true,
     ReactHotModuleReplacement = true
@@ -404,7 +406,7 @@ If a request arrives for `/some/page`, and it doesn't match any server-side rout
 
 To help distinguish between these cases, the `Microsoft.AspNetCore.SpaServices` NuGet package includes a routing helper, `MapSpaFallbackRoute`. For example, in your `Startup.cs` file's `Configure` method, you might add:
 
-```
+```csharp
     app.UseStaticFiles();
 
     app.UseMvc(routes =>
@@ -428,4 +430,3 @@ Then, since `MapSpaFallbackRoute` is last, any other requests **that don't appea
 Any requests that do appear to be for static files (i.e., those that end with filename extensions), will *not* be handled by `MapSpaFallbackRoute`, and so will end up as 404s.
 
 This is not a perfect solution to the problem of identifying 404s, because for example `MapSpaFallbackRoute` will not match requests for `/users/albert.einstein`, because it appears to contain a filename extension (`.einstein`). If you need your SPA to handle routes like that, then don't use `MapSpaFallbackRoute` - just use a regular MVC catch-all route. But then beware that requests for unknown static files will result in your client-side app being rendered.
-
