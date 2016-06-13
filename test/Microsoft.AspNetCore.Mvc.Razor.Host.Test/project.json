@@ -1,7 +1,6 @@
 {
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Mvc.Core": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.0.0-*",

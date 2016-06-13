@@ -3,7 +3,6 @@
     "emitEntryPoint": true
   },
   "dependencies": {
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "ControllersFromServicesClassLibrary": "1.0.0",
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.TestConfiguration": "1.0.0",
