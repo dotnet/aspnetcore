@@ -1,9 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Globalization;
+using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -17,9 +19,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class RequestTests
     {
-        [Fact]
-        public async Task LargeUpload()
+        [Theory]
+        [InlineData(10 * 1024 * 1024, true)]
+        // In the following dataset, send at least 2GB.
+        // Never change to a lower value, otherwise regression testing for
+        // https://github.com/aspnet/KestrelHttpServer/issues/520#issuecomment-188591242
+        // will be lost.
+        [InlineData((long)int.MaxValue + 1, false)]
+        public void LargeUpload(long contentLength, bool checkBytes)
         {
+            const int bufferLength = 1024 * 1024;
+            Assert.True(contentLength % bufferLength == 0, $"{nameof(contentLength)} sent must be evenly divisible by {bufferLength}.");
+            Assert.True(bufferLength % 256 == 0, $"{nameof(bufferLength)} must be evenly divisible by 256");
+
             var builder = new WebHostBuilder()
                 .UseKestrel()
                 .UseUrls("http://127.0.0.1:0/")
@@ -28,62 +40,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     app.Run(async context =>
                     {
                         // Read the full request body
-                        var total = 0;
-                        var bytes = new byte[1024];
-                        var count = await context.Request.Body.ReadAsync(bytes, 0, bytes.Length);
-                        while (count > 0)
-                        {
-                            for (int i = 0; i < count; i++)
-                            {
-                                Assert.Equal(total % 256, bytes[i]);
-                                total++;
-                            }
-                            count = await context.Request.Body.ReadAsync(bytes, 0, bytes.Length);
-                        }
-
-                        await context.Response.WriteAsync(total.ToString(CultureInfo.InvariantCulture));
-                    });
-                });
-
-            using (var host = builder.Build())
-            {
-                host.Start();
-
-                using (var client = new HttpClient())
-                {
-                    var bytes = new byte[1024 * 1024];
-                    for (int i = 0; i < bytes.Length; i++)
-                    {
-                        bytes[i] = (byte)i;
-                    }
-
-                    var response = await client.PostAsync($"http://localhost:{host.GetPort()}/", new ByteArrayContent(bytes));
-                    response.EnsureSuccessStatusCode();
-                    var sizeString = await response.Content.ReadAsStringAsync();
-                    Assert.Equal(sizeString, bytes.Length.ToString(CultureInfo.InvariantCulture));
-                }
-            }
-        }
-
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Fails on Mono on Mac because it is not 64-bit.")]
-        public async Task LargeMultipartUpload()
-        {
-            var builder = new WebHostBuilder()
-                .UseKestrel()
-                .UseUrls("http://127.0.0.1:0/")
-                .Configure(app =>
-                {
-                    app.Run(async context =>
-                    {
                         long total = 0;
-                        var bytes = new byte[1024];
-                        var count = await context.Request.Body.ReadAsync(bytes, 0, bytes.Length);
-                        while (count > 0)
+                        var receivedBytes = new byte[bufferLength];
+                        var received = 0;
+                        while ((received = await context.Request.Body.ReadAsync(receivedBytes, 0, receivedBytes.Length)) > 0)
                         {
-                            total += count;
-                            count = await context.Request.Body.ReadAsync(bytes, 0, bytes.Length);
+                            if (checkBytes)
+                            {
+                                for (var i = 0; i < received; i++)
+                                {
+                                    Assert.Equal((byte)((total + i) % 256), receivedBytes[i]);
+                                }
+                            }
+
+                            total += received;
                         }
+
                         await context.Response.WriteAsync(total.ToString(CultureInfo.InvariantCulture));
                     });
                 });
@@ -92,25 +64,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 host.Start();
 
-                using (var client = new HttpClient())
+                using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
                 {
-                    using (var form = new MultipartFormDataContent())
+                    socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
+                    socket.Send(Encoding.ASCII.GetBytes($"POST / HTTP/1.0\r\nContent-Length: {contentLength}\r\n\r\n"));
+
+                    var contentBytes = new byte[bufferLength];
+
+                    if (checkBytes)
                     {
-                        const int oneMegabyte = 1024 * 1024;
-                        const int files = 2048;
-                        var bytes = new byte[oneMegabyte];
-
-                        for (int i = 0; i < files; i++)
+                        for (var i = 0; i < contentBytes.Length; i++)
                         {
-                            var fileName = Guid.NewGuid().ToString();
-                            form.Add(new ByteArrayContent(bytes), "file", fileName);
+                            contentBytes[i] = (byte)i;
                         }
-
-                        var length = form.Headers.ContentLength.Value;
-                        var response = await client.PostAsync($"http://localhost:{host.GetPort()}/", form);
-                        response.EnsureSuccessStatusCode();
-                        Assert.Equal(length.ToString(CultureInfo.InvariantCulture), await response.Content.ReadAsStringAsync());
                     }
+
+                    for (var i = 0; i < contentLength / contentBytes.Length; i++)
+                    {
+                        socket.Send(contentBytes);
+                    }
+
+                    var response = new StringBuilder();
+                    var responseBytes = new byte[4096];
+                    var received = 0;
+                    while ((received = socket.Receive(responseBytes)) > 0)
+                    {
+                        response.Append(Encoding.ASCII.GetString(responseBytes, 0, received));
+                    }
+
+                    Assert.Contains(contentLength.ToString(CultureInfo.InvariantCulture), response.ToString());
                 }
             }
         }
