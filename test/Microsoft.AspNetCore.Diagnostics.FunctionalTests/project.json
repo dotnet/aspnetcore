@@ -1,7 +1,6 @@
 {
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "DatabaseErrorPageSample": "1.0.0",
     "DeveloperExceptionPageSample": "1.0.0",
     "ElmPageSample": "1.0.0",
