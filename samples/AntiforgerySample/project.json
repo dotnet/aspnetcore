@@ -1,7 +1,6 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Antiforgery": "1.0.0-*",
     "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
     "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
