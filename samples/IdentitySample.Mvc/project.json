@@ -5,7 +5,6 @@
   "description": "Identity sample MVC application on ASP.NET Core",
   "version": "1.0.0-*",
   "dependencies": {
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
     "Microsoft.AspNetCore.DataProtection.Extensions": "1.0.0-*",
