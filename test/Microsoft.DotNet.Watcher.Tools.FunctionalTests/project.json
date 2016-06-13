@@ -11,7 +11,7 @@
       "version": "1.0.0-*"
     },
     "Microsoft.DotNet.Watcher.Core": "1.0.0-*",
-    "Newtonsoft.Json": "9.0.1-beta1",
+    "Newtonsoft.Json": "9.0.1",
     "System.Threading.Thread": "4.0.0-*",
     "xunit": "2.1.0"
   },
