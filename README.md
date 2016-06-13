@@ -4,35 +4,36 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 
 ## What is this?
 
-`JavaScriptServices` is a set of technologies for ASP.NET Core developers whose applications involve JavaScript. It's especially useful if you use Angular 2 / React / Knockout / etc. on the client, or if you build your client-side resources using Webpack.
+`JavaScriptServices` is a set of technologies for ASP.NET Core developers. It provides infrastructure that you'll find useful it you use Angular 2 / React / Knockout / etc. on the client, or if you build your client-side resources using Webpack, or otherwise want to execute JavaScript on the server at runtime.
 
-These technologies consist of:
+This repo contains:
 
  * A set of NuGet/NPM packages that implement the functionality
  * A Yeoman generator that creates preconfigured app starting points
- * Samples
+ * Samples and docs
 
 Everything here is cross-platform, and works with .NET Core 1.0 RC2 or later on Windows, Linux, or OS X.
 
 ## Creating new applications
 
-If you want to build a brand-new ASP.NET Core app that uses Angular 2 / React / Knockout on the client, consider starting with the `aspnetcore-spa` generator. This lets you choose your client-side framework, and generates a starting point that includes applicable features such as Webpack dev middleware, server-side prerendering, and efficient production builds. It's much easier than configuring everything to work together manually.
+If you want to build a brand-new ASP.NET Core app that uses Angular 2 / React / Knockout on the client, consider starting with the `aspnetcore-spa` generator. This lets you choose your client-side framework, and generates a starting point that includes applicable features such as Webpack dev middleware, server-side prerendering, and efficient production builds.
 
-See: [getting started with the `aspnetcore-spa` generator](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/).
+See: [getting started with the `aspnetcore-spa` generator](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/). It's much easier than configuring everything to work together manually!
+
 
 ## Adding to existing applications
 
 If you have an existing ASP.NET Core application, or if you just want to use the underlying JavaScriptServices packages directly, you can install these packages using NuGet and NPM:
 
  * `Microsoft.AspNetCore.NodeServices`
-   * This provides a fast and robust way for .NET code to run JavaScript on the server inside a Node.js runtime.
+   * This provides a fast and robust way for .NET code to run JavaScript on the server inside a Node.js environment. You can use this to consume arbitrary functionality from NPM packages at runtime in your ASP.NET Core app.
    * Most applications developers don't need to use this directly, but you can do so if you want to implement your own functionality that involves calling Node.js code from .NET at runtime.
    * Find [documentation and usage examples here](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.NodeServices#microsoftaspnetcorenodeservices).
  * `Microsoft.AspNetCore.SpaServices`
    * This provides infrastructure that's generally useful when building Single Page Applications (SPAs) with technologies such as Angular 2 or React (such as server-side prerendering and webpack middleware). Internally, it uses the `NodeServices` package to implement its features.
    * Find [documentation and usage examples here](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.SpaServices#microsoftaspnetcorespaservices).
  * `Microsoft.AspNetCore.AngularServices`
-   * This builds on the `SpaServices` package and includes features specific to Angular 2. Currently, this includes validation helpers and a *cache priming* feature, which let you pre-evaluate ajax requests on the server so that client-side code doesn't need to make network calls once it's loaded.
+   * This builds on the `SpaServices` package and includes features specific to Angular 2. Currently, this includes validation helpers and a "cache priming" feature, which let you pre-evaluate ajax requests on the server so that client-side code doesn't need to make network calls once it's loaded.
    * The code is [here](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.AngularServices), and you'll find a usage example for [the validation helper here](https://github.com/aspnet/JavaScriptServices/blob/master/samples/angular/MusicStore/wwwroot/ng-app/components/admin/album-edit/album-edit.ts), and for the [cache priming here](https://github.com/aspnet/JavaScriptServices/blob/master/samples/angular/MusicStore/Views/Home/Index.cshtml#L7-8). Full docs are to be written.
 
 At some point, if we have React-specific features, they will go into a package called `Microsoft.AspNetCore.ReactServices`. Presently there's no need for any such package, because the functionality we want is already included in `SpaServices` without having to be specific to React. Nothing extra is currently needed.
@@ -41,9 +42,9 @@ If you want to build a helper library for some other SPA framework, you can do s
 
 ## Samples and templates
 
-Inside this repo, the `templates` directory contains the application starting points that the `aspnetcore-spa` generator emits. If you want, you can clone this repo and run those applications directly. But it's easier to [use the Yeoman tool to run the generator](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/).
+Inside this repo, [the `templates` directory](https://github.com/aspnet/JavaScriptServices/tree/master/templates) contains the application starting points that the `aspnetcore-spa` generator emits. If you want, you can clone this repo and run those applications directly. But it's easier to [use the Yeoman tool to run the generator](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/).
 
-Also in this repo, the `samples` directory contains examples of using the JavaScript services family of packages with Angular 2 and React, plus examples of standalone `NodeServices` usage for runtime code transpilation and image processing.
+Also in this repo, [the `samples` directory](https://github.com/aspnet/JavaScriptServices/tree/master/samples) contains examples of using the JavaScript services family of packages with Angular 2 and React, plus examples of standalone `NodeServices` usage for runtime code transpilation and image processing.
 
 **To run the samples:**
 
