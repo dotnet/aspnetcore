@@ -9,15 +9,15 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 This repo contains:
 
  * A set of NuGet/NPM packages that implement functionality for:
-   * Invoking arbitrary NPM packages at runtime from .NET code
-   * Server-side prerendering of SPA components
-   * Webpack dev middleware
-   * Hot module replacement (HMR)
-   * Server-side and client-side routing integration
+   * Invoking arbitrary NPM packages at runtime from .NET code ([docs](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.NodeServices#simple-usage-example))
+   * Server-side prerendering of SPA components ([docs](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.SpaServices#server-side-prerendering))
+   * Webpack dev middleware ([docs](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.SpaServices#webpack-dev-middleware))
+   * Hot module replacement (HMR) ([docs](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.SpaServices#webpack-hot-module-replacement))
+   * Server-side and client-side routing integration ([docs](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.SpaServices#routing-helper-mapspafallbackroute))
    * Server-side and client-side validation integration
    * "Cache priming" for Angular 2 apps
    * "Lazy loading" for Knockout apps
- * A Yeoman generator that creates preconfigured app starting points
+ * A Yeoman generator that creates preconfigured app starting points ([guide](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/))
  * Samples and docs
 
 Everything here is cross-platform, and works with .NET Core 1.0 RC2 or later on Windows, Linux, or OS X.
