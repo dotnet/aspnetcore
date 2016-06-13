@@ -4,7 +4,7 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 
 ## What is this?
 
-`JavaScriptServices` is a set of technologies for ASP.NET Core developers. It provides infrastructure that you'll find useful it you use Angular 2 / React / Knockout / etc. on the client, or if you build your client-side resources using Webpack, or otherwise want to execute JavaScript on the server at runtime.
+`JavaScriptServices` is a set of technologies for ASP.NET Core developers. It provides infrastructure that you'll find useful if you use Angular 2 / React / Knockout / etc. on the client, or if you build your client-side resources using Webpack, or otherwise want to execute JavaScript on the server at runtime.
 
 This repo contains:
 
@@ -30,13 +30,13 @@ If you have an existing ASP.NET Core application, or if you just want to use the
    * Most applications developers don't need to use this directly, but you can do so if you want to implement your own functionality that involves calling Node.js code from .NET at runtime.
    * Find [documentation and usage examples here](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.NodeServices#microsoftaspnetcorenodeservices).
  * `Microsoft.AspNetCore.SpaServices`
-   * This provides infrastructure that's generally useful when building Single Page Applications (SPAs) with technologies such as Angular 2 or React (such as server-side prerendering and webpack middleware). Internally, it uses the `NodeServices` package to implement its features.
+   * This provides infrastructure that's generally useful when building Single Page Applications (SPAs) with technologies such as Angular 2 or React (for example, server-side prerendering and webpack middleware). Internally, it uses the `NodeServices` package to implement its features.
    * Find [documentation and usage examples here](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.SpaServices#microsoftaspnetcorespaservices).
  * `Microsoft.AspNetCore.AngularServices`
    * This builds on the `SpaServices` package and includes features specific to Angular 2. Currently, this includes validation helpers and a "cache priming" feature, which let you pre-evaluate ajax requests on the server so that client-side code doesn't need to make network calls once it's loaded.
    * The code is [here](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.AngularServices), and you'll find a usage example for [the validation helper here](https://github.com/aspnet/JavaScriptServices/blob/master/samples/angular/MusicStore/wwwroot/ng-app/components/admin/album-edit/album-edit.ts), and for the [cache priming here](https://github.com/aspnet/JavaScriptServices/blob/master/samples/angular/MusicStore/Views/Home/Index.cshtml#L7-8). Full docs are to be written.
 
-At some point, if we have React-specific features, they will go into a package called `Microsoft.AspNetCore.ReactServices`. Presently there's no need for any such package, because the functionality we want is already included in `SpaServices` without having to be specific to React. Nothing extra is currently needed.
+There was previously a `Microsoft.AspNetCore.ReactServices` but this is not currently needed - all applicable functionality is in `Microsoft.AspNetCore.SpaServices`, because it's sufficiently general. We might add a new `Microsoft.AspNetCore.ReactServices` package in the future if new React-specific requirements emerge.
 
 If you want to build a helper library for some other SPA framework, you can do so by taking a dependency on `Microsoft.AspNetCore.SpaServices` and wrapping its functionality in whatever way is most useful for your SPA framework.
 
