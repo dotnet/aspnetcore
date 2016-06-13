@@ -21,7 +21,7 @@
     ]
   },
   "dependencies": {
-    "Newtonsoft.Json": "9.0.1-beta1"
+    "Newtonsoft.Json": "9.0.1"
   },
   "frameworks": {
     "netstandard1.1": {
