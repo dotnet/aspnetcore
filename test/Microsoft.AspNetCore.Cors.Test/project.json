@@ -2,7 +2,6 @@
   "version": "1.0.0-*",
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "CorsMiddlewareWebSite": "1.0.0-*",
     "Microsoft.AspNetCore.Cors": "1.0.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
