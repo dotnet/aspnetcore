@@ -8,7 +8,15 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 
 This repo contains:
 
- * A set of NuGet/NPM packages that implement the functionality
+ * A set of NuGet/NPM packages that implement functionality for:
+   * Invoking arbitrary NPM packages at runtime from .NET code
+   * Server-side prerendering of SPA components
+   * Webpack dev middleware
+   * Hot module replacement (HMR)
+   * Server-side and client-side routing integration
+   * Server-side and client-side validation integration
+   * "Cache priming" for Angular 2 apps
+   * "Lazy loading" for Knockout apps
  * A Yeoman generator that creates preconfigured app starting points
  * Samples and docs
 
