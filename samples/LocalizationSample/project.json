@@ -1,7 +1,6 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
     "Microsoft.AspNetCore.Localization": "1.0.0-*",
     "Microsoft.Extensions.Configuration.CommandLine": "1.0.0-*",

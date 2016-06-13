@@ -4,7 +4,6 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Localization": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Testing": "0.1.0-*",
     "Microsoft.Extensions.Logging": "1.0.0-*",
