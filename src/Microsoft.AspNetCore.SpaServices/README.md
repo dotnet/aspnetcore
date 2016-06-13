@@ -5,8 +5,8 @@ If you're building an ASP.NET Core application, and want to use Angular 2, React
 This package enables:
 
  * [**Server-side prerendering**](#server-side-prerendering) for *universal* (a.k.a. *isomorphic*) applications, where your Angular 2 / React / etc. components are first rendered on the server, and then transferred to the client where execution continues
- * [**Webpack middleware**](#webpack-dev-middleware) so that, during development, any webpack-build resources will be generated on demand, without you having to run webpack manually or compile files to disk
- * [**Hot module replacement**](#webpack-hot-module-replacement) so that, during development, your code and markup changes will be sent to your browser and updated in the running application, without even needing to reload the page
+ * [**Webpack middleware**](#webpack-dev-middleware) so that, during development, any webpack-built resources will be generated on demand, without you having to run webpack manually or compile files to disk
+ * [**Hot module replacement**](#webpack-hot-module-replacement) so that, during development, your code and markup changes will be pushed to your browser and updated in the running application automatically, without even needing to reload the page
  * [**Routing helpers**](#routing-helper-mapspafallbackroute) for integrating server-side routing with client-side routing
 
 Behind the scenes, it uses the [`Microsoft.AspNetCore.NodeServices`](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.NodeServices) package as a fast and robust way to invoke Node.js-hosted code from ASP.NET Core at runtime.
@@ -23,8 +23,13 @@ Behind the scenes, it uses the [`Microsoft.AspNetCore.NodeServices`](https://git
  * Add `Microsoft.AspNetCore.SpaServices` to the dependencies list in your `project.json` file
  * Run `dotnet restore` (or if you use Visual Studio, just wait a moment - it will restore dependencies automatically)
  * Install supporting NPM packages for the features you'll be using:
-   * If you'll be using server-side prerendering, install `aspnet-prerendering`, plus `aspnet-webpack` if your SPA will be build using webpack (e.g., run `npm install --save aspnet-prerendering aspnet-webpack`)
-   * If you'll be using webpack dev middleware, install `aspnet-webpack` (e.g., run `npm install --save aspnet-webpack`)
+   * For **server-side prerendering**, install `aspnet-prerendering`
+   * For **server-side prerendering with Webpack build support**, also install `aspnet-webpack`
+   * For **webpack dev middleware**, install `aspnet-webpack`
+   * For **webpack dev middleware with hot module replacement**, also install `webpack-hot-middleware`
+   * For **webpack dev middleware with React hot module replacement**, also install `aspnet-webpack-react`
+ 
+   For example, run `npm install --save aspnet-prerendering aspnet-webpack` to install `aspnet-prerendering` and `aspnet-webpack`.
 
  
 ### Creating entirely new projects
@@ -78,7 +83,7 @@ As you can see, your JavaScript code receives context information (such as the U
 
 **Passing data from server-side to client-side code**
 
-If you want to pass some contextual data from your server-side code to your client-side code (for example, to avoid having to load the same data you just loaded on the server again on the client), you can supply a `globals` object alongside the initial `html`, e.g.:
+If, as well as returning HTML, you also want to pass some contextual data from your server-side code to your client-side code, you can supply a `globals` object alongside the initial `html`, e.g.:
 
 ```javascript
 resolve({
@@ -91,6 +96,8 @@ resolve({
 ```
 
 When the `aspnet-prerender-*` tag helper emits this result into the document, as well as injecting the `html` string, it will also emit code that populates `window.albumsList` and `window.userData` with JSON-serialized copies of the objects you passed.
+
+This can be useful if, for example, you want to avoid loading the same data twice (once on the server and once on the client).
 
 ### 4. Enabling webpack build tooling
 
@@ -161,17 +168,17 @@ Webpack is a broad and powerful tool and can do far more than just invoke the Ty
 
 ### 5(a). Prerendering Angular 2 components
 
-If you're building an Angular 2 application, you can run your components in the server inside your `boot-server.ts` file so they will be injected into the resulting web page.
+If you're building an Angular 2 application, you can run your components on the server inside your `boot-server.ts` file so they will be injected into the resulting web page.
 
-First install the NPM package `angular2-universal` - this contains infrastructure for executing Angular 2 components on the server:
+First install the NPM package `angular2-universal` - this contains infrastructure for executing Angular 2 components inside Node.js:
 
 ```
 npm install --save angular2-universal
 ```
 
-Now you can use the [`angular2-universal` APIs](https://github.com/angular/universal) from your `boot-server.ts` TypeScript module to execute your Angular 2 component on the server. The code needed for this is fairly complex, but is necessary because Angular 2 supports so many different ways of being configured, and you need to provide wiring for whatever combination of DI modules you're using.
+Now you can use the [`angular2-universal` APIs](https://github.com/angular/universal) from your `boot-server.ts` TypeScript module to execute your Angular 2 component on the server. The code needed for this is fairly complex, but that's unavoidable because Angular 2 supports so many different ways of being configured, and you need to provide wiring for whatever combination of DI modules you're using.
 
-You can find an example `boot-server.ts` that renders arbitrary Angular 2 components [here](https://github.com/aspnet/JavaScriptServices/blob/master/templates/Angular2Spa/ClientApp/boot-server.ts). If you use this with your own application, remember to reference any other DI services that your Angular 2 component depends on.
+You can find an example `boot-server.ts` that renders arbitrary Angular 2 components [here](https://github.com/aspnet/JavaScriptServices/blob/master/templates/Angular2Spa/ClientApp/boot-server.ts). If you use this with your own application, you might need to edit the `serverBindings` array to reference any other DI services that your Angular 2 component depends on.
 
 The easiest way to get started with Angular 2 server-side rendering on ASP.NET Core is to use the [aspnetcore-spa generator](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/), which creates a ready-made working starting point.
 
@@ -318,7 +325,7 @@ module.exports = {
 
 Now, assuming you're running in [development mode](https://docs.asp.net/en/latest/fundamentals/environments.html), any requests for files under `/dist` will be intercepted and served using Webpack dev middleware.
 
-**This is for development time only, not for production use (hence the `app.IsDevelopment()` check in the code above).** While you could technically remove that check and serve your content in production through the webpack middleware, it's hard to think of a good reason for doing so. For best performance, it makes sense to prebuild your client-side resources so they can be served directly from disk with no build middleware. If you use the [aspnetcore-spa generator](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/), you'll get a site that produces optimised static builds for production, while also supporting webpack dev middleware at development time.
+**This is for development time only, not for production use (hence the `env.IsDevelopment()` check in the code above).** While you could technically remove that check and serve your content in production through the webpack middleware, it's hard to think of a good reason for doing so. For best performance, it makes sense to prebuild your client-side resources so they can be served directly from disk with no build middleware. If you use the [aspnetcore-spa generator](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/), you'll get a site that produces optimised static builds for production, while also supporting webpack dev middleware at development time.
 
 ## Webpack Hot Module Replacement
 
@@ -393,7 +400,7 @@ Now if you edit any React component (e.g., in `.jsx` or `.tsx` files), the updat
 
 #### Enabling hot replacement for other module types
 
-Webpack has built-in HMR support for various types of module, such as styles, and React components as described above. But to support HMR for other code modules, you need to add a small block of code that describes how to update the running application.
+Webpack has built-in HMR support for various types of module, such as styles and React components as described above. But to support HMR for other code modules, you need to add a small block of code that calls `module.hot.accept` to receive the updated module and update the running application.
 
 This is [documented in detail on the Webpack site](https://webpack.github.io/docs/hot-module-replacement.html). Or to get a working HMR-enabled ASP.NET Core site with Angular 2, React, React+Redux, or Knockout, you can use the [aspnetcore-spa generator](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/).
 
