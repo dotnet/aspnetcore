@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Filter;
 
 namespace Microsoft.AspNetCore.Server.Kestrel
 {
+    /// <summary>
+    /// Provides programmatic configuration of Kestrel-specific features.
+    /// </summary>
     public class KestrelServerOptions
     {
         // Matches the default client_max_body_size in nginx.  Also large enough that most requests
@@ -15,16 +18,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         /// <summary>
         /// Gets or sets whether the <c>Server</c> header should be included in each response.
         /// </summary>
+        /// <remarks>
+        /// Defaults to true.
+        /// </remarks>
         public bool AddServerHeader { get; set; } = true;
 
+        /// <summary>
+        /// Enables the UseKestrel options callback to resolve and use services registered by the application during startup.
+        /// Typically initialized by <see cref="Hosting.WebHostBuilderKestrelExtensions.UseKestrel(Hosting.IWebHostBuilder, Action{KestrelServerOptions})"/>.
+        /// </summary>
         public IServiceProvider ApplicationServices { get; set; }
 
+        /// <summary>
+        /// Gets or sets an <see cref="IConnectionFilter"/> that allows each connection <see cref="System.IO.Stream"/>
+        /// to be intercepted and transformed.
+        /// Configured by the <c>UseHttps()</c> and <see cref="Hosting.KestrelServerOptionsConnectionLoggingExtensions.UseConnectionLogging(KestrelServerOptions)"/>
+        /// extension methods.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to null.
+        /// </remarks>
         public IConnectionFilter ConnectionFilter { get; set; }
 
         /// <summary>
-        /// Maximum size of the request buffer.  Default is 1,048,576 bytes (1 MB).
+        /// Maximum size of the request buffer.
         /// If value is null, the size of the request buffer is unlimited.
         /// </summary>
+        /// <remarks>
+        /// Defaults to 1,048,576 bytes (1 MB).
+        /// </remarks>
         public long? MaxRequestBufferSize
         {
             get
@@ -41,15 +63,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
         }
 
+        /// <summary>
+        /// Set to false to enable Nagle's algorithm for all connections.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to true.
+        /// </remarks>
         public bool NoDelay { get; set; } = true;
 
         /// <summary>
         /// The amount of time after the server begins shutting down before connections will be forcefully closed.
-        /// By default, Kestrel will wait 5 seconds for any ongoing requests to complete before terminating
-        /// the connection.
+        /// Kestrel will wait for the duration of the timeout for any ongoing request processing to complete before
+        /// terminating the connection. No new connections or requests will be accepted during this time.
         /// </summary>
+        /// <remarks>
+        /// Defaults to 5 seconds.
+        /// </remarks>
         public TimeSpan ShutdownTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
+        /// <summary>
+        /// The number of libuv I/O threads used to process requests.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to half of <see cref="Environment.ProcessorCount" /> rounded down and clamped between 1 and 16.
+        /// </remarks>
         public int ThreadCount { get; set; } = ProcessorThreadCount;
 
         private static int ProcessorThreadCount
