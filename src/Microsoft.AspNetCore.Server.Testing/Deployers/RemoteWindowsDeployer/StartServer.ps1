@@ -28,14 +28,15 @@ param(
 
 Write-Host "Executing the start server script on machine '$serverName'"
 
-Write-Host "Copying shell32.dll as a temporary workaround for issue https://github.com/dotnet/cli/issues/2967"
+$forwarders="C:\Windows\System32\forwarders"
+Write-Host "Copying all content under '$forwarders' as a temporary workaround for issue https://github.com/dotnet/cli/issues/2967"
 if ($executablePath -eq "dotnet.exe")
 {
-    Copy-Item C:\Windows\System32\forwarders\shell32.dll $dotnetRuntimePath
+    Copy-Item $forwarders\* $dotnetRuntimePath
 }
 else
 {
-    Copy-Item C:\Windows\System32\forwarders\shell32.dll $deployedFolderPath
+    Copy-Item $forwarders\* $deployedFolderPath
 }
 
 if ($serverType -eq "IIS")
