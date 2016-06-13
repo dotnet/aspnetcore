@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Http
         public const int Status305UseProxy = 305;
         public const int Status306SwitchProxy = 306;
         public const int Status307TemporaryRedirect = 307;
+        public const int Status308PermanentRedirect = 308;
 
         public const int Status400BadRequest = 400;
         public const int Status401Unauthorized = 401;
