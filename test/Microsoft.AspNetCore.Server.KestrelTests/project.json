@@ -2,7 +2,6 @@
   "version": "1.0.0-*",
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel.Https": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
