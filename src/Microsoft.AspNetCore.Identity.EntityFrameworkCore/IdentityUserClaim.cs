@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         public virtual int Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the of the primary key of the user associated with this claim.
+        /// Gets or sets the primary key of the user associated with this claim.
         /// </summary>
         public virtual TKey UserId { get; set; }
 

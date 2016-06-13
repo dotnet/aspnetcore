@@ -67,8 +67,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         }
 
         /// <summary>
-        /// </summary>
         /// Gets or sets the primary key for this user.
+        /// </summary>
         public virtual TKey Id { get; set; }
 
         /// <summary>
