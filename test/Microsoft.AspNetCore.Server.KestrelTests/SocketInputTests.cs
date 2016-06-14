@@ -3,16 +3,65 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class SocketInputTests
     {
+        public static readonly TheoryData<Mock<IBufferSizeControl>> MockBufferSizeControlData =
+            new TheoryData<Mock<IBufferSizeControl>>() { new Mock<IBufferSizeControl>(), null };
+
+        [Theory]
+        [MemberData("MockBufferSizeControlData")]
+        public void IncomingDataCallsBufferSizeControlAdd(Mock<IBufferSizeControl> mockBufferSizeControl)
+        {
+            using (var memory = new MemoryPool())
+            using (var socketInput = new SocketInput(memory, null, mockBufferSizeControl?.Object))
+            {
+                socketInput.IncomingData(new byte[5], 0, 5);
+                mockBufferSizeControl?.Verify(b => b.Add(5));
+            }
+        }
+
+        [Theory]
+        [MemberData("MockBufferSizeControlData")]
+        public void IncomingCompleteCallsBufferSizeControlAdd(Mock<IBufferSizeControl> mockBufferSizeControl)
+        {
+            using (var memory = new MemoryPool())
+            using (var socketInput = new SocketInput(memory, null, mockBufferSizeControl?.Object))
+            {
+                socketInput.IncomingComplete(5, null);
+                mockBufferSizeControl?.Verify(b => b.Add(5));
+            }
+        }
+
+        [Theory]
+        [MemberData("MockBufferSizeControlData")]
+        public void ConsumingCompleteCallsBufferSizeControlSubtract(Mock<IBufferSizeControl> mockBufferSizeControl)
+        {
+            using (var kestrelEngine = new KestrelEngine(new MockLibuv(), new TestServiceContext()))
+            {
+                kestrelEngine.Start(1);
+
+                using (var memory = new MemoryPool())
+                using (var socketInput = new SocketInput(memory, null, mockBufferSizeControl?.Object))
+                {
+                    socketInput.IncomingData(new byte[20], 0, 20);
+
+                    var iterator = socketInput.ConsumingStart();
+                    iterator.Skip(5);
+                    socketInput.ConsumingComplete(iterator, iterator);
+                    mockBufferSizeControl?.Verify(b => b.Subtract(5));
+                }
+            }
+        }
+
         [Fact]
         public async Task ConcurrentReadsFailGracefully()
         {

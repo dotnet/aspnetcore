@@ -8,16 +8,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 {
     public class KestrelServerOptions
     {
-        public IServiceProvider ApplicationServices { get; set; }
-
-        public IConnectionFilter ConnectionFilter { get; set; }
-
-        public bool NoDelay { get; set; } = true;
+        // Matches the default client_max_body_size in nginx.  Also large enough that most requests
+        // should be under the limit.
+        private long? _maxRequestBufferSize = 1024 * 1024;
 
         /// <summary>
         /// Gets or sets whether the <c>Server</c> header should be included in each response.
         /// </summary>
         public bool AddServerHeader { get; set; } = true;
+
+        public IServiceProvider ApplicationServices { get; set; }
+
+        public IConnectionFilter ConnectionFilter { get; set; }
+
+        /// <summary>
+        /// Maximum size of the request buffer.  Default is 1,048,576 bytes (1 MB).
+        /// If value is null, the size of the request buffer is unlimited.
+        /// </summary>
+        public long? MaxRequestBufferSize
+        {
+            get
+            {
+                return _maxRequestBufferSize;
+            }
+            set
+            {
+                if (value.HasValue && value.Value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException("value", "Value must be null or a positive integer.");
+                }
+                _maxRequestBufferSize = value;
+            }
+        }
+
+        public bool NoDelay { get; set; } = true;
 
         /// <summary>
         /// The amount of time after the server begins shutting down before connections will be forcefully closed.

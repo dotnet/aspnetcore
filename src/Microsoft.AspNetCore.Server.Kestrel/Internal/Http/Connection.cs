@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Filter;
@@ -41,6 +42,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private ConnectionState _connectionState;
         private TaskCompletionSource<object> _socketClosedTcs;
 
+        private BufferSizeControl _bufferSizeControl;
+
         public Connection(ListenerContext context, UvStreamHandle socket) : base(context)
         {
             _socket = socket;
@@ -49,7 +52,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             ConnectionId = GenerateConnectionId(Interlocked.Increment(ref _lastConnectionId));
 
-            _rawSocketInput = new SocketInput(Memory, ThreadPool);
+            if (ServerOptions.MaxRequestBufferSize.HasValue)
+            {
+                _bufferSizeControl = new BufferSizeControl(ServerOptions.MaxRequestBufferSize.Value, this, Thread);
+            }
+
+            _rawSocketInput = new SocketInput(Memory, ThreadPool, _bufferSizeControl);
             _rawSocketOutput = new SocketOutput(Thread, _socket, Memory, this, ConnectionId, Log, ThreadPool, WriteReqPool);
         }
 
@@ -217,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                     if (_filterContext.Connection != _libuvStream)
                     {
-                        _filteredStreamAdapter = new FilteredStreamAdapter(ConnectionId, _filterContext.Connection, Memory, Log, ThreadPool);
+                        _filteredStreamAdapter = new FilteredStreamAdapter(ConnectionId, _filterContext.Connection, Memory, Log, ThreadPool, _bufferSizeControl);
 
                         SocketInput = _filteredStreamAdapter.SocketInput;
                         SocketOutput = _filteredStreamAdapter.SocketOutput;
@@ -316,7 +324,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         void IConnectionControl.Resume()
         {
             Log.ConnectionResume(ConnectionId);
-            _socket.ReadStart(_allocCallback, _readCallback, this);
+            try
+            {
+                _socket.ReadStart(_allocCallback, _readCallback, this);
+            }
+            catch (UvException)
+            {
+                // ReadStart() can throw a UvException in some cases (e.g. socket is no longer connected).
+                // This should be treated the same as OnRead() seeing a "normalDone" condition.
+                Log.ConnectionReadFin(ConnectionId);
+                _rawSocketInput.IncomingComplete(0, null);
+            }
         }
 
         void IConnectionControl.End(ProduceEndType endType)

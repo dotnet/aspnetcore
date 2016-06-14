@@ -24,9 +24,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter.Internal
             Stream filteredStream,
             MemoryPool memory,
             IKestrelTrace logger,
-            IThreadPool threadPool)
+            IThreadPool threadPool,
+            IBufferSizeControl bufferSizeControl)
         {
-            SocketInput = new SocketInput(memory, threadPool);
+            SocketInput = new SocketInput(memory, threadPool, bufferSizeControl);
             SocketOutput = new StreamSocketOutput(connectionId, filteredStream, memory, logger);
 
             _connectionId = connectionId;

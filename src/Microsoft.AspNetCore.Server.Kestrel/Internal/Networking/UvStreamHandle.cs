@@ -105,16 +105,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             }
         }
 
+        // UvStreamHandle.ReadStop() should be idempotent to match uv_read_stop()
         public void ReadStop()
         {
-            if (!_readVitality.IsAllocated)
+            if (_readVitality.IsAllocated)
             {
-                throw new InvalidOperationException("TODO: ReadStart must be called before ReadStop may be called");
+                _readVitality.Free();
             }
             _allocCallback = null;
             _readCallback = null;
             _readState = null;
-            _readVitality.Free();
             _uv.read_stop(this);
         }
 

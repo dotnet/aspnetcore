@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private readonly MemoryPool _memory;
         private readonly IThreadPool _threadPool;
+        private readonly IBufferSizeControl _bufferSizeControl;
         private readonly ManualResetEventSlim _manualResetEvent = new ManualResetEventSlim(false, 0);
 
         private Action _awaitableState;
@@ -32,10 +33,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private bool _consuming;
         private bool _disposed;
 
-        public SocketInput(MemoryPool memory, IThreadPool threadPool)
+        public SocketInput(MemoryPool memory, IThreadPool threadPool, IBufferSizeControl bufferSizeControl = null)
         {
             _memory = memory;
             _threadPool = threadPool;
+            _bufferSizeControl = bufferSizeControl;
             _awaitableState = _awaitableIsNotCompleted;
         }
 
@@ -63,6 +65,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             lock (_sync)
             {
+                // Must call Add() before bytes are available to consumer, to ensure that Length is >= 0
+                _bufferSizeControl?.Add(count);
+
                 if (count > 0)
                 {
                     if (_tail == null)
@@ -93,6 +98,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             lock (_sync)
             {
+                // Must call Add() before bytes are available to consumer, to ensure that Length is >= 0
+                _bufferSizeControl?.Add(count);
+
                 if (_pinned != null)
                 {
                     _pinned.End += count;
@@ -189,10 +197,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {
                     if (!consumed.IsDefault)
                     {
+                        // Compute lengthConsumed before modifying _head or consumed
+                        var lengthConsumed = 0;
+                        if (_bufferSizeControl != null)
+                        {
+                            lengthConsumed = new MemoryPoolIterator(_head).GetLength(consumed);
+                        }
+
                         returnStart = _head;
                         returnEnd = consumed.Block;
                         _head = consumed.Block;
                         _head.Start = consumed.Index;
+
+                        // Must call Subtract() after _head has been advanced, to avoid producer starting too early and growing
+                        // buffer beyond max length.
+                        _bufferSizeControl?.Subtract(lengthConsumed);
                     }
 
                     if (!examined.IsDefault &&

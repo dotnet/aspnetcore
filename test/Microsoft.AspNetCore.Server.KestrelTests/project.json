@@ -20,7 +20,8 @@
         "System.Net.Http": "4.1.0-*",
         "System.Net.Http.WinHttpHandler": "4.0.0-*",
         "System.Net.Sockets": "4.1.0-*",
-        "System.Runtime.Handles": "4.0.1-*"
+        "System.Runtime.Handles": "4.0.1-*",
+        "moq.netcore": "4.4.0-beta8"
       },
       "imports": [
         "dnxcore50",
@@ -29,7 +30,8 @@
     },
     "net451": {
       "dependencies": {
-        "xunit.runner.console": "2.1.0"
+        "xunit.runner.console": "2.1.0",
+        "Moq": "4.2.1312.1622"
       },
       "frameworkAssemblies": {
         "System.Net.Http": "4.0.0.0"
