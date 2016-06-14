@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                     continue;
                 }
 
-                if (part.IsParameter && (part.IsOptional || part.IsCatchAll))
+                if (part.IsParameter && (part.IsOptional || part.IsCatchAll || part.DefaultValue != null))
                 {
                     current.Matches.Add(new InboundMatch() { Entry = entry, TemplateMatcher = matcher });
                 }
