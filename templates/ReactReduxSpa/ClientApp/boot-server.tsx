@@ -14,6 +14,11 @@ export default function (params: any): Promise<{ html: string }> {
                 throw error;
             }
 
+            // If it didn't match any route, renderProps will be undefined
+            if (!renderProps) {
+                throw new Error(`The location '${ params.url }' doesn't match any route configured in react-router.`);
+            }
+
             // Build an instance of the application
             const store = configureStore();
             const app = (
