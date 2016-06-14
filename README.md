@@ -39,6 +39,7 @@ The schedule and milestone themes for ASP.NET Core.
     ```
     *NOTE: This NuGet.Config should be with your application unless you want nightly packages to potentially start being restored for other apps on the machine.*
     - Change your applications dependencies to have a `*` to get the latest version, `1.0.0-*` for example.
+- Prerelease tooling builds for Visual Studio are available from the [Tooling](https://github.com/aspnet/tooling) repo.
 
 ## Repos and Projects
 
