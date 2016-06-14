@@ -46,7 +46,11 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels.VirtualConnections
 
             var id = Interlocked.Increment(ref _nextInnerStreamId);
             var newInnerStream = new VirtualConnection(id, this);
-            _activeInnerStreams.Add(id, newInnerStream);
+            lock (_activeInnerStreams)
+            {
+                _activeInnerStreams.Add(id, newInnerStream);
+            }
+
             return newInnerStream;
         }
 
