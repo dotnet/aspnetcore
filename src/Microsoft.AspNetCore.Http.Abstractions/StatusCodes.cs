@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Http
         public const int Status422UnprocessableEntity = 422;
         public const int Status423Locked = 423;
         public const int Status424FailedDependency = 424;
+        public const int Status451UnavailableForLegalReasons = 451;
 
         public const int Status500InternalServerError = 500;
         public const int Status501NotImplemented = 501;
