@@ -370,20 +370,6 @@
         <Exec Command="src\PushCoherence\bin\$(Configuration)\PushCoherence.exe;NUGET_FEED=$(NUGET_FEED);APIKEY=$(APIKEY)" />
     </Target>
      
-    <Target Name="R2RFinalPackages">
-        <!-- Generates the R2R native images from the final packages -->
-      
-        <PropertyGroup>
-            <FinalCacheVersion>$(DOTNET_BUILD_VERSION)-final</FinalCacheVersion>
-            <DnxToolsFeed>https://www.myget.org/F/dnxtools/api/v2</DnxToolsFeed>
-            <CommandsPath>$(DNXToolsPath)commands</CommandsPath>
-        </PropertyGroup>
-       
-        <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre DependenciesPackager -Source $(DnxToolsFeed) -out $(CommandsPath)"/>
-        <Exec Command="$(CommandsPath)\DependenciesPackager\DependenciesPackager.exe --project $(CoherenceDestinationDir)\ship\project.json --diagnostics-project $(CoherenceDestinationDir)\ship\noimports.project.json --sources $(CoherenceSignedDestinationDir)\Packages-NoTimeStamp --sources $(CoherenceDestinationDir)\ext --fallback https://api.nuget.org/v3/index.json --destination $(CoherenceSignedDestinationDir) --version $(FinalCacheVersion)"/>
-        <RemoveDir Directories="$(CommandsPath)"/>
-    </Target>
-
     <UsingTask TaskName="RenameEncodedFolders" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
         <ParameterGroup>
             <RootDirectory ParameterType="System.String" Required="true" />
