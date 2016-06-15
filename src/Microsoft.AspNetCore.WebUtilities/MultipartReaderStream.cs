@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             PositionInnerStream();
             if (!_innerStream.EnsureBuffered(_boundary.FinalBoundaryLength))
             {
-                throw new IOException("Unexpected end of stream.");
+                throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
             }
             var bufferedData = _innerStream.BufferedData;
 
@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             PositionInnerStream();
             if (!await _innerStream.EnsureBufferedAsync(_boundary.FinalBoundaryLength, cancellationToken))
             {
-                throw new IOException("Unexpected end of stream.");
+                throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
             }
             var bufferedData = _innerStream.BufferedData;
 
