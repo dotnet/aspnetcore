@@ -16,6 +16,44 @@ namespace Microsoft.AspNetCore.Http
             ExceptionAssert.ThrowsArgument(() => new PathString("hello"), "value", "The path in 'value' must start with '/'.");
         }
 
+        [Fact]
+        public void Equals_EmptyPathStringAndDefaultPathString()
+        {
+            // Act and Assert
+            Assert.Equal(PathString.Empty, default(PathString));
+            Assert.Equal(default(PathString), PathString.Empty);
+            Assert.True(PathString.Empty == default(PathString));
+            Assert.True(default(PathString) == PathString.Empty);
+            Assert.True(PathString.Empty.Equals(default(PathString)));
+            Assert.True(default(PathString).Equals(PathString.Empty));
+        }
+
+        [Fact]
+        public void NotEquals_DefaultPathStringAndNonNullPathString()
+        {
+            // Arrange
+            var pathString = new PathString("/hello");
+
+            // Act and Assert
+            Assert.NotEqual(pathString, default(PathString));
+        }
+
+        [Fact]
+        public void NotEquals_EmptyPathStringAndNonNullPathString()
+        {
+            // Arrange
+            var pathString = new PathString("/hello");
+
+            // Act and Assert
+            Assert.NotEqual(pathString, PathString.Empty);
+        }
+
+        [Fact]
+        public void HashCode_CheckNullAndEmptyHaveSameHashcodes()
+        {
+            Assert.Equal(PathString.Empty.GetHashCode(), default(PathString).GetHashCode());
+        }
+
         [Theory]
         [InlineData(null, null)]
         [InlineData("", null)]

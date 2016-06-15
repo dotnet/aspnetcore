@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>True if both PathString values are equal</returns>
         public bool Equals(PathString other)
         {
-            return string.Equals(_value, other._value, StringComparison.OrdinalIgnoreCase);
+            return Equals(other, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -224,6 +224,10 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>True if both PathString values are equal</returns>
         public bool Equals(PathString other, StringComparison comparisonType)
         {
+            if (!HasValue && !other.HasValue)
+            {
+                return true;
+            }
             return string.Equals(_value, other._value, comparisonType);
         }
 
@@ -236,9 +240,9 @@ namespace Microsoft.AspNetCore.Http
         {
             if (ReferenceEquals(null, obj))
             {
-                return false;
+                return !HasValue;
             }
-            return obj is PathString && Equals((PathString)obj, StringComparison.OrdinalIgnoreCase);
+            return obj is PathString && Equals((PathString)obj);
         }
 
         /// <summary>
@@ -247,7 +251,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>The hash code</returns>
         public override int GetHashCode()
         {
-            return (_value != null ? StringComparer.OrdinalIgnoreCase.GetHashCode(_value) : 0);
+            return (HasValue ? StringComparer.OrdinalIgnoreCase.GetHashCode(_value) : 0);
         }
 
         /// <summary>
@@ -258,7 +262,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>True if both PathString values are equal</returns>
         public static bool operator ==(PathString left, PathString right)
         {
-            return left.Equals(right, StringComparison.OrdinalIgnoreCase);
+            return left.Equals(right);
         }
 
         /// <summary>
@@ -269,7 +273,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>True if both PathString values are not equal</returns>
         public static bool operator !=(PathString left, PathString right)
         {
-            return !left.Equals(right, StringComparison.OrdinalIgnoreCase);
+            return !left.Equals(right);
         }
 
         /// <summary>
