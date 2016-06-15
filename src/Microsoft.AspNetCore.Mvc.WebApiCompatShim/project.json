@@ -1,6 +1,6 @@
 {
   "description": "Provides compatibility in ASP.NET Core MVC with ASP.NET Web API 2 to simplify migration of existing Web API implementations.\r\nCommonly used types:\r\nSystem.Web.Http.ApiController",
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "packOptions": {
     "repository": {
       "type": "git",
@@ -21,13 +21,13 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc.Core": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Core": "1.1.0-*",
+    "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.1.0-*",
     "Microsoft.AspNet.WebApi.Client": "5.2.2",
-    "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
+    "Microsoft.AspNetCore.WebUtilities": "1.1.0-*",
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "type": "build",
-      "version": "1.0.0-*"
+      "version": "1.1.0-*"
     }
   },
   "frameworks": {
