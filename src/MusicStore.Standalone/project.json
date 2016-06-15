@@ -17,13 +17,13 @@
       ]
     },
     "copyToOutput": {
-      "include": [
-        "Areas",
-        "Views",
-        "wwwroot",
-        "config.json",
-        "web.config"
-      ]
+      "mappings": {
+      "Areas/": "../MusicStore/Areas/**/*.cshtml",
+      "Views/": "../MusicStore/Views/**/*.cshtml",
+      "wwwroot/": "../MusicStore/wwwroot/",
+      "web.config": "../MusicStore/web.config",
+      "config.json": "../MusicStore/config.json"
+      }
     },
     "define": [
       "DEMO",
@@ -34,13 +34,13 @@
     "warningsAsErrors": true
   },
   "publishOptions": {
-    "include": [
-      "Areas",
-      "Views",
-      "wwwroot",
-      "config.json",
-      "web.config"
-    ]
+    "mappings": {
+      "Areas/": "../MusicStore/Areas/**/*.cshtml",
+      "Views/": "../MusicStore/Views/**/*.cshtml",
+      "wwwroot/": "../MusicStore/wwwroot/",
+      "web.config": "../MusicStore/web.config",
+      "config.json": "../MusicStore/config.json"
+    }
   },
   "dependencies": {
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",

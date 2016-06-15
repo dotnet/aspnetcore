@@ -110,7 +110,7 @@ namespace E2ETests
                 Console.WriteLine("Verifying Twitter login scenarios");
                 await validator.LoginWithTwitter();
 
-                Console.WriteLine("Verifying Microsft login scenarios");
+                Console.WriteLine("Verifying Microsoft login scenarios");
                 await validator.LoginWithMicrosoftAccount();
 
                 logger.LogInformation("Variation completed successfully.");
