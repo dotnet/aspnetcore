@@ -4,7 +4,7 @@
     "emitEntryPoint": true
   },
   "dependencies": {
-    "Newtonsoft.Json": "9.0.1-beta1",
+    "Newtonsoft.Json": "9.0.1",
     "NuGet.Protocol.Core.v3": "3.5.0-beta-final"
   },
   "frameworks": {
