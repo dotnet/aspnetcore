@@ -1049,12 +1049,13 @@ namespace Microsoft.Net.Http.Server
 
             // Server API
 
-            internal static void GetUnknownHeaders(IDictionary<string, StringValues> unknownHeaders, byte[] memoryBlob, IntPtr originalAddress)
+            internal static void GetUnknownHeaders(IDictionary<string, StringValues> unknownHeaders, byte[] memoryBlob,
+                int requestOffset, IntPtr originalAddress)
             {
                 // Return value.
                 fixed (byte* pMemoryBlob = memoryBlob)
                 {
-                    HTTP_REQUEST* request = (HTTP_REQUEST*)pMemoryBlob;
+                    HTTP_REQUEST* request = (HTTP_REQUEST*)(pMemoryBlob + requestOffset);
                     long fixup = pMemoryBlob - (byte*)originalAddress;
                     int index;
 
@@ -1064,7 +1065,7 @@ namespace Microsoft.Net.Http.Server
                         HTTP_UNKNOWN_HEADER* pUnknownHeader = (HTTP_UNKNOWN_HEADER*)(fixup + (byte*)request->Headers.pUnknownHeaders);
                         for (index = 0; index < request->Headers.UnknownHeaderCount; index++)
                         {
-                            // For unknown headers, when header value is empty, RawValueLength will be 0 and 
+                            // For unknown headers, when header value is empty, RawValueLength will be 0 and
                             // pRawValue will be null.
                             if (pUnknownHeader->pName != null && pUnknownHeader->NameLength > 0)
                             {
@@ -1093,7 +1094,7 @@ namespace Microsoft.Net.Http.Server
                 string header = null;
 
                 HTTP_KNOWN_HEADER* pKnownHeader = (&request->Headers.KnownHeaders) + headerIndex;
-                // For known headers, when header value is empty, RawValueLength will be 0 and 
+                // For known headers, when header value is empty, RawValueLength will be 0 and
                 // pRawValue will point to empty string ("\0")
                 if (pKnownHeader->pRawValue != null)
                 {
@@ -1103,11 +1104,12 @@ namespace Microsoft.Net.Http.Server
                 return header;
             }
 
-            internal static string GetKnownHeader(byte[] memoryBlob, IntPtr originalAddress, int headerIndex)
+            internal static string GetKnownHeader(byte[] memoryBlob, int requestOffset, IntPtr originalAddress, int headerIndex)
             {
                 fixed (byte* pMemoryBlob = memoryBlob)
                 {
-                    return GetKnownHeader((HTTP_REQUEST*)pMemoryBlob, pMemoryBlob - (byte*)originalAddress, headerIndex);
+                    return GetKnownHeader(
+                        (HTTP_REQUEST*)(pMemoryBlob + requestOffset), pMemoryBlob - (byte*)originalAddress, headerIndex);
                 }
             }
 
@@ -1127,21 +1129,21 @@ namespace Microsoft.Net.Http.Server
                 return verb;
             }
 
-            internal static unsafe string GetVerb(byte[] memoryBlob, IntPtr originalAddress)
+            internal static unsafe string GetVerb(byte[] memoryBlob, int requestOffset, IntPtr originalAddress)
             {
                 fixed (byte* pMemoryBlob = memoryBlob)
                 {
-                    return GetVerb((HTTP_REQUEST*)pMemoryBlob, pMemoryBlob - (byte*)originalAddress);
+                    return GetVerb((HTTP_REQUEST*)(pMemoryBlob + requestOffset), pMemoryBlob - (byte*)originalAddress);
                 }
             }
 
-            internal static HTTP_VERB GetKnownVerb(byte[] memoryBlob, IntPtr originalAddress)
+            internal static HTTP_VERB GetKnownVerb(byte[] memoryBlob, int requestOffset, IntPtr originalAddress)
             {
                 // Return value.
                 HTTP_VERB verb = HTTP_VERB.HttpVerbUnknown;
                 fixed (byte* pMemoryBlob = memoryBlob)
                 {
-                    HTTP_REQUEST* request = (HTTP_REQUEST*)pMemoryBlob;
+                    HTTP_REQUEST* request = (HTTP_REQUEST*)(pMemoryBlob + requestOffset);
                     if ((int)request->Verb > (int)HTTP_VERB.HttpVerbUnparsed && (int)request->Verb < (int)HTTP_VERB.HttpVerbMaximum)
                     {
                         verb = request->Verb;
@@ -1151,13 +1153,14 @@ namespace Microsoft.Net.Http.Server
                 return verb;
             }
 
-            internal static uint GetChunks(byte[] memoryBlob, IntPtr originalAddress, ref int dataChunkIndex, ref uint dataChunkOffset, byte[] buffer, int offset, int size)
+            internal static uint GetChunks(byte[] memoryBlob, int requestOffset, IntPtr originalAddress,
+                ref int dataChunkIndex, ref uint dataChunkOffset, byte[] buffer, int offset, int size)
             {
                 // Return value.
                 uint dataRead = 0;
                 fixed (byte* pMemoryBlob = memoryBlob)
                 {
-                    HTTP_REQUEST* request = (HTTP_REQUEST*)pMemoryBlob;
+                    HTTP_REQUEST* request = (HTTP_REQUEST*)(pMemoryBlob + requestOffset);
                     long fixup = pMemoryBlob - (byte*)originalAddress;
 
                     if (request->EntityChunkCount > 0 && dataChunkIndex < request->EntityChunkCount && dataChunkIndex != -1)
@@ -1205,30 +1208,30 @@ namespace Microsoft.Net.Http.Server
                 return dataRead;
             }
 
-            internal static SocketAddress GetRemoteEndPoint(byte[] memoryBlob, IntPtr originalAddress)
+            internal static SocketAddress GetRemoteEndPoint(byte[] memoryBlob, int requestOffset, IntPtr originalAddress)
             {
                 fixed (byte* pMemoryBlob = memoryBlob)
                 {
-                    HTTP_REQUEST* request = (HTTP_REQUEST*)pMemoryBlob;
-                    return GetEndPoint(memoryBlob, originalAddress, (byte*)request->Address.pRemoteAddress);
+                    HTTP_REQUEST* request = (HTTP_REQUEST*)(pMemoryBlob + requestOffset);
+                    return GetEndPoint(memoryBlob, requestOffset, originalAddress, (byte*)request->Address.pRemoteAddress);
                 }
             }
 
-            internal static SocketAddress GetLocalEndPoint(byte[] memoryBlob, IntPtr originalAddress)
+            internal static SocketAddress GetLocalEndPoint(byte[] memoryBlob, int requestOffset, IntPtr originalAddress)
             {
                 fixed (byte* pMemoryBlob = memoryBlob)
                 {
-                    HTTP_REQUEST* request = (HTTP_REQUEST*)pMemoryBlob;
-                    return GetEndPoint(memoryBlob, originalAddress, (byte*)request->Address.pLocalAddress);
+                    HTTP_REQUEST* request = (HTTP_REQUEST*)(pMemoryBlob + requestOffset);
+                    return GetEndPoint(memoryBlob, requestOffset, originalAddress, (byte*)request->Address.pLocalAddress);
                 }
             }
 
-            internal static SocketAddress GetEndPoint(byte[] memoryBlob, IntPtr originalAddress, byte* source)
+            internal static SocketAddress GetEndPoint(byte[] memoryBlob, int requestOffset, IntPtr originalAddress, byte* source)
             {
                 fixed (byte* pMemoryBlob = memoryBlob)
                 {
                     IntPtr address = source != null ?
-                        (IntPtr)(pMemoryBlob - (byte*)originalAddress + source) : IntPtr.Zero;
+                        (IntPtr)(pMemoryBlob + requestOffset - (byte*)originalAddress + source) : IntPtr.Zero;
                     return CopyOutAddress(address);
                 }
             }

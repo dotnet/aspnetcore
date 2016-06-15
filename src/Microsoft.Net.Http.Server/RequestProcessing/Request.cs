@@ -141,7 +141,7 @@ namespace Microsoft.Net.Http.Server
                 _httpVersion = new Version(major, minor);
             }
 
-            _httpMethod = UnsafeNclNativeMethods.HttpApi.GetVerb(RequestBuffer, OriginalBlobAddress);
+            _httpMethod = UnsafeNclNativeMethods.HttpApi.GetVerb(RequestBuffer, BufferAlignment, OriginalBlobAddress);
             _headers = new HeaderCollection(new RequestHeaders(_nativeRequestContext));
 
             var requestV2 = (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_V2*)memoryBlob.RequestBlob;
@@ -187,6 +187,15 @@ namespace Microsoft.Net.Http.Server
             {
                 CheckDisposed();
                 return _nativeRequestContext.RequestBuffer;
+            }
+        }
+
+        internal int BufferAlignment
+        {
+            get
+            {
+                CheckDisposed();
+                return _nativeRequestContext.BufferAlignment;
             }
         }
 
@@ -304,7 +313,7 @@ namespace Microsoft.Net.Http.Server
                 return _rawUrl;
             }
         }
-        
+
         public Version ProtocolVersion
         {
             get
@@ -329,7 +338,7 @@ namespace Microsoft.Net.Http.Server
             {
                 if (_remoteEndPoint == null)
                 {
-                    _remoteEndPoint = UnsafeNclNativeMethods.HttpApi.GetRemoteEndPoint(RequestBuffer, OriginalBlobAddress);
+                    _remoteEndPoint = UnsafeNclNativeMethods.HttpApi.GetRemoteEndPoint(RequestBuffer, BufferAlignment, OriginalBlobAddress);
                 }
 
                 return _remoteEndPoint;
@@ -342,7 +351,7 @@ namespace Microsoft.Net.Http.Server
             {
                 if (_localEndPoint == null)
                 {
-                    _localEndPoint = UnsafeNclNativeMethods.HttpApi.GetLocalEndPoint(RequestBuffer, OriginalBlobAddress);
+                    _localEndPoint = UnsafeNclNativeMethods.HttpApi.GetLocalEndPoint(RequestBuffer, BufferAlignment, OriginalBlobAddress);
                 }
 
                 return _localEndPoint;
@@ -406,7 +415,7 @@ namespace Microsoft.Net.Http.Server
 
         internal UnsafeNclNativeMethods.HttpApi.HTTP_VERB GetKnownMethod()
         {
-            return UnsafeNclNativeMethods.HttpApi.GetKnownVerb(RequestBuffer, OriginalBlobAddress);
+            return UnsafeNclNativeMethods.HttpApi.GetKnownVerb(RequestBuffer, BufferAlignment, OriginalBlobAddress);
         }
 
         // Populates the client certificate.  The result may be null if there is no client cert.

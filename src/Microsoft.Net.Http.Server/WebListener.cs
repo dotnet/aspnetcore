@@ -890,7 +890,7 @@ namespace Microsoft.Net.Http.Server
                 blob = new byte[size];
                 fixed (byte* blobPtr = blob)
                 {
-                    // Http.sys team: ServiceName will always be null if 
+                    // Http.sys team: ServiceName will always be null if
                     // HTTP_RECEIVE_SECURE_CHANNEL_TOKEN flag is set.
                     statusCode = UnsafeNclNativeMethods.HttpApi.HttpReceiveClientCertificate(
                         RequestQueueHandle,

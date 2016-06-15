@@ -31,9 +31,11 @@ namespace Microsoft.Net.Http.Server
     internal unsafe class NativeRequestContext : IDisposable
     {
         private const int DefaultBufferSize = 4096;
+        private const int AlignmentPadding = 8;
         private UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST* _memoryBlob;
         private IntPtr _originalBlobAddress;
         private byte[] _backingBuffer;
+        private int _bufferAlignment;
         private SafeNativeOverlapped _nativeOverlapped;
         private AsyncAcceptContext _acceptResult;
 
@@ -80,7 +82,15 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return (uint)_backingBuffer.Length;
+                return (uint)_backingBuffer.Length - AlignmentPadding;
+            }
+        }
+
+        internal int BufferAlignment
+        {
+            get
+            {
+                return _bufferAlignment;
             }
         }
 
@@ -89,7 +99,7 @@ namespace Microsoft.Net.Http.Server
             get
             {
                 UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST* blob = _memoryBlob;
-                return (blob == null ? _originalBlobAddress : (IntPtr)blob);
+                return blob == null ? _originalBlobAddress : (IntPtr)blob;
             }
         }
 
@@ -155,12 +165,13 @@ namespace Microsoft.Net.Http.Server
 
         private void SetBuffer(int size)
         {
-            _backingBuffer = size == 0 ? null : new byte[size];
+            Debug.Assert(size != 0, "unexpected size");
+
+            _backingBuffer = new byte[size + AlignmentPadding];
         }
 
         private UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST* Allocate(uint size)
         {
-            uint newSize = size != 0 ? size : RequestBuffer == null ? DefaultBufferSize : Size;
             // We can't reuse overlapped objects
             if (_nativeOverlapped != null)
             {
@@ -168,15 +179,19 @@ namespace Microsoft.Net.Http.Server
                 _nativeOverlapped = null;
                 nativeOverlapped.Dispose();
             }
-            if (_nativeOverlapped == null)
-            {
-                SetBuffer(checked((int)newSize));
-                var boundHandle = _acceptResult.Server.BoundHandle;
-                _nativeOverlapped = new SafeNativeOverlapped(boundHandle,
-                    boundHandle.AllocateNativeOverlapped(AsyncAcceptContext.IOCallback, _acceptResult, RequestBuffer));
-                return (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST*)Marshal.UnsafeAddrOfPinnedArrayElement(RequestBuffer, 0);
-            }
-            return RequestBlob;
+
+            uint newSize = size != 0 ? size : RequestBuffer == null ? DefaultBufferSize : Size;
+            SetBuffer(checked((int)newSize));
+            var boundHandle = _acceptResult.Server.BoundHandle;
+            _nativeOverlapped = new SafeNativeOverlapped(boundHandle,
+                boundHandle.AllocateNativeOverlapped(AsyncAcceptContext.IOCallback, _acceptResult, RequestBuffer));
+
+            // HttpReceiveHttpRequest expects the request pointer to be 8-byte-aligned or it fails. On ARM
+            // CLR creates buffers that are 4-byte-aligned so we need force 8-byte alignment.
+            var requestAddress = Marshal.UnsafeAddrOfPinnedArrayElement(RequestBuffer, 0);
+            _bufferAlignment = (int)(requestAddress.ToInt64() & 0x07);
+
+            return (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST*)(requestAddress + _bufferAlignment);
         }
 
         internal void Reset(ulong requestId, uint size)
