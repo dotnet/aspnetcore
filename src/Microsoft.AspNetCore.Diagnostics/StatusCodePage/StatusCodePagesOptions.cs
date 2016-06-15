@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Builder
         private string BuildResponseBody(int httpStatusCode)
         {
             // Note the 500 spaces are to work around an IE 'feature'
-            string internetExplorerWorkaround = new string(' ', 500);
+            var internetExplorerWorkaround = new string(' ', 500);
 
             var reasonPhrase = ReasonPhrases.GetReasonPhrase(httpStatusCode);
 
