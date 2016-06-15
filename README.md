@@ -27,18 +27,22 @@ The schedule and milestone themes for ASP.NET Core.
 - If you want to use nightlies then you need to:
     - Obtain the latest nightly CLI from http://github.com/dotnet/cli
     - Add a NuGet.Config to your app with the following content:
-    ```xml
-    <?xml version="1.0" encoding="utf-8"?>
-    <configuration>
-        <packageSources>
-            <clear />
-            <add key="AspNetCI" value="https://www.myget.org/F/aspnetvnext/api/v3/index.json" />
-            <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
-        </packageSources>
-    </configuration>
-    ```
-    *NOTE: This NuGet.Config should be with your application unless you want nightly packages to potentially start being restored for other apps on the machine.*
+    
+      ```xml
+      <?xml version="1.0" encoding="utf-8"?>
+      <configuration>
+          <packageSources>
+              <clear />
+              <add key="AspNetCI" value="https://www.myget.org/F/aspnetvnext/api/v3/index.json" />
+              <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
+          </packageSources>
+      </configuration>
+      ```
+    
+      *NOTE: This NuGet.Config should be with your application unless you want nightly packages to potentially start being restored for other apps on the machine.*
+    
     - Change your applications dependencies to have a `*` to get the latest version, `1.0.0-*` for example.
+- Prerelease tooling builds for Visual Studio are available from the [Tooling](https://github.com/aspnet/tooling/#pre-release-builds) repo.
 
 ## Repos and Projects
 
