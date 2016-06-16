@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "description": "Additional APIs for ASP.NET Core data protection.",
   "packOptions": {
     "repository": {
@@ -12,12 +12,12 @@
     ]
   },
   "dependencies": {
-    "Microsoft.AspNetCore.DataProtection": "1.0.0-*",
+    "Microsoft.AspNetCore.DataProtection": "1.1.0-*",
     "Microsoft.AspNetCore.DataProtection.Sources": {
       "type": "build",
-      "version": "1.0.0-*"
+      "version": "1.1.0-*"
     },
-    "Microsoft.Extensions.DependencyInjection": "1.0.0-*"
+    "Microsoft.Extensions.DependencyInjection": "1.1.0-*"
   },
   "frameworks": {
     "net451": {},

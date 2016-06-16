@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "description": "A component to allow the ASP.NET Core data protection stack to work with the ASP.NET 4.x <machineKey> element.",
   "packOptions": {
     "repository": {
@@ -20,8 +20,8 @@
   "frameworks": {
     "net451": {
       "dependencies": {
-        "Microsoft.AspNetCore.DataProtection": "1.0.0-*",
-        "Microsoft.Extensions.DependencyInjection": "1.0.0-*"
+        "Microsoft.AspNetCore.DataProtection": "1.1.0-*",
+        "Microsoft.Extensions.DependencyInjection": "1.1.0-*"
       },
       "frameworkAssemblies": {
         "System.Configuration": "4.0.0.0",

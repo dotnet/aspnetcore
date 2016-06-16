@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "description": "ASP.NET Core data protection abstractions.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.DataProtection.IDataProtectionProvider\r\nMicrosoft.AspNetCore.DataProtection.IDataProtector",
   "packOptions": {
     "repository": {
@@ -14,7 +14,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.DataProtection.Sources": {
       "type": "build",
-      "version": "1.0.0-*"
+      "version": "1.1.0-*"
     }
   },
   "frameworks": {

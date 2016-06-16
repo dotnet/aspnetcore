@@ -1,10 +1,10 @@
 {
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.AspNetCore.Cryptography.Internal": "1.0.0-*",
-    "Microsoft.AspNetCore.Cryptography.KeyDerivation": "1.0.0-*",
+    "Microsoft.AspNetCore.Cryptography.Internal": "1.1.0-*",
+    "Microsoft.AspNetCore.Cryptography.KeyDerivation": "1.1.0-*",
     "Microsoft.AspNetCore.DataProtection.Test.Shared": "1.0.0-*",
-    "Microsoft.AspNetCore.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "xunit": "2.1.0"
   },
   "frameworks": {
