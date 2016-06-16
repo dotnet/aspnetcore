@@ -1,12 +1,12 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel.Https": "1.0.0-*",
-    "Microsoft.AspNetCore.Testing": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
+    "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel.Https": "1.1.0-*",
+    "Microsoft.AspNetCore.Testing": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.1.0-*",
     "Newtonsoft.Json": "9.0.1",
     "xunit": "2.1.0"
   },
