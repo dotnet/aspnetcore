@@ -1,11 +1,11 @@
 {
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-*",
-    "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "1.0.0-*",
+    "Microsoft.EntityFrameworkCore.SqlServer": "1.1.0-*",
+    "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "1.1.0-*",
     "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests": "1.0.0",
-    "Microsoft.AspNetCore.TestHost": "1.0.0-*",
-    "Microsoft.AspNetCore.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.1.0-*",
+    "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "xunit": "2.1.0"
   },
   "testRunner": "xunit",
