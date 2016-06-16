@@ -8,13 +8,13 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.AspNetCore.Authentication": "1.0.0-*",
-    "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
-    "Microsoft.AspNetCore.Hosting": "1.0.0-*",
-    "Microsoft.AspNetCore.Http": "1.0.0-*",
-    "Microsoft.AspNetCore.Identity": "1.0.0-*",
-    "Microsoft.AspNetCore.TestHost": "1.0.0-*",
-    "Microsoft.AspNetCore.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Authentication": "1.1.0-*",
+    "Microsoft.AspNetCore.Authentication.Cookies": "1.1.0-*",
+    "Microsoft.AspNetCore.Hosting": "1.1.0-*",
+    "Microsoft.AspNetCore.Http": "1.1.0-*",
+    "Microsoft.AspNetCore.Identity": "1.1.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.1.0-*",
+    "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "xunit": "2.1.0"
   },
   "frameworks": {

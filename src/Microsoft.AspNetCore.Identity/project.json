@@ -1,6 +1,6 @@
 {
   "description": "ASP.NET Core Identity is the membership system for building ASP.NET Core web applications, including membership, login, and user data. ASP.NET Core Identity allows you to add login features to your application and makes it easy to customize data about the logged in user.",
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
@@ -21,9 +21,9 @@
     ]
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
-    "Microsoft.AspNetCore.Cryptography.KeyDerivation": "1.0.0-*",
-    "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*"
+    "Microsoft.AspNetCore.Authentication.Cookies": "1.1.0-*",
+    "Microsoft.AspNetCore.Cryptography.KeyDerivation": "1.1.0-*",
+    "Microsoft.AspNetCore.Hosting.Abstractions": "1.1.0-*"
   },
   "frameworks": {
     "net451": {},
