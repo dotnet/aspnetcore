@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Determines if the cookie should only be transmitted on HTTPS requests. 
+        /// </summary>
         public CookieSecurePolicy CookieSecure { get; set; } = CookieSecurePolicy.None;
 
         /// <summary>
