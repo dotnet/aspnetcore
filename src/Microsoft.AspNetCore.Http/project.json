@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "description": "ASP.NET Core default HTTP feature implementations.",
   "packOptions": {
     "repository": {
@@ -20,11 +20,11 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
-    "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
-    "Microsoft.Extensions.ObjectPool": "1.0.0-*",
-    "Microsoft.Extensions.Options": "1.0.0-*",
-    "Microsoft.Net.Http.Headers": "1.0.0-*",
+    "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
+    "Microsoft.AspNetCore.WebUtilities": "1.1.0-*",
+    "Microsoft.Extensions.ObjectPool": "1.1.0-*",
+    "Microsoft.Extensions.Options": "1.1.0-*",
+    "Microsoft.Net.Http.Headers": "1.1.0-*",
     "System.Buffers": "4.0.0-*"
   },
   "frameworks": {

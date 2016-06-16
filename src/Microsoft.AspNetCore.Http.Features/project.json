@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "description": "ASP.NET Core HTTP feature interface definitions.",
   "packOptions": {
     "repository": {
@@ -19,7 +19,7 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.Extensions.Primitives": "1.0.0-*"
+    "Microsoft.Extensions.Primitives": "1.1.0-*"
   },
   "frameworks": {
     "net451": {},

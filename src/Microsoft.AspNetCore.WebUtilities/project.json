@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "description": "ASP.NET Core utilities, such as for working with forms, multipart messages, and query strings.",
   "packOptions": {
     "repository": {
@@ -19,7 +19,7 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.Extensions.Primitives": "1.0.0-*",
+    "Microsoft.Extensions.Primitives": "1.1.0-*",
     "System.Buffers": "4.0.0-*",
     "System.Text.Encodings.Web": "4.0.0-*"
   },

@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "description": "ASP.NET Core common extension methods for HTTP abstractions, HTTP headers, HTTP request/response, and session state.",
   "packOptions": {
     "repository": {
@@ -19,9 +19,9 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
-    "Microsoft.Extensions.FileProviders.Abstractions": "1.0.0-*",
-    "Microsoft.Net.Http.Headers": "1.0.0-*",
+    "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
+    "Microsoft.Extensions.FileProviders.Abstractions": "1.1.0-*",
+    "Microsoft.Net.Http.Headers": "1.1.0-*",
     "System.Buffers": "4.0.0-*"
   },
   "frameworks": {
