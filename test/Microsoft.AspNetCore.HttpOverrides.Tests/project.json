@@ -1,13 +1,13 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "buildOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.AspNetCore.HttpOverrides": "1.0.0-*",
-    "Microsoft.AspNetCore.TestHost": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.HttpOverrides": "1.1.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Testing": "1.1.0-*",
     "xunit": "2.1.0"
   },
   "frameworks": {
