@@ -16,11 +16,11 @@
   "dependencies": {
     "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-*",
     "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.AspNetCore.Hosting": "1.0.0-*",
-    "Microsoft.AspNetCore.Owin": "1.0.0-*",
-    "Microsoft.AspNetCore.Testing": "1.0.0-*",
-    "Microsoft.Extensions.Options": "1.0.0-*",
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Hosting": "1.1.0-*",
+    "Microsoft.AspNetCore.Owin": "1.1.0-*",
+    "Microsoft.AspNetCore.Testing": "1.1.0-*",
+    "Microsoft.Extensions.Options": "1.1.0-*",
+    "Microsoft.Extensions.PlatformAbstractions": "1.1.0-*",
     "xunit": "2.1.0"
   },
   "frameworks": {

@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
@@ -20,12 +20,12 @@
     ]
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
-    "Microsoft.AspNetCore.Hosting.Server.Abstractions": "1.0.0-*",
-    "Microsoft.Extensions.Configuration.Abstractions": "1.0.0-*",
-    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
-    "Microsoft.Extensions.FileProviders.Abstractions": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*"
+    "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
+    "Microsoft.AspNetCore.Hosting.Server.Abstractions": "1.1.0-*",
+    "Microsoft.Extensions.Configuration.Abstractions": "1.1.0-*",
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0-*",
+    "Microsoft.Extensions.FileProviders.Abstractions": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*"
   },
   "frameworks": {
     "net451": {},

@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0-*",
+  "version": "0.2.0-*",
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
@@ -26,12 +26,12 @@
   },
   "dependencies": {
     "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-*",
-    "Microsoft.AspNetCore.Testing": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
-    "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
+    "Microsoft.Extensions.FileProviders.Embedded": "1.1.0-*",
     "Microsoft.Extensions.Process.Sources": {
       "type": "build",
-      "version": "1.0.0-*"
+      "version": "1.1.0-*"
     }
   },
   "frameworks": {
