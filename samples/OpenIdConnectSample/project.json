@@ -1,15 +1,15 @@
 {
   "dependencies": {
-    "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
-    "Microsoft.AspNetCore.Authentication.OpenIdConnect": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel.Https": "1.0.0-*",
-    "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0-*",
-    "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Debug": "1.0.0-*",
-    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*"
+    "Microsoft.AspNetCore.Authentication.Cookies": "1.1.0-*",
+    "Microsoft.AspNetCore.Authentication.OpenIdConnect": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel.Https": "1.1.0-*",
+    "Microsoft.Extensions.Configuration.UserSecrets": "1.1.0-*",
+    "Microsoft.Extensions.FileProviders.Embedded": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Debug": "1.1.0-*",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.1.0-*"
   },
   "frameworks": {
     "net451": {},
