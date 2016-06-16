@@ -87,6 +87,59 @@ namespace Microsoft.AspNetCore.Session
             }
         }
 
+        [Theory]
+        [InlineData(CookieSecurePolicy.Always, "http://example.com/testpath", true)]
+        [InlineData(CookieSecurePolicy.Always, "https://example.com/testpath", true)]
+        [InlineData(CookieSecurePolicy.None, "http://example.com/testpath", false)]
+        [InlineData(CookieSecurePolicy.None, "https://example.com/testpath", false)]
+        [InlineData(CookieSecurePolicy.SameAsRequest, "http://example.com/testpath", false)]
+        [InlineData(CookieSecurePolicy.SameAsRequest, "https://example.com/testpath", true)]
+        public async Task SecureSessionBasedOnHttpsAndSecurePolicy(
+            CookieSecurePolicy cookieSecurePolicy,
+            string requestUri,
+            bool shouldBeSecureOnly)
+        {
+            var builder = new WebHostBuilder()
+               .Configure(app =>
+               {
+                   app.UseSession(new SessionOptions
+                   {
+                       CookieName = "TestCookie",
+                       CookieSecure = cookieSecurePolicy
+                   });
+                   app.Run(context =>
+                   {
+                       Assert.Null(context.Session.GetString("Key"));
+                       context.Session.SetString("Key", "Value");
+                       Assert.Equal("Value", context.Session.GetString("Key"));
+                       return Task.FromResult(0);
+                   });
+               })
+               .ConfigureServices(services =>
+               {
+                   services.AddDistributedMemoryCache();
+                   services.AddSession();
+               });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync(requestUri);
+                response.EnsureSuccessStatusCode();
+                IEnumerable<string> values;
+                Assert.True(response.Headers.TryGetValues("Set-Cookie", out values));
+                Assert.Equal(1, values.Count());
+                if (shouldBeSecureOnly)
+                {
+                    Assert.Contains("; secure", values.First());
+                }
+                else
+                {
+                    Assert.DoesNotContain("; secure", values.First());
+                }
+            }
+        }
+
         [Fact]
         public async Task SessionCanBeAccessedOnTheNextRequest()
         {

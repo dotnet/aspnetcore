@@ -156,6 +156,14 @@ namespace Microsoft.AspNetCore.Session
                     HttpOnly = _options.CookieHttpOnly,
                     Path = _options.CookiePath ?? SessionDefaults.CookiePath,
                 };
+                if (_options.CookieSecure == CookieSecurePolicy.SameAsRequest)
+                {
+                    cookieOptions.Secure = _context.Request.IsHttps;
+                }
+                else
+                {
+                    cookieOptions.Secure = _options.CookieSecure == CookieSecurePolicy.Always;
+                }
 
                 _context.Response.Cookies.Append(_options.CookieName, _cookieValue, cookieOptions);
 

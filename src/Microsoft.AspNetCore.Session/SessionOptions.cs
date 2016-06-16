@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Session;
 
 namespace Microsoft.AspNetCore.Builder
@@ -34,6 +35,10 @@ namespace Microsoft.AspNetCore.Builder
         /// to script on the page.
         /// </summary>
         public bool CookieHttpOnly { get; set; } = true;
+
+        /// <summary>
+        /// Determines if the cookie should only be transmitted on HTTPS requests. 
+        public CookieSecurePolicy CookieSecure { get; set; } = CookieSecurePolicy.None;
 
         /// <summary>
         /// The IdleTimeout indicates how long the session can be idle before its contents are abandoned. Each session access
