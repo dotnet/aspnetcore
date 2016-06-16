@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.AspNetCore.WebSockets.Protocol": "0.1.0-*",
+    "Microsoft.AspNetCore.WebSockets.Protocol": "0.2.0-*",
     "xunit": "2.1.0"
   },
   "testRunner": "xunit",
