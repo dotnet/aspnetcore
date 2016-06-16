@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "description": "ASP.NET Core support for JSON PATCH.",
   "buildOptions": {
     "warningsAsErrors": true,
