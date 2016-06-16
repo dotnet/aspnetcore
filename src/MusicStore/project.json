@@ -3,11 +3,11 @@
     "Microsoft"
   ],
   "description": "Music store application on ASP.NET 5",
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "buildOptions": {
     "compile": {
       "include": [
-        "../../shared/**/*.cs" 
+        "../../shared/**/*.cs"
       ]
     },
     "copyToOutput": {
@@ -37,32 +37,32 @@
     ]
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
-    "Microsoft.AspNetCore.Authentication.Facebook": "1.0.0-*",
-    "Microsoft.AspNetCore.Authentication.Google": "1.0.0-*",
-    "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "1.0.0-*",
-    "Microsoft.AspNetCore.Authentication.OpenIdConnect": "1.0.0-*",
-    "Microsoft.AspNetCore.Authentication.Twitter": "1.0.0-*",
-    "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
-    "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "1.0.0-*",
-    "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.WebListener": "0.1.0-*",
-    "Microsoft.AspNetCore.Session": "1.0.0-*",
-    "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
-    "Microsoft.EntityFrameworkCore.InMemory": "1.0.0-*",
-    "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-*",
-    "Microsoft.Extensions.Configuration.CommandLine": "1.0.0-*",
-    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
-    "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
-    "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0-*",
+    "Microsoft.AspNetCore.Authentication.Cookies": "1.1.0-*",
+    "Microsoft.AspNetCore.Authentication.Facebook": "1.1.0-*",
+    "Microsoft.AspNetCore.Authentication.Google": "1.1.0-*",
+    "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "1.1.0-*",
+    "Microsoft.AspNetCore.Authentication.OpenIdConnect": "1.1.0-*",
+    "Microsoft.AspNetCore.Authentication.Twitter": "1.1.0-*",
+    "Microsoft.AspNetCore.Diagnostics": "1.1.0-*",
+    "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "1.1.0-*",
+    "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.1.0-*",
+    "Microsoft.AspNetCore.Mvc": "1.1.0-*",
+    "Microsoft.AspNetCore.Mvc.TagHelpers": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.WebListener": "0.2.0-*",
+    "Microsoft.AspNetCore.Session": "1.1.0-*",
+    "Microsoft.AspNetCore.StaticFiles": "1.1.0-*",
+    "Microsoft.EntityFrameworkCore.InMemory": "1.1.0-*",
+    "Microsoft.EntityFrameworkCore.SqlServer": "1.1.0-*",
+    "Microsoft.Extensions.Configuration.CommandLine": "1.1.0-*",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.1.0-*",
+    "Microsoft.Extensions.Configuration.Json": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.1.0-*",
+    "Microsoft.Extensions.Options.ConfigurationExtensions": "1.1.0-*"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
