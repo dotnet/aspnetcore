@@ -4,13 +4,13 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.AspNetCore.Http": "1.0.0-*",
-    "Microsoft.AspNetCore.Routing": "1.0.0-*",
-    "Microsoft.AspNetCore.Testing": "1.0.0-*",
-    "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
-    "Microsoft.Extensions.Logging": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
-    "Microsoft.Extensions.WebEncoders": "1.0.0-*",
+    "Microsoft.AspNetCore.Http": "1.1.0-*",
+    "Microsoft.AspNetCore.Routing": "1.1.0-*",
+    "Microsoft.AspNetCore.Testing": "1.1.0-*",
+    "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
+    "Microsoft.Extensions.Logging": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Testing": "1.1.0-*",
+    "Microsoft.Extensions.WebEncoders": "1.1.0-*",
     "xunit": "2.1.0"
   },
   "frameworks": {
