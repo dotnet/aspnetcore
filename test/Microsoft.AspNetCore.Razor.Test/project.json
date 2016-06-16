@@ -2,12 +2,12 @@
   "version": "1.0.0",
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.AspNetCore.Razor": "1.0.0-*",
+    "Microsoft.AspNetCore.Razor": "1.1.0-*",
     "Microsoft.AspNetCore.Razor.Test.Sources": {
-      "version": "1.0.0-*",
+      "version": "1.1.0-*",
       "type": "build"
     },
-    "Microsoft.AspNetCore.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Newtonsoft.Json": "9.0.1",
     "xunit": "2.1.0"
   },
