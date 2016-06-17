@@ -161,11 +161,7 @@ namespace PushCoherence
             if (releaseLabel.StartsWith("rtm-", StringComparison.OrdinalIgnoreCase))
             {
                 // E.g. change version 2.5.0-rtm-123123 to 2.5.0.
-                var index = releaseLabel.LastIndexOf('-');
-                if (index != -1)
-                {
-                    releaseLabel = releaseLabel.Substring(0, index);
-                }
+                releaseLabel = string.Empty;
             }
             else
             {
