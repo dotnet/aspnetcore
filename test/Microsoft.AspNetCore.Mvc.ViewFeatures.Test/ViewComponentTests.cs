@@ -1,8 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Xunit;
@@ -144,6 +150,7 @@ namespace Microsoft.AspNetCore.Mvc
             // ViewComponent.ViewContext returns the default instance for the unit test scenarios
             Assert.NotNull(viewComponent.ViewContext);
             Assert.NotNull(viewComponent.ViewContext.ViewData);
+            Assert.Null(viewComponent.ViewContext.TempData);
 
             // ViewComponent.ViewData returns the default instance for the unit test scenarios
             Assert.Empty(viewComponent.ViewContext.ViewData);
@@ -152,8 +159,75 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Same(viewComponent.ViewData, viewComponent.ViewContext.ViewData);
         }
 
+        [Fact]
+        public void ViewComponent_ViewContext_TempData_ReturnsDefaultInstanceIfSessionActive()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.Features.Set<ISessionFeature>(new SessionFeature() { Session = new TestSession() });
+            var viewContext = new ViewContext();
+            viewContext.TempData = new TempDataDictionary(httpContext, new SessionStateTempDataProvider());
+            var viewComponentContext = new ViewComponentContext();
+            viewComponentContext.ViewContext = viewContext;
+
+            // Act
+            var viewComponent = new TestViewComponent();
+            viewComponent.ViewComponentContext = viewComponentContext;
+
+            // Assert
+            Assert.NotNull(viewComponent.ViewContext.TempData);
+            Assert.Empty(viewComponent.ViewContext.TempData);
+            Assert.Same(viewComponent.TempData, viewComponent.ViewContext.TempData);
+        }
+
         private class TestViewComponent : ViewComponent
         {
+        }
+
+        private class SessionFeature : ISessionFeature
+        {
+            public ISession Session { get; set; }
+        }
+
+        private class TestSession : ISession
+        {
+            private Dictionary<string, byte[]> _innerDictionary = new Dictionary<string, byte[]>();
+
+            public IEnumerable<string> Keys { get { return _innerDictionary.Keys; } }
+
+            public string Id => "TestId";
+
+            public bool IsAvailable { get; } = true;
+
+            public Task LoadAsync()
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task CommitAsync()
+            {
+                return Task.FromResult(0);
+            }
+
+            public void Clear()
+            {
+                _innerDictionary.Clear();
+            }
+
+            public void Remove(string key)
+            {
+                _innerDictionary.Remove(key);
+            }
+
+            public void Set(string key, byte[] value)
+            {
+                _innerDictionary[key] = value.ToArray();
+            }
+
+            public bool TryGetValue(string key, out byte[] value)
+            {
+                return _innerDictionary.TryGetValue(key, out value);
+            }
         }
     }
 }

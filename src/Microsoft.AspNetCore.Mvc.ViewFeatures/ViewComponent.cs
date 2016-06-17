@@ -173,6 +173,17 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
+        /// Gets the <see cref="ITempDataDictionary"/>.
+        /// </summary>
+        public ITempDataDictionary TempData
+        {
+            get
+            {
+                return ViewComponentContext.TempData;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the <see cref="ICompositeViewEngine"/>.
         /// </summary>
         public ICompositeViewEngine ViewEngine

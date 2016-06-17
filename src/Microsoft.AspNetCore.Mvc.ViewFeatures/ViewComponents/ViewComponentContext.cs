@@ -123,6 +123,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         public ViewDataDictionary ViewData => ViewContext.ViewData;
 
         /// <summary>
+        /// Gets the <see cref="ITempDataDictionary"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is an alias for <c>ViewContext.TempData</c>.
+        /// </remarks>
+        public ITempDataDictionary TempData => ViewContext.TempData;
+
+        /// <summary>
         /// Gets the <see cref="TextWriter"/> for output.
         /// </summary>
         /// <remarks>
