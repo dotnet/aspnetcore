@@ -20,7 +20,7 @@
     "webpack-hot-middleware": "^2.10.0"
   },
   "dependencies": {
-    "aspnet-prerendering": "^1.0.0",
+    "aspnet-prerendering": "^1.0.2",
     "aspnet-webpack": "^1.0.2",
     "babel-core": "^6.5.2",
     "domain-task": "^1.0.0",
