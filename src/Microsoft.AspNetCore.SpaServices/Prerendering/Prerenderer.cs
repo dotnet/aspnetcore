@@ -22,7 +22,8 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
             INodeServices nodeServices,
             JavaScriptModuleExport bootModule,
             string requestAbsoluteUrl,
-            string requestPathAndQuery)
+            string requestPathAndQuery,
+            object customDataParameter)
         {
             return nodeServices.InvokeExport<RenderToStringResult>(
                 NodeScript.Value.FileName,
@@ -30,7 +31,8 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
                 applicationBasePath,
                 bootModule,
                 requestAbsoluteUrl,
-                requestPathAndQuery);
+                requestPathAndQuery,
+                customDataParameter);
         }
     }
 }

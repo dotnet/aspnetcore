@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
         private const string PrerenderModuleAttributeName = "asp-prerender-module";
         private const string PrerenderExportAttributeName = "asp-prerender-export";
         private const string PrerenderWebpackConfigAttributeName = "asp-prerender-webpack-config";
+        private const string PrerenderDataAttributeName = "asp-prerender-data";
         private static INodeServices _fallbackNodeServices; // Used only if no INodeServices was registered with DI
 
         private readonly string _applicationBasePath;
@@ -51,6 +52,9 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
         [HtmlAttributeName(PrerenderWebpackConfigAttributeName)]
         public string WebpackConfigPath { get; set; }
 
+        [HtmlAttributeName(PrerenderDataAttributeName)]
+        public object CustomDataParameter { get; set; }
+
         [HtmlAttributeNotBound]
         [ViewContext]
         public ViewContext ViewContext { get; set; }
@@ -67,7 +71,8 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
                     WebpackConfig = WebpackConfigPath
                 },
                 request.GetEncodedUrl(),
-                request.Path + request.QueryString.Value);
+                request.Path + request.QueryString.Value,
+                CustomDataParameter);
             output.Content.SetHtmlContent(result.Html);
 
             // Also attach any specified globals to the 'window' object. This is useful for transferring
