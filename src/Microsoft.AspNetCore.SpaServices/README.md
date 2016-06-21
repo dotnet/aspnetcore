@@ -91,7 +91,7 @@ For example, in your `cshtml`,
                      asp-prerender-data="new {
                         IsGoldUser = true,
                         Cookies = ViewContext.HttpContext.Request.Cookies
-                    }""></div>
+                     }"></div>
 
 Now in your JavaScript prerendering function, you can access this data by reading `params.data`, e.g.:
 
