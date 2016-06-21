@@ -7,6 +7,6 @@ module.exports.createWebpackDevServer = function (callback) {
         callback('To use webpack dev middleware, you must install the \'aspnet-webpack\' NPM package.');
         return;
     }
-    
+
     return aspNetWebpack.createWebpackDevServer.apply(this, arguments);
 };

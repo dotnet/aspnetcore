@@ -7,6 +7,6 @@ module.exports.renderToString = function (callback) {
         callback('To use prerendering, you must install the \'aspnet-prerendering\' NPM package.');
         return;
     }
-    
+
     return aspNetPrerendering.renderToString.apply(this, arguments);
 };

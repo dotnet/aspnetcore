@@ -17,7 +17,7 @@ Behind the scenes, it uses the [`Microsoft.AspNetCore.NodeServices`](https://git
   * To test this is installed and can be found, run `node -v` on a command line
   * Note: If you're deploying to an Azure web site, you don't need to do anything here - Node is already installed and available in the server environments
 * [.NET Core](https://dot.net), version 1.0 RC2 or later
-  
+
 ### Installation into existing projects
 
  * Add `Microsoft.AspNetCore.SpaServices` to the dependencies list in your `project.json` file
@@ -28,10 +28,10 @@ Behind the scenes, it uses the [`Microsoft.AspNetCore.NodeServices`](https://git
    * For **webpack dev middleware**, install `aspnet-webpack`
    * For **webpack dev middleware with hot module replacement**, also install `webpack-hot-middleware`
    * For **webpack dev middleware with React hot module replacement**, also install `aspnet-webpack-react`
- 
+
    For example, run `npm install --save aspnet-prerendering aspnet-webpack` to install `aspnet-prerendering` and `aspnet-webpack`.
 
- 
+
 ### Creating entirely new projects
 
 If you're starting from scratch, you might prefer to use the `aspnetcore-spa` Yeoman generator to get a ready-to-go starting point using your choice of client-side framework. This includes `Microsoft.AspNetCore.SpaServices` along with everything configured for webpack middleware, server-side prerendering, etc.
