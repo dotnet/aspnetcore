@@ -54,8 +54,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             return GetErrorMessage(
                 validationContext.ModelMetadata,
                 validationContext.ModelMetadata.GetDisplayName(),
-                Attribute.MaximumLength,
-                Attribute.MinimumLength);
+                Attribute.MinimumLength,
+                Attribute.MaximumLength);
         }
     }
 }
