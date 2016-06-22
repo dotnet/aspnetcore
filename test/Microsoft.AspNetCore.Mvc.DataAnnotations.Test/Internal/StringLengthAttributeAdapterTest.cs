@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var expectedMessage = "Property must not be longer than '8' characters.";
 
             var stringLocalizer = new Mock<IStringLocalizer>();
-            var expectedProperties = new object[] { "Length", 0, 8 };
+            var expectedProperties = new object[] { "Length", 8, 0 };
 
             stringLocalizer.Setup(s => s[attribute.ErrorMessage, expectedProperties])
                 .Returns(new LocalizedString(attribute.ErrorMessage, expectedMessage));
