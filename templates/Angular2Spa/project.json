@@ -55,6 +55,7 @@
     "include": [
       "appsettings.json",
       "ClientApp",
+      "node_modules",
       "typings",
       "Views",
       "tsconfig.json",
