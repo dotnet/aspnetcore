@@ -46,11 +46,11 @@
     ]
   },
   "scripts": {
-    "prepare": [
+    "prepublish": [
       "npm install",
-      "webpack --config webpack.config.vendor.js"
+      "node node_modules/webpack/bin/webpack.js --config webpack.config.vendor.js",
+      "node node_modules/webpack/bin/webpack.js"
     ],
-    "prepublish": [ "webpack" ],
     "postpublish": [ "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%" ]
   }
 }
