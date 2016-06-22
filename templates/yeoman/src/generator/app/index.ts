@@ -22,7 +22,7 @@ class MyGenerator extends yeoman.Base {
 
     prompting() {
         const done = this.async();
-        
+
         this.prompt([{
             type: 'list',
             name: 'framework',
@@ -40,13 +40,18 @@ class MyGenerator extends yeoman.Base {
             done();
         });
     }
-    
+
     writing() {
         var templateRoot = this.templatePath(this._answers.framework);
         glob.sync('**/*', { cwd: templateRoot, dot: true, nodir: true }).forEach(fn => {
             // Token replacement in filenames
             let outputFn = fn.replace(/tokenreplace\-([^\.\/]*)/g, (substr, token) => this._answers[token]);
-            
+
+            // Rename template_gitignore to .gitignore in output
+            if (path.basename(fn) === 'template_gitignore') {
+                outputFn = path.join(path.dirname(fn), '.gitignore');
+            }
+
             this.fs.copyTpl(
                 path.join(templateRoot, fn),
                 this.destinationPath(outputFn),
@@ -54,7 +59,7 @@ class MyGenerator extends yeoman.Base {
             );
         });
     }
-    
+
     installingDeps() {
         this.installDependencies({
             npm: true,
@@ -62,7 +67,7 @@ class MyGenerator extends yeoman.Base {
             callback: () => {
                 this.spawnCommandSync('dotnet', ['restore']);
                 this.spawnCommandSync('./node_modules/.bin/webpack', ['--config', 'webpack.config.vendor.js']);
-                this.spawnCommandSync('./node_modules/.bin/webpack');                
+                this.spawnCommandSync('./node_modules/.bin/webpack');
             }
         });
     }

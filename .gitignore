@@ -29,3 +29,10 @@ project.lock.json
 .vs/
 npm-debug.log
 /.build/
+
+# The templates can't contain their own .gitignore files, because Yeoman has strange default handling for
+# files with that name (https://github.com/npm/npm/issues/1862). So, each template instead has a template_gitignore
+# file which gets renamed after the files are copied. And so any files that need to be excluded in the source
+# repo have to be excluded here.
+/templates/*/node_modules/
+/templates/*/wwwroot/dist/
