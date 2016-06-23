@@ -188,6 +188,9 @@ namespace Microsoft.AspNetCore.Http.Internal
                                 switch (attr)
                                 {
                                     case Attr.Delimiter:
+                                        _valueStart = _valueStart == -1 ? _offset : _valueStart;
+                                        _valueEnd = _valueEnd == -1 ? _offset : _valueEnd;
+                                        _trailingStart = _trailingStart == -1 ? _offset : _trailingStart;
                                         _leadingEnd = _offset;
                                         _mode = Mode.Produce;
                                         break;
