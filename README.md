@@ -10,7 +10,7 @@ We are pleased to [announce](https://blogs.msdn.microsoft.com/webdev/2016/06/27/
 
 ## Get Started
 
-Follow the [getting started](https://docs.asp.net/en/latest/getting-started.html) instructions in the [ASP.NET Core docs](https://docs.asp.net).
+Follow the [Getting Started](https://docs.asp.net/en/latest/getting-started.html) instructions in the [ASP.NET Core docs](https://docs.asp.net).
 
 Also checkout the [.NET Homepage](http://dot.net) for released versions of .NET, getting started guides, and learning resources.
 
