@@ -18,7 +18,7 @@ Also checkout the [.NET Homepage](http://dot.net) for released versions of .NET,
 
 If you want to use nightlies then you need to:
 
-- Obtain the latest nightly .NET Core SDK from http://github.com/dotnet/cli
+- Obtain the latest [nightly build of the .NET Core SDK](https://github.com/dotnet/cli#installers-and-binaries)
 - Add a NuGet.Config to your app with the following content:
     
   ```xml
