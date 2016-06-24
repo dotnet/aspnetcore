@@ -14,11 +14,11 @@ Follow the [getting started](https://docs.asp.net/en/latest/getting-started.html
 
 Also checkout the [.NET Homepage](http://dot.net) for released versions of .NET, getting started guides, and learning resources.
 
-## Nightly builds
+## Builds
 
-If you want to use nightlies then you need to:
+If you want to use the latest dev build then you need to:
 
-- Obtain the latest [nightly build of the .NET Core SDK](https://github.com/dotnet/cli#installers-and-binaries)
+- Obtain the latest [build of the .NET Core SDK](https://github.com/dotnet/cli#installers-and-binaries)
 - Add a NuGet.Config to your app with the following content:
     
   ```xml
