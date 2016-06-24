@@ -34,7 +34,7 @@ If you want to use the latest dev build then you need to:
     
   *NOTE: This NuGet.Config should be with your application unless you want nightly packages to potentially start being restored for other apps on the machine.*
     
-- Change your applications dependencies to have a `*` to get the latest version (ex. `1.0.0-*`.
+- Change your applications dependencies to have a `*` to get the latest version (ex. `1.0.0-*`).
 
 Prerelease tooling builds for Visual Studio are available from the [Tooling](https://github.com/aspnet/tooling/#pre-release-builds) repo.
 
