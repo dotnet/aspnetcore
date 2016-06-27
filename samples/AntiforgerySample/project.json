@@ -1,12 +1,12 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
-    "Microsoft.AspNetCore.Antiforgery": "1.0.0-*",
-    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
-    "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
+    "Microsoft.AspNetCore.Antiforgery": "1.0.0",
+    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0",
+    "Microsoft.AspNetCore.Http.Extensions": "1.0.0",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0",
+    "Microsoft.AspNetCore.StaticFiles": "1.0.0",
     "Newtonsoft.Json": "9.0.1"
   },
   "buildOptions": {
@@ -17,7 +17,7 @@
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.0.0",
           "type": "platform"
         }
       }

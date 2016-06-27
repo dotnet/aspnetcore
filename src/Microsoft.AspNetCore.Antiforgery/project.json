@@ -1,6 +1,6 @@
 {
   "description": "An antiforgery system for ASP.NET Core designed to generate and validate tokens to prevent Cross-Site Request Forgery attacks.",
-  "version": "1.0.0-*",
+  "version": "1.0.0",
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
@@ -20,10 +20,10 @@
     ]
   },
   "dependencies": {
-    "Microsoft.AspNetCore.DataProtection": "1.0.0-*",
-    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
-    "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
-    "Microsoft.Extensions.ObjectPool": "1.0.0-*"
+    "Microsoft.AspNetCore.DataProtection": "1.0.0",
+    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0",
+    "Microsoft.AspNetCore.WebUtilities": "1.0.0",
+    "Microsoft.Extensions.ObjectPool": "1.0.0"
   },
   "frameworks": {
     "netstandard1.3": {},
