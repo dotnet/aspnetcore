@@ -10,7 +10,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-*",
+    "dotnet-test-xunit": "1.0.0-rc3-000000-00",
     "ApiExplorerWebSite": "1.0.0",
     "ApplicationModelWebSite": "1.0.0",
     "BasicWebSite": "1.0.0",
@@ -21,17 +21,17 @@
     "FiltersWebSite": "1.0.0",
     "FormatterWebSite": "1.0.0",
     "HtmlGenerationWebSite": "1.0.0",
-    "Microsoft.AspNetCore.Mvc": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc": "1.0.0",
+    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.0.0",
     "Microsoft.AspNetCore.Mvc.TestCommon": {
       "version": "1.0.0-*",
       "type": "build"
     },
     "Microsoft.AspNetCore.Mvc.TestConfiguration": "1.0.0",
-    "Microsoft.AspNetCore.TestHost": "1.0.0-*",
-    "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
-    "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.0.0",
+    "Microsoft.AspNetCore.WebUtilities": "1.0.0",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0",
+    "Microsoft.Extensions.Logging.Testing": "1.0.0-rtm-21431",
     "MvcSandbox": "1.0.0",
     "RazorPageExecutionInstrumentationWebSite": "1.0.0",
     "RazorWebSite": "1.0.0",
@@ -47,7 +47,7 @@
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.0.0",
           "type": "platform"
         }
       },

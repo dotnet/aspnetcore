@@ -1,10 +1,10 @@
 {
   "dependencies": {
-    "Microsoft.AspNetCore.Http": "1.0.0-*",
-    "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
-    "Microsoft.AspNetCore.Testing": "1.0.0-*",
-    "Microsoft.Extensions.Configuration": "1.0.0-*",
-    "Microsoft.Extensions.DependencyInjection": "1.0.0-*"
+    "Microsoft.AspNetCore.Http": "1.0.0",
+    "Microsoft.AspNetCore.Http.Extensions": "1.0.0",
+    "Microsoft.AspNetCore.Testing": "1.0.0-rtm-21431",
+    "Microsoft.Extensions.Configuration": "1.0.0",
+    "Microsoft.Extensions.DependencyInjection": "1.0.0"
   },
   "frameworks": {
     "net451": {},
@@ -14,7 +14,7 @@
         "portable-net451+win8"
       ],
       "dependencies": {
-        "NETStandard.Library": "1.5.0-*"
+        "NETStandard.Library": "1.6.0"
       }
     }
   }

@@ -1,6 +1,6 @@
 {
   "description": "ASP.NET Core MVC Razor view engine for CSHTML files.",
-  "version": "1.0.0-*",
+  "version": "1.0.0",
   "packOptions": {
     "repository": {
       "type": "git",
@@ -22,32 +22,31 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc.Razor.Host": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.0-*",
-    "Microsoft.CodeAnalysis.CSharp": "1.3.0-*",
-    "Microsoft.Extensions.FileProviders.Composite": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Razor.Host": "1.0.0",
+    "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.0",
+    "Microsoft.CodeAnalysis.CSharp": "1.3.0",
+    "Microsoft.Extensions.FileProviders.Composite": "1.0.0",
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
-      "version": "1.0.0-*",
+      "version": "1.0.0-rtm-21431",
       "type": "build"
     },
     "Microsoft.Extensions.PropertyActivator.Sources": {
-      "version": "1.0.0-*",
+      "version": "1.0.0-rtm-21431",
       "type": "build"
     },
     "Microsoft.Extensions.PropertyHelper.Sources": {
-      "version": "1.0.0-*",
+      "version": "1.0.0-rtm-21431",
       "type": "build"
     }
   },
   "frameworks": {
     "net451": {
-      "frameworkAssemblies": {
-      }
+      "frameworkAssemblies": {}
     },
     "netstandard1.6": {
       "dependencies": {
-        "System.Text.Encoding": "4.0.11-*",
-        "System.Runtime.Loader": "4.0.0-*"
+        "System.Text.Encoding": "4.0.11",
+        "System.Runtime.Loader": "4.0.0"
       }
     }
   }

@@ -1,6 +1,6 @@
 {
   "description": "ASP.NET Core MVC formatters for XML input and output using DataContractSerializer and XmlSerializer.",
-  "version": "1.0.0-*",
+  "version": "1.0.0",
   "packOptions": {
     "repository": {
       "type": "git",
@@ -21,13 +21,13 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc.Core": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Core": "1.0.0",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
-      "version": "1.0.0-*",
+      "version": "1.0.0-rtm-21431",
       "type": "build"
     },
     "Microsoft.Extensions.PropertyHelper.Sources": {
-      "version": "1.0.0-*",
+      "version": "1.0.0-rtm-21431",
       "type": "build"
     }
   },
@@ -40,8 +40,8 @@
     },
     "netstandard1.6": {
       "dependencies": {
-        "System.Runtime.Serialization.Xml": "4.1.1-*",
-        "System.Xml.XmlSerializer": "4.0.11-*"
+        "System.Runtime.Serialization.Xml": "4.1.1",
+        "System.Xml.XmlSerializer": "4.0.11"
       }
     }
   }

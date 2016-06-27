@@ -9,13 +9,13 @@
     ]
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNetCore.Cors": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0",
+    "Microsoft.AspNetCore.Cors": "1.0.0",
+    "Microsoft.AspNetCore.Mvc": "1.0.0",
+    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.0.0",
     "Microsoft.AspNetCore.Mvc.TestConfiguration": "1.0.0",
-    "Microsoft.AspNetCore.StaticFiles": "1.0.0-*"
+    "Microsoft.AspNetCore.StaticFiles": "1.0.0"
   },
   "frameworks": {
     "net451": {},
@@ -26,7 +26,7 @@
       ],
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.0.0",
           "type": "platform"
         }
       }
