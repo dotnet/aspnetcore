@@ -1,50 +1,51 @@
 
+# ASP.NET Core
 [![Join the chat at https://gitter.im/aspnet/Home](https://badges.gitter.im/aspnet/Home.svg)](https://gitter.im/aspnet/Home?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-We are pleased to [announce](https://blogs.msdn.microsoft.com/webdev/2016/05/16/announcing-asp-net-core-rc2/) the release of ASP.NET Core RC2!
+This is the home page of the ASP.NET Core source code repositories and is intended for those contributing to ASP.NET Core or using bleeding edge nightly builds.
 
-[Get started with ASP.NET Core RC2](https://docs.asp.net/en/1.0.0-rc2/getting-started.html)
+ASP.NET Core is a new open-source and cross-platform framework for building modern cloud based internet connected applications, such as web apps, IoT apps and mobile backends. ASP.NET Core apps can run on .NET Core or on the full .NET Framework. It was architected to provide an optimized development framework for apps that are deployed to the cloud or run on-premises. It consists of modular components with minimal overhead, so you retain flexibility while constructing your solutions. You can develop and run your ASP.NET Core apps cross-platform on Windows, Mac and Linux. [Learn more about ASP.NET Core](https://docs.asp.net/en/latest/intro.html).
 
-If you are looking for the homepage of .NET Core, with getting started guides and downloads for released versions of ASP.NET Core then you should go to http://dot.net. This is the home page of our source code repositories and is intended for those contributing to ASP.NET Core or using bleeding edge nightly builds.
+We are pleased to [announce](https://blogs.msdn.microsoft.com/webdev/2016/06/27/announcing-asp-net-core-1-0/) the release of ASP.NET Core 1.0!
 
-If you want a more stable, released, experience or getting started instructions then go to one of the following:
+## Get Started
 
-- [.NET Homepage](http://dot.net)
-Check out dot.net for released versions of .NET, getting started guides, and learning resources.
+Follow the [Getting Started](https://docs.asp.net/en/latest/getting-started.html) instructions in the [ASP.NET Core docs](https://docs.asp.net).
 
-- [ASP.NET Core Documentation](http://docs.asp.net) or [.NET Core Documentation](http://microsoft.com/net/core). We intend to merge these in the future.
+Also checkout the [.NET Homepage](http://dot.net) for released versions of .NET, getting started guides, and learning resources.
 
-If you want to follow along with development of ASP.NET Core then go to:
+## Builds
 
-- [Community Standup](http://live.asp.net)
-The community standup is held every week and streamed live to YouTube. You can view past standups in the linked playlist.
-- [Roadmap](https://github.com/aspnet/Home/wiki/Roadmap)
-The schedule and milestone themes for ASP.NET Core.
+If you want to use the latest dev build then you need to:
 
-## Getting ASP.NET Core
-
-- Stable builds of ASP.NET Core should be obtained from http://dot.net.
-- If you want to use nightlies then you need to:
-    - Obtain the latest nightly CLI from http://github.com/dotnet/cli
-    - Add a NuGet.Config to your app with the following content:
+- Obtain the latest [build of the .NET Core SDK](https://github.com/dotnet/cli#installers-and-binaries)
+- Add a NuGet.Config to your app with the following content:
     
-      ```xml
-      <?xml version="1.0" encoding="utf-8"?>
-      <configuration>
-          <packageSources>
-              <clear />
-              <add key="AspNetCI" value="https://www.myget.org/F/aspnetvnext/api/v3/index.json" />
-              <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
-          </packageSources>
-      </configuration>
-      ```
+  ```xml
+  <?xml version="1.0" encoding="utf-8"?>
+  <configuration>
+      <packageSources>
+          <clear />
+          <add key="AspNetVNext" value="https://www.myget.org/F/aspnetvnext/api/v3/index.json" />
+          <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
+      </packageSources>
+  </configuration>
+  ```
     
-      *NOTE: This NuGet.Config should be with your application unless you want nightly packages to potentially start being restored for other apps on the machine.*
+  *NOTE: This NuGet.Config should be with your application unless you want nightly packages to potentially start being restored for other apps on the machine.*
     
-    - Change your applications dependencies to have a `*` to get the latest version, `1.0.0-*` for example.
-- Prerelease tooling builds for Visual Studio are available from the [Tooling](https://github.com/aspnet/tooling/#pre-release-builds) repo.
+- Change your applications dependencies to have a `*` to get the latest version (ex. `1.0.0-*`).
 
-## Repos and Projects
+Prerelease tooling builds for Visual Studio are available from the [Tooling](https://github.com/aspnet/tooling/#pre-release-builds) repo.
+
+## Community and roadmap
+
+To follow along with the development of ASP.NET Core:
+
+- [Community Standup](http://live.asp.net): The community standup is held every week and streamed live to YouTube. You can view past standups in the linked playlist.
+- [Roadmap](https://github.com/aspnet/Home/wiki/Roadmap): The schedule and milestone themes for ASP.NET Core.
+
+## Repos and projects
 
 These are some of the most common repos:
 
