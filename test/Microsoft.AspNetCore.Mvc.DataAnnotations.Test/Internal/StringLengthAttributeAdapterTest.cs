@@ -16,19 +16,19 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
     {
         [Fact]
         [ReplaceCulture]
-        public void AddValidation_WithMaxLength_AddsAttributes_Localize()
+        public void AddValidation_WithMaxLengthAndMinLength_AddsAttributes_Localize()
         {
             // Arrange
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
 
             var attribute = new StringLengthAttribute(8);
-            attribute.ErrorMessage = "Property must not be longer than '{1}' characters.";
+            attribute.ErrorMessage = "Property must not be longer than '{1}' characters and not shorter than '{2}' characters.";
 
-            var expectedMessage = "Property must not be longer than '8' characters.";
+            var expectedMessage = "Property must not be longer than '8' characters and not shorter than '0' characters.";
 
             var stringLocalizer = new Mock<IStringLocalizer>();
-            var expectedProperties = new object[] { "Length", 0, 8 };
+            var expectedProperties = new object[] { "Length", 8, 0 };
 
             stringLocalizer.Setup(s => s[attribute.ErrorMessage, expectedProperties])
                 .Returns(new LocalizedString(attribute.ErrorMessage, expectedMessage));

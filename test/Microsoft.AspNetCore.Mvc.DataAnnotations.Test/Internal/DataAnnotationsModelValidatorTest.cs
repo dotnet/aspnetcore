@@ -417,7 +417,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                     {
                         new StringLengthAttribute(length) { ErrorMessage = LocalizationKey, MinimumLength = 1},
                         string.Empty,
-                        new object[] { nameof(SampleModel), 1, length }
+                        new object[] { nameof(SampleModel), length, 1 }
                     },
                     {
                         new RangeAttribute(0, length) { ErrorMessage = LocalizationKey },
