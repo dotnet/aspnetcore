@@ -1,26 +1,26 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel.Https": "1.0.0-*",
-    "Microsoft.AspNetCore.Testing": "1.0.0-*",
+    "dotnet-test-xunit": "1.0.0-rc3-000000-00",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0",
+    "Microsoft.AspNetCore.Server.Kestrel.Https": "1.0.0",
+    "Microsoft.AspNetCore.Testing": "1.0.0-rtm-21431",
     "xunit": "2.1.0"
   },
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.0.0",
           "type": "platform"
         },
-        "System.Diagnostics.TraceSource": "4.0.0-*",
-        "System.Globalization.Extensions": "4.0.1-*",
-        "System.IO": "4.1.0-*",
-        "System.Net.Http": "4.1.0-*",
-        "System.Net.Http.WinHttpHandler": "4.0.0-*",
-        "System.Net.Sockets": "4.1.0-*",
-        "System.Runtime.Handles": "4.0.1-*",
+        "System.Diagnostics.TraceSource": "4.0.0",
+        "System.Globalization.Extensions": "4.0.1",
+        "System.IO": "4.1.0",
+        "System.Net.Http": "4.1.0",
+        "System.Net.Http.WinHttpHandler": "4.0.0",
+        "System.Net.Sockets": "4.1.0",
+        "System.Runtime.Handles": "4.0.1",
         "moq.netcore": "4.4.0-beta8"
       },
       "imports": [

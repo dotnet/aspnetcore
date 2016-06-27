@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.0.0",
   "description": "HTTPS support for the ASP.NET Core Kestrel cross-platform web server.",
   "buildOptions": {
     "keyFile": "../../tools/Key.snk",
@@ -19,13 +19,13 @@
     ]
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*"
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0"
   },
   "frameworks": {
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "System.Net.Security": "4.0.0-*"
+        "System.Net.Security": "4.0.0"
       }
     }
   }
