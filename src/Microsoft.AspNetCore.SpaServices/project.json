@@ -8,13 +8,13 @@
     "Microsoft"
   ],
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc": "1.0.0",
     "Microsoft.AspNetCore.NodeServices": "1.0.0-*"
   },
   "frameworks": {
     "net451": {
     },
-    "netstandard1.0": {
+    "netstandard1.6": {
       "imports": [
         "dotnet5.6",
         "dnxcore50",

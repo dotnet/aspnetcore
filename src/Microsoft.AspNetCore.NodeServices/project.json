@@ -6,16 +6,16 @@
   },
   "authors": [ "Microsoft" ],
   "dependencies": {
-    "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*",
-    "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
-    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
-    "Newtonsoft.Json": "8.0.3"
+    "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0",
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0",
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0",
+    "Newtonsoft.Json": "9.0.1"
   },
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Net.Http": "4.0.0-*"
+        "System.Net.Http": "4.0.0"
       },
       "dependencies": {
         "Microsoft.Tpl.Dataflow": "4.5.24"
@@ -28,13 +28,14 @@
         "portable-net45+win8"
       ],
       "dependencies": {
-        "System.Console": "4.0.0-*",
-        "System.Diagnostics.Process": "4.1.0-*",
-        "System.IO.Pipes": "4.0.0-*",
-        "System.Net.Http": "4.0.1-*",
-        "System.Net.Sockets": "4.1.0-*",
-        "System.Text.RegularExpressions": "4.0.12-*",
-        "System.Threading.Tasks.Dataflow": "4.5.25-*"
+        "System.Console": "4.0.0",
+        "System.Diagnostics.Process": "4.1.0",
+        "System.IO.Pipes": "4.0.0",
+        "System.Net.Http": "4.1.0",
+        "System.Net.Sockets": "4.1.0",
+        "System.Runtime.InteropServices.RuntimeInformation": "4.0.0",
+        "System.Text.RegularExpressions": "4.1.0",
+        "System.Threading.Tasks.Dataflow": "4.5.25"
       }
     }
   },

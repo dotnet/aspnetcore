@@ -9,13 +9,13 @@
     "defaultNamespace": "Microsoft.AspNetCore.ReactServices"
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0",
     "Microsoft.AspNetCore.SpaServices": "1.0.0-*"
   },
   "frameworks": {
     "net451": {
     },
-    "netstandard1.0": {
+    "netstandard1.6": {
       "imports": [
         "dotnet5.6",
         "dnxcore50",
