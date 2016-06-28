@@ -51,8 +51,6 @@ if [ -z "$PROFILE" ]; then
         PROFILE="$HOME/.bash_profile"
     elif [ -f "$HOME/.bashrc" ]; then
         PROFILE="$HOME/.bashrc"
-    elif [ -f "$HOME/.profile" ]; then
-        PROFILE="$HOME/.profile"
     fi
 fi
 
@@ -66,7 +64,7 @@ SOURCE_STR="[ -s \"$DNX_USER_HOME/dnvm/dnvm.sh\" ] && . \"$DNX_USER_HOME/dnvm/dn
 
 if [ -z "$PROFILE" -a -z "$ZPROFILE" ] || [ ! -f "$PROFILE" -a ! -f "$ZPROFILE" ] ; then
     if [ -z "$PROFILE" ]; then
-      echo "Profile not found. Tried ~/.bash_profile ~/.zshrc and ~/.profile."
+      echo "Profile not found. Tried ~/.bash_profile ~/.zshrc and ~/.bashrc."
       echo "Create one of them and run this script again"
     elif [ ! -f "$PROFILE" ]; then
       echo "Profile $PROFILE not found"
