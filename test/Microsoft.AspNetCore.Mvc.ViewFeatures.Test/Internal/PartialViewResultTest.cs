@@ -23,6 +23,23 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
     public class PartialViewResultTest
     {
         [Fact]
+        public void Model_ExposesViewDataModel()
+        {
+            // Arrange
+            var customModel = new object();
+            var viewResult = new PartialViewResult
+            {
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider())
+                {
+                    Model = customModel
+                },
+            };
+
+            // Act & Assert
+            Assert.Same(customModel, viewResult.Model);
+        }
+
+        [Fact]
         public async Task ExecuteResultAsync_Throws_IfViewCouldNotBeFound_MessageUsesGetViewLocations()
         {
             // Arrange

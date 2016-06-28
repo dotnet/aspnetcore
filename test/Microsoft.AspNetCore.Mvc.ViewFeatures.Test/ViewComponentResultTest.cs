@@ -35,6 +35,23 @@ namespace Microsoft.AspNetCore.Mvc
             new TempDataDictionary(new DefaultHttpContext(), new SessionStateTempDataProvider());
 
         [Fact]
+        public void Model_ExposesViewDataModel()
+        {
+            // Arrange
+            var customModel = new object();
+            var viewResult = new ViewComponentResult
+            {
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider())
+                {
+                    Model = customModel
+                },
+            };
+
+            // Act & Assert
+            Assert.Same(customModel, viewResult.Model);
+        }
+
+        [Fact]
         public async Task ExecuteAsync_ViewComponentResult_AllowsNullViewDataAndTempData()
         {
             // Arrange
