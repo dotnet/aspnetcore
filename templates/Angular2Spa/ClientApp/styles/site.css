@@ -10,9 +10,9 @@
 }
 
 /* Highlighting rules for nav menu items */
-.main-nav li a.router-link-active,
-.main-nav li a.router-link-active:hover,
-.main-nav li a.router-link-active:focus {
+.main-nav li.link-active a,
+.main-nav li.link-active a:hover,
+.main-nav li.link-active a:focus {
     background-color: #4189C7;
     color: white;
 }

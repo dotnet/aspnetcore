@@ -5,11 +5,16 @@ import './styles/site.css';
 
 import { bootstrap } from '@angular/platform-browser-dynamic';
 import { FormBuilder } from '@angular/common';
-import * as router from '@angular/router-deprecated';
-import { Http, HTTP_PROVIDERS } from '@angular/http';
+import { provideRouter } from '@angular/router';
+import { HTTP_PROVIDERS } from '@angular/http';
 import { App } from './components/app/app';
+import { routes } from './routes';
 
-bootstrap(App, [router.ROUTER_PROVIDERS, HTTP_PROVIDERS, FormBuilder]);
+bootstrap(App, [
+    ...HTTP_PROVIDERS,
+    FormBuilder,
+    provideRouter(routes)
+]);
 
 // Basic hot reloading support. Automatically reloads and restarts the Angular 2 app each time
 // you modify source files. This will not preserve any application state other than the URL.
