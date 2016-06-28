@@ -325,9 +325,60 @@ Benefits:
 
 It lets you work as if the browser natively understands whatever file types you are working with (e.g., TypeScript, SASS), because it's as if there's no build process to wait for.
 
+### Example: A simple Webpack setup
+
+**Note:** If you already have Webpack in your project, then you can skip this section.
+
+As a simple example, here's how you can set up Webpack to build TypeScript files. First install the relevant NPM packages by executing this from the root directory of your project:
+
+```
+npm install --save typescript ts-loader
+``` 
+
+And if you don't already have it, you'll find it useful to install the `webpack` command-line tool:
+
+```
+npm install -g webpack
+```
+
+Now add a Webpack configuration file. Create `webpack.config.js` in the root of your project, containing the following:
+
+```javascript
+module.exports = {
+    resolve: {
+        // For modules referenced with no filename extension, Webpack will consider these extensions
+        extensions: [ '', '.js', '.ts' ]
+    },
+    module: {
+        loaders: [
+            // This example only configures Webpack to load .ts files. You can also drop in loaders
+            // for other file types, e.g., .coffee, .sass, .jsx, ...
+            { test: /\.ts$/, loader: 'ts-loader' }
+        ]
+    },
+    entry: {
+        // The loader will follow all chains of reference from this entry point...
+        main: ['./ClientApp/MyApp.ts']
+    },
+    output: {
+        // ... and emit the built result in this location
+        path: __dirname + '/wwwroot/dist',
+        filename: '[name].js'
+    },
+};
+```
+
+Now you can put some TypeScript code (minimally, just `console.log('Hello');`) at `ClientApp/MyApp.ts` and then run `webpack` from the command line to build it (and everything it references). The output will be placed in `wwwroot/dist`, so you can load and run it in a browser by adding the following to one of your views (e.g., `Views\Home\Index.cshtml`):
+
+    <script src="/dist/main.js"></script>
+
+The Webpack loader, `ts-loader`, follows all chains of reference from `MyApp.ts` and will compile all referenced TypeScript code into your output. If you want, you can create a [`tsconfig.json` file](https://www.typescriptlang.org/docs/handbook/tsconfig-json.html) to control things like whether source maps will be included in the output. If you add other Webpack loaders to your `webpack.config.js`, you can even reference things like SASS from your TypeScript, and then it will get built to CSS and loaded automatically.
+
+So that's enough to build TypeScript. Here's where webpack dev middleware comes in to auto-build your code whenever needed (so you don't need any file watchers or to run `webpack` manually), and optionally hot module replacement (HMR) to push your changes automatically from code editor to browser without even reloading the page.
+
 ### Enabling webpack dev middleware
 
-After installing the `Microsoft.AspNetCore.SpaServices` NuGet package and the `aspnet-webpack` NPM package, go to your `Startup.cs` file, and **before your call to `UseStaticFiles`**, add the following:
+First install the `Microsoft.AspNetCore.SpaServices` NuGet package and the `aspnet-webpack` NPM package, then go to your `Startup.cs` file, and **before your call to `UseStaticFiles`**, add the following:
 
 ```csharp
 if (env.IsDevelopment()) {
@@ -337,7 +388,7 @@ if (env.IsDevelopment()) {
 // You call to app.UseStaticFiles(); should be here
 ```
 
-You will also need to edit your webpack configuration at `webpack.config.js`. Since `UseWebpackDevMiddleware` needs to know which incoming requests to intercept, specify a `publicPath` value on your `output`, for example:
+Also check your webpack configuration at `webpack.config.js`. Since `UseWebpackDevMiddleware` needs to know which incoming requests to intercept, make sure you've specified a `publicPath` value on your `output`, for example:
 
 ```javascript
 module.exports = {
