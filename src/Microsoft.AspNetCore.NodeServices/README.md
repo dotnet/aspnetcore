@@ -356,12 +356,14 @@ services.AddNodeServices(new NodeServicesOptions
 
 **Available hosting models**
 
-* `Socket` (default)
+* `Socket`
   * Launches Node as a separate process, and communicates with it using named pipes (on Windows) or domain sockets (on Linux / OS X).
   * This is faster than `Http` because it uses a low-level binary protocol with very low overhead. It retains one continuous connection for the whole lifetime of the Node instance, so it doesn't have to keep waiting for new connections to open.
-* `Http`
+* `Http` (default)
   * Launches Node as a separate process, and communicates with it by making HTTP requests.
   * This primarily exists because it was implemented before `Socket`, but there's no particular reason to use it now that `Socket` is available. It could theoretically be useful if you wanted to run Node instances on separate servers (though there isn't currently any built-in API for configuring that).
+
+The default transport may change from `Http` to `Socket` in the near future, because it's faster.
 
 ### Custom hosting models
 
