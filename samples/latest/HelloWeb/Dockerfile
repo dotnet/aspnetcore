@@ -30,9 +30,10 @@ ENV PATH $PATH:$DNX_USER_HOME/runtimes/default/bin
 
 ENV MONO_THREADS_PER_CPU 20
 
-COPY . /app
+COPY ./project.json /app/project.json
 WORKDIR /app
 RUN ["dnu", "restore"]
+COPY . /app
 
 EXPOSE 5004
 ENTRYPOINT ["dnx", "kestrel"]
