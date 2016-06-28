@@ -12,19 +12,19 @@
   },
   "dependencies": {
     "Microsoft.NETCore.App": {
-      "version": "1.0.0-rc2-*",
+      "version": "1.0.0",
       "type": "platform"
     },
-    "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
-    "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
-    "Microsoft.Extensions.Logging.Debug": "1.0.0-*",
+    "Microsoft.AspNetCore.Diagnostics": "1.0.0",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0",
+    "Microsoft.AspNetCore.Mvc": "1.0.0",
+    "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0",
+    "Microsoft.AspNetCore.StaticFiles": "1.0.0",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0",
+    "Microsoft.Extensions.Logging.Console": "1.0.0",
+    "Microsoft.NETCore.Platforms": "1.0.1",
+    "Microsoft.Extensions.Logging.Debug": "1.0.0",
     "Microsoft.AspNetCore.NodeServices": "1.0.0-*"
   },
   "frameworks": {

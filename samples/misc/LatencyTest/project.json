@@ -5,9 +5,9 @@
   },
   "dependencies": {
     "Microsoft.NETCore.App": {
-      "version": "1.0.0-rc2-*",
+      "version": "1.0.0",
       "type": "platform"
-    },    
+    },
     "Microsoft.AspNetCore.NodeServices": "1.0.0-*"
   },
   "frameworks": {
