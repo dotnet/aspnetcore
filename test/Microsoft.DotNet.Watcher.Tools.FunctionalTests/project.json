@@ -4,7 +4,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-*",
+    "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
     "Microsoft.Extensions.Process.Sources": {
       "type": "build",
@@ -13,14 +13,10 @@
     "Microsoft.DotNet.Watcher.Core": "1.0.0-*",
     "Newtonsoft.Json": "9.0.1",
     "System.Threading.Thread": "4.0.0-*",
-    "xunit": "2.1.0"
+    "xunit": "2.2.0-*"
   },
   "frameworks": {
     "netcoreapp1.0": {
-      "imports": [
-        "portable-net451+win8",
-        "dnxcore50"
-      ],
       "dependencies": {
         "Microsoft.NETCore.App": {
           "type": "platform",
