@@ -662,6 +662,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             tagBuilder.MergeAttribute("name", fullName, true);
+
+            AddPlaceholderAttribute(viewContext.ViewData, tagBuilder, modelExplorer, expression);
             AddValidationAttributes(viewContext, tagBuilder, modelExplorer, expression);
 
             // If there are any errors for a named field, we add this CSS attribute.
@@ -1170,12 +1172,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var suppliedTypeString = tagBuilder.Attributes["type"];
             if (_placeholderInputTypes.Contains(suppliedTypeString))
             {
-                modelExplorer = modelExplorer ?? ExpressionMetadataProvider.FromStringExpression(expression, viewContext.ViewData, _metadataProvider);
-                var placeholder = modelExplorer.Metadata.Placeholder;
-                if (!string.IsNullOrEmpty(placeholder))
-                {
-                    tagBuilder.MergeAttribute("placeholder", placeholder);
-                }
+                AddPlaceholderAttribute(viewContext.ViewData, tagBuilder, modelExplorer, expression);
             }
 
             var valueParameter = FormatValue(value, format);
@@ -1286,6 +1283,27 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             tagBuilder.MergeAttribute("href", url);
 
             return tagBuilder;
+        }
+
+        /// <summary>
+        /// Adds a placeholder attribute to the <paramref name="tagBuilder" />.
+        /// </summary>
+        /// <param name="viewData">A <see cref="ViewDataDictionary"/> instance for the current scope.</param>
+        /// <param name="tagBuilder">A <see cref="TagBuilder"/> instance.</param>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/> for the <paramref name="expression"/>.</param>
+        /// <param name="expression">Expression name, relative to the current model.</param>
+        protected virtual void AddPlaceholderAttribute(
+            ViewDataDictionary viewData,
+            TagBuilder tagBuilder,
+            ModelExplorer modelExplorer,
+            string expression)
+        {
+            modelExplorer = modelExplorer ?? ExpressionMetadataProvider.FromStringExpression(expression, viewData, _metadataProvider);
+            var placeholder = modelExplorer.Metadata.Placeholder;
+            if (!string.IsNullOrEmpty(placeholder))
+            {
+                tagBuilder.MergeAttribute("placeholder", placeholder);
+            }
         }
 
         /// <summary>

@@ -1,8 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Mvc.TestCommon;
+using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.TestCommon;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Rendering
@@ -23,10 +24,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
 
             // Act
-            var result = HtmlContentUtilities.HtmlContentToString(helper.TextBoxFor(m => m.Property1, new { type }));
+            var textBox = helper.TextBoxFor(m => m.Property1, new { type });
 
-            // Assert
-            Assert.True(result.Contains(@"placeholder=""HtmlEncode[[placeholder]]"""));
+            // Assert 
+            var result = HtmlContentUtilities.HtmlContentToString(textBox);
+            Assert.Contains(@"placeholder=""HtmlEncode[[placeholder]]""", result, StringComparison.Ordinal);
         }
 
         [Theory]
@@ -49,10 +51,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
 
             // Act
-            var result = HtmlContentUtilities.HtmlContentToString(helper.TextBoxFor(m => m.Property1, new { type }));
+            var textBox = helper.TextBoxFor(m => m.Property1, new { type });
 
-            // Assert
-            Assert.False(result.Contains(@"placeholder=""HtmlEncode[[placeholder]]"""));
+            // Assert 
+            var result = HtmlContentUtilities.HtmlContentToString(textBox);
+            Assert.DoesNotContain(@"placeholder=""HtmlEncode[[placeholder]]""", result, StringComparison.Ordinal);
         }
 
         private class TextBoxModel
