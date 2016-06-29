@@ -14,6 +14,8 @@ cd aspnet-home/samples/latest/HelloWeb
 docker build -t aspnet-home-helloweb .
 ```
 
+If this build fails when setting up colord, due to a failed chfn, it is likely due to Linux kernel PAM auditing code.  To use a patched image that disables auditing, edit the Dockerfile and replace the FROM ubuntu:14.04 line with FROM sequenceiq/pam:ubuntu-14.04, or follow the instructions at https://github.com/sequenceiq/docker-pam to create a patch from source code.
+
 ### Run a docker container
 ```
 docker run -it -p 5004:5004 aspnet-home-helloweb
