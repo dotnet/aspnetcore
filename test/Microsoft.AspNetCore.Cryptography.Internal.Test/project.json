@@ -1,13 +1,13 @@
 {
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-*",
+    "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Cryptography.Internal": "1.1.0-*",
     "Microsoft.AspNetCore.DataProtection.Test.Shared": {
       "type": "build",
       "version": "1.0.0-*"
     },
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
-    "xunit": "2.1.0"
+    "xunit": "2.2.0-*"
   },
   "frameworks": {
     "netcoreapp1.0": {
@@ -15,8 +15,7 @@
         "Microsoft.NETCore.App": {
           "version": "1.0.0-*",
           "type": "platform"
-        },
-        "System.Diagnostics.Process": "4.1.0-*"
+        }
       },
       "imports": [
         "dnxcore50",
