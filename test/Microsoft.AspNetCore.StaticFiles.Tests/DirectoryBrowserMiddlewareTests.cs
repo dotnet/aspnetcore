@@ -20,6 +20,14 @@ namespace Microsoft.AspNetCore.StaticFiles
     public class DirectoryBrowserMiddlewareTests
     {
         [Fact]
+        public void WorksWithoutEncoderRegistered()
+        {
+            // No exception, uses HtmlEncoder.Default
+            StaticFilesTestServer.Create(
+                app => app.UseDirectoryBrowser());
+        }
+
+        [Fact]
         public async Task NullArguments()
         {
             // No exception, default provided
