@@ -286,6 +286,53 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             Assert.Equal(expectedString, result.ToString());
         }
 
+        [Theory]
+        [InlineData("SomeName", "SomeName")]
+        [InlineData("Obj1.Prop1", "Obj1_Prop1")]
+        [InlineData("Obj1.Prop1[0]", "Obj1_Prop1_0_")]
+        [InlineData("Obj1.Prop1[0].Prop2", "Obj1_Prop1_0__Prop2")]
+        public void GenerateIdFromName_ReturnsExpectedValues(string fullname, string expected)
+        {
+            // Arrange
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+
+            // Act
+            var result = helper.GenerateIdFromName(fullname);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData(FormMethod.Get, "get")]
+        [InlineData(FormMethod.Post, "post")]
+        [InlineData((FormMethod)42, "post")]
+        public void GetFormMethodString_ReturnsExpectedValues(FormMethod method, string expected)
+        {
+            // Act
+            var result = HtmlHelper.GetFormMethodString(method);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData("-{0}-", "-<b>boldFromObject</b>-")]
+        [InlineData("-%{0}%-", "-%<b>boldFromObject</b>%-")]
+        [InlineData("-=={0}=={0}==-", "-==<b>boldFromObject</b>==<b>boldFromObject</b>==-")]
+        public void FormatValue_ReturnsExpectedValues(string format, string expected)
+        {
+            // Arrange
+            var value = new ObjectWithToStringOverride();
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+
+            // Act
+            var result = helper.FormatValue(value, format);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
         private class ObjectWithToStringOverride
         {
             public override string ToString()

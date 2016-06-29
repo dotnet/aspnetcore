@@ -439,6 +439,61 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             return viewData;
         }
 
+        public static TheoryData PasswordFor_IgnoresExpressionValueForComplexExpressionsData
+        {
+            get
+            {
+                return new TheoryData<Expression<Func<PasswordModel, string>>, string>
+                {
+                    {
+                        model => model.Property3["key"],
+                        @"<input id=""HtmlEncode[[pre_Property3_key_]]"" name=""HtmlEncode[[pre.Property3[key]]]"" " +
+                        @"type=""HtmlEncode[[password]]"" />"
+                    },
+                    {
+                        model => model.Property4.Property5,
+                        @"<input id=""HtmlEncode[[pre_Property4_Property5]]"" name=""HtmlEncode[[pre.Property4.Property5]]"" " +
+                        @"type=""HtmlEncode[[password]]"" />"
+                    },
+                    {
+                        model => model.Property4.Property6[0],
+                        @"<input id=""HtmlEncode[[pre_Property4_Property6_0_]]"" " +
+                        @"name=""HtmlEncode[[pre.Property4.Property6[0]]]"" type=""HtmlEncode[[password]]"" />"
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(PasswordFor_IgnoresExpressionValueForComplexExpressionsData))]
+        public void PasswordFor_ComplexExpressions_IgnoresValueFromViewDataModelStateAndModel(
+            Expression<Func<PasswordModel, string>> expression,
+            string expected)
+        {
+            // Arrange            
+            var model = new PasswordModel();
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "pre";
+
+            helper.ViewData.ModelState.SetModelValue("pre.Property3[key]", "MProp3Val", "MProp3Val");
+            helper.ViewData.ModelState.SetModelValue("pre.Property4.Property5", "MProp5Val", "MProp5Val");
+            helper.ViewData.ModelState.SetModelValue("pre.Property4.Property6[0]", "MProp6Val", "MProp6Val");
+
+            helper.ViewData["pre.Property3[key]"] = "VDProp3Val";
+            helper.ViewData["pre.Property4.Property5"] = "VDProp5Val";
+            helper.ViewData["pre.Property4.Property6"] = "VDProp6Val";
+
+            helper.ViewData.Model.Property3["key"] = "Prop3Val";
+            helper.ViewData.Model.Property4.Property5 = "Prop5Val";
+            helper.ViewData.Model.Property4.Property6.Add("Prop6Val");
+
+            // Act
+            var result = helper.PasswordFor(expression);
+
+            // Assert 
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
+        }
+
         public class PasswordModel
         {
             public string Property1 { get; set; }
