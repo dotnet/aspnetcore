@@ -1,9 +1,10 @@
 {
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-*",
+    "dotnet-test-xunit": "2.2.0-*",
     "AntiforgerySample": "1.1.0-*",
     "Microsoft.AspNetCore.TestHost": "1.1.0-*",
-    "Microsoft.AspNetCore.Testing": "1.1.0-*"
+    "Moq": "4.6.25-*",
+    "xunit": "2.2.0-*"
   },
   "testRunner": "xunit",
   "frameworks": {
@@ -13,19 +14,11 @@
           "version": "1.0.0-*",
           "type": "platform"
         },
-        "moq.netcore": "4.4.0-beta8",
-        "System.Net.Http": "4.1.0-*",
-        "System.Diagnostics.Process": "4.1.0-*"
+        "System.Net.Http": "4.1.0-*"
       },
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ]
+      "imports": "dotnet5.4"
     },
     "net451": {
-      "dependencies": {
-        "Moq": "4.2.1312.1622"
-      },
       "frameworkAssemblies": {
         "System.Net.Http": ""
       }
