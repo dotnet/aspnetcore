@@ -1,12 +1,8 @@
 {
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.EntityFrameworkCore.SqlServer": "1.1.0-*",
-    "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "1.1.0-*",
     "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests": "1.0.0",
-    "Microsoft.AspNetCore.TestHost": "1.1.0-*",
-    "Microsoft.AspNetCore.Testing": "1.1.0-*",
-    "xunit": "2.1.0"
+    "Microsoft.AspNetCore.TestHost": "1.1.0-*"
   },
   "testRunner": "xunit",
   "frameworks": {
@@ -17,20 +13,9 @@
           "type": "platform"
         }
       },
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ]
+      "imports": "dotnet5.4"
     },
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Runtime": "",
-        "System.Threading.Tasks": ""
-      },
-      "dependencies": {
-        "xunit.runner.console": "2.1.0"
-      }
-    }
+    "net451": {}
   },
   "buildOptions": {
     "warningsAsErrors": true
