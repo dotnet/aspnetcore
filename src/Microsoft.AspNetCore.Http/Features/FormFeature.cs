@@ -181,7 +181,9 @@ namespace Microsoft.AspNetCore.Http.Features
                             await section.Body.DrainAsync(cancellationToken);
 
                             var name = HeaderUtilities.RemoveQuotes(contentDisposition.Name) ?? string.Empty;
-                            var fileName = HeaderUtilities.RemoveQuotes(contentDisposition.FileName) ?? string.Empty;
+                            var fileName = HeaderUtilities.RemoveQuotes(contentDisposition.FileNameStar) ??
+                                HeaderUtilities.RemoveQuotes(contentDisposition.FileName) ??
+                                string.Empty;
 
                             FormFile file;
                             if (section.BaseStreamOffset.HasValue)

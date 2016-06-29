@@ -65,6 +65,12 @@ namespace Microsoft.AspNetCore.Http.Features
 "\r\n" +
 "<html><body>Hello World</body></html>\r\n";
 
+        private const string MultipartFormEncodedFilename = "--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
+"Content-Disposition: form-data; name=\"myfile1\"; filename=\"temp.html\"; filename*=utf-8\'\'t%c3%a9mp.html\r\n" +
+"Content-Type: text/html\r\n" +
+"\r\n" +
+"<html><body>Hello World</body></html>\r\n";
+
         private const string MultipartFormWithField =
             MultipartFormField +
             MultipartFormEnd;
@@ -76,6 +82,10 @@ namespace Microsoft.AspNetCore.Http.Features
         private const string MultipartFormWithFieldAndFile =
             MultipartFormField +
             MultipartFormFile +
+            MultipartFormEnd;
+
+        private const string MultipartFormWithEncodedFilename =
+            MultipartFormEncodedFilename +
             MultipartFormEnd;
 
         [Theory]
@@ -187,6 +197,54 @@ namespace Microsoft.AspNetCore.Http.Features
             Assert.Equal("temp.html", file.FileName);
             Assert.Equal("text/html", file.ContentType);
             Assert.Equal(@"form-data; name=""myfile1""; filename=""temp.html""", file.ContentDisposition);
+            var body = file.OpenReadStream();
+            using (var reader = new StreamReader(body))
+            {
+                Assert.True(body.CanSeek);
+                var content = reader.ReadToEnd();
+                Assert.Equal(content, "<html><body>Hello World</body></html>");
+            }
+
+            await responseFeature.CompleteAsync();
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadFormAsync_MultipartWithEncodedFilename_ReturnsParsedFormCollection(bool bufferRequest)
+        {
+            var formContent = Encoding.UTF8.GetBytes(MultipartFormWithEncodedFilename);
+            var context = new DefaultHttpContext();
+            var responseFeature = new FakeResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
+            context.Request.ContentType = MultipartContentType;
+            context.Request.Body = new NonSeekableReadStream(formContent);
+
+            IFormFeature formFeature = new FormFeature(context.Request, new FormOptions() { BufferBody = bufferRequest });
+            context.Features.Set<IFormFeature>(formFeature);
+
+            var formCollection = await context.Request.ReadFormAsync();
+
+            Assert.NotNull(formCollection);
+
+            // Cached
+            formFeature = context.Features.Get<IFormFeature>();
+            Assert.NotNull(formFeature);
+            Assert.NotNull(formFeature.Form);
+            Assert.Same(formFeature.Form, formCollection);
+            Assert.Same(formCollection, context.Request.Form);
+
+            // Content
+            Assert.Equal(0, formCollection.Count);
+
+            Assert.NotNull(formCollection.Files);
+            Assert.Equal(1, formCollection.Files.Count);
+
+            var file = formCollection.Files["myfile1"];
+            Assert.Equal("myfile1", file.Name);
+            Assert.Equal("t\u00e9mp.html", file.FileName);
+            Assert.Equal("text/html", file.ContentType);
+            Assert.Equal(@"form-data; name=""myfile1""; filename=""temp.html""; filename*=utf-8''t%c3%a9mp.html", file.ContentDisposition);
             var body = file.OpenReadStream();
             using (var reader = new StreamReader(body))
             {
