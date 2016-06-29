@@ -15,19 +15,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     /// </summary>
     public class DefaultBindingMetadataProvider : IBindingMetadataProvider
     {
-        private readonly ModelBindingMessageProvider _messageProvider;
-
-        public DefaultBindingMetadataProvider(ModelBindingMessageProvider messageProvider)
-        {
-            if (messageProvider == null)
-            {
-                throw new ArgumentNullException(nameof(messageProvider));
-            }
-
-            _messageProvider = messageProvider;
-        }
-
-        /// <inheritdoc />
         public void CreateBindingMetadata(BindingMetadataProviderContext context)
         {
             if (context == null)
@@ -64,10 +51,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     break;
                 }
             }
-
-            // ModelBindingMessageProvider
-            // Provide a unique instance based on one passed to the constructor.
-            context.BindingMetadata.ModelBindingMessageProvider = new ModelBindingMessageProvider(_messageProvider);
 
             // PropertyFilterProvider
             var propertyFilterProviders = context.Attributes.OfType<IPropertyFilterProvider>().ToArray();

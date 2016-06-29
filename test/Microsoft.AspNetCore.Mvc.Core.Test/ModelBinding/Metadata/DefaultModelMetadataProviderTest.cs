@@ -3,7 +3,6 @@
 
 using System;
 using System.Linq;
-using System.Reflection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
@@ -173,7 +172,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
         private static DefaultModelMetadataProvider CreateProvider()
         {
-            return new DefaultModelMetadataProvider(new EmptyCompositeMetadataDetailsProvider());
+            return new DefaultModelMetadataProvider(
+                new EmptyCompositeMetadataDetailsProvider(),
+                new TestOptionsManager<MvcOptions>());
         }
 
         [Model("OnType")]

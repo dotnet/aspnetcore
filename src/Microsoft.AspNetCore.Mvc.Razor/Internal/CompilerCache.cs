@@ -116,6 +116,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     return cacheEntry;
                 }
 
+                if (_fileProvider is NullFileProvider)
+                {
+                    var message = Resources.FormatFileProvidersAreRequired(
+                        typeof(RazorViewEngineOptions).FullName,
+                        nameof(RazorViewEngineOptions.FileProviders),
+                        typeof(IFileProvider).FullName);
+                    throw new InvalidOperationException(message);
+                }
+
                 fileInfo = _fileProvider.GetFileInfo(normalizedPath);
                 if (!fileInfo.Exists)
                 {

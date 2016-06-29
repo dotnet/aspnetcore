@@ -46,12 +46,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(context));
             }
 
+            if (_providers.Length == 0)
+            {
+                throw new InvalidOperationException(Resources.FormatModelBinderProvidersAreRequired(
+                    typeof(MvcOptions).FullName,
+                    nameof(MvcOptions.ModelBinderProviders),
+                    typeof(IModelBinderProvider).FullName));
+            }
+
             IModelBinder binder;
             if (TryGetCachedBinder(context.Metadata, context.CacheToken, out binder))
             {
                 return binder;
             }
-            
+
             // Perf: We're calling the Uncached version of the API here so we can:
             // 1. avoid allocating a context when the value is already cached
             // 2. avoid checking the cache twice when the value is not cached

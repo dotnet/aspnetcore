@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 {
@@ -23,11 +24,35 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// </summary>
         /// <param name="detailsProvider">The <see cref="ICompositeMetadataDetailsProvider"/>.</param>
         public DefaultModelMetadataProvider(ICompositeMetadataDetailsProvider detailsProvider)
+            : this(detailsProvider, new ModelBindingMessageProvider())
         {
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="DefaultModelMetadataProvider"/>.
+        /// </summary>
+        /// <param name="detailsProvider">The <see cref="ICompositeMetadataDetailsProvider"/>.</param>
+        /// <param name="optionsAccessor">The accessor for <see cref="MvcOptions"/>.</param>
+        public DefaultModelMetadataProvider(
+            ICompositeMetadataDetailsProvider detailsProvider,
+            IOptions<MvcOptions> optionsAccessor)
+            : this(detailsProvider, GetMessageProvider(optionsAccessor))
+        {
+        }
+
+        private DefaultModelMetadataProvider(
+            ICompositeMetadataDetailsProvider detailsProvider,
+            ModelBindingMessageProvider modelBindingMessageProvider)
+        {
+            if (detailsProvider == null)
+            {
+                throw new ArgumentNullException(nameof(detailsProvider));
+            }
+
             DetailsProvider = detailsProvider;
+            ModelBindingMessageProvider = modelBindingMessageProvider;
 
             _cacheEntryFactory = CreateCacheEntry;
-
             _metadataCacheEntryForObjectType = GetMetadataCacheEntryForObjectType();
         }
 
@@ -35,6 +60,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Gets the <see cref="ICompositeMetadataDetailsProvider"/>.
         /// </summary>
         protected ICompositeMetadataDetailsProvider DetailsProvider { get; }
+
+        /// <summary>
+        /// Gets the <see cref="Metadata.ModelBindingMessageProvider"/>.
+        /// </summary>
+        /// <value>Same as <see cref="MvcOptions.ModelBindingMessageProvider"/> in all production scenarios.</value>
+        protected ModelBindingMessageProvider ModelBindingMessageProvider { get; }
 
         /// <inheritdoc />
         public virtual IEnumerable<ModelMetadata> GetMetadataForProperties(Type modelType)
@@ -76,6 +107,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var cacheEntry = GetCacheEntry(modelType);
 
             return cacheEntry.Metadata;
+        }
+
+        private static ModelBindingMessageProvider GetMessageProvider(IOptions<MvcOptions> optionsAccessor)
+        {
+            if (optionsAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(optionsAccessor));
+            }
+
+            return optionsAccessor.Value.ModelBindingMessageProvider;
         }
 
         private ModelMetadataCacheEntry GetCacheEntry(Type modelType)
@@ -123,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// </remarks>
         protected virtual ModelMetadata CreateModelMetadata(DefaultMetadataDetails entry)
         {
-            return new DefaultModelMetadata(this, DetailsProvider, entry);
+            return new DefaultModelMetadata(this, DetailsProvider, entry, ModelBindingMessageProvider);
         }
 
         /// <summary>

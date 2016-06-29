@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Moq;
 using Xunit;
@@ -14,24 +12,41 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class ModelBinderFactoryTest
     {
-        // No providers => can't create a binder
+        [Fact]
+        public void CreateBinder_Throws_WhenNoProviders()
+        {
+            // Arrange
+            var expected = $"'{typeof(MvcOptions).FullName}.{nameof(MvcOptions.ModelBinderProviders)}' must not be " +
+                $"empty. At least one '{typeof(IModelBinderProvider).FullName}' is required to model bind.";
+            var metadataProvider = new TestModelMetadataProvider();
+            var options = new TestOptionsManager<MvcOptions>();
+            var factory = new ModelBinderFactory(metadataProvider, options);
+            var context = new ModelBinderFactoryContext()
+            {
+                Metadata = metadataProvider.GetMetadataForType(typeof(string)),
+            };
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => factory.CreateBinder(context));
+            Assert.Equal(expected, exception.Message);
+        }
+
         [Fact]
         public void CreateBinder_Throws_WhenBinderNotCreated()
         {
             // Arrange
             var metadataProvider = new TestModelMetadataProvider();
             var options = new TestOptionsManager<MvcOptions>();
-            var factory = new ModelBinderFactory(metadataProvider, options);
+            options.Value.ModelBinderProviders.Add(new TestModelBinderProvider(_ => null));
 
+            var factory = new ModelBinderFactory(metadataProvider, options);
             var context = new ModelBinderFactoryContext()
             {
                 Metadata = metadataProvider.GetMetadataForType(typeof(string)),
             };
 
-            // Act
+            // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(() => factory.CreateBinder(context));
-
-            // Assert
             Assert.Equal(
                 $"Could not create a model binder for model object of type '{typeof(string).FullName}'.",
                 exception.Message);

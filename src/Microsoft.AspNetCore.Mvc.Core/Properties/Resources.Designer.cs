@@ -1162,6 +1162,54 @@ namespace Microsoft.AspNetCore.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("CouldNotCreateIModelBinder"), p0);
         }
 
+        /// <summary>
+        /// '{0}.{1}' must not be empty. At least one '{2}' is required to bind from the body.
+        /// </summary>
+        internal static string InputFormattersAreRequired
+        {
+            get { return GetString("InputFormattersAreRequired"); }
+        }
+
+        /// <summary>
+        /// '{0}.{1}' must not be empty. At least one '{2}' is required to bind from the body.
+        /// </summary>
+        internal static string FormatInputFormattersAreRequired(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("InputFormattersAreRequired"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// '{0}.{1}' must not be empty. At least one '{2}' is required to model bind.
+        /// </summary>
+        internal static string ModelBinderProvidersAreRequired
+        {
+            get { return GetString("ModelBinderProvidersAreRequired"); }
+        }
+
+        /// <summary>
+        /// '{0}.{1}' must not be empty. At least one '{2}' is required to model bind.
+        /// </summary>
+        internal static string FormatModelBinderProvidersAreRequired(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ModelBinderProvidersAreRequired"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// '{0}.{1}' must not be empty. At least one '{2}' is required to format a response.
+        /// </summary>
+        internal static string OutputFormattersAreRequired
+        {
+            get { return GetString("OutputFormattersAreRequired"); }
+        }
+
+        /// <summary>
+        /// '{0}.{1}' must not be empty. At least one '{2}' is required to format a response.
+        /// </summary>
+        internal static string FormatOutputFormattersAreRequired(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("OutputFormattersAreRequired"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

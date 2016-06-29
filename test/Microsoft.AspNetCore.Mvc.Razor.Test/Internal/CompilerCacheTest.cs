@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.Extensions.FileProviders;
 using Moq;
 using Xunit;
 
@@ -443,6 +444,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var result1 = task1.Result;
             var result2 = task2.Result;
             Assert.Same(result1.PageFactory, result2.PageFactory);
+        }
+
+        [Fact]
+        public void GetOrAdd_ThrowsIfNullFileProvider()
+        {
+            // Arrange
+            var expected =
+                $"'{typeof(RazorViewEngineOptions).FullName}.{nameof(RazorViewEngineOptions.FileProviders)}' must " +
+                $"not be empty. At least one '{typeof(IFileProvider).FullName}' is required to locate a view for " +
+                "rendering.";
+            var fileProvider = new NullFileProvider();
+            var cache = new CompilerCache(fileProvider);
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => cache.GetOrAdd(ViewPath, _ => { throw new InvalidTimeZoneException(); }));
+            Assert.Equal(expected, exception.Message);
         }
 
         [Fact]

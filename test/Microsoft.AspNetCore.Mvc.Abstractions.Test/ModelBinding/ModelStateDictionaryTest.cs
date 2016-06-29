@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -887,20 +887,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var expected = "Hmm, the supplied value is not valid for Length.";
             var dictionary = new ModelStateDictionary();
 
-            var messageProvider = new ModelBindingMessageProvider
-            {
-                MissingBindRequiredValueAccessor = name => "Unexpected MissingBindRequiredValueAccessor use",
-                MissingKeyOrValueAccessor = () => "Unexpected MissingKeyOrValueAccessor use",
-                ValueMustNotBeNullAccessor = value => "Unexpected ValueMustNotBeNullAccessor use",
-                AttemptedValueIsInvalidAccessor =
-                    (value, name) => "Unexpected InvalidValueWithKnownAttemptedValueAccessor use",
-                UnknownValueIsInvalidAccessor = name => $"Hmm, the supplied value is not valid for { name }.",
-                ValueIsInvalidAccessor = value => "Unexpected InvalidValueWithUnknownModelErrorAccessor use",
-                ValueMustBeANumberAccessor = name => "Unexpected ValueMustBeANumberAccessor use",
-            };
-            var bindingMetadataProvider = new DefaultBindingMetadataProvider(messageProvider);
+            var bindingMetadataProvider = new DefaultBindingMetadataProvider();
             var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
-            var provider = new DefaultModelMetadataProvider(compositeProvider);
+            var optionsAccessor = new OptionsAccessor();
+            optionsAccessor.Value.ModelBindingMessageProvider.UnknownValueIsInvalidAccessor =
+                name => $"Hmm, the supplied value is not valid for { name }.";
+
+            var provider = new DefaultModelMetadataProvider(compositeProvider, optionsAccessor);
             var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));
 
             // Act
@@ -939,20 +932,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var dictionary = new ModelStateDictionary();
             dictionary.SetModelValue("key", new string[] { "some value" }, "some value");
 
-            var messageProvider = new ModelBindingMessageProvider
-            {
-                MissingBindRequiredValueAccessor = name => "Unexpected MissingBindRequiredValueAccessor use",
-                MissingKeyOrValueAccessor = () => "Unexpected MissingKeyOrValueAccessor use",
-                ValueMustNotBeNullAccessor = value => "Unexpected ValueMustNotBeNullAccessor use",
-                AttemptedValueIsInvalidAccessor =
-                    (value, name) => $"Hmm, the value '{ value }' is not valid for { name }.",
-                UnknownValueIsInvalidAccessor = name => "Unexpected InvalidValueWithUnknownAttemptedValueAccessor use",
-                ValueIsInvalidAccessor = value => "Unexpected InvalidValueWithUnknownModelErrorAccessor use",
-                ValueMustBeANumberAccessor = name => "Unexpected ValueMustBeANumberAccessor use",
-            };
-            var bindingMetadataProvider = new DefaultBindingMetadataProvider(messageProvider);
+            var bindingMetadataProvider = new DefaultBindingMetadataProvider();
             var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
-            var provider = new DefaultModelMetadataProvider(compositeProvider);
+            var optionsAccessor = new OptionsAccessor();
+            optionsAccessor.Value.ModelBindingMessageProvider.AttemptedValueIsInvalidAccessor =
+                (value, name) => $"Hmm, the value '{ value }' is not valid for { name }.";
+
+            var provider = new DefaultModelMetadataProvider(compositeProvider, optionsAccessor);
             var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));
 
             // Act
@@ -1302,6 +1288,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.Equal("value1", property.RawValue);
+        }
+
+        private class OptionsAccessor : IOptions<MvcOptions>
+        {
+            public MvcOptions Value { get; } = new MvcOptions();
         }
     }
 }

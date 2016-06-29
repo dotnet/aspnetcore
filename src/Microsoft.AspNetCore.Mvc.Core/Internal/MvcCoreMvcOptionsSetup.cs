@@ -4,12 +4,10 @@
 using System;
 using System.Threading;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
@@ -33,16 +31,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public void Configure(MvcOptions options)
         {
-            // Set up default error messages
-            var messageProvider = options.ModelBindingMessageProvider;
-            messageProvider.MissingBindRequiredValueAccessor = Resources.FormatModelBinding_MissingBindRequiredMember;
-            messageProvider.MissingKeyOrValueAccessor = Resources.FormatKeyValuePair_BothKeyAndValueMustBePresent;
-            messageProvider.ValueMustNotBeNullAccessor = Resources.FormatModelBinding_NullValueNotValid;
-            messageProvider.AttemptedValueIsInvalidAccessor = Resources.FormatModelState_AttemptedValueIsInvalid;
-            messageProvider.UnknownValueIsInvalidAccessor = Resources.FormatModelState_UnknownValueIsInvalid;
-            messageProvider.ValueIsInvalidAccessor = Resources.FormatHtmlGeneration_ValueIsInvalid;
-            messageProvider.ValueMustBeANumberAccessor = Resources.FormatHtmlGeneration_ValueMustBeNumber;
-
             // Set up ModelBinding
             options.ModelBinderProviders.Add(new BinderTypeModelBinderProvider());
             options.ModelBinderProviders.Add(new ServicesModelBinderProvider());
@@ -79,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // by altering the collection of providers.
             options.ModelMetadataDetailsProviders.Add(new ExcludeBindingMetadataProvider(typeof(Type)));
 
-            options.ModelMetadataDetailsProviders.Add(new DefaultBindingMetadataProvider(messageProvider));
+            options.ModelMetadataDetailsProviders.Add(new DefaultBindingMetadataProvider());
             options.ModelMetadataDetailsProviders.Add(new DefaultValidationMetadataProvider());
 
             // Set up validators

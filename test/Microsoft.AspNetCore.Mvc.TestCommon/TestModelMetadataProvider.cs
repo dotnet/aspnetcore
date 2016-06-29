@@ -18,21 +18,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             var detailsProviders = new IMetadataDetailsProvider[]
             {
-                new DefaultBindingMetadataProvider(CreateMessageProvider()),
+                new DefaultBindingMetadataProvider(),
                 new DefaultValidationMetadataProvider(),
                 new DataAnnotationsMetadataProvider(),
                 new DataMemberRequiredBindingMetadataProvider(),
             };
 
             var compositeDetailsProvider = new DefaultCompositeMetadataDetailsProvider(detailsProviders);
-            return new DefaultModelMetadataProvider(compositeDetailsProvider);
+            return new DefaultModelMetadataProvider(compositeDetailsProvider, new TestOptionsManager<MvcOptions>());
         }
 
         public static IModelMetadataProvider CreateDefaultProvider(IList<IMetadataDetailsProvider> providers)
         {
             var detailsProviders = new List<IMetadataDetailsProvider>()
             {
-                new DefaultBindingMetadataProvider(CreateMessageProvider()),
+                new DefaultBindingMetadataProvider(),
                 new DefaultValidationMetadataProvider(),
                 new DataAnnotationsMetadataProvider(),
                 new DataMemberRequiredBindingMetadataProvider(),
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             detailsProviders.AddRange(providers);
 
             var compositeDetailsProvider = new DefaultCompositeMetadataDetailsProvider(detailsProviders);
-            return new DefaultModelMetadataProvider(compositeDetailsProvider);
+            return new DefaultModelMetadataProvider(compositeDetailsProvider, new TestOptionsManager<MvcOptions>());
         }
 
         public static IModelMetadataProvider CreateProvider(IList<IMetadataDetailsProvider> providers)
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             var compositeDetailsProvider = new DefaultCompositeMetadataDetailsProvider(detailsProviders);
-            return new DefaultModelMetadataProvider(compositeDetailsProvider);
+            return new DefaultModelMetadataProvider(compositeDetailsProvider, new TestOptionsManager<MvcOptions>());
         }
 
         private readonly TestModelMetadataDetailsProvider _detailsProvider;
@@ -64,13 +64,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         private TestModelMetadataProvider(TestModelMetadataDetailsProvider detailsProvider)
-            : base(new DefaultCompositeMetadataDetailsProvider(new IMetadataDetailsProvider[]
-                {
-                    new DefaultBindingMetadataProvider(CreateMessageProvider()),
-                    new DefaultValidationMetadataProvider(),
-                    new DataAnnotationsMetadataProvider(),
-                    detailsProvider
-                }))
+            : base(
+                  new DefaultCompositeMetadataDetailsProvider(new IMetadataDetailsProvider[]
+                  {
+                      new DefaultBindingMetadataProvider(),
+                      new DefaultValidationMetadataProvider(),
+                      new DataAnnotationsMetadataProvider(),
+                      detailsProvider
+                  }),
+                  new TestOptionsManager<MvcOptions>())
         {
             _detailsProvider = detailsProvider;
         }
@@ -104,20 +106,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public IMetadataBuilder ForProperty<TContainer>(string propertyName)
         {
             return ForProperty(typeof(TContainer), propertyName);
-        }
-
-        private static ModelBindingMessageProvider CreateMessageProvider()
-        {
-            return new ModelBindingMessageProvider
-            {
-                MissingBindRequiredValueAccessor = name => $"A value for the '{ name }' property was not provided.",
-                MissingKeyOrValueAccessor = () => $"A value is required.",
-                ValueMustNotBeNullAccessor = value => $"The value '{ value }' is invalid.",
-                AttemptedValueIsInvalidAccessor = (value, name) => $"The value '{ value }' is not valid for { name }.",
-                UnknownValueIsInvalidAccessor = name => $"The supplied value is invalid for { name }.",
-                ValueIsInvalidAccessor = value => $"The value '{ value }' is invalid.",
-                ValueMustBeANumberAccessor = name => $"The field { name } must be a number.",
-            };
         }
 
         private class TestModelMetadataDetailsProvider :

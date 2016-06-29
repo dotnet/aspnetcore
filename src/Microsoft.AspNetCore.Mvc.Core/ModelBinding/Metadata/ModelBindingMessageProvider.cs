@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 {
@@ -23,6 +24,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// </summary>
         public ModelBindingMessageProvider()
         {
+            MissingBindRequiredValueAccessor = Resources.FormatModelBinding_MissingBindRequiredMember;
+            MissingKeyOrValueAccessor = Resources.FormatKeyValuePair_BothKeyAndValueMustBePresent;
+            ValueMustNotBeNullAccessor = Resources.FormatModelBinding_NullValueNotValid;
+            AttemptedValueIsInvalidAccessor = Resources.FormatModelState_AttemptedValueIsInvalid;
+            UnknownValueIsInvalidAccessor = Resources.FormatModelState_UnknownValueIsInvalid;
+            ValueIsInvalidAccessor = Resources.FormatHtmlGeneration_ValueIsInvalid;
+            ValueMustBeANumberAccessor = Resources.FormatHtmlGeneration_ValueMustBeNumber;
         }
 
         /// <summary>

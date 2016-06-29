@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
 
@@ -48,6 +49,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (context.BindingInfo.BindingSource != null &&
                 context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.Body))
             {
+                if (_formatters.Count == 0)
+                {
+                    throw new InvalidOperationException(Resources.FormatInputFormattersAreRequired(
+                        typeof(MvcOptions).FullName,
+                        nameof(MvcOptions.InputFormatters),
+                        typeof(IInputFormatter).FullName));
+                }
+
                 return new BodyModelBinder(_formatters, _readerFactory);
             }
 

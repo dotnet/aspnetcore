@@ -37,6 +37,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(viewName));
             }
 
+            if (ViewEngines.Count == 0)
+            {
+                throw new InvalidOperationException(Resources.FormatViewEnginesAreRequired(
+                    typeof(MvcViewOptions).FullName,
+                    nameof(MvcViewOptions.ViewEngines),
+                    typeof(IViewEngine).FullName));
+            }
+
             // Do not allocate in the common cases: ViewEngines contains one entry or initial attempt is successful.
             IEnumerable<string> searchedLocations = null;
             List<string> searchedList = null;
@@ -75,6 +83,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
             if (string.IsNullOrEmpty(viewPath))
             {
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(viewPath));
+            }
+
+            if (ViewEngines.Count == 0)
+            {
+                throw new InvalidOperationException(Resources.FormatViewEnginesAreRequired(
+                    typeof(MvcViewOptions).FullName,
+                    nameof(MvcViewOptions.ViewEngines),
+                    typeof(IViewEngine).FullName));
             }
 
             // Do not allocate in the common cases: ViewEngines contains one entry or initial attempt is successful.

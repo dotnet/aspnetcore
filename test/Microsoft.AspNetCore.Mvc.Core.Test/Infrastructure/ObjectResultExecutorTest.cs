@@ -393,6 +393,25 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 actionContext.HttpContext.Response.Headers[HeaderNames.ContentType]);
         }
 
+        [Fact]
+        public async Task ExecuteAsync_ThrowsWithNoFormatters()
+        {
+            // Arrange
+            var expected = $"'{typeof(MvcOptions).FullName}.{nameof(MvcOptions.OutputFormatters)}' must not be " +
+                $"empty. At least one '{typeof(IOutputFormatter).FullName}' is required to format a response.";
+            var executor = CreateExecutor();
+            var actionContext = new ActionContext
+            {
+                HttpContext = GetHttpContext(),
+            };
+            var result = new ObjectResult("some value");
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => executor.ExecuteAsync(actionContext, result));
+            Assert.Equal(expected, exception.Message);
+        }
+
         [Theory]
         [InlineData(new[] { "application/*" }, "application/*")]
         [InlineData(new[] { "application/xml", "application/*", "application/json" }, "application/*")]

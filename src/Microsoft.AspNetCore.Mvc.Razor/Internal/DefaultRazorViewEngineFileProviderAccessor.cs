@@ -18,7 +18,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         public DefaultRazorViewEngineFileProviderAccessor(IOptions<RazorViewEngineOptions> optionsAccessor)
         {
             var fileProviders = optionsAccessor.Value.FileProviders;
-            if (fileProviders.Count == 1)
+            if (fileProviders.Count == 0)
+            {
+                FileProvider = new NullFileProvider();
+            }
+            else if (fileProviders.Count == 1)
             {
                 FileProvider = fileProviders[0];
             }

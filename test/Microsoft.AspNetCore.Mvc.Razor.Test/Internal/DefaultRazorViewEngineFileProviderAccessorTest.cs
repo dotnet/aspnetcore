@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     public class DefaultRazorViewEngineFileProviderAccessorTest
     {
         [Fact]
-        public void FileProvider_ReturnsInstanceIfExactlyOneFileProviderIsSpecified()
+        public void FileProvider_ReturnsInstance_IfExactlyOneFileProviderIsRegistered()
         {
             // Arrange
             var fileProvider = new TestFileProvider();
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         }
 
         [Fact]
-        public void FileProvider_ReturnsCompositeFileProviderIfNoInstancesAreRegistered()
+        public void FileProvider_ReturnsNullFileProvider_IfNoInstancesAreRegistered()
         {
             // Arrange
             var options = new RazorViewEngineOptions();
@@ -41,11 +41,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var actual = fileProviderAccessor.FileProvider;
 
             // Assert
-            Assert.IsType<CompositeFileProvider>(actual);
+            Assert.IsType<NullFileProvider>(actual);
         }
 
         [Fact]
-        public void FileProvider_ReturnsCompositeFileProviderIfMoreThanOneInstanceIsRegistered()
+        public void FileProvider_ReturnsCompositeFileProvider_IfMoreThanOneInstanceIsRegistered()
         {
             // Arrange
             var options = new RazorViewEngineOptions();

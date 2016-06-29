@@ -494,6 +494,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return GetString("RazorPage_NestingAttributeWritingScopesNotSupported");
         }
 
+        /// <summary>
+        /// '{0}.{1}' must not be empty. At least one '{2}' is required to locate a view for rendering.
+        /// </summary>
+        internal static string FileProvidersAreRequired
+        {
+            get { return GetString("FileProvidersAreRequired"); }
+        }
+
+        /// <summary>
+        /// '{0}.{1}' must not be empty. At least one '{2}' is required to locate a view for rendering.
+        /// </summary>
+        internal static string FormatFileProvidersAreRequired(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("FileProvidersAreRequired"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

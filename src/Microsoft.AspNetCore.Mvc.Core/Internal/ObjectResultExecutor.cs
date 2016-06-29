@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -117,6 +118,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (formatters == null || formatters.Count == 0)
             {
                 formatters = OptionsFormatters;
+
+                // Complain about MvcOptions.OutputFormatters only if the result has an empty Formatters.
+                Debug.Assert(formatters != null, "MvcOptions.OutputFormatters cannot be null.");
+                if (formatters.Count == 0)
+                {
+                    throw new InvalidOperationException(Resources.FormatOutputFormattersAreRequired(
+                        typeof(MvcOptions).FullName,
+                        nameof(MvcOptions.OutputFormatters),
+                        typeof(IOutputFormatter).FullName));
+                }
             }
 
             var objectType = result.DeclaredType;
@@ -136,7 +147,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 // No formatter supports this.
                 Logger.NoFormatter(formatterContext);
-                
+
                 context.HttpContext.Response.StatusCode = StatusCodes.Status406NotAcceptable;
                 return TaskCache.CompletedTask;
             }
@@ -189,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (acceptableMediaTypes.Count == 0)
             {
                 // There is either no Accept header value, or it contained */* and we
-                // are not currently respecting the 'browser accept header'.            
+                // are not currently respecting the 'browser accept header'.
                 Logger.NoAcceptForNegotiation();
 
                 selectFormatterWithoutRegardingAcceptHeader = true;
@@ -399,7 +410,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             return null;
         }
-        
+
         /// <summary>
         /// Selects the <see cref="IOutputFormatter"/> to write the response based on the content type values
         /// present in <paramref name="sortedAcceptableContentTypes"/> and <paramref name="possibleOutputContentTypes"/>.
@@ -423,19 +434,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             IList<MediaTypeSegmentWithQuality> sortedAcceptableContentTypes,
             MediaTypeCollection possibleOutputContentTypes)
         {
-            for (var i = 0; i < sortedAcceptableContentTypes.Count; i++) 
+            for (var i = 0; i < sortedAcceptableContentTypes.Count; i++)
             {
                 var acceptableContentType = new MediaType(sortedAcceptableContentTypes[i].MediaType);
-                for (var j = 0; j < possibleOutputContentTypes.Count; j++) 
+                for (var j = 0; j < possibleOutputContentTypes.Count; j++)
                 {
                     var candidateContentType = new MediaType(possibleOutputContentTypes[j]);
-                    if (candidateContentType.IsSubsetOf(acceptableContentType)) 
+                    if (candidateContentType.IsSubsetOf(acceptableContentType))
                     {
-                        for (var k = 0; k < formatters.Count; k++) 
+                        for (var k = 0; k < formatters.Count; k++)
                         {
                             var formatter = formatters[k];
                             formatterContext.ContentType = new StringSegment(possibleOutputContentTypes[j]);
-                            if (formatter.CanWriteResult(formatterContext)) 
+                            if (formatter.CanWriteResult(formatterContext))
                             {
                                 return formatter;
                             }
@@ -443,7 +454,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     }
                 }
             }
-            
+
             return null;
         }
 

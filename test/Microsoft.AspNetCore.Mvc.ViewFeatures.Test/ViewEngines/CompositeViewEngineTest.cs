@@ -32,20 +32,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
         }
 
         [Fact]
-        public void FindView_IsMainPage_ReturnsNotFoundResult_WhenNoViewEnginesAreRegistered()
+        public void FindView_IsMainPage_Throws_WhenNoViewEnginesAreRegistered()
         {
             // Arrange
+            var expected = $"'{typeof(MvcViewOptions).FullName}.{nameof(MvcViewOptions.ViewEngines)}' must not be " +
+                $"empty. At least one '{typeof(IViewEngine).FullName}' is required to locate a view for rendering.";
             var viewName = "test-view";
             var actionContext = GetActionContext();
             var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
-            // Act
-            var result = compositeViewEngine.FindView(actionContext, viewName, isMainPage: true);
-
-            // Assert
-            Assert.False(result.Success);
-            Assert.Empty(result.SearchedLocations);
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => compositeViewEngine.FindView(actionContext, viewName, isMainPage: true));
+            Assert.Equal(expected, exception.Message);
         }
 
 
@@ -165,16 +165,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
         public void GetView_ReturnsNotFoundResult_WhenNoViewEnginesAreRegistered(bool isMainPage)
         {
             // Arrange
+            var expected = $"'{typeof(MvcViewOptions).FullName}.{nameof(MvcViewOptions.ViewEngines)}' must not be " +
+                $"empty. At least one '{typeof(IViewEngine).FullName}' is required to locate a view for rendering.";
             var viewName = "test-view.cshtml";
             var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
-            // Act
-            var result = compositeViewEngine.GetView("~/Index.html", viewName, isMainPage);
-
-            // Assert
-            Assert.False(result.Success);
-            Assert.Empty(result.SearchedLocations);
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => compositeViewEngine.GetView("~/Index.html", viewName, isMainPage));
+            Assert.Equal(expected, exception.Message);
         }
 
 
@@ -305,16 +305,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
         public void FindView_ReturnsNotFoundResult_WhenNoViewEnginesAreRegistered()
         {
             // Arrange
+            var expected = $"'{typeof(MvcViewOptions).FullName}.{nameof(MvcViewOptions.ViewEngines)}' must not be " +
+                $"empty. At least one '{typeof(IViewEngine).FullName}' is required to locate a view for rendering.";
             var viewName = "my-partial-view";
             var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
-            // Act
-            var result = compositeViewEngine.FindView(GetActionContext(), viewName, isMainPage: false);
-
-            // Assert
-            Assert.False(result.Success);
-            Assert.Empty(result.SearchedLocations);
+            // Act & AssertS
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => compositeViewEngine.FindView(GetActionContext(), viewName, isMainPage: false));
+            Assert.Equal(expected, exception.Message);
         }
 
         [Fact]
