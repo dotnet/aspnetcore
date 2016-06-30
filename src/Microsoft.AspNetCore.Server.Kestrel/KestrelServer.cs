@@ -92,10 +92,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                         "ThreadCount must be positive.");
                 }
 
-                if (!Constants.ECONNRESET.HasValue)
-                {
-                    _logger.LogWarning("Unable to determine ECONNRESET value on this platform.");
-                }
                 if (!Constants.EADDRINUSE.HasValue)
                 {
                     _logger.LogWarning("Unable to determine EADDRINUSE value on this platform.");

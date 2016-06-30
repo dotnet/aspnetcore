@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {
                     while (!_requestProcessingStopping && TakeStartLine(SocketInput) != RequestLineStatus.Done)
                     {
-                        if (SocketInput.RemoteIntakeFin)
+                        if (SocketInput.CheckFinOrThrow())
                         {
                             // We need to attempt to consume start lines and headers even after
                             // SocketInput.RemoteIntakeFin is set to true to ensure we don't close a
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                     while (!_requestProcessingStopping && !TakeMessageHeaders(SocketInput, FrameRequestHeaders))
                     {
-                        if (SocketInput.RemoteIntakeFin)
+                        if (SocketInput.CheckFinOrThrow())
                         {
                             // We need to attempt to consume start lines and headers even after
                             // SocketInput.RemoteIntakeFin is set to true to ensure we don't close a

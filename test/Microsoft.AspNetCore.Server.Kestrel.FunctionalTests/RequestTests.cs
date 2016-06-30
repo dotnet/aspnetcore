@@ -2,17 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging.Testing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -184,6 +190,102 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
+        [Fact]
+        public async Task ConnectionResetAbortsRequest()
+        {
+            var connectionErrorLogged = new SemaphoreSlim(0);
+            var testSink = new ConnectionErrorTestSink(() => connectionErrorLogged.Release());
+            var builder = new WebHostBuilder()
+                .UseLoggerFactory(new TestLoggerFactory(testSink, true))
+                .UseKestrel()
+                .UseUrls($"http://127.0.0.1:0")
+                .Configure(app => app.Run(context =>
+                {
+                    return Task.FromResult(0);
+                }));
+
+            using (var host = builder.Build())
+            {
+                host.Start();
+
+                using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+                {
+                    socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
+                    socket.LingerState = new LingerOption(true, 0);
+                }
+
+                // Wait until connection error is logged
+                Assert.True(await connectionErrorLogged.WaitAsync(2500));
+
+                // Check for expected message
+                Assert.NotNull(testSink.ConnectionErrorMessage);
+                Assert.Contains("ECONNRESET", testSink.ConnectionErrorMessage);
+            }
+        }
+
+        [Fact]
+        public async Task ThrowsOnReadAfterConnectionError()
+        {
+            var requestStarted = new SemaphoreSlim(0);
+            var connectionReset = new SemaphoreSlim(0);
+            var appDone = new SemaphoreSlim(0);
+            var expectedExceptionThrown = false;
+
+            var builder = new WebHostBuilder()
+                .UseKestrel()
+                .UseUrls($"http://127.0.0.1:0")
+                .Configure(app => app.Run(async context =>
+                {
+                    requestStarted.Release();
+                    Assert.True(await connectionReset.WaitAsync(2500));
+
+                    try
+                    {
+                        await context.Request.Body.ReadAsync(new byte[1], 0, 1);
+                    }
+                    catch (BadHttpRequestException)
+                    {
+                        // We need this here because BadHttpRequestException derives from IOException,
+                        // and we're looking for an actual IOException.
+                    }
+                    catch (IOException ex)
+                    {
+                        // This is one of two exception types that might thrown in this scenario.
+                        // An IOException is thrown if ReadAsync is awaiting on SocketInput when
+                        // the connection is aborted.
+                        expectedExceptionThrown = ex.InnerException is UvException;
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        // This is the other exception type that might be thrown here.
+                        // A TaskCanceledException is thrown if ReadAsync is called when the
+                        // connection has already been aborted, since FrameRequestStream is
+                        // aborted and returns a canceled task from ReadAsync.
+                        expectedExceptionThrown = true;
+                    }
+
+                    appDone.Release();
+                }));
+
+            using (var host = builder.Build())
+            {
+                host.Start();
+
+                using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+                {
+                    socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
+                    socket.LingerState = new LingerOption(true, 0);
+                    socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nContent-Length: 1\r\n\r\n"));
+                    Assert.True(await requestStarted.WaitAsync(2500));
+                }
+
+                connectionReset.Release();
+
+                Assert.True(await appDone.WaitAsync(2500));
+                Assert.True(expectedExceptionThrown);
+            }
+        }
+
         private async Task TestRemoteIPAddress(string registerAddress, string requestAddress, string expectAddress)
         {
             var builder = new WebHostBuilder()
@@ -218,6 +320,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 var facts = JsonConvert.DeserializeObject<JObject>(connectionFacts);
                 Assert.Equal(expectAddress, facts["RemoteIPAddress"].Value<string>());
                 Assert.NotEmpty(facts["RemotePort"].Value<string>());
+            }
+        }
+
+        private class ConnectionErrorTestSink : ITestSink
+        {
+            private readonly Action _connectionErrorLogged;
+
+            public ConnectionErrorTestSink(Action connectionErrorLogged)
+            {
+                _connectionErrorLogged = connectionErrorLogged;
+            }
+
+            public string ConnectionErrorMessage { get; set; }
+
+            public Func<BeginScopeContext, bool> BeginEnabled { get; set; }
+
+            public List<BeginScopeContext> Scopes { get; set; }
+
+            public Func<WriteContext, bool> WriteEnabled { get; set; }
+
+            public List<WriteContext> Writes { get; set; }
+
+            public void Begin(BeginScopeContext context)
+            {
+            }
+
+            public void Write(WriteContext context)
+            {
+                const int connectionErrorEventId = 14;
+
+                if (context.EventId.Id == connectionErrorEventId)
+                {
+                    ConnectionErrorMessage = context.Exception?.Message;
+                    _connectionErrorLogged();
+                }
             }
         }
     }

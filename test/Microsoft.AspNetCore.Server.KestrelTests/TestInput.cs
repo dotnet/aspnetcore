@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             FrameContext.SocketInput.IncomingData(data, 0, data.Length);
             if (fin)
             {
-                FrameContext.SocketInput.RemoteIntakeFin = true;
+                FrameContext.SocketInput.IncomingFin();
             }
         }
 

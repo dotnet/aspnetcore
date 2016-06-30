@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {
                     while (_mode == Mode.Prefix)
                     {
-                        var fin = input.RemoteIntakeFin;
+                        var fin = input.CheckFinOrThrow();
 
                         ParseChunkedPrefix(input);
 
@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                     while (_mode == Mode.Extension)
                     {
-                        var fin = input.RemoteIntakeFin;
+                        var fin = input.CheckFinOrThrow();
 
                         ParseExtension(input);
 
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                     while (_mode == Mode.Data)
                     {
-                        var fin = input.RemoteIntakeFin;
+                        var fin = input.CheckFinOrThrow();
 
                         int actual = ReadChunkedData(input, buffer.Array, buffer.Offset, buffer.Count);
 
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                     while (_mode == Mode.Suffix)
                     {
-                        var fin = input.RemoteIntakeFin;
+                        var fin = input.CheckFinOrThrow();
 
                         ParseChunkedSuffix(input);
 
@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 // Chunks finished, parse trailers
                 while (_mode == Mode.Trailer)
                 {
-                    var fin = input.RemoteIntakeFin;
+                    var fin = input.CheckFinOrThrow();
 
                     ParseChunkedTrailer(input);
 
@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {
                     while (!_context.TakeMessageHeaders(input, _requestHeaders))
                     {
-                        if (input.RemoteIntakeFin)
+                        if (input.CheckFinOrThrow())
                         {
                             if (_context.TakeMessageHeaders(input, _requestHeaders))
                             {

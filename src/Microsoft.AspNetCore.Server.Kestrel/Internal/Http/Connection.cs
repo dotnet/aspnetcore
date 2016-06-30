@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             var normalRead = status > 0;
-            var normalDone = status == Constants.ECONNRESET || status == Constants.EOF;
+            var normalDone = status == Constants.EOF;
             var errorDone = !(normalDone || normalRead);
             var readCount = normalRead ? status : 0;
 
@@ -293,13 +293,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             else
             {
                 _socket.ReadStop();
-                Log.ConnectionReadFin(ConnectionId);
+
+                if (normalDone)
+                {
+                    Log.ConnectionReadFin(ConnectionId);
+                }
             }
 
             Exception error = null;
             if (errorDone)
             {
                 handle.Libuv.Check(status, out error);
+                Log.ConnectionError(ConnectionId, error);
             }
 
             _rawSocketInput.IncomingComplete(readCount, error);

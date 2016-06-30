@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             while (input.IsCompleted)
             {
-                var fin = input.RemoteIntakeFin;
+                var fin = input.CheckFinOrThrow();
 
                 var begin = input.ConsumingStart();
                 int actual;
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 await input;
 
-                var fin = input.RemoteIntakeFin;
+                var fin = input.CheckFinOrThrow();
 
                 var begin = input.ConsumingStart();
                 int actual;

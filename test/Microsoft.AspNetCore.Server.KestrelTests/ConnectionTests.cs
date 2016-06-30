@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 Libuv.uv_buf_t ignored;
                 mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out ignored);
                 mockLibuv.ReadCallback(socket.InternalGetHandle(), 0, ref ignored);
-                Assert.False(connection.SocketInput.RemoteIntakeFin);
+                Assert.False(connection.SocketInput.CheckFinOrThrow());
 
                 connection.ConnectionControl.End(ProduceEndType.SocketDisconnect);
             }
