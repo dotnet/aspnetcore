@@ -14,14 +14,14 @@
     ]
   },
   "dependencies": {
-    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-*",
-    "dotnet-test-xunit": "1.0.0-*",
+    "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Hosting": "1.1.0-*",
     "Microsoft.AspNetCore.Owin": "1.1.0-*",
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Microsoft.Extensions.Options": "1.1.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.1.0-*",
-    "xunit": "2.1.0"
+    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-*",
+    "xunit": "2.2.0-*"
   },
   "frameworks": {
     "netcoreapp1.0": {
@@ -29,22 +29,10 @@
         "Microsoft.NETCore.App": {
           "version": "1.0.0-*",
           "type": "platform"
-        },
-        "System.Diagnostics.Process": "4.1.0-*"
-      },
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ]
-    },
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Threading.Tasks": ""
-      },
-      "dependencies": {
-        "xunit.runner.console": "2.1.0"
+        }
       }
-    }
+    },
+    "net451": {}
   },
   "testRunner": "xunit"
 }
