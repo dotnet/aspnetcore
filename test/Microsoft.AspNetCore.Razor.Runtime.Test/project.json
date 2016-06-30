@@ -5,7 +5,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-*",
+    "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Razor.Runtime": "1.1.0-*",
     "Microsoft.AspNetCore.Razor.Test.Sources": {
       "version": "1.1.0-*",
@@ -13,24 +13,20 @@
     },
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Microsoft.Extensions.WebEncoders": "1.1.0-*",
-    "xunit": "2.1.0"
+    "Moq": "4.6.25-*",
+    "xunit": "2.2.0-*"
   },
   "testRunner": "xunit",
   "frameworks": {
     "netcoreapp1.0": {
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ],
       "dependencies": {
         "Microsoft.NETCore.App": {
           "version": "1.0.0-*",
           "type": "platform"
         },
-        "moq.netcore": "4.4.0-beta8",
-        "System.Diagnostics.Process": "4.1.0-*",
         "System.Diagnostics.TraceSource": "4.0.0-*"
-      }
+      },
+      "imports": "dotnet5.4"
     },
     "net451": {
       "frameworkAssemblies": {
@@ -43,10 +39,6 @@
         "System.Threading.Tasks": "",
         "System.Xml": "4.0.0.0",
         "System.Xml.Linq": "4.0.0.0"
-      },
-      "dependencies": {
-        "Moq": "4.2.1312.1622",
-        "xunit.runner.console": "2.1.0"
       }
     }
   }
