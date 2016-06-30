@@ -15,19 +15,13 @@
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.1.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.1.0-*",
     "Microsoft.Extensions.Logging.Console": "1.1.0-*",
-    "xunit": "2.1.0"
+    "xunit": "2.2.0-*"
   },
   "frameworks": {
     "netcoreapp1.0": {
-      "imports": [
-        "portable-dnxcore50+net45+win8+wp8+wpa81",
-        "dotnet",
-        "portable-net45+win8"
-      ],
       "dependencies": {
         "Microsoft.NETCore.App": "1.0.0-*",
-        "System.Net.Primitives": "4.0.11-*",
-        "System.Diagnostics.Process": "4.1.0-*"
+        "System.Net.Primitives": "4.0.11-*"
       }
     },
     "net451": {}
