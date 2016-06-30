@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                 {
                     Error = scan,
                     StackFrames = StackTraceHelper.GetFrames(ex)
-                        .Select(frame => GetStackFrame(frame.Method, frame.FilePath, frame.LineNumber))
+                        .Select(frame => GetStackFrame(frame.MethodDisplayInfo.ToString(), frame.FilePath, frame.LineNumber))
                 };
             };
         }
