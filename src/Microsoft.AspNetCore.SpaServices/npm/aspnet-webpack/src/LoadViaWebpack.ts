@@ -52,7 +52,7 @@ function loadViaWebpackNoCache<T>(webpackConfigPath: string, modulePath: string)
         webpackConfig.plugins = webpackConfig.plugins.filter(plugin => {
             return !(plugin instanceof webpack.optimize.CommonsChunkPlugin);
         });
-        
+
         // The typical use case for DllReferencePlugin is for referencing vendor modules. In a Node
         // environment, it doesn't make sense to load them from a DLL bundle, nor would that even
         // work, because then you'd get different module instances depending on whether a module
@@ -78,9 +78,14 @@ function loadViaWebpackNoCache<T>(webpackConfigPath: string, modulePath: string)
             if (err) {
                 reject(err);
             } else {
-                const fileContent = compiler.outputFileSystem.readFileSync('/webpack-output.js', 'utf8');
-                const moduleInstance = requireFromString<T>(fileContent);
-                resolve(moduleInstance);
+                // We're in a callback, so need an explicit try/catch to propagate any errors up the promise chain
+                try {
+                    const fileContent = compiler.outputFileSystem.readFileSync('/webpack-output.js', 'utf8');
+                    const moduleInstance = requireFromString<T>(fileContent);
+                    resolve(moduleInstance);
+                } catch(ex) {
+                    reject(ex);
+                }
             }
         });
     });
