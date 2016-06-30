@@ -12,7 +12,6 @@ using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Encodings.Web;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.StackTrace.Sources;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -81,6 +80,7 @@ namespace Microsoft.AspNetCore.Hosting
             var builder = new StringBuilder("<pre>");
             var stackFrame = frameInfo.StackFrame;
             var method = stackFrame.GetMethod();
+            var displayInfo = frameInfo.MethodDisplayInfo;
 
             // Special case: no method available
             if (method == null)
@@ -98,23 +98,23 @@ namespace Microsoft.AspNetCore.Hosting
                     return @"<pre><span class=""faded"">--- exception rethrown ---</span></pre>";
                 }
 
-                string prefix, friendlyName;
-                SplitTypeIntoPrefixAndFriendlyName(type, out prefix, out friendlyName);
-                builder.AppendFormat(CultureInfo.InvariantCulture, @"<span class=""faded"">at {0}</span>", HtmlEncodeAndReplaceLineBreaks(prefix));
-                builder.Append(HtmlEncodeAndReplaceLineBreaks(friendlyName));
+                var typeName = displayInfo.DeclaringTypeName;
+                // Separate the namespace component from the type name so that we can format it differently.
+                if (!string.IsNullOrEmpty(typeName) && !string.IsNullOrEmpty(type.Namespace))
+                {
+                    builder.Append($@"<span class=""faded"">at {HtmlEncodeAndReplaceLineBreaks(type.Namespace)}</span>");
+                    typeName = typeName.Substring(type.Namespace.Length + 1);
+                }
+
+                builder.Append(HtmlEncodeAndReplaceLineBreaks(typeName));
             }
 
             // Next, write the method signature
-            builder.Append(HtmlEncodeAndReplaceLineBreaks("." + method.Name));
-
-            // Is this method generic?
-            if (method.IsGenericMethod)
-            {
-                builder.Append(HtmlEncodeAndReplaceLineBreaks(BuildMethodGenericParametersUnescaped(method)));
-            }
+            builder.Append(displayInfo.Name);
 
             // Build method parameters
-            builder.AppendFormat(CultureInfo.InvariantCulture, @"<span class=""faded"">{0}</span>", HtmlEncodeAndReplaceLineBreaks(BuildMethodParametersUnescaped(method)));
+            var methodParameters = "(" + string.Join(", ", displayInfo.Parameters) + ")";
+            builder.Append($@"<span class=""faded"">{HtmlEncodeAndReplaceLineBreaks(methodParameters)}</span>");
 
             // Do we have source information for this frame?
             if (stackFrame.GetILOffset() != -1)
@@ -129,21 +129,6 @@ namespace Microsoft.AspNetCore.Hosting
             // Finish
             builder.Append("</pre>");
             return builder.ToString();
-        }
-
-        private static string BuildMethodGenericParametersUnescaped(MethodBase method)
-        {
-            Debug.Assert(method.IsGenericMethod);
-            return "<" + string.Join(", ", method.GetGenericArguments().Select(PrettyPrintTypeName)) + ">";
-        }
-
-        private static string BuildMethodParametersUnescaped(MethodBase method)
-        {
-            return "(" + string.Join(", ", method.GetParameters().Select(p =>
-            {
-                var parameterType = p.ParameterType;
-                return ((parameterType != null) ? PrettyPrintTypeName(parameterType) : "?") + " " + p.Name;
-            })) + ")";
         }
 
         private static string GetResourceString(string name, bool escapeBraces = false)
@@ -215,20 +200,6 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             return (didReadFailingLine) ? errorSubContents : null;
-        }
-
-        private static string PrettyPrintTypeName(Type type) => TypeNameHelper.GetTypeDisplayName(type, fullName: false);
-
-
-        private static void SplitTypeIntoPrefixAndFriendlyName(Type type, out string prefix, out string friendlyName)
-        {
-            prefix = type.Namespace;
-            friendlyName = PrettyPrintTypeName(type);
-
-            if (!string.IsNullOrEmpty(friendlyName) && !string.IsNullOrEmpty(prefix))
-            {
-                prefix += ".";
-            }
         }
 
         private static string GenerateFooterEncoded()
