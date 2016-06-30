@@ -3,33 +3,24 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-*",
+    "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Localization": "1.1.0-*",
     "Microsoft.AspNetCore.Server.Testing": "0.2.0-*",
     "Microsoft.Extensions.Logging": "1.1.0-*",
     "Microsoft.Extensions.Logging.Console": "1.1.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.1.0-*",
-    "xunit": "2.1.0"
+    "xunit": "2.2.0-*"
   },
   "frameworks": {
     "netcoreapp1.0": {
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ],
       "dependencies": {
         "Microsoft.NETCore.App": {
           "version": "1.0.0-*",
           "type": "platform"
-        },
-        "System.Diagnostics.Process": "4.1.0-*"
+        }
       }
     },
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Runtime": ""
-      }
-    }
+    "net451": {}
   },
   "testRunner": "xunit"
 }
