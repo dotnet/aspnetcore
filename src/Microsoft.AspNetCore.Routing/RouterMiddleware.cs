@@ -48,10 +48,5 @@ namespace Microsoft.AspNetCore.Builder
                 await context.Handler(context.HttpContext);
             }
         }
-
-        private class RoutingFeature : IRoutingFeature
-        {
-            public RouteData RouteData { get; set; }
-        }
     }
 }
