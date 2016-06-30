@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         /// <summary>
-        /// The object that contains the route parameters that <see cref="IUrlHelper.Action(UrlActionContext)"/>
+        /// The object that contains the route values that <see cref="IUrlHelper.Action(UrlActionContext)"/>
         /// uses to generate URLs.
         /// </summary>
         public object Values
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         /// <summary>
-        /// The protocol for the URLs that <see cref="IUrlHelper.Action(UrlActionContext)"/> generates
+        /// The protocol for the URLs that <see cref="IUrlHelper.Action(UrlActionContext)"/> generates,
         /// such as "http" or "https"
         /// </summary>
         public string Protocol

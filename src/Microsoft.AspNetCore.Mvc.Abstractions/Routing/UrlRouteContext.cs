@@ -18,7 +18,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         /// <summary>
-        /// The object that contains the route values for the generated URLs.
+        /// The object that contains the route values that <see cref="IUrlHelper.RouteUrl(UrlRouteContext)"/>
+        /// uses to generate URLs.
         /// </summary>
         public object Values
         {
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         /// <summary>
-        /// The protocol for the URLs that <see cref="IUrlHelper.RouteUrl(UrlRouteContext)"/> generates
+        /// The protocol for the URLs that <see cref="IUrlHelper.RouteUrl(UrlRouteContext)"/> generates,
         /// such as "http" or "https"
         /// </summary>
         public string Protocol

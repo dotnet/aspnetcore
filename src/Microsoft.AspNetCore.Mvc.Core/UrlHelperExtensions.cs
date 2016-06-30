@@ -9,9 +9,10 @@ namespace Microsoft.AspNetCore.Mvc
     public static class UrlHelperExtensions
     {
         /// <summary>
-        /// Generates a fully qualified or absolute URL for an action method.
+        /// Generates a URL with an absolute path for an action method.
         /// </summary>
-        /// <returns>The fully qualified or absolute URL to an action method.</returns>
+        /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
+        /// <returns>The generated URL.</returns>
         public static string Action(this IUrlHelper helper)
         {
             if (helper == null)
@@ -29,11 +30,12 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a fully qualified or absolute URL for an action method by using the specified action name.
+        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// <paramref name="action"/> name.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="action">The name of the action method.</param>
-        /// <returns>The fully qualified or absolute URL to an action method.</returns>
+        /// <returns>The generated URL.</returns>
         public static string Action(this IUrlHelper helper, string action)
         {
             if (helper == null)
@@ -45,13 +47,13 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a fully qualified or absolute URL for an action method by using the specified action name,
-        /// and route values.
+        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// <paramref name="action"/> name and route <paramref name="values"/>.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="action">The name of the action method.</param>
         /// <param name="values">An object that contains route values.</param>
-        /// <returns>The fully qualified or absolute URL to an action method.</returns>
+        /// <returns>The generated URL.</returns>
         public static string Action(this IUrlHelper helper, string action, object values)
         {
             if (helper == null)
@@ -63,13 +65,13 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a fully qualified or absolute URL for an action method by using the specified action name,
-        /// and controller name.
+        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// <paramref name="action"/> and <paramref name="controller"/> names.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="action">The name of the action method.</param>
         /// <param name="controller">The name of the controller.</param>
-        /// <returns>The fully qualified or absolute URL to an action method.</returns>
+        /// <returns>The generated URL.</returns>
         public static string Action(this IUrlHelper helper, string action, string controller)
         {
             if (helper == null)
@@ -81,14 +83,14 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a fully qualified or absolute URL for an action method by using the specified action name,
-        /// controller name, and route values.
+        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// <paramref name="action"/> name, <paramref name="controller"/> name, and route <paramref name="values"/>.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="action">The name of the action method.</param>
         /// <param name="controller">The name of the controller.</param>
         /// <param name="values">An object that contains route values.</param>
-        /// <returns>The fully qualified or absolute URL to an action method.</returns>
+        /// <returns>The generated URL.</returns>
         public static string Action(this IUrlHelper helper, string action, string controller, object values)
         {
             if (helper == null)
@@ -100,15 +102,16 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a fully qualified or absolute URL for an action method by using the specified action name,
-        /// controller name, route values, and protocol to use.
+        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// <paramref name="action"/> name, <paramref name="controller"/> name, route <paramref name="values"/>, and
+        /// <paramref name="protocol"/> to use.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="action">The name of the action method.</param>
         /// <param name="controller">The name of the controller.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
-        /// <returns>The fully qualified or absolute URL to an action method.</returns>
+        /// <returns>The generated URL.</returns>
         public static string Action(
             this IUrlHelper helper,
             string action,
@@ -125,8 +128,11 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a fully qualified or absolute URL for an action method by using the specified action name,
-        /// controller name, route values, protocol to use, and host name.
+        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// <paramref name="action"/> name, <paramref name="controller"/> name, route <paramref name="values"/>,
+        /// <paramref name="protocol"/> to use, and <paramref name="host"/> name.
+        /// Generates an absolute URL if the <paramref name="protocol"/> and <paramref name="host"/> are
+        /// non-<c>null</c>.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="action">The name of the action method.</param>
@@ -134,7 +140,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="values">An object that contains route values.</param>
         /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
         /// <param name="host">The host name for the URL.</param>
-        /// <returns>The fully qualified or absolute URL to an action method.</returns>
+        /// <returns>The generated URL.</returns>
         public static string Action(
             this IUrlHelper helper,
             string action,
@@ -152,8 +158,11 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a fully qualified or absolute URL for an action method by using the specified action name,
-        /// controller name, route values, protocol to use, host name and fragment.
+        /// Generates a URL with an absolute path for an action method, which contains the specified
+        /// <paramref name="action"/> name, <paramref name="controller"/> name, route <paramref name="values"/>,
+        /// <paramref name="protocol"/> to use, <paramref name="host"/> name, and <paramref name="fragment"/>.
+        /// Generates an absolute URL if the <paramref name="protocol"/> and <paramref name="host"/> are
+        /// non-<c>null</c>.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="action">The name of the action method.</param>
@@ -162,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
         /// <param name="host">The host name for the URL.</param>
         /// <param name="fragment">The fragment for the URL.</param>
-        /// <returns>The fully qualified or absolute URL to an action method.</returns>
+        /// <returns>The generated URL.</returns>
         public static string Action(
             this IUrlHelper helper,
             string action,
@@ -189,11 +198,11 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a fully qualified or absolute URL for the specified route values.
+        /// Generates a URL with an absolute path for the specified route <paramref name="values"/>.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="values">An object that contains route values.</param>
-        /// <returns>The fully qualified or absolute URL.</returns>
+        /// <returns>The generated URL.</returns>
         public static string RouteUrl(this IUrlHelper helper, object values)
         {
             if (helper == null)
@@ -205,11 +214,11 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a fully qualified or absolute URL for the specified route name.
+        /// Generates a URL with an absolute path for the specified <paramref name="routeName"/>.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="routeName">The name of the route that is used to generate URL.</param>
-        /// <returns>The fully qualified or absolute URL.</returns>
+        /// <returns>The generated URL.</returns>
         public static string RouteUrl(this IUrlHelper helper, string routeName)
         {
             if (helper == null)
@@ -221,13 +230,13 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a fully qualified or absolute URL for the specified route values by
-        /// using the specified route name.
+        /// Generates a URL with an absolute path for the specified <paramref name="routeName"/> and route
+        /// <paramref name="values"/>.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="routeName">The name of the route that is used to generate URL.</param>
         /// <param name="values">An object that contains route values.</param>
-        /// <returns>The fully qualified or absolute URL.</returns>
+        /// <returns>The generated URL.</returns>
         public static string RouteUrl(this IUrlHelper helper, string routeName, object values)
         {
             if (helper == null)
@@ -239,14 +248,14 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a fully qualified or absolute URL for the specified route values by
-        /// using the specified route name, and protocol to use.
+        /// Generates a URL with an absolute path for the specified route <paramref name="routeName"/> and route
+        /// <paramref name="values"/>, which contains the specified <paramref name="protocol"/> to use.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="routeName">The name of the route that is used to generate URL.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
-        /// <returns>The fully qualified or absolute URL.</returns>
+        /// <returns>The generated URL.</returns>
         public static string RouteUrl(
             this IUrlHelper helper,
             string routeName,
@@ -262,15 +271,17 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a fully qualified or absolute URL for the specified route values by
-        /// using the specified route name, protocol to use, and host name.
+        /// Generates a URL with an absolute path for the specified route <paramref name="routeName"/> and route
+        /// <paramref name="values"/>, which contains the specified <paramref name="protocol"/> to use and
+        /// <paramref name="host"/> name. Generates an absolute URL if
+        /// <see cref="UrlActionContext.Protocol"/> and <see cref="UrlActionContext.Host"/> are non-<c>null</c>.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="routeName">The name of the route that is used to generate URL.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
         /// <param name="host">The host name for the URL.</param>
-        /// <returns>The fully qualified or absolute URL.</returns>
+        /// <returns>The generated URL.</returns>
         public static string RouteUrl(
             this IUrlHelper helper,
             string routeName,
@@ -287,8 +298,10 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Generates a fully qualified or absolute URL for the specified route values by
-        /// using the specified route name, protocol to use, host name and fragment.
+        /// Generates a URL with an absolute path for the specified route <paramref name="routeName"/> and route
+        /// <paramref name="values"/>, which contains the specified <paramref name="protocol"/> to use,
+        /// <paramref name="host"/> name and <paramref name="fragment"/>. Generates an absolute URL if
+        /// <see cref="UrlActionContext.Protocol"/> and <see cref="UrlActionContext.Host"/> are non-<c>null</c>.
         /// </summary>
         /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="routeName">The name of the route that is used to generate URL.</param>
@@ -296,7 +309,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
         /// <param name="host">The host name for the URL.</param>
         /// <param name="fragment">The fragment for the URL.</param>
-        /// <returns>The fully qualified or absolute URL.</returns>
+        /// <returns>The generated URL.</returns>
         public static string RouteUrl(
             this IUrlHelper helper,
             string routeName,

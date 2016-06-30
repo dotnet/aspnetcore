@@ -16,11 +16,13 @@ namespace Microsoft.AspNetCore.Mvc
         ActionContext ActionContext { get; }
 
         /// <summary>
-        /// Generates a fully qualified or absolute URL specified by <see cref="UrlActionContext"/> for an action
-        /// method, which contains action name, controller name, route values, protocol to use, host name, and fragment.
+        /// Generates a URL with an absolute path for an action method, which contains the action
+        /// name, controller name, route values, protocol to use, host name, and fragment specified by
+        /// <see cref="UrlActionContext"/>. Generates an absolute URL if <see cref="UrlActionContext.Protocol"/> and
+        /// <see cref="UrlActionContext.Host"/> are non-<c>null</c>.
         /// </summary>
         /// <param name="actionContext">The context object for the generated URLs for an action method.</param>
-        /// <returns>The fully qualified or absolute URL to an action method.</returns>
+        /// <returns>The generated URL.</returns>
         string Action(UrlActionContext actionContext);
 
         /// <summary>
@@ -35,43 +37,47 @@ namespace Microsoft.AspNetCore.Mvc
         string Content(string contentPath);
 
         /// <summary>
-        /// Returns a value that indicates whether the URL is local. A URL with an absolute path is considered local
-        /// if it does not have a host/authority part. URLs using virtual paths ('~/') are also local.
+        /// Returns a value that indicates whether the URL is local. A URL is considered local if it does not have a
+        /// host / authority part and it has an absolute path. URLs using virtual paths ('~/') are also local.
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <returns><c>true</c> if the URL is local; otherwise, <c>false</c>.</returns>
         /// <example>
         /// <para>
         /// For example, the following URLs are considered local:
+        /// <code>
         /// /Views/Default/Index.html
         /// ~/Index.html
+        /// </code>
         /// </para>
         /// <para>
         /// The following URLs are non-local:
+        /// <code>
         /// ../Index.html
         /// http://www.contoso.com/
         /// http://localhost/Index.html
+        /// </code>
         /// </para>
         /// </example>
         bool IsLocalUrl(string url);
 
         /// <summary>
-        /// Generates a fully qualified or absolute URL specified by <see cref="UrlRouteContext"/>, which
-        /// contains the route name, the route values, protocol to use, host name and fragment.
+        /// Generates a URL with an absolute path, which contains the route name, route values, protocol to use, host
+        /// name, and fragment specified by <see cref="UrlRouteContext"/>. Generates an absolute URL if
+        /// <see cref="UrlActionContext.Protocol"/> and <see cref="UrlActionContext.Host"/> are non-<c>null</c>.
         /// </summary>
         /// <param name="routeContext">The context object for the generated URLs for a route.</param>
-        /// <returns>The fully qualified or absolute URL.</returns>
+        /// <returns>The generated URL.</returns>
         string RouteUrl(UrlRouteContext routeContext);
 
         /// <summary>
-        /// Generates an absolute URL using the specified route name and values.
+        /// Generates an absolute URL for the specified <paramref name="routeName"/> and route
+        /// <paramref name="values"/>, which contains the protocol (such as "http" or "https") and host name from the
+        /// current request.
         /// </summary>
-        /// <param name="routeName">The name of the route that is used to generate the URL.</param>
-        /// <param name="values">An object that contains the route values.</param>
+        /// <param name="routeName">The name of the route that is used to generate URL.</param>
+        /// <param name="values">An object that contains route values.</param>
         /// <returns>The generated absolute URL.</returns>
-        /// <remarks>
-        /// The protocol and host is obtained from the current request.
-        /// </remarks>
         string Link(string routeName, object values);
     }
 }
