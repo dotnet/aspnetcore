@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Localization.Tests
     public class QueryStringRequestCultureProviderTest
     {
         [Fact]
-        public async void GetCultureInfoFromQueryString()
+        public async Task GetCultureInfoFromQueryString()
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -50,7 +50,7 @@ namespace Microsoft.Extensions.Localization.Tests
         }
 
         [Fact]
-        public async void GetDefaultCultureInfoIfCultureKeysAreMissing()
+        public async Task GetDefaultCultureInfoIfCultureKeysAreMissing()
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.Localization.Tests
         }
 
         [Fact]
-        public async void GetDefaultCultureInfoIfCultureIsInSupportedCultureList()
+        public async Task GetDefaultCultureInfoIfCultureIsInSupportedCultureList()
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -111,7 +111,7 @@ namespace Microsoft.Extensions.Localization.Tests
         }
 
         [Fact]
-        public async void GetDefaultCultureInfoIfUICultureIsNotInSupportedList()
+        public async Task GetDefaultCultureInfoIfUICultureIsNotInSupportedList()
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -145,7 +145,7 @@ namespace Microsoft.Extensions.Localization.Tests
         }
 
         [Fact]
-        public async void GetSameCultureInfoIfCultureKeyIsMissing()
+        public async Task GetSameCultureInfoIfCultureKeyIsMissing()
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -180,7 +180,7 @@ namespace Microsoft.Extensions.Localization.Tests
         }
 
         [Fact]
-        public async void GetSameCultureInfoIfUICultureKeyIsMissing()
+        public async Task GetSameCultureInfoIfUICultureKeyIsMissing()
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -215,7 +215,7 @@ namespace Microsoft.Extensions.Localization.Tests
         }
 
         [Fact]
-        public async void GetCultureInfoFromQueryStringWithCustomKeys()
+        public async Task GetCultureInfoFromQueryStringWithCustomKeys()
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -255,7 +255,7 @@ namespace Microsoft.Extensions.Localization.Tests
         }
 
         [Fact]
-        public async void GetTheRightCultureInfoRegardlessOfCultureNameCasing()
+        public async Task GetTheRightCultureInfoRegardlessOfCultureNameCasing()
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>

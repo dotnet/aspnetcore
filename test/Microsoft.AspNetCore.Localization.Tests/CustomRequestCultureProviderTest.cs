@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Localization.Tests
     public class CustomRequestCultureProviderTest
     {
         [Fact]
-        public async void CustomRequestCultureProviderThatGetsCultureInfoFromUrl()
+        public async Task CustomRequestCultureProviderThatGetsCultureInfoFromUrl()
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>

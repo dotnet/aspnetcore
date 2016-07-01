@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Localization.Tests
     public class CookieRequestCultureProviderTest
     {
         [Fact]
-        public async void GetCultureInfoFromPersistentCookie()
+        public async Task GetCultureInfoFromPersistentCookie()
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -60,7 +60,7 @@ namespace Microsoft.Extensions.Localization.Tests
         }
 
         [Fact]
-        public async void GetDefaultCultureInfoIfCultureKeysAreMissingOrInvalid()
+        public async Task GetDefaultCultureInfoIfCultureKeysAreMissingOrInvalid()
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -99,7 +99,7 @@ namespace Microsoft.Extensions.Localization.Tests
         }
 
         [Fact]
-        public async void GetDefaultCultureInfoIfCookieDoesNotExist()
+        public async Task GetDefaultCultureInfoIfCookieDoesNotExist()
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
