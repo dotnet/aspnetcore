@@ -61,6 +61,14 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(action));
             }
 
+            if (builder.ApplicationServices.GetService(typeof(RoutingMarkerService)) == null)
+            {
+                throw new InvalidOperationException(Resources.FormatUnableToFindServices(
+                    nameof(IServiceCollection),
+                    nameof(RoutingServiceCollectionExtensions.AddRouting),
+                    "ConfigureServices(...)"));
+            }
+
             var routeBuilder = new RouteBuilder(builder);
             action(routeBuilder);
 
