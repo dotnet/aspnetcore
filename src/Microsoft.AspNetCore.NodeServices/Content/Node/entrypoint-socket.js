@@ -44,27 +44,89 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(1);
+	module.exports = __webpack_require__(7);
 
 
 /***/ },
-/* 1 */
+/* 1 */,
+/* 2 */,
+/* 3 */
+/***/ function(module, exports) {
+
+	module.exports = require("path");
+
+/***/ },
+/* 4 */
+/***/ function(module, exports) {
+
+	"use strict";
+	function parseArgs(args) {
+	    // Very simplistic parsing which is sufficient for the cases needed. We don't want to bring in any external
+	    // dependencies (such as an args-parsing library) to this file.
+	    var result = {};
+	    var currentKey = null;
+	    args.forEach(function (arg) {
+	        if (arg.indexOf('--') === 0) {
+	            var argName = arg.substring(2);
+	            result[argName] = undefined;
+	            currentKey = argName;
+	        }
+	        else if (currentKey) {
+	            result[currentKey] = arg;
+	            currentKey = null;
+	        }
+	    });
+	    return result;
+	}
+	exports.parseArgs = parseArgs;
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var fs = __webpack_require__(6);
+	var path = __webpack_require__(3);
+	function autoQuitOnFileChange(rootDir, extensions) {
+	    // Note: This will only work on Windows/OS X, because the 'recursive' option isn't supported on Linux.
+	    // Consider using a different watch mechanism (though ideally without forcing further NPM dependencies).
+	    fs.watch(rootDir, { persistent: false, recursive: true }, function (event, filename) {
+	        var ext = path.extname(filename);
+	        if (extensions.indexOf(ext) >= 0) {
+	            console.log('Restarting due to file change: ' + filename);
+	            process.exit(0);
+	        }
+	    });
+	}
+	exports.autoQuitOnFileChange = autoQuitOnFileChange;
+
+
+/***/ },
+/* 6 */
+/***/ function(module, exports) {
+
+	module.exports = require("fs");
+
+/***/ },
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	// Limit dependencies to core Node modules. This means the code in this file has to be very low-level and unattractive,
 	// but simplifies things for the consumer of this module.
-	var fs = __webpack_require__(2);
-	var net = __webpack_require__(3);
-	var path = __webpack_require__(4);
-	var readline = __webpack_require__(5);
-	var virtualConnectionServer = __webpack_require__(6);
+	var net = __webpack_require__(8);
+	var path = __webpack_require__(3);
+	var readline = __webpack_require__(9);
+	var ArgsUtil_1 = __webpack_require__(4);
+	var AutoQuit_1 = __webpack_require__(5);
+	var virtualConnectionServer = __webpack_require__(10);
 	// Webpack doesn't support dynamic requires for files not present at compile time, so grab a direct
 	// reference to Node's runtime 'require' function.
 	var dynamicRequire = eval('require');
-	var parsedArgs = parseArgs(process.argv);
+	var parsedArgs = ArgsUtil_1.parseArgs(process.argv);
 	if (parsedArgs.watch) {
-	    autoQuitOnFileChange(process.cwd(), parsedArgs.watch.split(','));
+	    AutoQuit_1.autoQuitOnFileChange(process.cwd(), parsedArgs.watch.split(','));
 	}
 	// Signal to the .NET side when we're ready to accept invocations
 	var server = net.createServer().on('listening', function () {
@@ -116,68 +178,27 @@
 	var useWindowsNamedPipes = /^win/.test(process.platform);
 	var listenAddress = (useWindowsNamedPipes ? '\\\\.\\pipe\\' : '/tmp/') + parsedArgs.pipename;
 	server.listen(listenAddress);
-	function autoQuitOnFileChange(rootDir, extensions) {
-	    // Note: This will only work on Windows/OS X, because the 'recursive' option isn't supported on Linux.
-	    // Consider using a different watch mechanism (though ideally without forcing further NPM dependencies).
-	    fs.watch(rootDir, { persistent: false, recursive: true }, function (event, filename) {
-	        var ext = path.extname(filename);
-	        if (extensions.indexOf(ext) >= 0) {
-	            console.log('Restarting due to file change: ' + filename);
-	            process.exit(0);
-	        }
-	    });
-	}
-	function parseArgs(args) {
-	    // Very simplistic parsing which is sufficient for the cases needed. We don't want to bring in any external
-	    // dependencies (such as an args-parsing library) to this file.
-	    var result = {};
-	    var currentKey = null;
-	    args.forEach(function (arg) {
-	        if (arg.indexOf('--') === 0) {
-	            var argName = arg.substring(2);
-	            result[argName] = undefined;
-	            currentKey = argName;
-	        }
-	        else if (currentKey) {
-	            result[currentKey] = arg;
-	            currentKey = null;
-	        }
-	    });
-	    return result;
-	}
 
 
 /***/ },
-/* 2 */
-/***/ function(module, exports) {
-
-	module.exports = require("fs");
-
-/***/ },
-/* 3 */
+/* 8 */
 /***/ function(module, exports) {
 
 	module.exports = require("net");
 
 /***/ },
-/* 4 */
-/***/ function(module, exports) {
-
-	module.exports = require("path");
-
-/***/ },
-/* 5 */
+/* 9 */
 /***/ function(module, exports) {
 
 	module.exports = require("readline");
 
 /***/ },
-/* 6 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var events_1 = __webpack_require__(7);
-	var VirtualConnection_1 = __webpack_require__(8);
+	var events_1 = __webpack_require__(11);
+	var VirtualConnection_1 = __webpack_require__(12);
 	// Keep this in sync with the equivalent constant in the .NET code. Both sides split up their transmissions into frames with this max length,
 	// and both will reject longer frames.
 	var MaxFrameBodyLength = 16 * 1024;
@@ -358,13 +379,13 @@
 
 
 /***/ },
-/* 7 */
+/* 11 */
 /***/ function(module, exports) {
 
 	module.exports = require("events");
 
 /***/ },
-/* 8 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -373,7 +394,7 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var stream_1 = __webpack_require__(9);
+	var stream_1 = __webpack_require__(13);
 	/**
 	 * Represents a virtual connection. Multiple virtual connections may be multiplexed over a single physical socket connection.
 	 */
@@ -414,7 +435,7 @@
 
 
 /***/ },
-/* 9 */
+/* 13 */
 /***/ function(module, exports) {
 
 	module.exports = require("stream");

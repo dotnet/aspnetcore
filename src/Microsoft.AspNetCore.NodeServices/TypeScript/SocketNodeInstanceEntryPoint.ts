@@ -1,10 +1,11 @@
 // Limit dependencies to core Node modules. This means the code in this file has to be very low-level and unattractive,
 // but simplifies things for the consumer of this module.
-import * as fs from 'fs';
 import * as net from 'net';
 import * as path from 'path';
 import * as readline from 'readline';
 import { Duplex } from 'stream';
+import { parseArgs } from './Util/ArgsUtil';
+import { autoQuitOnFileChange } from './Util/AutoQuit';
 import * as virtualConnectionServer from './VirtualConnections/VirtualConnectionServer';
 
 // Webpack doesn't support dynamic requires for files not present at compile time, so grab a direct
@@ -70,37 +71,6 @@ virtualConnectionServer.createInterface(server).on('connection', (connection: Du
 const useWindowsNamedPipes = /^win/.test(process.platform);
 const listenAddress = (useWindowsNamedPipes ? '\\\\.\\pipe\\' : '/tmp/') + parsedArgs.pipename;
 server.listen(listenAddress);
-
-function autoQuitOnFileChange(rootDir: string, extensions: string[]) {
-    // Note: This will only work on Windows/OS X, because the 'recursive' option isn't supported on Linux.
-    // Consider using a different watch mechanism (though ideally without forcing further NPM dependencies).
-    fs.watch(rootDir, { persistent: false, recursive: true } as any, (event, filename) => {
-        var ext = path.extname(filename);
-        if (extensions.indexOf(ext) >= 0) {
-            console.log('Restarting due to file change: ' + filename);
-            process.exit(0);
-        }
-    });
-}
-
-function parseArgs(args: string[]): any {
-    // Very simplistic parsing which is sufficient for the cases needed. We don't want to bring in any external
-    // dependencies (such as an args-parsing library) to this file.
-    const result = {};
-    let currentKey = null;
-    args.forEach(arg => {
-        if (arg.indexOf('--') === 0) {
-            const argName = arg.substring(2);
-            result[argName] = undefined;
-            currentKey = argName;
-        } else if (currentKey) {
-            result[currentKey] = arg;
-            currentKey = null;
-        }
-    });
-
-    return result;
-}
 
 interface RpcInvocation {
     moduleName: string;
