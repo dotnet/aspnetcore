@@ -80,6 +80,11 @@ function loadViaWebpackNoCache<T>(webpackConfigPath: string, modulePath: string)
             } else {
                 // We're in a callback, so need an explicit try/catch to propagate any errors up the promise chain
                 try {
+                    if (stats.hasErrors()) {
+                        throw new Error('Webpack compilation reported errors. Compiler output follows: '
+                            + stats.toString({ chunks: false }));
+                    }
+
                     const fileContent = compiler.outputFileSystem.readFileSync('/webpack-output.js', 'utf8');
                     const moduleInstance = requireFromString<T>(fileContent);
                     resolve(moduleInstance);
