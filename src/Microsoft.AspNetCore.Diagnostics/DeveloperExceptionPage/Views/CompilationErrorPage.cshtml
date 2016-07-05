@@ -1,4 +1,4 @@
-@using System
+﻿@using System
 @using System.Globalization
 @using System.Linq
 @using System.Net
@@ -33,6 +33,10 @@
                     {
                         <div class="titleerror">@fileName</div>
                     }
+                }
+                @if (!string.IsNullOrEmpty(errorDetail.ErrorMessage))
+                {
+                    <details>@errorDetail.ErrorMessage</details>
                 }
                 <br />
                 <ul>

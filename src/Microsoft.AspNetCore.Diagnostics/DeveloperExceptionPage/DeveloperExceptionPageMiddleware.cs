@@ -131,7 +131,8 @@ namespace Microsoft.AspNetCore.Diagnostics
                 var stackFrames = new List<StackFrame>();
                 var errorDetails = new ErrorDetails
                 {
-                    StackFrames = stackFrames
+                    StackFrames = stackFrames,
+                    ErrorMessage = compilationFailure.FailureSummary,
                 };
                 var fileContent = compilationFailure
                     .SourceFileContent

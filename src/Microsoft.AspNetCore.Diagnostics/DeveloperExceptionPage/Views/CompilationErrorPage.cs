@@ -63,7 +63,7 @@ using Microsoft.AspNetCore.Diagnostics
 
 #line default
 #line hidden
-            WriteLiteral("</title>\r\n        <style>\r\n            body {\r\n    font-family: 'Segoe UI', Tahoma, Arial, Helvetica, sans-serif;\r\n    font-size: .813em;\r\n    line-height: 1.4em;\r\n    color: #222;\r\n}\r\n\r\nh1, h2, h3, h4, h5 {\r\n    /*font-family: 'Segoe UI',Tahoma,Arial,Helvetica,sans-serif;*/\r\n    font-weight: 100;\r\n}\r\n\r\nh1 {\r\n    color: #44525e;\r\n    margin: 15px 0 15px 0;\r\n}\r\n\r\nh2 {\r\n    margin: 10px 5px 0 0;\r\n}\r\n\r\nh3 {\r\n    color: #363636;\r\n    margin: 5px 5px 0 0;\r\n}\r\n\r\ncode {\r\n    font-family: Consolas, \"Courier New\", courier, monospace;\r\n}\r\n\r\nbody .titleerror {\r\n    padding: 3px;\r\n    display: block;\r\n    font-size: 1.5em;\r\n    font-weight: 100;\r\n}\r\n\r\nbody .location {\r\n    margin: 3px 0 10px 30px;\r\n}\r\n\r\n#header {\r\n    font-size: 18px;\r\n    padding: 15px 0;\r\n    border-top: 1px #ddd solid;\r\n    border-bottom: 1px #ddd solid;\r\n    margin-bottom: 0;\r\n}\r\n\r\n    #header li {\r\n        display: inline;\r\n        margin: 5px;\r\n        padding: 5px;\r\n        color: #a0a0a0;\r\n        cursor: pointer;\r\n    }\r\n\r\n        #header li:hover {\r\n            background: #a9e4f9;\r\n            color: #fff;\r\n        }\r\n\r\n        #header .selected {\r\n            background: #44c5f2;\r\n            color: #fff;\r\n        }\r\n\r\n#stackpage ul {\r\n    list-style: none;\r\n    padding-left: 0;\r\n    margin: 0;\r\n    /*border-bottom: 1px #ddd solid;*/\r\n}\r\n\r\n#stackpage .stackerror {\r\n    padding: 5px;\r\n    border-bottom: 1px #ddd solid;\r\n}\r\n\r\n    #stackpage .stackerror:hover {\r\n        background-color: #f0f0f0;\r\n    }\r\n\r\n#stackpage .frame:hover {\r\n    background-color: #f0f0f0;\r\n    text-decoration: none;\r\n}\r\n\r\n#stackpage .frame {\r\n    padding: 2px;\r\n    margin: 0 0 0 30px;\r\n    border-bottom: 1px #ddd solid;\r\n    cursor: pointer;\r\n}\r\n\r\n    #stackpage .frame h3 {\r\n        padding: 5px;\r\n        margin: 0;\r\n    }\r\n\r\n#stackpage .source {\r\n    padding: 0;\r\n}\r\n\r\n    #stackpage .source ol li {\r\n        font-family: Consolas, \"Courier New\", courier, monospace;\r\n        white-space: pre;\r\n    }\r\n\r\n#stackpage .frame:hover .source .highlight li span {\r\n    color: #fff;\r\n    background: #b20000;\r\n}\r\n\r\n#stackpage .source ol.collapsible li {\r\n    color: #888;\r\n}\r\n\r\n    #stackpage .source ol.collapsible li span {\r\n        color: #606060;\r\n    }\r\n\r\n.page table {\r\n    border-collapse: separate;\r\n    border-spacing: 0;\r\n    margin: 0 0 20px;\r\n}\r\n\r\n.page th {\r\n    vertical-align: bottom;\r\n    padding: 10px 5px 5px 5px;\r\n    font-weight: 400;\r\n    color: #a0a0a0;\r\n    text-align: left;\r\n}\r\n\r\n.page td {\r\n    padding: 3px 10px;\r\n}\r\n\r\n.page th, .page td {\r\n    border-right: 1px #ddd solid;\r\n    border-bottom: 1px #ddd solid;\r\n    border-left: 1px transparent solid;\r\n    border-top: 1px transparent solid;\r\n    box-sizing: border-box;\r\n}\r\n\r\n    .page th:last-child, .page td:last-child {\r\n        border-right: 1px transparent solid;\r\n    }\r\n\r\n    .page .length {\r\n        text-align: right;\r\n    }\r\n\r\na {\r\n    color: #1ba1e2;\r\n    text-decoration: none;\r\n}\r\n\r\n    a:hover {\r\n        color: #13709e;\r\n        text-decoration: underline;\r\n    }\r\n\r\n        </style>\r\n    </head>\r\n    <body>\r\n        <h1>");
+            WriteLiteral("</title>\r\n        <style>\r\n            body {\r\n    font-family: 'Segoe UI', Tahoma, Arial, Helvetica, sans-serif;\r\n    font-size: .813em;\r\n    line-height: 1.4em;\r\n    color: #222;\r\n}\r\n\r\nh1, h2, h3, h4, h5 {\r\n    /*font-family: 'Segoe UI',Tahoma,Arial,Helvetica,sans-serif;*/\r\n    font-weight: 100;\r\n}\r\n\r\nh1 {\r\n    color: #44525e;\r\n    margin: 15px 0 15px 0;\r\n}\r\n\r\nh2 {\r\n    margin: 10px 5px 0 0;\r\n}\r\n\r\nh3 {\r\n    color: #363636;\r\n    margin: 5px 5px 0 0;\r\n}\r\n\r\ncode {\r\n    font-family: Consolas, \"Courier New\", courier, monospace;\r\n}\r\n\r\nbody .titleerror {\r\n    padding: 3px 3px 6px 3px;\r\n    display: block;\r\n    font-size: 1.5em;\r\n    font-weight: 100;\r\n}\r\n\r\nbody .location {\r\n    margin: 3px 0 10px 30px;\r\n}\r\n\r\n#header {\r\n    font-size: 18px;\r\n    padding: 15px 0;\r\n    border-top: 1px #ddd solid;\r\n    border-bottom: 1px #ddd solid;\r\n    margin-bottom: 0;\r\n}\r\n\r\n    #header li {\r\n        display: inline;\r\n        margin: 5px;\r\n        padding: 5px;\r\n        color: #a0a0a0;\r\n        cursor: pointer;\r\n    }\r\n\r\n        #header li:hover {\r\n            background: #a9e4f9;\r\n            color: #fff;\r\n        }\r\n\r\n    #header .selected {\r\n        background: #44c5f2;\r\n        color: #fff;\r\n    }\r\n\r\n#stackpage ul {\r\n    list-style: none;\r\n    padding-left: 0;\r\n    margin: 0;\r\n    /*border-bottom: 1px #ddd solid;*/\r\n}\r\n\r\n#stackpage details {\r\n    font-size: 1.2em;\r\n    padding: 3px;\r\n    color: #000;\r\n}\r\n\r\n#stackpage .stackerror {\r\n    padding: 5px;\r\n    border-bottom: 1px #ddd solid;\r\n}\r\n\r\n    #stackpage .stackerror:hover {\r\n        background-color: #f0f0f0;\r\n    }\r\n\r\n#stackpage .frame:hover {\r\n    background-color: #f0f0f0;\r\n    text-decoration: none;\r\n}\r\n\r\n#stackpage .frame {\r\n    padding: 2px;\r\n    margin: 0 0 0 30px;\r\n    border-bottom: 1px #ddd solid;\r\n    cursor: pointer;\r\n}\r\n\r\n    #stackpage .frame h3 {\r\n        padding: 5px;\r\n        margin: 0;\r\n    }\r\n\r\n#stackpage .source {\r\n    padding: 0;\r\n}\r\n\r\n    #stackpage .source ol li {\r\n        font-family: Consolas, \"Courier New\", courier, monospace;\r\n        white-space: pre;\r\n    }\r\n\r\n#stackpage .frame:hover .source .highlight li span {\r\n    color: #fff;\r\n    background: #b20000;\r\n}\r\n\r\n#stackpage .source ol.collapsible li {\r\n    color: #888;\r\n}\r\n\r\n    #stackpage .source ol.collapsible li span {\r\n        color: #606060;\r\n    }\r\n\r\n.page table {\r\n    border-collapse: separate;\r\n    border-spacing: 0;\r\n    margin: 0 0 20px;\r\n}\r\n\r\n.page th {\r\n    vertical-align: bottom;\r\n    padding: 10px 5px 5px 5px;\r\n    font-weight: 400;\r\n    color: #a0a0a0;\r\n    text-align: left;\r\n}\r\n\r\n.page td {\r\n    padding: 3px 10px;\r\n}\r\n\r\n.page th, .page td {\r\n    border-right: 1px #ddd solid;\r\n    border-bottom: 1px #ddd solid;\r\n    border-left: 1px transparent solid;\r\n    border-top: 1px transparent solid;\r\n    box-sizing: border-box;\r\n}\r\n\r\n    .page th:last-child, .page td:last-child {\r\n        border-right: 1px transparent solid;\r\n    }\r\n\r\n.page .length {\r\n    text-align: right;\r\n}\r\n\r\na {\r\n    color: #1ba1e2;\r\n    text-decoration: none;\r\n}\r\n\r\n    a:hover {\r\n        color: #13709e;\r\n        text-decoration: underline;\r\n    }\r\n\r\n        </style>\r\n    </head>\r\n    <body>\r\n        <h1>");
 #line 25 "CompilationErrorPage.cshtml"
        Write(Resources.ErrorPageHtml_CompilationException);
 
@@ -120,14 +120,35 @@ using Microsoft.AspNetCore.Diagnostics
 #line default
 #line hidden
 
-            WriteLiteral("                <br />\r\n                <ul>\r\n");
+            WriteLiteral("                ");
+#line 37 "CompilationErrorPage.cshtml"
+                 if (!string.IsNullOrEmpty(errorDetail.ErrorMessage))
+                {
+
+#line default
+#line hidden
+
+            WriteLiteral("                    <details>");
 #line 39 "CompilationErrorPage.cshtml"
+                        Write(errorDetail.ErrorMessage);
+
+#line default
+#line hidden
+            WriteLiteral("</details>\r\n");
+#line 40 "CompilationErrorPage.cshtml"
+                }
+
+#line default
+#line hidden
+
+            WriteLiteral("                <br />\r\n                <ul>\r\n");
+#line 43 "CompilationErrorPage.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 39 "CompilationErrorPage.cshtml"
+#line 43 "CompilationErrorPage.cshtml"
                  foreach (var frame in errorDetail.StackFrames)
                 {
 
@@ -135,28 +156,28 @@ using Microsoft.AspNetCore.Diagnostics
 #line hidden
 
             WriteLiteral("                    <li class=\"frame\"");
-            BeginWriteAttribute("tabindex", " tabindex=\"", 1273, "\"", 1293, 1);
-#line 41 "CompilationErrorPage.cshtml"
-WriteAttributeValue("", 1284, tabIndex, 1284, 9, false);
+            BeginWriteAttribute("tabindex", " tabindex=\"", 1448, "\"", 1468, 1);
+#line 45 "CompilationErrorPage.cshtml"
+WriteAttributeValue("", 1459, tabIndex, 1459, 9, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(">\r\n");
-#line 42 "CompilationErrorPage.cshtml"
+#line 46 "CompilationErrorPage.cshtml"
                         
 
 #line default
 #line hidden
 
-#line 42 "CompilationErrorPage.cshtml"
+#line 46 "CompilationErrorPage.cshtml"
                            tabIndex++; 
 
 #line default
 #line hidden
 
             WriteLiteral("                        ");
-#line 43 "CompilationErrorPage.cshtml"
+#line 47 "CompilationErrorPage.cshtml"
                          if (!string.IsNullOrEmpty(frame.ErrorDetails))
                         {
 
@@ -164,26 +185,26 @@ WriteAttributeValue("", 1284, tabIndex, 1284, 9, false);
 #line hidden
 
             WriteLiteral("                            <h3>");
-#line 45 "CompilationErrorPage.cshtml"
+#line 49 "CompilationErrorPage.cshtml"
                            Write(frame.ErrorDetails);
 
 #line default
 #line hidden
             WriteLiteral("</h3>\r\n");
-#line 46 "CompilationErrorPage.cshtml"
+#line 50 "CompilationErrorPage.cshtml"
                         }
 
 #line default
 #line hidden
 
             WriteLiteral("\r\n");
-#line 48 "CompilationErrorPage.cshtml"
+#line 52 "CompilationErrorPage.cshtml"
                         
 
 #line default
 #line hidden
 
-#line 48 "CompilationErrorPage.cshtml"
+#line 52 "CompilationErrorPage.cshtml"
                          if (frame.Line != 0 && frame.ContextCode.Any())
                         {
 
@@ -191,13 +212,13 @@ WriteAttributeValue("", 1284, tabIndex, 1284, 9, false);
 #line hidden
 
             WriteLiteral("                            <div class=\"source\">\r\n");
-#line 51 "CompilationErrorPage.cshtml"
+#line 55 "CompilationErrorPage.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 51 "CompilationErrorPage.cshtml"
+#line 55 "CompilationErrorPage.cshtml"
                                  if (frame.PreContextCode.Any())
                                 {
 
@@ -205,21 +226,21 @@ WriteAttributeValue("", 1284, tabIndex, 1284, 9, false);
 #line hidden
 
             WriteLiteral("                                    <ol");
-            BeginWriteAttribute("start", " start=\"", 1817, "\"", 1846, 1);
-#line 53 "CompilationErrorPage.cshtml"
-WriteAttributeValue("", 1825, frame.PreContextLine, 1825, 21, false);
+            BeginWriteAttribute("start", " start=\"", 1992, "\"", 2021, 1);
+#line 57 "CompilationErrorPage.cshtml"
+WriteAttributeValue("", 2000, frame.PreContextLine, 2000, 21, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"collapsible\">\r\n");
-#line 54 "CompilationErrorPage.cshtml"
+#line 58 "CompilationErrorPage.cshtml"
                                         
 
 #line default
 #line hidden
 
-#line 54 "CompilationErrorPage.cshtml"
+#line 58 "CompilationErrorPage.cshtml"
                                          foreach (var line in frame.PreContextCode)
                                         {
 
@@ -227,41 +248,41 @@ WriteAttributeValue("", 1825, frame.PreContextLine, 1825, 21, false);
 #line hidden
 
             WriteLiteral("                                            <li><span>");
-#line 56 "CompilationErrorPage.cshtml"
+#line 60 "CompilationErrorPage.cshtml"
                                                  Write(line);
 
 #line default
 #line hidden
             WriteLiteral("</span></li>\r\n");
-#line 57 "CompilationErrorPage.cshtml"
+#line 61 "CompilationErrorPage.cshtml"
                                         }
 
 #line default
 #line hidden
 
             WriteLiteral("                                    </ol>\r\n");
-#line 59 "CompilationErrorPage.cshtml"
+#line 63 "CompilationErrorPage.cshtml"
                                 }
 
 #line default
 #line hidden
 
             WriteLiteral("                                <ol");
-            BeginWriteAttribute("start", " start=\"", 2227, "\"", 2246, 1);
-#line 60 "CompilationErrorPage.cshtml"
-WriteAttributeValue("", 2235, frame.Line, 2235, 11, false);
+            BeginWriteAttribute("start", " start=\"", 2402, "\"", 2421, 1);
+#line 64 "CompilationErrorPage.cshtml"
+WriteAttributeValue("", 2410, frame.Line, 2410, 11, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"highlight\">\r\n");
-#line 61 "CompilationErrorPage.cshtml"
+#line 65 "CompilationErrorPage.cshtml"
                                     
 
 #line default
 #line hidden
 
-#line 61 "CompilationErrorPage.cshtml"
+#line 65 "CompilationErrorPage.cshtml"
                                      foreach (var line in frame.ContextCode)
                                     {
 
@@ -269,26 +290,26 @@ WriteAttributeValue("", 2235, frame.Line, 2235, 11, false);
 #line hidden
 
             WriteLiteral("                                        <li><span>");
-#line 63 "CompilationErrorPage.cshtml"
+#line 67 "CompilationErrorPage.cshtml"
                                              Write(line);
 
 #line default
 #line hidden
             WriteLiteral("</span></li>\r\n");
-#line 64 "CompilationErrorPage.cshtml"
+#line 68 "CompilationErrorPage.cshtml"
                                     }
 
 #line default
 #line hidden
 
             WriteLiteral("                                </ol>\r\n");
-#line 66 "CompilationErrorPage.cshtml"
+#line 70 "CompilationErrorPage.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 66 "CompilationErrorPage.cshtml"
+#line 70 "CompilationErrorPage.cshtml"
                                  if (frame.PostContextCode.Any())
                                 {
 
@@ -296,21 +317,21 @@ WriteAttributeValue("", 2235, frame.Line, 2235, 11, false);
 #line hidden
 
             WriteLiteral("                                    <ol");
-            BeginWriteAttribute("start", " start=\'", 2673, "\'", 2698, 1);
-#line 68 "CompilationErrorPage.cshtml"
-WriteAttributeValue("", 2681, frame.Line + 1, 2681, 17, false);
+            BeginWriteAttribute("start", " start=\'", 2848, "\'", 2873, 1);
+#line 72 "CompilationErrorPage.cshtml"
+WriteAttributeValue("", 2856, frame.Line + 1, 2856, 17, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"collapsible\">\r\n");
-#line 69 "CompilationErrorPage.cshtml"
+#line 73 "CompilationErrorPage.cshtml"
                                         
 
 #line default
 #line hidden
 
-#line 69 "CompilationErrorPage.cshtml"
+#line 73 "CompilationErrorPage.cshtml"
                                          foreach (var line in frame.PostContextCode)
                                         {
 
@@ -318,41 +339,41 @@ WriteAttributeValue("", 2681, frame.Line + 1, 2681, 17, false);
 #line hidden
 
             WriteLiteral("                                            <li><span>");
-#line 71 "CompilationErrorPage.cshtml"
+#line 75 "CompilationErrorPage.cshtml"
                                                  Write(line);
 
 #line default
 #line hidden
             WriteLiteral("</span></li>\r\n");
-#line 72 "CompilationErrorPage.cshtml"
+#line 76 "CompilationErrorPage.cshtml"
                                         }
 
 #line default
 #line hidden
 
             WriteLiteral("                                    </ol>\r\n");
-#line 74 "CompilationErrorPage.cshtml"
+#line 78 "CompilationErrorPage.cshtml"
                                 } 
 
 #line default
 #line hidden
 
             WriteLiteral("                            </div>\r\n");
-#line 76 "CompilationErrorPage.cshtml"
+#line 80 "CompilationErrorPage.cshtml"
                         } 
 
 #line default
 #line hidden
 
             WriteLiteral("                    </li>\r\n");
-#line 78 "CompilationErrorPage.cshtml"
+#line 82 "CompilationErrorPage.cshtml"
                 }
 
 #line default
 #line hidden
 
             WriteLiteral("                </ul>\r\n                <br />\r\n            </div>\r\n");
-#line 82 "CompilationErrorPage.cshtml"
+#line 86 "CompilationErrorPage.cshtml"
         }
 
 #line default

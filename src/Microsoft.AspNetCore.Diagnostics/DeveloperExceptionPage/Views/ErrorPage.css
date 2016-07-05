@@ -29,7 +29,7 @@ code {
 }
 
 body .titleerror {
-    padding: 3px;
+    padding: 3px 3px 6px 3px;
     display: block;
     font-size: 1.5em;
     font-weight: 100;
@@ -70,6 +70,12 @@ body .location {
     padding-left: 0;
     margin: 0;
     /*border-bottom: 1px #ddd solid;*/
+}
+
+#stackpage details {
+    font-size: 1.2em;
+    padding: 3px;
+    color: #000;
 }
 
 #stackpage .stackerror {

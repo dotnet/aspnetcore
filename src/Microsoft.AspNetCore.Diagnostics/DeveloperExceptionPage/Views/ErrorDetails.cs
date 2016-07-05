@@ -20,5 +20,10 @@ namespace Microsoft.AspNetCore.Diagnostics.Views
         /// The generated stack frames
         /// </summary>
         public IEnumerable<StackFrame> StackFrames { get; set; }
+
+        /// <summary>
+        /// Gets or sets the summary message.
+        /// </summary>
+        public string ErrorMessage { get; set; }
     }
 }
