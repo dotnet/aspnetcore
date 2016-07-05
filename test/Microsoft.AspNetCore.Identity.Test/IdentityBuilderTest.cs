@@ -4,10 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -31,6 +34,19 @@ namespace Microsoft.AspNetCore.Identity.Test
             var services = new ServiceCollection();
             services.AddIdentity<TestUser,TestRole>().AddRoleStore<MyUberThingy>();
             var thingy = services.BuildServiceProvider().GetRequiredService<IRoleStore<TestRole>>() as MyUberThingy;
+            Assert.NotNull(thingy);
+        }
+
+        [Fact]
+        public void CanOverridePrincipalFactory()
+        {
+            var services = new ServiceCollection().AddLogging();
+            services.AddIdentity<TestUser, TestRole>()
+                .AddClaimsPrincipalFactory<MyClaimsPrincipalFactory>()
+                .AddUserManager<MyUserManager>()
+                .AddUserStore<NoopUserStore>()
+                .AddRoleStore<NoopRoleStore>();
+            var thingy = services.BuildServiceProvider().GetRequiredService<IUserClaimsPrincipalFactory<TestUser>>() as MyClaimsPrincipalFactory;
             Assert.NotNull(thingy);
         }
 
@@ -84,6 +100,22 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 
         [Fact]
+        public void CanOverrideSignInManager()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>()
+                .AddLogging()
+                .AddIdentity<TestUser, TestRole>()
+                .AddUserStore<NoopUserStore>()
+                .AddRoleStore<NoopRoleStore>()
+                .AddUserManager<MyUserManager>()
+                .AddClaimsPrincipalFactory<MyClaimsPrincipalFactory>()
+                .AddSignInManager<MySignInManager>();
+            var myUserManager = services.BuildServiceProvider().GetRequiredService(typeof(SignInManager<TestUser>)) as MySignInManager;
+            Assert.NotNull(myUserManager);
+        }
+
+        [Fact]
         public void EnsureDefaultServices()
         {
             var services = new ServiceCollection();
@@ -118,8 +150,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             var builder = services.AddIdentity<TestUser, TestRole>();
             Assert.Throws<InvalidOperationException>(() => builder.AddUserManager<UserManager<TestUser>>());
             Assert.Throws<InvalidOperationException>(() => builder.AddRoleManager<RoleManager<TestRole>>());
+            Assert.Throws<InvalidOperationException>(() => builder.AddSignInManager<SignInManager<TestRole>>());
             Assert.Throws<InvalidOperationException>(() => builder.AddUserManager<object>());
             Assert.Throws<InvalidOperationException>(() => builder.AddRoleManager<object>());
+            Assert.Throws<InvalidOperationException>(() => builder.AddSignInManager<object>());
         }
 
         [Fact]
@@ -254,9 +288,21 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
         }
 
+        private class MySignInManager : SignInManager<TestUser>
+        {
+            public MySignInManager(UserManager<TestUser> manager, IHttpContextAccessor context, IUserClaimsPrincipalFactory<TestUser> claimsFactory) : base(manager, context, claimsFactory, null, null) { }
+        }
+
         private class MyUserManager : UserManager<TestUser>
         {
             public MyUserManager(IUserStore<TestUser> store) : base(store, null, null, null, null, null, null, null, null) { }
+        }
+
+        private class MyClaimsPrincipalFactory : UserClaimsPrincipalFactory<TestUser, TestRole>
+        {
+            public MyClaimsPrincipalFactory(UserManager<TestUser> userManager, RoleManager<TestRole> roleManager, IOptions<IdentityOptions> optionsAccessor) : base(userManager, roleManager, optionsAccessor)
+            {
+            }
         }
 
         private class MyRoleManager : RoleManager<TestRole>

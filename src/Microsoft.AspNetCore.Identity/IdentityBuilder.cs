@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Adds an <see cref="IUserValidator{TUser}"/> for the <seealso cref="UserType"/>.
         /// </summary>
-        /// <typeparam name="T">The user type to validate.</typeparam>
+        /// <typeparam name="T">The user validator type.</typeparam>
         /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public virtual IdentityBuilder AddUserValidator<T>() where T : class
         {
@@ -70,11 +70,21 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Adds an <see cref="IRoleValidator{TRole}"/> for the <seealso cref="RoleType"/>.
         /// </summary>
-        /// <typeparam name="T">The role type to validate.</typeparam>
+        /// <typeparam name="T">The role validator type.</typeparam>
         /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public virtual IdentityBuilder AddRoleValidator<T>() where T : class
         {
             return AddScoped(typeof(IRoleValidator<>).MakeGenericType(RoleType), typeof(T));
+        }
+
+        /// <summary>
+        /// Adds an <see cref="IUserClaimsPrincipalFactory{TUser}"/> for the <seealso cref="UserType"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the claims principal factory.</typeparam>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+        public virtual IdentityBuilder AddClaimsPrincipalFactory<T>() where T : class
+        {
+            return AddScoped(typeof(IUserClaimsPrincipalFactory<>).MakeGenericType(UserType), typeof(T));
         }
 
         /// <summary>
@@ -198,6 +208,24 @@ namespace Microsoft.AspNetCore.Identity
             }
             Services.AddScoped(typeof(TRoleManager), services => services.GetRequiredService(managerType));
             return AddScoped(managerType, typeof(TRoleManager));
+        }
+
+        /// <summary>
+        /// Adds a <see cref="SignInManager{TUser}"/> for the <seealso cref="UserType"/>.
+        /// </summary>
+        /// <typeparam name="TSignInManager">The type of the sign in manager to add.</typeparam>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+        public virtual IdentityBuilder AddSignInManager<TSignInManager>() where TSignInManager : class
+        {
+            var managerType = typeof(SignInManager<>).MakeGenericType(UserType);
+            var customType = typeof(TSignInManager);
+            if (managerType == customType ||
+                !managerType.GetTypeInfo().IsAssignableFrom(customType.GetTypeInfo()))
+            {
+                throw new InvalidOperationException(Resources.FormatInvalidManagerType(customType.Name, "SignInManager", UserType.Name));
+            }
+            Services.AddScoped(typeof(TSignInManager), services => services.GetRequiredService(managerType));
+            return AddScoped(managerType, typeof(TSignInManager));
         }
     }
 }
