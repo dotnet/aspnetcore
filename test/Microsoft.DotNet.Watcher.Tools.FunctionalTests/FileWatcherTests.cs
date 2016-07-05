@@ -288,7 +288,21 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     handler = (_, f) =>
                     {
                         filesChanged.Add(f);
-                        changedEv.Set();
+                        try
+                        {
+                            changedEv.Set();
+                        }
+                        catch(ObjectDisposedException)
+                        {
+                            // There's a known race condition here:
+                            // even though we tell the watcher to stop raising events and we unsubscribe the handler
+                            // there might be in-flight events that will still process. Since we dispose the reset 
+                            // event, this code will fail if the handler executes after Dispose happens. There's no
+                            // better way to guard against it than catch because we cannot check if the object is
+                            // disposed nor can we check if there are any in-flight events.
+                            // This is actually a known issue in the corefx file watcher. It can trigger multiple
+                            // times for the same item. 
+                        }
                     };
 
                     watcher.OnFileChange += handler;
