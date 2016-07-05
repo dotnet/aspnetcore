@@ -10,13 +10,15 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
+namespace Microsoft.AspNetCore.Mvc
 {
     // These tests cover the logic included in PartialViewResult.ExecuteResultAsync - see PartialViewResultExecutorTest
     // and ViewExecutorTest for more comprehensive tests.
@@ -43,28 +45,29 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         public async Task ExecuteResultAsync_Throws_IfViewCouldNotBeFound_MessageUsesGetViewLocations()
         {
             // Arrange
+            var viewName = "MyView";
+            var actionContext = GetActionContext();
             var expected = string.Join(
                 Environment.NewLine,
-                "The view 'MyView' was not found. The following locations were searched:",
+                $"The view '{viewName}' was not found. The following locations were searched:",
                 "Location1",
                 "Location2");
 
-            var actionContext = GetActionContext();
-
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetView(/*executingFilePath*/ null, "MyView", /*isMainPage*/ false))
-                .Returns(ViewEngineResult.NotFound("MyView", new[] { "Location1", "Location2" }))
+                .Setup(v => v.GetView(/*executingFilePath*/ null, viewName, /*isMainPage*/ false))
+                .Returns(ViewEngineResult.NotFound(viewName, new[] { "Location1", "Location2" }))
                 .Verifiable();
+
             viewEngine
-                .Setup(v => v.FindView(It.IsAny<ActionContext>(), "MyView", /*isMainPage*/ false))
-                .Returns(ViewEngineResult.NotFound("MyView", Enumerable.Empty<string>()))
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), viewName, /*isMainPage*/ false))
+                .Returns(ViewEngineResult.NotFound(viewName, Enumerable.Empty<string>()))
                 .Verifiable();
 
             var viewResult = new PartialViewResult
             {
                 ViewEngine = viewEngine.Object,
-                ViewName = "MyView",
+                ViewName = viewName,
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
                 TempData = Mock.Of<ITempDataDictionary>(),
             };
@@ -80,28 +83,29 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         public async Task ExecuteResultAsync_Throws_IfViewCouldNotBeFound_MessageUsesFindViewLocations()
         {
             // Arrange
+            var viewName = "MyView";
+            var actionContext = GetActionContext();
             var expected = string.Join(
                 Environment.NewLine,
-                "The view 'MyView' was not found. The following locations were searched:",
+                $"The view '{viewName}' was not found. The following locations were searched:",
                 "Location1",
                 "Location2");
 
-            var actionContext = GetActionContext();
-
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetView(/*executingFilePath*/ null, "MyView", /*isMainPage*/ false))
-                .Returns(ViewEngineResult.NotFound("MyView", Enumerable.Empty<string>()))
+                .Setup(v => v.GetView(/*executingFilePath*/ null, viewName, /*isMainPage*/ false))
+                .Returns(ViewEngineResult.NotFound(viewName, Enumerable.Empty<string>()))
                 .Verifiable();
+
             viewEngine
-                .Setup(v => v.FindView(It.IsAny<ActionContext>(), "MyView", /*isMainPage*/ false))
-                .Returns(ViewEngineResult.NotFound("MyView", new[] { "Location1", "Location2" }))
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), viewName, /*isMainPage*/ false))
+                .Returns(ViewEngineResult.NotFound(viewName, new[] { "Location1", "Location2" }))
                 .Verifiable();
 
             var viewResult = new PartialViewResult
             {
                 ViewEngine = viewEngine.Object,
-                ViewName = "MyView",
+                ViewName = viewName,
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
                 TempData = Mock.Of<ITempDataDictionary>(),
             };
@@ -117,30 +121,31 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         public async Task ExecuteResultAsync_Throws_IfViewCouldNotBeFound_MessageUsesAllLocations()
         {
             // Arrange
+            var viewName = "MyView";
+            var actionContext = GetActionContext();
             var expected = string.Join(
                 Environment.NewLine,
-                "The view 'MyView' was not found. The following locations were searched:",
+                $"The view '{viewName}' was not found. The following locations were searched:",
                 "Location1",
                 "Location2",
                 "Location3",
                 "Location4");
 
-            var actionContext = GetActionContext();
-
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetView(/*executingFilePath*/ null, "MyView", /*isMainPage*/ false))
-                .Returns(ViewEngineResult.NotFound("MyView", new[] { "Location1", "Location2" }))
+                .Setup(v => v.GetView(/*executingFilePath*/ null, viewName, /*isMainPage*/ false))
+                .Returns(ViewEngineResult.NotFound(viewName, new[] { "Location1", "Location2" }))
                 .Verifiable();
+
             viewEngine
-                .Setup(v => v.FindView(It.IsAny<ActionContext>(), "MyView", /*isMainPage*/ false))
-                .Returns(ViewEngineResult.NotFound("MyView", new[] { "Location3", "Location4" }))
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), viewName, /*isMainPage*/ false))
+                .Returns(ViewEngineResult.NotFound(viewName, new[] { "Location3", "Location4" }))
                 .Verifiable();
 
             var viewResult = new PartialViewResult
             {
                 ViewEngine = viewEngine.Object,
-                ViewName = "MyView",
+                ViewName = viewName,
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
                 TempData = Mock.Of<ITempDataDictionary>(),
             };
@@ -156,8 +161,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         public async Task ExecuteResultAsync_FindsAndExecutesView()
         {
             // Arrange
-            var viewName = "myview";
-            var context = GetActionContext();
+            var viewName = "MyView";
+            var actionContext = GetActionContext();
 
             var view = new Mock<IView>(MockBehavior.Strict);
             view
@@ -173,16 +178,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             // Used by logging
             view
                 .SetupGet(v => v.Path)
-                .Returns("myview.cshtml");
+                .Returns($"{viewName}.cshtml");
 
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetView(/*executingFilePath*/ null, "myview", /*isMainPage*/ false))
-                .Returns(ViewEngineResult.NotFound("myview", Enumerable.Empty<string>()))
+                .Setup(v => v.GetView(/*executingFilePath*/ null, viewName, /*isMainPage*/ false))
+                .Returns(ViewEngineResult.NotFound(viewName, Enumerable.Empty<string>()))
                 .Verifiable();
+
             viewEngine
-                .Setup(v => v.FindView(It.IsAny<ActionContext>(), "myview", /*isMainPage*/ false))
-                .Returns(ViewEngineResult.Found("myview", view.Object))
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), viewName, /*isMainPage*/ false))
+                .Returns(ViewEngineResult.Found(viewName, view.Object))
                 .Verifiable();
 
             var viewResult = new PartialViewResult
@@ -194,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             };
 
             // Act
-            await viewResult.ExecuteResultAsync(context);
+            await viewResult.ExecuteResultAsync(actionContext);
 
             // Assert
             view.Verify();
