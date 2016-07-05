@@ -15,26 +15,19 @@ namespace SampleApp
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(LogLevel.Trace);
+            var logger = loggerFactory.CreateLogger("Default");
 
             app.Run(async context =>
             {
-                Console.WriteLine("{0} {1}{2}{3}",
-                    context.Request.Method,
-                    context.Request.PathBase,
-                    context.Request.Path,
-                    context.Request.QueryString);
-                Console.WriteLine($"Method: {context.Request.Method}");
-                Console.WriteLine($"PathBase: {context.Request.PathBase}");
-                Console.WriteLine($"Path: {context.Request.Path}");
-                Console.WriteLine($"QueryString: {context.Request.QueryString}");
-
                 var connectionFeature = context.Connection;
-                Console.WriteLine($"Peer: {connectionFeature.RemoteIpAddress?.ToString()} {connectionFeature.RemotePort}");
-                Console.WriteLine($"Sock: {connectionFeature.LocalIpAddress?.ToString()} {connectionFeature.LocalPort}");
+                logger.LogDebug($"Peer: {connectionFeature.RemoteIpAddress?.ToString()}:{connectionFeature.RemotePort}"
+                    + $"{Environment.NewLine}"
+                    + $"Sock: {connectionFeature.LocalIpAddress?.ToString()}:{connectionFeature.LocalPort}");
 
-                context.Response.ContentLength = 11;
+                var response = $"hello, world{Environment.NewLine}";
+                context.Response.ContentLength = response.Length;
                 context.Response.ContentType = "text/plain";
-                await context.Response.WriteAsync("Hello world");
+                await context.Response.WriteAsync(response);
             });
         }
 
