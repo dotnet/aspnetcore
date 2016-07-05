@@ -50,15 +50,15 @@ namespace Microsoft.AspNetCore.Builder
                 branchBuilder.Run(main);
                 var branch = branchBuilder.Build();
 
-                return async context =>
+                return context =>
                 {
                     if (predicate(context))
                     {
-                        await branch(context);
+                        return branch(context);
                     }
                     else
                     {
-                        await main(context);
+                        return main(context);
                     }
                 };
             });
