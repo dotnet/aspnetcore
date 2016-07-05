@@ -13,7 +13,7 @@ namespace Owin
         public static ISecureDataFormat<AuthenticationTicket> CreateSharedDataFormat(DirectoryInfo keyDirectory, string authenticationType)
         {
             var dataProtector = DataProtectionProvider.Create(keyDirectory)
-                .CreateProtector("Microsoft.AspNet.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET 5 type
+                .CreateProtector("Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET 5 type
                 authenticationType, "v2");
             return new AspNetTicketDataFormat(new DataProtectorShim(dataProtector));
         }
