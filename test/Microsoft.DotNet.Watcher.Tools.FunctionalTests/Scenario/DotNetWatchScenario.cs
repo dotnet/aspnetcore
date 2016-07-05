@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Microsoft.AspNetCore.Testing.Functional;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests

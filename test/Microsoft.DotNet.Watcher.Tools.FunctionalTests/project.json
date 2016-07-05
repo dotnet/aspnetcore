@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
+    "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
     "Microsoft.Extensions.Process.Sources": {
       "type": "build",
