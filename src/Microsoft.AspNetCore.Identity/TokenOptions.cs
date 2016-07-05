@@ -6,10 +6,24 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Identity
 {
+    /// <summary>
+    /// Options for user tokens.
+    /// </summary>
     public class TokenOptions
     {
+        /// <summary>
+        /// Default token provider name used by email confirmation, password reset, and change email.
+        /// </summary>
         public static readonly string DefaultProvider = "Default";
+
+        /// <summary>
+        /// Default token provider name used by the <see cref="EmailTokenProvider{TUser}"/>.
+        /// </summary>
         public static readonly string DefaultEmailProvider = "Email";
+
+        /// <summary>
+        /// Default token provider name used by the <see cref="PhoneNumberTokenProvider{TUser}"/>.
+        /// </summary>
         public static readonly string DefaultPhoneProvider = "Phone";
 
         /// <summary>

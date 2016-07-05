@@ -69,7 +69,12 @@ namespace Microsoft.AspNetCore.Identity
         /// The <see cref="ILogger"/> used to log messages from the manager.
         /// </value>
         protected internal virtual ILogger Logger { get; set; }
+
+        /// <summary>
+        /// The <see cref="UserManager{TUser}"/> used.
+        /// </summary>
         protected internal UserManager<TUser> UserManager { get; set; }
+
         internal IUserClaimsPrincipalFactory<TUser> ClaimsFactory { get; set; }
         internal IdentityOptions Options { get; set; }
 

@@ -32,11 +32,19 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// </summary>
         public virtual string ClaimValue { get; set; }
 
+        /// <summary>
+        /// Constructs a new claim with the type and value.
+        /// </summary>
+        /// <returns></returns>
         public virtual Claim ToClaim()
         {
             return new Claim(ClaimType, ClaimValue);
         }
 
+        /// <summary>
+        /// Initializes by copying ClaimType and ClaimValue from the other claim.
+        /// </summary>
+        /// <param name="other">The claim to initialize from.</param>
         public virtual void InitializeFromClaim(Claim other)
         {
             ClaimType = other?.Type;

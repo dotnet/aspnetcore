@@ -455,7 +455,10 @@ namespace Microsoft.AspNetCore.Identity
             }
             return cast;
         }
-            
+
+        /// <summary>
+        /// Throws if this class has been disposed.
+        /// </summary>
         protected void ThrowIfDisposed()
         {
             if (_disposed)

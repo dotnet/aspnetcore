@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="loginProvider">The authentication provider for the token.</param>
         /// <param name="name">The name of the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         Task RemoveTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken);
 
         /// <summary>

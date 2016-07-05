@@ -19,6 +19,9 @@ namespace Microsoft.AspNetCore.Identity
         private static readonly string DefaultTwoFactorRememberMeScheme = CookiePrefix + ".TwoFactorRememberMe";
         private static readonly string DefaultTwoFactorUserIdScheme = CookiePrefix + ".TwoFactorUserId";
 
+        /// <summary>
+        /// Constructs a new instance of <see cref="IdentityCookieOptions"/>.
+        /// </summary>
         public IdentityCookieOptions()
         {
             // Configure all of the cookie middlewares
@@ -58,9 +61,24 @@ namespace Microsoft.AspNetCore.Identity
             };
         }
 
+        /// <summary>
+        /// The options for the application cookie.
+        /// </summary>
         public CookieAuthenticationOptions ApplicationCookie { get; set; }
+
+        /// <summary>
+        /// The options for the external cookie.
+        /// </summary>
         public CookieAuthenticationOptions ExternalCookie { get; set; }
+
+        /// <summary>
+        /// The options for the two factor remember me cookie.
+        /// </summary>
         public CookieAuthenticationOptions TwoFactorRememberMeCookie { get; set; }
+
+        /// <summary>
+        /// The options for the two factor user id cookie.
+        /// </summary>
         public CookieAuthenticationOptions TwoFactorUserIdCookie { get; set; }
 
         /// <summary>

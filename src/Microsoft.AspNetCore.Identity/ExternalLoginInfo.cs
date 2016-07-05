@@ -31,6 +31,9 @@ namespace Microsoft.AspNetCore.Identity
         /// <value>The <see cref="ClaimsPrincipal"/> associated with this login.</value>
         public ClaimsPrincipal Principal { get; set; }
 
+        /// <summary>
+        /// The <see cref="AuthenticationToken"/>s associated with this login.
+        /// </summary>
         public IEnumerable<AuthenticationToken> AuthenticationTokens { get; set; }
     }
 }

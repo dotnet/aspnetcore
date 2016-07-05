@@ -23,7 +23,14 @@ namespace Microsoft.AspNetCore.Identity
     /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
     public class UserManager<TUser> : IDisposable where TUser : class
     {
+        /// <summary>
+        /// The data protection purpose used for the reset password related methods.
+        /// </summary>
         protected const string ResetPasswordTokenPurpose = "ResetPassword";
+
+        /// <summary>
+        /// The data protection purpose used for the email confirmation related methods.
+        /// </summary>
         protected const string ConfirmEmailTokenPurpose = "EmailConfirmation";
 
         private readonly Dictionary<string, IUserTwoFactorTokenProvider<TUser>> _tokenProviders =
@@ -344,6 +351,13 @@ namespace Microsoft.AspNetCore.Identity
             return principal.FindFirstValue(Options.ClaimsIdentity.UserIdClaimType);
         }
 
+        /// <summary>
+        /// Returns the user corresponding to the IdentityOptions.ClaimsIdentity.UserIdClaimType claim in
+        /// the principal or null.
+        /// </summary>
+        /// <param name="principal">The principal which contains the user id claim.</param>
+        /// <returns>The user corresponding to the IdentityOptions.ClaimsIdentity.UserIdClaimType claim in
+        /// the principal or null</returns>
         public virtual Task<TUser> GetUserAsync(ClaimsPrincipal principal)
         {
             if (principal == null)
@@ -2265,6 +2279,9 @@ namespace Microsoft.AspNetCore.Identity
             return cast;
         }
 
+        /// <summary>
+        /// Throws if this class has been disposed.
+        /// </summary>
         protected void ThrowIfDisposed()
         {
             if (_disposed)

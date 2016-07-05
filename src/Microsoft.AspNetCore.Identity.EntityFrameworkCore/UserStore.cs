@@ -19,6 +19,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// </summary>
     public class UserStore : UserStore<IdentityUser<string>>
     {
+        /// <summary>
+        /// Constructs a new instance of <see cref="UserStore"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="DbContext"/>.</param>
+        /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
         public UserStore(DbContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
     }
 
@@ -29,6 +34,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     public class UserStore<TUser> : UserStore<TUser, IdentityRole, DbContext, string>
         where TUser : IdentityUser<string>, new()
     {
+        /// <summary>
+        /// Constructs a new instance of <see cref="UserStore{TUser}"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="DbContext"/>.</param>
+        /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
         public UserStore(DbContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
     }
 
@@ -43,8 +53,14 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         where TRole : IdentityRole<string>
         where TContext : DbContext
     {
+        /// <summary>
+        /// Constructs a new instance of <see cref="UserStore{TUser, TRole, TContext}"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="DbContext"/>.</param>
+        /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
         public UserStore(TContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
     }
+
     /// <summary>
     /// Represents a new instance of a persistence store for the specified user and role types.
     /// </summary>
@@ -58,8 +74,19 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     where TContext : DbContext
     where TKey : IEquatable<TKey>
     {
+        /// <summary>
+        /// Constructs a new instance of <see cref="UserStore{TUser, TRole, TContext, TKey}"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="DbContext"/>.</param>
+        /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
         public UserStore(TContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
 
+        /// <summary>
+        /// Called to create a new instance of a <see cref="IdentityUserRole{TKey}"/>.
+        /// </summary>
+        /// <param name="user">The associated user.</param>
+        /// <param name="role">The associated role.</param>
+        /// <returns></returns>
         protected override IdentityUserRole<TKey> CreateUserRole(TUser user, TRole role)
         {
             return new IdentityUserRole<TKey>()
@@ -69,6 +96,12 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             };
         }
 
+        /// <summary>
+        /// Called to create a new instance of a <see cref="IdentityUserClaim{TKey}"/>.
+        /// </summary>
+        /// <param name="user">The associated user.</param>
+        /// <param name="claim">The associated claim.</param>
+        /// <returns></returns>
         protected override IdentityUserClaim<TKey> CreateUserClaim(TUser user, Claim claim)
         {
             var userClaim = new IdentityUserClaim<TKey> { UserId = user.Id };
@@ -76,6 +109,12 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             return userClaim;
         }
 
+        /// <summary>
+        /// Called to create a new instance of a <see cref="IdentityUserLogin{TKey}"/>.
+        /// </summary>
+        /// <param name="user">The associated user.</param>
+        /// <param name="login">The sasociated login.</param>
+        /// <returns></returns>
         protected override IdentityUserLogin<TKey> CreateUserLogin(TUser user, UserLoginInfo login)
         {
             return new IdentityUserLogin<TKey>
@@ -87,6 +126,14 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             };
         }
 
+        /// <summary>
+        /// Called to create a new instance of a <see cref="IdentityUserToken{TKey}"/>.
+        /// </summary>
+        /// <param name="user">The associated user.</param>
+        /// <param name="loginProvider">The associated login provider.</param>
+        /// <param name="name">The name of the user token.</param>
+        /// <param name="value">The value of the user token.</param>
+        /// <returns></returns>
         protected override IdentityUserToken<TKey> CreateUserToken(TUser user, string loginProvider, string name, string value)
         {
             return new IdentityUserToken<TKey>
@@ -603,6 +650,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             return false;
         }
 
+        /// <summary>
+        /// Throws if this class has been disposed.
+        /// </summary>
         protected void ThrowIfDisposed()
         {
             if (_disposed)
@@ -1289,7 +1339,15 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             return UserTokens.SingleOrDefaultAsync(l => l.UserId.Equals(userId) && l.LoginProvider == loginProvider && l.Name == name, cancellationToken);
         }
 
-        // <inheritdoc>
+        /// <summary>
+        /// Sets the token value for a particular user.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="loginProvider">The authentication provider for the token.</param>
+        /// <param name="name">The name of the token.</param>
+        /// <param name="value">The value of the token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         public virtual async Task SetTokenAsync(TUser user, string loginProvider, string name, string value, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -1311,6 +1369,14 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             }
         }
 
+        /// <summary>
+        /// Deletes a token for a user.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="loginProvider">The authentication provider for the token.</param>
+        /// <param name="name">The name of the token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         public async Task RemoveTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -1328,6 +1394,14 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             }
         }
 
+        /// <summary>
+        /// Returns the token value.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="loginProvider">The authentication provider for the token.</param>
+        /// <param name="name">The name of the token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         public async Task<string> GetTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();

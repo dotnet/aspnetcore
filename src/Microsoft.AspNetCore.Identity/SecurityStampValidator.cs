@@ -19,6 +19,11 @@ namespace Microsoft.AspNetCore.Identity
         private readonly SignInManager<TUser> _signInManager;
         private readonly IdentityOptions _options;
 
+        /// <summary>
+        /// Creates a new instance of <see cref="SecurityStampValidator{TUser}"/>.
+        /// </summary>
+        /// <param name="options">Used to access the <see cref="IdentityOptions"/>.</param>
+        /// <param name="signInManager">The <see cref="SignInManager{TUser}"/>.</param>
         public SecurityStampValidator(IOptions<IdentityOptions> options, SignInManager<TUser> signInManager)
         {
             if (options == null)
