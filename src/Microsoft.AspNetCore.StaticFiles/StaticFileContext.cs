@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             // 14.28 If-Unmodified-Since
             var ifUnmodifiedSince = _requestHeaders.IfUnmodifiedSince;
-            if (ifUnmodifiedSince.HasValue && ifModifiedSince <= now)
+            if (ifUnmodifiedSince.HasValue && ifUnmodifiedSince <= now)
             {
                 bool unmodified = ifUnmodifiedSince >= _lastModified;
                 _ifUnmodifiedSinceState = unmodified ? PreconditionState.ShouldProcess : PreconditionState.PreconditionFailed;
