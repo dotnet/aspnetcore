@@ -13,7 +13,7 @@ export class Router {
     public currentRoute = ko.observable<Route>({});
     private disposeHistory: () => void;
     private clickEventListener: EventListener;
-    
+
     constructor(history: HistoryModule.History, routes: Route[]) {
         // Reset and configure Crossroads so it matches routes and updates this.currentRoute
         crossroads.removeAllRoutes();
@@ -25,7 +25,7 @@ export class Router {
             });
         });
 
-        // Make history.js watch for navigation and notify Crossroads 
+        // Make history.js watch for navigation and notify Crossroads
         this.disposeHistory = history.listen(location => crossroads.parse(location.pathname));
         this.clickEventListener = evt => {
             let target: any = evt.target;
@@ -37,10 +37,10 @@ export class Router {
                 }
             }
         };
-        
+
         document.addEventListener('click', this.clickEventListener);
     }
-    
+
     public dispose() {
         this.disposeHistory();
         document.removeEventListener('click', this.clickEventListener);

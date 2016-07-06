@@ -9,11 +9,11 @@ ko.components.loaders.unshift({
         if (typeof componentConfig === 'function') {
             // It's a lazy-loaded Webpack bundle
             (componentConfig as any)(loadedModule => {
-                // Handle TypeScript-style default exports 
+                // Handle TypeScript-style default exports
                 if (loadedModule.__esModule && loadedModule.default) {
                     loadedModule = loadedModule.default;
                 }
-                
+
                 // Pass the loaded module to KO's default loader
                 ko.components.defaultLoader.loadComponent(name, loadedModule, callback);
             });

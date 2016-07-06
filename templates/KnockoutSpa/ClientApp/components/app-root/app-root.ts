@@ -12,12 +12,12 @@ const routes: Route[] = [
 class AppRootViewModel {
     public route: KnockoutObservable<Route>;
     private _router: Router;
-    
+
     constructor(params: { history: HistoryModule.History }) {
         // Activate the client-side router
         this._router = new Router(params.history, routes)
         this.route = this._router.currentRoute;
-        
+
         // Load and register all the KO components needed to handle the routes
         // The optional 'bundle?lazy!' prefix is a Webpack feature that causes the referenced modules
         // to be split into separate files that are then loaded on demand.
@@ -27,12 +27,12 @@ class AppRootViewModel {
         ko.components.register('counter-example', require('bundle?lazy!../counter-example/counter-example'));
         ko.components.register('fetch-data', require('bundle?lazy!../fetch-data/fetch-data'));
     }
-    
+
     // To support hot module replacement, this method unregisters the router and KO components.
     // In production scenarios where hot module replacement is disabled, this would not be invoked.
     public dispose() {
         this._router.dispose();
-        
+
         // TODO: Need a better API for this
         Object.getOwnPropertyNames((<any>ko).components._allRegisteredComponents).forEach(componentName => {
             ko.components.unregister(componentName);

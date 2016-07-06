@@ -9,7 +9,7 @@ interface WeatherForecast {
 
 class FetchDataViewModel {
     public forecasts = ko.observableArray<WeatherForecast>();
-    
+
     constructor() {
         fetch('/api/SampleData/WeatherForecasts')
             .then(response => response.json())
