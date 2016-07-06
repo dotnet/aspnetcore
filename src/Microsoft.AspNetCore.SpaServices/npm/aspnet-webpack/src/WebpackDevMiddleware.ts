@@ -1,6 +1,6 @@
 import * as connect from 'connect';
 import * as webpack from 'webpack';
-import * as url from 'url'
+import * as url from 'url';
 import { requireNewCopy } from './RequireNewCopy';
 
 export interface CreateDevServerCallback {
@@ -98,6 +98,6 @@ function removeTrailingSlash(str: string) {
     return str;
 }
 
-function getPath(publicPath: string){
-    return url.parse(publicPath).path;     
+function getPath(publicPath: string) {
+    return url.parse(publicPath).path;
 }
