@@ -72,7 +72,7 @@ body .location {
     /*border-bottom: 1px #ddd solid;*/
 }
 
-#stackpage details {
+#stackpage .details {
     font-size: 1.2em;
     padding: 3px;
     color: #000;
