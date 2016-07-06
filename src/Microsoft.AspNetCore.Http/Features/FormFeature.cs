@@ -170,20 +170,24 @@ namespace Microsoft.AspNetCore.Http.Features
                     var section = await multipartReader.ReadNextSectionAsync(cancellationToken);
                     while (section != null)
                     {
+                        // Parse the content disposition here and pass it further to avoid reparsings
                         ContentDispositionHeaderValue contentDisposition;
                         ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out contentDisposition);
-                        if (HasFileContentDisposition(contentDisposition))
+
+                        if (contentDisposition.IsFileDisposition())
                         {
+                            var fileSection = new FileMultipartSection(section, contentDisposition);
+
                             // Enable buffering for the file if not already done for the full body
-                            section.EnableRewind(_request.HttpContext.Response.RegisterForDispose,
+                            section.EnableRewind(
+                                _request.HttpContext.Response.RegisterForDispose,
                                 _options.MemoryBufferThreshold, _options.MultipartBodyLengthLimit);
+
                             // Find the end
                             await section.Body.DrainAsync(cancellationToken);
 
-                            var name = HeaderUtilities.RemoveQuotes(contentDisposition.Name) ?? string.Empty;
-                            var fileName = HeaderUtilities.RemoveQuotes(contentDisposition.FileNameStar) ??
-                                HeaderUtilities.RemoveQuotes(contentDisposition.FileName) ??
-                                string.Empty;
+                            var name = fileSection.Name;
+                            var fileName = fileSection.FileName;
 
                             FormFile file;
                             if (section.BaseStreamOffset.HasValue)
@@ -208,26 +212,22 @@ namespace Microsoft.AspNetCore.Http.Features
                             }
                             files.Add(file);
                         }
-                        else if (HasFormDataContentDisposition(contentDisposition))
+                        else if (contentDisposition.IsFormDisposition())
                         {
+                            var formDataSection = new FormMultipartSection(section, contentDisposition);
+
                             // Content-Disposition: form-data; name="key"
                             //
                             // value
 
                             // Do not limit the key name length here because the mulipart headers length limit is already in effect.
-                            var key = HeaderUtilities.RemoveQuotes(contentDisposition.Name);
-                            MediaTypeHeaderValue mediaType;
-                            MediaTypeHeaderValue.TryParse(section.ContentType, out mediaType);
-                            var encoding = FilterEncoding(mediaType?.Encoding);
-                            using (var reader = new StreamReader(section.Body, encoding, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true))
+                            var key = formDataSection.Name;
+                            var value = await formDataSection.GetValueAsync();
+
+                            formAccumulator.Append(key, value);
+                            if (formAccumulator.ValueCount > _options.ValueCountLimit)
                             {
-                                // The value length limit is enforced by MultipartBodyLengthLimit
-                                var value = await reader.ReadToEndAsync();
-                                formAccumulator.Append(key, value);
-                                if (formAccumulator.ValueCount > _options.ValueCountLimit)
-                                {
-                                    throw new InvalidDataException($"Form value count limit {_options.ValueCountLimit} exceeded.");
-                                }
+                                throw new InvalidDataException($"Form value count limit {_options.ValueCountLimit} exceeded.");
                             }
                         }
                         else
