@@ -14,8 +14,7 @@
     "adx-nonshipping": {
         "rules": [],
         "packages": {
-            "Microsoft.AspNetCore.DiagnosticsViewPage.Sources": { },
-            "PageGenerator": { }
+            "Microsoft.AspNetCore.DiagnosticsViewPage.Sources": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.

@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{509A6F36-AD80-4A18-B5B1-717D38DFF29D}"
 EndProject
@@ -12,7 +12,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Diagno
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DeveloperExceptionPageSample", "samples\DeveloperExceptionPageSample\DeveloperExceptionPageSample.xproj", "{589AC17F-9455-4764-8F82-FCD2AE58DA14}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PageGenerator", "src\PageGenerator\PageGenerator.xproj", "{4D4A785A-ECB9-4916-A88F-0FD306EE3B74}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PageGenerator", "tools\PageGenerator\PageGenerator.xproj", "{4D4A785A-ECB9-4916-A88F-0FD306EE3B74}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F0557697-8D86-4DF3-A385-B0BFA9596189}"
 	ProjectSection(SolutionItems) = preProject
@@ -50,6 +50,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Diagnostics.FunctionalTests", "test\Microsoft.AspNetCore.Diagnostics.FunctionalTests\Microsoft.AspNetCore.Diagnostics.FunctionalTests.xproj", "{BFDFE1E3-A6A9-4DAB-8939-1DA306FC69C8}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.DiagnosticsViewPage.Sources", "src\Microsoft.AspNetCore.DiagnosticsViewPage.Sources\Microsoft.AspNetCore.DiagnosticsViewPage.Sources.xproj", "{B9F08060-621F-4E1F-BDA8-9C4EA107E08A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{B9729160-50A4-49C5-8BB2-4944492AEA30}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -285,7 +287,7 @@ Global
 		{C5F59CBA-DF2D-4983-8CBB-11B6AF21B416} = {ACAA0157-A8C4-4152-93DE-90CCDF304087}
 		{68A1F0E1-ECCE-46D1-B20F-C43EE5B097DE} = {509A6F36-AD80-4A18-B5B1-717D38DFF29D}
 		{589AC17F-9455-4764-8F82-FCD2AE58DA14} = {ACAA0157-A8C4-4152-93DE-90CCDF304087}
-		{4D4A785A-ECB9-4916-A88F-0FD306EE3B74} = {509A6F36-AD80-4A18-B5B1-717D38DFF29D}
+		{4D4A785A-ECB9-4916-A88F-0FD306EE3B74} = {B9729160-50A4-49C5-8BB2-4944492AEA30}
 		{994351B4-7B2A-4139-8B72-72C5BB5CC618} = {2AF90579-B118-4583-AE88-672EFACB5BC4}
 		{427CDB36-78B0-4583-9EBC-7F283DE60355} = {ACAA0157-A8C4-4152-93DE-90CCDF304087}
 		{4F5A6A72-FFE4-49C4-B4C6-58132CFCB9FE} = {509A6F36-AD80-4A18-B5B1-717D38DFF29D}
