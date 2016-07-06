@@ -506,7 +506,7 @@ namespace Microsoft.AspNetCore.Identity
         /// Configures the redirect URL and user identifier for the specified external login <paramref name="provider"/>.
         /// </summary>
         /// <param name="provider">The provider to configure.</param>
-        /// <param name="redirectUrl">The external login URL users should be redirected to during the login glow.</param>
+        /// <param name="redirectUrl">The external login URL users should be redirected to during the login flow.</param>
         /// <param name="userId">The current user's identifier, which will be used to provide CSRF protection.</param>
         /// <returns>A configured <see cref="AuthenticationProperties"/>.</returns>
         public virtual AuthenticationProperties ConfigureExternalAuthenticationProperties(string provider, string redirectUrl, string userId = null)
