@@ -1,10 +1,10 @@
 {
   "testRunner": "xunit",
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-*",
+    "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Server.WebListener": "0.2.0-*",
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
-    "xunit": "2.1.0"
+    "xunit": "2.2.0-*"
   },
   "frameworks": {
     "netcoreapp1.0": {
@@ -15,22 +15,13 @@
         },
         "System.Net.Http.WinHttpHandler": "4.0.0-*",
         "System.Net.Requests": "4.0.11-*",
-        "System.Net.WebHeaderCollection": "4.0.1-*",
-        "System.Diagnostics.Process": "4.1.0-*"
-      },
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ]
+        "System.Net.WebHeaderCollection": "4.0.1-*"
+      }
     },
     "net451": {
       "frameworkAssemblies": {
         "System.Net.Http": "",
-        "System.Net.Http.WebRequest": "",
-        "System.Threading.Tasks": ""
-      },
-      "dependencies": {
-        "xunit.runner.console": "2.1.0"
+        "System.Net.Http.WebRequest": ""
       }
     }
   }
