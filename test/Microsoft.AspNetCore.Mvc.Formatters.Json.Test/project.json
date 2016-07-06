@@ -3,7 +3,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-*",
+    "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Http": "1.1.0-*",
     "Microsoft.AspNetCore.Mvc": "1.1.0-*",
     "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.1.0-*",
@@ -13,29 +13,22 @@
     },
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Testing": "1.1.0-*"
+    "Microsoft.Extensions.Logging.Testing": "1.1.0-*",
+    "Moq": "4.6.25-*",
+    "xunit": "2.2.0-*"
   },
   "testRunner": "xunit",
   "frameworks": {
     "netcoreapp1.0": {
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ],
+      "imports":"dotnet5.4",
       "dependencies": {
         "Microsoft.NETCore.App": {
           "version": "1.0.0-*",
           "type": "platform"
         },
-        "moq.netcore": "4.4.0-beta8",
-        "System.Diagnostics.Process": "4.1.0-*",
         "System.Diagnostics.TraceSource": "4.0.0-*"
       }
     },
-    "net451": {
-      "dependencies": {
-        "Moq": "4.2.1312.1622"
-      }
-    }
+    "net451": {}
   }
 }

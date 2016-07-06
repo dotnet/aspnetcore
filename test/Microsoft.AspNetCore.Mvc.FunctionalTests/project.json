@@ -10,7 +10,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-*",
+    "dotnet-test-xunit": "2.2.0-*",
     "ApiExplorerWebSite": "1.0.0",
     "ApplicationModelWebSite": "1.0.0",
     "BasicWebSite": "1.0.0",
@@ -40,7 +40,8 @@
     "TagHelpersWebSite": "1.0.0",
     "VersioningWebSite": "1.0.0",
     "WebApiCompatShimWebSite": "1.0.0",
-    "XmlFormattersWebSite": "1.0.0"
+    "XmlFormattersWebSite": "1.0.0",
+    "xunit": "2.2.0-*"
   },
   "testRunner": "xunit",
   "frameworks": {
@@ -51,10 +52,7 @@
           "type": "platform"
         }
       },
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ]
+      "imports": "portable-net451+win8"
     },
     "net451": {}
   }
