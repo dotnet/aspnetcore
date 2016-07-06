@@ -2,14 +2,10 @@
   "version": "1.1.0-*",
   "shared": "*.cs",
   "dependencies": {
-    "xunit.assert": "2.1.0-*"
+    "xunit.assert": "2.2.0-*"
   },
   "frameworks": {
     "net451": {},
-    "netstandard1.3": {
-      "imports": [
-        "dotnet"
-      ]
-    }
+    "netstandard1.3": {}
   }
 }
