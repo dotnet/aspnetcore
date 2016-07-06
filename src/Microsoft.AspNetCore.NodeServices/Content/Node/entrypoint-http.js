@@ -67,12 +67,6 @@
 	}
 	var server = http.createServer(function (req, res) {
 	    readRequestBodyAsJson(req, function (bodyJson) {
-	        var resolvedPath = path.resolve(process.cwd(), bodyJson.moduleName);
-	        var invokedModule = dynamicRequire(resolvedPath);
-	        var func = bodyJson.exportedFunctionName ? invokedModule[bodyJson.exportedFunctionName] : invokedModule;
-	        if (!func) {
-	            throw new Error('The module "' + resolvedPath + '" has no export named "' + bodyJson.exportedFunctionName + '"');
-	        }
 	        var hasSentResult = false;
 	        var callback = function (errorValue, successValue) {
 	            if (!hasSentResult) {
@@ -110,6 +104,12 @@
 	            }
 	        });
 	        try {
+	            var resolvedPath = path.resolve(process.cwd(), bodyJson.moduleName);
+	            var invokedModule = dynamicRequire(resolvedPath);
+	            var func = bodyJson.exportedFunctionName ? invokedModule[bodyJson.exportedFunctionName] : invokedModule;
+	            if (!func) {
+	                throw new Error('The module "' + resolvedPath + '" has no export named "' + bodyJson.exportedFunctionName + '"');
+	            }
 	            func.apply(null, [callback].concat(bodyJson.args));
 	        }
 	        catch (synchronousException) {
