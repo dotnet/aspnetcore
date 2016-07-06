@@ -3,14 +3,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.NodeServices
+namespace Microsoft.AspNetCore.NodeServices.HostingModels
 {
     /// <summary>
     /// Class responsible for launching the Node child process, determining when it is ready to accept invocations,
     /// and finally killing it when the parent process exits. Also it restarts the child process if it dies.
     /// </summary>
-    /// <seealso cref="Microsoft.AspNetCore.NodeServices.INodeServices" />
-    public abstract class OutOfProcessNodeInstance : INodeServices
+    /// <seealso cref="Microsoft.AspNetCore.NodeServices.INodeInstance" />
+    public abstract class OutOfProcessNodeInstance : INodeInstance
     {
         private readonly object _childProcessLauncherLock;
         private string _commandLineArguments;
@@ -34,15 +34,12 @@ namespace Microsoft.AspNetCore.NodeServices
             set { _commandLineArguments = value; }
         }
 
-        public Task<T> Invoke<T>(string moduleName, params object[] args)
-            => InvokeExport<T>(moduleName, null, args);
-
-        public Task<T> InvokeExport<T>(string moduleName, string exportedFunctionName, params object[] args)
+        public Task<T> InvokeExportAsync<T>(string moduleName, string exportNameOrNull, params object[] args)
         {
-            return Invoke<T>(new NodeInvocationInfo
+            return InvokeExportAsync<T>(new NodeInvocationInfo
             {
                 ModuleName = moduleName,
-                ExportedFunctionName = exportedFunctionName,
+                ExportedFunctionName = exportNameOrNull,
                 Args = args
             });
         }
@@ -53,7 +50,7 @@ namespace Microsoft.AspNetCore.NodeServices
             GC.SuppressFinalize(this);
         }
 
-        public abstract Task<T> Invoke<T>(NodeInvocationInfo invocationInfo);
+        protected abstract Task<T> InvokeExportAsync<T>(NodeInvocationInfo invocationInfo);
 
         protected void ExitNodeProcess()
         {

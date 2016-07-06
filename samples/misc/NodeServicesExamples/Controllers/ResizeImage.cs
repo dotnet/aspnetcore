@@ -46,7 +46,7 @@ namespace NodeServicesExamples.Controllers
             }
 
             // Invoke Node and pipe the result to the response
-            var imageStream = await _nodeServices.Invoke<Stream>(
+            var imageStream = await _nodeServices.InvokeAsync<Stream>(
                 "./Node/resizeImage",
                 fileInfo.PhysicalPath,
                 mimeType,

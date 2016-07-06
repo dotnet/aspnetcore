@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.NodeServices.HostingModels.VirtualConnections;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.AspNetCore.NodeServices
+namespace Microsoft.AspNetCore.NodeServices.HostingModels
 {
     internal class SocketNodeInstance : OutOfProcessNodeInstance
     {
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.NodeServices
             _watchFileExtensions = watchFileExtensions;
 		}
 
-        public override async Task<T> Invoke<T>(NodeInvocationInfo invocationInfo)
+        protected override async Task<T> InvokeExportAsync<T>(NodeInvocationInfo invocationInfo)
         {
             await EnsureReady();
             var virtualConnectionClient = await GetOrCreateVirtualConnectionClientAsync();

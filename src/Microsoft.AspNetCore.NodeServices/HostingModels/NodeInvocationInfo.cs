@@ -1,4 +1,4 @@
-namespace Microsoft.AspNetCore.NodeServices
+namespace Microsoft.AspNetCore.NodeServices.HostingModels
 {
     public class NodeInvocationInfo
     {

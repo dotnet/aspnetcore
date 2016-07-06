@@ -44,7 +44,6 @@ namespace Microsoft.AspNetCore.Builder
             var hostEnv = (IHostingEnvironment)appBuilder.ApplicationServices.GetService(typeof(IHostingEnvironment));
             var nodeServices = Configuration.CreateNodeServices(new NodeServicesOptions
             {
-                HostingModel = Configuration.DefaultNodeHostingModel,
                 ProjectPath = hostEnv.ContentRootPath,
                 WatchFileExtensions = new string[] { } // Don't watch anything
             });
@@ -61,7 +60,7 @@ namespace Microsoft.AspNetCore.Builder
                 suppliedOptions = options
             };
             var devServerInfo =
-                nodeServices.InvokeExport<WebpackDevServerInfo>(nodeScript.FileName, "createWebpackDevServer",
+                nodeServices.InvokeExportAsync<WebpackDevServerInfo>(nodeScript.FileName, "createWebpackDevServer",
                     JsonConvert.SerializeObject(devServerOptions)).Result;
 
             // Proxy the corresponding requests through ASP.NET and into the Node listener

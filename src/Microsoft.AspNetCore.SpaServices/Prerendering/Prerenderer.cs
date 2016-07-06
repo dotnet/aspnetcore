@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
             string requestPathAndQuery,
             object customDataParameter)
         {
-            return nodeServices.InvokeExport<RenderToStringResult>(
+            return nodeServices.InvokeExportAsync<RenderToStringResult>(
                 NodeScript.Value.FileName,
                 "renderToString",
                 applicationBasePath,

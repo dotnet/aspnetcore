@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.AspNetCore.NodeServices
+namespace Microsoft.AspNetCore.NodeServices.HostingModels
 {
     internal class HttpNodeInstance : OutOfProcessNodeInstance
     {
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.NodeServices
             return result;
         }
 
-        public override async Task<T> Invoke<T>(NodeInvocationInfo invocationInfo)
+        protected override async Task<T> InvokeExportAsync<T>(NodeInvocationInfo invocationInfo)
         {
             await EnsureReady();
 

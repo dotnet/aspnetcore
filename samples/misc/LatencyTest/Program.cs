@@ -12,21 +12,21 @@ namespace ConsoleApplication
     public class Program
     {
         public static void Main(string[] args) {
-            using (var nodeServices = CreateNodeServices(Configuration.DefaultNodeHostingModel)) {
+            using (var nodeServices = CreateNodeServices(NodeServicesOptions.DefaultNodeHostingModel)) {
                 MeasureLatency(nodeServices).Wait();
             }
         }
 
         private static async Task MeasureLatency(INodeServices nodeServices) {
             // Ensure the connection is open, so we can measure per-request timings below
-            var response = await nodeServices.Invoke<string>("latencyTest", "C#");
+            var response = await nodeServices.InvokeAsync<string>("latencyTest", "C#");
             Console.WriteLine(response);
 
             // Now perform a series of requests, capturing the time taken
             const int requestCount = 100;
             var watch = Stopwatch.StartNew();
             for (var i = 0; i < requestCount; i++) {
-                await nodeServices.Invoke<string>("latencyTest", "C#");
+                await nodeServices.InvokeAsync<string>("latencyTest", "C#");
             }
 
             // Display results

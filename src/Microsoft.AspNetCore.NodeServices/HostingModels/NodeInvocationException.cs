@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.AspNetCore.NodeServices
+namespace Microsoft.AspNetCore.NodeServices.HostingModels
 {
     public class NodeInvocationException : Exception
     {
