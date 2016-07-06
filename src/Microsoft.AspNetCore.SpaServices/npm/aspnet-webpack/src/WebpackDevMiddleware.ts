@@ -1,5 +1,6 @@
 import * as connect from 'connect';
 import * as webpack from 'webpack';
+import * as url from 'url'
 import { requireNewCopy } from './RequireNewCopy';
 
 export interface CreateDevServerCallback {
@@ -84,7 +85,7 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
         // Tell the ASP.NET app what addresses we're listening on, so that it can proxy requests here
         callback(null, {
             Port: listener.address().port,
-            PublicPath: removeTrailingSlash(publicPath)
+            PublicPath: removeTrailingSlash(getPath(publicPath))
         });
     });
 }
@@ -95,4 +96,8 @@ function removeTrailingSlash(str: string) {
     }
 
     return str;
+}
+
+function getPath(publicPath: string){
+    return url.parse(publicPath).path;     
 }
