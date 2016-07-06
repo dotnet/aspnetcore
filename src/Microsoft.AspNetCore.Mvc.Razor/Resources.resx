@@ -201,7 +201,7 @@
     <value>A circular layout reference was detected when rendering '{0}'. The layout page '{1}' has already been rendered.</value>
   </data>
   <data name="Compilation_DependencyContextIsNotSpecified" xml:space="preserve">
-    <value>The Razor page '{0}' failed to compile. Ensure that your application's {1} sets the '{2}' compilation property.</value>
+    <value>One or more compilation references are missing. Possible causes include a missing '{0}' property under '{1}' in the application's {2}.</value>
   </data>
   <data name="ViewLocationFormatsIsRequired" xml:space="preserve">
     <value>'{0}' cannot be empty. These locations are required to locate a view for rendering.</value>

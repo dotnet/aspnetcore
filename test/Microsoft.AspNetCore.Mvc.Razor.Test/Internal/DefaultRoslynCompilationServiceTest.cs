@@ -249,27 +249,6 @@ public class MyNonCustomDefinedClass {}
         }
 
         [Fact]
-        public void Compile_ThrowsIfNoMetadataReferencesAreDiscoveredAndApplicationFailsToCompile()
-        {
-            // Arrange
-            var content = "public class MyTestType  {}";
-            var applicationPartManager = new ApplicationPartManager();
-            var compilationService = GetRoslynCompilationService(applicationPartManager);
-
-            var relativeFileInfo = new RelativeFileInfo(
-                new TestFileInfo { PhysicalPath = "SomePath" },
-                "some-relative-path.cshtml");
-
-            var expected = "The Razor page 'some-relative-path.cshtml' failed to compile. Ensure that your "
-                 + "application's project.json sets the 'preserveCompilationContext' compilation property.";
-
-            // Act and Assert
-            var ex = Assert.Throws<InvalidOperationException>(() =>
-                compilationService.Compile(relativeFileInfo, content));
-            Assert.Equal(expected, ex.Message);
-        }
-
-        [Fact]
         public void Compile_DoesNotThrowIfReferencesWereClearedInCallback()
         {
             // Arrange

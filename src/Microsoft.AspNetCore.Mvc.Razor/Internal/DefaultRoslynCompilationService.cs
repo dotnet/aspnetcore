@@ -27,6 +27,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     /// </summary>
     public class DefaultRoslynCompilationService : ICompilationService
     {
+        // error CS0234: The type or namespace name 'C' does not exist in the namespace 'N' (are you missing
+        // an assembly reference?)
+        private const string CS0234 = nameof(CS0234);
+        // error CS0246: The type or namespace name 'T' could not be found (are you missing a using directive
+        // or an assembly reference?)
+        private const string CS0246 = nameof(CS0246);
         private readonly DebugInformationFormat _pdbFormat =
 #if NET451
             SymbolsUtility.SupportsFullPdbGeneration() ?
@@ -128,18 +134,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
                     if (!result.Success)
                     {
-                        if (!compilation.References.Any() && !CompilationReferences.Any())
-                        {
-                            // DependencyModel had no references specified and the user did not use the
-                            // CompilationCallback to add extra references. It is likely that the user did not specify
-                            // preserveCompilationContext in the app's project.json.
-                            throw new InvalidOperationException(
-                                Resources.FormatCompilation_DependencyContextIsNotSpecified(
-                                    fileInfo.RelativePath,
-                                    "project.json",
-                                    "preserveCompilationContext"));
-                        }
-
                         return GetCompilationFailedResult(
                             fileInfo.RelativePath,
                             compilationContent,
@@ -232,11 +226,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     sourceFileContent = ReadFileContentsSafely(_fileProvider, sourceFilePath);
                 }
 
+                string additionalMessage = null;
+                if (group.Any(g =>
+                    string.Equals(CS0234, g.Id, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(CS0246, g.Id, StringComparison.OrdinalIgnoreCase)))
+                {
+                    additionalMessage = Resources.FormatCompilation_DependencyContextIsNotSpecified(
+                        "preserveCompilationContext",
+                        "buildOptions",
+                        "project.json");
+                }
+
                 var compilationFailure = new CompilationFailure(
                     sourceFilePath,
                     sourceFileContent,
                     compilationContent,
-                    group.Select(GetDiagnosticMessage));
+                    group.Select(GetDiagnosticMessage),
+                    additionalMessage);
 
                 failures.Add(compilationFailure);
             }

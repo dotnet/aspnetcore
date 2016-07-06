@@ -447,7 +447,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <summary>
-        /// The Razor page '{0}' failed to compile. Ensure that your application's {1} sets the '{2}' compilation property.
+        /// One or more compilation references are missing. Possible causes include a missing '{0}' property under '{1}' in the application's {2}.
         /// </summary>
         internal static string Compilation_DependencyContextIsNotSpecified
         {
@@ -455,7 +455,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <summary>
-        /// The Razor page '{0}' failed to compile. Ensure that your application's {1} sets the '{2}' compilation property.
+        /// One or more compilation references are missing. Possible causes include a missing '{0}' property under '{1}' in the application's {2}.
         /// </summary>
         internal static string FormatCompilation_DependencyContextIsNotSpecified(object p0, object p1, object p2)
         {
