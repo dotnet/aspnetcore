@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private static readonly byte[] _bytesStatus305 = Encoding.ASCII.GetBytes("305 Use Proxy");
         private static readonly byte[] _bytesStatus306 = Encoding.ASCII.GetBytes("306 Reserved");
         private static readonly byte[] _bytesStatus307 = Encoding.ASCII.GetBytes("307 Temporary Redirect");
+        private static readonly byte[] _bytesStatus308 = Encoding.ASCII.GetBytes("308 Permanent Redirect");
         private static readonly byte[] _bytesStatus400 = Encoding.ASCII.GetBytes("400 Bad Request");
         private static readonly byte[] _bytesStatus401 = Encoding.ASCII.GetBytes("401 Unauthorized");
         private static readonly byte[] _bytesStatus402 = Encoding.ASCII.GetBytes("402 Payment Required");
@@ -107,6 +108,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         return _bytesStatus306;
                     case 307:
                         return _bytesStatus307;
+                    case 308:
+                        return _bytesStatus308;
                     case 400:
                         return _bytesStatus400;
                     case 401:
