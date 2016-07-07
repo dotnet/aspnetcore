@@ -76,7 +76,7 @@ public class SomeController : Controller
     {
         _nodeServices = nodeServices;
     }
-    
+
     // ... your action methods are here ...
 }
 ```
@@ -86,7 +86,7 @@ Then you can use this instance to make calls into Node.js code, e.g.:
 ```csharp
 public async Task<IActionResult> MyAction()
 {
-    var result = await _nodeServices.Invoke<int>("./addNumbers", 1, 2);
+    var result = await _nodeServices.InvokeAsync<int>("./addNumbers", 1, 2);
     return Content("1 + 2 = " + result);
 }
 ```
@@ -102,7 +102,7 @@ module.exports = function (callback, first, second) {
 
 As you can see, the exported JavaScript function will receive the arguments you pass from .NET (as long as they are JSON-serializable), along with a Node-style callback you can use to send back a result or error when you are ready.
 
-When the `Invoke<T>` method receives the result back from Node, the result will be JSON-deserialized to whatever generic type you specified when calling `Invoke<T>` (e.g., above, that type is `int`). If `Invoke<T>` receives an error from your Node code, it will throw an exception describing that error.
+When the `InvokeAsync<T>` method receives the result back from Node, the result will be JSON-deserialized to whatever generic type you specified when calling `InvokeAsync<T>` (e.g., above, that type is `int`). If `InvokeAsync<T>` receives an error from your Node code, it will throw an exception describing that error.
 
 If you want to put `addNumber.js` inside a subfolder rather than the root of your app, then also amend the path in the `_nodeServices.Invoke` call to match that path.
 
@@ -116,9 +116,9 @@ In other types of .NET app where you don't have ASP.NET Core's DI system, you ca
 var nodeServices = Configuration.CreateNodeServices(new NodeServicesOptions());
 ```
 
-Besides this, the usage is the same as described for ASP.NET above, so you can now call `nodeServices.Invoke<T>(...)` etc.
+Besides this, the usage is the same as described for ASP.NET above, so you can now call `nodeServices.InvokeAsync<T>(...)` etc.
 
-You can dispose the `nodeServices` object whenever you are done with it (and it will shut down the associated Node.js instance), but because these instances are expensive to create, you should whenever possible retain and reuse instances. They are thread-safe - you can call `Invoke<T>` simultaneously from multiple threads. Also, `NodeServices` instances are smart enough to detect if the associated Node instance has died and will automatically start a new Node instance if needed.
+You can dispose the `nodeServices` object whenever you are done with it (and it will shut down the associated Node.js instance), but because these instances are expensive to create, you should whenever possible retain and reuse instances. They are thread-safe - you can call `InvokeAsync<T>` simultaneously from multiple threads. Also, `NodeServices` instances are smart enough to detect if the associated Node instance has died and will automatically start a new Node instance if needed.
 
 
 # API Reference
@@ -197,17 +197,17 @@ var nodeServices = Configuration.CreateNodeServices(new NodeServicesOptions {
      * `HostingModel` - an `NodeHostingModel` enum value. See: [hosting models](#hosting-models)
      * `ProjectPath` - if specified, controls the working directory used when launching Node instances. This affects, for example, the location that `require` statements resolve relative paths against. If not specified, your application root directory is used.
      * `WatchFileExtensions` - if specified, the launched Node instance will watch for changes to any files with these extension, and auto-restarts when any are changed.
-     
+
 **Return type:** `NodeServices`
 
-If you create a `NodeServices` instance this way, you can also dispose it (call `nodeServiceInstance.Dispose();`) and it will shut down the associated Node instance. But because these instances are expensive to create, you should whenever possible retain and reuse your `NodeServices` object. They are thread-safe - you can call `nodeServiceInstance.Invoke<T>(...)` simultaneously from multiple threads.
+If you create a `NodeServices` instance this way, you can also dispose it (call `nodeServiceInstance.Dispose();`) and it will shut down the associated Node instance. But because these instances are expensive to create, you should whenever possible retain and reuse your `NodeServices` object. They are thread-safe - you can call `nodeServiceInstance.InvokeAsync<T>(...)` simultaneously from multiple threads.
 
 ### Invoke&lt;T&gt;
 
 **Signature:**
 
 ```csharp
-Invoke<T>(string moduleName, params object[] args)
+InvokeAsync<T>(string moduleName, params object[] args)
 ```
 
 Asynchronously calls a JavaScript function and returns the result, or throws an exception if the result was an error.
@@ -215,7 +215,7 @@ Asynchronously calls a JavaScript function and returns the result, or throws an 
 **Example 1: Getting a JSON-serializable object from Node (the most common use case)**
 
 ```csharp
-var result = await myNodeServicesInstance.Invoke<TranspilerResult>(
+var result = await myNodeServicesInstance.InvokeAsync<TranspilerResult>(
     "./Node/transpile",
     pathOfSomeFileToBeTranspiled);
 ```
@@ -226,7 +226,7 @@ var result = await myNodeServicesInstance.Invoke<TranspilerResult>(
 public class TranspilerResult
 {
     public string Code { get; set; }
-    public string[] Warnings { get; set;  
+    public string[] Warnings { get; set; }
 }
 ```
 
@@ -245,7 +245,7 @@ module.exports = function (callback, filePath) {
 **Example 2: Getting a stream of binary data from Node**
 
 ```csharp
-var imageStream = await myNodeServicesInstance.Invoke<Stream>(
+var imageStream = await myNodeServicesInstance.InvokeAsync<Stream>(
     "./Node/resizeImage",
     fullImagePath,
     width,
@@ -287,19 +287,19 @@ There's a working image resizing example following this approach [here](https://
 **Signature**
 
 ```csharp
-InvokeExport<T>(string moduleName, string exportName, params object[] args)
+InvokeExportAsync<T>(string moduleName, string exportName, params object[] args)
 ```
 
-This is exactly the same as `Invoke<T>`, except that it also takes an `exportName` parameter. You can use this if you want your JavaScript module to export more than one function.
+This is exactly the same as `InvokeAsync<T>`, except that it also takes an `exportName` parameter. You can use this if you want your JavaScript module to export more than one function.
 
 **Example**
 
 ```csharp
-var someString = await myNodeServicesInstance.Invoke<string>(
+var someString = await myNodeServicesInstance.InvokeExportAsync<string>(
     "./Node/myNodeApis",
     "getMeAString");
 
-var someStringInFrench = await myNodeServicesInstance.Invoke<string>(
+var someStringInFrench = await myNodeServicesInstance.InvokeExportAsync<string>(
     "./Node/myNodeApis",
     "convertLanguage"
     someString,
@@ -325,7 +325,7 @@ module.exports = {
 };
 ```
 
-**Parameters, return type, etc.** For all other details, see the docs for [`Invoke<T>`](#invoket)
+**Parameters, return type, etc.** For all other details, see the docs for [`InvokeAsync<T>`](#invokeasynct)
 
 ## Hosting models
 
