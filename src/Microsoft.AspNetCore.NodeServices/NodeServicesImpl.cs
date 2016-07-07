@@ -14,16 +14,16 @@ namespace Microsoft.AspNetCore.NodeServices
     /// class will create a new instance and dispatch future calls to it, while keeping the old instance
     /// alive for a defined period so that any in-flight RPC calls can complete. This latter feature is
     /// analogous to the "connection draining" feature implemented by HTTP load balancers.
-    ///
-    /// TODO: Implement everything in the preceding paragraph.
     /// </summary>
     /// <seealso cref="Microsoft.AspNetCore.NodeServices.INodeServices" />
     internal class NodeServicesImpl : INodeServices
     {
+        private static TimeSpan ConnectionDrainingTimespan = TimeSpan.FromSeconds(15);
         private NodeServicesOptions _options;
         private Func<INodeInstance> _nodeInstanceFactory;
         private INodeInstance _currentNodeInstance;
         private object _currentNodeInstanceAccessLock = new object();
+        private Exception _instanceDelayedDisposalException;
 
         internal NodeServicesImpl(NodeServicesOptions options, Func<INodeInstance> nodeInstanceFactory)
         {
@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.NodeServices
 
         public async Task<T> InvokeExportWithPossibleRetryAsync<T>(string moduleName, string exportedFunctionName, object[] args, bool allowRetry)
         {
+            ThrowAnyOutstandingDelayedDisposalException();
             var nodeInstance = GetOrCreateCurrentNodeInstance();
 
             try
@@ -56,11 +57,13 @@ namespace Microsoft.AspNetCore.NodeServices
                 if (allowRetry && ex.NodeInstanceUnavailable)
                 {
                     // Perform the retry after clearing away the old instance
+                    // Since we disposal is delayed even though the node instance is replaced immediately, this produces the
+                    // "connection draining" feature whereby in-flight RPC calls are given a certain period to complete.
                     lock (_currentNodeInstanceAccessLock)
                     {
                         if (_currentNodeInstance == nodeInstance)
                         {
-                            DisposeNodeInstance(_currentNodeInstance);
+                            DisposeNodeInstance(_currentNodeInstance, delay: ConnectionDrainingTimespan);
                             _currentNodeInstance = null;
                         }
                     }
@@ -83,17 +86,47 @@ namespace Microsoft.AspNetCore.NodeServices
             {
                 if (_currentNodeInstance != null)
                 {
-                    DisposeNodeInstance(_currentNodeInstance);
+                    DisposeNodeInstance(_currentNodeInstance, delay: TimeSpan.Zero);
                     _currentNodeInstance = null;
                 }
             }
         }
 
-        private static void DisposeNodeInstance(INodeInstance nodeInstance)
+        private void DisposeNodeInstance(INodeInstance nodeInstance, TimeSpan delay)
         {
-            // TODO: Implement delayed disposal for connection draining
-            // Or consider having the delayedness of it being a responsibility of the INodeInstance
-            nodeInstance.Dispose();
+            if (delay == TimeSpan.Zero)
+            {
+                nodeInstance.Dispose();
+            }
+            else
+            {
+                Task.Run(async () => {
+                    try
+                    {
+                        await Task.Delay(delay);
+                        nodeInstance.Dispose();
+                    }
+                    catch(Exception ex)
+                    {
+                        // Nothing's waiting for the delayed disposal task, so any exceptions in it would
+                        // by default just get ignored. To make these discoverable, capture them here so
+                        // they can be rethrown to the next caller to InvokeExportAsync.
+                        _instanceDelayedDisposalException = ex;
+                    }
+                });
+            }
+        }
+
+        private void ThrowAnyOutstandingDelayedDisposalException()
+        {
+            if (_instanceDelayedDisposalException != null)
+            {
+                var ex = _instanceDelayedDisposalException;
+                _instanceDelayedDisposalException = null;
+                throw new AggregateException(
+                    "A previous attempt to dispose a Node instance failed. See InnerException for details.",
+                    ex);
+            }
         }
 
         private INodeInstance GetOrCreateCurrentNodeInstance()
