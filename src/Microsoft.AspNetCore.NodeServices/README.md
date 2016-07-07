@@ -63,30 +63,12 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-Now you can receive an instance of `NodeServices` as a constructor parameter to any MVC controller, e.g.:
+Now you can receive an instance of `NodeServices` as an action method parameter to any MVC action, and then use it to make calls into Node.js code, e.g.:
 
 ```csharp
-using Microsoft.AspNetCore.NodeServices;
-
-public class SomeController : Controller
+public async Task<IActionResult> MyAction([FromServices] INodeServices nodeServices)
 {
-    private INodeServices _nodeServices;
-
-    public SomeController(INodeServices nodeServices)
-    {
-        _nodeServices = nodeServices;
-    }
-
-    // ... your action methods are here ...
-}
-```
-
-Then you can use this instance to make calls into Node.js code, e.g.:
-
-```csharp
-public async Task<IActionResult> MyAction()
-{
-    var result = await _nodeServices.InvokeAsync<int>("./addNumbers", 1, 2);
+    var result = await nodeServices.InvokeAsync<int>("./addNumbers", 1, 2);
     return Content("1 + 2 = " + result);
 }
 ```
