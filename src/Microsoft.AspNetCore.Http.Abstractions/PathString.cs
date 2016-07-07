@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text.Encodings.Web;
+using System.Text;
 using Microsoft.AspNetCore.Http.Abstractions;
+using Microsoft.AspNetCore.Http.Internal;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -66,25 +67,83 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>The escaped path value</returns>
         public string ToUriComponent()
         {
-            // TODO: Measure the cost of this escaping and consider optimizing.
             if (!HasValue)
             {
                 return string.Empty;
             }
-            var values = _value.Split(splitChar);
-            var changed = false;
-            for (var i = 0; i < values.Length; i++)
-            {
-                var value = values[i];
-                values[i] = UrlEncoder.Default.Encode(value);
 
-                if (!changed && value != values[i])
+            StringBuilder buffer = null;
+
+            var start = 0;
+            var count = 0;
+            var requiresEscaping = false;
+            for (int i = 0; i < _value.Length; ++i)
+            {
+                if (PathStringHelper.IsValidPathChar(_value[i]))
                 {
-                    changed = true;
+                    if (requiresEscaping)
+                    {
+                        // the current segment requires escape
+                        if (buffer == null)
+                        {
+                            buffer = new StringBuilder(_value.Length * 3);
+                        }
+
+                        buffer.Append(Uri.EscapeDataString(_value.Substring(start, count)));
+
+                        requiresEscaping = false;
+                        start = i;
+                        count = 0;
+                    }
+
+                    count++;
+                }
+                else
+                {
+                    if (!requiresEscaping)
+                    {
+                        // the current segument doesn't require escape
+                        if (buffer == null)
+                        {
+                            buffer = new StringBuilder(_value.Length * 3);
+                        }
+
+                        buffer.Append(_value, start, count);
+
+                        requiresEscaping = true;
+                        start = i;
+                        count = 0;
+                    }
+
+                    count++;
                 }
             }
 
-            return changed ? string.Join("/", values) : _value;
+            if (count == _value.Length && !requiresEscaping)
+            {
+                return _value;
+            }
+            else
+            {
+                if (count > 0)
+                {
+                    if (buffer == null)
+                    {
+                        buffer = new StringBuilder(_value.Length * 3);
+                    }
+
+                    if (requiresEscaping)
+                    {
+                        buffer.Append(Uri.EscapeDataString(_value.Substring(start, count)));
+                    }
+                    else
+                    {
+                        buffer.Append(_value, start, count);
+                    }
+                }
+
+                return buffer.ToString();
+            }
         }
 
         /// <summary>
@@ -335,7 +394,7 @@ namespace Microsoft.AspNetCore.Http
         /// Implicitly calls ToString().
         /// </summary>
         /// <param name="path"></param>
-        public static implicit operator string (PathString path)
+        public static implicit operator string(PathString path)
         {
             return path.ToString();
         }
