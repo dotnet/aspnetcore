@@ -176,7 +176,7 @@
 	// Begin listening now. The underlying transport varies according to the runtime platform.
 	// On Windows it's Named Pipes; on Linux/OSX it's Domain Sockets.
 	var useWindowsNamedPipes = /^win/.test(process.platform);
-	var listenAddress = (useWindowsNamedPipes ? '\\\\.\\pipe\\' : '/tmp/') + parsedArgs.pipename;
+	var listenAddress = (useWindowsNamedPipes ? '\\\\.\\pipe\\' : '/tmp/') + parsedArgs.listenAddress;
 	server.listen(listenAddress);
 
 

@@ -69,7 +69,7 @@ virtualConnectionServer.createInterface(server).on('connection', (connection: Du
 // Begin listening now. The underlying transport varies according to the runtime platform.
 // On Windows it's Named Pipes; on Linux/OSX it's Domain Sockets.
 const useWindowsNamedPipes = /^win/.test(process.platform);
-const listenAddress = (useWindowsNamedPipes ? '\\\\.\\pipe\\' : '/tmp/') + parsedArgs.pipename;
+const listenAddress = (useWindowsNamedPipes ? '\\\\.\\pipe\\' : '/tmp/') + parsedArgs.listenAddress;
 server.listen(listenAddress);
 
 interface RpcInvocation {

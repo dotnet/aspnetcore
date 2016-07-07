@@ -6,37 +6,43 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.NodeServices.HostingModels
 {
     /// <summary>
-    /// Class responsible for launching the Node child process, determining when it is ready to accept invocations,
-    /// and finally killing it when the parent process exits. Also it restarts the child process if it dies.
+    /// Class responsible for launching a Node child process on the local machine, determining when it is ready to
+    /// accept invocations, detecting if it dies on its own, and finally terminating it on disposal.
+    ///
+    /// This abstract base class uses the input/output streams of the child process to perform a simple handshake
+    /// to determine when the child process is ready to accept invocations. This is agnostic to the mechanism that
+    /// derived classes use to actually perform the invocations (e.g., they could use HTTP-RPC, or a binary TCP
+    /// protocol, or any other RPC-type mechanism).
     /// </summary>
-    /// <seealso cref="Microsoft.AspNetCore.NodeServices.INodeInstance" />
+    /// <seealso cref="Microsoft.AspNetCore.NodeServices.HostingModels.INodeInstance" />
     public abstract class OutOfProcessNodeInstance : INodeInstance
     {
-        private readonly object _childProcessLauncherLock;
-        private string _commandLineArguments;
-        private readonly StringAsTempFile _entryPointScript;
-        private Process _nodeProcess;
-        private TaskCompletionSource<bool> _nodeProcessIsReadySource;
-        private readonly string _projectPath;
+        private const string ConnectionEstablishedMessage = "[Microsoft.AspNetCore.NodeServices:Listening]";
+        private readonly TaskCompletionSource<object> _connectionIsReadySource = new TaskCompletionSource<object>();
         private bool _disposed;
+        private readonly StringAsTempFile _entryPointScript;
+        private readonly Process _nodeProcess;
 
         public OutOfProcessNodeInstance(string entryPointScript, string projectPath, string commandLineArguments = null)
         {
-            _childProcessLauncherLock = new object();
             _entryPointScript = new StringAsTempFile(entryPointScript);
-            _projectPath = projectPath;
-            _commandLineArguments = commandLineArguments ?? string.Empty;
+            _nodeProcess = LaunchNodeProcess(_entryPointScript.FileName, projectPath, commandLineArguments);
+            ConnectToInputOutputStreams();
         }
 
-        public string CommandLineArguments
+        public async Task<T> InvokeExportAsync<T>(string moduleName, string exportNameOrNull, params object[] args)
         {
-            get { return _commandLineArguments; }
-            set { _commandLineArguments = value; }
-        }
+            // Wait until the connection is established. This will throw if the connection fails to initialize.
+            await _connectionIsReadySource.Task;
 
-        public Task<T> InvokeExportAsync<T>(string moduleName, string exportNameOrNull, params object[] args)
-        {
-            return InvokeExportAsync<T>(new NodeInvocationInfo
+            if (_nodeProcess.HasExited)
+            {
+                // This special kind of exception triggers a transparent retry - NodeServicesImpl will launch
+                // a new Node instance and pass the invocation to that one instead.
+                throw new NodeInvocationException("The Node process has exited", null, nodeInstanceUnavailable: true);
+            }
+
+            return await InvokeExportAsync<T>(new NodeInvocationInfo
             {
                 ModuleName = moduleName,
                 ExportedFunctionName = exportNameOrNull,
@@ -51,100 +57,6 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         }
 
         protected abstract Task<T> InvokeExportAsync<T>(NodeInvocationInfo invocationInfo);
-
-        protected void ExitNodeProcess()
-        {
-            if (_nodeProcess != null && !_nodeProcess.HasExited)
-            {
-                // TODO: Is there a more graceful way to end it? Or does this still let it perform any cleanup?
-                _nodeProcess.Kill();
-            }
-        }
-
-        protected async Task EnsureReady()
-        {
-            lock (_childProcessLauncherLock)
-            {
-                if (_nodeProcess == null || _nodeProcess.HasExited)
-                {
-                    this.OnBeforeLaunchProcess();
-
-                    var startInfo = new ProcessStartInfo("node")
-                    {
-                        Arguments = "\"" + _entryPointScript.FileName + "\" " + _commandLineArguments,
-                        UseShellExecute = false,
-                        RedirectStandardInput = true,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        WorkingDirectory = _projectPath
-                    };
-
-                    // Append projectPath to NODE_PATH so it can locate node_modules
-                    var existingNodePath = Environment.GetEnvironmentVariable("NODE_PATH") ?? string.Empty;
-                    if (existingNodePath != string.Empty)
-                    {
-                        existingNodePath += ":";
-                    }
-
-                    var nodePathValue = existingNodePath + Path.Combine(_projectPath, "node_modules");
-#if NET451
-                    startInfo.EnvironmentVariables["NODE_PATH"] = nodePathValue;
-#else
-                    startInfo.Environment["NODE_PATH"] = nodePathValue;
-#endif
-
-                    _nodeProcess = Process.Start(startInfo);
-                    ConnectToInputOutputStreams();
-                }
-            }
-
-            var task = _nodeProcessIsReadySource.Task;
-            var initializationSucceeded = await task;
-
-            if (!initializationSucceeded)
-            {
-                throw new InvalidOperationException("The Node.js process failed to initialize", task.Exception);
-            }
-        }
-
-        private void ConnectToInputOutputStreams()
-        {
-            var initializationIsCompleted = false; // TODO: Make this thread-safe? (Interlocked.Exchange etc.)
-            _nodeProcessIsReadySource = new TaskCompletionSource<bool>();
-
-            _nodeProcess.OutputDataReceived += (sender, evt) =>
-            {
-                if (evt.Data == "[Microsoft.AspNetCore.NodeServices:Listening]" && !initializationIsCompleted)
-                {
-                    _nodeProcessIsReadySource.SetResult(true);
-                    initializationIsCompleted = true;
-                }
-                else if (evt.Data != null)
-                {
-                    OnOutputDataReceived(evt.Data);
-                }
-            };
-
-            _nodeProcess.ErrorDataReceived += (sender, evt) =>
-            {
-                if (evt.Data != null)
-                {
-                    OnErrorDataReceived(evt.Data);
-                    if (!initializationIsCompleted)
-                    {
-                        _nodeProcessIsReadySource.SetResult(false);
-                        initializationIsCompleted = true;
-                    }
-                }
-            };
-
-            _nodeProcess.BeginOutputReadLine();
-            _nodeProcess.BeginErrorReadLine();
-        }
-
-        protected virtual void OnBeforeLaunchProcess()
-        {
-        }
 
         protected virtual void OnOutputDataReceived(string outputData)
         {
@@ -165,10 +77,82 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                     _entryPointScript.Dispose();
                 }
 
-                ExitNodeProcess();
+                // Make sure the Node process is finished
+                // TODO: Is there a more graceful way to end it? Or does this still let it perform any cleanup?
+                if (!_nodeProcess.HasExited)
+                {
+                    _nodeProcess.Kill();
+                }
 
                 _disposed = true;
             }
+        }
+
+        private static Process LaunchNodeProcess(string entryPointFilename, string projectPath, string commandLineArguments)
+        {
+            var startInfo = new ProcessStartInfo("node")
+            {
+                Arguments = "\"" + entryPointFilename + "\" " + (commandLineArguments ?? string.Empty),
+                UseShellExecute = false,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                WorkingDirectory = projectPath
+            };
+
+            // Append projectPath to NODE_PATH so it can locate node_modules
+            var existingNodePath = Environment.GetEnvironmentVariable("NODE_PATH") ?? string.Empty;
+            if (existingNodePath != string.Empty)
+            {
+                existingNodePath += ":";
+            }
+
+            var nodePathValue = existingNodePath + Path.Combine(projectPath, "node_modules");
+#if NET451
+            startInfo.EnvironmentVariables["NODE_PATH"] = nodePathValue;
+#else
+            startInfo.Environment["NODE_PATH"] = nodePathValue;
+#endif
+
+            return Process.Start(startInfo);
+        }
+
+        private void ConnectToInputOutputStreams()
+        {
+            var initializationIsCompleted = false;
+
+            _nodeProcess.OutputDataReceived += (sender, evt) =>
+            {
+                if (evt.Data == ConnectionEstablishedMessage && !initializationIsCompleted)
+                {
+                    _connectionIsReadySource.SetResult(null);
+                    initializationIsCompleted = true;
+                }
+                else if (evt.Data != null)
+                {
+                    OnOutputDataReceived(evt.Data);
+                }
+            };
+
+            _nodeProcess.ErrorDataReceived += (sender, evt) =>
+            {
+                if (evt.Data != null)
+                {
+                    if (!initializationIsCompleted)
+                    {
+                        _connectionIsReadySource.SetException(
+                            new InvalidOperationException("The Node.js process failed to initialize: " + evt.Data));
+                        initializationIsCompleted = true;
+                    }
+                    else
+                    {
+                        OnErrorDataReceived(evt.Data);
+                    }
+                }
+            };
+
+            _nodeProcess.BeginOutputReadLine();
+            _nodeProcess.BeginErrorReadLine();
         }
 
         ~OutOfProcessNodeInstance()

@@ -38,8 +38,43 @@ namespace Microsoft.AspNetCore.NodeServices
 
         public Task<T> InvokeExportAsync<T>(string moduleName, string exportedFunctionName, params object[] args)
         {
+            return InvokeExportWithPossibleRetryAsync<T>(moduleName, exportedFunctionName, args, allowRetry: true);
+        }
+
+        public async Task<T> InvokeExportWithPossibleRetryAsync<T>(string moduleName, string exportedFunctionName, object[] args, bool allowRetry)
+        {
             var nodeInstance = GetOrCreateCurrentNodeInstance();
-            return nodeInstance.InvokeExportAsync<T>(moduleName, exportedFunctionName, args);
+
+            try
+            {
+                return await nodeInstance.InvokeExportAsync<T>(moduleName, exportedFunctionName, args);
+            }
+            catch (NodeInvocationException ex)
+            {
+                // If the Node instance can't complete the invocation because it needs to restart (e.g., because the underlying
+                // Node process has exited, or a file it depends on has changed), then we make one attempt to restart transparently.
+                if (allowRetry && ex.NodeInstanceUnavailable)
+                {
+                    // Perform the retry after clearing away the old instance
+                    lock (_currentNodeInstanceAccessLock)
+                    {
+                        if (_currentNodeInstance == nodeInstance)
+                        {
+                            DisposeNodeInstance(_currentNodeInstance);
+                            _currentNodeInstance = null;
+                        }
+                    }
+
+                    // One the next call, don't allow retries, because we could get into an infinite retry loop, or a long retry
+                    // loop that masks an underlying problem. A newly-created Node instance should be able to accept invocations,
+                    // or something more serious must be wrong.
+                    return await InvokeExportWithPossibleRetryAsync<T>(moduleName, exportedFunctionName, args, allowRetry: false);
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
         public void Dispose()
@@ -48,10 +83,17 @@ namespace Microsoft.AspNetCore.NodeServices
             {
                 if (_currentNodeInstance != null)
                 {
-                    _currentNodeInstance.Dispose();
+                    DisposeNodeInstance(_currentNodeInstance);
                     _currentNodeInstance = null;
                 }
             }
+        }
+
+        private static void DisposeNodeInstance(INodeInstance nodeInstance)
+        {
+            // TODO: Implement delayed disposal for connection draining
+            // Or consider having the delayedness of it being a responsibility of the INodeInstance
+            nodeInstance.Dispose();
         }
 
         private INodeInstance GetOrCreateCurrentNodeInstance()

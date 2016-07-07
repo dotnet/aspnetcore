@@ -9,6 +9,18 @@ using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.NodeServices.HostingModels
 {
+    /// <summary>
+    /// A specialisation of the OutOfProcessNodeInstance base class that uses HTTP to perform RPC invocations.
+    ///
+    /// The Node child process starts an HTTP listener on an arbitrary available port (except where a nonzero
+    /// port number is specified as a constructor parameter), and signals which port was selected using the same
+    /// input/output-based mechanism that the base class uses to determine when the child process is ready to
+    /// accept RPC invocations.
+    ///
+    /// TODO: Remove the file-watching logic from here and centralise it in OutOfProcessNodeInstance, implementing
+    /// the actual watching in .NET code (not Node), for consistency across platforms.
+    /// </summary>
+    /// <seealso cref="Microsoft.AspNetCore.NodeServices.HostingModels.OutOfProcessNodeInstance" />
     internal class HttpNodeInstance : OutOfProcessNodeInstance
     {
         private static readonly Regex PortMessageRegex =
@@ -19,7 +31,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
 
-	    private HttpClient _client;
+	    private readonly HttpClient _client;
         private bool _disposed;
         private int _portNumber;
 
@@ -47,9 +59,6 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
         protected override async Task<T> InvokeExportAsync<T>(NodeInvocationInfo invocationInfo)
         {
-            await EnsureReady();
-
-            // TODO: Use System.Net.Http.Formatting (PostAsJsonAsync etc.)
             var payloadJson = JsonConvert.SerializeObject(invocationInfo, JsonSerializerSettings);
             var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
             var response = await _client.PostAsync("http://localhost:" + _portNumber, payload);
@@ -97,6 +106,9 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
         protected override void OnOutputDataReceived(string outputData)
         {
+            // Watch for "port selected" messages, and when observed, store the port number
+            // so we can use it when making HTTP requests. The child process will always send
+            // one of these messages before it sends a "ready for connections" message.
             var match = _portNumber != 0 ? null : PortMessageRegex.Match(outputData);
             if (match != null && match.Success)
             {
@@ -106,12 +118,6 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             {
                 base.OnOutputDataReceived(outputData);
             }
-        }
-
-        protected override void OnBeforeLaunchProcess()
-        {
-            // Prepare to receive a new port number
-            _portNumber = 0;
         }
 
 	    protected override void Dispose(bool disposing) {

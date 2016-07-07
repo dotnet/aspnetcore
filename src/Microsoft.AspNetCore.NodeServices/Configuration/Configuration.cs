@@ -48,7 +48,8 @@ namespace Microsoft.AspNetCore.NodeServices
                     case NodeHostingModel.Http:
                         return new HttpNodeInstance(options.ProjectPath, /* port */ 0, options.WatchFileExtensions);
                     case NodeHostingModel.Socket:
-                        return new SocketNodeInstance(options.ProjectPath, options.WatchFileExtensions);
+                        var pipeName = "pni-" + Guid.NewGuid().ToString("D"); // Arbitrary non-clashing string
+                        return new SocketNodeInstance(options.ProjectPath, options.WatchFileExtensions, pipeName);
                     default:
                         throw new ArgumentException("Unknown hosting model: " + options.HostingModel);
                 }
