@@ -349,11 +349,12 @@ The default transport may change from `Http` to `Socket` in the near future, bec
 
 ### Custom hosting models
 
-If you implement a custom hosting model (by implementing `INodeServices`), then you can get instances of that just by using your type's constructor. Or if you want to designate it as the default hosting model that higher-level services (such as those in the `SpaServices` package) should use, register it with ASP.NET Core's DI system:
+If you implement a custom hosting model (by implementing `INodeInstance`), then you can cause it to be used by populating `NodeInstanceFactory` on a `NodeServicesOptions`:
 
 ```csharp
-services.AddSingleton(typeof(INodeServices), serviceProvider =>
-{
-    return new YourCustomHostingModel();
-});
+var options = new NodeServicesOptions {
+    NodeInstanceFactory = () => new MyCustomNodeInstance()
+};
 ```
+
+Now you can pass this `options` object to [`AddNodeServices`](#addnodeservices) or [`CreateNodeServices`](#createnodeservices).
