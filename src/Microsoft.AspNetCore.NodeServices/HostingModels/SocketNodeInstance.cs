@@ -21,9 +21,6 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
     /// The address of the pipe/socket is selected randomly here on the .NET side and sent to the child process as a
     /// command-line argument (the address space is wide enough that there's no real risk of a clash, unlike when
     /// selecting TCP port numbers).
-    ///
-    /// TODO: Remove the file-watching logic from here and centralise it in OutOfProcessNodeInstance, implementing
-    /// the actual watching in .NET code (not Node), for consistency across platforms.
     /// </summary>
     /// <seealso cref="Microsoft.AspNetCore.NodeServices.HostingModels.OutOfProcessNodeInstance" />
     internal class SocketNodeInstance : OutOfProcessNodeInstance
@@ -38,16 +35,15 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private StreamConnection _physicalConnection;
         private string _socketAddress;
         private VirtualConnectionClient _virtualConnectionClient;
-        private readonly string[] _watchFileExtensions;
 
         public SocketNodeInstance(string projectPath, string[] watchFileExtensions, string socketAddress): base(
                 EmbeddedResourceReader.Read(
                     typeof(SocketNodeInstance),
                     "/Content/Node/entrypoint-socket.js"),
                 projectPath,
-                MakeNewCommandLineOptions(socketAddress, watchFileExtensions))
+                watchFileExtensions,
+                MakeNewCommandLineOptions(socketAddress))
         {
-            _watchFileExtensions = watchFileExtensions;
             _socketAddress = socketAddress;
 		}
 
@@ -188,15 +184,9 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             }
         }
 
-        private static string MakeNewCommandLineOptions(string listenAddress, string[] watchFileExtensions)
+        private static string MakeNewCommandLineOptions(string listenAddress)
         {
-            var result = "--listenAddress " + listenAddress;
-            if (watchFileExtensions != null && watchFileExtensions.Length > 0)
-            {
-                result += " --watch " + string.Join(",", watchFileExtensions);
-            }
-
-            return result;
+            return $"--listenAddress {listenAddress}";
         }
 
 #pragma warning disable 649 // These properties are populated via JSON deserialization

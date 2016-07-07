@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.NodeServices.HostingModels
@@ -18,17 +19,24 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
     public abstract class OutOfProcessNodeInstance : INodeInstance
     {
         private const string ConnectionEstablishedMessage = "[Microsoft.AspNetCore.NodeServices:Listening]";
-        private const string NeedsRestartMessage = "[Microsoft.AspNetCore.NodeServices:Restart]";
         private readonly TaskCompletionSource<object> _connectionIsReadySource = new TaskCompletionSource<object>();
         private bool _disposed;
         private readonly StringAsTempFile _entryPointScript;
+        private FileSystemWatcher _fileSystemWatcher;
         private readonly Process _nodeProcess;
         private bool _nodeProcessNeedsRestart;
+        private readonly string[] _watchFileExtensions;
 
-        public OutOfProcessNodeInstance(string entryPointScript, string projectPath, string commandLineArguments = null)
+        public OutOfProcessNodeInstance(
+            string entryPointScript,
+            string projectPath,
+            string[] watchFileExtensions,
+            string commandLineArguments)
         {
             _entryPointScript = new StringAsTempFile(entryPointScript);
             _nodeProcess = LaunchNodeProcess(_entryPointScript.FileName, projectPath, commandLineArguments);
+            _watchFileExtensions = watchFileExtensions;
+            _fileSystemWatcher = BeginFileWatcher(projectPath);
             ConnectToInputOutputStreams();
         }
 
@@ -80,6 +88,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                 if (disposing)
                 {
                     _entryPointScript.Dispose();
+                    EnsureFileSystemWatcherIsDisposed();
                 }
 
                 // Make sure the Node process is finished
@@ -90,6 +99,15 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                 }
 
                 _disposed = true;
+            }
+        }
+
+        private void EnsureFileSystemWatcherIsDisposed()
+        {
+            if (_fileSystemWatcher != null)
+            {
+                _fileSystemWatcher.Dispose();
+                _fileSystemWatcher = null;
             }
         }
 
@@ -143,13 +161,6 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                     _connectionIsReadySource.SetResult(null);
                     initializationIsCompleted = true;
                 }
-                else if (evt.Data == NeedsRestartMessage)
-                {
-                    // Temporarily, the file-watching logic is in Node, so look out for the
-                    // signal that we need to restart. This can be removed once the file-watching
-                    // logic is moved over to the .NET side.
-                    _nodeProcessNeedsRestart = true;
-                }
                 else if (evt.Data != null)
                 {
                     OnOutputDataReceived(evt.Data);
@@ -175,6 +186,69 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
             _nodeProcess.BeginOutputReadLine();
             _nodeProcess.BeginErrorReadLine();
+        }
+
+        private FileSystemWatcher BeginFileWatcher(string rootDir)
+        {
+            if (_watchFileExtensions == null || _watchFileExtensions.Length == 0)
+            {
+                // Nothing to watch
+                return null;
+            }
+
+            var watcher = new FileSystemWatcher(rootDir)
+            {
+                IncludeSubdirectories = true,
+                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName
+            };
+            watcher.Changed += OnFileChanged;
+            watcher.Created += OnFileChanged;
+            watcher.Deleted += OnFileChanged;
+            watcher.Renamed += OnFileRenamed;
+            watcher.EnableRaisingEvents = true;
+            return watcher;
+        }
+
+        private void OnFileChanged(object source, FileSystemEventArgs e)
+        {
+            if (IsFilenameBeingWatched(e.FullPath))
+            {
+                RestartDueToFileChange(e.FullPath);
+            }
+        }
+
+        private void OnFileRenamed(object source, RenamedEventArgs e)
+        {
+            if (IsFilenameBeingWatched(e.OldFullPath) || IsFilenameBeingWatched(e.FullPath))
+            {
+                RestartDueToFileChange(e.OldFullPath);
+            }
+        }
+
+        private bool IsFilenameBeingWatched(string fullPath)
+        {
+            if (string.IsNullOrEmpty(fullPath))
+            {
+                return false;
+            }
+            else
+            {
+                var actualExtension = Path.GetExtension(fullPath) ?? string.Empty;
+                return _watchFileExtensions.Any(actualExtension.Equals);
+            }
+        }
+
+        private void RestartDueToFileChange(string fullPath)
+        {
+            // TODO: Use proper logger
+            Console.WriteLine($"Node will restart because file changed: {fullPath}");
+
+            _nodeProcessNeedsRestart = true;
+
+            // There's no need to watch for any more changes, since we're already restarting, and if the
+            // restart takes some time (e.g., due to connection draining), we could end up getting duplicate
+            // notifications.
+            EnsureFileSystemWatcherIsDisposed();
         }
 
         ~OutOfProcessNodeInstance()

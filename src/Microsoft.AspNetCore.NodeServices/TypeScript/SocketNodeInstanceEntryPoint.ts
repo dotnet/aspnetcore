@@ -5,16 +5,11 @@ import * as path from 'path';
 import * as readline from 'readline';
 import { Duplex } from 'stream';
 import { parseArgs } from './Util/ArgsUtil';
-import { autoQuitOnFileChange } from './Util/AutoQuit';
 import * as virtualConnectionServer from './VirtualConnections/VirtualConnectionServer';
 
 // Webpack doesn't support dynamic requires for files not present at compile time, so grab a direct
 // reference to Node's runtime 'require' function.
 const dynamicRequire: (name: string) => any = eval('require');
-const parsedArgs = parseArgs(process.argv);
-if (parsedArgs.watch) {
-    autoQuitOnFileChange(process.cwd(), parsedArgs.watch.split(','));
-}
 
 // Signal to the .NET side when we're ready to accept invocations
 const server = net.createServer().on('listening', () => {
@@ -69,6 +64,7 @@ virtualConnectionServer.createInterface(server).on('connection', (connection: Du
 // Begin listening now. The underlying transport varies according to the runtime platform.
 // On Windows it's Named Pipes; on Linux/OSX it's Domain Sockets.
 const useWindowsNamedPipes = /^win/.test(process.platform);
+const parsedArgs = parseArgs(process.argv);
 const listenAddress = (useWindowsNamedPipes ? '\\\\.\\pipe\\' : '/tmp/') + parsedArgs.listenAddress;
 server.listen(listenAddress);
 

@@ -57,14 +57,9 @@
 	var http = __webpack_require__(2);
 	var path = __webpack_require__(3);
 	var ArgsUtil_1 = __webpack_require__(4);
-	var AutoQuit_1 = __webpack_require__(5);
 	// Webpack doesn't support dynamic requires for files not present at compile time, so grab a direct
 	// reference to Node's runtime 'require' function.
 	var dynamicRequire = eval('require');
-	var parsedArgs = ArgsUtil_1.parseArgs(process.argv);
-	if (parsedArgs.watch) {
-	    AutoQuit_1.autoQuitOnFileChange(process.cwd(), parsedArgs.watch.split(','));
-	}
 	var server = http.createServer(function (req, res) {
 	    readRequestBodyAsJson(req, function (bodyJson) {
 	        var hasSentResult = false;
@@ -117,6 +112,7 @@
 	        }
 	    });
 	});
+	var parsedArgs = ArgsUtil_1.parseArgs(process.argv);
 	var requestedPortOrZero = parsedArgs.port || 0; // 0 means 'let the OS decide'
 	server.listen(requestedPortOrZero, 'localhost', function () {
 	    // Signal to HttpNodeHost which port it should make its HTTP connections on
@@ -169,36 +165,6 @@
 	}
 	exports.parseArgs = parseArgs;
 
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var fs = __webpack_require__(6);
-	var path = __webpack_require__(3);
-	function autoQuitOnFileChange(rootDir, extensions) {
-	    // Note: This will only work on Windows/OS X, because the 'recursive' option isn't supported on Linux.
-	    // Consider using a different watch mechanism (though ideally without forcing further NPM dependencies).
-	    fs.watch(rootDir, { persistent: false, recursive: true }, function (event, filename) {
-	        var ext = path.extname(filename);
-	        if (extensions.indexOf(ext) >= 0) {
-	            console.log('Restarting due to file change: ' + filename);
-	            // Temporarily, the file-watching logic is in Node, so we signal it's time to restart by
-	            // sending the following message back to .NET. Soon the file-watching logic will move over
-	            // to the .NET side, and this whole file can be removed.
-	            console.log('[Microsoft.AspNetCore.NodeServices:Restart]');
-	        }
-	    });
-	}
-	exports.autoQuitOnFileChange = autoQuitOnFileChange;
-
-
-/***/ },
-/* 6 */
-/***/ function(module, exports) {
-
-	module.exports = require("fs");
 
 /***/ }
 /******/ ])));

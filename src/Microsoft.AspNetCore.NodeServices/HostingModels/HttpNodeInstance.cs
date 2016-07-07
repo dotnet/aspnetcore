@@ -16,9 +16,6 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
     /// port number is specified as a constructor parameter), and signals which port was selected using the same
     /// input/output-based mechanism that the base class uses to determine when the child process is ready to
     /// accept RPC invocations.
-    ///
-    /// TODO: Remove the file-watching logic from here and centralise it in OutOfProcessNodeInstance, implementing
-    /// the actual watching in .NET code (not Node), for consistency across platforms.
     /// </summary>
     /// <seealso cref="Microsoft.AspNetCore.NodeServices.HostingModels.OutOfProcessNodeInstance" />
     internal class HttpNodeInstance : OutOfProcessNodeInstance
@@ -35,26 +32,21 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private bool _disposed;
         private int _portNumber;
 
-        public HttpNodeInstance(string projectPath, int port = 0, string[] watchFileExtensions = null)
+        public HttpNodeInstance(string projectPath, string[] watchFileExtensions, int port = 0)
             : base(
                 EmbeddedResourceReader.Read(
                     typeof(HttpNodeInstance),
                     "/Content/Node/entrypoint-http.js"),
                 projectPath,
-                MakeCommandLineOptions(port, watchFileExtensions))
+                watchFileExtensions,
+                MakeCommandLineOptions(port))
         {
             _client = new HttpClient();
 		}
 
-        private static string MakeCommandLineOptions(int port, string[] watchFileExtensions)
+        private static string MakeCommandLineOptions(int port)
         {
-            var result = "--port " + port;
-            if (watchFileExtensions != null && watchFileExtensions.Length > 0)
-            {
-                result += " --watch " + string.Join(",", watchFileExtensions);
-            }
-
-            return result;
+            return $"--port {port}";
         }
 
         protected override async Task<T> InvokeExportAsync<T>(NodeInvocationInfo invocationInfo)

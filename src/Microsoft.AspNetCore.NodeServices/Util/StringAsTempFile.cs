@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.NodeServices
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects).
+                    // Would dispose managed state here, if there was any
                 }
 
                 File.Delete(FileName);

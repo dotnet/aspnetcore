@@ -3,16 +3,10 @@
 import * as http from 'http';
 import * as path from 'path';
 import { parseArgs } from './Util/ArgsUtil';
-import { autoQuitOnFileChange } from './Util/AutoQuit';
 
 // Webpack doesn't support dynamic requires for files not present at compile time, so grab a direct
 // reference to Node's runtime 'require' function.
 const dynamicRequire: (name: string) => any = eval('require');
-
-const parsedArgs = parseArgs(process.argv);
-if (parsedArgs.watch) {
-    autoQuitOnFileChange(process.cwd(), parsedArgs.watch.split(','));
-}
 
 const server = http.createServer((req, res) => {
     readRequestBodyAsJson(req, bodyJson => {
@@ -68,6 +62,7 @@ const server = http.createServer((req, res) => {
     });
 });
 
+const parsedArgs = parseArgs(process.argv);
 const requestedPortOrZero = parsedArgs.port || 0; // 0 means 'let the OS decide'
 server.listen(requestedPortOrZero, 'localhost', function () {
     // Signal to HttpNodeHost which port it should make its HTTP connections on
