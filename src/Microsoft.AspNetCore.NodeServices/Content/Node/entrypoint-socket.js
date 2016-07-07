@@ -95,7 +95,10 @@
 	        var ext = path.extname(filename);
 	        if (extensions.indexOf(ext) >= 0) {
 	            console.log('Restarting due to file change: ' + filename);
-	            process.exit(0);
+	            // Temporarily, the file-watching logic is in Node, so we signal it's time to restart by
+	            // sending the following message back to .NET. Soon the file-watching logic will move over
+	            // to the .NET side, and this whole file can be removed.
+	            console.log('[Microsoft.AspNetCore.NodeServices:Restart]');
 	        }
 	    });
 	}

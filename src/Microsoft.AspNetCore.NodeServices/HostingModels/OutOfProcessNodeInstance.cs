@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
     public abstract class OutOfProcessNodeInstance : INodeInstance
     {
         private const string ConnectionEstablishedMessage = "[Microsoft.AspNetCore.NodeServices:Listening]";
+        private const string NeedsRestartMessage = "[Microsoft.AspNetCore.NodeServices:Restart]";
         private readonly TaskCompletionSource<object> _connectionIsReadySource = new TaskCompletionSource<object>();
         private bool _disposed;
         private readonly StringAsTempFile _entryPointScript;
@@ -127,6 +128,13 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                 {
                     _connectionIsReadySource.SetResult(null);
                     initializationIsCompleted = true;
+                }
+                else if (evt.Data == NeedsRestartMessage)
+                {
+                    // Temporarily, the file-watching logic is in Node, so look out for the
+                    // signal that we need to restart. This can be removed once the file-watching
+                    // logic is moved over to the .NET side.
+                    Dispose();
                 }
                 else if (evt.Data != null)
                 {
