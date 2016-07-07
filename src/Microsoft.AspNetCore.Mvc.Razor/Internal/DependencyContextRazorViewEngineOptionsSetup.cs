@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Options;
+using DependencyContextOptions = Microsoft.Extensions.DependencyModel.CompilationOptions;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
@@ -17,27 +18,46 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     /// Sets up compilation and parse option default options for <see cref="RazorViewEngineOptions"/> using
     /// <see cref="DependencyContext"/>
     /// </summary>
-    public class DependencyContextRazorViewEngineOptionsSetup : ConfigureOptions<RazorViewEngineOptions>
+    public class DependencyContextRazorViewEngineOptionsSetup : IConfigureOptions<RazorViewEngineOptions>
     {
+        private readonly IHostingEnvironment _hostingEnvironment;
+
         /// <summary>
         /// Initializes a new instance of <see cref="DependencyContextRazorViewEngineOptionsSetup"/>.
         /// </summary>
         public DependencyContextRazorViewEngineOptionsSetup(IHostingEnvironment hostingEnvironment)
-            : base(options => ConfigureRazor(options, hostingEnvironment))
         {
+            _hostingEnvironment = hostingEnvironment;
         }
 
-        private static void ConfigureRazor(RazorViewEngineOptions options, IHostingEnvironment hostingEnvironment)
+        /// <inheritdoc />
+        public void Configure(RazorViewEngineOptions options)
         {
-            var applicationAssembly = Assembly.Load(new AssemblyName(hostingEnvironment.ApplicationName));
-            var dependencyContext = DependencyContext.Load(applicationAssembly);
-            var compilationOptions = dependencyContext?.CompilationOptions ?? Extensions.DependencyModel.CompilationOptions.Default;
+            var compilationOptions = GetCompilationOptions();
 
             SetParseOptions(options, compilationOptions);
             SetCompilationOptions(options, compilationOptions);
         }
 
-        private static void SetCompilationOptions(RazorViewEngineOptions options, Extensions.DependencyModel.CompilationOptions compilationOptions)
+        // Internal for unit testing.
+        protected internal virtual DependencyContextOptions GetCompilationOptions()
+        {
+            if (!string.IsNullOrEmpty(_hostingEnvironment.ApplicationName))
+            {
+                var applicationAssembly = Assembly.Load(new AssemblyName(_hostingEnvironment.ApplicationName));
+                var dependencyContext = DependencyContext.Load(applicationAssembly);
+                if (dependencyContext?.CompilationOptions != null)
+                {
+                    return dependencyContext.CompilationOptions;
+                }
+            }
+
+            return DependencyContextOptions.Default;
+        }
+
+        private static void SetCompilationOptions(
+            RazorViewEngineOptions options,
+            DependencyContextOptions compilationOptions)
         {
             var roslynOptions = options.CompilationOptions;
 
@@ -57,17 +77,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             if (compilationOptions.Optimize.HasValue)
             {
-                var optimizationLevel = compilationOptions.Optimize.Value
-                    ? OptimizationLevel.Debug
-                    : OptimizationLevel.Release;
+                var optimizationLevel = compilationOptions.Optimize.Value ?
+                    OptimizationLevel.Release :
+                    OptimizationLevel.Debug;
                 roslynOptions = roslynOptions.WithOptimizationLevel(optimizationLevel);
             }
 
             if (compilationOptions.WarningsAsErrors.HasValue)
             {
-                var reportDiagnostic = compilationOptions.WarningsAsErrors.Value
-                    ? ReportDiagnostic.Error
-                    : ReportDiagnostic.Default;
+                var reportDiagnostic = compilationOptions.WarningsAsErrors.Value ?
+                    ReportDiagnostic.Error :
+                    ReportDiagnostic.Default;
                 roslynOptions = roslynOptions.WithGeneralDiagnosticOption(reportDiagnostic);
             }
 
@@ -76,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         private static void SetParseOptions(
             RazorViewEngineOptions options,
-            Extensions.DependencyModel.CompilationOptions compilationOptions)
+            DependencyContextOptions compilationOptions)
         {
             var parseOptions = options.ParseOptions;
             parseOptions = parseOptions.WithPreprocessorSymbols(

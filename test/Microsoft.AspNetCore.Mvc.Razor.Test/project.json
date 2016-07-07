@@ -10,7 +10,10 @@
         "../Microsoft.AspNetCore.Mvc.Razor.Host.Test/TestFileTrigger.cs",
         "../Microsoft.AspNetCore.Mvc.ViewFeatures.Test/Internal/TestViewBufferScope.cs"
       ]
-    }
+    },
+    "define": [
+      "SOME_TEST_DEFINE"
+    ]
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
