@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private bool _disposed;
         private readonly StringAsTempFile _entryPointScript;
         private readonly Process _nodeProcess;
+        private bool _nodeProcessNeedsRestart;
 
         public OutOfProcessNodeInstance(string entryPointScript, string projectPath, string commandLineArguments = null)
         {
@@ -33,15 +34,18 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
         public async Task<T> InvokeExportAsync<T>(string moduleName, string exportNameOrNull, params object[] args)
         {
-            // Wait until the connection is established. This will throw if the connection fails to initialize.
-            await _connectionIsReadySource.Task;
-
-            if (_nodeProcess.HasExited)
+            if (_nodeProcess.HasExited || _nodeProcessNeedsRestart)
             {
                 // This special kind of exception triggers a transparent retry - NodeServicesImpl will launch
                 // a new Node instance and pass the invocation to that one instead.
-                throw new NodeInvocationException("The Node process has exited", null, nodeInstanceUnavailable: true);
+                var message = _nodeProcess.HasExited
+                    ? "The Node process has exited"
+                    : "The Node process needs to restart";
+                throw new NodeInvocationException(message, null, nodeInstanceUnavailable: true);
             }
+
+            // Wait until the connection is established. This will throw if the connection fails to initialize.
+            await _connectionIsReadySource.Task;
 
             return await InvokeExportAsync<T>(new NodeInvocationInfo
             {
@@ -115,7 +119,17 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             startInfo.Environment["NODE_PATH"] = nodePathValue;
 #endif
 
-            return Process.Start(startInfo);
+            var process = Process.Start(startInfo);
+
+            // On Mac at least, a killed child process is left open as a zombie until the parent
+            // captures its exit code. We don't need the exit code for this process, and don't want
+            // to use process.WaitForExit() explicitly (we'd have to block the thread until it really
+            // has exited), but we don't want to leave zombies lying around either. It's sufficient
+            // to use process.EnableRaisingEvents so that .NET will grab the exit code and let the
+            // zombie be cleaned away without having to block our thread.
+            process.EnableRaisingEvents = true;
+
+            return process;
         }
 
         private void ConnectToInputOutputStreams()
@@ -134,7 +148,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                     // Temporarily, the file-watching logic is in Node, so look out for the
                     // signal that we need to restart. This can be removed once the file-watching
                     // logic is moved over to the .NET side.
-                    Dispose();
+                    _nodeProcessNeedsRestart = true;
                 }
                 else if (evt.Data != null)
                 {
