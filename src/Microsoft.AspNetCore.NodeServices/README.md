@@ -184,7 +184,7 @@ var nodeServices = Configuration.CreateNodeServices(new NodeServicesOptions {
 
 If you create a `NodeServices` instance this way, you can also dispose it (call `nodeServiceInstance.Dispose();`) and it will shut down the associated Node instance. But because these instances are expensive to create, you should whenever possible retain and reuse your `NodeServices` object. They are thread-safe - you can call `nodeServiceInstance.InvokeAsync<T>(...)` simultaneously from multiple threads.
 
-### Invoke&lt;T&gt;
+### InvokeAsync&lt;T&gt;
 
 **Signature:**
 
@@ -264,7 +264,7 @@ There's a working image resizing example following this approach [here](https://
  * A JSON-serializable .NET type, if your JavaScript code uses the `callback(error, result)` pattern to return an object, as in example 1 above
  * Or, the type `System.IO.Stream`, if your JavaScript code writes data to the `result.stream` object (which is a [Node `Duplex` stream](https://nodejs.org/api/stream.html#stream_class_stream_duplex)), as in example 2 above
 
-### InvokeExport&lt;T&gt;
+### InvokeExportAsync&lt;T&gt;
 
 **Signature**
 
