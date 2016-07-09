@@ -33,6 +33,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         void ConnectionDisconnectedWrite(string connectionId, int count, Exception ex);
 
+        void ConnectionHeadResponseBodyWrite(string connectionId, int count);
+
         void ConnectionBadRequest(string connectionId, BadHttpRequestException ex);
 
         void NotAllConnectionsClosedGracefully();

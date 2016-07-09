@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Threading;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
@@ -1259,6 +1260,229 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 requestProcessingTask.Wait();
             }
+        }
+
+        [Fact]
+        public void FlushSetsTransferEncodingSetForUnknownLengthBodyResponse()
+        {
+            // Arrange
+            var serviceContext = new ServiceContext
+            {
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerOptions = new KestrelServerOptions(),
+                Log = new TestKestrelTrace()
+            };
+            var listenerContext = new ListenerContext(serviceContext)
+            {
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+            };
+            var connectionContext = new ConnectionContext(listenerContext)
+            {
+                SocketOutput = new MockSocketOuptut(),
+            };
+            var frame = new TestFrameProtectedMembers<object>(application: null, context: connectionContext);
+            frame.InitializeHeaders();
+            frame.KeepAlive = true;
+            frame.HttpVersion = "HTTP/1.1";
+
+            // Act
+            frame.Flush();
+
+            // Assert
+            Assert.True(frame.HasResponseStarted);
+            Assert.True(frame.ResponseHeaders.ContainsKey("Transfer-Encoding"));
+        }
+
+        [Fact]
+        public void FlushDoesNotSetTransferEncodingSetForNoBodyResponse()
+        {
+            // Arrange
+            var serviceContext = new ServiceContext
+            {
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerOptions = new KestrelServerOptions(),
+                Log = new TestKestrelTrace()
+            };
+            var listenerContext = new ListenerContext(serviceContext)
+            {
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+            };
+            var connectionContext = new ConnectionContext(listenerContext)
+            {
+                SocketOutput = new MockSocketOuptut(),
+            };
+            var frame = new TestFrameProtectedMembers<object>(application: null, context: connectionContext);
+            frame.InitializeHeaders();
+            frame.KeepAlive = true;
+            frame.HttpVersion = "HTTP/1.1";
+            ((IHttpResponseFeature)frame).StatusCode = 304;
+
+            // Act
+            frame.Flush();
+
+            // Assert
+            Assert.True(frame.HasResponseStarted);
+            Assert.False(frame.ResponseHeaders.ContainsKey("Transfer-Encoding"));
+        }
+
+        [Fact]
+        public void FlushDoesNotSetTransferEncodingSetForHeadResponse()
+        {
+            // Arrange
+            var serviceContext = new ServiceContext
+            {
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerOptions = new KestrelServerOptions(),
+                Log = new TestKestrelTrace()
+            };
+            var listenerContext = new ListenerContext(serviceContext)
+            {
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+            };
+            var connectionContext = new ConnectionContext(listenerContext)
+            {
+                SocketOutput = new MockSocketOuptut(),
+            };
+            var frame = new TestFrameProtectedMembers<object>(application: null, context: connectionContext);
+            frame.InitializeHeaders();
+            frame.KeepAlive = true;
+            frame.HttpVersion = "HTTP/1.1";
+            ((IHttpRequestFeature)frame).Method = "HEAD";
+
+            // Act
+            frame.Flush();
+
+            // Assert
+            Assert.True(frame.HasResponseStarted);
+            Assert.False(frame.ResponseHeaders.ContainsKey("Transfer-Encoding"));
+        }
+
+        [Fact]
+        public void WriteThrowsForNoBodyResponse()
+        {
+            // Arrange
+            var serviceContext = new ServiceContext
+            {
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerOptions = new KestrelServerOptions(),
+                Log = new TestKestrelTrace()
+            };
+            var listenerContext = new ListenerContext(serviceContext)
+            {
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+            };
+            var connectionContext = new ConnectionContext(listenerContext)
+            {
+                SocketOutput = new MockSocketOuptut(),
+            };
+            var frame = new TestFrameProtectedMembers<object>(application: null, context: connectionContext);
+            frame.InitializeHeaders();
+            frame.KeepAlive = true;
+            frame.HttpVersion = "HTTP/1.1";
+            ((IHttpResponseFeature)frame).StatusCode = 304;
+
+            // Assert
+            frame.Flush(); // Does not throw
+
+            Assert.Throws<InvalidOperationException>(() => frame.Write(new ArraySegment<byte>(new byte[1])));
+            Assert.ThrowsAsync<InvalidOperationException>(() => frame.WriteAsync(new ArraySegment<byte>(new byte[1]), default(CancellationToken)));
+
+            frame.Flush(); // Does not throw
+        }
+
+        [Fact]
+        public void WriteDoesNotThrowForHeadResponse()
+        {
+            // Arrange
+            var serviceContext = new ServiceContext
+            {
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerOptions = new KestrelServerOptions(),
+                Log = new TestKestrelTrace()
+            };
+            var listenerContext = new ListenerContext(serviceContext)
+            {
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+            };
+            var connectionContext = new ConnectionContext(listenerContext)
+            {
+                SocketOutput = new MockSocketOuptut(),
+            };
+            var frame = new TestFrameProtectedMembers<object>(application: null, context: connectionContext);
+            frame.InitializeHeaders();
+            frame.KeepAlive = true;
+            frame.HttpVersion = "HTTP/1.1";
+            ((IHttpRequestFeature)frame).Method = "HEAD";
+
+            // Assert
+            frame.Flush(); // Does not throw
+
+            frame.Write(new ArraySegment<byte>(new byte[1]));
+
+            frame.Flush(); // Does not throw
+        }
+
+
+        [Fact]
+        public void ManuallySettingTransferEncodingThrowsForHeadResponse()
+        {
+            // Arrange
+            var serviceContext = new ServiceContext
+            {
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerOptions = new KestrelServerOptions(),
+                Log = new TestKestrelTrace()
+            };
+            var listenerContext = new ListenerContext(serviceContext)
+            {
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+            };
+            var connectionContext = new ConnectionContext(listenerContext)
+            {
+                SocketOutput = new MockSocketOuptut(),
+            };
+            var frame = new TestFrameProtectedMembers<object>(application: null, context: connectionContext);
+            frame.InitializeHeaders();
+            frame.KeepAlive = true;
+            frame.HttpVersion = "HTTP/1.1";
+            ((IHttpRequestFeature)frame).Method = "HEAD";
+
+            //Act
+            frame.ResponseHeaders.Add("Transfer-Encoding", "chunked");
+
+            // Assert
+            Assert.Throws<InvalidOperationException>(() => frame.Flush());
+        }
+
+        [Fact]
+        public void ManuallySettingTransferEncodingThrowsForNoBodyResponse()
+        {
+            // Arrange
+            var serviceContext = new ServiceContext
+            {
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerOptions = new KestrelServerOptions(),
+                Log = new TestKestrelTrace()
+            };
+            var listenerContext = new ListenerContext(serviceContext)
+            {
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+            };
+            var connectionContext = new ConnectionContext(listenerContext)
+            {
+                SocketOutput = new MockSocketOuptut(),
+            };
+            var frame = new TestFrameProtectedMembers<object>(application: null, context: connectionContext);
+            frame.InitializeHeaders();
+            frame.KeepAlive = true;
+            frame.HttpVersion = "HTTP/1.1";
+            ((IHttpResponseFeature)frame).StatusCode = 304;
+
+            //Act
+            frame.ResponseHeaders.Add("Transfer-Encoding", "chunked");
+
+            // Assert
+            Assert.Throws<InvalidOperationException>(() => frame.Flush());
         }
     }
 }

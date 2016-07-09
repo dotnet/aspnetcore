@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 if (_isReadOnly)
                 {
-                    ThrowHeadersReadOnlyException();
+                    BadHttpResponse.ThrowException(ResponseRejectionReasons.HeadersReadonlyResponseStarted);
                 }
                 SetValueFast(key, value);
             }
@@ -46,11 +46,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 ((IHeaderDictionary)this)[key] = value;
             }
-        }
-
-        protected void ThrowHeadersReadOnlyException()
-        {
-            throw new InvalidOperationException("Headers are read-only, response has already started.");
         }
 
         protected void ThrowArgumentException()
@@ -144,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             if (_isReadOnly)
             {
-                ThrowHeadersReadOnlyException();
+                BadHttpResponse.ThrowException(ResponseRejectionReasons.HeadersReadonlyResponseStarted);
             }
             AddValueFast(key, value);
         }
@@ -153,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             if (_isReadOnly)
             {
-                ThrowHeadersReadOnlyException();
+                BadHttpResponse.ThrowException(ResponseRejectionReasons.HeadersReadonlyResponseStarted);
             }
             ClearFast();
         }
@@ -200,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             if (_isReadOnly)
             {
-                ThrowHeadersReadOnlyException();
+                BadHttpResponse.ThrowException(ResponseRejectionReasons.HeadersReadonlyResponseStarted);
             }
             return RemoveFast(key);
         }
