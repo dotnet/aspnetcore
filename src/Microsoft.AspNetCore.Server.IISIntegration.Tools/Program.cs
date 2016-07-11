@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.Tools
             var app = new CommandLineApplication
             {
                 Name = "dotnet publish-iis",
-                FullName = "Asp.Net Core IIS Publisher",
-                Description = "IIS Publisher for the Asp.Net Core web applications",
+                FullName = "ASP.NET Core IIS Publisher",
+                Description = "IIS Publisher for ASP.NET Core applications",
             };
             app.HelpOption("-h|--help");
 
