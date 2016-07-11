@@ -23,7 +23,7 @@
     "aspnet-prerendering": "^1.0.2",
     "aspnet-webpack": "^1.0.2",
     "babel-core": "^6.5.2",
-    "domain-task": "^1.0.0",
+    "domain-task": "^2.0.0",
     "react": "^15.0.1",
     "react-dom": "^15.0.1",
     "react-redux": "^4.4.4",

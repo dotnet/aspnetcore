@@ -1,4 +1,4 @@
-import { fetch } from 'domain-task/fetch';
+import { fetch, addTask } from 'domain-task';
 import { typeName, isActionType, Action, Reducer } from 'redux-typed';
 import { ActionCreator } from './';
 import { Album } from './FeaturedAlbums';
@@ -39,7 +39,7 @@ export const actionCreators = {
     requestGenreDetails: (genreId: number): ActionCreator => (dispatch, getState) => {
         // Only load if it's not already loaded (or currently being loaded)
         if (genreId !== getState().genreDetails.requestedGenreId) {
-            fetch(`/api/genres/${ genreId }/albums`)
+            let fetchTask = fetch(`/api/genres/${ genreId }/albums`)
                 .then(results => results.json())
                 .then(albums => {
                     // Only replace state if it's still the most recent request
@@ -48,6 +48,7 @@ export const actionCreators = {
                     }
                 });
 
+            addTask(fetchTask); // Ensure server-side prerendering waits for this to complete
             dispatch(new RequestGenreDetails(genreId));
         }
     }

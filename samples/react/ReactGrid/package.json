@@ -4,7 +4,7 @@
   "dependencies": {
     "babel-core": "^6.4.5",
     "bootstrap": "^3.3.5",
-    "domain-task": "^1.0.0",
+    "domain-task": "^2.0.0",
     "formsy-react": "^0.17.0",
     "formsy-react-components": "^0.6.3",
     "griddle-react": "^0.3.1",

@@ -1,4 +1,4 @@
-import { fetch } from 'domain-task/fetch';
+import { fetch, addTask } from 'domain-task';
 import { typeName, isActionType, Action, Reducer } from 'redux-typed';
 import { ActionCreator } from './';
 
@@ -39,10 +39,11 @@ class ReceiveFeaturedAlbums extends Action {
 export const actionCreators = {
     requestFeaturedAlbums: (): ActionCreator => (dispatch, getState) => {
         if (!getState().featuredAlbums.isLoaded) {
-            fetch('/api/albums/mostPopular')
+            let fetchTask = fetch('/api/albums/mostPopular')
                 .then(results => results.json())
                 .then(albums => dispatch(new ReceiveFeaturedAlbums(albums)));
 
+            addTask(fetchTask); // Ensure server-side prerendering waits for this to complete
             return dispatch(new RequestFeaturedAlbums());
         }
     }

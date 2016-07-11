@@ -25,7 +25,7 @@
     "aspnet-webpack-react": "^1.0.1",
     "bootstrap": "^3.3.6",
     "domain-context": "^0.5.1",
-    "domain-task": "^1.0.0",
+    "domain-task": "^2.0.0",
     "history": "^2.0.0",
     "isomorphic-fetch": "^2.2.1",
     "memory-fs": "^0.3.0",

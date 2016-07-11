@@ -1,4 +1,4 @@
-import { fetch } from 'domain-task/fetch';
+import { fetch, addTask } from 'domain-task';
 import { typeName, isActionType, Action, Reducer } from 'redux-typed';
 import { ActionCreator } from './';
 
@@ -34,9 +34,10 @@ class ReceiveGenresList extends Action {
 export const actionCreators = {
     requestGenresList: (): ActionCreator => (dispatch, getState) => {
         if (!getState().genreList.isLoaded) {
-            fetch('/api/genres')
+            let fetchTask = fetch('/api/genres')
                 .then(results => results.json())
                 .then(genres => dispatch(new ReceiveGenresList(genres)));
+            addTask(fetchTask); // Ensure server-side prerendering waits for this to complete
         }
     }
 };

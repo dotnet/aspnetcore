@@ -1,4 +1,4 @@
-import { fetch } from 'domain-task/fetch';
+import { fetch, addTask } from 'domain-task';
 import { typeName, isActionType, Action, Reducer } from 'redux-typed';
 import { ActionCreator } from './';
 
@@ -45,12 +45,13 @@ export const actionCreators = {
     requestWeatherForecasts: (startDateIndex: number): ActionCreator => (dispatch, getState) => {
         // Only load data if it's something we don't already have (and are not already loading)
         if (startDateIndex !== getState().weatherForecasts.startDateIndex) {
-            fetch(`/api/SampleData/WeatherForecasts?startDateIndex=${ startDateIndex }`)
+            let fetchTask = fetch(`/api/SampleData/WeatherForecasts?startDateIndex=${ startDateIndex }`)
                 .then(response => response.json())
                 .then((data: WeatherForecast[]) => {
                     dispatch(new ReceiveWeatherForecasts(startDateIndex, data));
                 });
 
+            addTask(fetchTask); // Ensure server-side prerendering waits for this to complete
             dispatch(new RequestWeatherForecasts(startDateIndex));
         }
     }
