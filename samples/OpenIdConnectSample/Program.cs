@@ -17,6 +17,7 @@ namespace OpenIdConnectSample
                     var serverCertificate = LoadCertificate();
                     options.UseHttps(serverCertificate);
                 })
+                .UseUrls("https://localhost:44318")
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()

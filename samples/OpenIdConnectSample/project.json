@@ -33,7 +33,8 @@
   },
   "userSecretsId": "aspnet5-OpenIdConnectSample-20151210110318",
   "tools": {
-    "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.0.0-*"
+    "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.0.0-*",
+    "Microsoft.Extensions.SecretManager.Tools": "1.0.0-*"
   },
   "scripts": {
     "postpublish": "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%"

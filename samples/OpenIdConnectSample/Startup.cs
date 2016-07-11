@@ -86,6 +86,7 @@ namespace OpenIdConnectSample
                     await context.Response.WriteAsync($"</body></html>");
                     return;
                 }
+
                 if (context.Request.Path.Equals("/signout"))
                 {
                     await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -95,6 +96,7 @@ namespace OpenIdConnectSample
                     await context.Response.WriteAsync($"</body></html>");
                     return;
                 }
+
                 if (context.Request.Path.Equals("/signout-remote"))
                 {
                     // Redirects
@@ -105,6 +107,7 @@ namespace OpenIdConnectSample
                     });
                     return;
                 }
+
                 if (context.Request.Path.Equals("/Account/AccessDenied"))
                 {
                     await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
