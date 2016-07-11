@@ -1,14 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Buffers;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -20,6 +23,8 @@ namespace Microsoft.AspNetCore.Mvc
 {
     public class ContentResultTest
     {
+        private const int DefaultCharacterChunkSize = HttpResponseStreamWriter.DefaultBufferSize;
+
         [Fact]
         public async Task ContentResult_Response_NullContent_SetsContentTypeAndEncoding()
         {
@@ -137,6 +142,110 @@ namespace Microsoft.AspNetCore.Mvc
             var finalResponseContentType = httpContext.Response.ContentType;
             Assert.Equal(expectedContentType, finalResponseContentType);
             Assert.Equal(expectedContentData, memoryStream.ToArray());
+            Assert.Equal(expectedContentData.Length, httpContext.Response.ContentLength);
+        }
+
+        public static TheoryData<string, string> ContentResult_WritesDataCorrectly_ForDifferentContentSizesData
+        {
+            get
+            {
+                // content, contentType
+                return new TheoryData<string, string>
+                {
+                    {  string.Empty, "text/plain; charset=utf-8" },
+                    {  new string('a', DefaultCharacterChunkSize), "text/plain; charset=utf-8" },
+                    {  new string('a', DefaultCharacterChunkSize - 1), "text/plain; charset=utf-8" },
+                    {  new string('a', DefaultCharacterChunkSize + 1), "text/plain; charset=utf-8" },
+                    {  new string('a', DefaultCharacterChunkSize - 2), "text/plain; charset=utf-8" },
+                    {  new string('a', DefaultCharacterChunkSize + 2), "text/plain; charset=utf-8" },
+                    {  new string('a', DefaultCharacterChunkSize - 3), "text/plain; charset=utf-8" },
+                    {  new string('a', DefaultCharacterChunkSize + 3), "text/plain; charset=utf-8" },
+                    {  new string('a', DefaultCharacterChunkSize * 2), "text/plain; charset=utf-8" },
+                    {  new string('a', DefaultCharacterChunkSize * 3), "text/plain; charset=utf-8" },
+                    {  new string('a', (DefaultCharacterChunkSize * 2) - 1), "text/plain; charset=utf-8" },
+                    {  new string('a', (DefaultCharacterChunkSize * 2) - 2), "text/plain; charset=utf-8" },
+                    {  new string('a', (DefaultCharacterChunkSize * 2) - 3), "text/plain; charset=utf-8" },
+                    {  new string('a', (DefaultCharacterChunkSize * 2) + 1), "text/plain; charset=utf-8" },
+                    {  new string('a', (DefaultCharacterChunkSize * 2) + 2), "text/plain; charset=utf-8" },
+                    {  new string('a', (DefaultCharacterChunkSize * 2) + 3), "text/plain; charset=utf-8" },
+                    {  new string('a', (DefaultCharacterChunkSize * 3) - 1), "text/plain; charset=utf-8" },
+                    {  new string('a', (DefaultCharacterChunkSize * 3) - 2), "text/plain; charset=utf-8" },
+                    {  new string('a', (DefaultCharacterChunkSize * 3) - 3), "text/plain; charset=utf-8" },
+                    {  new string('a', (DefaultCharacterChunkSize * 3) + 1), "text/plain; charset=utf-8" },
+                    {  new string('a', (DefaultCharacterChunkSize * 3) + 2), "text/plain; charset=utf-8" },
+                    {  new string('a', (DefaultCharacterChunkSize * 3) + 3), "text/plain; charset=utf-8" },
+
+                    {  new string('色', DefaultCharacterChunkSize), "text/plain; charset=utf-16" },
+                    {  new string('色', DefaultCharacterChunkSize - 1), "text/plain; charset=utf-16" },
+                    {  new string('色', DefaultCharacterChunkSize + 1), "text/plain; charset=utf-16" },
+                    {  new string('色', DefaultCharacterChunkSize - 2), "text/plain; charset=utf-16" },
+                    {  new string('色', DefaultCharacterChunkSize + 2), "text/plain; charset=utf-16" },
+                    {  new string('色', DefaultCharacterChunkSize - 3), "text/plain; charset=utf-16" },
+                    {  new string('色', DefaultCharacterChunkSize + 3), "text/plain; charset=utf-16" },
+                    {  new string('色', DefaultCharacterChunkSize * 2), "text/plain; charset=utf-16" },
+                    {  new string('色', DefaultCharacterChunkSize * 3), "text/plain; charset=utf-16" },
+                    {  new string('色', (DefaultCharacterChunkSize * 2) - 1), "text/plain; charset=utf-16" },
+                    {  new string('色', (DefaultCharacterChunkSize * 2) - 2), "text/plain; charset=utf-16" },
+                    {  new string('色', (DefaultCharacterChunkSize * 2) - 3), "text/plain; charset=utf-16" },
+                    {  new string('色', (DefaultCharacterChunkSize * 2) + 1), "text/plain; charset=utf-16" },
+                    {  new string('色', (DefaultCharacterChunkSize * 2) + 2), "text/plain; charset=utf-16" },
+                    {  new string('色', (DefaultCharacterChunkSize * 2) + 3), "text/plain; charset=utf-16" },
+                    {  new string('色', (DefaultCharacterChunkSize * 3) - 1), "text/plain; charset=utf-16" },
+                    {  new string('色', (DefaultCharacterChunkSize * 3) - 2), "text/plain; charset=utf-16" },
+                    {  new string('色', (DefaultCharacterChunkSize * 3) - 3), "text/plain; charset=utf-16" },
+                    {  new string('色', (DefaultCharacterChunkSize * 3) + 1), "text/plain; charset=utf-16" },
+                    {  new string('色', (DefaultCharacterChunkSize * 3) + 2), "text/plain; charset=utf-16" },
+                    {  new string('色', (DefaultCharacterChunkSize * 3) + 3), "text/plain; charset=utf-16" },
+
+                    {  new string('色', DefaultCharacterChunkSize), "text/plain; charset=utf-32" },
+                    {  new string('色', DefaultCharacterChunkSize - 1), "text/plain; charset=utf-32" },
+                    {  new string('色', DefaultCharacterChunkSize + 1), "text/plain; charset=utf-32" },
+                    {  new string('色', DefaultCharacterChunkSize - 2), "text/plain; charset=utf-32" },
+                    {  new string('色', DefaultCharacterChunkSize + 2), "text/plain; charset=utf-32" },
+                    {  new string('色', DefaultCharacterChunkSize - 3), "text/plain; charset=utf-32" },
+                    {  new string('色', DefaultCharacterChunkSize + 3), "text/plain; charset=utf-32" },
+                    {  new string('色', DefaultCharacterChunkSize * 2), "text/plain; charset=utf-32" },
+                    {  new string('色', DefaultCharacterChunkSize * 3), "text/plain; charset=utf-32" },
+                    {  new string('色', (DefaultCharacterChunkSize * 2) - 1), "text/plain; charset=utf-32" },
+                    {  new string('色', (DefaultCharacterChunkSize * 2) - 2), "text/plain; charset=utf-32" },
+                    {  new string('色', (DefaultCharacterChunkSize * 2) - 3), "text/plain; charset=utf-32" },
+                    {  new string('色', (DefaultCharacterChunkSize * 2) + 1), "text/plain; charset=utf-32" },
+                    {  new string('色', (DefaultCharacterChunkSize * 2) + 2), "text/plain; charset=utf-32" },
+                    {  new string('色', (DefaultCharacterChunkSize * 2) + 3), "text/plain; charset=utf-32" },
+                    {  new string('色', (DefaultCharacterChunkSize * 3) - 1), "text/plain; charset=utf-32" },
+                    {  new string('色', (DefaultCharacterChunkSize * 3) - 2), "text/plain; charset=utf-32" },
+                    {  new string('色', (DefaultCharacterChunkSize * 3) - 3), "text/plain; charset=utf-32" },
+                    {  new string('色', (DefaultCharacterChunkSize * 3) + 1), "text/plain; charset=utf-32" },
+                    {  new string('色', (DefaultCharacterChunkSize * 3) + 2), "text/plain; charset=utf-32" },
+                    {  new string('色', (DefaultCharacterChunkSize * 3) + 3), "text/plain; charset=utf-32" },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ContentResult_WritesDataCorrectly_ForDifferentContentSizesData))]
+        public async Task ContentResult_WritesDataCorrectly_ForDifferentContentSizes(string content, string contentType)
+        {
+            // Arrange
+            var contentResult = new ContentResult
+            {
+                Content = content,
+                ContentType = contentType
+            };
+            var httpContext = GetHttpContext();
+            var memoryStream = new MemoryStream();
+            httpContext.Response.Body = memoryStream;
+            var actionContext = GetActionContext(httpContext);
+            var encoding = MediaTypeHeaderValue.Parse(contentType).Encoding;
+
+            // Act
+            await contentResult.ExecuteResultAsync(actionContext);
+
+            // Assert
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            var streamReader = new StreamReader(memoryStream, encoding);
+            var actualContent = await streamReader.ReadToEndAsync();
+            Assert.Equal(content, actualContent);
         }
 
         private static ActionContext GetActionContext(HttpContext httpContext)
@@ -151,8 +260,18 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static IServiceCollection CreateServices(params ViewComponentDescriptor[] descriptors)
         {
+            // An array pool could return a buffer which is greater or equal to the size of the default character
+            // chunk size. Since the tests here depend on a specifc character buffer size to test boundary conditions,
+            // make sure to only return a buffer of that size.
+            var charArrayPool = new Mock<ArrayPool<char>>();
+            charArrayPool
+                .Setup(ap => ap.Rent(DefaultCharacterChunkSize))
+                .Returns(new char[DefaultCharacterChunkSize]);
+
             var services = new ServiceCollection();
-            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddSingleton(new ContentResultExecutor(
+                new Logger<ContentResultExecutor>(NullLoggerFactory.Instance),
+                new MemoryPoolHttpResponseStreamWriterFactory(ArrayPool<byte>.Shared, charArrayPool.Object)));
             return services;
         }
 

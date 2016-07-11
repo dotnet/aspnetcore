@@ -215,6 +215,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<LocalRedirectResultExecutor>();
             services.TryAddSingleton<RedirectToActionResultExecutor>();
             services.TryAddSingleton<RedirectToRouteResultExecutor>();
+            services.TryAddSingleton<ContentResultExecutor>();
 
             //
             // Route Handlers
