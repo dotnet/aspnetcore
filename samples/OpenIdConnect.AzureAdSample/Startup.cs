@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -88,7 +87,7 @@ namespace OpenIdConnect.AzureAdSample
                     {
                         var request = context.HttpContext.Request;
                         var currentUri = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path);
-                        var credential = new ClientCredential(clientId, clientSecret);                                 
+                        var credential = new ClientCredential(clientId, clientSecret);
                         var authContext = new AuthenticationContext(authority, AuthPropertiesTokenCache.ForCodeRedemption(context.Properties));
 
                         var result = await authContext.AcquireTokenByAuthorizationCodeAsync(
