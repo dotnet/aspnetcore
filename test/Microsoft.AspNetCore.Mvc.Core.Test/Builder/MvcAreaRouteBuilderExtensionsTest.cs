@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
-        public void MapAreaRoute_ReplacesValuesForArea()
+        public void MapAreaRoute_DoesNotReplaceValuesForAreaIfAlreadyPresentInConstraintsOrDefaults()
         {
             // Arrange
             var builder = CreateRouteBuilder();
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Builder
                 kvp =>
                 {
                     Assert.Equal(kvp.Key, "area");
-                    Assert.IsType<RegexRouteConstraint>(kvp.Value);
+                    Assert.IsType<IntRouteConstraint>(kvp.Value);
                 });
             Assert.Collection(
                 route.DataTokens.OrderBy(kvp => kvp.Key),
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Builder
                 kvp =>
                 {
                     Assert.Equal(kvp.Key, "area");
-                    Assert.Equal(kvp.Value, "admin");
+                    Assert.Equal(kvp.Value, "Home");
                 });
         }
 
