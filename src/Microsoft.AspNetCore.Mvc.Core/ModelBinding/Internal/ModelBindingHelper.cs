@@ -509,19 +509,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Internal
         {
             var model = bindingContext.Model;
             var modelType = bindingContext.ModelType;
-            var writeable = !bindingContext.ModelMetadata.IsReadOnly;
+
             if (typeof(T).IsAssignableFrom(modelType))
             {
                 // Scalar case. Existing model is not relevant and property must always be set. Will use a List<T>
                 // intermediate and set property to first element, if any.
-                return writeable;
+                return true;
             }
 
             if (modelType == typeof(T[]))
             {
                 // Can't change the length of an existing array or replace it. Will use a List<T> intermediate and set
                 // property to an array created from that.
-                return writeable;
+                return true;
             }
 
             if (!typeof(IEnumerable<T>).IsAssignableFrom(modelType))
@@ -542,12 +542,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Internal
             //   public IEnumerable<T> Property { get; set; } = new T[0];
             if (modelType.IsAssignableFrom(typeof(List<T>)))
             {
-                return writeable;
+                return true;
             }
 
             // Will we be able to activate an instance and use that?
-            return writeable &&
-                modelType.GetTypeInfo().IsClass &&
+            return modelType.GetTypeInfo().IsClass &&
                 !modelType.GetTypeInfo().IsAbstract &&
                 typeof(ICollection<T>).IsAssignableFrom(modelType);
         }

@@ -1412,7 +1412,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [InlineData(nameof(ModelWithReadOnlyAndSpecialCaseProperties.ListProperty))]
         [InlineData(nameof(ModelWithReadOnlyAndSpecialCaseProperties.ScalarProperty))]
         [InlineData(nameof(ModelWithReadOnlyAndSpecialCaseProperties.ScalarPropertyWithValue))]
-        public void CanGetCompatibleCollection_ReturnsFalse_IfReadOnly(string propertyName)
+        public void CanGetCompatibleCollection_ReturnsTrue_IfReadOnly(string propertyName)
         {
             // Arrange
             var bindingContext = GetBindingContextForProperty(propertyName);
@@ -1421,7 +1421,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var result = ModelBindingHelper.CanGetCompatibleCollection<int>(bindingContext);
 
             // Assert
-            Assert.False(result);
+            Assert.True(result);
         }
 
         [Theory]

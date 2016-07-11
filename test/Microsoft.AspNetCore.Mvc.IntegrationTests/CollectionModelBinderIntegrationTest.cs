@@ -744,7 +744,26 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                         typeof(List<string>)
                     },
                     {
+                        typeof(IReadOnlyCollection<string>),
+                        new Dictionary<string, StringValues>
+                        {
+                            { "index", new[] { "low", "high" } },
+                            { "[low]", new[] { "hello" } },
+                            { "[high]", new[] { "world" } },
+                        },
+                        typeof(List<string>)
+                    },
+                    {
                         typeof(IList<string>),
+                        new Dictionary<string, StringValues>
+                        {
+                            { "[0]", new[] { "hello" } },
+                            { "[1]", new[] { "world" } },
+                        },
+                        typeof(List<string>)
+                    },
+                    {
+                        typeof(IReadOnlyList<string>),
                         new Dictionary<string, StringValues>
                         {
                             { "[0]", new[] { "hello" } },

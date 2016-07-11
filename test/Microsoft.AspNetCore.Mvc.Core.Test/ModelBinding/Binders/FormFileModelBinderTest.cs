@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Fact]
-        public async Task FormFileModelBinder_ReturnsFailedResult_ForReadOnlyDestination()
+        public async Task FormFileModelBinder_ReturnsResult_ForReadOnlyDestination()
         {
             // Arrange
             var binder = new FormFileModelBinder();
@@ -217,8 +217,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(bindingContext.Result.IsModelSet);
-            Assert.Null(bindingContext.Result.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
+            Assert.NotNull(bindingContext.Result.Model);
         }
 
         [Fact]

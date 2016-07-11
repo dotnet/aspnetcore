@@ -299,6 +299,62 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Empty(modelState.Keys);
         }
 
+        private class Car1
+        {
+            public string Name { get; set; }
+
+            public FormFileCollection Specs { get; set; }
+        }
+
+        [Fact]
+        public async Task BindProperty_WithData_WithPrefix_GetsBound()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor
+            {
+                Name = "p",
+                BindingInfo = new BindingInfo(),
+                ParameterType = typeof(Car1)
+            };
+
+            var data = "Some Data Is Better Than No Data.";
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.QueryString = QueryString.Create("p.Name", "Accord");
+                    UpdateRequest(request, data, "p.Specs");
+                });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+
+            // ModelBindingResult
+            Assert.True(modelBindingResult.IsModelSet);
+
+            // Model
+            var car = Assert.IsType<Car1>(modelBindingResult.Model);
+            Assert.NotNull(car.Specs);
+            var file = Assert.Single(car.Specs);
+            Assert.Equal("form-data; name=p.Specs; filename=text.txt", file.ContentDisposition);
+            var reader = new StreamReader(file.OpenReadStream());
+            Assert.Equal(data, reader.ReadToEnd());
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+            Assert.Equal(2, modelState.Count);
+
+            var entry = Assert.Single(modelState, e => e.Key == "p.Name").Value;
+            Assert.Equal("Accord", entry.AttemptedValue);
+            Assert.Equal("Accord", entry.RawValue);
+
+            Assert.Single(modelState, e => e.Key == "p.Specs");
+        }
+
         private void UpdateRequest(HttpRequest request, string data, string name)
         {
             const string fileName = "text.txt";

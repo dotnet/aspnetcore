@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -356,6 +357,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             public CustomReadOnlyCollection<Address> Address { get; set; }
         }
 
+        [Fact]
         public async Task TryUpdateModel_ReadOnlyCollectionModel_EmptyPrefix_DoesNotGetBound()
         {
             // Arrange
@@ -371,22 +373,46 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var result = await TryUpdateModelAsync(model, string.Empty, testContext);
 
             // Assert
-            Assert.True(result);
+            Assert.False(result);
 
-            // Model
-            Assert.NotNull(model.Address);
-
-            // Read-only collection should not be updated.
-            Assert.Empty(model.Address);
-
-            // ModelState (data is valid but is not copied into Address).
-            Assert.True(modelState.IsValid);
+            // ModelState
+            Assert.False(modelState.IsValid);
             var entry = Assert.Single(modelState);
             Assert.Equal("Address[0].Street", entry.Key);
             var state = entry.Value;
             Assert.NotNull(state);
-            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+            Assert.Equal(ModelValidationState.Unvalidated, state.ValidationState);
             Assert.Equal("SomeStreet", state.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_ReadOnlyCollectionModel_WithPrefix_DoesNotGetBound()
+        {
+            // Arrange
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
+            });
+
+            var modelState = testContext.ModelState;
+            var model = new Person6();
+
+            // Act
+            var result = await TryUpdateModelAsync(model, "prefix", testContext);
+
+            // Assert
+            Assert.False(result);
+
+            // ModelState
+            Assert.False(modelState.IsValid);
+            var entry = Assert.Single(modelState);
+            Assert.Equal("prefix.Address[0].Street", entry.Key);
+            var state = entry.Value;
+            Assert.NotNull(state);
+            Assert.Equal(ModelValidationState.Unvalidated, state.ValidationState);
+            Assert.Equal("SomeStreet", state.RawValue);
+            Assert.Equal("SomeStreet", state.AttemptedValue);
         }
 
         private class Person4
@@ -484,7 +510,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task TryUpdateModel_NonSettableArrayModel_EmptyPrefix_GetsBound()
+        public async Task TryUpdateModel_NonSettableArrayModel_EmptyPrefix_IsNotBound()
         {
             // Arrange
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
@@ -512,6 +538,99 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Empty(modelState);
         }
 
+        private class Person7
+        {
+            public IEnumerable<Address> Address { get; } = new Address[]
+            {
+                new Address()
+                {
+                     City = "Redmond",
+                     Street = "One Microsoft Way"
+                }
+            };
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_NonSettableIEnumerableModel_EmptyPrefix_IsNotBound()
+        {
+            // Arrange
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
+            });
+
+            var modelState = testContext.ModelState;
+            var model = new Person7();
+
+            // Act
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
+
+            // Assert
+            Assert.True(result);
+
+            // Model
+            Assert.NotNull(model.Address);
+
+            // Arrays should not be updated.
+            Assert.Equal(1, model.Address.Count());
+            Assert.Collection(
+                model.Address,
+                (a) =>
+                {
+                    Assert.Equal("Redmond", a.City);
+                    Assert.Equal("One Microsoft Way", a.Street);
+                });
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+        }
+
+        private class Person8
+        {
+            public ICollection<Address> Address { get; } = new Address[]
+            {
+                new Address()
+                {
+                     City = "Redmond",
+                     Street = "One Microsoft Way"
+                }
+            };
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_NonSettableICollectionModel_EmptyPrefix_IsNotBound()
+        {
+            // Arrange
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
+            });
+
+            var modelState = testContext.ModelState;
+            var model = new Person8();
+
+            // Act
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
+
+            // Assert
+            Assert.True(result);
+
+            // Model
+            Assert.NotNull(model.Address);
+
+            // Arrays should not be updated.
+            Assert.Equal(1, model.Address.Count());
+            Assert.Collection(
+                model.Address,
+                (a) =>
+                {
+                    Assert.Equal("Redmond", a.City);
+                    Assert.Equal("One Microsoft Way", a.Street);
+                });
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+        }
 
         [Fact]
         public async Task TryUpdateModel_ExistingModel_WithPrefix_ValuesGetOverwritten()
@@ -816,39 +935,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
-        }
-
-        public async Task TryUpdateModel_ReadOnlyCollectionModel_WithPrefix_DoesNotGetBound()
-        {
-            // Arrange
-            var testContext = ModelBindingTestHelper.GetTestContext(request =>
-            {
-                request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
-            });
-
-            var modelState = testContext.ModelState;
-            var model = new Person6();
-
-            // Act
-            var result = await TryUpdateModelAsync(model, "prefix", testContext);
-
-            // Assert
-            Assert.True(result);
-
-            // Model
-            Assert.NotNull(model.Address);
-
-            // Read-only collection should not be updated.
-            Assert.Empty(model.Address);
-
-            // ModelState (data is valid but is not copied into Address).
-            Assert.True(modelState.IsValid);
-            var entry = Assert.Single(modelState);
-            Assert.Equal("prefix.Address[0].Street", entry.Key);
-            var state = entry.Value;
-            Assert.NotNull(state);
-            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
-            Assert.Equal("SomeStreet", state.RawValue);
         }
 
         [Fact]

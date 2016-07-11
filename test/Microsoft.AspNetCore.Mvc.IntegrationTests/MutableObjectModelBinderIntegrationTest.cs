@@ -1122,6 +1122,328 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.True(modelState.IsValid);
         }
 
+        // Dictionary property with an IEnumerable<> value type
+        private class Car1
+        {
+            public string Name { get; set; }
+
+            public Dictionary<string, IEnumerable<SpecDoc>> Specs { get; set; }
+        }
+
+        // Dictionary property with an Array value type
+        private class Car2
+        {
+            public string Name { get; set; }
+
+            public Dictionary<string, SpecDoc[]> Specs { get; set; }
+        }
+
+        private class Car3
+        {
+            public string Name { get; set; }
+
+            public IEnumerable<KeyValuePair<string, IEnumerable<SpecDoc>>> Specs { get; set; }
+        }
+
+        private class SpecDoc
+        {
+            public string Name { get; set; }
+        }
+
+        [Fact]
+        public async Task MutableObjectModelBinder_BindsDictionaryProperty_WithIEnumerableComplexTypeValue_Success()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "p",
+                ParameterType = typeof(Car1)
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                var queryString = "?p.Name=Accord"
+                        + "&p.Specs[0].Key=camera_specs"
+                        + "&p.Specs[0].Value[0].Name=camera_spec1.txt"
+                        + "&p.Specs[0].Value[1].Name=camera_spec2.txt"
+                        + "&p.Specs[1].Key=tyre_specs"
+                        + "&p.Specs[1].Value[0].Name=tyre_spec1.txt"
+                        + "&p.Specs[1].Value[1].Name=tyre_spec2.txt";
+                request.QueryString = new QueryString(queryString);
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Car1>(modelBindingResult.Model);
+            Assert.Equal("Accord", model.Name);
+
+            Assert.Collection(
+                model.Specs,
+                (e) =>
+                {
+                    Assert.Equal("camera_specs", e.Key);
+                    Assert.Collection(
+                        e.Value,
+                        (s) =>
+                        {
+                            Assert.Equal("camera_spec1.txt", s.Name);
+                        },
+                        (s) =>
+                        {
+                            Assert.Equal("camera_spec2.txt", s.Name);
+                        });
+                },
+                (e) =>
+                {
+                    Assert.Equal("tyre_specs", e.Key);
+                    Assert.Collection(
+                        e.Value,
+                        (s) =>
+                        {
+                            Assert.Equal("tyre_spec1.txt", s.Name);
+                        },
+                        (s) =>
+                        {
+                            Assert.Equal("tyre_spec2.txt", s.Name);
+                        });
+                });
+
+            Assert.Equal(7, modelState.Count);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "p.Name").Value;
+            Assert.Equal("Accord", entry.AttemptedValue);
+            Assert.Equal("Accord", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[0].Key").Value;
+            Assert.Equal("camera_specs", entry.AttemptedValue);
+            Assert.Equal("camera_specs", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[0].Value[0].Name").Value;
+            Assert.Equal("camera_spec1.txt", entry.AttemptedValue);
+            Assert.Equal("camera_spec1.txt", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[0].Value[1].Name").Value;
+            Assert.Equal("camera_spec2.txt", entry.AttemptedValue);
+            Assert.Equal("camera_spec2.txt", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[1].Key").Value;
+            Assert.Equal("tyre_specs", entry.AttemptedValue);
+            Assert.Equal("tyre_specs", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[1].Value[0].Name").Value;
+            Assert.Equal("tyre_spec1.txt", entry.AttemptedValue);
+            Assert.Equal("tyre_spec1.txt", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[1].Value[1].Name").Value;
+            Assert.Equal("tyre_spec2.txt", entry.AttemptedValue);
+            Assert.Equal("tyre_spec2.txt", entry.RawValue);
+        }
+
+        [Fact]
+        public async Task MutableObjectModelBinder_BindsDictionaryProperty_WithArrayOfComplexTypeValue_Success()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "p",
+                ParameterType = typeof(Car2)
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                var queryString = "?p.Name=Accord"
+                        + "&p.Specs[0].Key=camera_specs"
+                        + "&p.Specs[0].Value[0].Name=camera_spec1.txt"
+                        + "&p.Specs[0].Value[1].Name=camera_spec2.txt"
+                        + "&p.Specs[1].Key=tyre_specs"
+                        + "&p.Specs[1].Value[0].Name=tyre_spec1.txt"
+                        + "&p.Specs[1].Value[1].Name=tyre_spec2.txt";
+                request.QueryString = new QueryString(queryString);
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Car2>(modelBindingResult.Model);
+            Assert.Equal("Accord", model.Name);
+
+            Assert.Collection(
+                model.Specs,
+                (e) =>
+                {
+                    Assert.Equal("camera_specs", e.Key);
+                    Assert.Collection(
+                        e.Value,
+                        (s) =>
+                        {
+                            Assert.Equal("camera_spec1.txt", s.Name);
+                        },
+                        (s) =>
+                        {
+                            Assert.Equal("camera_spec2.txt", s.Name);
+                        });
+                },
+                (e) =>
+                {
+                    Assert.Equal("tyre_specs", e.Key);
+                    Assert.Collection(
+                        e.Value,
+                        (s) =>
+                        {
+                            Assert.Equal("tyre_spec1.txt", s.Name);
+                        },
+                        (s) =>
+                        {
+                            Assert.Equal("tyre_spec2.txt", s.Name);
+                        });
+                });
+
+            Assert.Equal(7, modelState.Count);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "p.Name").Value;
+            Assert.Equal("Accord", entry.AttemptedValue);
+            Assert.Equal("Accord", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[0].Key").Value;
+            Assert.Equal("camera_specs", entry.AttemptedValue);
+            Assert.Equal("camera_specs", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[0].Value[0].Name").Value;
+            Assert.Equal("camera_spec1.txt", entry.AttemptedValue);
+            Assert.Equal("camera_spec1.txt", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[0].Value[1].Name").Value;
+            Assert.Equal("camera_spec2.txt", entry.AttemptedValue);
+            Assert.Equal("camera_spec2.txt", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[1].Key").Value;
+            Assert.Equal("tyre_specs", entry.AttemptedValue);
+            Assert.Equal("tyre_specs", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[1].Value[0].Name").Value;
+            Assert.Equal("tyre_spec1.txt", entry.AttemptedValue);
+            Assert.Equal("tyre_spec1.txt", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[1].Value[1].Name").Value;
+            Assert.Equal("tyre_spec2.txt", entry.AttemptedValue);
+            Assert.Equal("tyre_spec2.txt", entry.RawValue);
+        }
+
+        [Fact]
+        public async Task MutableObjectModelBinder_BindsDictionaryProperty_WithIEnumerableOfKeyValuePair_Success()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "p",
+                ParameterType = typeof(Car3)
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                var queryString = "?p.Name=Accord"
+                        + "&p.Specs[0].Key=camera_specs"
+                        + "&p.Specs[0].Value[0].Name=camera_spec1.txt"
+                        + "&p.Specs[0].Value[1].Name=camera_spec2.txt"
+                        + "&p.Specs[1].Key=tyre_specs"
+                        + "&p.Specs[1].Value[0].Name=tyre_spec1.txt"
+                        + "&p.Specs[1].Value[1].Name=tyre_spec2.txt";
+                request.QueryString = new QueryString(queryString);
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Car3>(modelBindingResult.Model);
+            Assert.Equal("Accord", model.Name);
+
+            Assert.Collection(
+                model.Specs,
+                (e) =>
+                {
+                    Assert.Equal("camera_specs", e.Key);
+                    Assert.Collection(
+                        e.Value,
+                        (s) =>
+                        {
+                            Assert.Equal("camera_spec1.txt", s.Name);
+                        },
+                        (s) =>
+                        {
+                            Assert.Equal("camera_spec2.txt", s.Name);
+                        });
+                },
+                (e) =>
+                {
+                    Assert.Equal("tyre_specs", e.Key);
+                    Assert.Collection(
+                        e.Value,
+                        (s) =>
+                        {
+                            Assert.Equal("tyre_spec1.txt", s.Name);
+                        },
+                        (s) =>
+                        {
+                            Assert.Equal("tyre_spec2.txt", s.Name);
+                        });
+                });
+
+            Assert.Equal(7, modelState.Count);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "p.Name").Value;
+            Assert.Equal("Accord", entry.AttemptedValue);
+            Assert.Equal("Accord", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[0].Key").Value;
+            Assert.Equal("camera_specs", entry.AttemptedValue);
+            Assert.Equal("camera_specs", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[0].Value[0].Name").Value;
+            Assert.Equal("camera_spec1.txt", entry.AttemptedValue);
+            Assert.Equal("camera_spec1.txt", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[0].Value[1].Name").Value;
+            Assert.Equal("camera_spec2.txt", entry.AttemptedValue);
+            Assert.Equal("camera_spec2.txt", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[1].Key").Value;
+            Assert.Equal("tyre_specs", entry.AttemptedValue);
+            Assert.Equal("tyre_specs", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[1].Value[0].Name").Value;
+            Assert.Equal("tyre_spec1.txt", entry.AttemptedValue);
+            Assert.Equal("tyre_spec1.txt", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs[1].Value[1].Name").Value;
+            Assert.Equal("tyre_spec2.txt", entry.AttemptedValue);
+            Assert.Equal("tyre_spec2.txt", entry.RawValue);
+        }
+
         private class Order8
         {
             public string Name { get; set; }
@@ -1292,6 +1614,90 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(0, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
+        }
+
+        private class Car4
+        {
+            public string Name { get; set; }
+
+            public KeyValuePair<string, Dictionary<string, string>> Specs { get; set; }
+        }
+
+        [Fact]
+        public async Task Foo_MutableObjectModelBinder_BindsKeyValuePairProperty_WithPrefix_Success()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "p",
+                ParameterType = typeof(Car4)
+            };
+
+            // Need to have a key here so that the MutableObjectModelBinder will recurse to bind elements.
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                var queryString = "?p.Name=Accord"
+                                + "&p.Specs.Key=camera_specs"
+                                + "&p.Specs.Value[0].Key=spec1"
+                                + "&p.Specs.Value[0].Value=spec1.txt"
+                                + "&p.Specs.Value[1].Key=spec2"
+                                + "&p.Specs.Value[1].Value=spec2.txt";
+
+                request.QueryString = new QueryString(queryString);
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Car4>(modelBindingResult.Model);
+            Assert.Equal("Accord", model.Name);
+
+            Assert.Collection(
+                model.Specs.Value,
+                (e) =>
+                {
+                    Assert.Equal("spec1", e.Key);
+                    Assert.Equal("spec1.txt", e.Value);
+                },
+                (e) =>
+                {
+                    Assert.Equal("spec2", e.Key);
+                    Assert.Equal("spec2.txt", e.Value);
+                });
+
+            Assert.Equal(6, modelState.Count);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "p.Name").Value;
+            Assert.Equal("Accord", entry.AttemptedValue);
+            Assert.Equal("Accord", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs.Key").Value;
+            Assert.Equal("camera_specs", entry.AttemptedValue);
+            Assert.Equal("camera_specs", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs.Value[0].Key").Value;
+            Assert.Equal("spec1", entry.AttemptedValue);
+            Assert.Equal("spec1", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs.Value[0].Value").Value;
+            Assert.Equal("spec1.txt", entry.AttemptedValue);
+            Assert.Equal("spec1.txt", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs.Value[1].Key").Value;
+            Assert.Equal("spec2", entry.AttemptedValue);
+            Assert.Equal("spec2", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "p.Specs.Value[1].Value").Value;
+            Assert.Equal("spec2.txt", entry.AttemptedValue);
+            Assert.Equal("spec2.txt", entry.RawValue);
         }
 
         private class Order9
@@ -2124,6 +2530,121 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.NotNull(entry);
             Assert.Empty(entry.Errors);
             Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+        }
+
+        private class Product
+        {
+            public int ProductId { get; set; }
+
+            public string Name { get; }
+
+            public IList<string> Aliases { get; }
+        }
+
+        [Theory]
+        [InlineData("?parameter.ProductId=10")]
+        [InlineData("?parameter.ProductId=10&parameter.Name=Camera")]
+        [InlineData("?parameter.ProductId=10&parameter.Name=Camera&parameter.Aliases[0]=Camera1")]
+        public async Task ComplexTypeModelBinder_BindsSettableProperties(string queryString)
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Product)
+            };
+
+            // Need to have a key here so that the ComplexTypeModelBinder will recurse to bind elements.
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString(queryString);
+                SetJsonBodyContent(request, AddressBodyContent);
+            });
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Product>(modelBindingResult.Model);
+            Assert.NotNull(model);
+            Assert.Equal(10, model.ProductId);
+            Assert.Null(model.Name);
+            Assert.Null(model.Aliases);
+        }
+
+        private class Photo
+        {
+            public string Id { get; set; }
+
+            public KeyValuePair<string, LocationInfo> Info { get; set; }
+        }
+
+        private class LocationInfo
+        {
+            [FromHeader]
+            public string GpsCoordinates { get; set; }
+
+            public int Zipcode { get; set; }
+        }
+
+        [Fact]
+        public async Task MutableObjectModelBinder_BindsKeyValuePairProperty_HavingFromHeaderProperty_Success()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Photo)
+            };
+
+            // Need to have a key here so that the MutableObjectModelBinder will recurse to bind elements.
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.Headers.Add("GpsCoordinates", "10,20");
+                request.QueryString = new QueryString("?Id=1&Info.Key=location1&Info.Value.Zipcode=98052");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            // Model
+            var model = Assert.IsType<Photo>(modelBindingResult.Model);
+            Assert.Equal("1", model.Id);
+            Assert.NotNull(model.Info);
+            Assert.Equal("location1", model.Info.Key);
+            Assert.NotNull(model.Info.Value);
+            Assert.Equal("10,20", model.Info.Value.GpsCoordinates);
+            Assert.Equal(98052, model.Info.Value.Zipcode);
+
+            // ModelState
+            Assert.Equal(4, modelState.Count);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "Id").Value;
+            Assert.Equal("1", entry.AttemptedValue);
+            Assert.Equal("1", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "Info.Key").Value;
+            Assert.Equal("location1", entry.AttemptedValue);
+            Assert.Equal("location1", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "Info.Value.Zipcode").Value;
+            Assert.Equal("98052", entry.AttemptedValue);
+            Assert.Equal("98052", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "Info.Value.GpsCoordinates").Value;
+            Assert.Equal("10,20", entry.AttemptedValue);
+            Assert.Equal(new[] { "10", "20" }, entry.RawValue);
         }
 
         private static void SetJsonBodyContent(HttpRequest request, string content)

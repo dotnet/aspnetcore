@@ -29,9 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(bindingContext));
             }
 
-            var createFileCollection =
-                bindingContext.ModelType == typeof(IFormFileCollection) &&
-                !bindingContext.ModelMetadata.IsReadOnly;
+            var createFileCollection = bindingContext.ModelType == typeof(IFormFileCollection);
             if (!createFileCollection && !ModelBindingHelper.CanGetCompatibleCollection<IFormFile>(bindingContext))
             {
                 // Silently fail if unable to create an instance or use the current instance.

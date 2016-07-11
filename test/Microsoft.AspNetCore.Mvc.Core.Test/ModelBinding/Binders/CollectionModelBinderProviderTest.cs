@@ -43,6 +43,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         [InlineData(typeof(IList<int>))]
         [InlineData(typeof(List<int>))]
         [InlineData(typeof(Collection<int>))]
+        [InlineData(typeof(IEnumerable<int>))]
+        [InlineData(typeof(IReadOnlyCollection<int>))]
+        [InlineData(typeof(IReadOnlyList<int>))]
         public void Create_ForSupportedTypes_ReturnsBinder(Type modelType)
         {
             // Arrange
@@ -66,46 +69,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.IsType<CollectionModelBinder<int>>(result);
         }
 
-        // These aren't ICollection<> - we can handle them by creating a List<> - but in this case
-        // we can't set the property so we can't bind.
-        [Theory]
-        [InlineData(nameof(ReadOnlyProperties.Enumerable))]
-        [InlineData(nameof(ReadOnlyProperties.ReadOnlyCollection))]
-        [InlineData(nameof(ReadOnlyProperties.ReadOnlyList))]
-        public void Create_ForNonICollectionTypes_ReadOnlyProperty_ReturnsNull(string propertyName)
-        {
-            // Arrange
-            var provider = new CollectionModelBinderProvider();
-
-            var metadataProvider = TestModelBinderProviderContext.CachedMetadataProvider;
-
-            var metadata = metadataProvider.GetMetadataForProperty(typeof(ReadOnlyProperties), propertyName);
-            Assert.NotNull(metadata);
-            Assert.True(metadata.IsReadOnly);
-
-            var context = new TestModelBinderProviderContext(metadata, bindingInfo: null);
-
-            // Act
-            var result = provider.GetBinder(context);
-
-            // Assert
-            Assert.Null(result);
-        }
-
         private class Person
         {
             public string Name { get; set; }
 
             public int Age { get; set; }
-        }
-
-        private class ReadOnlyProperties
-        {
-            public IEnumerable<int> Enumerable { get; }
-
-            public IReadOnlyCollection<int> ReadOnlyCollection { get; }
-
-            public IReadOnlyList<int> ReadOnlyList { get; }
         }
     }
 }

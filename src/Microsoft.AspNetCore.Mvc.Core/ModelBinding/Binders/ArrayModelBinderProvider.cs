@@ -18,9 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // We don't support binding readonly properties of arrays because we can't resize the
-            // existing value.
-            if (context.Metadata.ModelType.IsArray && !context.Metadata.IsReadOnly)
+            if (context.Metadata.ModelType.IsArray)
             {
                 var elementType = context.Metadata.ElementMetadata.ModelType;
                 var elementBinder = context.CreateBinder(context.Metadata.ElementMetadata);

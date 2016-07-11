@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Fact]
-        public async Task HeaderBinder_ReturnsFailedResult_ForReadOnlyDestination()
+        public async Task HeaderBinder_ReturnsResult_ForReadOnlyDestination()
         {
             // Arrange
             var header = "Accept";
@@ -116,8 +116,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.False(bindingContext.Result.IsModelSet);
-            Assert.Null(bindingContext.Result.Model);
+            Assert.True(bindingContext.Result.IsModelSet);
+            Assert.NotNull(bindingContext.Result.Model);
         }
 
         [Fact]

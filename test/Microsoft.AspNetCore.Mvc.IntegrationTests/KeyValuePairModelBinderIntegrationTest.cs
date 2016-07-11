@@ -498,5 +498,49 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
+
+        [Fact]
+        public async Task KeyValuePairModelBinder_BindsKeyValuePairOfArray_Success()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "p",
+                ParameterType = typeof(KeyValuePair<string, string[]>)
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?p.Key=key1&p.Value[0]=value1&p.Value[1]=value2");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            var model = Assert.IsType<KeyValuePair<string, string[]>>(modelBindingResult.Model);
+            Assert.Equal("key1", model.Key);
+            Assert.Equal(new[] { "value1", "value2" }, model.Value);
+
+            Assert.Equal(3, modelState.Count);
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, kvp => kvp.Key == "p.Key").Value;
+            Assert.Equal("key1", entry.AttemptedValue);
+            Assert.Equal("key1", entry.RawValue);
+
+            entry = Assert.Single(modelState, kvp => kvp.Key == "p.Value[0]").Value;
+            Assert.Equal("value1", entry.AttemptedValue);
+            Assert.Equal("value1", entry.RawValue);
+
+            entry = Assert.Single(modelState, kvp => kvp.Key == "p.Value[1]").Value;
+            Assert.Equal("value2", entry.AttemptedValue);
+            Assert.Equal("value2", entry.RawValue);
+        }
     }
 }
