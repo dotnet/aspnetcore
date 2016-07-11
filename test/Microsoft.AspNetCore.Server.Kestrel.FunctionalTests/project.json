@@ -19,6 +19,7 @@
         },
         "System.Net.Http": "4.1.0-*",
         "System.Net.Http.WinHttpHandler": "4.0.0-*",
+        "System.Net.NetworkInformation": "4.1.0-*",
         "System.Runtime.Serialization.Primitives": "4.1.1-*"
       }
     },
