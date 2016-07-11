@@ -1,8 +1,8 @@
 {
   "name": "domain-task",
-  "version": "1.0.1",
+  "version": "2.0.1",
   "description": "Tracks outstanding operations for a logical thread of execution",
-  "main": "main.js",
+  "main": "index.js",
   "scripts": {
     "prepublish": "tsd update && tsc && echo 'Finished building NPM package \"domain-task\"'",
     "test": "echo \"Error: no test specified\" && exit 1"

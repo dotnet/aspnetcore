@@ -1,6 +1,6 @@
 {
   "name": "aspnet-prerendering",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "Helpers for server-side rendering of JavaScript applications in ASP.NET Core projects. Works in conjunction with the Microsoft.AspNetCore.SpaServices NuGet package.",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "author": "Microsoft",
   "license": "Apache-2.0",
   "dependencies": {
-    "domain-task": "^1.0.1",
+    "domain-task": "^2.0.1",
     "es6-promise": "^3.1.2"
   },
   "devDependencies": {
