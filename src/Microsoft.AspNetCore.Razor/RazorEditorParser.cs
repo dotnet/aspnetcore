@@ -145,10 +145,10 @@ namespace Microsoft.AspNetCore.Razor
         /// <returns>A <see cref="PartialParseResult"/> value indicating the result of the incremental parse.</returns>
         public virtual PartialParseResult CheckForStructureChanges(TextChange change)
         {
+#if EDITOR_TRACING
             // Validate the change
             long? elapsedMs = null;
 
-#if EDITOR_TRACING
             var sw = new Stopwatch();
             sw.Start();
 #endif
@@ -161,13 +161,16 @@ namespace Microsoft.AspNetCore.Razor
             }
 
             var result = PartialParseResult.Rejected;
-
+#if EDITOR_TRACING
             // If there isn't already a parse underway, try partial-parsing
             var changeString = string.Empty;
+#endif
             using (_parser.SynchronizeMainThreadState())
             {
+#if EDITOR_TRACING
                 // Capture the string value of the change while we're synchronized
                 changeString = change.ToString();
+#endif
 
                 // Check if we can partial-parse
                 if (CurrentParseTree != null && _parser.IsIdle)
@@ -190,13 +193,13 @@ namespace Microsoft.AspNetCore.Razor
             sw.Stop();
             elapsedMs = sw.ElapsedMilliseconds;
             sw.Reset();
-#endif
 
             RazorEditorTrace.TraceLine(RazorResources.FormatTrace_EditorProcessedChange(
                 Path.GetFileName(FileName),
                 changeString,
                 elapsedMs.HasValue ? elapsedMs.Value.ToString(CultureInfo.InvariantCulture) : "?",
                 result.ToString()));
+#endif
 
             return result;
         }
