@@ -11,15 +11,20 @@
     ]
   },
   "buildOptions": {
-    "warningsAsErrors": true,
+    "define": [ "WebEncoders_In_WebUtilities" ],
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
       "CS1591"
     ],
+    "warningsAsErrors": true,
     "xmlDoc": true
   },
   "dependencies": {
     "Microsoft.Extensions.Primitives": "1.1.0-*",
+    "Microsoft.Extensions.WebEncoders.Sources": {
+      "type": "build",
+      "version": "1.1.0-*"
+    },
     "System.Buffers": "4.0.0-*",
     "System.Text.Encodings.Web": "4.0.0-*"
   },
