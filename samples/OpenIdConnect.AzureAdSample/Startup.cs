@@ -20,8 +20,6 @@ namespace OpenIdConnect.AzureAdSample
 {
     public class Startup
     {
-        private const string GraphResourceID = "https://graph.windows.net";
-
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -103,7 +101,20 @@ namespace OpenIdConnect.AzureAdSample
 
             app.Run(async context =>
             {
-                if (context.Request.Path.Equals("/signout"))
+                if (context.Request.Path.Equals("/signin"))
+                {
+                    if (context.User.Identities.Any(identity => identity.IsAuthenticated))
+                    {
+                        // User has already signed in
+                        context.Response.Redirect("/");
+                        return;
+                    }
+
+                    await context.Authentication.ChallengeAsync(
+                        OpenIdConnectDefaults.AuthenticationScheme,
+                        new AuthenticationProperties { RedirectUri = "/" });
+                }
+                else if (context.Request.Path.Equals("/signout"))
                 {
                     await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     await WriteHtmlAsync(context.Response,
