@@ -53,8 +53,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalTheory, MemberData(nameof(AddressRegistrationDataIPv6ScopeId))]
         [IPv6SupportedCondition]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "HttpClient does not support IPv6 with scope ID on Linux (https://github.com/dotnet/corefx/issues/8235).")]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HttpClient does not support IPv6 with scope ID on Mac (https://github.com/dotnet/corefx/issues/8235).")]
         public async Task RegisterAddresses_IPv6ScopeId_Success(string addressInput, Func<IServerAddressesFeature, string[]> testUrls)
         {
             await RegisterAddresses_Success(addressInput, testUrls);
