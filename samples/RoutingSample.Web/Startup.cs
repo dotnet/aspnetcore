@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace RoutingSample.Web
@@ -20,46 +22,23 @@ namespace RoutingSample.Web
 
         public void Configure(IApplicationBuilder app)
         {
-            var endpoint1 = new RouteHandler((c) =>
+            app.UseRouter(routes =>
             {
-                return c.Response.WriteAsync($"match1, route values - {string.Join(", ", c.GetRouteData().Values)}");
-            });
-
-            var endpoint2 = new RouteHandler((c) => c.Response.WriteAsync("Hello, World!"));
-
-            var routeBuilder = new RouteBuilder(app)
-            {
-                DefaultHandler = endpoint1,
-            };
-
-            routeBuilder.MapRoute("api/status/{item}", c => c.Response.WriteAsync($"{c.GetRouteValue("item")} is just fine."));
-            routeBuilder.MapRoute("localized/{lang=en-US}", b =>
-            {
-                b.Use(next => async (c) =>
+                routes.DefaultHandler = new RouteHandler((c) =>
                 {
-                    var culture = new CultureInfo((string)c.GetRouteValue("lang"));
-#if NET451
-                    Thread.CurrentThread.CurrentCulture = culture;
-                    Thread.CurrentThread.CurrentUICulture = culture;
-#else
-                    CultureInfo.CurrentCulture = culture;
-                    CultureInfo.CurrentUICulture = culture;
-#endif
-                    await next(c);
+                    return c.Response.WriteAsync($"Verb =  {c.Request.Method.ToUpperInvariant()} - Path = {c.Request.Path} - Route values - {string.Join(", ", c.GetRouteData().Values)}");
                 });
 
-                b.Run(c => c.Response.WriteAsync($"What would you do with {1000000m:C}?"));
+                routes.MapGet("api/get/{id}", (c) => c.Response.WriteAsync($"API Get {c.GetRouteData().Values["id"]}"));
+
+                routes.MapRoute("api/middleware", (IApplicationBuilder fork) => fork.Use((c, n) => c.Response.WriteAsync("Middleware!")));
+
+                routes.MapRoute(
+                    name: "AllVerbs",
+                    template: "api/all/{name}/{lastName?}",
+                    defaults: new { lastName = "Doe" },
+                    constraints: new { lastName = new RegexRouteConstraint(new Regex("[a-zA-Z]{3}")) });
             });
-
-            routeBuilder.AddPrefixRoute("api/store", endpoint1);
-            routeBuilder.AddPrefixRoute("hello/world", endpoint2);
-
-            routeBuilder.MapLocaleRoute("en-US", "store/US/{action}", new { controller = "Store" });
-            routeBuilder.MapLocaleRoute("en-GB", "store/UK/{action}", new { controller = "Store" });
-
-            routeBuilder.AddPrefixRoute("", endpoint2);
-
-            app.UseRouter(routeBuilder.Build());
         }
 
         public static void Main(string[] args)
