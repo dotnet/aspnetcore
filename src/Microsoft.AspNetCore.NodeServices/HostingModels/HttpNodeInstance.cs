@@ -28,21 +28,22 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
 
-	    private readonly HttpClient _client;
+        private readonly HttpClient _client;
         private bool _disposed;
         private int _portNumber;
 
-        public HttpNodeInstance(string projectPath, string[] watchFileExtensions, int port = 0)
+        public HttpNodeInstance(string projectPath, string[] watchFileExtensions, int port = 0, Action<System.Diagnostics.ProcessStartInfo> onBeforeStartExternalProcess = null)
             : base(
                 EmbeddedResourceReader.Read(
                     typeof(HttpNodeInstance),
                     "/Content/Node/entrypoint-http.js"),
                 projectPath,
                 watchFileExtensions,
-                MakeCommandLineOptions(port))
+                MakeCommandLineOptions(port),
+                onBeforeStartExternalProcess)
         {
             _client = new HttpClient();
-		}
+        }
 
         private static string MakeCommandLineOptions(int port)
         {
@@ -112,18 +113,19 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             }
         }
 
-	    protected override void Dispose(bool disposing) {
-	        base.Dispose(disposing);
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
 
-	        if (!_disposed)
+            if (!_disposed)
             {
-	            if (disposing)
+                if (disposing)
                 {
-	                _client.Dispose();
-	            }
+                    _client.Dispose();
+                }
 
-	            _disposed = true;
-	        }
-	    }
-	}
+                _disposed = true;
+            }
+        }
+    }
 }

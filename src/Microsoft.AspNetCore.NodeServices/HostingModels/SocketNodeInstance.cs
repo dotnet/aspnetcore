@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
     /// <seealso cref="Microsoft.AspNetCore.NodeServices.HostingModels.OutOfProcessNodeInstance" />
     internal class SocketNodeInstance : OutOfProcessNodeInstance
     {
-        private readonly static JsonSerializerSettings jsonSerializerSettings =  new JsonSerializerSettings
+        private readonly static JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
@@ -36,16 +36,17 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private string _socketAddress;
         private VirtualConnectionClient _virtualConnectionClient;
 
-        public SocketNodeInstance(string projectPath, string[] watchFileExtensions, string socketAddress): base(
+        public SocketNodeInstance(string projectPath, string[] watchFileExtensions, string socketAddress, Action<System.Diagnostics.ProcessStartInfo> onBeforeStartExternalProcess = null) : base(
                 EmbeddedResourceReader.Read(
                     typeof(SocketNodeInstance),
                     "/Content/Node/entrypoint-socket.js"),
                 projectPath,
                 watchFileExtensions,
-                MakeNewCommandLineOptions(socketAddress))
+                MakeNewCommandLineOptions(socketAddress),
+                onBeforeStartExternalProcess)
         {
             _socketAddress = socketAddress;
-		}
+        }
 
         protected override async Task<T> InvokeExportAsync<T>(NodeInvocationInfo invocationInfo)
         {
@@ -170,7 +171,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
         private static async Task<byte[]> ReadAllBytesAsync(Stream input)
         {
-            byte[] buffer = new byte[16*1024];
+            byte[] buffer = new byte[16 * 1024];
 
             using (var ms = new MemoryStream())
             {

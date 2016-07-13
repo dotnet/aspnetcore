@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.NodeServices
             HostingModel = DefaultNodeHostingModel;
             WatchFileExtensions = (string[])DefaultWatchFileExtensions.Clone();
         }
-
+        public Action<System.Diagnostics.ProcessStartInfo> OnBeforeStartExternalProcess { get; set; }
         public NodeHostingModel HostingModel { get; set; }
         public Func<INodeInstance> NodeInstanceFactory { get; set; }
         public string ProjectPath { get; set; }

@@ -31,10 +31,11 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             string entryPointScript,
             string projectPath,
             string[] watchFileExtensions,
-            string commandLineArguments)
+            string commandLineArguments,
+             Action<System.Diagnostics.ProcessStartInfo> onBeforeStartExternalProcess = null)
         {
             _entryPointScript = new StringAsTempFile(entryPointScript);
-            _nodeProcess = LaunchNodeProcess(_entryPointScript.FileName, projectPath, commandLineArguments);
+            _nodeProcess = LaunchNodeProcess(_entryPointScript.FileName, projectPath, commandLineArguments, onBeforeStartExternalProcess);
             _watchFileExtensions = watchFileExtensions;
             _fileSystemWatcher = BeginFileWatcher(projectPath);
             ConnectToInputOutputStreams();
@@ -111,7 +112,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             }
         }
 
-        private static Process LaunchNodeProcess(string entryPointFilename, string projectPath, string commandLineArguments)
+        private static Process LaunchNodeProcess(string entryPointFilename, string projectPath, string commandLineArguments, Action<System.Diagnostics.ProcessStartInfo> onBeforeStartExternalProcess)
         {
             var startInfo = new ProcessStartInfo("node")
             {
@@ -136,6 +137,10 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 #else
             startInfo.Environment["NODE_PATH"] = nodePathValue;
 #endif
+            if (onBeforeStartExternalProcess != null)
+            {
+                onBeforeStartExternalProcess(startInfo);
+            }
 
             var process = Process.Start(startInfo);
 
