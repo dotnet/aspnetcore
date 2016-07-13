@@ -51,32 +51,27 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        internal static void LogDebug(ILogger logger, string data)
+        internal static void LogDebug(ILogger logger, string location, Exception exception)
         {
             if (logger == null)
             {
-                Debug.WriteLine(data);
+                Console.WriteLine(location + Environment.NewLine + exception.ToString());
             }
             else
             {
-                logger.LogDebug(data);
+                logger.LogDebug(0, exception, location);
             }
-        }
-
-        internal static void LogDebug(ILogger logger, string location, Exception exception)
-        {
-            LogDebug(logger, location + "; " + exception.ToString());
         }
 
         internal static void LogException(ILogger logger, string location, Exception exception)
         {
             if (logger == null)
             {
-                Debug.WriteLine(exception);
+                Debug.WriteLine(location + Environment.NewLine + exception.ToString());
             }
             else
             {
-                logger.LogError(location, exception);
+                logger.LogError(0, exception, location);
             }
         }
 
