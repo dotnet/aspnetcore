@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Routing
                         throw new ArgumentException(message, nameof(values));
                     }
 
-                    listStorage._inner.Add(kvp);
+                    listStorage.Add(kvp);
                 }
 
                 return;
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Routing
                         throw new ArgumentException(message, nameof(values));
                     }
 
-                    listStorage._inner.Add(new KeyValuePair<string, object>(kvp.Key, kvp.Value));
+                    listStorage.Add(new KeyValuePair<string, object>(kvp.Key, kvp.Value));
                 }
 
                 return;
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 Upgrade();
 
-                var list = ((ListStorage)_storage)._inner;
+                var list = (ListStorage)_storage;
                 var keys = new string[list.Count];
                 for (var i = 0; i < keys.Length; i++)
                 {
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 Upgrade();
 
-                var list = ((ListStorage)_storage)._inner;
+                var list = (ListStorage)_storage;
                 var values = new object[list.Count];
                 for (var i = 0; i < values.Length; i++)
                 {
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Routing
 
             Upgrade();
 
-            var list = ((ListStorage)_storage)._inner;
+            var list = (ListStorage)_storage;
             for (var i = 0; i < list.Count; i++)
             {
                 if (string.Equals(list[i].Key, key, StringComparison.OrdinalIgnoreCase))
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Routing
 
             Upgrade();
 
-            var list = ((ListStorage)_storage)._inner;
+            var list = (ListStorage)_storage;
             list.Clear();
         }
 
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Routing
 
             Upgrade();
 
-            var list = ((ListStorage)_storage)._inner;
+            var list = (ListStorage)_storage;
             for (var i = 0; i < list.Count; i++)
             {
                 if (string.Equals(list[i].Key, item.Key, StringComparison.OrdinalIgnoreCase))
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Routing
 
             Upgrade();
 
-            var list = ((ListStorage)_storage)._inner;
+            var list = (ListStorage)_storage;
             list.CopyTo(array, arrayIndex);
         }
 
@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Routing
 
             Upgrade();
 
-            var list = ((ListStorage)_storage)._inner;
+            var list = (ListStorage)_storage;
             for (var i = 0; i < list.Count; i++)
             {
                 if (string.Equals(list[i].Key, item.Key, StringComparison.OrdinalIgnoreCase) &&
@@ -366,7 +366,7 @@ namespace Microsoft.AspNetCore.Routing
 
             Upgrade();
 
-            var list = ((ListStorage)_storage)._inner;
+            var list = (ListStorage)_storage;
             for (var i = 0; i < list.Count; i++)
             {
                 if (string.Equals(list[i].Key, key, StringComparison.OrdinalIgnoreCase))
@@ -445,7 +445,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             public abstract int Count { get; }
 
-            public abstract KeyValuePair<string, object> this[int index] { get; }
+            public abstract KeyValuePair<string, object> this[int index] { get; set; }
 
             public abstract void Upgrade(ref Storage storage);
 
@@ -458,42 +458,115 @@ namespace Microsoft.AspNetCore.Routing
 
         internal class ListStorage : Storage
         {
-            internal readonly List<KeyValuePair<string, object>> _inner;
+            private KeyValuePair<string, object>[] _items;
+            private int _count;
+
+            private static readonly KeyValuePair<string, object>[] _emptyArray = new KeyValuePair<string, object>[0];
 
             public ListStorage()
             {
-                _inner = new List<KeyValuePair<string, object>>();
+                _items = _emptyArray;
             }
 
             public ListStorage(int capacity)
             {
-                _inner = new List<KeyValuePair<string, object>>(capacity);
+                if (capacity == 0)
+                {
+                    _items = _emptyArray;
+                }
+                else
+                {
+                    _items = new KeyValuePair<string, object>[capacity];
+                }
             }
 
             public ListStorage(ListStorage other)
             {
-                // Perf: Don't call the copy constructor, that would box the enumerator.
-                _inner = new List<KeyValuePair<string, object>>(other._inner.Capacity);
-                for (var i = 0; i < other._inner.Count; i++)
+                if (other.Count == 0)
                 {
-                    _inner.Add(other._inner[i]);
+                    _items = _emptyArray;
+                }
+                else
+                {
+                    _items = new KeyValuePair<string, object>[other.Count];
+                    for (var i = 0; i < other.Count; i++)
+                    {
+                        this.Add(other[i]);
+                    }
                 }
             }
 
-            public override int Count => _inner.Count;
+            public int Capacity => _items.Length;
 
-            public override KeyValuePair<string, object> this[int index] => _inner[index];
+            public override int Count => _count;
+
+            public override KeyValuePair<string, object> this[int index]
+            {
+                get
+                {
+                    if (index < 0 || index >= _count)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(index));
+                    }
+
+                    return _items[index];
+                }
+                set
+                {
+                    if (index < 0 || index >= _count)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(index));
+                    }
+
+                    _items[index] = value;
+                }
+            }
+
+            public void Add(KeyValuePair<string, object> item)
+            {
+                if (_count == _items.Length)
+                {
+                    EnsureCapacity(_count + 1);
+                }
+
+                _items[_count++] = item;
+            }
+
+            public void RemoveAt(int index)
+            {
+                _count--;
+
+                for (var i = index; i < _count; i++)
+                {
+                    _items[i] = _items[i + 1];
+                }
+
+                _items[_count] = default(KeyValuePair<string, object>);
+            }
 
             public void Clear()
             {
-                _inner.Clear();
+                for (var i = 0; i < _count; i++)
+                {
+                    _items[i] = default(KeyValuePair<string, object>);
+                }
+
+                _count = 0;
+            }
+
+            public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
+            {
+                for (var i = 0; i < _count; i++)
+                {
+                    array[arrayIndex++] = _items[i];
+                }
             }
 
             public override bool ContainsKey(string key)
             {
-                for (var i = 0; i < _inner.Count; i++)
+                for (var i = 0; i < Count; i++)
                 {
-                    var kvp = _inner[i];
+                    var kvp = _items[i];
                     if (string.Equals(key, kvp.Key, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
@@ -505,25 +578,25 @@ namespace Microsoft.AspNetCore.Routing
 
             public override bool TrySetValue(string key, object value)
             {
-                for (var i = 0; i < _inner.Count; i++)
+                for (var i = 0; i < Count; i++)
                 {
-                    var kvp = _inner[i];
+                    var kvp = _items[i];
                     if (string.Equals(key, kvp.Key, StringComparison.OrdinalIgnoreCase))
                     {
-                        _inner[i] = new KeyValuePair<string, object>(key, value);
+                        _items[i] = new KeyValuePair<string, object>(key, value);
                         return true;
                     }
                 }
 
-                _inner.Add(new KeyValuePair<string, object>(key, value));
+                Add(new KeyValuePair<string, object>(key, value));
                 return true;
             }
 
             public override bool TryGetValue(string key, out object value)
             {
-                for (var i = 0; i < _inner.Count; i++)
+                for (var i = 0; i < Count; i++)
                 {
-                    var kvp = _inner[i];
+                    var kvp = _items[i];
                     if (string.Equals(key, kvp.Key, StringComparison.OrdinalIgnoreCase))
                     {
                         value = kvp.Value;
@@ -538,6 +611,18 @@ namespace Microsoft.AspNetCore.Routing
             public override void Upgrade(ref Storage storage)
             {
                 // Do nothing.
+            }
+
+            private void EnsureCapacity(int min)
+            {
+                var newLength = _items.Length == 0 ? 4 : _items.Length * 2;
+                var newItems = new KeyValuePair<string, object>[newLength];
+                for (var i = 0; i < _count; i++)
+                {
+                    newItems[i] = _items[i];
+                }
+
+                _items = newItems;
             }
         }
 
@@ -577,6 +662,11 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     var property = _properties[index];
                     return new KeyValuePair<string, object>(property.Name, property.GetValue(_value));
+                }
+                set
+                {
+                    // PropertyStorage never sets a value.
+                    throw new NotImplementedException();
                 }
             }
 
@@ -662,6 +752,10 @@ namespace Microsoft.AspNetCore.Routing
             public override KeyValuePair<string, object> this[int index]
             {
                 get
+                {
+                    throw new NotImplementedException();
+                }
+                set
                 {
                     throw new NotImplementedException();
                 }

@@ -53,7 +53,6 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var storage = Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
             var otherStorage = Assert.IsType<RouteValueDictionary.ListStorage>(other._storage);
             Assert.NotSame(otherStorage, storage);
-            Assert.NotSame(otherStorage._inner, storage._inner);
         }
 
         [Fact]
@@ -328,7 +327,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         [Fact]
         public void CreateFromObject_MixedCaseThrows()
         {
-            // Arrange		
+            // Arrange
             var obj = new { controller = "Home", Controller = "Home" };
 
             var message =
@@ -336,7 +335,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
                 $"only by casing. This is not supported by {nameof(RouteValueDictionary)} which uses " +
                 $"case-insensitive comparisons.";
 
-            // Act & Assert		
+            // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(() =>
             {
                 var dictionary = new RouteValueDictionary(obj);
@@ -1436,6 +1435,55 @@ namespace Microsoft.AspNetCore.Routing.Tests
             Assert.True(result);
             Assert.Equal("value", value);
             Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+        }
+
+        [Fact]
+        public void ListStorage_DynamicallyAdjustsCapacity()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act 1
+            dict.Add("key", "value");
+
+            // Assert 1
+            var storage = Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.Equal(4, storage.Capacity);
+
+            // Act 2
+            dict.Add("key2", "value2");
+            dict.Add("key3", "value3");
+            dict.Add("key4", "value4");
+            dict.Add("key5", "value5");
+
+            // Assert 2
+            Assert.Equal(8, storage.Capacity);
+        }
+
+        [Fact]
+        public void ListStorage_RemoveAt_RearrangesInnerArray()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+            dict.Add("key", "value");
+            dict.Add("key2", "value2");
+            dict.Add("key3", "value3");
+
+            // Assert 1
+            var storage = Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.Equal(3, storage.Count);
+
+            // Act
+            dict.Remove("key2");
+
+            // Assert 2
+            Assert.Equal(2, storage.Count);
+            Assert.Equal("key", storage[0].Key);
+            Assert.Equal("value", storage[0].Value);
+            Assert.Equal("key3", storage[1].Key);
+            Assert.Equal("value3", storage[1].Value);
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => storage[2]);
         }
 
         private class RegularType
