@@ -365,6 +365,53 @@ namespace Microsoft.AspNetCore.StaticFiles
             Assert.Equal(HttpStatusCode.OK, res2.StatusCode);
         }
 
+        [Theory]
+        [MemberData(nameof(SupportedMethods))]
+        public async Task InvalidIfUnmodifiedSinceDateFormatGivesNormalGet(HttpMethod method)
+        {
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+
+            HttpResponseMessage res = await server
+                .CreateRequest("/SubFolder/extra.xml")
+                .AddHeader("If-Unmodified-Since", "bad-date")
+                .SendAsync(method.Method);
+
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        }
+
+        [Theory]
+        [MemberData(nameof(SupportedMethods))]
+        public async Task FutureIfUnmodifiedSinceDateFormatGivesNormalGet(HttpMethod method)
+        {
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+
+            HttpResponseMessage res = await server
+                .CreateRequest("/SubFolder/extra.xml")
+                .And(req => req.Headers.IfUnmodifiedSince = DateTimeOffset.Now.AddYears(1))
+                .SendAsync(method.Method);
+
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        }
+
+        [Theory]
+        [MemberData(nameof(SupportedMethods))]
+        public async Task IfUnmodifiedSinceDateLessThanLastModifiedShouldReturn412(HttpMethod method)
+        {
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+
+            HttpResponseMessage res1 = await server
+                .CreateRequest("/SubFolder/extra.xml")
+                .SendAsync(method.Method);
+
+            HttpResponseMessage res2 = await server
+                .CreateRequest("/SubFolder/extra.xml")
+                .And(req => req.Headers.IfUnmodifiedSince = DateTimeOffset.MinValue)
+                .SendAsync(method.Method);
+
+            Assert.Equal(HttpStatusCode.PreconditionFailed, res2.StatusCode);
+        }
+
+
         public static IEnumerable<object> SupportedMethods => new[]
         {
             new [] { HttpMethod.Get },
