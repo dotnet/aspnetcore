@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Globalization;
 using System.Net;
 using System.Text.Encodings.Web;
@@ -18,6 +19,9 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         static string nonceDelimiter = ".";
         const string DefaultHost = @"https://example.com";
         const string Logout = "/logout";
+        const string Signin = "/signin";
+        const string Signout = "/signout";
+
 
         /// <summary>
         /// Tests RedirectForSignOutContext replaces the OpenIdConnectMesssage correctly.
@@ -49,50 +53,86 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         public async Task SignOutWithDefaultRedirectUri()
         {
             var configuration = TestServerBuilder.CreateDefaultOpenIdConnectConfiguration();
-            var server = TestServerBuilder.CreateServer(new OpenIdConnectOptions
+            var options = new OpenIdConnectOptions
             {
                 Authority = TestServerBuilder.DefaultAuthority,
                 ClientId = "Test Id",
                 Configuration = configuration
-            });
+            };
+            var server = TestServerBuilder.CreateServer(options);
 
             var transaction = await server.SendAsync(DefaultHost + TestServerBuilder.Signout);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-            Assert.Equal(configuration.EndSessionEndpoint, transaction.Response.Headers.Location.AbsoluteUri);
+            Assert.True(transaction.Response.Headers.Location.AbsoluteUri.StartsWith(configuration.EndSessionEndpoint));
+
+            var query = transaction.Response.Headers.Location.Query.Substring(1).Split('&')
+                                   .Select(each => each.Split('='))
+                                   .ToDictionary(pair => pair[0], pair => pair[1]);
+
+            string redirectUri;
+            Assert.True(query.TryGetValue("post_logout_redirect_uri", out redirectUri));
+            Assert.Equal(UrlEncoder.Default.Encode("https://example.com" + options.SignedOutCallbackPath), redirectUri, true);
         }
 
         [Fact]
         public async Task SignOutWithCustomRedirectUri()
         {
             var configuration = TestServerBuilder.CreateDefaultOpenIdConnectConfiguration();
-            var server = TestServerBuilder.CreateServer(new OpenIdConnectOptions
+            var options = new OpenIdConnectOptions
             {
                 Authority = TestServerBuilder.DefaultAuthority,
                 ClientId = "Test Id",
                 Configuration = configuration,
-                PostLogoutRedirectUri = "https://example.com/logout"
-            });
+                SignedOutCallbackPath = "/thelogout",
+                PostLogoutRedirectUri = "https://example.com/postlogout"
+            };
+            var server = TestServerBuilder.CreateServer(options);
 
             var transaction = await server.SendAsync(DefaultHost + TestServerBuilder.Signout);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-            Assert.Contains(UrlEncoder.Default.Encode("https://example.com/logout"), transaction.Response.Headers.Location.AbsoluteUri);
+
+            var query = transaction.Response.Headers.Location.Query.Substring(1).Split('&')
+                                   .Select(each => each.Split('='))
+                                   .ToDictionary(pair => pair[0], pair => pair[1]);
+
+            string redirectUri;
+            Assert.True(query.TryGetValue("post_logout_redirect_uri", out redirectUri));
+            Assert.Equal(UrlEncoder.Default.Encode("https://example.com" + options.SignedOutCallbackPath), redirectUri, true);
+
+            string state;
+            Assert.True(query.TryGetValue("state", out state));
+            var properties = options.StateDataFormat.Unprotect(state);
+            Assert.Equal("https://example.com/postlogout", properties.RedirectUri, true);
         }
 
         [Fact]
         public async Task SignOutWith_Specific_RedirectUri_From_Authentication_Properites()
         {
             var configuration = TestServerBuilder.CreateDefaultOpenIdConnectConfiguration();
-            var server = TestServerBuilder.CreateServer(new OpenIdConnectOptions
+            var options = new OpenIdConnectOptions
             {
                 Authority = TestServerBuilder.DefaultAuthority,
                 ClientId = "Test Id",
                 Configuration = configuration,
-                PostLogoutRedirectUri = "https://example.com/logout"
-            });
+                PostLogoutRedirectUri = "https://example.com/postlogout"
+            };
+            var server = TestServerBuilder.CreateServer(options);
 
             var transaction = await server.SendAsync("https://example.com/signout_with_specific_redirect_uri");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-            Assert.Contains(UrlEncoder.Default.Encode("http://www.example.com/specific_redirect_uri"), transaction.Response.Headers.Location.AbsoluteUri);
+
+            var query = transaction.Response.Headers.Location.Query.Substring(1).Split('&')
+                                   .Select(each => each.Split('='))
+                                   .ToDictionary(pair => pair[0], pair => pair[1]);
+
+            string redirectUri;
+            Assert.True(query.TryGetValue("post_logout_redirect_uri", out redirectUri));
+            Assert.Equal(UrlEncoder.Default.Encode("https://example.com" + options.SignedOutCallbackPath), redirectUri, true);
+
+            string state;
+            Assert.True(query.TryGetValue("state", out state));
+            var properties = options.StateDataFormat.Unprotect(state);
+            Assert.Equal("http://www.example.com/specific_redirect_uri", properties.RedirectUri, true);
         }
 
         // Test Cases for calculating the expiration time of cookie from cookie name
