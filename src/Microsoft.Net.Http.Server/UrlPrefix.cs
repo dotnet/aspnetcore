@@ -117,49 +117,50 @@ namespace Microsoft.Net.Http.Server
             string host = null;
             int? port = null;
             string path = null;
-            string whole = prefix ?? string.Empty;
+            var whole = prefix ?? string.Empty;
 
-            int delimiterStart1 = whole.IndexOf("://", StringComparison.Ordinal);
-            if (delimiterStart1 < 0)
+            var schemeDelimiterEnd = whole.IndexOf("://", StringComparison.Ordinal);
+            if (schemeDelimiterEnd < 0)
             {
-                int aPort;
-                if (int.TryParse(whole, NumberStyles.None, CultureInfo.InvariantCulture, out aPort))
-                {
-                    return UrlPrefix.Create("http", "localhost", aPort, "/");
-                }
-
                 throw new FormatException("Invalid prefix, missing scheme separator: " + prefix);
             }
-            int delimiterEnd1 = delimiterStart1 + "://".Length;
+            var hostDelimiterStart = schemeDelimiterEnd + "://".Length;
 
-            int delimiterStart3 = whole.IndexOf("/", delimiterEnd1, StringComparison.Ordinal);
-            if (delimiterStart3 < 0)
+            var pathDelimiterStart = whole.IndexOf("/", hostDelimiterStart, StringComparison.Ordinal);
+            if (pathDelimiterStart < 0)
             {
-                delimiterStart3 = whole.Length;
+                pathDelimiterStart = whole.Length;
             }
-            int delimiterStart2 = whole.LastIndexOf(":", delimiterStart3 - 1, delimiterStart3 - delimiterEnd1, StringComparison.Ordinal);
-            int delimiterEnd2 = delimiterStart2 + ":".Length;
-            if (delimiterStart2 < 0)
+            var hostDelimiterEnd = whole.LastIndexOf(":", pathDelimiterStart - 1, pathDelimiterStart - hostDelimiterStart, StringComparison.Ordinal);
+            if (hostDelimiterEnd < 0)
             {
-                delimiterStart2 = delimiterStart3;
-                delimiterEnd2 = delimiterStart3;
+                hostDelimiterEnd = pathDelimiterStart;
             }
 
-            scheme = whole.Substring(0, delimiterStart1);
-            string portString = whole.Substring(delimiterEnd2, delimiterStart3 - delimiterEnd2);
+            scheme = whole.Substring(0, schemeDelimiterEnd);
+            var portString = whole.Substring(hostDelimiterEnd, pathDelimiterStart - hostDelimiterEnd); // The leading ":" is included
             int portValue;
-            if (int.TryParse(portString, NumberStyles.Integer, CultureInfo.InvariantCulture, out portValue))
+            if (!string.IsNullOrEmpty(portString))
             {
-                host = whole.Substring(delimiterEnd1, delimiterStart2 - delimiterEnd1);
-                port = portValue;
+                var portValueString = portString.Substring(1); // Trim the leading ":"
+                if (int.TryParse(portValueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out portValue))
+                {
+                    host = whole.Substring(hostDelimiterStart, hostDelimiterEnd - hostDelimiterStart);
+                    port = portValue;
+                }
+                else
+                {
+                    // This means a port was specified but was invalid or empty.
+                    throw new FormatException("Invalid prefix, invalid port speficification: " + prefix);
+                }
             }
             else
             {
-                host = whole.Substring(delimiterEnd1, delimiterStart3 - delimiterEnd1);
+                host = whole.Substring(hostDelimiterStart, pathDelimiterStart - hostDelimiterStart);
             }
-            path = whole.Substring(delimiterStart3);
+            path = whole.Substring(pathDelimiterStart);
 
-            return UrlPrefix.Create(scheme, host, port, path);
+            return Create(scheme, host, port, path);
         }
 
         public bool IsHttps { get; private set; }
