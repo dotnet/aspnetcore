@@ -843,14 +843,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [Fact]
         public void ConvertTo_ReturnsNullForReferenceTypes_WhenValueIsNull()
         {
-            var convertedValue = ModelBindingHelper.ConvertTo(null, typeof(string));
+            var convertedValue = ModelBindingHelper.ConvertTo(value: null, type: typeof(string), culture: null);
             Assert.Null(convertedValue);
         }
 
         [Fact]
         public void ConvertTo_ReturnsDefaultForValueTypes_WhenValueIsNull()
         {
-            var convertedValue = ModelBindingHelper.ConvertTo(null, typeof(int));
+            var convertedValue = ModelBindingHelper.ConvertTo(value: null, type: typeof(int), culture: null);
             Assert.Equal(0, convertedValue);
         }
 
@@ -861,7 +861,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var value = new int[] { 1, 20, 42 };
 
             // Act
-            var converted = ModelBindingHelper.ConvertTo(value, typeof(string));
+            var converted = ModelBindingHelper.ConvertTo(value, typeof(string), culture: null);
 
             // Assert
             Assert.Equal("1", converted);
@@ -874,7 +874,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var value = 42;
 
             // Act
-            var converted = ModelBindingHelper.ConvertTo<string[]>(value);
+            var converted = ModelBindingHelper.ConvertTo<string[]>(value, culture: null);
 
             // Assert
             Assert.NotNull(converted);
@@ -888,7 +888,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var converted = ModelBindingHelper.ConvertTo<string>(42);
+            var converted = ModelBindingHelper.ConvertTo<string>(42, culture: null);
 
             // Assert
             Assert.NotNull(converted);
@@ -901,10 +901,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var returned = ModelBindingHelper.ConvertTo<int?>(null);
+            var returned = ModelBindingHelper.ConvertTo<int?>(value: null, culture: null);
 
             // Assert
-            Assert.Equal(returned, null);
+            Assert.Null(returned);
         }
 
         [Fact]
@@ -914,10 +914,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var original = " ";
 
             // Act
-            var returned = ModelBindingHelper.ConvertTo<int?>(original);
+            var returned = ModelBindingHelper.ConvertTo<int?>(original, culture: null);
 
             // Assert
-            Assert.Equal(returned, null);
+            Assert.Null(returned);
         }
 
         [Fact]
@@ -926,7 +926,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo(new string[] { null }, typeof(int));
+            var outValue = ModelBindingHelper.ConvertTo(new string[] { null }, typeof(int), culture: null);
 
             // Assert
             Assert.Null(outValue);
@@ -938,7 +938,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo(new int[0], typeof(int));
+            var outValue = ModelBindingHelper.ConvertTo(new int[0], typeof(int), culture: null);
 
             // Assert
             Assert.Null(outValue);
@@ -951,7 +951,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             // Arrange
             // Act
-            var outValue = ModelBindingHelper.ConvertTo(value, typeof(int));
+            var outValue = ModelBindingHelper.ConvertTo(value, typeof(int), culture: null);
 
             // Assert
             Assert.Null(outValue);
@@ -963,7 +963,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo(null, typeof(int[]));
+            var outValue = ModelBindingHelper.ConvertTo(value: null, type: typeof(int[]), culture: null);
 
             // Assert
             Assert.Null(outValue);
@@ -975,10 +975,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo(new object[] { 1 }, typeof(IntEnum));
+            var outValue = ModelBindingHelper.ConvertTo(new object[] { 1 }, typeof(IntEnum), culture: null);
 
             // Assert
-            Assert.Equal(outValue, IntEnum.Value1);
+            Assert.Equal(IntEnum.Value1, outValue);
         }
 
         [Theory]
@@ -1008,7 +1008,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo(new object[] { input }, enumType);
+            var outValue = ModelBindingHelper.ConvertTo(new object[] { input }, enumType, culture: null);
 
             // Assert
             Assert.Equal(expected, outValue);
@@ -1020,10 +1020,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo(new object[] { "1" }, typeof(IntEnum));
+            var outValue = ModelBindingHelper.ConvertTo(new object[] { "1" }, typeof(IntEnum), culture: null);
 
             // Assert
-            Assert.Equal(outValue, IntEnum.Value1);
+            Assert.Equal(IntEnum.Value1, outValue);
         }
 
         [Fact]
@@ -1032,10 +1032,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo(new object[] { "Value1" }, typeof(IntEnum));
+            var outValue = ModelBindingHelper.ConvertTo(new object[] { "Value1" }, typeof(IntEnum), culture: null);
 
             // Assert
-            Assert.Equal(outValue, IntEnum.Value1);
+            Assert.Equal(IntEnum.Value1, outValue);
         }
 
         [Fact]
@@ -1044,7 +1044,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo("12", typeof(int?));
+            var outValue = ModelBindingHelper.ConvertTo("12", typeof(int?), culture: null);
 
             // Assert
             Assert.Equal(12, outValue);
@@ -1056,7 +1056,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo("12.5", typeof(double?));
+            var outValue = ModelBindingHelper.ConvertTo("12.5", typeof(double?), culture: null);
 
             // Assert
             Assert.Equal(12.5, outValue);
@@ -1068,7 +1068,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo(12M, typeof(int?));
+            var outValue = ModelBindingHelper.ConvertTo(12M, typeof(int?), culture: null);
 
             // Assert
             Assert.Equal(12, outValue);
@@ -1080,7 +1080,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo(12.5M, typeof(double?));
+            var outValue = ModelBindingHelper.ConvertTo(12.5M, typeof(double?), culture: null);
 
             // Assert
             Assert.Equal(12.5, outValue);
@@ -1092,7 +1092,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo(12M, typeof(int?));
+            var outValue = ModelBindingHelper.ConvertTo(12M, typeof(int?), culture: null);
 
             // Assert
             Assert.Equal(12, outValue);
@@ -1104,7 +1104,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo(12M, typeof(long?));
+            var outValue = ModelBindingHelper.ConvertTo(12M, typeof(long?), culture: null);
 
             // Assert
             Assert.Equal(12L, outValue);
@@ -1116,7 +1116,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo(new object[] { "some string" }, typeof(string));
+            var outValue = ModelBindingHelper.ConvertTo(new object[] { "some string" }, typeof(string), culture: null);
 
             // Assert
             Assert.Equal("some string", outValue);
@@ -1131,7 +1131,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo(value, typeof(IntEnum[]));
+            var outValue = ModelBindingHelper.ConvertTo(value, typeof(IntEnum[]), culture: null);
 
             // Assert
             var result = Assert.IsType<IntEnum[]>(outValue);
@@ -1149,7 +1149,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo(value, typeof(FlagsEnum[]));
+            var outValue = ModelBindingHelper.ConvertTo(value, typeof(FlagsEnum[]), culture: null);
 
             // Assert
             var result = Assert.IsType<FlagsEnum[]>(outValue);
@@ -1165,7 +1165,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var original = new[] { "some string" };
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo(original, typeof(string[]));
+            var outValue = ModelBindingHelper.ConvertTo(original, typeof(string[]), culture: null);
 
             // Assert
             Assert.Same(original, outValue);
@@ -1181,7 +1181,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Act & Assert
             var ex = Assert.Throws<FormatException>(
-                () => ModelBindingHelper.ConvertTo("this-is-not-a-valid-value", destinationType));
+                () => ModelBindingHelper.ConvertTo("this-is-not-a-valid-value", destinationType, culture: null));
         }
 
         [Fact]
@@ -1205,7 +1205,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act & Assert
-            Assert.Equal(expectedValue, ModelBindingHelper.ConvertTo(initialValue, typeof(T)));
+            Assert.Equal(expectedValue, ModelBindingHelper.ConvertTo(initialValue, typeof(T), culture: null));
         }
 
         public static IEnumerable<object[]> IntrinsicConversionData
@@ -1248,7 +1248,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(
-                () => ModelBindingHelper.ConvertTo(new MyClassWithoutConverter(), destinationType));
+                () => ModelBindingHelper.ConvertTo(new MyClassWithoutConverter(), destinationType, culture: null));
             Assert.Equal(expectedMessage, ex.Message);
         }
 
@@ -1264,7 +1264,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(
-                () => ModelBindingHelper.ConvertTo(value, destinationType));
+                () => ModelBindingHelper.ConvertTo(value, destinationType, culture: null));
             Assert.Equal(expectedMessage, ex.Message);
         }
 
@@ -1278,7 +1278,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var value = new MySubClassWithoutConverter();
 
             // Act
-            var result = ModelBindingHelper.ConvertTo(value, destinationType);
+            var result = ModelBindingHelper.ConvertTo(value, destinationType, culture: null);
 
             // Assert
             Assert.Same(value, result);
@@ -1298,7 +1298,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             };
 
             // Act
-            var result = ModelBindingHelper.ConvertTo(value, destinationType);
+            var result = ModelBindingHelper.ConvertTo(value, destinationType, culture: null);
 
             // Assert
             Assert.IsType(destinationType, result);
@@ -1323,7 +1323,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
 
             // Act
-            var outValue = ModelBindingHelper.ConvertTo<FlagsEnum>(value);
+            var outValue = ModelBindingHelper.ConvertTo<FlagsEnum>(value, culture: null);
 
             // Assert
             Assert.Equal(expected, outValue);
