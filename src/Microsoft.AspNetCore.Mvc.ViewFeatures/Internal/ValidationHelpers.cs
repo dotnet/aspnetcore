@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
@@ -90,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             ModelMetadata metadata,
             List<ModelStateEntry> orderedModelStateEntries)
         {
-            if (metadata.ElementMetadata != null)
+            if (metadata.ElementMetadata != null && modelStateEntry.Children != null)
             {
                 foreach (var indexEntry in modelStateEntry.Children)
                 {

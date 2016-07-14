@@ -672,6 +672,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             modelState.AddModelError("Property3.Property2", "This is an error for Property3.Property2.");
             modelState.AddModelError("Property3.OrderedProperty3", "This is an error for Property3.OrderedProperty3.");
             modelState.AddModelError("Property3.OrderedProperty2", "This is an error for Property3.OrderedProperty2.");
+            modelState.SetModelValue("Property3.Empty", rawValue: null, attemptedValue: null);
+            modelState.MarkFieldValid("Property3.Empty");
 
             var provider = new EmptyModelMetadataProvider();
             var metadata = provider.GetMetadataForProperty(typeof(ValidationModel), nameof(ValidationModel.Property3));
@@ -712,6 +714,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
             modelState.AddModelError("OrderedProperty1", "This is an error for OrderedProperty1.");
             modelState.AddModelError("OrderedProperty2", "This is yet-another error for OrderedProperty2.");
+
+            modelState.SetModelValue("Empty", rawValue: null, attemptedValue: null);
+            modelState.MarkFieldValid("Empty");
         }
 
         private class ValidationModel
@@ -738,6 +743,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             public string OrderedProperty2 { get; set; }
             [Display(Order = 23)]
             public string OrderedProperty1 { get; set; }
+
+            // Exists to ensure #4989 does not regress. Issue specific to case where collection has a ModelStateEntry
+            // but no element does.
+            public byte[] Empty { get; set; }
         }
 
         private class ModelWithCollection
