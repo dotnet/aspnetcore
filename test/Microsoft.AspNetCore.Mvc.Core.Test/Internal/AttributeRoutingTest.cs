@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -28,10 +29,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     public class AttributeRoutingTest
     {
         [Fact]
+        [ReplaceCulture]
         public async Task AttributeRouting_SyntaxErrorInTemplate()
         {
             // Arrange
-            var action = CreateAction("InvalidTemplate", "{a/dkfk}");
+            var value = "a/dkfk";
+            var action = CreateAction("InvalidTemplate", "{" + value + "}");
 
             var expectedMessage =
                 "The following errors occurred with attribute routing information:" + Environment.NewLine +
@@ -42,16 +45,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 "and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all, " +
                 "and can occur only at the start of the parameter." + Environment.NewLine +
                 "Parameter name: routeTemplate";
-            
+
             var services = CreateServices(action);
 
             var route = AttributeRouting.CreateAttributeMegaRoute(services);
+            var routeContext = new RouteContext(new DefaultHttpContext());
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            {
-                await route.RouteAsync(new RouteContext(new DefaultHttpContext()));
-            });
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => route.RouteAsync(routeContext));
 
             Assert.Equal(expectedMessage, ex.Message);
         }
@@ -69,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 "For action: 'DisallowedParameter'" + Environment.NewLine +
                 "Error: The attribute route '{foo}/{action}' cannot contain a parameter named '{foo}'. " +
                 "Use '[foo]' in the route template to insert the value 'bleh'.";
-            
+
             var services = CreateServices(action);
 
             var route = AttributeRouting.CreateAttributeMegaRoute(services);
@@ -103,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 "For action: 'DisallowedParameter2'" + Environment.NewLine +
                 "Error: The attribute route 'cool/{action}' cannot contain a parameter named '{action}'. " +
                 "Use '[action]' in the route template to insert the value 'hey'.";
-            
+
             var services = CreateServices(action1, action2);
 
             var route = AttributeRouting.CreateAttributeMegaRoute(services);

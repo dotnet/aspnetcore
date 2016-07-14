@@ -96,11 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 #if GENERATE_BASELINES
                 ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
-                // Mono issue - https://github.com/aspnet/External/issues/19
-                Assert.Equal(
-                    PlatformNormalizer.NormalizeContent(expectedContent.Trim()),
-                    responseContent,
-                    ignoreLineEndingDifferences: true);
+                Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
 #endif
             }
             else
@@ -112,11 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
                 expectedContent = string.Format(expectedContent, forgeryToken);
-                // Mono issue - https://github.com/aspnet/External/issues/19
-                Assert.Equal(
-                    PlatformNormalizer.NormalizeContent(expectedContent.Trim()),
-                    responseContent,
-                    ignoreLineEndingDifferences: true);
+                Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
 #endif
             }
         }
@@ -164,9 +156,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 #if GENERATE_BASELINES
                 ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
-                // Mono issue - https://github.com/aspnet/External/issues/19
                 Assert.Equal(
-                    PlatformNormalizer.NormalizeContent(expectedContent.Trim()),
+                    expectedContent.Trim(),
                     responseContent,
                     ignoreLineEndingDifferences: true);
 #endif
@@ -180,11 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
                 expectedContent = string.Format(expectedContent, forgeryToken);
-                // Mono issue - https://github.com/aspnet/External/issues/19
-                Assert.Equal(
-                    PlatformNormalizer.NormalizeContent(expectedContent.Trim()),
-                    responseContent,
-                    ignoreLineEndingDifferences: true);
+                Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
 #endif
             }
         }
@@ -254,11 +241,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
             expectedContent = string.Format(expectedContent, forgeryToken);
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            Assert.Equal(
-                PlatformNormalizer.NormalizeContent(expectedContent.Trim()),
-                responseContent,
-                ignoreLineEndingDifferences: true);
+            Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
 #endif
         }
 
@@ -502,12 +485,12 @@ Products: Music Systems, Televisions (3)";
         public async Task EditorTemplateWithNoModel_RendersWithCorrectMetadata()
         {
             // Arrange
-            var expected = PlatformNormalizer.NormalizeContent(
+            var expected =
                 "<label class=\"control-label col-md-2\" for=\"Name\">ItemName</label>" + Environment.NewLine +
                 "<input id=\"Name\" name=\"Name\" type=\"text\" value=\"\" />" + Environment.NewLine + Environment.NewLine +
                 "<label class=\"control-label col-md-2\" for=\"Id\">ItemNo</label>" + Environment.NewLine +
                 "<input data-val=\"true\" data-val-required=\"The ItemNo field is required.\" id=\"Id\" name=\"Id\" type=\"text\" value=\"\" />" +
-                Environment.NewLine + Environment.NewLine);
+                Environment.NewLine + Environment.NewLine;
 
             // Act
             var response = await Client.GetStringAsync("http://localhost/HtmlGeneration_Home/ItemUsingSharedEditorTemplate");

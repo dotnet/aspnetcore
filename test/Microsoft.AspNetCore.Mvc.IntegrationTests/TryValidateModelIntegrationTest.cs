@@ -76,6 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void TryValidateModel_CollectionsModel_ReturnsErrorsForInvalidProperties()
         {
             // Arrange
@@ -107,6 +108,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var controller = CreateController(testContext, testContext.MetadataProvider);
 
+            // We define the "CompanyName null" message locally, so we should manually check its value.
+            var categoryRequired = ValidationAttributeUtil.GetRequiredErrorMessage("Category");
+            var priceRange = ValidationAttributeUtil.GetRangeErrorMessage(20, 100, "Price");
+            var contactUsMax = ValidationAttributeUtil.GetStringLengthErrorMessage(null, 20, "Contact Us");
+            var contactusRegEx = ValidationAttributeUtil.GetRegExErrorMessage("^[0-9]*$", "Contact Us");
+
             // Act
             var result = controller.TryValidateModel(model);
 
@@ -114,26 +121,23 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.False(result);
             Assert.False(modelState.IsValid);
             var modelStateErrors = GetModelStateErrors(modelState);
+
             Assert.Equal("CompanyName cannot be null or empty.", modelStateErrors["[0].CompanyName"]);
-            Assert.Equal("The field Price must be between 20 and 100.", modelStateErrors["[0].Price"]);
-            Assert.Equal(
-                PlatformNormalizer.NormalizeContent("The Category field is required."),
-                modelStateErrors["[0].Category"]);
-            AssertErrorEquals(
-                "The field Contact Us must be a string with a maximum length of 20." +
-                "The field Contact Us must match the regular expression " +
-                (TestPlatformHelper.IsMono ? "^[0-9]*$." : "'^[0-9]*$'."),
-                modelStateErrors["[0].Contact"]);
+            Assert.Equal(priceRange, modelStateErrors["[0].Price"]);
+            Assert.Equal(categoryRequired, modelStateErrors["[0].Category"]);
+            AssertErrorEquals(contactUsMax + contactusRegEx, modelStateErrors["[0].Contact"]);
             Assert.Equal("CompanyName cannot be null or empty.", modelStateErrors["[1].CompanyName"]);
-            Assert.Equal("The field Price must be between 20 and 100.", modelStateErrors["[1].Price"]);
+            Assert.Equal(priceRange, modelStateErrors["[1].Price"]);
+            Assert.Equal(categoryRequired, modelStateErrors["[1].Category"]);
+            AssertErrorEquals(contactUsMax + contactusRegEx, modelStateErrors["[1].Contact"]);
+        }
+
+        private void AssertErrorEquals(string expected, string actual)
+        {
+            // OrderBy is used because the order of the results may very depending on the platform / client.
             Assert.Equal(
-                PlatformNormalizer.NormalizeContent("The Category field is required."),
-                modelStateErrors["[1].Category"]);
-            AssertErrorEquals(
-                "The field Contact Us must be a string with a maximum length of 20." +
-                "The field Contact Us must match the regular expression " +
-                (TestPlatformHelper.IsMono ? "^[0-9]*$." : "'^[0-9]*$'."),
-                modelStateErrors["[1].Contact"]);
+                expected.Split('.').OrderBy(item => item, StringComparer.Ordinal),
+                actual.Split('.').OrderBy(item => item, StringComparer.Ordinal));
         }
 
         private TestController CreateController(
@@ -148,14 +152,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             controller.MetadataProvider = metadataProvider;
 
             return controller;
-        }
-
-        private void AssertErrorEquals(string expected, string actual)
-        {
-            // OrderBy is used because the order of the results may very depending on the platform / client.
-            Assert.Equal(
-                expected.Split('.').OrderBy(item => item, StringComparer.Ordinal),
-                actual.Split('.').OrderBy(item => item, StringComparer.Ordinal));
         }
 
         private Dictionary<string, string> GetModelStateErrors(ModelStateDictionary modelState)

@@ -3,10 +3,9 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.TestCommon;
-using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
-
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -49,14 +48,16 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var options = new FormatterMappings();
             var format = ".";
-            var expected = string.Format(@"The format provided is invalid '{0}'. A format must be a non-empty file-" +
-                "extension, optionally prefixed with a '.' character.", format);
+            var expected = $"The format provided is invalid '{format}'. A format must be a non-empty file-" +
+                "extension, optionally prefixed with a '.' character.";
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => options.SetMediaTypeMappingForFormat(
-                format,
-                MediaTypeHeaderValue.Parse("application/xml")));
-            Assert.Equal(expected, exception.Message);
+            ExceptionAssert.ThrowsArgument(
+                () => options.SetMediaTypeMappingForFormat(
+                    format,
+                    MediaTypeHeaderValue.Parse("application/xml")),
+                "format",
+                expected);
         }
 
         [Fact]
@@ -65,15 +66,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var options = new FormatterMappings();
             var format = "";
-            var expected = "Value cannot be null or empty." + Environment.NewLine + "Parameter name: format";
 
-            // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => options.SetMediaTypeMappingForFormat(
-                format,
-                MediaTypeHeaderValue.Parse("application/xml")));
-            Assert.Equal(expected, exception.Message);
+            // Act and Assert
+            ExceptionAssert.ThrowsArgumentNullOrEmpty(
+                () => options.SetMediaTypeMappingForFormat(
+                    format,
+                    MediaTypeHeaderValue.Parse("application/xml")),
+                "format");
         }
-
 
         [Theory]
         [InlineData("application/*")]
@@ -83,14 +83,16 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             // Arrange
             var options = new FormatterMappings();
-            var expected = string.Format(@"The media type ""{0}"" is not valid. MediaTypes containing wildcards (*) " +
-                "are not allowed in formatter mappings.", format);
+            var expected = $@"The media type ""{format}"" is not valid. MediaTypes containing wildcards (*) " +
+                "are not allowed in formatter mappings.";
 
             // Act and assert
-            var exception = Assert.Throws<ArgumentException>(() => options.SetMediaTypeMappingForFormat(
-                "star",
-                MediaTypeHeaderValue.Parse(format)));
-            Assert.Equal(expected, exception.Message);
+            ExceptionAssert.ThrowsArgument(
+                () => options.SetMediaTypeMappingForFormat(
+                    "star",
+                    MediaTypeHeaderValue.Parse(format)),
+                "contentType",
+                expected);
         }
 
         [Theory]

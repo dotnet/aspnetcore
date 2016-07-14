@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Moq;
@@ -53,9 +52,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             public TestLevelOne TestOne { get; set; }
         }
 
-        [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [InlineData("application/xml", true)]
         [InlineData("application/*", false)]
         [InlineData("*/*", false)]
@@ -90,9 +86,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Equal(expectedCanRead, result);
         }
 
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void XmlDataContractSerializer_CachesSerializerForType()
         {
             // Arrange
@@ -136,9 +129,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.True(formatter.SupportedEncodings.Any(i => i.WebName == "utf-16"));
         }
 
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ReadsSimpleTypes()
         {
             // Arrange
@@ -165,9 +155,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Equal(expectedString, model.sampleString);
         }
 
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ReadsComplexTypes()
         {
             // Arrange
@@ -197,9 +184,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Equal(expectedString, model.TestOne.sampleString);
         }
 
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ReadsWhenMaxDepthIsModified()
         {
             // Arrange
@@ -223,9 +207,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Equal(expectedInt, model.SampleInt);
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono,
-            SkipReason = "Mono issue - https://github.com/aspnet/External/issues/18")]
         public async Task ReadAsync_ThrowsOnExceededMaxDepth()
         {
             // Arrange
@@ -242,9 +223,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             await Assert.ThrowsAsync(typeof(SerializationException), async () => await formatter.ReadAsync(context));
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono,
-            SkipReason = "Mono issue - https://github.com/aspnet/External/issues/18")]
         public async Task ReadAsync_ThrowsWhenReaderQuotasAreChanged()
         {
             // Arrange
@@ -271,9 +249,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Throws(typeof(ArgumentException), () => formatter.MaxDepth = 0);
         }
 
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_VerifyStreamIsOpenAfterRead()
         {
             // Arrange
@@ -293,17 +268,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.True(context.HttpContext.Request.Body.CanRead);
         }
 
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_FallsbackToUTF8_WhenCharSet_NotInContentType()
         {
             // Arrange
-            var expectedException = TestPlatformHelper.IsMono ? typeof(SerializationException) :
-                                                                typeof(XmlException);
-            var expectedMessage = TestPlatformHelper.IsMono ?
-                "Expected element 'TestLevelTwo' in namespace '', but found Element node 'DummyClass' in namespace ''" :
-                "The expected encoding 'utf-8' does not match the actual encoding 'utf-16LE'.";
+            var expectedException = typeof(XmlException);
             var inpStart = Encoding.Unicode.GetBytes("<?xml version=\"1.0\" encoding=\"UTF-16\"?>" +
                 "<DummyClass><SampleInt>");
             byte[] inp = { 192, 193 };
@@ -319,20 +287,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 
             // Act
             var ex = await Assert.ThrowsAsync(expectedException, () => formatter.ReadAsync(context));
-            Assert.Equal(expectedMessage, ex.Message);
+            Assert.Contains("utf-8", ex.Message);
+            Assert.Contains("utf-16LE", ex.Message);
         }
 
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_UsesContentTypeCharSet_ToReadStream()
         {
             // Arrange
-            var expectedException = TestPlatformHelper.IsMono ? typeof(SerializationException) :
-                                                                typeof(XmlException);
-            var expectedMessage = TestPlatformHelper.IsMono ?
-                "Expected element 'TestLevelTwo' in namespace '', but found Element node 'DummyClass' in namespace ''" :
-                "The expected encoding 'utf-16LE' does not match the actual encoding 'utf-8'.";
+            var expectedException = typeof(XmlException);
+
             var inputBytes = Encoding.UTF8.GetBytes("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<DummyClass><SampleInt>1000</SampleInt></DummyClass>");
 
@@ -352,12 +315,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 
             // Act
             var ex = await Assert.ThrowsAsync(expectedException, () => formatter.ReadAsync(context));
-            Assert.Equal(expectedMessage, ex.Message);
+            Assert.Contains("utf-16LE", ex.Message);
+            Assert.Contains("utf-8", ex.Message);
         }
 
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_IgnoresBOMCharacters()
         {
             // Arrange
@@ -389,9 +350,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Equal(expectedBytes, Encoding.UTF8.GetBytes(model.SampleString));
         }
 
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_AcceptsUTF16Characters()
         {
             // Arrange
@@ -429,9 +387,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Equal(expectedString, model.sampleString);
         }
 
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ThrowsWhenNotConfiguredWithRootName()
         {
             // Arrange
@@ -450,9 +405,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             await Assert.ThrowsAsync(typeof(SerializationException), async () => await formatter.ReadAsync(context));
         }
 
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ReadsWhenConfiguredWithRootName()
         {
             // Arrange
@@ -489,9 +441,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.Equal(expectedInt, model.SampleInt);
         }
 
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ThrowsWhenNotConfiguredWithKnownTypes()
         {
             // Arrange
@@ -511,9 +460,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             await Assert.ThrowsAsync(typeof(SerializationException), async () => await formatter.ReadAsync(context));
         }
 
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ReadAsync_ReadsWhenConfiguredWithKnownTypes()
         {
             // Arrange

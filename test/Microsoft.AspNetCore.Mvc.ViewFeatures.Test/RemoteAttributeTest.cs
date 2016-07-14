@@ -230,13 +230,13 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var attribute = new RemoteAttribute(routeName: "default");
-            var expected = "Value cannot be null or empty." + Environment.NewLine + "Parameter name: property";
+            var expectedMessage = "Value cannot be null or empty.";
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(
+            ExceptionAssert.ThrowsArgument(
+                () => attribute.FormatAdditionalFieldsForClientValidation(property),
                 "property",
-                () => attribute.FormatAdditionalFieldsForClientValidation(property));
-            Assert.Equal(expected, exception.Message);
+                expectedMessage);
         }
 
         [Theory]
@@ -244,13 +244,13 @@ namespace Microsoft.AspNetCore.Mvc
         public void FormatPropertyForClientValidation_WithInvalidPropertyName_Throws(string property)
         {
             // Arrange
-            var expected = "Value cannot be null or empty." + Environment.NewLine + "Parameter name: property";
+            var expected = "Value cannot be null or empty.";
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(
+            ExceptionAssert.ThrowsArgument(
+                () => RemoteAttribute.FormatPropertyForClientValidation(property),
                 "property",
-                () => RemoteAttribute.FormatPropertyForClientValidation(property));
-            Assert.Equal(expected, exception.Message);
+                expected);
         }
 
         [Fact]

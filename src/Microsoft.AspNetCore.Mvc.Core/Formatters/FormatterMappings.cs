@@ -104,7 +104,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             if (contentType.Type == "*" || contentType.SubType == "*")
             {
-                throw new ArgumentException(string.Format(Resources.FormatterMappings_NotValidMediaType, contentType));
+                throw new ArgumentException(
+                    string.Format(Resources.FormatterMappings_NotValidMediaType, contentType),
+                    nameof(contentType));
             }
         }
 
@@ -119,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 if (format == ".")
                 {
-                    throw new ArgumentException(string.Format(Resources.Format_NotValid, format));
+                    throw new ArgumentException(string.Format(Resources.Format_NotValid, format), nameof(format));
                 }
 
                 format = format.Substring(1);

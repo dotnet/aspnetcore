@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Filters
@@ -42,16 +42,13 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             // Arrange
             var collection = new FilterCollection();
 
-            var expectedMessage =
-                $"The type '{typeof(NonFilter).FullName}' must derive from " +
-                $"'{typeof(IFilterMetadata).FullName}'." + Environment.NewLine +
-                "Parameter name: filterType";
+            var expectedMessage = $"The type '{typeof(NonFilter).FullName}' must derive from " + $"'{typeof(IFilterMetadata).FullName}'.";
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => { collection.Add(typeof(NonFilter)); });
-
-            // Assert
-            Assert.Equal(expectedMessage, ex.Message);
+            ExceptionAssert.ThrowsArgument(
+                () => collection.Add(typeof(NonFilter)),
+                "filterType",
+                expectedMessage);
         }
 
         [Fact]
@@ -88,16 +85,13 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             // Arrange
             var collection = new FilterCollection();
 
-            var expectedMessage =
-                $"The type '{typeof(NonFilter).FullName}' must derive from " +
-                $"'{typeof(IFilterMetadata).FullName}'." + Environment.NewLine +
-                "Parameter name: filterType";
+            var expectedMessage = $"The type '{typeof(NonFilter).FullName}' must derive from '{typeof(IFilterMetadata).FullName}'.";
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => { collection.AddService(typeof(NonFilter)); });
-
-            // Assert
-            Assert.Equal(expectedMessage, ex.Message);
+            ExceptionAssert.ThrowsArgument(
+                () => { collection.AddService(typeof(NonFilter)); },
+                "filterType",
+                expectedMessage);
         }
 
         private class MyFilter : IFilterMetadata, IOrderedFilter

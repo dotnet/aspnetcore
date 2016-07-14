@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
@@ -49,8 +50,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public async Task TryUpdateModel_ReturnsFalse_IfModelValidationFails()
         {
             // Arrange
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            var expectedMessage = PlatformNormalizer.NormalizeContent("The MyProperty field is required.");
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
@@ -86,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Assert
             Assert.False(result);
             var error = Assert.Single(modelState["MyProperty"].Errors);
-            Assert.Equal(expectedMessage, error.ErrorMessage);
+            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("MyProperty"), error.ErrorMessage);
         }
 
         [Fact]
@@ -613,8 +612,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var model = new MyModel();
             Func<ModelMetadata, bool> propertyFilter = (m) => true;
 
+            var modelName = model.GetType().FullName;
+            var userName = typeof(User).FullName;
+            var expectedMessage = $"The model's runtime type '{modelName}' is not assignable to the type '{userName}'.";
+
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<ArgumentException>(
+            var exception = await ExceptionAssert.ThrowsArgumentAsync(
                 () => ModelBindingHelper.TryUpdateModelAsync(
                     model,
                     typeof(User),
@@ -624,14 +627,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     GetModelBinderFactory(binder.Object),
                     Mock.Of<IValueProvider>(),
                     new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
-                    propertyFilter));
-
-            var expectedMessage = string.Format("The model's runtime type '{0}' is not assignable to the type '{1}'." +
-                Environment.NewLine +
-                "Parameter name: modelType",
-                model.GetType().FullName,
-                typeof(User).FullName);
-            Assert.Equal(expectedMessage, exception.Message);
+                    propertyFilter),
+                "modelType",
+                expectedMessage);
         }
 
         [Theory]

@@ -131,16 +131,15 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             var name = string.Empty;
             var value = string.Empty;
-            var expected = "The name of an HTML field cannot be null or empty. Instead use methods " +
+            var expectedMessage = "The name of an HTML field cannot be null or empty. Instead use methods " +
                 "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNetCore.Mvc.Rendering." +
-                "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value." +
-                Environment.NewLine + "Parameter name: expression";
+                "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value.";
 
             // Act and Assert
             ExceptionAssert.ThrowsArgument(
                 () => helper.Password(name, value, htmlAttributes: null),
                 "expression",
-                expected);
+                expectedMessage);
         }
 
         [Fact]
@@ -169,10 +168,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         public void PasswordGeneratesUnobtrusiveValidation()
         {
             // Arrange
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            var expected = PlatformNormalizer.NormalizeContent(
-                @"<input data-val=""HtmlEncode[[true]]"" data-val-required=""HtmlEncode[[The Property2 field is required.]]"" " +
-                @"id=""HtmlEncode[[Property2]]"" name=""HtmlEncode[[Property2]]"" type=""HtmlEncode[[password]]"" />");
+            var requiredMessage = ValidationAttributeUtil.GetRequiredErrorMessage("Property2");
+            var expected =
+                $@"<input data-val=""HtmlEncode[[true]]"" data-val-required=""HtmlEncode[[{requiredMessage}]]"" " +
+                @"id=""HtmlEncode[[Property2]]"" name=""HtmlEncode[[Property2]]"" type=""HtmlEncode[[password]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
 
             // Act
@@ -278,10 +277,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         public void PasswordFor_GeneratesUnobtrusiveValidationAttributes()
         {
             // Arrange
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            var expected = PlatformNormalizer.NormalizeContent(
-                @"<input data-val=""HtmlEncode[[true]]"" data-val-required=""HtmlEncode[[The Property2 field is required.]]"" " +
-                @"id=""HtmlEncode[[Property2]]"" name=""HtmlEncode[[Property2]]"" type=""HtmlEncode[[password]]"" />");
+            var requiredMessage = ValidationAttributeUtil.GetRequiredErrorMessage("Property2");
+            var expected =
+                $@"<input data-val=""HtmlEncode[[true]]"" data-val-required=""HtmlEncode[[{requiredMessage}]]"" " +
+                @"id=""HtmlEncode[[Property2]]"" name=""HtmlEncode[[Property2]]"" type=""HtmlEncode[[password]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithErrors());
 
             // Act

@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -12,12 +12,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void CompositeBindingSourceTest_CanAcceptDataFrom_ThrowsOnComposite()
         {
             // Arrange
-            var expected =
-                "The provided binding source 'Test Source2' is a composite. " +
-                "'CanAcceptDataFrom' requires that the source must represent a single type of input." + 
-                Environment.NewLine +
-                "Parameter name: bindingSource";
-
             var composite1 = CompositeBindingSource.Create(
                 bindingSources: new BindingSource[] { BindingSource.Query, BindingSource.Form },
                 displayName: "Test Source1");
@@ -26,11 +20,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
               bindingSources: new BindingSource[] { BindingSource.Query, BindingSource.Form },
               displayName: "Test Source2");
 
+            var expected = "The provided binding source 'Test Source2' is a composite. " +
+                $"'{nameof(composite1.CanAcceptDataFrom)}' requires that the source must represent a single type of input.";
+
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(
-                () => composite1.CanAcceptDataFrom(composite2));
-            Assert.Equal(expected, exception.Message);
+            ExceptionAssert.ThrowsArgument(
+                () => composite1.CanAcceptDataFrom(composite2),
+                "bindingSource",
+                expected);
         }
 
         [Fact]

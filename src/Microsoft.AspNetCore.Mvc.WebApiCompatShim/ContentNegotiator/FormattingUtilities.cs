@@ -68,12 +68,12 @@ namespace System.Net.Http
         /// <summary>
         /// HTTP X-Requested-With header field name
         /// </summary>
-        public const string HttpRequestedWithHeader = @"x-requested-with";
+        public const string HttpRequestedWithHeader = "x-requested-with";
 
         /// <summary>
         /// HTTP X-Requested-With header field value
         /// </summary>
-        public const string HttpRequestedWithHeaderValue = @"XMLHttpRequest";
+        public const string HttpRequestedWithHeaderValue = "XMLHttpRequest";
 
         /// <summary>
         /// HTTP Host header field name

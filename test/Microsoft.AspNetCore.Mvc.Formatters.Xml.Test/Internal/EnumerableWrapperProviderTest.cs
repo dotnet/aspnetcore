@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
@@ -80,16 +81,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
         public void ThrowsArugmentExceptionFor_ConcreteEnumerableOfT(Type declaredType)
         {
             // Arrange
-            var expectedMessage =
-                "The type must be an interface and must be or derive from 'IEnumerable`1'." +
-                $"{Environment.NewLine}Parameter name: sourceEnumerableOfT";
+            var expectedMessage = "The type must be an interface and must be or derive from 'IEnumerable`1'.";
 
             // Act and Assert
-            var ex = Assert.Throws<ArgumentException>(() => new EnumerableWrapperProvider(
-                                                                            declaredType,
-                                                                            elementWrapperProvider: null));
-
-            Assert.Equal(expectedMessage, ex.Message);
+            ExceptionAssert.ThrowsArgument(() => new EnumerableWrapperProvider(
+                declaredType,
+                elementWrapperProvider: null),
+                "sourceEnumerableOfT",
+                expectedMessage);
         }
     }
 }

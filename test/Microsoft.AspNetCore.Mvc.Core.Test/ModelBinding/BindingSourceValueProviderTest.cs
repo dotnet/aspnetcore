@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -15,8 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
             var expected =
                 "The provided binding source 'Test Source' is a greedy data source. " +
-                "'BindingSourceValueProvider' does not support greedy data sources." + Environment.NewLine +
-                "Parameter name: bindingSource";
+                $"'{nameof(BindingSourceValueProvider)}' does not support greedy data sources.";
 
             var bindingSource = new BindingSource(
                 "Test",
@@ -25,29 +24,28 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 isFromRequest: true);
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(
-                () => new TestableBindingSourceValueProvider(bindingSource));
-            Assert.Equal(expected, exception.Message);
+            ExceptionAssert.ThrowsArgument(
+                () => new TestableBindingSourceValueProvider(bindingSource),
+                "bindingSource",
+                expected);
         }
 
         [Fact]
         public void BindingSourceValueProvider_ThrowsOnCompositeSource()
         {
             // Arrange
-            var expected =
-                "The provided binding source 'Test Source' is a composite. " +
-                "'BindingSourceValueProvider' requires that the source must represent a single type of input." + 
-                Environment.NewLine +
-                "Parameter name: bindingSource";
+            var expected = $"The provided binding source 'Test Source' is a composite. '{nameof(BindingSourceValueProvider)}' " +
+                "requires that the source must represent a single type of input.";
 
             var bindingSource = CompositeBindingSource.Create(
                 bindingSources: new BindingSource[] { BindingSource.Query, BindingSource.Form },
                 displayName: "Test Source");
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(
-                () => new TestableBindingSourceValueProvider(bindingSource));
-            Assert.Equal(expected, exception.Message);
+            ExceptionAssert.ThrowsArgument(
+                () => new TestableBindingSourceValueProvider(bindingSource),
+                "bindingSource",
+                expected);
         }
 
         [Fact]

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ViewsInheritsUsingsAndInjectDirectivesFromViewStarts()
         {
             // Arrange
-            var expected = @"Hello Person1";
+            var expected = "Hello Person1";
 
             // Act
             var body = await Client.GetStringAsync(
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ViewInheritsBasePageFromViewStarts()
         {
             // Arrange
-            var expected = @"WriteLiteral says:layout:Write says:Write says:Hello Person2";
+            var expected = "WriteLiteral says:layout:Write says:Write says:Hello Person2";
 
             // Act
             var body = await Client.GetStringAsync("http://localhost/Directives/ViewInheritsBasePageFromViewImports");

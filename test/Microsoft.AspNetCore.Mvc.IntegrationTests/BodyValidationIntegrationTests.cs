@@ -118,6 +118,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var modelState = testContext.ModelState;
 
+            var priceRange = ValidationAttributeUtil.GetRangeErrorMessage(20, 100, "Price");
+            var categoryRequired = ValidationAttributeUtil.GetRequiredErrorMessage("Category");
+            var contactUsRequired = ValidationAttributeUtil.GetRequiredErrorMessage("Contact Us");
+            var detail2Required = ValidationAttributeUtil.GetRequiredErrorMessage("Detail2");
+            var detail3Required = ValidationAttributeUtil.GetRequiredErrorMessage("Detail3");
+
             // Act
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
 
@@ -127,21 +133,13 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.NotNull(boundPerson);
             Assert.False(modelState.IsValid);
             var modelStateErrors = CreateValidationDictionary(modelState);
+
             Assert.Equal("CompanyName cannot be null or empty.", modelStateErrors["CompanyName"]);
-            Assert.Equal("The field Price must be between 20 and 100.", modelStateErrors["Price"]);
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            Assert.Equal(
-                PlatformNormalizer.NormalizeContent("The Category field is required."),
-                modelStateErrors["Category"]);
-            Assert.Equal(
-                PlatformNormalizer.NormalizeContent("The Contact Us field is required."),
-                modelStateErrors["Contact"]);
-            Assert.Equal(
-                PlatformNormalizer.NormalizeContent("The Detail2 field is required."),
-                modelStateErrors["ProductDetails.Detail2"]);
-            Assert.Equal(
-                PlatformNormalizer.NormalizeContent("The Detail3 field is required."),
-                modelStateErrors["ProductDetails.Detail3"]);
+            Assert.Equal(priceRange, modelStateErrors["Price"]);
+            Assert.Equal(categoryRequired, modelStateErrors["Category"]);
+            Assert.Equal(contactUsRequired, modelStateErrors["Contact"]);
+            Assert.Equal(detail2Required, modelStateErrors["ProductDetails.Detail2"]);
+            Assert.Equal(detail3Required, modelStateErrors["ProductDetails.Detail3"]);
         }
 
         [Fact]
@@ -170,6 +168,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var modelState = testContext.ModelState;
 
+            var productDetailsRequired = ValidationAttributeUtil.GetRequiredErrorMessage("ProductDetails");
+
             // Act
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
 
@@ -179,9 +179,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.NotNull(boundPerson);
             Assert.False(modelState.IsValid);
             var modelStateErrors = CreateValidationDictionary(modelState);
-            Assert.Equal(
-                PlatformNormalizer.NormalizeContent("The ProductDetails field is required."),
-                modelStateErrors["ProductDetails"]);
+            Assert.Equal(productDetailsRequired, modelStateErrors["ProductDetails"]);
         }
 
         [Fact]
@@ -287,6 +285,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var modelState = testContext.ModelState;
 
+            var priceRange = ValidationAttributeUtil.GetRangeErrorMessage(100, 200, "Price");
+            var contactLength = ValidationAttributeUtil.GetStringLengthErrorMessage(null, 10, "Contact");
+
             // Act
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
 
@@ -297,10 +298,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.False(modelState.IsValid);
             var modelStateErrors = CreateValidationDictionary(modelState);
             Assert.Equal(2, modelStateErrors.Count);
-            Assert.Equal("The field Price must be between 100 and 200.", modelStateErrors["Price"]);
-            Assert.Equal(
-                "The field Contact must be a string with a maximum length of 10.",
-                modelStateErrors["Contact"]);
+
+            Assert.Equal(priceRange, modelStateErrors["Price"]);
+            Assert.Equal(contactLength, modelStateErrors["Contact"]);
         }
 
         [Fact]
@@ -379,6 +379,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var modelState = testContext.ModelState;
 
+            var addressRequired = ValidationAttributeUtil.GetRequiredErrorMessage("Address");
+
             // Act
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
 
@@ -390,8 +392,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("CustomParameter.Address", key);
             Assert.False(modelState.IsValid);
             var error = Assert.Single(modelState[key].Errors);
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            Assert.Equal(PlatformNormalizer.NormalizeContent("The Address field is required."), error.ErrorMessage);
+            Assert.Equal(addressRequired, error.ErrorMessage);
         }
 
         [Fact]
@@ -623,6 +624,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var httpContext = testContext.HttpContext;
             var modelState = testContext.ModelState;
 
+            var streetRequired = ValidationAttributeUtil.GetRequiredErrorMessage("Street");
+
             // Act
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
 
@@ -637,8 +640,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var street = entry.Value;
             Assert.Equal(ModelValidationState.Invalid, street.ValidationState);
             var error = Assert.Single(street.Errors);
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            Assert.Equal(PlatformNormalizer.NormalizeContent("The Street field is required."), error.ErrorMessage);
+            Assert.Equal(streetRequired, error.ErrorMessage);
         }
 
         private class Person3

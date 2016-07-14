@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
-using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
@@ -610,17 +609,15 @@ Environment.NewLine;
         [InlineData("datetime", null, "2000-01-02T03:04:05.006+00:00")]
         [InlineData("datetime-local", null, "2000-01-02T03:04:05.006")]
         [InlineData("time", "{0:t}", "03:04:05.006")]
-        [ReplaceCulture]
         public void Editor_FindsCorrectDateOrTimeTemplate(string dataTypeName, string editFormatString, string expected)
         {
             // Arrange
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            var expectedInput = PlatformNormalizer.NormalizeContent(
-                "<input class=\"HtmlEncode[[text-box single-line]]\" data-val=\"HtmlEncode[[true]]\" " +
-                "data-val-required=\"HtmlEncode[[The DateTimeOffset field is required.]]\" id=\"HtmlEncode[[FieldPrefix]]\" " +
+            var requiredMessage = ValidationAttributeUtil.GetRequiredErrorMessage("DateTimeOffset");
+            var expectedInput = "<input class=\"HtmlEncode[[text-box single-line]]\" data-val=\"HtmlEncode[[true]]\" " +
+                $"data-val-required=\"HtmlEncode[[{requiredMessage}]]\" id=\"HtmlEncode[[FieldPrefix]]\" " +
                 "name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[" +
                 dataTypeName +
-                "]]\" value=\"HtmlEncode[[" + expected + "]]\" />");
+                "]]\" value=\"HtmlEncode[[" + expected + "]]\" />";
 
             var offset = TimeSpan.FromHours(0);
             var model = new DateTimeOffset(
@@ -666,17 +663,16 @@ Environment.NewLine;
         [InlineData("datetime", null, "2000-01-02T03:04:05.060+00:00")]
         [InlineData("datetime-local", null, "2000-01-02T03:04:05.060")]
         [InlineData("time", "{0:t}", "03:04:05.060")]
-        [ReplaceCulture]
         public void Editor_AppliesRfc3339(string dataTypeName, string editFormatString, string expected)
         {
             // Arrange
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            var expectedInput = PlatformNormalizer.NormalizeContent(
+            var requiredMessage = ValidationAttributeUtil.GetRequiredErrorMessage("DateTimeOffset");
+            var expectedInput =
                 "<input class=\"HtmlEncode[[text-box single-line]]\" data-val=\"HtmlEncode[[true]]\" " +
-                "data-val-required=\"HtmlEncode[[The DateTimeOffset field is required.]]\" id=\"HtmlEncode[[FieldPrefix]]\" " +
+                $"data-val-required=\"HtmlEncode[[{requiredMessage}]]\" id=\"HtmlEncode[[FieldPrefix]]\" " +
                 "name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[" +
                 dataTypeName +
-                "]]\" value=\"HtmlEncode[[" + expected + "]]\" />");
+                "]]\" value=\"HtmlEncode[[" + expected + "]]\" />";
 
             // Place DateTime-local value in current timezone.
             var offset = string.Equals(string.Empty, dataTypeName) ? DateTimeOffset.Now.Offset : TimeSpan.FromHours(0);
@@ -731,13 +727,12 @@ Environment.NewLine;
         public void Editor_AppliesNonDefaultEditFormat(string dataTypeName, Html5DateRenderingMode renderingMode)
         {
             // Arrange
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            var expectedInput = PlatformNormalizer.NormalizeContent(
-                "<input class=\"HtmlEncode[[text-box single-line]]\" data-val=\"HtmlEncode[[true]]\" " +
-                "data-val-required=\"HtmlEncode[[The DateTimeOffset field is required.]]\" id=\"HtmlEncode[[FieldPrefix]]\" " +
+            var requiredMessage = ValidationAttributeUtil.GetRequiredErrorMessage("DateTimeOffset");
+            var expectedInput = "<input class=\"HtmlEncode[[text-box single-line]]\" data-val=\"HtmlEncode[[true]]\" " +
+                $"data-val-required=\"HtmlEncode[[{requiredMessage}]]\" id=\"HtmlEncode[[FieldPrefix]]\" " +
                 "name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[" +
                 dataTypeName +
-                "]]\" value=\"HtmlEncode[[Formatted as 2000-01-02T03:04:05.0600000+00:00]]\" />");
+                "]]\" value=\"HtmlEncode[[Formatted as 2000-01-02T03:04:05.0600000+00:00]]\" />";
 
             var offset = TimeSpan.FromHours(0);
             var model = new DateTimeOffset(

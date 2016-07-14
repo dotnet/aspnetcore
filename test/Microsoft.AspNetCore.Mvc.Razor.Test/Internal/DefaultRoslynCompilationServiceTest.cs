@@ -69,7 +69,7 @@ this should fail";
         {
             // Arrange
             var fileContent = "file content";
-            var content = @"this should fail";
+            var content = "this should fail";
 
             var compilationService = GetRoslynCompilationService();
             var relativeFileInfo = new RelativeFileInfo(

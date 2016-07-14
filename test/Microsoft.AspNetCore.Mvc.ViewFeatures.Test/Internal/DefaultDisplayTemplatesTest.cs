@@ -122,9 +122,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         {
             // Arrange
             var expected = "<div class=\"HtmlEncode[[display-label]]\">HtmlEncode[[Property1]]</div>" + Environment.NewLine +
-                "<div class=\"HtmlEncode[[display-field]]\"></div>"+ Environment.NewLine +
-                "<div class=\"HtmlEncode[[display-label]]\">HtmlEncode[[Property3]]</div>"+ Environment.NewLine +
-                "<div class=\"HtmlEncode[[display-field]]\"></div>"+ Environment.NewLine;
+                "<div class=\"HtmlEncode[[display-field]]\"></div>" + Environment.NewLine +
+                "<div class=\"HtmlEncode[[display-label]]\">HtmlEncode[[Property3]]</div>" + Environment.NewLine +
+                "<div class=\"HtmlEncode[[display-field]]\"></div>" + Environment.NewLine;
 
             var model = new DefaultTemplatesUtilities.ObjectWithScaffoldColumn();
             var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);

@@ -2469,9 +2469,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Act & Assert
             await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
                 () => invoker.InvokeAsync(),
-                "Cannot return null from an action method with a return type of '"
-                    + resultType
-                    + "'.");
+                $"Cannot return null from an action method with a return type of '{resultType}'.");
         }
 
         [Fact]

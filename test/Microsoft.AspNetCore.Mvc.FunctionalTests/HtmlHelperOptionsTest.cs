@@ -76,11 +76,7 @@ True";
             var body = await Client.GetStringAsync("http://localhost/HtmlHelperOptions/OverrideAppWideDefaultsInView");
 
             // Assert
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            Assert.Equal(
-                PlatformNormalizer.NormalizeContent(expected),
-                body.Trim(),
-                ignoreLineEndingDifferences: true);
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
     }
 }

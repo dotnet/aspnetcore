@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class XmlDataContractSerializerInputFormatterTest : IClassFixture<MvcTestFixture<XmlFormattersWebSite.Startup>>
+    public class XmlDataContractSerializerInputFormatterTest : IClassFixture<MvcTestFixture<Startup>>
     {
         private readonly string errorMessageFormat = string.Format(
             "{{1}}:{0} does not recognize '{1}', so instead use '{2}' with '{3}' set to '{4}' for value " +
@@ -27,16 +27,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             nameof(DataMemberAttribute.IsRequired),
             bool.TrueString);
 
-        public XmlDataContractSerializerInputFormatterTest(MvcTestFixture<XmlFormattersWebSite.Startup> fixture)
+        public XmlDataContractSerializerInputFormatterTest(MvcTestFixture<Startup> fixture)
         {
             Client = fixture.Client;
         }
 
         public HttpClient Client { get; }
 
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ThrowsOnInvalidInput_AndAddsToModelState()
         {
             // Arrange
@@ -56,9 +53,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 data);
         }
 
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task RequiredDataIsProvided_AndModelIsBound_NoValidationErrors()
         {
             // Arrange
@@ -85,10 +79,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Empty(modelBindingInfo.ModelStateErrorMessages);
         }
 
-        // Verifies that the model state has errors related to body model validation.
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task DataMissingForRefereneceTypeProperties_AndModelIsBound_AndHasMixedValidationErrors()
         {
             // Arrange
