@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private FilteredStreamAdapter _filteredStreamAdapter;
         private Task _readInputTask;
 
-        private TaskCompletionSource<object> _socketClosedTcs;
+        private TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>();
         private BufferSizeControl _bufferSizeControl;
 
         public Connection(ListenerContext context, UvStreamHandle socket) : base(context)
@@ -127,13 +127,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public Task StopAsync()
         {
-            if (_socketClosedTcs == null)
-            {
-                _socketClosedTcs = new TaskCompletionSource<object>();
-
-                _frame.Stop();
-                _frame.SocketInput.CompleteAwaiting();
-            }
+            _frame.Stop();
+            _frame.SocketInput.CompleteAwaiting();
 
             return _socketClosedTcs.Task;
         }
@@ -168,7 +163,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 SocketInput.Dispose();
             }
 
-            _socketClosedTcs?.TrySetResult(null);
+            _socketClosedTcs.TrySetResult(null);
         }
 
         private void ApplyConnectionFilter()
