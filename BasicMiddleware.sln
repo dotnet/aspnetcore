@@ -1,7 +1,6 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.HttpOverrides", "src\Microsoft.AspNetCore.HttpOverrides\Microsoft.AspNetCore.HttpOverrides.xproj", "{517308C3-B477-4B01-B461-CAB9C10B6928}"
 EndProject
@@ -25,6 +24,12 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ResponseBufferingSample", "samples\ResponseBufferingSample\ResponseBufferingSample.xproj", "{E5C55B80-7827-40EB-B661-32B0E0E431CA}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "HttpOverridesSample", "samples\HttpOverridesSample\HttpOverridesSample.xproj", "{7F95478D-E1D4-4A64-BA42-B041591A96EB}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Rewrite", "src\Microsoft.AspNetCore.Rewrite\Microsoft.AspNetCore.Rewrite.xproj", "{0E7CA1A7-1DC3-4CE6-B9C7-1688FE1410F1}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RewriteSample", "samples\RewriteSample\RewriteSample.xproj", "{9E049645-13BC-4598-89E1-5B43D36E5D14}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Rewrite.Tests", "test\Microsoft.AspNetCore.Rewrite.Tests\Microsoft.AspNetCore.Rewrite.Tests.xproj", "{31794F9E-A1AA-4535-B03C-A3233737CD1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +61,18 @@ Global
 		{7F95478D-E1D4-4A64-BA42-B041591A96EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F95478D-E1D4-4A64-BA42-B041591A96EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F95478D-E1D4-4A64-BA42-B041591A96EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E7CA1A7-1DC3-4CE6-B9C7-1688FE1410F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E7CA1A7-1DC3-4CE6-B9C7-1688FE1410F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E7CA1A7-1DC3-4CE6-B9C7-1688FE1410F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E7CA1A7-1DC3-4CE6-B9C7-1688FE1410F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E049645-13BC-4598-89E1-5B43D36E5D14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E049645-13BC-4598-89E1-5B43D36E5D14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E049645-13BC-4598-89E1-5B43D36E5D14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E049645-13BC-4598-89E1-5B43D36E5D14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31794F9E-A1AA-4535-B03C-A3233737CD1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31794F9E-A1AA-4535-B03C-A3233737CD1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31794F9E-A1AA-4535-B03C-A3233737CD1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31794F9E-A1AA-4535-B03C-A3233737CD1A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,5 +84,8 @@ Global
 		{F5F1D123-9C81-4A9E-8644-AA46B8E578FB} = {8437B0F3-3894-4828-A945-A9187F37631D}
 		{E5C55B80-7827-40EB-B661-32B0E0E431CA} = {9587FE9F-5A17-42C4-8021-E87F59CECB98}
 		{7F95478D-E1D4-4A64-BA42-B041591A96EB} = {9587FE9F-5A17-42C4-8021-E87F59CECB98}
+		{0E7CA1A7-1DC3-4CE6-B9C7-1688FE1410F1} = {A5076D28-FA7E-4606-9410-FEDD0D603527}
+		{9E049645-13BC-4598-89E1-5B43D36E5D14} = {9587FE9F-5A17-42C4-8021-E87F59CECB98}
+		{31794F9E-A1AA-4535-B03C-A3233737CD1A} = {8437B0F3-3894-4828-A945-A9187F37631D}
 	EndGlobalSection
 EndGlobal

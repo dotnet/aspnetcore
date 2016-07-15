@@ -1,0 +1,12 @@
+﻿# Ensure Https
+RewriteCond %{REQUEST_URI} ^foo/  
+RewriteCond %{HTTPS} off   
+# U is a new flag to represent full URL rewrites
+RewriteRule ^(.*)$ https://www.example.com$1 [L,U]
+
+# Rewrite path with additional sub directory
+RewriteRule ^(.*)$ /foo$1
+
+# Forbid a certain url from being accessed
+RewriteRule /bar - [F]
+RewriteRule /bar/ - [F]
