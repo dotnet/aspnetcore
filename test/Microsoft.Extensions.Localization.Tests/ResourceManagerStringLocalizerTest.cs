@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -21,8 +22,15 @@ namespace Microsoft.Extensions.Localization.Tests
             var baseName = "test";
             var resourceAssembly = new TestAssemblyWrapper();
             var resourceManager = new TestResourceManager(baseName, resourceAssembly.Assembly);
-            var localizer1 = new ResourceManagerStringLocalizer(resourceManager, resourceAssembly, baseName, resourceNamesCache);
-            var localizer2 = new ResourceManagerStringLocalizer(resourceManager, resourceAssembly, baseName, resourceNamesCache);
+            var resourceStreamManager = new TestResourceStringProvider(resourceNamesCache, resourceAssembly, baseName);
+            var localizer1 = new ResourceManagerStringLocalizer(resourceManager,
+                resourceStreamManager,
+                baseName,
+                resourceNamesCache);
+            var localizer2 = new ResourceManagerStringLocalizer(resourceManager,
+                resourceStreamManager,
+                baseName,
+                resourceNamesCache);
 
             // Act
             for (int i = 0; i < 5; i++)
@@ -46,8 +54,19 @@ namespace Microsoft.Extensions.Localization.Tests
             var resourceAssembly2 = new TestAssemblyWrapper("Assembly2");
             var resourceManager1 = new TestResourceManager(baseName, resourceAssembly1.Assembly);
             var resourceManager2 = new TestResourceManager(baseName, resourceAssembly2.Assembly);
-            var localizer1 = new ResourceManagerStringLocalizer(resourceManager1, resourceAssembly1, baseName, resourceNamesCache);
-            var localizer2 = new ResourceManagerStringLocalizer(resourceManager2, resourceAssembly2, baseName, resourceNamesCache);
+            var resourceStreamManager1 = new TestResourceStringProvider(resourceNamesCache, resourceAssembly1, baseName);
+            var resourceStreamManager2 = new TestResourceStringProvider(resourceNamesCache, resourceAssembly2, baseName);
+
+            var localizer1 = new ResourceManagerStringLocalizer(
+                resourceManager1,
+                resourceStreamManager1,
+                baseName,
+                resourceNamesCache);
+            var localizer2 = new ResourceManagerStringLocalizer(
+                resourceManager2,
+                resourceStreamManager2,
+                baseName,
+                resourceNamesCache);
 
             // Act
             localizer1.GetAllStrings().ToList();
@@ -69,7 +88,12 @@ namespace Microsoft.Extensions.Localization.Tests
             var resourceNamesCache = new ResourceNamesCache();
             var resourceAssembly = new TestAssemblyWrapper();
             var resourceManager = new TestResourceManager(baseName, resourceAssembly.Assembly);
-            var localizer = new ResourceManagerStringLocalizer(resourceManager, resourceAssembly, baseName, resourceNamesCache);
+            var resourceStreamManager = new TestResourceStringProvider(resourceNamesCache, resourceAssembly, baseName);
+            var localizer = new ResourceManagerStringLocalizer(
+                resourceManager,
+                resourceStreamManager,
+                baseName,
+                resourceNamesCache);
 
             // Act
             // We have to access the result so it evaluates.
@@ -144,10 +168,28 @@ namespace Microsoft.Extensions.Localization.Tests
             public TestResourceManager(string baseName, Assembly assembly)
                 : base(baseName, assembly)
             {
-
             }
 
             public override string GetString(string name, CultureInfo culture) => null;
+        }
+
+        public class TestResourceStringProvider : AssemblyResourceStringProvider
+        {
+            private TestAssemblyWrapper _assemblyWrapper;
+
+            public TestResourceStringProvider(
+                    IResourceNamesCache resourceCache,
+                    TestAssemblyWrapper assemblyWrapper,
+                    string resourceBaseName)
+                : base(resourceCache, assemblyWrapper, resourceBaseName)
+            {
+                _assemblyWrapper = assemblyWrapper;
+            }
+
+            protected override AssemblyWrapper GetAssembly(CultureInfo culture)
+            {
+                return _assemblyWrapper;
+            }
         }
 
         public class TestAssemblyWrapper : AssemblyWrapper
