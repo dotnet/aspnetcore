@@ -93,6 +93,7 @@ namespace Microsoft.DotNet.Watcher.Core
 
                     cancellationToken.ThrowIfCancellationRequested();
 
+                    string changedFile;
                     if (finishedTaskIndex == 0)
                     {
                         // This is the dotnet task
@@ -109,13 +110,17 @@ namespace Microsoft.DotNet.Watcher.Core
 
                         _logger.LogInformation("Waiting for a file to change before restarting dotnet...");
                         // Now wait for a file to change before restarting dotnet
-                        await WaitForProjectFileToChangeAsync(projectFile, cancellationToken);
+                        changedFile = await WaitForProjectFileToChangeAsync(projectFile, cancellationToken);
                     }
                     else
                     {
                         // This is a file watcher task
-                        string changedFile = fileWatchingTask.Result;
-                        _logger.LogInformation($"File changed: {fileWatchingTask.Result}");
+                        changedFile = fileWatchingTask.Result;
+                    }
+
+                    if (!string.IsNullOrEmpty(changedFile))
+                    {
+                        _logger.LogInformation($"File changed: {changedFile}");
                     }
                 }
             }

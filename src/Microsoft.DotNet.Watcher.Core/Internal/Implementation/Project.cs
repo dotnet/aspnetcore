@@ -35,7 +35,8 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
             }
             else
             {
-                filesToWatch.AddRange(runtimeProject.Files.ResourceFiles.Values);
+                // For resource files the key is the name of the file, not the value
+                filesToWatch.AddRange(runtimeProject.Files.ResourceFiles.Keys);
             }
 
             filesToWatch.AddRange(runtimeProject.Files.SharedFiles);
