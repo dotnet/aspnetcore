@@ -54,7 +54,7 @@ namespace Microsoft.Net.Http.Server
             CancellationTokenRegistration cancellationRegistration)
             : this(responseStream, cancellationRegistration)
         {
-            var boundHandle = _responseStream.RequestContext.Server.BoundHandle;
+            var boundHandle = _responseStream.RequestContext.Server.RequestQueue.BoundHandle;
             object[] objectsToPin;
 
             if (buffer.TotalBytes == 0)
@@ -117,7 +117,7 @@ namespace Microsoft.Net.Http.Server
             long? count, bool chunked, CancellationTokenRegistration cancellationRegistration)
             : this(responseStream, cancellationRegistration)
         {
-            var boundHandle = responseStream.RequestContext.Server.BoundHandle;
+            var boundHandle = responseStream.RequestContext.Server.RequestQueue.BoundHandle;
 
             int bufferSize = 1024 * 64; // TODO: Validate buffer size choice.
 #if NETSTANDARD1_3

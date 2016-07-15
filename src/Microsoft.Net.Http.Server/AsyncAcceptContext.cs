@@ -165,7 +165,7 @@ namespace Microsoft.Net.Http.Server
                 retry = false;
                 uint bytesTransferred = 0;
                 statusCode = UnsafeNclNativeMethods.HttpApi.HttpReceiveHttpRequest(
-                    Server.RequestQueueHandle,
+                    Server.RequestQueue.Handle,
                     _nativeRequestContext.RequestBlob->RequestId,
                     (uint)UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY,
                     _nativeRequestContext.RequestBlob,

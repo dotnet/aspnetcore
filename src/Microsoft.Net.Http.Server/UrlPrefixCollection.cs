@@ -49,7 +49,7 @@ namespace Microsoft.Net.Http.Server
                 var id = _nextId++;
                 if (_webListener.IsListening)
                 {
-                    RegisterPrefix(item.Whole, id);
+                    _webListener.UrlGroup.RegisterPrefix(item.Whole, id);
                 }
                 _prefixes.Add(id, item);
             }
@@ -108,7 +108,7 @@ namespace Microsoft.Net.Http.Server
                         id = pair.Key;
                         if (_webListener.IsListening)
                         {
-                            UnregisterPrefix(pair.Value.Whole);
+                            _webListener.UrlGroup.UnregisterPrefix(pair.Value.Whole);
                         }
                     }
                 }
@@ -142,7 +142,7 @@ namespace Microsoft.Net.Http.Server
                 foreach (var pair in _prefixes)
                 {
                     // We'll get this index back on each request and use it to look up the prefix to calculate PathBase.
-                    RegisterPrefix(pair.Value.Whole, pair.Key);
+                    _webListener.UrlGroup.RegisterPrefix(pair.Value.Whole, pair.Key);
                 }
             }
         }
@@ -155,51 +155,9 @@ namespace Microsoft.Net.Http.Server
                 foreach (var prefix in _prefixes.Values)
                 {
                     // ignore possible failures
-                    UnregisterPrefix(prefix.Whole);
+                    _webListener.UrlGroup.UnregisterPrefix(prefix.Whole);
                 }
             }
-        }
-
-        private void RegisterPrefix(string uriPrefix, int contextId)
-        {
-            LogHelper.LogInfo(_webListener.Logger, "Listening on prefix: " + uriPrefix);
-
-            uint statusCode =
-                UnsafeNclNativeMethods.HttpApi.HttpAddUrlToUrlGroup(
-                    _webListener.UrlGroupId,
-                    uriPrefix,
-                    (ulong)contextId,
-                    0);
-
-            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
-            {
-                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS)
-                {
-                    throw new WebListenerException((int)statusCode, String.Format(Resources.Exception_PrefixAlreadyRegistered, uriPrefix));
-                }
-                else
-                {
-                    throw new WebListenerException((int)statusCode);
-                }
-            }
-        }
-
-        private bool UnregisterPrefix(string uriPrefix)
-        {
-            uint statusCode = 0;
-            LogHelper.LogInfo(_webListener.Logger, "Stop listening on prefix: " + uriPrefix);
-
-            statusCode =
-                UnsafeNclNativeMethods.HttpApi.HttpRemoveUrlFromUrlGroup(
-                    _webListener.UrlGroupId,
-                    uriPrefix,
-                    0);
-
-            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_NOT_FOUND)
-            {
-                return false;
-            }
-            return true;
         }
     }
 }

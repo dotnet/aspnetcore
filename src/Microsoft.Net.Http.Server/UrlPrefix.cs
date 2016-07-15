@@ -151,7 +151,7 @@ namespace Microsoft.Net.Http.Server
                 else
                 {
                     // This means a port was specified but was invalid or empty.
-                    throw new FormatException("Invalid prefix, invalid port speficification: " + prefix);
+                    throw new FormatException("Invalid prefix, invalid port specified: " + prefix);
                 }
             }
             else

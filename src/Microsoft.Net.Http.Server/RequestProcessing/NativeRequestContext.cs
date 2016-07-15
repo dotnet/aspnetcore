@@ -182,7 +182,7 @@ namespace Microsoft.Net.Http.Server
 
             uint newSize = size != 0 ? size : RequestBuffer == null ? DefaultBufferSize : Size;
             SetBuffer(checked((int)newSize));
-            var boundHandle = _acceptResult.Server.BoundHandle;
+            var boundHandle = _acceptResult.Server.RequestQueue.BoundHandle;
             _nativeOverlapped = new SafeNativeOverlapped(boundHandle,
                 boundHandle.AllocateNativeOverlapped(AsyncAcceptContext.IOCallback, _acceptResult, RequestBuffer));
 

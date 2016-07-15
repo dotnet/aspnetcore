@@ -1025,15 +1025,7 @@ namespace Microsoft.Net.Http.Server
                 version.HttpApiMajorVersion = majorVersion;
                 version.HttpApiMinorVersion = minorVersion;
 
-                // For pre-Win7 OS versions, we need to check whether http.sys contains the CBT patch.
-                // We do so by passing HTTP_INITIALIZE_CBT flag to HttpInitialize. If the flag is not 
-                // supported, http.sys is not patched. Note that http.sys will return invalid parameter
-                // also on Win7, even though it shipped with CBT support. Therefore we must not pass
-                // the flag on Win7 and later.
-                uint statusCode = ErrorCodes.ERROR_SUCCESS;
-
-                // on Win7 and later, we don't pass the CBT flag. CBT is always supported.
-                statusCode = HttpApi.HttpInitialize(version, (uint)HTTP_FLAGS.HTTP_INITIALIZE_SERVER, null);
+                var statusCode = HttpApi.HttpInitialize(version, (uint)HTTP_FLAGS.HTTP_INITIALIZE_SERVER, null);
 
                 supported = statusCode == ErrorCodes.ERROR_SUCCESS;
             }

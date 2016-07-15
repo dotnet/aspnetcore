@@ -100,7 +100,7 @@ namespace Microsoft.Net.Http.Server
 
                 IntPtr infoptr = new IntPtr(&authInfo);
 
-                _server.SetUrlGroupProperty(
+                _server.UrlGroup.SetProperty(
                     UnsafeNclNativeMethods.HttpApi.HTTP_SERVER_PROPERTY.HttpServerAuthenticationProperty,
                     infoptr, (uint)AuthInfoSize);
             }

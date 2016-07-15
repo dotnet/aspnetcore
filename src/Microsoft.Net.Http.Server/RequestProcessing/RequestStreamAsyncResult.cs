@@ -64,7 +64,7 @@ namespace Microsoft.Net.Http.Server
             : this(requestStream, userState, callback)
         {
             _dataAlreadyRead = dataAlreadyRead;
-            var boundHandle = requestStream.RequestContext.Server.BoundHandle;
+            var boundHandle = requestStream.RequestContext.Server.RequestQueue.BoundHandle;
             _overlapped = new SafeNativeOverlapped(boundHandle,
                 boundHandle.AllocateNativeOverlapped(IOCallback, this, buffer));
             _pinnedBuffer = (Marshal.UnsafeAddrOfPinnedArrayElement(buffer, offset));

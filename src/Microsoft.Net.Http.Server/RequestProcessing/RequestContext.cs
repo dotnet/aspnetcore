@@ -22,9 +22,11 @@
 //------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -84,7 +86,7 @@ namespace Microsoft.Net.Http.Server
                 // We need to be able to dispose of the registrations each request to prevent leaks.
                 if (!_disconnectToken.HasValue)
                 {
-                    var connectionDisconnectToken = _server.RegisterForDisconnectNotification(this);
+                    var connectionDisconnectToken = _server.DisconnectListener.GetTokenForConnection(Request.ConnectionId);
 
                     if (connectionDisconnectToken.CanBeCanceled)
                     {
@@ -117,7 +119,7 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return _server.RequestQueueHandle;
+                return _server.RequestQueue.Handle;
             }
         }
 
@@ -167,17 +169,25 @@ namespace Microsoft.Net.Http.Server
             Response.SendOpaqueUpgrade(); // TODO: Async
             Request.SwitchToOpaqueMode();
             Response.SwitchToOpaqueMode();
-            Stream opaqueStream = new OpaqueStream(Request.Body, Response.Body);
-            return Task.FromResult(opaqueStream);
+            var opaqueStream = new OpaqueStream(Request.Body, Response.Body);
+            return Task.FromResult<Stream>(opaqueStream);
         }
 
-        /*
-        public bool TryGetChannelBinding(ref ChannelBinding value)
+        // TODO: Public when needed
+        internal bool TryGetChannelBinding(ref ChannelBinding value)
         {
-            value = Server.GetChannelBinding(Request.ConnectionId, Request.IsSecureConnection);
+            if (!Request.IsSecureConnection)
+            {
+                LogHelper.LogDebug(Logger, "TryGetChannelBinding", "Channel binding requires HTTPS.");
+                return false;
+            }
+
+            value = ClientCertLoader.GetChannelBindingFromTls(Server.RequestQueue, Request.ConnectionId, Logger);
+
+            Debug.Assert(value != null, "GetChannelBindingFromTls returned null even though OS supposedly supports Extended Protection");
+            LogHelper.LogInfo(Logger, "Channel binding retrieved.");
             return value != null;
         }
-        */
 
         public void Dispose()
         {

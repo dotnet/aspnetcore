@@ -270,7 +270,7 @@ namespace Microsoft.Net.Http.Server
 
             IntPtr infoptr = new IntPtr(&timeoutinfo);
 
-            _server.SetUrlGroupProperty(
+            _server.UrlGroup.SetProperty(
                 UnsafeNclNativeMethods.HttpApi.HTTP_SERVER_PROPERTY.HttpServerTimeoutsProperty,
                 infoptr, (uint)TimeoutLimitSize);
         }
