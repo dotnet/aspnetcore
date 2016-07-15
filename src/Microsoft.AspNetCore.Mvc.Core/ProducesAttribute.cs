@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -87,10 +86,17 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 // Check if there are any IFormatFilter in the pipeline, and if any of them is active. If there is one,
                 // do not override the content type value.
-                if (context.Filters.OfType<IFormatFilter>().All(f => f.GetFormat(context) == null))
+                for (var i = 0; i < context.Filters.Count; i++)
                 {
-                    SetContentTypes(objectResult.ContentTypes);
+                    var filter = context.Filters[i] as IFormatFilter;
+
+                    if (filter?.GetFormat(context) != null)
+                    {
+                        return;
+                    }
                 }
+
+                SetContentTypes(objectResult.ContentTypes);
             }
         }
 
