@@ -39,8 +39,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             ServerAddress = address;
             Thread = thread;
-            ConnectionManager = new ConnectionManager(thread);
-
             DispatchPipe = new UvPipeHandle(Log);
 
             var tcs = new TaskCompletionSource<int>(this);
@@ -180,27 +178,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                     listener._closed = true;
 
-                    listener.ConnectionManager.WalkConnectionsAndClose();
-                }, this).ConfigureAwait(false);
-
-                await ConnectionManager.WaitForConnectionCloseAsync().ConfigureAwait(false);
-
-                await Thread.PostAsync(state =>
-                {
-                    var listener = (ListenerSecondary)state;
-                    var writeReqPool = listener.WriteReqPool;
-                    while (writeReqPool.Count > 0)
-                    {
-                        writeReqPool.Dequeue().Dispose();
-                    }
                 }, this).ConfigureAwait(false);
             }
             else
             {
                 FreeBuffer();
             }
-
-            Memory.Dispose();
         }
     }
 }

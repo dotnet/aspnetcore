@@ -7,6 +7,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.Extensions.Logging;
@@ -42,6 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         private ExceptionDispatchInfo _closeError;
         private readonly IKestrelTrace _log;
         private readonly IThreadPool _threadPool;
+        private readonly TimeSpan _shutdownTimeout;
 
         public KestrelThread(KestrelEngine engine)
         {
@@ -49,6 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             _appLifetime = engine.AppLifetime;
             _log = engine.Log;
             _threadPool = engine.ThreadPool;
+            _shutdownTimeout = engine.ServerOptions.ShutdownTimeout;
             _loop = new UvLoopHandle(_log);
             _post = new UvAsyncHandle(_log);
             _thread = new Thread(ThreadStart);
@@ -60,9 +63,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 #endif
             QueueCloseHandle = PostCloseHandle;
             QueueCloseAsyncHandle = EnqueueCloseHandle;
+            Memory = new MemoryPool();
+            WriteReqPool = new WriteReqPool(this, _log);
+            ConnectionManager = new ConnectionManager(this, _threadPool);
         }
 
         public UvLoopHandle Loop { get { return _loop; } }
+
+        public MemoryPool Memory { get; }
+
+        public ConnectionManager ConnectionManager { get; }
+
+        public WriteReqPool WriteReqPool { get; }
 
         public ExceptionDispatchInfo FatalError { get { return _closeError; } }
 
@@ -95,6 +107,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
             if (_thread.IsAlive)
             {
+                // These operations need to run on the libuv thread so it only makes
+                // sense to attempt execution if it's still running
+                DisposeConnections();
+
                 var stepTimeout = (int)(timeout.TotalMilliseconds / 2);
                 try
                 {
@@ -122,6 +138,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             if (_closeError != null)
             {
                 _closeError.Throw();
+            }
+        }
+
+        private void DisposeConnections()
+        {
+            try
+            {
+                // Close and wait for all connections
+                if (!ConnectionManager.WalkConnectionsAndClose(_shutdownTimeout))
+                {
+                    _log.LogError(0, null, "Waiting for connections timed out");
+                }
+
+                var result = PostAsync(state =>
+                {
+                    var listener = (KestrelThread)state;
+                    listener.WriteReqPool.Dispose();
+                },
+                this).Wait(_shutdownTimeout);
+
+                if (!result)
+                {
+                    _log.LogError(0, null, "Disposing write requests failed");
+                }
+            }
+            finally
+            {
+                Memory.Dispose();
             }
         }
 

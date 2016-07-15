@@ -3,30 +3,36 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
     public class ConnectionManager
     {
-        private KestrelThread _thread;
-        private List<Task> _connectionStopTasks;
+        private readonly KestrelThread _thread;
+        private readonly IThreadPool _threadPool;
 
-        public ConnectionManager(KestrelThread thread)
+        public ConnectionManager(KestrelThread thread, IThreadPool threadPool)
         {
             _thread = thread;
+            _threadPool = threadPool;
         }
 
-        // This must be called on the libuv event loop
-        public void WalkConnectionsAndClose()
+        public bool WalkConnectionsAndClose(TimeSpan timeout)
         {
-            if (_connectionStopTasks != null)
-            {
-                throw new InvalidOperationException($"{nameof(WalkConnectionsAndClose)} cannot be called twice.");
-            }
+            var wh = new ManualResetEventSlim();
 
-            _connectionStopTasks = new List<Task>();
+            _thread.Post(state => ((ConnectionManager)state).WalkConnectionsAndCloseCore(wh), this);
+
+            return wh.Wait(timeout);
+        }
+
+        private void WalkConnectionsAndCloseCore(ManualResetEventSlim wh)
+        {
+            var connectionStopTasks = new List<Task>();
 
             _thread.Walk(ptr =>
             {
@@ -35,19 +41,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                 if (connection != null)
                 {
-                    _connectionStopTasks.Add(connection.StopAsync());
+                    connectionStopTasks.Add(connection.StopAsync());
                 }
             });
-        }
 
-        public Task WaitForConnectionCloseAsync()
-        {
-            if (_connectionStopTasks == null)
+            _threadPool.Run(() =>
             {
-                throw new InvalidOperationException($"{nameof(WalkConnectionsAndClose)} must be called first.");
-            }
-
-            return Task.WhenAll(_connectionStopTasks);
+                Task.WaitAll(connectionStopTasks.ToArray());
+                wh.Set();
+            });
         }
     }
 }

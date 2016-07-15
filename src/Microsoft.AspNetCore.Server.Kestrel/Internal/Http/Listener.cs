@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
     {
         private bool _closed;
 
-        protected Listener(ServiceContext serviceContext) 
+        protected Listener(ServiceContext serviceContext)
             : base(serviceContext)
         {
         }
@@ -28,7 +28,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             ServerAddress = address;
             Thread = thread;
-            ConnectionManager = new ConnectionManager(thread);
 
             var tcs = new TaskCompletionSource<int>(this);
 
@@ -57,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         protected static void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
         {
-            var listener = (Listener) state;
+            var listener = (Listener)state;
 
             if (error != null)
             {
@@ -97,22 +96,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                     listener._closed = true;
 
-                    listener.ConnectionManager.WalkConnectionsAndClose();
-                }, this).ConfigureAwait(false);
-
-                await ConnectionManager.WaitForConnectionCloseAsync().ConfigureAwait(false);
-
-                await Thread.PostAsync(state =>
-                {
-                    var writeReqPool = ((Listener)state).WriteReqPool;
-                    while (writeReqPool.Count > 0)
-                    {
-                        writeReqPool.Dequeue().Dispose();
-                    }
                 }, this).ConfigureAwait(false);
             }
 
-            Memory.Dispose();
             ListenSocket = null;
         }
     }

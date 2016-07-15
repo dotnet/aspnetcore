@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
     public class SocketOutput : ISocketOutput
     {
-        public const int MaxPooledWriteReqs = 1024;
-
         private const int _maxPendingWrites = 3;
         private const int _maxBytesPreCompleted = 65536;
         // Well behaved WriteAsync users should await returned task, so there is no need to allocate more per connection by default
@@ -58,17 +56,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private WriteContext _nextWriteContext;
         private readonly Queue<WaitingTask> _tasksPending;
         private readonly Queue<WriteContext> _writeContextPool;
-        private readonly Queue<UvWriteReq> _writeReqPool;
+        private readonly WriteReqPool _writeReqPool;
 
         public SocketOutput(
             KestrelThread thread,
             UvStreamHandle socket,
-            MemoryPool memory,
             Connection connection,
             string connectionId,
             IKestrelTrace log,
-            IThreadPool threadPool,
-            Queue<UvWriteReq> writeReqPool)
+            IThreadPool threadPool)
         {
             _thread = thread;
             _socket = socket;
@@ -78,9 +74,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             _threadPool = threadPool;
             _tasksPending = new Queue<WaitingTask>(_initialTaskQueues);
             _writeContextPool = new Queue<WriteContext>(_maxPooledWriteContexts);
-            _writeReqPool = writeReqPool;
+            _writeReqPool = thread.WriteReqPool;
 
-            _head = memory.Lease();
+            _head = thread.Memory.Lease();
             _tail = _head;
         }
 
@@ -585,15 +581,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 var lockedEndBlock = _lockedEnd.Block;
                 var lockedEndIndex = _lockedEnd.Index;
 
-                if (Self._writeReqPool.Count > 0)
-                {
-                    _writeReq = Self._writeReqPool.Dequeue();
-                }
-                else
-                {
-                    _writeReq = new UvWriteReq(Self._log);
-                    _writeReq.Init(Self._thread.Loop);
-                }
+                _writeReq = Self._writeReqPool.Allocate();
 
                 _writeReq.Write(Self._socket, _lockedStart, _lockedEnd, _bufferCount, (_writeReq, status, error, state) =>
                 {
@@ -691,14 +679,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             private void PoolWriteReq(UvWriteReq writeReq)
             {
-                if (Self._writeReqPool.Count < MaxPooledWriteReqs)
-                {
-                    Self._writeReqPool.Enqueue(writeReq);
-                }
-                else
-                {
-                    writeReq.Dispose();
-                }
+                Self._writeReqPool.Return(writeReq);
             }
 
             private void ScheduleReturnFullyWrittenBlocks()

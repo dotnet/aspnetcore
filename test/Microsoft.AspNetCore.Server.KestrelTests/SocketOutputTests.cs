@@ -26,8 +26,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             // Arrange
             var mockLibuv = new MockLibuv();
-
-            using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
@@ -36,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new LoggingThreadPool(trace);
-                var socketOutput = new SocketOutput(kestrelThread, socket, memory, new MockConnection(), "0", trace, ltp, new Queue<UvWriteReq>());
+                var socketOutput = new SocketOutput(kestrelThread, socket, new MockConnection(), "0", trace, ltp);
 
                 // I doubt _maxBytesPreCompleted will ever be over a MB. If it is, we should change this test.
                 var bufferSize = 1048576;
@@ -78,7 +76,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
@@ -88,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new LoggingThreadPool(trace);
                 var mockConnection = new MockConnection();
-                var socketOutput = new SocketOutput(kestrelThread, socket, memory, mockConnection, "0", trace, ltp, new Queue<UvWriteReq>());
+                var socketOutput = new SocketOutput(kestrelThread, socket, mockConnection, "0", trace, ltp);
 
                 var bufferSize = maxBytesPreCompleted;
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
@@ -152,7 +149,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
@@ -162,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new LoggingThreadPool(trace);
                 var mockConnection = new MockConnection();
-                var socketOutput = new SocketOutput(kestrelThread, socket, memory, mockConnection, "0", trace, ltp, new Queue<UvWriteReq>());
+                var socketOutput = new SocketOutput(kestrelThread, socket, mockConnection, "0", trace, ltp);
 
                 var bufferSize = maxBytesPreCompleted / 2;
                 var data = new byte[bufferSize];
@@ -231,7 +227,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
@@ -240,10 +235,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new LoggingThreadPool(trace);
-                
+
                 using (var mockConnection = new MockConnection())
                 {
-                    ISocketOutput socketOutput = new SocketOutput(kestrelThread, socket, memory, mockConnection, "0", trace, ltp, new Queue<UvWriteReq>());
+                    ISocketOutput socketOutput = new SocketOutput(kestrelThread, socket, mockConnection, "0", trace, ltp);
 
                     var bufferSize = maxBytesPreCompleted;
 
@@ -348,7 +343,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
@@ -361,7 +355,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 using (var mockConnection = new MockConnection())
                 {
                     var abortedSource = mockConnection.RequestAbortedSource;
-                    ISocketOutput socketOutput = new SocketOutput(kestrelThread, socket, memory, mockConnection, "0", trace, ltp, new Queue<UvWriteReq>());
+                    ISocketOutput socketOutput = new SocketOutput(kestrelThread, socket, mockConnection, "0", trace, ltp);
 
                     var bufferSize = maxBytesPreCompleted;
 
@@ -441,7 +435,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
@@ -451,7 +444,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new LoggingThreadPool(trace);
                 var mockConnection = new MockConnection();
-                var socketOutput = new SocketOutput(kestrelThread, socket, memory, mockConnection, "0", trace, ltp, new Queue<UvWriteReq>());
+                var socketOutput = new SocketOutput(kestrelThread, socket, mockConnection, "0", trace, ltp);
 
                 var bufferSize = maxBytesPreCompleted;
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
@@ -534,7 +527,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
@@ -543,14 +535,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new LoggingThreadPool(trace);
-                var socketOutput = new SocketOutput(kestrelThread, socket, memory, new MockConnection(), "0", trace, ltp, new Queue<UvWriteReq>());
+                var socketOutput = new SocketOutput(kestrelThread, socket, new MockConnection(), "0", trace, ltp);
 
                 // block 1
                 var start = socketOutput.ProducingStart();
                 start.Block.End = start.Block.Data.Offset + start.Block.Data.Count;
 
                 // block 2
-                var block2 = memory.Lease();
+                var block2 = kestrelThread.Memory.Lease();
                 block2.End = block2.Data.Offset + block2.Data.Count;
                 start.Block.Next = block2;
 
@@ -586,7 +578,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
@@ -596,7 +587,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new LoggingThreadPool(trace);
                 var mockConnection = new MockConnection();
-                var socketOutput = new SocketOutput(kestrelThread, socket, memory, mockConnection, "0", trace, ltp, new Queue<UvWriteReq>());
+                var socketOutput = new SocketOutput(kestrelThread, socket, mockConnection, "0", trace, ltp);
 
                 var buffer = new ArraySegment<byte>(new byte[1]);
 
@@ -656,7 +647,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
@@ -665,7 +655,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new LoggingThreadPool(trace);
-                var socketOutput = new SocketOutput(kestrelThread, socket, memory, new MockConnection(), "0", trace, ltp, new Queue<UvWriteReq>());
+                var socketOutput = new SocketOutput(kestrelThread, socket, new MockConnection(), "0", trace, ltp);
 
                 var blockThreadWh = new ManualResetEventSlim();
                 kestrelThread.Post(_ =>
@@ -702,7 +692,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var mockLibuv = new MockLibuv();
 
-            using (var memory = new MemoryPool())
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
@@ -712,7 +701,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new LoggingThreadPool(trace);
                 var connection = new MockConnection();
-                var socketOutput = new SocketOutput(kestrelThread, socket, memory, connection, "0", trace, ltp, new Queue<UvWriteReq>());
+                var socketOutput = new SocketOutput(kestrelThread, socket, connection, "0", trace, ltp);
 
                 // Close SocketOutput
                 var cleanupTask = socketOutput.WriteAsync(

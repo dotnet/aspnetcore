@@ -52,8 +52,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 _bufferSizeControl = new BufferSizeControl(ServerOptions.MaxRequestBufferSize.Value, this, Thread);
             }
 
-            SocketInput = new SocketInput(Memory, ThreadPool, _bufferSizeControl);
-            SocketOutput = new SocketOutput(Thread, _socket, Memory, this, ConnectionId, Log, ThreadPool, WriteReqPool);
+            SocketInput = new SocketInput(Thread.Memory, ThreadPool, _bufferSizeControl);
+            SocketOutput = new SocketOutput(Thread, _socket, this, ConnectionId, Log, ThreadPool);
 
             var tcpHandle = _socket as UvTcpHandle;
             if (tcpHandle != null)
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             if (_filterContext.Connection != _libuvStream)
             {
-                _filteredStreamAdapter = new FilteredStreamAdapter(ConnectionId, _filterContext.Connection, Memory, Log, ThreadPool, _bufferSizeControl);
+                _filteredStreamAdapter = new FilteredStreamAdapter(ConnectionId, _filterContext.Connection, Thread.Memory, Log, ThreadPool, _bufferSizeControl);
 
                 _frame.SocketInput = _filteredStreamAdapter.SocketInput;
                 _frame.SocketOutput = _filteredStreamAdapter.SocketOutput;
