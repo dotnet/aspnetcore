@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Filter;
@@ -128,13 +129,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return _socketClosedTcs.Task;
         }
 
-        public virtual void Abort()
+        public virtual void Abort(Exception error = null)
         {
             // Frame.Abort calls user code while this method is always
             // called from a libuv thread.
             ThreadPool.Run(() =>
             {
-                _frame.Abort();
+                _frame.Abort(error);
             });
         }
 
@@ -231,18 +232,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
             }
 
-            Exception error = null;
+            IOException error = null;
             if (errorDone)
             {
-                handle.Libuv.Check(status, out error);
-                Log.ConnectionError(ConnectionId, error);
+                Exception uvError;
+                handle.Libuv.Check(status, out uvError);
+                Log.ConnectionError(ConnectionId, uvError);
+                error = new IOException(uvError.Message, uvError);
             }
 
             SocketInput.IncomingComplete(readCount, error);
 
             if (errorDone)
             {
-                Abort();
+                Abort(error);
             }
         }
 

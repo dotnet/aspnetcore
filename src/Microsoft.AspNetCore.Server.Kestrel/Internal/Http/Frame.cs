@@ -339,13 +339,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         /// <summary>
         /// Immediate kill the connection and poison the request and response streams.
         /// </summary>
-        public void Abort()
+        public void Abort(Exception error = null)
         {
             if (Interlocked.CompareExchange(ref _requestAborted, 1, 0) == 0)
             {
                 _requestProcessingStopping = true;
 
-                _frameStreams?.RequestBody.Abort();
+                _frameStreams?.RequestBody.Abort(error);
                 _frameStreams?.ResponseBody.Abort();
 
                 try

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
             RequestAbortedSource = new CancellationTokenSource();
         }
 
-        public override void Abort()
+        public override void Abort(Exception error = null)
         {
             if (RequestAbortedSource != null)
             {

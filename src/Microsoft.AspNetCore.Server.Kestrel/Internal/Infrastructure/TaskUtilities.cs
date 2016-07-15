@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -38,6 +39,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 #else
             var tcs = new TaskCompletionSource<int>();
             tcs.TrySetCanceled();
+            return tcs.Task;
+#endif
+        }
+
+        public static Task<int> GetFaultedTask(Exception error)
+        {
+#if NETSTANDARD1_3
+            return Task.FromException<int>(error);
+#else
+            var tcs = new TaskCompletionSource<int>();
+            tcs.SetException(error);
             return tcs.Task;
 #endif
         }

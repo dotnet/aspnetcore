@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
     {
         private MessageBody _body;
         private FrameStreamState _state;
+        private Exception _error;
 
         public FrameRequestStream()
         {
@@ -163,13 +164,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             _body = null;
         }
 
-        public void Abort()
+        public void Abort(Exception error = null)
         {
             // We don't want to throw an ODE until the app func actually completes.
-            // If the request is aborted, we throw an TaskCanceledException instead.
+            // If the request is aborted, we throw an TaskCanceledException instead,
+            // unless error is not null, in which case we throw it.
             if (_state != FrameStreamState.Closed)
             {
                 _state = FrameStreamState.Aborted;
+                _error = error;
             }
         }
 
@@ -186,7 +189,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 case FrameStreamState.Closed:
                     throw new ObjectDisposedException(nameof(FrameRequestStream));
                 case FrameStreamState.Aborted:
-                    return TaskUtilities.GetCancelledZeroTask();
+                    return _error != null ?
+                        TaskUtilities.GetFaultedTask(_error) :
+                        TaskUtilities.GetCancelledZeroTask();
             }
             return null;
         }

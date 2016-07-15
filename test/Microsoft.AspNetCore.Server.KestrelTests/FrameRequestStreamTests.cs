@@ -114,5 +114,17 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var task = stream.ReadAsync(new byte[1], 0, 1);
             Assert.True(task.IsCanceled);
         }
+
+        [Fact]
+        public void AbortWithErrorCausesReadToCancel()
+        {
+            var stream = new FrameRequestStream();
+            stream.StartAcceptingReads(null);
+            var error = new Exception();
+            stream.Abort(error);
+            var task = stream.ReadAsync(new byte[1], 0, 1);
+            Assert.True(task.IsFaulted);
+            Assert.Same(error, task.Exception.InnerException);
+        }
     }
 }

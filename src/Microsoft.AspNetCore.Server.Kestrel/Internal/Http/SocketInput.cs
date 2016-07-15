@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -354,11 +353,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             var error = _tcs.Task.Exception?.InnerException;
             if (error != null)
             {
-                if (error is TaskCanceledException || error is InvalidOperationException)
-                {
-                    throw error;
-                }
-                throw new IOException(error.Message, error);
+                throw error;
             }
         }
     }
