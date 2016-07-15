@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         }
 
         [Fact]
-        public void GetReferencePaths_ReturnsAssebmlyLocation_IfPreserveCompilationContextIsNotSet()
+        public void GetReferencePaths_ReturnsAssemblyLocation_IfPreserveCompilationContextIsNotSet()
         {
             // Arrange
             // src projects do not have preserveCompilationContext specified.
