@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.NodeServices.HostingModels.PhysicalConnections;
 using Microsoft.AspNetCore.NodeServices.HostingModels.VirtualConnections;
+using Microsoft.AspNetCore.NodeServices.Util;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -36,13 +37,14 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private string _socketAddress;
         private VirtualConnectionClient _virtualConnectionClient;
 
-        public SocketNodeInstance(string projectPath, string[] watchFileExtensions, string socketAddress) : base(
+        public SocketNodeInstance(string projectPath, string[] watchFileExtensions, string socketAddress, INodeInstanceOutputLogger nodeInstanceOutputLogger = null) : base(
                 EmbeddedResourceReader.Read(
                     typeof(SocketNodeInstance),
                     "/Content/Node/entrypoint-socket.js"),
                 projectPath,
                 watchFileExtensions,
-                MakeNewCommandLineOptions(socketAddress))
+                MakeNewCommandLineOptions(socketAddress),
+                nodeInstanceOutputLogger)
         {
             _socketAddress = socketAddress;
         }

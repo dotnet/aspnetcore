@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.NodeServices.Util;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -32,14 +33,15 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private bool _disposed;
         private int _portNumber;
 
-        public HttpNodeInstance(string projectPath, string[] watchFileExtensions, int port = 0)
+        public HttpNodeInstance(string projectPath, string[] watchFileExtensions, int port = 0, INodeInstanceOutputLogger nodeInstanceOutputLogger = null)
             : base(
                 EmbeddedResourceReader.Read(
                     typeof(HttpNodeInstance),
                     "/Content/Node/entrypoint-http.js"),
                 projectPath,
                 watchFileExtensions,
-                MakeCommandLineOptions(port))
+                MakeCommandLineOptions(port),
+                nodeInstanceOutputLogger)
         {
             _client = new HttpClient();
         }

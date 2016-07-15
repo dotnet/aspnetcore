@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.NodeServices.Util;
 
 namespace Microsoft.AspNetCore.NodeServices.HostingModels
 {
@@ -26,13 +27,18 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private readonly Process _nodeProcess;
         private bool _nodeProcessNeedsRestart;
         private readonly string[] _watchFileExtensions;
+        private INodeInstanceOutputLogger _nodeInstanceOutputLogger;
 
         public OutOfProcessNodeInstance(
             string entryPointScript,
             string projectPath,
             string[] watchFileExtensions,
-            string commandLineArguments)
+            string commandLineArguments,
+            INodeInstanceOutputLogger nodeOutputLogger)
         {
+            _nodeInstanceOutputLogger = nodeOutputLogger;
+            if(_nodeInstanceOutputLogger == null)
+                _nodeInstanceOutputLogger = new ConsoleNodeInstanceOutputLogger();
             _entryPointScript = new StringAsTempFile(entryPointScript);
             
             var startInfo = PrepareNodeProcessStartInfo(_entryPointScript.FileName, projectPath, commandLineArguments);
@@ -106,12 +112,12 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
         protected virtual void OnOutputDataReceived(string outputData)
         {
-            Console.WriteLine("[Node] " + outputData);
+            _nodeInstanceOutputLogger.LogOutputData(outputData);
         }
 
         protected virtual void OnErrorDataReceived(string errorData)
         {
-            Console.WriteLine("[Node] " + errorData);
+            _nodeInstanceOutputLogger.LogErrorData(errorData);
         }
 
         protected virtual void Dispose(bool disposing)
