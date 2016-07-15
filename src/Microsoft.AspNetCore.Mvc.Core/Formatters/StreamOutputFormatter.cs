@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -46,9 +45,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 {
                     response.ContentType = context.ContentType.ToString();
                 }
-
-                var bufferingFeature = context.HttpContext.Features.Get<IHttpBufferingFeature>();
-                bufferingFeature?.DisableResponseBuffering();
 
                 await valueAsStream.CopyToAsync(response.Body);
             }

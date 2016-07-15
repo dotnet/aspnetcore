@@ -5,7 +5,6 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
@@ -41,35 +40,6 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             MediaTypeAssert.Equal("text/plain; charset=utf-7", httpContext.Response.ContentType);
-        }
-
-        [Fact]
-        public async Task ContentResult_DisablesResponseBuffering_IfBufferingFeatureAvailable()
-        {
-            // Arrange
-            var data = "Test Content";
-            var contentResult = new ContentResult
-            {
-                Content = data,
-                ContentType = new MediaTypeHeaderValue("text/plain")
-                {
-                    Encoding = Encoding.ASCII
-                }.ToString()
-            };
-            var httpContext = GetHttpContext();
-            httpContext.Features.Set<IHttpBufferingFeature>(new TestBufferingFeature());
-            var memoryStream = new MemoryStream();
-            httpContext.Response.Body = memoryStream;
-            var actionContext = GetActionContext(httpContext);
-
-            // Act
-            await contentResult.ExecuteResultAsync(actionContext);
-
-            // Assert
-            Assert.Equal("text/plain; charset=us-ascii", httpContext.Response.ContentType);
-            Assert.Equal(Encoding.ASCII.GetString(memoryStream.ToArray()), data);
-            var bufferingFeature = (TestBufferingFeature)httpContext.Features.Get<IHttpBufferingFeature>();
-            Assert.True(bufferingFeature.DisableResponseBufferingInvoked);
         }
 
         public static TheoryData<MediaTypeHeaderValue, string, string, string, byte[]> ContentResultContentTypeData

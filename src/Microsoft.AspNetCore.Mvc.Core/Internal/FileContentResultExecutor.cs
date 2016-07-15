@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
@@ -23,9 +22,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static Task WriteFileAsync(ActionContext context, FileContentResult result)
         {
             var response = context.HttpContext.Response;
-
-            var bufferingFeature = response.HttpContext.Features.Get<IHttpBufferingFeature>();
-            bufferingFeature?.DisableResponseBuffering();
 
             return response.Body.WriteAsync(result.FileContents, offset: 0, count: result.FileContents.Length);
         }

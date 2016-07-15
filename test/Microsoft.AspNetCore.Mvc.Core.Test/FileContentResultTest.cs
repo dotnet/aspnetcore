@@ -4,7 +4,6 @@
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.TestCommon;
@@ -93,32 +92,6 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(expectedContentType, httpContext.Response.ContentType);
         }
 
-        [Fact]
-        public async Task DisablesResponseBuffering_IfBufferingFeatureAvailable()
-        {
-            // Arrange
-            var expectedContentType = "text/foo; charset=us-ascii";
-            var buffer = new byte[] { 1, 2, 3, 4, 5 };
-
-            var httpContext = GetHttpContext();
-            var bufferingFeature = new TestBufferingFeature();
-            httpContext.Features.Set<IHttpBufferingFeature>(bufferingFeature);
-            var outStream = new MemoryStream();
-            httpContext.Response.Body = outStream;
-
-            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-
-            var result = new FileContentResult(buffer, expectedContentType);
-
-            // Act
-            await result.ExecuteResultAsync(context);
-
-            // Assert
-            Assert.Equal(buffer, outStream.ToArray());
-            Assert.Equal(expectedContentType, httpContext.Response.ContentType);
-            Assert.True(bufferingFeature.DisableResponseBufferingInvoked);
-        }
-
         private static IServiceCollection CreateServices()
         {
             var services = new ServiceCollection();
@@ -136,23 +109,6 @@ namespace Microsoft.AspNetCore.Mvc
             httpContext.RequestServices = services.BuildServiceProvider();
 
             return httpContext;
-        }
-
-        private class TestBufferingFeature : IHttpBufferingFeature
-        {
-            public bool DisableResponseBufferingInvoked { get; private set; }
-
-            public bool DisableRequestBufferingInvoked { get; private set; }
-
-            public void DisableRequestBuffering()
-            {
-                DisableRequestBufferingInvoked = true;
-            }
-
-            public void DisableResponseBuffering()
-            {
-                DisableResponseBufferingInvoked = true;
-            }
         }
     }
 }

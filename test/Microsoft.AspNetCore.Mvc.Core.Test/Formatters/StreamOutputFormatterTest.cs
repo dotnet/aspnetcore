@@ -87,35 +87,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.False(result);
         }
 
-        [Fact]
-        public async Task DisablesResponseBuffering_IfBufferingFeatureAvailable()
-        {
-            // Arrange
-            var formatter = new StreamOutputFormatter();
-
-            var expected = Encoding.UTF8.GetBytes("Test data");
-
-            var httpContext = new DefaultHttpContext();
-            var body = new MemoryStream();
-            httpContext.Response.Body = body;
-
-            var bufferingFeature = new TestBufferingFeature();
-            httpContext.Features.Set<IHttpBufferingFeature>(bufferingFeature);
-
-            var context = new OutputFormatterWriteContext(
-                httpContext,
-                new TestHttpResponseStreamWriterFactory().CreateWriter,
-                typeof(Stream),
-                new MemoryStream(expected));
-
-            // Act
-            await formatter.WriteAsync(context);
-
-            // Assert
-            Assert.Equal(expected, body.ToArray());
-            Assert.True(bufferingFeature.DisableResponseBufferingInvoked);
-        }
-
         private class SimplePOCO
         {
             public int Id { get; set; }
