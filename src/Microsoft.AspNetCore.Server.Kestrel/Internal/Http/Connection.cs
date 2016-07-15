@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private static long _lastConnectionId = DateTime.UtcNow.Ticks;
 
         private readonly UvStreamHandle _socket;
-        private Frame _frame;
+        private readonly Frame _frame;
         private ConnectionFilterContext _filterContext;
         private LibuvStream _libuvStream;
         private FilteredStreamAdapter _filteredStreamAdapter;
@@ -83,7 +83,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 _frame.SocketOutput = SocketOutput;
 
                 _frame.Start();
-
             }
             else
             {
@@ -139,8 +138,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             // called from a libuv thread.
             ThreadPool.Run(() =>
             {
-                var connection = this;
-                connection._frame.Abort();
+                _frame.Abort();
             });
         }
 
