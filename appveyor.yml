@@ -8,6 +8,9 @@ branches:
     - /^(.*\/)?ci-.*$/
 build_script:
   - build.cmd --quiet verify
+install:
+  - set PATH=C:\Python27\scripts;%PATH%
+  - pip install autobahntestsuite
 clone_depth: 1
 test: off
 deploy: off

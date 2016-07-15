@@ -1,0 +1,15 @@
+use namespace="System.IO"
+
+var VERSION='0.1'
+var FULL_VERSION='0.1'
+var AUTHORS='Microsoft'
+
+use-standard-lifecycle
+k-standard-goals
+
+var AUTOBAHN_REPORTS_DIR='${Path.Combine(Directory.GetCurrentDirectory(), "artifacts", "autobahnreports")}'
+
+#set-autobahn-report-dir target='initialize'
+    @{
+        E("AUTOBAHN_SUITES_REPORT_DIR", AUTOBAHN_REPORTS_DIR);
+    }

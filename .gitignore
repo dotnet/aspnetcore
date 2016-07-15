@@ -27,3 +27,4 @@ project.lock.json
 /.vs/
 .testPublish/
 .build/
+autobahnreports/

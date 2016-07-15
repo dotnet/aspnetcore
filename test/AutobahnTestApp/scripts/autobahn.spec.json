@@ -1,0 +1,14 @@
+﻿{
+  "options": { "failByDrop": false },
+  "outdir": "OUTPUTDIR",
+  "servers": [
+      {
+        "agent": "Server",
+        "url": "WEBSOCKETURL",
+        "options": { "version": 18 }
+      }
+   ],
+   "cases": ["CASES"],
+   "exclude-cases": ["12.*", "13.*"],
+   "exclude-agent-cases": {}
+}

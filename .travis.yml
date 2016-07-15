@@ -20,8 +20,11 @@ install:
   - make install
   - export LD_LIBRARY_PATH="$HOME/libuvinstall/lib"
   - cd $OLDPWD
+  - sudo pip install autobahntestsuite "six>=1.9.0"
 mono:
   - 4.0.5
+python:
+  - "2.7"
 os:
   - linux
   - osx
@@ -33,6 +36,6 @@ branches:
     - dev
     - /^(.*\/)?ci-.*$/
 before_install:
-  - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl; brew link --force openssl; fi
+  - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl python; brew link --force openssl; fi
 script:
   - ./build.sh --quiet verify
