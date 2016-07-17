@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
@@ -16,7 +15,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Newtonsoft.Json;
@@ -27,6 +25,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class RequestTests
     {
+        private const int _semaphoreWaitTimeout = 2500;
+
         [Theory]
         [InlineData(10 * 1024 * 1024, true)]
         // In the following dataset, send at least 2GB.
@@ -193,8 +193,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task ConnectionResetAbortsRequest()
         {
+            var connectionStarted = new SemaphoreSlim(0);
             var connectionErrorLogged = new SemaphoreSlim(0);
-            var testSink = new ConnectionErrorTestSink(() => connectionErrorLogged.Release());
+            var testSink = new ConnectionErrorTestSink(
+                () => connectionStarted.Release(), () => connectionErrorLogged.Release());
             var builder = new WebHostBuilder()
                 .UseLoggerFactory(new TestLoggerFactory(testSink, true))
                 .UseKestrel()
@@ -211,11 +213,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
                 {
                     socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
+                    // Wait until connection is established
+                    Assert.True(await connectionStarted.WaitAsync(_semaphoreWaitTimeout));
+                    // Force a reset
                     socket.LingerState = new LingerOption(true, 0);
                 }
 
                 // Wait until connection error is logged
-                Assert.True(await connectionErrorLogged.WaitAsync(2500));
+                Assert.True(await connectionErrorLogged.WaitAsync(_semaphoreWaitTimeout));
 
                 // Check for expected message
                 Assert.NotNull(testSink.ConnectionErrorMessage);
@@ -237,7 +242,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .Configure(app => app.Run(async context =>
                 {
                     requestStarted.Release();
-                    Assert.True(await connectionReset.WaitAsync(2500));
+                    Assert.True(await connectionReset.WaitAsync(_semaphoreWaitTimeout));
 
                     try
                     {
@@ -276,12 +281,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
                     socket.LingerState = new LingerOption(true, 0);
                     socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nContent-Length: 1\r\n\r\n"));
-                    Assert.True(await requestStarted.WaitAsync(2500));
+                    Assert.True(await requestStarted.WaitAsync(_semaphoreWaitTimeout));
                 }
 
                 connectionReset.Release();
 
-                Assert.True(await appDone.WaitAsync(2500));
+                Assert.True(await appDone.WaitAsync(_semaphoreWaitTimeout));
                 Assert.True(expectedExceptionThrown);
             }
         }
@@ -325,10 +330,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private class ConnectionErrorTestSink : ITestSink
         {
+            private readonly Action _connectionStarted;
             private readonly Action _connectionErrorLogged;
 
-            public ConnectionErrorTestSink(Action connectionErrorLogged)
+            public ConnectionErrorTestSink(Action connectionStarted, Action connectionErrorLogged)
             {
+                _connectionStarted = connectionStarted;
                 _connectionErrorLogged = connectionErrorLogged;
             }
 
@@ -348,9 +355,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             public void Write(WriteContext context)
             {
+                const int connectionStartEventId = 1;
                 const int connectionErrorEventId = 14;
 
-                if (context.EventId.Id == connectionErrorEventId)
+                if (context.EventId.Id == connectionStartEventId)
+                {
+                    _connectionStarted();
+                }
+                else if (context.EventId.Id == connectionErrorEventId)
                 {
                     ConnectionErrorMessage = context.Exception?.Message;
                     _connectionErrorLogged();
