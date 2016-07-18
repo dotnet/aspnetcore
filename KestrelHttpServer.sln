@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.Kestrel", "src\Microsoft.AspNetCore.Server.Kestrel\Microsoft.AspNetCore.Server.Kestrel.xproj", "{F510611A-3BEE-4B88-A613-5F4A74ED82A1}"
 EndProject
@@ -31,6 +31,11 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.Kestrel.Https", "src\Microsoft.AspNetCore.Server.Kestrel.Https\Microsoft.AspNetCore.Server.Kestrel.Https.xproj", "{5F64B3C3-0C2E-431A-B820-A81BBFC863DA}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.Kestrel.FunctionalTests", "test\Microsoft.AspNetCore.Server.Kestrel.FunctionalTests\Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.xproj", "{9559A5F1-080C-4909-B6CF-7E4B3DC55748}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{0EF2ACDF-012F-4472-A13A-4272419E2903}"
+	ProjectSection(SolutionItems) = preProject
+		test\shared\HttpClientSlim.cs = test\shared\HttpClientSlim.cs
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -78,5 +83,6 @@ Global
 		{BD2D4D29-1BD9-40D0-BB31-337D5416B63C} = {327F7880-D9AF-46BD-B45C-3B7E34A01DFD}
 		{5F64B3C3-0C2E-431A-B820-A81BBFC863DA} = {2D5D5227-4DBD-499A-96B1-76A36B03B750}
 		{9559A5F1-080C-4909-B6CF-7E4B3DC55748} = {D3273454-EA07-41D2-BF0B-FCC3675C2483}
+		{0EF2ACDF-012F-4472-A13A-4272419E2903} = {D3273454-EA07-41D2-BF0B-FCC3675C2483}
 	EndGlobalSection
 EndGlobal

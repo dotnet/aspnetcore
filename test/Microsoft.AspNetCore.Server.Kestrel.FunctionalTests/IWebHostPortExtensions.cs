@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Hosting
     {
         public static string GetHost(this IWebHost host)
         {
-            return host.GetUris().First().Host;
+            return host.GetUri().Host;
         }
 
         public static int GetPort(this IWebHost host)
@@ -39,6 +39,11 @@ namespace Microsoft.AspNetCore.Hosting
             return host.ServerFeatures.Get<IServerAddressesFeature>().Addresses
                 .Select(a => a.Replace("://+", "://localhost"))
                 .Select(a => new Uri(a));
+        }
+
+        public static Uri GetUri(this IWebHost host)
+        {
+            return host.GetUris().First();
         }
     }
 }

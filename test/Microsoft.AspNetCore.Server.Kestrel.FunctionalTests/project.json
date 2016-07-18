@@ -31,6 +31,11 @@
   },
   "buildOptions": {
     "allowUnsafe": true,
+    "compile": {
+      "include": [
+        "../shared/**/*.cs"
+      ]
+    },
     "copyToOutput": {
       "include": "TestResources/testCert.pfx"
     }

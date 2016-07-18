@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -85,10 +86,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 host.Start();
 
-                var client = new HttpClientSlim() { ValidateCertificate = false };
                 foreach (var testUrl in testUrls(host.ServerFeatures.Get<IServerAddressesFeature>()))
                 {
-                    var response = await client.GetStringAsync(testUrl);
+                    var response = await HttpClientSlim.GetStringAsync(testUrl, validateCertificate: false);
 
                     // Compare the response with Uri.ToString(), rather than testUrl directly.
                     // Required to handle IPv6 addresses with zone index, like "fe80::3%1"
