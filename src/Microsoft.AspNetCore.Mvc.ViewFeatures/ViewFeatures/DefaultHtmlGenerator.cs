@@ -156,15 +156,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(viewContext));
             }
 
-            // If we're inside a BeginForm/BeginRouteForm, the antiforgery token might have already been
-            // created and appended to the 'end form' content OR the form tag helper might have already generated
-            // an antiforgery token.
-            if (viewContext.FormContext.HasAntiforgeryToken)
+            var formContext = viewContext.FormContext;
+            if (formContext.CanRenderAtEndOfForm)
             {
-                return HtmlString.Empty;
-            }
+                // Inside a BeginForm/BeginRouteForm or a <form> tag helper. So, the antiforgery token might have
+                // already been created and appended to the 'end form' content (the AntiForgeryToken HTML helper does
+                // this) OR the <form> tag helper might have already generated an antiforgery token.
+                if (formContext.HasAntiforgeryToken)
+                {
+                    return HtmlString.Empty;
+                }
 
-            viewContext.FormContext.HasAntiforgeryToken = true;
+                formContext.HasAntiforgeryToken = true;
+            }
 
             return _antiforgery.GetHtml(viewContext.HttpContext);
         }

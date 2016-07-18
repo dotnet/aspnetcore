@@ -641,6 +641,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var htmlGenerator = GetGenerator(metadataProvider);
             var viewContext = GetViewContext<Model>(model: null, metadataProvider: metadataProvider);
+            viewContext.FormContext.CanRenderAtEndOfForm = true;
             viewContext.FormContext.HasAntiforgeryToken = hasAntiforgeryToken;
 
             // Act
@@ -649,6 +650,30 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // Assert
             var antiforgeryField = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
             Assert.Equal(expectedAntiforgeryHtmlField, antiforgeryField);
+        }
+
+        // This test covers use of the helper within literal <form> tags when tag helpers are not enabled e.g.
+        // <form action="/Home/Create">
+        //     @Html.AntiForgeryToken()
+        // </form>
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void GenerateAntiforgery_AlwaysGeneratesAntiforgeryToken_IfCannotRenderAtEnd(bool hasAntiforgeryToken)
+        {
+            // Arrange
+            var expected = "<input name=\"formFieldName\" type=\"hidden\" value=\"requestToken\" />";
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var htmlGenerator = GetGenerator(metadataProvider);
+            var viewContext = GetViewContext<Model>(model: null, metadataProvider: metadataProvider);
+            viewContext.FormContext.HasAntiforgeryToken = hasAntiforgeryToken;
+
+            // Act
+            var result = htmlGenerator.GenerateAntiforgery(viewContext);
+
+            // Assert
+            var antiforgeryField = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
+            Assert.Equal(expected, antiforgeryField);
         }
 
         // GetCurrentValues uses only the IModelMetadataProvider passed to the DefaultHtmlGenerator constructor.
