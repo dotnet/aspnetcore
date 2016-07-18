@@ -36,14 +36,13 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private string _socketAddress;
         private VirtualConnectionClient _virtualConnectionClient;
 
-        public SocketNodeInstance(string projectPath, string[] watchFileExtensions, string socketAddress, Action<System.Diagnostics.ProcessStartInfo> onBeforeStartExternalProcess = null) : base(
+        public SocketNodeInstance(string projectPath, string[] watchFileExtensions, string socketAddress) : base(
                 EmbeddedResourceReader.Read(
                     typeof(SocketNodeInstance),
                     "/Content/Node/entrypoint-socket.js"),
                 projectPath,
                 watchFileExtensions,
-                MakeNewCommandLineOptions(socketAddress),
-                onBeforeStartExternalProcess)
+                MakeNewCommandLineOptions(socketAddress))
         {
             _socketAddress = socketAddress;
         }

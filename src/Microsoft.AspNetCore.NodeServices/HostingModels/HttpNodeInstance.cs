@@ -32,15 +32,14 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private bool _disposed;
         private int _portNumber;
 
-        public HttpNodeInstance(string projectPath, string[] watchFileExtensions, int port = 0, Action<System.Diagnostics.ProcessStartInfo> onBeforeStartExternalProcess = null)
+        public HttpNodeInstance(string projectPath, string[] watchFileExtensions, int port = 0)
             : base(
                 EmbeddedResourceReader.Read(
                     typeof(HttpNodeInstance),
                     "/Content/Node/entrypoint-http.js"),
                 projectPath,
                 watchFileExtensions,
-                MakeCommandLineOptions(port),
-                onBeforeStartExternalProcess)
+                MakeCommandLineOptions(port))
         {
             _client = new HttpClient();
         }

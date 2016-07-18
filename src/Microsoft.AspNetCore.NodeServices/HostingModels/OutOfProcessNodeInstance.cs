@@ -31,11 +31,12 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             string entryPointScript,
             string projectPath,
             string[] watchFileExtensions,
-            string commandLineArguments,
-             Action<System.Diagnostics.ProcessStartInfo> onBeforeStartExternalProcess = null)
+            string commandLineArguments)
         {
             _entryPointScript = new StringAsTempFile(entryPointScript);
-            _nodeProcess = LaunchNodeProcess(_entryPointScript.FileName, projectPath, commandLineArguments, onBeforeStartExternalProcess);
+            
+            var startInfo = PrepareNodeProcessStartInfo(_entryPointScript.FileName, projectPath, commandLineArguments);
+            _nodeProcess = LaunchNodeProcess(startInfo);
             _watchFileExtensions = watchFileExtensions;
             _fileSystemWatcher = BeginFileWatcher(projectPath);
             ConnectToInputOutputStreams();
@@ -71,6 +72,37 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         }
 
         protected abstract Task<T> InvokeExportAsync<T>(NodeInvocationInfo invocationInfo);
+
+        // This method is virtual, as it provides a way to override the NODE_PATH or the path to node.exe
+        protected virtual ProcessStartInfo PrepareNodeProcessStartInfo(
+            string entryPointFilename, string projectPath, string commandLineArguments)
+        {
+            var startInfo = new ProcessStartInfo("node")
+            {
+                Arguments = "\"" + entryPointFilename + "\" " + (commandLineArguments ?? string.Empty),
+                UseShellExecute = false,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                WorkingDirectory = projectPath
+            };
+
+            // Append projectPath to NODE_PATH so it can locate node_modules
+            var existingNodePath = Environment.GetEnvironmentVariable("NODE_PATH") ?? string.Empty;
+            if (existingNodePath != string.Empty)
+            {
+                existingNodePath += ":";
+            }
+
+            var nodePathValue = existingNodePath + Path.Combine(projectPath, "node_modules");
+#if NET451
+            startInfo.EnvironmentVariables["NODE_PATH"] = nodePathValue;
+#else
+            startInfo.Environment["NODE_PATH"] = nodePathValue;
+#endif
+
+            return startInfo;
+        }
 
         protected virtual void OnOutputDataReceived(string outputData)
         {
@@ -112,36 +144,8 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             }
         }
 
-        private static Process LaunchNodeProcess(string entryPointFilename, string projectPath, string commandLineArguments, Action<System.Diagnostics.ProcessStartInfo> onBeforeStartExternalProcess)
+        private static Process LaunchNodeProcess(ProcessStartInfo startInfo)
         {
-            var startInfo = new ProcessStartInfo("node")
-            {
-                Arguments = "\"" + entryPointFilename + "\" " + (commandLineArguments ?? string.Empty),
-                UseShellExecute = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                WorkingDirectory = projectPath
-            };
-
-            // Append projectPath to NODE_PATH so it can locate node_modules
-            var existingNodePath = Environment.GetEnvironmentVariable("NODE_PATH") ?? string.Empty;
-            if (existingNodePath != string.Empty)
-            {
-                existingNodePath += ":";
-            }
-
-            var nodePathValue = existingNodePath + Path.Combine(projectPath, "node_modules");
-#if NET451
-            startInfo.EnvironmentVariables["NODE_PATH"] = nodePathValue;
-#else
-            startInfo.Environment["NODE_PATH"] = nodePathValue;
-#endif
-            if (onBeforeStartExternalProcess != null)
-            {
-                onBeforeStartExternalProcess(startInfo);
-            }
-
             var process = Process.Start(startInfo);
 
             // On Mac at least, a killed child process is left open as a zombie until the parent
