@@ -1,6 +1,6 @@
 ﻿{
     "dependencies": {
-        "Microsoft.AspNetCore.WebSockets.Server": { "target": "project" },
+        "Microsoft.AspNetCore.WebSockets.Server": "0.2.0-*",
         "Microsoft.NETCore.App": {
             "version": "1.0.0",
             "type": "platform"
