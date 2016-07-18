@@ -167,6 +167,67 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
+        public void WebHostApplicationLifetimeEventsOrderedCorrectlyDuringShutdown()
+        {
+            var host = CreateBuilder()
+                .UseServer(this)
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
+                .Build();
+
+            var lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
+            var applicationStartedEvent = new ManualResetEventSlim(false);
+            var applicationStoppingEvent = new ManualResetEventSlim(false);
+            var applicationStoppedEvent = new ManualResetEventSlim(false);
+            var applicationStartedCompletedBeforeApplicationStopping = false;
+            var applicationStoppingCompletedBeforeApplicationStopped = false;
+            var applicationStoppedCompletedBeforeRunCompleted = false;
+
+            lifetime.ApplicationStarted.Register(() =>
+            {
+                applicationStartedEvent.Set();
+            });
+
+            lifetime.ApplicationStopping.Register(() =>
+            {
+                // Check whether the applicationStartedEvent has been set
+                applicationStartedCompletedBeforeApplicationStopping = applicationStartedEvent.IsSet;
+
+                // Simulate work.
+                Thread.Sleep(1000);
+
+                applicationStoppingEvent.Set();
+            });
+
+            lifetime.ApplicationStopped.Register(() =>
+            {
+                // Check whether the applicationStoppingEvent has been set
+                applicationStoppingCompletedBeforeApplicationStopped = applicationStoppingEvent.IsSet;
+                applicationStoppedEvent.Set();
+            });
+
+            var runHostAndVerifyApplicationStopped = Task.Run(() =>
+            {
+                host.Run();
+                // Check whether the applicationStoppingEvent has been set
+                applicationStoppedCompletedBeforeRunCompleted = applicationStoppedEvent.IsSet;
+            });
+
+            // Wait until application has started to shut down the host
+            Assert.True(applicationStartedEvent.Wait(5000));
+
+            // Trigger host shutdown on a separate thread
+            Task.Run(() => lifetime.StopApplication());
+
+            // Wait for all events and host.Run() to complete
+            Assert.True(runHostAndVerifyApplicationStopped.Wait(5000));
+
+            // Verify Ordering
+            Assert.True(applicationStartedCompletedBeforeApplicationStopping);
+            Assert.True(applicationStoppingCompletedBeforeApplicationStopped);
+            Assert.True(applicationStoppedCompletedBeforeRunCompleted);
+        }
+
+        [Fact]
         public void WebHostDisposesServiceProvider()
         {
             var host = CreateBuilder()
