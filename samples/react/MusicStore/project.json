@@ -29,7 +29,7 @@
     "Microsoft.Extensions.Logging.Debug": "1.0.0",
     "Microsoft.EntityFrameworkCore.SQLite": "1.0.0",
     "Microsoft.AspNetCore.ReactServices": "1.0.0-*",
-    "AutoMapper": "4.1.1"
+  "AutoMapper": "5.0.2"
   },
   "frameworks": {
     "netcoreapp1.0": {

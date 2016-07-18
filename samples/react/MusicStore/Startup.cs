@@ -47,14 +47,17 @@ namespace MusicStore
                 options.AddPolicy("app-ManageStore", new AuthorizationPolicyBuilder().RequireClaim("app-ManageStore", "Allowed").Build());
             });
 
-            Mapper.CreateMap<AlbumChangeDto, Album>();
-            Mapper.CreateMap<Album, AlbumChangeDto>();
-            Mapper.CreateMap<Album, AlbumResultDto>();
-            Mapper.CreateMap<AlbumResultDto, Album>();
-            Mapper.CreateMap<Artist, ArtistResultDto>();
-            Mapper.CreateMap<ArtistResultDto, Artist>();
-            Mapper.CreateMap<Genre, GenreResultDto>();
-            Mapper.CreateMap<GenreResultDto, Genre>();
+            Mapper.Initialize(cfg =>
+            {
+                cfg.CreateMap<AlbumChangeDto, Album>();
+                cfg.CreateMap<Album, AlbumChangeDto>();
+                cfg.CreateMap<Album, AlbumResultDto>();
+                cfg.CreateMap<AlbumResultDto, Album>();
+                cfg.CreateMap<Artist, ArtistResultDto>();
+                cfg.CreateMap<ArtistResultDto, Artist>();
+                cfg.CreateMap<Genre, GenreResultDto>();
+                cfg.CreateMap<GenreResultDto, Genre>();
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
