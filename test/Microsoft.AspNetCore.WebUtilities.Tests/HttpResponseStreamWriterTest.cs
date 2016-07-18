@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 {
     public class HttpResponseStreamWriterTest
     {
+        private const int DefaultCharacterChunkSize = HttpResponseStreamWriter.DefaultBufferSize;
+
         [Fact]
         public async Task DoesNotWriteBOM()
         {
@@ -426,6 +428,30 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 
             // Assert
             Assert.Equal(expectedBytes, stream.ToArray());
+        }
+
+        [Theory]
+        [InlineData(DefaultCharacterChunkSize)]
+        [InlineData(DefaultCharacterChunkSize * 2)]
+        [InlineData(DefaultCharacterChunkSize * 3)]
+        public async Task HttpResponseStreamWriter_WritesDataCorrectly_ForCharactersHavingSurrogatePairs(int characterSize)
+        {
+            // Arrange
+            // Here "𐐀" (called Deseret Long I) actually represents 2 characters. Try to make this character split across
+            // the boundary
+            var content = new string('a', characterSize - 1) + "𐐀";
+            var stream = new TestMemoryStream();
+            var writer = new HttpResponseStreamWriter(stream, Encoding.Unicode);
+
+            // Act
+            await writer.WriteAsync(content);
+            await writer.FlushAsync();
+
+            // Assert
+            stream.Seek(0, SeekOrigin.Begin);
+            var streamReader = new StreamReader(stream, Encoding.Unicode);
+            var actualContent = await streamReader.ReadToEndAsync();
+            Assert.Equal(content, actualContent);
         }
 
         private class TestMemoryStream : MemoryStream
