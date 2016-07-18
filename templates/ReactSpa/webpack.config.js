@@ -12,7 +12,7 @@ module.exports = merge({
     module: {
         loaders: [
             { test: /\.ts(x?)$/, include: /ClientApp/, loader: 'babel-loader' },
-            { test: /\.ts(x?)$/, include: /ClientApp/, loader: 'ts-loader' }
+            { test: /\.ts(x?)$/, include: /ClientApp/, loader: 'ts-loader?silent=true' }
         ]
     },
     entry: {

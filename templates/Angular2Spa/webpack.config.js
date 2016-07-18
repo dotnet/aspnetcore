@@ -13,7 +13,7 @@ module.exports = merge({
     },
     module: {
         loaders: [
-            { test: /\.ts$/, include: /ClientApp/, loader: 'ts-loader' },
+            { test: /\.ts$/, include: /ClientApp/, loader: 'ts-loader?silent=true' },
             { test: /\.html$/, loader: 'raw-loader' },
             { test: /\.css/, loader: extractCSS.extract(['css']) }
         ]
