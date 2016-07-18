@@ -83,6 +83,25 @@ namespace Microsoft.AspNetCore.Routing
                 return;
             }
 
+            var stringValueEnumerable = values as IEnumerable<KeyValuePair<string, string>>;
+            if (stringValueEnumerable != null)
+            {
+                var listStorage = new ListStorage();
+                _storage = listStorage;
+                foreach (var kvp in stringValueEnumerable)
+                {
+                    if (listStorage.ContainsKey(kvp.Key))
+                    {
+                        var message = Resources.FormatRouteValueDictionary_DuplicateKey(kvp.Key, nameof(RouteValueDictionary));
+                        throw new ArgumentException(message, nameof(values));
+                    }
+
+                    listStorage._inner.Add(new KeyValuePair<string, object>(kvp.Key, kvp.Value));
+                }
+
+                return;
+            }
+
             if (values != null)
             {
                 _storage = new PropertyStorage(values);

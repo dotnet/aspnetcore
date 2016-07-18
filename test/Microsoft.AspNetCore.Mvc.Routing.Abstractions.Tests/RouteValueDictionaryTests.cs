@@ -109,6 +109,25 @@ namespace Microsoft.AspNetCore.Routing.Tests
             }
         }
 
+        public static IEnumerable<object[]> IEnumerableStringValuePairData
+        {
+            get
+            {
+                var routeValues = new[]
+                {
+                    new KeyValuePair<string, string>("First Name", "James"),
+                    new KeyValuePair<string, string>("Last Name", "Henrik"),
+                    new KeyValuePair<string, string>("Middle Name", "Bob")
+                };
+
+                yield return new object[] { routeValues.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) };
+
+                yield return new object[] { routeValues.ToList() };
+
+                yield return new object[] { routeValues };
+            }
+        }
+
         [Theory]
         [MemberData(nameof(IEnumerableKeyValuePairData))]
         public void CreateFromIEnumerableKeyValuePair_CopiesValues(object values)
@@ -131,6 +150,22 @@ namespace Microsoft.AspNetCore.Routing.Tests
                 kvp => { Assert.Equal("Name", kvp.Key); Assert.Equal("James", kvp.Value); });
         }
 
+        [Theory]
+        [MemberData(nameof(IEnumerableStringValuePairData))]
+        public void CreateFromIEnumerableStringValuePair_CopiesValues(object values)
+        {
+            // Arrange & Act
+            var dict = new RouteValueDictionary(values);
+
+            // Assert
+            Assert.IsType<RouteValueDictionary.ListStorage>(dict._storage);
+            Assert.Collection(
+                dict.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("First Name", kvp.Key); Assert.Equal("James", kvp.Value); },
+                kvp => { Assert.Equal("Last Name", kvp.Key); Assert.Equal("Henrik", kvp.Value); },
+                kvp => { Assert.Equal("Middle Name", kvp.Key); Assert.Equal("Bob", kvp.Value); });
+        }
+
         [Fact]
         public void CreateFromIEnumerableKeyValuePair_ThrowsExceptionForDuplicateKey()
         {
@@ -139,6 +174,23 @@ namespace Microsoft.AspNetCore.Routing.Tests
             {
                 new KeyValuePair<string, object>("name", "Billy"),
                 new KeyValuePair<string, object>("Name", "Joey"),
+            };
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgument(
+                () => new RouteValueDictionary(values),
+                "values",
+                $"An element with the key 'Name' already exists in the {nameof(RouteValueDictionary)}.");
+        }
+
+        [Fact]
+        public void CreateFromIEnumerableStringValuePair_ThrowsExceptionForDuplicateKey()
+        {
+            // Arrange
+            var values = new List<KeyValuePair<string, string>>()
+            {
+                new KeyValuePair<string, string>("name", "Billy"),
+                new KeyValuePair<string, string>("Name", "Joey"),
             };
 
             // Act & Assert
