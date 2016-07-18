@@ -1,5 +1,6 @@
 // Limit dependencies to core Node modules. This means the code in this file has to be very low-level and unattractive,
 // but simplifies things for the consumer of this module.
+import './Util/OverrideStdOutputs';
 import * as http from 'http';
 import * as path from 'path';
 import { parseArgs } from './Util/ArgsUtil';

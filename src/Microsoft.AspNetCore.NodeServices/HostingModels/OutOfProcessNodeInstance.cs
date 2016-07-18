@@ -168,6 +168,18 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             return process;
         }
 
+        private static string UnencodeNewlines(string str)
+        {
+            if (str != null)
+            {
+                // The token here needs to match the const in OverrideStdOutputs.ts.
+                // See the comment there for why we're doing this.
+                str = str.Replace("__ns_newline__", Environment.NewLine);
+            }
+
+            return str;
+        }
+
         private void ConnectToInputOutputStreams()
         {
             var initializationIsCompleted = false;
@@ -181,7 +193,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                 }
                 else if (evt.Data != null)
                 {
-                    OnOutputDataReceived(evt.Data);
+                    OnOutputDataReceived(UnencodeNewlines(evt.Data));
                 }
             };
 
@@ -197,7 +209,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                     }
                     else
                     {
-                        OnErrorDataReceived(evt.Data);
+                        OnErrorDataReceived(UnencodeNewlines(evt.Data));
                     }
                 }
             };
