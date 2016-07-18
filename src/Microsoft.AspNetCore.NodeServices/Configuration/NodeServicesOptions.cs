@@ -1,6 +1,6 @@
 using System;
 using Microsoft.AspNetCore.NodeServices.HostingModels;
-using Microsoft.AspNetCore.NodeServices.Util;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.NodeServices
 {
@@ -20,6 +20,6 @@ namespace Microsoft.AspNetCore.NodeServices
         public Func<INodeInstance> NodeInstanceFactory { get; set; }
         public string ProjectPath { get; set; }
         public string[] WatchFileExtensions { get; set; }
-        public INodeInstanceOutputLogger NodeInstanceOutputLogger { get; set; }
+        public ILogger NodeInstanceOutputLogger { get; set; }
     }
 }

@@ -9,6 +9,7 @@
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0",
     "Microsoft.Extensions.Configuration.Json": "1.0.0",
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0",
+    "Microsoft.Extensions.Logging.Console": "1.0.0",
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0",
     "Newtonsoft.Json": "9.0.1"
   },

@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.NodeServices.HostingModels.PhysicalConnections;
 using Microsoft.AspNetCore.NodeServices.HostingModels.VirtualConnections;
-using Microsoft.AspNetCore.NodeServices.Util;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private string _socketAddress;
         private VirtualConnectionClient _virtualConnectionClient;
 
-        public SocketNodeInstance(string projectPath, string[] watchFileExtensions, string socketAddress, INodeInstanceOutputLogger nodeInstanceOutputLogger = null) : base(
+        public SocketNodeInstance(string projectPath, string[] watchFileExtensions, string socketAddress, ILogger nodeInstanceOutputLogger) : base(
                 EmbeddedResourceReader.Read(
                     typeof(SocketNodeInstance),
                     "/Content/Node/entrypoint-socket.js"),
@@ -125,9 +125,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                         // failure, this Node instance is no longer usable and should be discarded.
                         _connectionHasFailed = true;
 
-                        // TODO: Log the exception properly. Need to change the chain of calls up to this point to supply
-                        // an ILogger or IServiceProvider etc.
-                        Console.WriteLine(ex.Message);
+                        OutputLogger.LogError(0, ex, ex.Message);
                     };
                 }
             }

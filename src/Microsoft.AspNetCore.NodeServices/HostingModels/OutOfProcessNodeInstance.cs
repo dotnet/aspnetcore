@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.NodeServices.Util;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.NodeServices.HostingModels
 {
@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
     /// <seealso cref="Microsoft.AspNetCore.NodeServices.HostingModels.INodeInstance" />
     public abstract class OutOfProcessNodeInstance : INodeInstance
     {
+        protected readonly ILogger OutputLogger;
         private const string ConnectionEstablishedMessage = "[Microsoft.AspNetCore.NodeServices:Listening]";
         private readonly TaskCompletionSource<object> _connectionIsReadySource = new TaskCompletionSource<object>();
         private bool _disposed;
@@ -27,18 +28,20 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private readonly Process _nodeProcess;
         private bool _nodeProcessNeedsRestart;
         private readonly string[] _watchFileExtensions;
-        private INodeInstanceOutputLogger _nodeInstanceOutputLogger;
 
         public OutOfProcessNodeInstance(
             string entryPointScript,
             string projectPath,
             string[] watchFileExtensions,
             string commandLineArguments,
-            INodeInstanceOutputLogger nodeOutputLogger)
+            ILogger nodeOutputLogger)
         {
-            _nodeInstanceOutputLogger = nodeOutputLogger;
-            if(_nodeInstanceOutputLogger == null)
-                _nodeInstanceOutputLogger = new ConsoleNodeInstanceOutputLogger();
+            if (nodeOutputLogger == null)
+            {
+                throw new ArgumentNullException(nameof(nodeOutputLogger));
+            }
+
+            OutputLogger = nodeOutputLogger;
             _entryPointScript = new StringAsTempFile(entryPointScript);
             
             var startInfo = PrepareNodeProcessStartInfo(_entryPointScript.FileName, projectPath, commandLineArguments);
@@ -112,12 +115,12 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
         protected virtual void OnOutputDataReceived(string outputData)
         {
-            _nodeInstanceOutputLogger.LogOutputData(outputData);
+            OutputLogger.LogInformation(outputData);
         }
 
         protected virtual void OnErrorDataReceived(string errorData)
         {
-            _nodeInstanceOutputLogger.LogErrorData(errorData);
+            OutputLogger.LogError(errorData);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -255,8 +258,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
         private void RestartDueToFileChange(string fullPath)
         {
-            // TODO: Use proper logger
-            Console.WriteLine($"Node will restart because file changed: {fullPath}");
+            OutputLogger.LogInformation($"Node will restart because file changed: {fullPath}");
 
             _nodeProcessNeedsRestart = true;
 

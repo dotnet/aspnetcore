@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.NodeServices.Util;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private bool _disposed;
         private int _portNumber;
 
-        public HttpNodeInstance(string projectPath, string[] watchFileExtensions, int port = 0, INodeInstanceOutputLogger nodeInstanceOutputLogger = null)
+        public HttpNodeInstance(string projectPath, string[] watchFileExtensions, ILogger nodeInstanceOutputLogger, int port = 0)
             : base(
                 EmbeddedResourceReader.Read(
                     typeof(HttpNodeInstance),
