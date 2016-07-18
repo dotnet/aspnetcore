@@ -4,6 +4,7 @@
 // that your loader plugins (e.g., require('./mystyles.less')) work in exactly the same way on the server as
 // on the client.
 import 'es6-promise';
+import * as path from 'path';
 import * as webpack from 'webpack';
 import { requireNewCopy } from './RequireNewCopy';
 
@@ -40,7 +41,15 @@ function loadViaWebpackNoCache<T>(webpackConfigPath: string, modulePath: string)
         const webpackConfig: webpack.Configuration = requireNewCopy(webpackConfigPath);
         webpackConfig.entry = modulePath;
         webpackConfig.target = 'node';
-        webpackConfig.output = { path: '/', filename: 'webpack-output.js', libraryTarget: 'commonjs' };
+
+        // Make sure we preserve the 'path' and 'publicPath' config values if specified, as these
+        // can affect the build output (e.g., when using 'file' loader, the publicPath value gets
+        // set as a prefix on output paths).
+        webpackConfig.output = webpackConfig.output || {};
+        webpackConfig.output.path = webpackConfig.output.path || '/';
+        webpackConfig.output.filename = 'webpack-output.js';
+        webpackConfig.output.libraryTarget = 'commonjs';
+        const outputVirtualPath = path.join(webpackConfig.output.path, webpackConfig.output.filename);
 
         // In Node, we want anything under /node_modules/ to be loaded natively and not bundled into the output
         // (partly because it's faster, but also because otherwise there'd be different instances of modules
@@ -85,7 +94,7 @@ function loadViaWebpackNoCache<T>(webpackConfigPath: string, modulePath: string)
                             + stats.toString({ chunks: false }));
                     }
 
-                    const fileContent = compiler.outputFileSystem.readFileSync('/webpack-output.js', 'utf8');
+                    const fileContent = compiler.outputFileSystem.readFileSync(outputVirtualPath, 'utf8');
                     const moduleInstance = requireFromString<T>(fileContent);
                     resolve(moduleInstance);
                 } catch(ex) {
