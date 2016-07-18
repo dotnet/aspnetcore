@@ -3,7 +3,6 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
@@ -99,7 +98,9 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 // Add a default '[Required]' validator for generating HTML if necessary.
                 context.Results.Add(new ClientValidatorItem
                 {
-                    Validator = new RequiredAttributeAdapter(new RequiredAttribute(), stringLocalizer),
+                    Validator = _validationAttributeAdapterProvider.GetAttributeAdapter(
+                        new RequiredAttribute(),
+                        stringLocalizer),
                     IsReusable = true
                 });
             }
