@@ -105,32 +105,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                 }
             }
 
+            var stepTimeout = (int)(timeout.TotalMilliseconds / 3);
+
             if (_thread.IsAlive)
             {
                 // These operations need to run on the libuv thread so it only makes
                 // sense to attempt execution if it's still running
                 DisposeConnections();
 
-                var stepTimeout = (int)(timeout.TotalMilliseconds / 2);
-                try
+                Post(t => t.AllowStop());
+                if (!_thread.Join(stepTimeout))
                 {
-                    Post(t => t.OnStopRude());
-                    if (!_thread.Join(stepTimeout))
+
+                    try
                     {
-                        Post(t => t.OnStopImmediate());
+                        Post(t => t.OnStopRude());
+                        if (!_thread.Join(stepTimeout))
+                        {
+                            Post(t => t.OnStopImmediate());
+                            if (!_thread.Join(stepTimeout))
+                            {
+                                _log.LogError(0, null, "KestrelThread.Stop failed to terminate libuv thread.");
+                            }
+                        }
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // REVIEW: Should we log something here?
+                        // Until we rework this logic, ODEs are bound to happen sometimes.
                         if (!_thread.Join(stepTimeout))
                         {
                             _log.LogError(0, null, "KestrelThread.Stop failed to terminate libuv thread.");
                         }
-                    }
-                }
-                catch (ObjectDisposedException)
-                {
-                    // REVIEW: Should we log something here?
-                    // Until we rework this logic, ODEs are bound to happen sometimes.
-                    if (!_thread.Join(stepTimeout))
-                    {
-                        _log.LogError(0, null, "KestrelThread.Stop failed to terminate libuv thread.");
                     }
                 }
             }
