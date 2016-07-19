@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
     {
         private const string _name = "test";
         private const string _state = "This is a test";
-        private Func<string, LogLevel, bool> _filter = (_, __) => true;
+        private static Func<string, LogLevel, bool> _filter = (_, __) => true;
 
-        private Tuple<ElmLogger, ElmStore> SetUp(Func<string, LogLevel, bool> filter = null, string name = null)
+        private static Tuple<ElmLogger, ElmStore> SetUp(Func<string, LogLevel, bool> filter = null, string name = null)
         {
             // Arrange
             var store = new ElmStore();
@@ -305,6 +305,37 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
             Assert.Empty(store.GetActivities());
         }
 
+#if NET451
+        private static void DomainFunc()
+        {
+            var t = SetUp();
+            var logger = t.Item1;
+            using (logger.BeginScope("newDomain scope"))
+            {
+                logger.LogInformation("Test");
+            }
+        }
+
+        [Fact]
+        public void ScopeWithChangingAppDomains_DoesNotAccessUnloadedAppDomain()
+        {
+            // Arrange
+            var t = SetUp();
+            var logger = t.Item1;
+            var store = t.Item2;
+            var domain = AppDomain.CreateDomain("newDomain");
+
+            // Act
+            domain.DoCallBack(DomainFunc);
+            AppDomain.Unload(domain);
+            using (logger.BeginScope("Scope1"))
+            {
+                logger.LogInformation("Testing");
+            }
+
+            Assert.Equal(1, store.Count());
+        }
+#endif
 
         private List<LogInfo> NodeLogs(ScopeNode node, List<LogInfo> logs)
         {

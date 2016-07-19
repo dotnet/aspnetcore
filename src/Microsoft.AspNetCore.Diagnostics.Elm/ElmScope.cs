@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Elm
         public ScopeNode Node { get; set; }
 
 #if NET451
-        private static string FieldKey = typeof(ElmScope).FullName + ".Value";
+        private static readonly string FieldKey = $"{typeof(ElmScope).FullName}.Value.{AppDomain.CurrentDomain.Id}";
         public static ElmScope Current
         {
             get

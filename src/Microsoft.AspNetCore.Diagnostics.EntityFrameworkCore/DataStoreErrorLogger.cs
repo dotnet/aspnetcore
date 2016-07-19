@@ -9,6 +9,7 @@ using System;
 #if NETSTANDARD1_3
 using System.Threading;
 #else
+using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 #endif
 
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 #if NETSTANDARD1_3
         private readonly AsyncLocal<DataStoreErrorLog> _log = new AsyncLocal<DataStoreErrorLog>(); 
 #else
-        private const string ContextName = "__DataStoreErrorLog";
+        private static readonly string ContextName = "__DataStoreErrorLog" + AppDomain.CurrentDomain.Id;
 #endif
 
         public virtual DataStoreErrorLog LastError
@@ -29,7 +30,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 #if NETSTANDARD1_3
                 return _log.Value; 
 #else
-                return (DataStoreErrorLog)CallContext.LogicalGetData(ContextName);
+                var handle = CallContext.LogicalGetData(ContextName) as ObjectHandle;
+
+                return handle?.Unwrap() as DataStoreErrorLog;
 #endif
             }
         }
@@ -44,7 +47,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 #if NETSTANDARD1_3
             _log.Value = new DataStoreErrorLog();
 #else
-            CallContext.LogicalSetData(ContextName, new DataStoreErrorLog());
+            CallContext.LogicalSetData(ContextName, new ObjectHandle(new DataStoreErrorLog()));
 #endif
         }
 
