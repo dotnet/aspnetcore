@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if NET451
+using System;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 #elif NETSTANDARD1_3
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Http
     public class HttpContextAccessor : IHttpContextAccessor
     {
 #if NET451
-        private const string LogicalDataKey = "__HttpContext_Current__";
+        private static readonly string LogicalDataKey = "__HttpContext_Current__" + AppDomain.CurrentDomain.Id;
 
         public HttpContext HttpContext
         {
