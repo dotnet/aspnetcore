@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                             if (requestLineStatus != RequestLineStatus.Done)
                             {
-                                RejectRequest($"Malformed request: {requestLineStatus}");
+                                RejectRequest(RequestRejectionReasons.MalformedRequestLineStatus, requestLineStatus.ToString());
                             }
 
                             break;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             // sent immediately before the a FIN from the client.
                             if (!TakeMessageHeaders(SocketInput, FrameRequestHeaders))
                             {
-                                RejectRequest($"Malformed request: invalid headers.");
+                                RejectRequest(RequestRejectionReasons.MalformedRequestInvalidHeaders);
                             }
 
                             break;

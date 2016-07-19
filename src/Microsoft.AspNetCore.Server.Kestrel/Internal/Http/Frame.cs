@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 if (HasResponseStarted)
                 {
-                    throw new InvalidOperationException("Status code cannot be set, response has already started.");
+                    ThrowResponseAlreadyStartedException(nameof(StatusCode));
                 }
 
                 _statusCode = value;
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 if (HasResponseStarted)
                 {
-                    throw new InvalidOperationException("Reason phrase cannot be set, response had already started.");
+                    ThrowResponseAlreadyStartedException(nameof(ReasonPhrase));
                 }
 
                 _reasonPhrase = value;
@@ -569,13 +569,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             if (_applicationException != null)
             {
-                throw new ObjectDisposedException(
-                    "The response has been aborted due to an unhandled application exception.",
-                    _applicationException);
+                ThrowResponseAbortedException();
             }
 
             ProduceStart(appCompleted: false);
-
             return TaskUtilities.CompletedTask;
         }
 
@@ -585,9 +582,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             if (_applicationException != null)
             {
-                throw new ObjectDisposedException(
-                    "The response has been aborted due to an unhandled application exception.",
-                    _applicationException);
+                ThrowResponseAbortedException();
             }
 
             ProduceStart(appCompleted: false);
@@ -819,7 +814,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                     if (method == null)
                     {
-                        RejectRequest("Missing method.");
+                        RejectRequest(RequestRejectionReasons.MissingMethod);
                     }
 
                     // Note: We're not in the fast path any more (GetKnownMethod should have handled any HTTP Method we're aware of)
@@ -828,7 +823,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     {
                         if (!IsValidTokenChar(method[i]))
                         {
-                            RejectRequest("Invalid method.");
+                            RejectRequest(RequestRejectionReasons.InvalidMethod);
                         }
                     }
                 }
@@ -873,7 +868,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                 if (pathBegin.Peek() == ' ')
                 {
-                    RejectRequest("Missing request target.");
+                    RejectRequest(RequestRejectionReasons.MissingRequestTarget);
                 }
 
                 scan.Take();
@@ -895,11 +890,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                     if (httpVersion == null)
                     {
-                        RejectRequest("Missing HTTP version.");
+                        RejectRequest(RequestRejectionReasons.MissingHTTPVersion);
                     }
                     else if (httpVersion != "HTTP/1.0" && httpVersion != "HTTP/1.1")
                     {
-                        RejectRequest("Unrecognized HTTP version.");
+                        RejectRequest(RequestRejectionReasons.UnrecognizedHTTPVersion);
                     }
                 }
 
@@ -911,7 +906,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
                 else if (next != '\n')
                 {
-                    RejectRequest("Missing LF in request line.");
+                    RejectRequest(RequestRejectionReasons.MissingLFInRequestLine);
                 }
 
                 // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
@@ -1065,11 +1060,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         }
 
                         // Headers don't end in CRLF line.
-                        RejectRequest("Headers corrupted, invalid header sequence.");
+                        RejectRequest(RequestRejectionReasons.HeadersCorruptedInvalidHeaderSequence);
                     }
                     else if (ch == ' ' || ch == '\t')
                     {
-                        RejectRequest("Header line must not start with whitespace.");
+                        RejectRequest(RequestRejectionReasons.HeaderLineMustNotStartWithWhitespace);
                     }
 
                     var beginName = scan;
@@ -1082,13 +1077,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     ch = scan.Take();
                     if (ch != ':')
                     {
-                        RejectRequest("No ':' character found in header line.");
+                        RejectRequest(RequestRejectionReasons.NoColonCharacterFoundInHeaderLine);
                     }
 
                     var validateName = beginName;
                     if (validateName.Seek(ref _vectorSpaces, ref _vectorTabs, ref _vectorColons) != ':')
                     {
-                        RejectRequest("Whitespace is not allowed in header name.");
+                        RejectRequest(RequestRejectionReasons.WhitespaceIsNotAllowedInHeaderName);
                     }
 
                     var beginValue = scan;
@@ -1128,7 +1123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     }
                     else if (ch != '\n')
                     {
-                        RejectRequest("Header line must end in CRLF; only CR found.");
+                        RejectRequest(RequestRejectionReasons.HeaderLineMustEndInCRLFOnlyCRFound);
                     }
 
                     var next = scan.Peek();
@@ -1155,7 +1150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         // explaining that obsolete line folding is unacceptable, or replace
                         // each received obs-fold with one or more SP octets prior to
                         // interpreting the field value or forwarding the message downstream.
-                        RejectRequest("Header value line folding not supported.");
+                        RejectRequest(RequestRejectionReasons.HeaderValueLineFoldingNotSupported);
                     }
 
                     // Trim trailing whitespace from header value by repeatedly advancing to next
@@ -1203,9 +1198,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                    statusCode != 304;
         }
 
-        public void RejectRequest(string message)
+        private void ThrowResponseAlreadyStartedException(string value)
         {
-            var ex = new BadHttpRequestException(message);
+            throw new InvalidOperationException(value + " cannot be set, response had already started.");
+        }
+
+        private void ThrowResponseAbortedException()
+        {
+            throw new ObjectDisposedException(
+                    "The response has been aborted due to an unhandled application exception.",
+                    _applicationException);
+        }
+
+        public void RejectRequest(RequestRejectionReasons reason)
+        {
+            var ex = BadHttpRequestException.GetException(reason);
+            SetBadRequestState(ex);
+            throw ex;
+        }
+
+        public void RejectRequest(RequestRejectionReasons reason, string value)
+        {
+            var ex = BadHttpRequestException.GetException(reason, value);
             SetBadRequestState(ex);
             throw ex;
         }

@@ -4903,7 +4903,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {
                     if (!AsciiUtilities.TryGetAsciiString(ptr, keyBuffer, keyLength))
                     {
-                        throw new BadHttpRequestException("Invalid characters in header name");
+                        throw BadHttpRequestException.GetException(RequestRejectionReasons.InvalidCharactersInHeaderName);
                     }
                 }
             }
