@@ -1,7 +1,7 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-rc3-000000-00",
+    "dotnet-test-xunit": "1.0.0-rc3-000000-01",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0",
     "Microsoft.AspNetCore.Server.Kestrel.Https": "1.0.0",
     "Microsoft.AspNetCore.Testing": "1.0.0-rtm-21431",
