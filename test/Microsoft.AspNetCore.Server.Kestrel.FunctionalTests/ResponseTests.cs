@@ -6,14 +6,17 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -182,6 +185,123 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                     Assert.NotNull(ex);
                 }
+            }
+        }
+
+        [Fact]
+        public Task ResponseStatusCodeSetBeforeHttpContextDisposeAppException()
+        {
+            return ResponseStatusCodeSetBeforeHttpContextDispose(
+                context =>
+                {
+                    throw new Exception();
+                },
+                expectedClientStatusCode: HttpStatusCode.InternalServerError,
+                expectedServerStatusCode: HttpStatusCode.InternalServerError);
+        }
+
+        [Fact]
+        public Task ResponseStatusCodeSetBeforeHttpContextDisposeRequestAborted()
+        {
+            return ResponseStatusCodeSetBeforeHttpContextDispose(
+                context =>
+                {
+                    context.Abort();
+                    return TaskCache.CompletedTask;
+                },
+                expectedClientStatusCode: null,
+                expectedServerStatusCode: 0);
+        }
+
+        [Fact]
+        public Task ResponseStatusCodeSetBeforeHttpContextDisposeRequestAbortedAppException()
+        {
+            return ResponseStatusCodeSetBeforeHttpContextDispose(
+                context =>
+                {
+                    context.Abort();
+                    throw new Exception();
+                },
+                expectedClientStatusCode: null,
+                expectedServerStatusCode: 0);
+        }
+
+        [Fact]
+        public Task ResponseStatusCodeSetBeforeHttpContextDisposedRequestMalformed()
+        {
+            return ResponseStatusCodeSetBeforeHttpContextDispose(
+                context =>
+                {
+                    return TaskCache.CompletedTask;
+                },
+                expectedClientStatusCode: null,
+                expectedServerStatusCode: HttpStatusCode.BadRequest,
+                sendMalformedRequest: true);
+        }
+
+        private static async Task ResponseStatusCodeSetBeforeHttpContextDispose(
+            RequestDelegate handler,
+            HttpStatusCode? expectedClientStatusCode,
+            HttpStatusCode expectedServerStatusCode,
+            bool sendMalformedRequest = false)
+        {
+            var mockHttpContextFactory = new Mock<IHttpContextFactory>();
+            mockHttpContextFactory.Setup(f => f.Create(It.IsAny<IFeatureCollection>()))
+                .Returns<IFeatureCollection>(fc => new DefaultHttpContext(fc));
+
+            var disposedTcs = new TaskCompletionSource<int>();
+            mockHttpContextFactory.Setup(f => f.Dispose(It.IsAny<HttpContext>()))
+                .Callback<HttpContext>(c =>
+                {
+                    disposedTcs.TrySetResult(c.Response.StatusCode);
+                });
+
+            var hostBuilder = new WebHostBuilder()
+                .UseKestrel()
+                .UseUrls("http://127.0.0.1:0")
+                .ConfigureServices(services => services.AddSingleton<IHttpContextFactory>(mockHttpContextFactory.Object))
+                .Configure(app =>
+                {
+                    app.Run(handler);
+                });
+
+            using (var host = hostBuilder.Build())
+            {
+                host.Start();
+
+                if (!sendMalformedRequest)
+                {
+                    using (var client = new HttpClient())
+                    {
+                        try
+                        {
+                            var response = await client.GetAsync($"http://localhost:{host.GetPort()}/");
+                            Assert.Equal(expectedClientStatusCode, response.StatusCode);
+                        }
+                        catch
+                        {
+                            if (expectedClientStatusCode != null)
+                            {
+                                throw;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+                    {
+                        socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
+                        socket.Send(Encoding.ASCII.GetBytes(
+                            "POST / HTTP/1.1\r\n" +
+                            "Transfer-Encoding: chunked\r\n" +
+                            "\r\n" +
+                            "wrong"));
+                    }
+                }
+
+                var disposedStatusCode = await disposedTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+                Assert.Equal(expectedServerStatusCode, (HttpStatusCode)disposedStatusCode);
             }
         }
 

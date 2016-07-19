@@ -92,55 +92,69 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         var context = _application.CreateContext(this);
                         try
                         {
-                            await _application.ProcessRequestAsync(context).ConfigureAwait(false);
-                            VerifyResponseContentLength();
-                        }
-                        catch (Exception ex)
-                        {
-                            ReportApplicationError(ex);
+                            try
+                            {
+                                await _application.ProcessRequestAsync(context).ConfigureAwait(false);
+                                VerifyResponseContentLength();
+                            }
+                            catch (Exception ex)
+                            {
+                                ReportApplicationError(ex);
+                            }
+                            finally
+                            {
+                                // Trigger OnStarting if it hasn't been called yet and the app hasn't
+                                // already failed. If an OnStarting callback throws we can go through
+                                // our normal error handling in ProduceEnd.
+                                // https://github.com/aspnet/KestrelHttpServer/issues/43
+                                if (!HasResponseStarted && _applicationException == null && _onStarting != null)
+                                {
+                                    await FireOnStarting();
+                                }
+
+                                PauseStreams();
+
+                                if (_onCompleted != null)
+                                {
+                                    await FireOnCompleted();
+                                }
+
+                                // If _requestAbort is set, the connection has already been closed.
+                                if (Volatile.Read(ref _requestAborted) == 0)
+                                {
+                                    ResumeStreams();
+
+                                    if (_keepAlive)
+                                    {
+                                        // Finish reading the request body in case the app did not.
+                                        await messageBody.Consume();
+                                    }
+
+                                    // ProduceEnd() must be called before _application.DisposeContext(), to ensure
+                                    // HttpContext.Response.StatusCode is correctly set when
+                                    // IHttpContextFactory.Dispose(HttpContext) is called.
+                                    await ProduceEnd();
+                                }
+                                else if (!HasResponseStarted)
+                                {
+                                    // If the request was aborted and no response was sent, there's no
+                                    // meaningful status code to log.
+                                    StatusCode = 0;
+                                }
+                            }
                         }
                         finally
                         {
-                            // Trigger OnStarting if it hasn't been called yet and the app hasn't
-                            // already failed. If an OnStarting callback throws we can go through
-                            // our normal error handling in ProduceEnd.
-                            // https://github.com/aspnet/KestrelHttpServer/issues/43
-                            if (!HasResponseStarted && _applicationException == null && _onStarting != null)
-                            {
-                                await FireOnStarting();
-                            }
-
-                            PauseStreams();
-
-                            if (_onCompleted != null)
-                            {
-                                await FireOnCompleted();
-                            }
-
                             _application.DisposeContext(context, _applicationException);
                         }
+                    }
 
-                        // If _requestAbort is set, the connection has already been closed.
-                        if (Volatile.Read(ref _requestAborted) == 0)
-                        {
-                            ResumeStreams();
+                    StopStreams();
 
-                            if (_keepAlive)
-                            {
-                                // Finish reading the request body in case the app did not.
-                                await messageBody.Consume();
-                            }
-
-                            await ProduceEnd();
-                        }
-
-                        StopStreams();
-
-                        if (!_keepAlive)
-                        {
-                            // End the connection for non keep alive as data incoming may have been thrown off
-                            return;
-                        }
+                    if (!_keepAlive)
+                    {
+                        // End the connection for non keep alive as data incoming may have been thrown off
+                        return;
                     }
 
                     // Don't reset frame state if we're exiting the loop. This avoids losing request rejection
