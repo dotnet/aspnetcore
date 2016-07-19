@@ -139,12 +139,6 @@ namespace Microsoft.AspNetCore.Builder
         public ISecureDataFormat<AuthenticationTicket> TicketDataFormat { get; set; }
 
         /// <summary>
-        /// For testing purposes only.
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public ISystemClock SystemClock { get; set; }
-
-        /// <summary>
         /// The component used to get cookies from the request or set them on the response.
         ///
         /// ChunkingCookieManager will be used by default.

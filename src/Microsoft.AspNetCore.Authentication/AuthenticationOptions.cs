@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.Authentication;
+using System.ComponentModel;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -47,5 +49,11 @@ namespace Microsoft.AspNetCore.Builder
         /// Additional information about the authentication type which is made available to the application.
         /// </summary>
         public AuthenticationDescription Description { get; set; } = new AuthenticationDescription();
+
+        /// <summary>
+        /// For testing purposes only.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public ISystemClock SystemClock { get; set; } = new SystemClock();
     }
 }

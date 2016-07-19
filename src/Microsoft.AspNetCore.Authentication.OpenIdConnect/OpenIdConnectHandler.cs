@@ -259,10 +259,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             // order for local RedirectUri
             // 1. challenge.Properties.RedirectUri
             // 2. CurrentUri if RedirectUri is not set)
-            var properties = new AuthenticationProperties(context.Properties)
-            {
-                ExpiresUtc = Options.SystemClock.UtcNow.Add(Options.RemoteAuthenticationTimeout)
-            };
+            var properties = new AuthenticationProperties(context.Properties);
 
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {

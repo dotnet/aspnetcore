@@ -96,12 +96,6 @@ namespace Microsoft.AspNetCore.Builder
         public bool RefreshOnIssuerKeyNotFound { get; set; } = true;
 
         /// <summary>
-        /// For testing purposes only.
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public ISystemClock SystemClock { get; set; } = new SystemClock();
-
-        /// <summary>
         /// Gets the ordered list of <see cref="ISecurityTokenValidator"/> used to validate access tokens.
         /// </summary>
         public IList<ISecurityTokenValidator> SecurityTokenValidators { get; } = new List<ISecurityTokenValidator> { new JwtSecurityTokenHandler() };

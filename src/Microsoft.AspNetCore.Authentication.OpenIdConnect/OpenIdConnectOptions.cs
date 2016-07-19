@@ -202,11 +202,5 @@ namespace Microsoft.AspNetCore.Builder
         /// This is disabled by default.
         /// </summary>
         public bool SkipUnrecognizedRequests { get; set; } = false;
-
-        /// <summary>
-        /// For testing purposes only.
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public ISystemClock SystemClock { get; set; } = new SystemClock();
     }
 }

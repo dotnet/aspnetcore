@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 HttpOnly = true,
                 Secure = Request.IsHttps,
-                Expires = properties.ExpiresUtc
+                Expires = Options.SystemClock.UtcNow.Add(Options.RemoteAuthenticationTimeout),
             };
 
             properties.Items[CorrelationProperty] = correlationId;

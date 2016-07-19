@@ -131,10 +131,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var properties = new AuthenticationProperties(context.Properties)
-            {
-                ExpiresUtc = Options.SystemClock.UtcNow.Add(Options.RemoteAuthenticationTimeout)
-            };
+            var properties = new AuthenticationProperties(context.Properties);
 
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
@@ -148,7 +145,8 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = Request.IsHttps
+                Secure = Request.IsHttps,
+                Expires = Options.SystemClock.UtcNow.Add(Options.RemoteAuthenticationTimeout),
             };
 
             Response.Cookies.Append(StateCookie, Options.StateDataFormat.Protect(requestToken), cookieOptions);

@@ -59,11 +59,5 @@ namespace Microsoft.AspNetCore.Builder
             get { return (ITwitterEvents)base.Events; }
             set { base.Events = value; }
         }
-
-        /// <summary>
-        /// For testing purposes only.
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public ISystemClock SystemClock { get; set; } = new SystemClock();
     }
 }
