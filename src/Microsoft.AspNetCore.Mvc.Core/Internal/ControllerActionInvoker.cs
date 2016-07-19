@@ -641,7 +641,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         else if (!_executor.IsMethodAsync)
                         {
                             var resultAsObject = _executor.Execute(_controller, arguments);
-                            result = new ObjectResult(resultAsObject)
+                            result = resultAsObject as IActionResult ?? new ObjectResult(resultAsObject)
                             {
                                 DeclaredType = returnType,
                             };
@@ -649,7 +649,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         else if (_executor.TaskGenericType != null)
                         {
                             var resultAsObject = await _executor.ExecuteAsync(_controller, arguments);
-                            result = new ObjectResult(resultAsObject)
+                            result = resultAsObject as IActionResult ?? new ObjectResult(resultAsObject)
                             {
                                 DeclaredType = _executor.TaskGenericType,
                             };

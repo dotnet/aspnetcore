@@ -2358,6 +2358,58 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public async Task InvokeAction_AsyncActionWithTaskOfObjectReturnType_AndReturningTaskOfActionResult()
+        {
+            // Arrange
+            var actionParameters = new Dictionary<string, object> { ["value"] = 3 };
+            IActionResult result = null;
+
+            var filter = new Mock<IActionFilter>(MockBehavior.Strict);
+            filter.Setup(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>())).Verifiable();
+            filter
+                .Setup(f => f.OnActionExecuted(It.IsAny<ActionExecutedContext>()))
+                .Callback<ActionExecutedContext>(c => result = c.Result);
+
+            var invoker = CreateInvoker(
+                new[] { filter.Object },
+                nameof(TestController.AsyncActionMethodReturningActionResultWithTaskOfObjectAsReturnType),
+                actionParameters);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            var testResult = Assert.IsType<TestActionResult>(result);
+            Assert.Equal(3, testResult.Value);
+        }
+
+        [Fact]
+        public async Task InvokeAction_ActionWithObjectReturnType_AndReturningActionResult()
+        {
+            // Arrange
+            var actionParameters = new Dictionary<string, object> { ["value"] = 3 };
+            IActionResult result = null;
+
+            var filter = new Mock<IActionFilter>(MockBehavior.Strict);
+            filter.Setup(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>())).Verifiable();
+            filter
+                .Setup(f => f.OnActionExecuted(It.IsAny<ActionExecutedContext>()))
+                .Callback<ActionExecutedContext>(c => result = c.Result);
+
+            var invoker = CreateInvoker(
+                new[] { filter.Object },
+                nameof(TestController.ActionMethodReturningActionResultWithObjectAsReturnType),
+                actionParameters);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            var testResult = Assert.IsType<TestActionResult>(result);
+            Assert.Equal(3, testResult.Value);
+        }
+
+        [Fact]
         public async Task InvokeAction_AsyncMethod_ParametersInRandomOrder()
         {
             //Arrange
@@ -2912,6 +2964,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             public IActionResult ActionMethodWithNullActionResult()
             {
                 return null;
+            }
+
+            public object ActionMethodReturningActionResultWithObjectAsReturnType(int value = 5)
+            {
+                return new TestActionResult { Value = value };
+            }
+
+            public async Task<object> AsyncActionMethodReturningActionResultWithTaskOfObjectAsReturnType(int value = 5)
+            {
+                return await Task.FromResult(new TestActionResult { Value = value });
             }
 
             public TestActionResult TestActionMethodWithNullActionResult()
