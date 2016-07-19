@@ -94,14 +94,24 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     defaults.Add(kvp.Key, kvp.Value);
                 }
 
-                // We use the `NullRouter` as the route handler because we don't need to do anything for link
-                // generations. The TreeRouter does it all for us.
-                builder.MapOutbound(
-                    NullRouter.Instance,
-                    routeInfo.RouteTemplate, 
-                    defaults,
-                    routeInfo.RouteName, 
-                    routeInfo.Order);
+                try
+                {
+                    // We use the `NullRouter` as the route handler because we don't need to do anything for link
+                    // generations. The TreeRouter does it all for us.
+                    builder.MapOutbound(
+                        NullRouter.Instance,
+                        routeInfo.RouteTemplate,
+                        defaults,
+                        routeInfo.RouteName,
+                        routeInfo.Order);
+                }
+                catch (RouteCreationException routeCreationException)
+                {
+                    throw new RouteCreationException(
+                        "An error occurred while adding a route to the route builder. " +
+                        $"Route name '{routeInfo.RouteName}' and template '{routeInfo.RouteTemplate.TemplateText}'.",
+                        routeCreationException);
+                }
             }
 
             // We're creating one AttributeRouteMatchingEntry per group, so we need to identify the distinct set of
@@ -113,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 var handler = _handlerFactory(group.ToArray());
 
                 // Note that because we only support 'inline' defaults, each routeInfo group also has the same
-                // set of defaults. 
+                // set of defaults.
                 //
                 // We then inject the route group as a default for the matcher so it gets passed back to MVC
                 // for use in action selection.
@@ -167,7 +177,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             e.ErrorMessage)));
 
                 var message = Resources.FormatAttributeRoute_AggregateErrorMessage(Environment.NewLine, allErrors);
-                throw new InvalidOperationException(message);
+                throw new RouteCreationException(message);
             }
 
             return routeInfos;
@@ -227,7 +237,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             public ActionDescriptor ActionDescriptor { get; set; }
 
             public string ErrorMessage { get; set; }
-            
+
             public int Order { get; set; }
 
             public string RouteName { get; set; }

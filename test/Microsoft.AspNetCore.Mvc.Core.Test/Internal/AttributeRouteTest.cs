@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.NotNull(context.Handler);
             Assert.Equal("5", context.RouteData.Values["key2"]);
             Assert.Same(actions[1], selected);
-            
+
             // Arrange 2 - remove the action and update the collection
             selected = null;
             actions.RemoveAt(1);
@@ -511,6 +511,40 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 });
         }
 
+        [Theory]
+        [InlineData("")]
+        [InlineData("GetBlogById")]
+        public void AttributeRoute_ThrowsRouteCreationException_ForConstraintsNotTakingArguments(string routeName)
+        {
+            // Arrange
+            var routeTemplate = "api/Blog/{id:int(10)}";
+            var actions = new List<ActionDescriptor>()
+            {
+                new ActionDescriptor()
+                {
+                    AttributeRouteInfo = new AttributeRouteInfo()
+                    {
+                        Template = routeTemplate,
+                        Name = routeName
+                    }
+                },
+            };
+            var expectedErrorMessage = "An error occurred while adding a route to the route builder. " +
+                        $"Route name '{routeName}' and template '{routeTemplate}'.";
+
+            var builder = CreateBuilder();
+            var actionDescriptorProvider = CreateActionDescriptorProvider(actions);
+            var route = CreateRoute(CreateHandler().Object, actionDescriptorProvider.Object);
+
+            // Act & Assert
+            var exception = Assert.Throws<RouteCreationException>(() =>
+            {
+                route.AddEntries(builder, actionDescriptorProvider.Object.ActionDescriptors);
+            });
+            Assert.Equal(expectedErrorMessage, exception.Message);
+            Assert.IsType<RouteCreationException>(exception.InnerException);
+        }
+
         private static TreeRouteBuilder CreateBuilder()
         {
             var services = new ServiceCollection()
@@ -546,7 +580,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         private static AttributeRoute CreateRoute(
-            IRouter handler, 
+            IRouter handler,
             IActionDescriptorCollectionProvider actionDescriptorProvider)
         {
             return CreateRoute((_) => handler, actionDescriptorProvider);
