@@ -43,6 +43,70 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <summary>
+        /// Cannot determine an '{4}' attribute for {0}. A {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.
+        /// </summary>
+        internal static string ButtonTagHelper_CannotDetermineFormActionRouteActionOrControllerSpecified
+        {
+            get { return GetString("ButtonTagHelper_CannotDetermineFormActionRouteActionOrControllerSpecified"); }
+        }
+
+        /// <summary>
+        /// Cannot determine an '{4}' attribute for {0}. A {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.
+        /// </summary>
+        internal static string FormatButtonTagHelper_CannotDetermineFormActionRouteActionOrControllerSpecified(object p0, object p1, object p2, object p3, object p4)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ButtonTagHelper_CannotDetermineFormActionRouteActionOrControllerSpecified"), p0, p1, p2, p3, p4);
+        }
+
+        /// <summary>
+        /// Cannot override the '{6}' attribute for {0}. A {0} with a specified '{6}' must not have attributes starting with '{5}' or an '{1}', '{2}', '{3}', or '{4}' attribute.
+        /// </summary>
+        internal static string ButtonTagHelper_CannotOverrideFormAction
+        {
+            get { return GetString("ButtonTagHelper_CannotOverrideFormAction"); }
+        }
+
+        /// <summary>
+        /// Cannot override the '{6}' attribute for {0}. A {0} with a specified '{6}' must not have attributes starting with '{5}' or an '{1}', '{2}', '{3}', or '{4}' attribute.
+        /// </summary>
+        internal static string FormatButtonTagHelper_CannotOverrideFormAction(object p0, object p1, object p2, object p3, object p4, object p5, object p6)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ButtonTagHelper_CannotOverrideFormAction"), p0, p1, p2, p3, p4, p5, p6);
+        }
+
+        /// <summary>
+        /// Cannot determine an '{4}' attribute for {0}. An {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.
+        /// </summary>
+        internal static string SubmitTagHelper_CannotDetermineFormActionRouteActionOrControllerSpecified
+        {
+            get { return GetString("SubmitTagHelper_CannotDetermineFormActionRouteActionOrControllerSpecified"); }
+        }
+
+        /// <summary>
+        /// Cannot determine an '{4}' attribute for {0}. An {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.
+        /// </summary>
+        internal static string FormatSubmitTagHelper_CannotDetermineFormActionRouteActionOrControllerSpecified(object p0, object p1, object p2, object p3, object p4)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("SubmitTagHelper_CannotDetermineFormActionRouteActionOrControllerSpecified"), p0, p1, p2, p3, p4);
+        }
+
+        /// <summary>
+        /// Cannot override the '{6}' attribute for {0}. An {0} with a specified '{6}' must not have attributes starting with '{5}' or an '{1}', '{2}', '{3}', or '{4}' attribute.
+        /// </summary>
+        internal static string SubmitTagHelper_CannotOverrideFormAction
+        {
+            get { return GetString("SubmitTagHelper_CannotOverrideFormAction"); }
+        }
+
+        /// <summary>
+        /// Cannot override the '{6}' attribute for {0}. An {0} with a specified '{6}' must not have attributes starting with '{5}' or an '{1}', '{2}', '{3}', or '{4}' attribute.
+        /// </summary>
+        internal static string FormatSubmitTagHelper_CannotOverrideFormAction(object p0, object p1, object p2, object p3, object p4, object p5, object p6)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("SubmitTagHelper_CannotOverrideFormAction"), p0, p1, p2, p3, p4, p5, p6);
+        }
+
+        /// <summary>
         /// Cannot override the '{1}' attribute for {0}. A {0} with a specified '{1}' must not have attributes starting with '{6}' or an '{2}' or '{3}' or '{4}' or '{5}' attribute.
         /// </summary>
         internal static string FormTagHelper_CannotOverrideAction
