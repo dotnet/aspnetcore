@@ -76,12 +76,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             // Start socket prior to applying the ConnectionFilter
             _socket.ReadStart(_allocCallback, _readCallback, this);
 
-            // Don't initialize _frame until SocketInput and SocketOutput are set to their final values.
             if (ServerOptions.ConnectionFilter == null)
             {
-                _frame.SocketInput = SocketInput;
-                _frame.SocketOutput = SocketOutput;
-
                 _frame.Start();
             }
             else
@@ -151,9 +147,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 SocketInput.IncomingFin();
                 _readInputTask.ContinueWith((task, state) =>
                 {
-                    ((Connection)state)._filterContext.Connection.Dispose();
-                    ((Connection)state)._filteredStreamAdapter.Dispose();
-                    ((Connection)state).SocketInput.Dispose();
+                    var connection = (Connection)state;
+                    connection._filterContext.Connection.Dispose();
+                    connection._filteredStreamAdapter.Dispose();
+                    connection.SocketInput.Dispose();
                 }, this);
             }
             else
@@ -174,11 +171,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 _frame.SocketOutput = _filteredStreamAdapter.SocketOutput;
 
                 _readInputTask = _filteredStreamAdapter.ReadInputAsync();
-            }
-            else
-            {
-                _frame.SocketInput = SocketInput;
-                _frame.SocketOutput = SocketOutput;
             }
 
             _frame.PrepareRequest = _filterContext.PrepareRequest;
@@ -252,11 +244,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 Abort();
             }
-        }
-
-        private Frame CreateFrame()
-        {
-            return FrameFactory(this);
         }
 
         void IConnectionControl.Pause()
