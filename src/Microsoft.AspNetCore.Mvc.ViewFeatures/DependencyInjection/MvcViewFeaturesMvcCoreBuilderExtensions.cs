@@ -140,7 +140,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<
                 IViewComponentDescriptorCollectionProvider,
                 DefaultViewComponentDescriptorCollectionProvider>();
-            services.TryAddSingleton<ViewComponentResultExecutor>();
+            services.TryAddTransient<ViewComponentResultExecutor>();
 
             services.TryAddSingleton<ViewComponentInvokerCache>();
             services.TryAddTransient<IViewComponentDescriptorProvider, DefaultViewComponentDescriptorProvider>();
