@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers
 {
@@ -180,22 +181,17 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
             else
             {
-                IDictionary<string, object> routeValues = null;
+                RouteValueDictionary routeValues = null;
                 if (_routeValues != null && _routeValues.Count > 0)
                 {
-                    // Convert from Dictionary<string, string> to Dictionary<string, object>.
-                    routeValues = new Dictionary<string, object>(_routeValues.Count, StringComparer.OrdinalIgnoreCase);
-                    foreach (var routeValue in _routeValues)
-                    {
-                        routeValues.Add(routeValue.Key, routeValue.Value);
-                    }
+                    routeValues = new RouteValueDictionary(_routeValues);
                 }
 
                 if (Area != null)
                 {
                     if (routeValues == null)
                     {
-                        routeValues = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                        routeValues = new RouteValueDictionary();
                     }
 
                     // Unconditionally replace any value from asp-route-area. 
