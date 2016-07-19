@@ -442,6 +442,22 @@ namespace Microsoft.AspNetCore.Routing
             return string.Format(CultureInfo.CurrentCulture, GetString("UnableToFindServices"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// An error occurred while creating the route with name '{0}' and template '{1}'.
+        /// </summary>
+        internal static string TemplateRoute_Exception
+        {
+            get { return GetString("TemplateRoute_Exception"); }
+        }
+
+        /// <summary>
+        /// An error occurred while creating the route with name '{0}' and template '{1}'.
+        /// </summary>
+        internal static string FormatTemplateRoute_Exception(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_Exception"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

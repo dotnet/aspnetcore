@@ -30,11 +30,8 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var template = @"{controller}/{action}/ {p1:regex(abc} ";
             var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
-            var expected = "The constraint entry 'p1' - 'regex(abc' on the route " +
-                "'{controller}/{action}/ {p1:regex(abc} ' could not be resolved by the constraint resolver of type " +
-                "'IInlineConstraintResolverProxy'.";
 
-            var exception = Assert.Throws<InvalidOperationException>(
+            var exception = Assert.Throws<RouteCreationException>(
                 () => new Route(
                     mockTarget.Object,
                     template,
@@ -43,7 +40,15 @@ namespace Microsoft.AspNetCore.Routing
                     dataTokens: null,
                     inlineConstraintResolver: _inlineConstraintResolver));
 
+            var expected = "An error occurred while creating the route with name '' and template" +
+                $" '{template}'.";
             Assert.Equal(expected, exception.Message);
+
+            Assert.NotNull(exception.InnerException);
+            expected = "The constraint entry 'p1' - 'regex(abc' on the route " +
+                "'{controller}/{action}/ {p1:regex(abc} ' could not be resolved by the constraint resolver of type " +
+                "'IInlineConstraintResolverProxy'.";
+            Assert.Equal(expected, exception.InnerException.Message);
         }
 
         [Fact]
@@ -1460,14 +1465,21 @@ namespace Microsoft.AspNetCore.Routing
             var routeBuilder = CreateRouteBuilder();
 
             // Assert
-            ExceptionAssert.Throws<InvalidOperationException>(
+            var expectedMessage = "An error occurred while creating the route with name 'mockName' and template" +
+                " '{controller}/{action}'.";
+
+            var exception = ExceptionAssert.Throws<RouteCreationException>(
                 () => routeBuilder.MapRoute("mockName",
                     "{controller}/{action}",
                     defaults: null,
                     constraints: new { controller = "a.*", action = 17 }),
-                "The constraint entry 'action' - '17' on the route '{controller}/{action}' " +
+                    expectedMessage);
+
+            expectedMessage = "The constraint entry 'action' - '17' on the route '{controller}/{action}' " +
                 "must have a string value or be of a type which implements '" +
-                typeof(IRouteConstraint) + "'.");
+                typeof(IRouteConstraint) + "'.";
+            Assert.NotNull(exception.InnerException);
+            Assert.Equal(expectedMessage, exception.InnerException.Message);
         }
 
         [Fact]

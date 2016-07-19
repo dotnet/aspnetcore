@@ -46,8 +46,9 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void ResolveConstraint_IntConstraintWithArgument_Throws()
         {
             // Arrange, Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(
+            var ex = Assert.Throws<RouteCreationException>(
                 () => _constraintResolver.ResolveConstraint("int(5)"));
+
             Assert.Equal("Could not find a constructor for constraint type 'IntRouteConstraint'" +
                          " with the following number of parameters: 1.",
                          ex.Message);
@@ -276,7 +277,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var resolver = GetInlineConstraintResolver(routeOptions);
 
             // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() => resolver.ResolveConstraint("custom"));
+            var ex = Assert.Throws<RouteCreationException>(() => resolver.ResolveConstraint("custom"));
             Assert.Equal("The constraint type 'System.String' which is mapped to constraint key 'custom'" +
                          " must implement the 'IRouteConstraint' interface.",
                          ex.Message);
@@ -291,7 +292,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var resolver = GetInlineConstraintResolver(routeOptions);
 
             // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() => resolver.ResolveConstraint("custom(5,6)"));
+            var ex = Assert.Throws<RouteCreationException>(() => resolver.ResolveConstraint("custom(5,6)"));
             Assert.Equal("The constructor to use for activating the constraint type 'MultiConstructorRouteConstraint' is ambiguous." +
                          " Multiple constructors were found with the following number of parameters: 2.",
                          ex.Message);
@@ -317,7 +318,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         {
             // Arrange
             // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() => _constraintResolver.ResolveConstraint("int(5,6)"));
+            var ex = Assert.Throws<RouteCreationException>(() => _constraintResolver.ResolveConstraint("int(5,6)"));
             Assert.Equal("Could not find a constructor for constraint type 'IntRouteConstraint'" +
                          " with the following number of parameters: 2.",
                          ex.Message);

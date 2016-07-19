@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Routing
             var builder = CreateBuilder("{controller}/{action}");
 
             // Act & Assert
-            ExceptionAssert.Throws<InvalidOperationException>(
+            ExceptionAssert.Throws<RouteCreationException>(
                 () => builder.AddConstraint("controller", 5),
                 "The constraint entry 'controller' - '5' on the route " +
                 "'{controller}/{action}' must have a string value or be of a type which implements '" +
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Routing
         [Fact]
         public void AddResolvedConstraint_SetOptionalParameter_AfterAddingTheParameter()
         {
-            var builder = CreateBuilder("{controller}/{action}/{id}");            
+            var builder = CreateBuilder("{controller}/{action}/{id}");
             builder.AddResolvedConstraint("id", "int");
             builder.SetOptional("id");
 
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Equal(1, result.Count);
             Assert.Equal("name", result.First().Key);
             Assert.IsType<OptionalRouteConstraint>(Assert.Single(result).Value);
-            var optionalConstraint = (OptionalRouteConstraint)result.First().Value;            
+            var optionalConstraint = (OptionalRouteConstraint)result.First().Value;
             var compositeConstraint = Assert.IsType<CompositeRouteConstraint>(optionalConstraint.InnerConstraint); ;
             Assert.Equal(compositeConstraint.Constraints.Count(), 2);
 

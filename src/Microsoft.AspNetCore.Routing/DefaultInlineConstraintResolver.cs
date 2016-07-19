@@ -69,12 +69,25 @@ namespace Microsoft.AspNetCore.Routing
 
             if (!typeof(IRouteConstraint).GetTypeInfo().IsAssignableFrom(constraintType.GetTypeInfo()))
             {
-                throw new InvalidOperationException(
+                throw new RouteCreationException(
                             Resources.FormatDefaultInlineConstraintResolver_TypeNotConstraint(
                                                         constraintType, constraintKey, typeof(IRouteConstraint).Name));
             }
 
-            return CreateConstraint(constraintType, argumentString);
+            try
+            {
+                return CreateConstraint(constraintType, argumentString);
+            }
+            catch (RouteCreationException)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                throw new RouteCreationException(
+                    $"An error occurred while trying to create an instance of route constraint '{constraintType.FullName}'.",
+                    exception);
+            }
         }
 
         private static IRouteConstraint CreateConstraint(Type constraintType, string argumentString)
@@ -107,7 +120,7 @@ namespace Microsoft.AspNetCore.Routing
 
                 if (constructorMatches == 0)
                 {
-                    throw new InvalidOperationException(
+                    throw new RouteCreationException(
                                 Resources.FormatDefaultInlineConstraintResolver_CouldNotFindCtor(
                                                        constraintTypeInfo.Name, arguments.Length));
                 }
@@ -118,7 +131,7 @@ namespace Microsoft.AspNetCore.Routing
                 }
                 else
                 {
-                    throw new InvalidOperationException(
+                    throw new RouteCreationException(
                                 Resources.FormatDefaultInlineConstraintResolver_AmbiguousCtors(
                                                        constraintTypeInfo.Name, arguments.Length));
                 }

@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="name">The name of the route.</param>
         /// <param name="template">The URL pattern of the route.</param>
         /// <param name="defaults">
-        /// An object that contains default values for route parameters. The object's properties represent the names 
+        /// An object that contains default values for route parameters. The object's properties represent the names
         /// and values of the default values.
         /// </param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             if (routeBuilder.DefaultHandler == null)
             {
-                throw new InvalidOperationException(Resources.DefaultHandler_MustBeSet);
+                throw new RouteCreationException(Resources.DefaultHandler_MustBeSet);
             }
 
             var inlineConstraintResolver = routeBuilder

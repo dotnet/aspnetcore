@@ -46,12 +46,19 @@ namespace Microsoft.AspNetCore.Routing
             ConstraintResolver = constraintResolver;
             DataTokens = dataTokens ?? new RouteValueDictionary();
 
-            // Data we parse from the template will be used to fill in the rest of the constraints or
-            // defaults. The parser will throw for invalid routes.
-            ParsedTemplate = TemplateParser.Parse(template);
+            try
+            {
+                // Data we parse from the template will be used to fill in the rest of the constraints or
+                // defaults. The parser will throw for invalid routes.
+                ParsedTemplate = TemplateParser.Parse(template);
 
-            Constraints = GetConstraints(constraintResolver, ParsedTemplate, constraints);
-            Defaults = GetDefaults(ParsedTemplate, defaults);
+                Constraints = GetConstraints(constraintResolver, ParsedTemplate, constraints);
+                Defaults = GetDefaults(ParsedTemplate, defaults);
+            }
+            catch (Exception exception)
+            {
+                throw new RouteCreationException(Resources.FormatTemplateRoute_Exception(name, template), exception);
+            }
         }
 
         public virtual IDictionary<string, IRouteConstraint> Constraints { get; protected set; }

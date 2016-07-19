@@ -198,4 +198,7 @@
   <data name="UnableToFindServices" xml:space="preserve">
     <value>Unable to find the required services. Please add all the required services by calling '{0}.{1}' inside the call to '{2}' in the application startup code.</value>
   </data>
+  <data name="TemplateRoute_Exception" xml:space="preserve">
+    <value>An error occurred while creating the route with name '{0}' and template '{1}'.</value>
+  </data>
 </root>

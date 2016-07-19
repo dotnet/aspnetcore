@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Routing
                 var regexPattern = value as string;
                 if (regexPattern == null)
                 {
-                    throw new InvalidOperationException(
+                    throw new RouteCreationException(
                         Resources.FormatRouteConstraintBuilder_ValidationMustBeStringOrCustomConstraint(
                             key,
                             value,

@@ -58,46 +58,54 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var routeBuilder = CreateRouteBuilder();
 
             // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(
+            var ex = Assert.Throws<RouteCreationException>(
                                 () => routeBuilder.MapRoute("mockName",
                                                             "{controller}/{action}/{id:int=12}",
                                                             defaults: new { id = 13 },
                                                             constraints: null));
 
-            var message = "The route parameter 'id' has both an inline default value and an explicit default" +
-                          " value specified. A route parameter cannot contain an inline default value when" +
-                          " a default value is specified explicitly. Consider removing one of them.";
+            var message = "An error occurred while creating the route with name 'mockName' and template" +
+                " '{controller}/{action}/{id:int=12}'.";
             Assert.Equal(message, ex.Message);
+
+            Assert.NotNull(ex.InnerException);
+            message = "The route parameter 'id' has both an inline default value and an explicit default" +
+                " value specified. A route parameter cannot contain an inline default value when" +
+                " a default value is specified explicitly. Consider removing one of them.";
+            Assert.Equal(message, ex.InnerException.Message);
         }
 
         [Fact]
         public void EmptyDefaultValue_WithOptionalParameter_Throws()
         {
             // Arrange
-            var message = "An optional parameter cannot have default value." + Environment.NewLine +
-                          "Parameter name: routeTemplate";
             var routeBuilder = CreateRouteBuilder();
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(
+            var ex = Assert.Throws<RouteCreationException>(
                                 () => routeBuilder.MapRoute("mockName",
                                                             "{controller}/{action}/{id:int=?}",
                                                             defaults: new { id = 13 },
                                                             constraints: null));
 
+            var message = "An error occurred while creating the route with name 'mockName' and template" +
+                " '{controller}/{action}/{id:int=?}'.";
             Assert.Equal(message, ex.Message);
+
+            Assert.NotNull(ex.InnerException);
+            message = "An optional parameter cannot have default value." + Environment.NewLine +
+                "Parameter name: routeTemplate";
+            Assert.Equal(message, ex.InnerException.Message);
         }
 
         [Fact]
         public void NonEmptyDefaultValue_WithOptionalParameter_Throws()
         {
             // Arrange
-            var message = "An optional parameter cannot have default value." + Environment.NewLine +
-                          "Parameter name: routeTemplate";
             var routeBuilder = CreateRouteBuilder();
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() =>
+            var ex = Assert.Throws<RouteCreationException>(() =>
             {
                 routeBuilder.MapRoute(
                     "mockName",
@@ -106,7 +114,14 @@ namespace Microsoft.AspNetCore.Routing.Tests
                     constraints: null);
             });
 
+            var message = "An error occurred while creating the route with name 'mockName' and template" +
+                " '{controller}/{action}/{id:int=12?}'.";
             Assert.Equal(message, ex.Message);
+
+            Assert.NotNull(ex.InnerException);
+            message = "An optional parameter cannot have default value." + Environment.NewLine +
+                "Parameter name: routeTemplate";
+            Assert.Equal(message, ex.InnerException.Message);
         }
 
         private static IRouteBuilder CreateRouteBuilder()
