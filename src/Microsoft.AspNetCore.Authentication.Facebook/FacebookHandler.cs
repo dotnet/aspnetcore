@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Globalization;
 using System.Net.Http;
 using System.Security.Claims;
@@ -35,7 +36,11 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             }
 
             var response = await Backchannel.GetAsync(endpoint, Context.RequestAborted);
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMessage = $"Failed to retrived Facebook user information ({response.StatusCode}) Please check if the authentication information is correct and the corresponding Google API is enabled.";
+                throw new InvalidOperationException(errorMessage);
+            }
 
             var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
 
@@ -119,7 +124,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             {
                 identity.AddClaim(new Claim(ClaimTypes.Name, name, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
- 
+
             var timeZone = FacebookHelper.GetTimeZone(payload);
             if (!string.IsNullOrEmpty(timeZone))
             {

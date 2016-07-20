@@ -32,7 +32,11 @@ namespace Microsoft.AspNetCore.Authentication.Google
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
 
             var response = await Backchannel.SendAsync(request, Context.RequestAborted);
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMessage = $"Failed to retrived Google user information ({response.StatusCode}) Please check if the authentication information is correct and the corresponding Google API is enabled.";
+                throw new InvalidOperationException(errorMessage);
+            }
 
             var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
 
