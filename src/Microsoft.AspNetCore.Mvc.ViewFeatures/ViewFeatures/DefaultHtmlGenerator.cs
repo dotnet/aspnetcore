@@ -658,7 +658,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             if (columns > 0)
             {
-                tagBuilder.MergeAttribute("columns", columns.ToString(CultureInfo.InvariantCulture), true);
+                tagBuilder.MergeAttribute("cols", columns.ToString(CultureInfo.InvariantCulture), true);
             }
 
             tagBuilder.MergeAttribute("name", fullName, true);
