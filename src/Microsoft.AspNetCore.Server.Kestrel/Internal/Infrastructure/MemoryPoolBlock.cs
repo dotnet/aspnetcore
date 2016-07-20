@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         ~MemoryPoolBlock()
         {
 #if DEBUG
-            Debug.Assert(Slab == null || !Slab.IsActive, "Block being garbage collected instead of returned to pool: " + Leaser + "\n" + StackTrace);
+            Debug.Assert(Slab == null || !Slab.IsActive, $"{Environment.NewLine}{Environment.NewLine}*** Block being garbage collected instead of returned to pool: {Leaser} ***{Environment.NewLine}Allocation StackTrace:{Environment.NewLine}{StackTrace}");
 #endif
             if (Slab != null && Slab.IsActive)
             {

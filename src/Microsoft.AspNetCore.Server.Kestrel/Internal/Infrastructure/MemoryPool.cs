@@ -61,6 +61,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         /// </summary>
         private bool _disposedValue = false; // To detect redundant calls
 
+        /// <summary>
+        /// Called to take a block from the pool.
+        /// </summary>
+        /// <returns>The block that is reserved for the called. It must be passed to Return when it is no longer being used.</returns>
 #if DEBUG
         public MemoryPoolBlock Lease([CallerMemberName] string memberName = "",
                              [CallerFilePath] string sourceFilePath = "",
@@ -68,11 +72,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         {
             Debug.Assert(!_disposedValue, "Block being leased from disposed pool!");
 #else
-
-        /// <summary>
-        /// Called to take a block from the pool.
-        /// </summary>
-        /// <returns>The block that is reserved for the called. It must be passed to Return when it is no longer being used.</returns>
         public MemoryPoolBlock Lease()
         {
 #endif
@@ -83,9 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 #if DEBUG
                 block.Leaser = memberName + ", " + sourceFilePath + ", " + sourceLineNumber;
                 block.IsLeased = true;
-#if !NETSTANDARD1_3
-                block.StackTrace = new StackTrace(true).ToString();
-#endif
+                block.StackTrace = Environment.StackTrace;
 #endif
                 return block;
             }
@@ -94,9 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 #if DEBUG
             block.Leaser = memberName + ", " + sourceFilePath + ", " + sourceLineNumber;
             block.IsLeased = true;
-#if !NETSTANDARD1_3
-            block.StackTrace = new StackTrace(true).ToString();
-#endif
+            block.StackTrace = Environment.StackTrace;
 #endif
             return block;
         }
@@ -153,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         {
 #if DEBUG
             Debug.Assert(block.Pool == this, "Returned block was not leased from this pool");
-            Debug.Assert(block.IsLeased, "Block being returned to pool twice: " + block.Leaser + "\n" + block.StackTrace);
+            Debug.Assert(block.IsLeased, $"Block being returned to pool twice: {block.Leaser}{Environment.NewLine}{block.StackTrace}");
             block.IsLeased = false;
 #endif
 
