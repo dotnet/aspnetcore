@@ -59,6 +59,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         var end = GetIterator(begin, byteRange.Length);
 
                         Assert.Throws<BadHttpRequestException>(() => begin.GetAsciiString(end));
+
+                        pool.Return(mem);
                     }
                 }
             }
@@ -150,7 +152,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     var returnBlock = block;
                     block = block.Next;
-                    pool.Return(returnBlock);
+                    if (returnBlock != mem0 && returnBlock != mem1)
+                    {
+                        pool.Return(returnBlock);
+                    }
                 }
 
                 pool.Return(mem0);

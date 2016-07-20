@@ -71,10 +71,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         /// </summary>
         public MemoryPoolBlock Next;
 
+#if DEBUG
+        public bool IsLeased { get; set; }
+        public string Leaser { get; set; }
+        public string StackTrace { get; set; }
+#endif
+
         ~MemoryPoolBlock()
         {
-            Debug.Assert(Slab == null || !Slab.IsActive, "Block being garbage collected instead of returned to pool");
-
+#if DEBUG
+            Debug.Assert(Slab == null || !Slab.IsActive, "Block being garbage collected instead of returned to pool: " + Leaser + "\n" + StackTrace);
+#endif
             if (Slab != null && Slab.IsActive)
             {
                 Pool.Return(new MemoryPoolBlock(DataArrayPtr)

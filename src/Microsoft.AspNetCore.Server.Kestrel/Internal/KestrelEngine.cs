@@ -46,6 +46,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                 thread.Stop(TimeSpan.FromSeconds(2.5));
             }
             Threads.Clear();
+#if DEBUG
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+#endif
         }
 
         public IDisposable CreateServer(ServerAddress address)
