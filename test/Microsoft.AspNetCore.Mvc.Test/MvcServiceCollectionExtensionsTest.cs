@@ -33,6 +33,8 @@ using Moq;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 using Xunit;
+using Microsoft.Extensions.ObjectPool;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -243,6 +245,34 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             Assert.Single(services, d => d.ServiceType == typeof(IConfigureOptions<MvcJsonOptions>));
+        }
+
+        [Fact]
+        public void AddMvc_NoScopedServiceIsReferredToByASingleton()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            services.AddSingleton<IHostingEnvironment>(GetHostingEnvironment());
+            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
+            services.AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNet"));
+            services.AddLogging();
+            services.AddOptions();
+            services.AddMvc();
+
+            var root = services.BuildServiceProvider(validateScopes: true);
+
+            var scopeFactory = root.GetRequiredService<IServiceScopeFactory>();
+
+            // Act & Assert
+            using (var scope = scopeFactory.CreateScope())
+            {
+                foreach (var serviceType in services.Select(d => d.ServiceType).Where(t => !t.GetTypeInfo().IsGenericTypeDefinition).Distinct())
+                {
+                    // This will throw if something is invalid.
+                    scope.ServiceProvider.GetService(typeof(IEnumerable<>).MakeGenericType(serviceType));
+                }
+            }
         }
 
         private IEnumerable<Type> SingleRegistrationServiceTypes
