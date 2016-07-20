@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -22,11 +23,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         private readonly ILogger<ViewComponentResult> _logger;
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly ITempDataDictionaryFactory _tempDataDictionaryFactory;
-        private readonly IViewComponentHelper _viewComponentHelper;
 
         public ViewComponentResultExecutor(
             IOptions<MvcViewOptions> mvcHelperOptions,
-            IViewComponentHelper viewComponentHelper,
             ILoggerFactory loggerFactory,
             HtmlEncoder htmlEncoder,
             IModelMetadataProvider modelMetadataProvider,
@@ -35,11 +34,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             if (mvcHelperOptions == null)
             {
                 throw new ArgumentNullException(nameof(mvcHelperOptions));
-            }
-
-            if (viewComponentHelper == null)
-            {
-                throw new ArgumentNullException(nameof(viewComponentHelper));
             }
 
             if (loggerFactory == null)
@@ -63,7 +57,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
 
             _htmlHelperOptions = mvcHelperOptions.Value.HtmlHelperOptions;
-            _viewComponentHelper = viewComponentHelper;
             _logger = loggerFactory.CreateLogger<ViewComponentResult>();
             _htmlEncoder = htmlEncoder;
             _modelMetadataProvider = modelMetadataProvider;
@@ -112,8 +105,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                     writer,
                     _htmlHelperOptions);
 
-                (_viewComponentHelper as IViewContextAware)?.Contextualize(viewContext);
-                var result = await GetViewComponentResult(_viewComponentHelper, _logger, viewComponentResult);
+                // IViewComponentHelper is stateful, we want to make sure to retrieve it every time we need it.
+                var viewComponentHelper = context.HttpContext.RequestServices.GetRequiredService<IViewComponentHelper>();
+                (viewComponentHelper as IViewContextAware)?.Contextualize(viewContext);
+
+                var result = await GetViewComponentResult(viewComponentHelper, _logger, viewComponentResult);
 
                 result.WriteTo(writer, _htmlEncoder);
             }
