@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Start the web host and listen on the speficied urls.
+        /// Start the web host and listen on the specified urls.
         /// </summary>
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to start.</param>
         /// <param name="urls">The urls the hosted application will listen on.</param>
