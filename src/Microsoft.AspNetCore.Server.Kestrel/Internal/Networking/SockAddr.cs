@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             _field3 = _field0 = _field1 = _field2 = _field3 = 0;
         }
 
-        public IPEndPoint GetIPEndPoint()
+        public unsafe IPEndPoint GetIPEndPoint()
         {
             // The bytes are represented in network byte order.
             //
@@ -84,14 +84,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             else
             {
                 // otherwise IPv6
-                var bytes1 = BitConverter.GetBytes(_field1);
-                var bytes2 = BitConverter.GetBytes(_field2);
-
                 var bytes = new byte[16];
-                for (int i = 0; i < 8; ++i)
+                fixed (byte* b = bytes)
                 {
-                    bytes[i] = bytes1[i];
-                    bytes[i + 8] = bytes2[i];
+                    *((long*)b) = _field1;
+                    *((long*)(b + 8)) = _field2;
                 }
 
                 return new IPEndPoint(new IPAddress(bytes), port);
