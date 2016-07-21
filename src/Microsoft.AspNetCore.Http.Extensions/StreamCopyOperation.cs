@@ -15,11 +15,29 @@ namespace Microsoft.AspNetCore.Http.Extensions
     {
         private const int DefaultBufferSize = 4096;
 
-        public static async Task CopyToAsync(Stream source, Stream destination, long? count, CancellationToken cancel)
+        /// <summary>Asynchronously reads the bytes from the source stream and writes them to another stream.</summary>
+        /// <returns>A task that represents the asynchronous copy operation.</returns>
+        /// <param name="source">The stream from which the contents will be copied.</param>
+        /// <param name="destination">The stream to which the contents of the current stream will be copied.</param>
+        /// <param name="count">The count of bytes to be copied.</param>
+        /// <param name="cancel">The token to monitor for cancellation requests. The default value is <see cref="P:System.Threading.CancellationToken.None" />.</param>
+        public static Task CopyToAsync(Stream source, Stream destination, long? count, CancellationToken cancel)
+        {
+            return CopyToAsync(source, destination, count, DefaultBufferSize, cancel);
+        }
+
+        /// <summary>Asynchronously reads the bytes from the source stream and writes them to another stream, using a specified buffer size.</summary>
+        /// <returns>A task that represents the asynchronous copy operation.</returns>
+        /// <param name="source">The stream from which the contents will be copied.</param>
+        /// <param name="destination">The stream to which the contents of the current stream will be copied.</param>
+        /// <param name="count">The count of bytes to be copied.</param>
+        /// <param name="bufferSize">The size, in bytes, of the buffer. This value must be greater than zero. The default size is 4096.</param>
+        /// <param name="cancel">The token to monitor for cancellation requests. The default value is <see cref="P:System.Threading.CancellationToken.None" />.</param>
+        public static async Task CopyToAsync(Stream source, Stream destination, long? count, int bufferSize, CancellationToken cancel)
         {
             long? bytesRemaining = count;
 
-            var buffer = ArrayPool<byte>.Shared.Rent(DefaultBufferSize);
+            var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
             try
             {
                 Debug.Assert(source != null);
