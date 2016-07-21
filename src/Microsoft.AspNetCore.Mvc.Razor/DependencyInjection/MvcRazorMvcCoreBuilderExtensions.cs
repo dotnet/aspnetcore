@@ -72,6 +72,11 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 builder.PartManager.FeatureProviders.Add(new MetadataReferenceFeatureProvider());
             }
+
+            if (!builder.PartManager.FeatureProviders.OfType<ViewsFeatureProvider>().Any())
+            {
+                builder.PartManager.FeatureProviders.Add(new ViewsFeatureProvider());
+            }
         }
 
         /// <summary>
@@ -127,6 +132,8 @@ namespace Microsoft.Extensions.DependencyInjection
         // Internal for testing.
         internal static void AddRazorViewEngineServices(IServiceCollection services)
         {
+            services.TryAddSingleton<CSharpCompiler>();
+            services.TryAddSingleton<RazorReferenceManager>();
             // This caches compilation related details that are valid across the lifetime of the application.
             services.TryAddSingleton<ICompilationService, DefaultRoslynCompilationService>();
 
@@ -165,7 +172,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // creating the singleton RazorViewEngine instance.
             services.TryAddTransient<IRazorPageFactoryProvider, DefaultRazorPageFactoryProvider>();
             services.TryAddTransient<IRazorCompilationService, RazorCompilationService>();
-            services.TryAddTransient<IMvcRazorHost,MvcRazorHost>();
+            services.TryAddTransient<IMvcRazorHost, MvcRazorHost>();
 
             // This caches Razor page activation details that are valid for the lifetime of the application.
             services.TryAddSingleton<IRazorPageActivator, RazorPageActivator>();

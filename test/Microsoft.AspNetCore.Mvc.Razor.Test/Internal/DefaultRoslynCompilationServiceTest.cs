@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
@@ -297,34 +295,6 @@ public class MyNonCustomDefinedClass {}
             Assert.NotNull(result.CompiledType);
         }
 
-        [Fact]
-        public void GetCompilationReferences_CombinesApplicationPartAndOptionMetadataReferences()
-        {
-            // Arrange
-            var options = new RazorViewEngineOptions();
-            var objectAssemblyLocation = typeof(object).GetTypeInfo().Assembly.Location;
-            var objectAssemblyMetadataReference = MetadataReference.CreateFromFile(objectAssemblyLocation);
-            options.AdditionalCompilationReferences.Add(objectAssemblyMetadataReference);
-            var applicationPartManager = GetApplicationPartManager();
-            var compilationService = new TestRoslynCompilationService(applicationPartManager, options);
-            var feature = new MetadataReferenceFeature();
-            applicationPartManager.PopulateFeature(feature);
-            var partReferences = feature.MetadataReferences;
-            var expectedReferences = new List<MetadataReference>();
-            expectedReferences.AddRange(partReferences);
-            expectedReferences.Add(objectAssemblyMetadataReference);
-            var expectedReferenceDisplays = expectedReferences.Select(reference => reference.Display);
-
-            // Act
-            var references = compilationService.GetCompilationReferencesPublic();
-            var referenceDisplays = references.Select(reference => reference.Display);
-
-            // Assert
-            Assert.NotNull(references);
-            Assert.NotEmpty(references);
-            Assert.Equal(expectedReferenceDisplays, referenceDisplays);
-        }
-
         private static DiagnosticDescriptor GetDiagnosticDescriptor(string messageFormat)
         {
             return new DiagnosticDescriptor(
@@ -377,22 +347,15 @@ public class MyNonCustomDefinedClass {}
         {
             partManager = partManager ?? GetApplicationPartManager();
             options = options ?? GetOptions();
+            var optionsAccessor = GetAccessor(options);
+            var referenceManager = new RazorReferenceManager(partManager, optionsAccessor);
+            var compiler = new CSharpCompiler(referenceManager, optionsAccessor);
 
             return new DefaultRoslynCompilationService(
-                partManager,
-                GetAccessor(options),
+                compiler,
                 GetFileProviderAccessor(fileProvider),
+                optionsAccessor,
                 NullLoggerFactory.Instance);
-        }
-
-        private class TestRoslynCompilationService : DefaultRoslynCompilationService
-        {
-            public TestRoslynCompilationService(ApplicationPartManager partManager, RazorViewEngineOptions options)
-                : base(partManager, GetAccessor(options), GetFileProviderAccessor(), NullLoggerFactory.Instance)
-            {
-            }
-
-            public IList<MetadataReference> GetCompilationReferencesPublic() => GetCompilationReferences();
         }
     }
 }

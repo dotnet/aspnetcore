@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Expressions;
@@ -31,6 +30,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private SemanticModel SemanticModel { get; }
 
         private List<KeyValuePair<SimpleLambdaExpressionSyntax, IdentifierNameSyntax>> Expressions { get; }
+
+        public static CSharpCompilation Rewrite(CSharpCompilation compilation)
+        {
+            var rewrittenTrees = new List<SyntaxTree>();
+            foreach (var tree in compilation.SyntaxTrees)
+            {
+                var semanticModel = compilation.GetSemanticModel(tree, ignoreAccessibility: true);
+                var rewriter = new ExpressionRewriter(semanticModel);
+
+                var rewrittenTree = tree.WithRootAndOptions(rewriter.Visit(tree.GetRoot()), tree.Options);
+                rewrittenTrees.Add(rewrittenTree);
+            }
+
+            return compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(rewrittenTrees);
+        }
 
         public override SyntaxNode VisitClassDeclaration(ClassDeclarationSyntax node)
         {

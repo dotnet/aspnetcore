@@ -42,22 +42,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         /// <summary>
         /// Initializes a new instance of <see cref="CompilerCache"/> populated with precompiled views
-        /// specified by <paramref name="precompiledViews"/>.
+        /// specified by <paramref name="views"/>.
         /// </summary>
         /// <param name="fileProvider"><see cref="IFileProvider"/> used to locate Razor views.</param>
-        /// <param name="precompiledViews">A mapping of application relative paths of view to the precompiled view
-        /// <see cref="Type"/>s.</param>
+        /// <param name="views">A mapping of application relative paths of view to <see cref="Type"/>s that
+        /// have already been compiled.</param>
         public CompilerCache(
             IFileProvider fileProvider,
-            IDictionary<string, Type> precompiledViews)
+            IDictionary<string, Type> views)
             : this(fileProvider)
         {
-            if (precompiledViews == null)
+            if (views == null)
             {
-                throw new ArgumentNullException(nameof(precompiledViews));
+                throw new ArgumentNullException(nameof(views));
             }
 
-            foreach (var item in precompiledViews)
+            foreach (var item in views)
             {
                 var cacheEntry = new CompilerCacheResult(item.Key, new CompilationResult(item.Value));
                 _cache.Set(GetNormalizedPath(item.Key), Task.FromResult(cacheEntry));

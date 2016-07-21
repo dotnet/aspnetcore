@@ -12,8 +12,27 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
     /// <summary>
     /// An <see cref="ApplicationPart"/> backed by an <see cref="Assembly"/>.
     /// </summary>
-    public class AssemblyPart : ApplicationPart, IApplicationPartTypeProvider, ICompilationReferencesProvider
+    public class AssemblyPart :
+        ApplicationPart,
+        IApplicationPartTypeProvider,
+        ICompilationReferencesProvider,
+        IViewsProvider
     {
+        /// <summary>
+        /// Gets the suffix for the view assembly.
+        /// </summary>
+        public static readonly string PrecompiledViewsAssemblySuffix = ".PrecompiledViews";
+
+        /// <summary>
+        /// Gets the namespace for the <see cref="ViewInfoContainer"/> type in the view assembly.
+        /// </summary>
+        public static readonly string ViewInfoContainerNamespace = "AspNetCore";
+
+        /// <summary>
+        /// Gets the type name for the view collection type in the view assembly.
+        /// </summary>
+        public static readonly string ViewInfoContainerTypeName = "__PrecompiledViewCollection";
+
         /// <summary>
         /// Initalizes a new <see cref="AssemblyPart"/> instance.
         /// </summary>
@@ -40,6 +59,27 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 
         /// <inheritdoc />
         public IEnumerable<TypeInfo> Types => Assembly.DefinedTypes;
+
+        /// <inheritdoc />
+        public IEnumerable<ViewInfo> Views
+        {
+            get
+            {
+                var precompiledAssemblyName = new AssemblyName(Assembly.FullName);
+                precompiledAssemblyName.Name = precompiledAssemblyName.Name + PrecompiledViewsAssemblySuffix;
+
+                var typeName = $"{ViewInfoContainerNamespace}.{ViewInfoContainerTypeName},{precompiledAssemblyName}";
+                var viewInfoContainerTypeName = Type.GetType(typeName);
+
+                if (viewInfoContainerTypeName == null)
+                {
+                    return null;
+                }
+
+                var precompiledViews = (ViewInfoContainer)Activator.CreateInstance(viewInfoContainerTypeName);
+                return precompiledViews.ViewInfos;
+            }
+        }
 
         /// <inheritdoc />
         public IEnumerable<string> GetReferencePaths()
