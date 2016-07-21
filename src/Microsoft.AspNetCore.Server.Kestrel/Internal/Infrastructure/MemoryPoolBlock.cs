@@ -74,13 +74,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 #if DEBUG
         public bool IsLeased { get; set; }
         public string Leaser { get; set; }
-        public string StackTrace { get; set; }
 #endif
 
         ~MemoryPoolBlock()
         {
 #if DEBUG
-            Debug.Assert(Slab == null || !Slab.IsActive, $"{Environment.NewLine}{Environment.NewLine}*** Block being garbage collected instead of returned to pool: {Leaser} ***{Environment.NewLine}Allocation StackTrace:{Environment.NewLine}{StackTrace}");
+            Debug.Assert(Slab == null || !Slab.IsActive, $"{Environment.NewLine}{Environment.NewLine}*** Block being garbage collected instead of returned to pool: {Leaser} ***{Environment.NewLine}");
 #endif
             if (Slab != null && Slab.IsActive)
             {

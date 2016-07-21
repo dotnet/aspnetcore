@@ -82,7 +82,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 #if DEBUG
                 block.Leaser = memberName + ", " + sourceFilePath + ", " + sourceLineNumber;
                 block.IsLeased = true;
-                block.StackTrace = Environment.StackTrace;
 #endif
                 return block;
             }
@@ -91,7 +90,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 #if DEBUG
             block.Leaser = memberName + ", " + sourceFilePath + ", " + sourceLineNumber;
             block.IsLeased = true;
-            block.StackTrace = Environment.StackTrace;
 #endif
             return block;
         }
@@ -148,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         {
 #if DEBUG
             Debug.Assert(block.Pool == this, "Returned block was not leased from this pool");
-            Debug.Assert(block.IsLeased, $"Block being returned to pool twice: {block.Leaser}{Environment.NewLine}{block.StackTrace}");
+            Debug.Assert(block.IsLeased, $"Block being returned to pool twice: {block.Leaser}{Environment.NewLine}");
             block.IsLeased = false;
 #endif
 
