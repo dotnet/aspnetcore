@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For("HTTP/1.0", new FrameRequestHeaders(), input.FrameContext);
+                var body = MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders(), input.FrameContext);
                 var stream = new FrameRequestStream();
                 stream.StartAcceptingReads(body);
 
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For("HTTP/1.0", new FrameRequestHeaders(), input.FrameContext);
+                var body = MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders(), input.FrameContext);
                 var stream = new FrameRequestStream();
                 stream.StartAcceptingReads(body);
 
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For("HTTP/1.0", new FrameRequestHeaders(), input.FrameContext);
+                var body = MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders(), input.FrameContext);
                 var stream = new FrameRequestStream();
                 stream.StartAcceptingReads(body);
 
