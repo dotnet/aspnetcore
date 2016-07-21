@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// <summary>
     /// Extensions methods for <see cref="ValueProviderResult"/>.
     /// </summary>
+    [Obsolete("This type is obsolete and will be removed in a future version. " +
+        "The recommended alternative is System.ComponentModel.TypeDescriptor.GetConverter().")]
     public static class ValueProviderResultExtensions
     {
         /// <summary>
