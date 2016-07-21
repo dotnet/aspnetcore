@@ -1,4 +1,4 @@
-ASP.NET Response Caching
+ASP.NET Core Response Caching
 ========
 
 This repo hosts the ASP.NET Core middleware for response caching.

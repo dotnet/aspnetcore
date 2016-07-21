@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
-using Microsoft.Framework.Caching.Memory;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 
-namespace Microsoft.AspNet.ResponseCaching
+namespace Microsoft.AspNetCore.ResponseCaching
 {
     // http://tools.ietf.org/html/rfc7234
     public class ResponseCachingMiddleware
@@ -22,7 +21,7 @@ namespace Microsoft.AspNet.ResponseCaching
 
         public async Task Invoke(HttpContext context)
         {
-            var cachingContext = new CachingContext(context, _cache);
+            var cachingContext = new ResponseCachingContext(context, _cache);
             // Should we attempt any caching logic?
             if (cachingContext.CheckRequestAllowsCaching())
             {

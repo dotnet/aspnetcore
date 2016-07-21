@@ -1,33 +1,34 @@
 ﻿{
-  "webroot": "wwwroot",
-  "version": "1.0.0-*",
-
+  "version": "1.1.0-*",
   "dependencies": {
-    "Microsoft.AspNet.ResponseCaching": "1.0.0-*",
-    "Microsoft.AspNet.Server.IIS": "1.0.0-*",
-    "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-    "Microsoft.Framework.Caching.Memory": "1.0.0-*"
+    "Microsoft.AspNetCore.ResponseCaching": "0.1.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
+    "Microsoft.Extensions.Caching.Memory": "1.1.0-*"
   },
-
-  "commands": {
-      "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5000"
+  "buildOptions": {
+    "emitEntryPoint": true
   },
-
   "frameworks": {
-    "dnx451": { },
-    "dnxcore50": { }
+    "net451": {},
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        }
+      }
+    }
   },
-
-  "publishExclude": [
-    "node_modules",
-    "bower_components",
-    "**.xproj",
-    "**.user",
-    "**.vspscc"
-  ],
-  "exclude": [
-    "wwwroot",
-    "node_modules",
-    "bower_components"
-  ]
+  "publishOptions": {
+    "include": [
+      "web.config"
+    ]
+  },
+  "tools": {
+    "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.0.0-*"
+  },
+  "scripts": {
+    "postpublish": "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%"
+  }
 }

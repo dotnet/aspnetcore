@@ -3,18 +3,17 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.Framework.Caching.Memory;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 
-namespace Microsoft.AspNet.ResponseCaching
+namespace Microsoft.AspNetCore.ResponseCaching
 {
-    internal class CachingContext
+    public class ResponseCachingContext
     {
         private string _cacheKey;
 
-        public CachingContext(HttpContext httpContext, IMemoryCache cache)
+        public ResponseCachingContext(HttpContext httpContext, IMemoryCache cache)
         {
             HttpContext = httpContext;
             Cache = cache;
@@ -32,7 +31,7 @@ namespace Microsoft.AspNet.ResponseCaching
 
         private bool CacheResponse { get; set; }
 
-        internal bool CheckRequestAllowsCaching()
+        public bool CheckRequestAllowsCaching()
         {
             // Verify the method
             // TODO: What other methods should be supported?
@@ -64,7 +63,7 @@ namespace Microsoft.AspNet.ResponseCaching
         internal async Task<bool> TryServeFromCacheAsync()
         {
             _cacheKey = CreateCacheKey();
-            ResponseCacheEntry cacheEntry;
+            ResponseCachingEntry cacheEntry;
             if (Cache.TryGetValue(_cacheKey, out cacheEntry))
             {
                 // TODO: Compare cached request headers
@@ -80,7 +79,7 @@ namespace Microsoft.AspNet.ResponseCaching
                 response.StatusCode = cacheEntry.StatusCode;
                 foreach (var pair in cacheEntry.Headers)
                 {
-                    response.Headers.SetValues(pair.Key, pair.Value);
+                    response.Headers[pair.Key] = pair.Value;
                 }
 
                 // TODO: Update cache headers (Age)
@@ -122,9 +121,12 @@ namespace Microsoft.AspNet.ResponseCaching
             if (CacheResponse)
             {
                 // Store the buffer to cache
-                var cacheEntry = new ResponseCacheEntry();
+                var cacheEntry = new ResponseCachingEntry();
                 cacheEntry.StatusCode = HttpContext.Response.StatusCode;
-                cacheEntry.Headers = HttpContext.Response.Headers.ToList();
+                foreach (var pair in HttpContext.Response.Headers)
+                {
+                    cacheEntry.Headers[pair.Key] = pair.Value;
+                }
                 cacheEntry.Body = Buffer.ToArray();
                 Cache.Set(_cacheKey, cacheEntry); // TODO: Timeouts
             }

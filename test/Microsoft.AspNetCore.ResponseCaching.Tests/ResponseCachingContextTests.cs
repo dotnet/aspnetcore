@@ -1,20 +1,20 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.Framework.Caching.Memory;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Xunit;
 
-namespace Microsoft.AspNet.ResponseCaching
+namespace Microsoft.AspNetCore.ResponseCaching
 {
-    public class CachingContextTests
+    public class ResponseCachingContextTests
     {
         [Fact]
         public void CheckRequestAllowsCaching_Method_GET_Allowed()
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Method = "GET";
-            var context = new CachingContext(httpContext, new MemoryCache(new MemoryCacheOptions()));
+            var context = new ResponseCachingContext(httpContext, new MemoryCache(new MemoryCacheOptions()));
 
             Assert.True(context.CheckRequestAllowsCaching());
         }
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.ResponseCaching
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Method = method;
-            var context = new CachingContext(httpContext, new MemoryCache(new MemoryCacheOptions()));
+            var context = new ResponseCachingContext(httpContext, new MemoryCache(new MemoryCacheOptions()));
 
             Assert.False(context.CheckRequestAllowsCaching());
         }

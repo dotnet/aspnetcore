@@ -2,7 +2,6 @@
 [Bb]in/
 TestResults/
 .nuget/
-*.sln.ide/
 _ReSharper.*/
 packages/
 artifacts/
@@ -24,4 +23,8 @@ nuget.exe
 *.ncrunchsolution
 *.*sdf
 *.ipch
+*.sln.ide
 project.lock.json
+/.vs/
+.build/
+.testPublish/

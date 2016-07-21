@@ -1,0 +1,15 @@
+{
+    "adx": { // Packages written by the ADX team and that ship on NuGet.org
+        "rules": [
+            "AdxVerificationCompositeRule"
+        ],
+        "packages": {
+            "Microsoft.AspNetCore.ResponseCaching": { },
+        }
+    },
+    "Default": { // Rules to run for packages not listed in any other set.
+        "rules": [
+            "DefaultCompositeRule"
+        ]
+    }
+}

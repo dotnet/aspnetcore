@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
-using Microsoft.Framework.DependencyInjection;
+using System.IO;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
 namespace ResponseCachingSample
@@ -13,7 +15,7 @@ namespace ResponseCachingSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCaching();
+            services.AddMemoryCache();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -28,6 +30,18 @@ namespace ResponseCachingSample
                 };
                 await context.Response.WriteAsync("Hello World! " + DateTime.UtcNow);
             });
+        }
+
+        public static void Main(string[] args)
+        {
+            var host = new WebHostBuilder()
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .UseStartup<Startup>()
+                .Build();
+
+            host.Run();
         }
     }
 }
