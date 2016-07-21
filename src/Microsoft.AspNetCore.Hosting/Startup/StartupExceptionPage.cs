@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Hosting
                 if (!string.IsNullOrEmpty(typeName) && !string.IsNullOrEmpty(type.Namespace))
                 {
                     builder.Append($@"<span class=""faded"">at {HtmlEncodeAndReplaceLineBreaks(type.Namespace)}</span>");
-                    typeName = typeName.Substring(type.Namespace.Length + 1);
+                    typeName = typeName.Substring(type.Namespace.Length);
                 }
 
                 builder.Append(HtmlEncodeAndReplaceLineBreaks(typeName));
@@ -302,12 +302,12 @@ namespace Microsoft.AspNetCore.Hosting
         private static IEnumerable<Exception> FlattenAndReverseExceptionTree(Exception ex)
         {
             // ReflectionTypeLoadException is special because the details are in 
-            // a the LoaderExceptions property
+            // the LoaderExceptions property
             var typeLoadException = ex as ReflectionTypeLoadException;
             if (typeLoadException != null)
             {
                 var typeLoadExceptions = new List<Exception>();
-                foreach (Exception loadException in typeLoadException.LoaderExceptions)
+                foreach (var loadException in typeLoadException.LoaderExceptions)
                 {
                     typeLoadExceptions.AddRange(FlattenAndReverseExceptionTree(loadException));
                 }

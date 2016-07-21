@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Reflection;
+using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,12 +21,36 @@ namespace Microsoft.AspNetCore.Hosting
         
         public void Configure(IApplicationBuilder app)
         {
-            _methods.ConfigureDelegate(app);
+            try
+            {
+                _methods.ConfigureDelegate(app);
+            }
+            catch (Exception ex)
+            {
+                if (ex is TargetInvocationException)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                }
+
+                throw;
+            }
         }
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            return _methods.ConfigureServicesDelegate(services);
+            try
+            {
+                return _methods.ConfigureServicesDelegate(services);
+            }
+            catch (Exception ex)
+            {
+                if (ex is TargetInvocationException)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                }
+
+                throw;
+            }
         }
     }
 }

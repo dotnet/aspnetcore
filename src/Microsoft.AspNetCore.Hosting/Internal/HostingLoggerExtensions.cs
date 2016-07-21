@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -51,9 +52,20 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public static void ApplicationError(this ILogger logger, Exception exception)
         {
+            var message = "Application startup exception";
+
+            var reflectionTypeLoadException = exception as ReflectionTypeLoadException;
+            if (reflectionTypeLoadException != null)
+            {
+                foreach (var ex in reflectionTypeLoadException.LoaderExceptions)
+                {
+                    message = message + Environment.NewLine + ex.Message;
+                }
+            }
+
             logger.LogCritical(
                 eventId: LoggerEventIds.ApplicationStartupException,
-                message: "Application startup exception",
+                message: message,
                 exception: exception);
         }
 
