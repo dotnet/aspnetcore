@@ -18,7 +18,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private const int _maxPendingWrites = 3;
         private const int _maxBytesPreCompleted = 65536;
-        private const int _initialTaskQueues = 64;
+        // Well behaved WriteAsync users should await returned task, so there is no need to allocate more per connection by default
+        private const int _initialTaskQueues = 1;
         private const int _maxPooledWriteContexts = 32;
 
         private static readonly WaitCallback _returnBlocks = (state) => ReturnBlocks((MemoryPoolBlock)state);
