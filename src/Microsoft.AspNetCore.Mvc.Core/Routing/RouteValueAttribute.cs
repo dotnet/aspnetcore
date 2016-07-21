@@ -10,9 +10,10 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     /// An attribute which specifies a required route value for an action or controller.
     /// </para>
     /// <para>
-    /// When placed on an action, the route data of a request must match the expectations of the route
-    /// constraint in order for the action to be selected. See <see cref="IRouteValueProvider"/> for
-    /// the expectations that must be satisfied by the route data.
+    /// When placed on an action, the route data of a request must match the expectations of the required route data
+    /// in order for the action to be selected. All other actions without a route value for the given key cannot be
+    /// selected unless the route data of the request does omits a value matching the key.
+    /// See <see cref="IRouteValueProvider"/> for more details and examples.
     /// </para>
     /// <para>
     /// When placed on a controller, unless overridden by the action, the constraint applies to all
