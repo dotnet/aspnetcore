@@ -1,6 +1,6 @@
 {
   "description": "ASP.NET Core MVC abstractions and interfaces for action invocation and dispatching, authorization, action filters, formatters, model binding, routing, validation, and more.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.Mvc.IActionResult",
-  "version": "1.0.0",
+  "version": "1.0.1-*",
   "packOptions": {
     "repository": {
       "type": "git",

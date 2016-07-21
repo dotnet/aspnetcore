@@ -5,7 +5,7 @@
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-rc3-000000-01",
     "Microsoft.AspNetCore.Http": "1.0.0",
-    "Microsoft.AspNetCore.Mvc.WebApiCompatShim": "1.0.0",
+    "Microsoft.AspNetCore.Mvc.WebApiCompatShim": "1.0.1-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-rtm-21431",
     "Microsoft.Extensions.Logging.Testing": "1.0.0-rtm-21431",
     "Microsoft.Extensions.DependencyInjection": "1.0.0",

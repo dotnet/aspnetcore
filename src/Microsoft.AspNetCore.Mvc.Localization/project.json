@@ -1,6 +1,6 @@
 {
   "description": "ASP.NET Core MVC features that enable globalization and localization of applications.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.Mvc.Localization.IHtmlLocalizer<TResource>\r\nMicrosoft.AspNetCore.Mvc.Localization.IViewLocalizer",
-  "version": "1.0.0",
+  "version": "1.0.1-*",
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Localization": "1.0.0",
-    "Microsoft.AspNetCore.Mvc.Razor": "1.0.0",
+    "Microsoft.AspNetCore.Mvc.Razor": "1.0.1-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0",
     "Microsoft.Extensions.Localization": "1.0.0",
     "Microsoft.Extensions.PropertyHelper.Sources": {

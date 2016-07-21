@@ -1,6 +1,6 @@
 {
   "description": "ASP.NET Core MVC is a web framework that gives you a powerful, patterns-based way to build dynamic websites and web APIs. ASP.NET Core MVC enables a clean separation of concerns and gives you full control over markup.",
-  "version": "1.0.0",
+  "version": "1.0.1-*",
   "packOptions": {
     "repository": {
       "type": "git",
@@ -20,14 +20,14 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc.ApiExplorer": "1.0.0",
-    "Microsoft.AspNetCore.Mvc.Cors": "1.0.0",
-    "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.0.0",
-    "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.0.0",
-    "Microsoft.AspNetCore.Mvc.Localization": "1.0.0",
-    "Microsoft.AspNetCore.Mvc.Razor": "1.0.0",
-    "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0",
-    "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.0",
+    "Microsoft.AspNetCore.Mvc.ApiExplorer": "1.0.1-*",
+    "Microsoft.AspNetCore.Mvc.Cors": "1.0.1-*",
+    "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.0.1-*",
+    "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.0.1-*",
+    "Microsoft.AspNetCore.Mvc.Localization": "1.0.1-*",
+    "Microsoft.AspNetCore.Mvc.Razor": "1.0.1-*",
+    "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.1-*",
+    "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.1-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0",
     "Microsoft.Extensions.DependencyInjection": "1.0.0",
     "Microsoft.Extensions.PropertyHelper.Sources": {

@@ -1,6 +1,6 @@
 {
   "description": "ASP.NET Core MVC view rendering features. Contains common types used in most MVC applications as well as view rendering features such as view engines, views, view components, and HTML helpers.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.Mvc.Controller\r\nMicrosoft.AspNetCore.Mvc.ValidateAntiForgeryTokenAttribute\r\nMicrosoft.AspNetCore.Mvc.ViewComponent",
-  "version": "1.0.0",
+  "version": "1.0.1-*",
   "packOptions": {
     "repository": {
       "type": "git",
@@ -23,9 +23,9 @@
     "Microsoft.AspNetCore.Antiforgery": "1.0.0",
     "Microsoft.AspNetCore.Diagnostics.Abstractions": "1.0.0",
     "Microsoft.AspNetCore.Html.Abstractions": "1.0.0",
-    "Microsoft.AspNetCore.Mvc.Core": "1.0.0",
-    "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.0.0",
-    "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.0.0",
+    "Microsoft.AspNetCore.Mvc.Core": "1.0.1-*",
+    "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.0.1-*",
+    "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.0.1-*",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "version": "1.0.0-rtm-21431",
       "type": "build"

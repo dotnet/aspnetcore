@@ -1,4 +1,5 @@
 {
+  "version": "1.0.1-*",
   "dependencies": {
     "Microsoft.AspNetCore.Http": "1.0.0",
     "Microsoft.AspNetCore.Http.Extensions": "1.0.0",
