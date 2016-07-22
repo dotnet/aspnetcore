@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 {
     internal struct StaticFileContext
     {
+        private const int StreamCopyBufferSize = 64 * 1024;
         private readonly HttpContext _context;
         private readonly StaticFileOptions _options;
         private readonly PathString _matchUrl;
@@ -356,7 +357,8 @@ namespace Microsoft.AspNetCore.StaticFiles
             Stream readStream = _fileInfo.CreateReadStream();
             try
             {
-                await StreamCopyOperation.CopyToAsync(readStream, _response.Body, _length, _context.RequestAborted);
+                // Larger StreamCopyBufferSize is required because in case of FileStream readStream isn't going to be buffering
+                await StreamCopyOperation.CopyToAsync(readStream, _response.Body, _length, StreamCopyBufferSize, _context.RequestAborted);
             }
             finally
             {
