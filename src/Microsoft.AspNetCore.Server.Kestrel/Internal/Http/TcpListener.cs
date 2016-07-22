@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.Extensions.Logging;
@@ -22,14 +23,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         protected override UvStreamHandle CreateListenSocket()
         {
             var socket = new UvTcpHandle(Log);
-            socket.Init(Thread.Loop, Thread.QueueCloseHandle);
-            socket.NoDelay(ServerOptions.NoDelay);
-            socket.Bind(ServerAddress);
 
-            // If requested port was "0", replace with assigned dynamic port.
-            ServerAddress.Port = socket.GetSockIPEndPoint().Port;
+            try
+            {
+                socket.Init(Thread.Loop, Thread.QueueCloseHandle);
+                socket.NoDelay(ServerOptions.NoDelay);
+                socket.Bind(ServerAddress);
 
-            socket.Listen(Constants.ListenBacklog, (stream, status, error, state) => ConnectionCallback(stream, status, error, state), this);
+                // If requested port was "0", replace with assigned dynamic port.
+                ServerAddress.Port = socket.GetSockIPEndPoint().Port;
+            }
+            catch
+            {
+                socket.Dispose();
+                throw;
+            }
+
             return socket;
         }
 

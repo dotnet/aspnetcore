@@ -22,9 +22,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         protected override UvStreamHandle CreateListenSocket()
         {
             var socket = new UvPipeHandle(Log);
-            socket.Init(Thread.Loop, Thread.QueueCloseHandle, false);
-            socket.Bind(ServerAddress.UnixPipePath);
-            socket.Listen(Constants.ListenBacklog, (stream, status, error, state) => ConnectionCallback(stream, status, error, state), this);
+
+            try
+            {
+                socket.Init(Thread.Loop, Thread.QueueCloseHandle, false);
+                socket.Bind(ServerAddress.UnixPipePath);
+            }
+            catch
+            {
+                socket.Dispose();
+                throw;
+            }
+
             return socket;
         }
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
@@ -38,6 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {
                     var listener = ((Listener)tcs2.Task.AsyncState);
                     listener.ListenSocket = listener.CreateListenSocket();
+                    ListenSocket.Listen(Constants.ListenBacklog, ConnectionCallback, this);
                     tcs2.SetResult(0);
                 }
                 catch (Exception ex)
@@ -54,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         /// </summary>
         protected abstract UvStreamHandle CreateListenSocket();
 
-        protected static void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
+        private static void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
         {
             var listener = (Listener)state;
 

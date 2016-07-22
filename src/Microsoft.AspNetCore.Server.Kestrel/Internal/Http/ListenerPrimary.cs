@@ -70,10 +70,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             var dispatchPipe = new UvPipeHandle(Log);
-            dispatchPipe.Init(Thread.Loop, Thread.QueueCloseHandle, true);
 
             try
             {
+                dispatchPipe.Init(Thread.Loop, Thread.QueueCloseHandle, true);
                 pipe.Accept(dispatchPipe);
             }
             catch (UvException ex)
