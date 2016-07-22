@@ -115,5 +115,23 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Contains("/Views/ErrorPageMiddleware/RuntimeError.cshtml", content);
             Assert.Contains(expectedMessage, content);
         }
+
+        [Fact]
+        public async Task LoaderExceptionsFromReflectionTypeLoadExceptionsAreListed()
+        {
+            // Arrange
+            var expectedMessage = "Custom Loader Exception.";
+            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+
+            // Act
+            var response = await Client.GetAsync("http://localhost/LoaderException");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Contains("Loader Exceptions:", content);
+            Assert.Contains(expectedMessage, content);
+        }
     }
 }

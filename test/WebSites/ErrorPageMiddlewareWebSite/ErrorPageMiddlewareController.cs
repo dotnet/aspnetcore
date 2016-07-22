@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ErrorPageMiddlewareWebSite
@@ -27,5 +29,17 @@ namespace ErrorPageMiddlewareWebSite
 
         [HttpGet("/RuntimeError")]
         public IActionResult RuntimeError() => View();
+
+        [HttpGet("/LoaderException")]
+        public IActionResult ReflectionTypeLoadException()
+        {
+            throw new ReflectionTypeLoadException(
+                new[] { typeof(SomeType) },
+                new[] { new TypeLoadException("Custom Loader Exception.") });
+        }
+
+        private class SomeType
+        {
+        }
     }
 }
