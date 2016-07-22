@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             if (byte1 == 0)
             {
-                throw BadHttpRequestException.GetException(RequestRejectionReasons.PathContainsNullCharacters);
+                throw BadHttpRequestException.GetException(RequestRejectionReason.PathContainsNullCharacters);
             }
 
             if (byte1 == -1)

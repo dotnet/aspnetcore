@@ -814,7 +814,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                     if (method == null)
                     {
-                        RejectRequest(RequestRejectionReasons.MissingMethod);
+                        RejectRequest(RequestRejectionReason.MissingMethod);
                     }
 
                     // Note: We're not in the fast path any more (GetKnownMethod should have handled any HTTP Method we're aware of)
@@ -823,7 +823,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     {
                         if (!IsValidTokenChar(method[i]))
                         {
-                            RejectRequest(RequestRejectionReasons.InvalidMethod);
+                            RejectRequest(RequestRejectionReason.InvalidMethod);
                         }
                     }
                 }
@@ -868,7 +868,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                 if (pathBegin.Peek() == ' ')
                 {
-                    RejectRequest(RequestRejectionReasons.MissingRequestTarget);
+                    RejectRequest(RequestRejectionReason.MissingRequestTarget);
                 }
 
                 scan.Take();
@@ -890,11 +890,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                     if (httpVersion == null)
                     {
-                        RejectRequest(RequestRejectionReasons.MissingHTTPVersion);
+                        RejectRequest(RequestRejectionReason.MissingHTTPVersion);
                     }
                     else if (httpVersion != "HTTP/1.0" && httpVersion != "HTTP/1.1")
                     {
-                        RejectRequest(RequestRejectionReasons.UnrecognizedHTTPVersion);
+                        RejectRequest(RequestRejectionReason.UnrecognizedHTTPVersion);
                     }
                 }
 
@@ -906,7 +906,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
                 else if (next != '\n')
                 {
-                    RejectRequest(RequestRejectionReasons.MissingLFInRequestLine);
+                    RejectRequest(RequestRejectionReason.MissingLFInRequestLine);
                 }
 
                 // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
@@ -1060,11 +1060,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         }
 
                         // Headers don't end in CRLF line.
-                        RejectRequest(RequestRejectionReasons.HeadersCorruptedInvalidHeaderSequence);
+                        RejectRequest(RequestRejectionReason.HeadersCorruptedInvalidHeaderSequence);
                     }
                     else if (ch == ' ' || ch == '\t')
                     {
-                        RejectRequest(RequestRejectionReasons.HeaderLineMustNotStartWithWhitespace);
+                        RejectRequest(RequestRejectionReason.HeaderLineMustNotStartWithWhitespace);
                     }
 
                     var beginName = scan;
@@ -1077,13 +1077,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     ch = scan.Take();
                     if (ch != ':')
                     {
-                        RejectRequest(RequestRejectionReasons.NoColonCharacterFoundInHeaderLine);
+                        RejectRequest(RequestRejectionReason.NoColonCharacterFoundInHeaderLine);
                     }
 
                     var validateName = beginName;
                     if (validateName.Seek(ref _vectorSpaces, ref _vectorTabs, ref _vectorColons) != ':')
                     {
-                        RejectRequest(RequestRejectionReasons.WhitespaceIsNotAllowedInHeaderName);
+                        RejectRequest(RequestRejectionReason.WhitespaceIsNotAllowedInHeaderName);
                     }
 
                     var beginValue = scan;
@@ -1123,7 +1123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     }
                     else if (ch != '\n')
                     {
-                        RejectRequest(RequestRejectionReasons.HeaderLineMustEndInCRLFOnlyCRFound);
+                        RejectRequest(RequestRejectionReason.HeaderLineMustEndInCRLFOnlyCRFound);
                     }
 
                     var next = scan.Peek();
@@ -1150,7 +1150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         // explaining that obsolete line folding is unacceptable, or replace
                         // each received obs-fold with one or more SP octets prior to
                         // interpreting the field value or forwarding the message downstream.
-                        RejectRequest(RequestRejectionReasons.HeaderValueLineFoldingNotSupported);
+                        RejectRequest(RequestRejectionReason.HeaderValueLineFoldingNotSupported);
                     }
 
                     // Trim trailing whitespace from header value by repeatedly advancing to next
@@ -1206,18 +1206,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private void ThrowResponseAbortedException()
         {
             throw new ObjectDisposedException(
-                    "The response has been aborted due to an unhandled application exception.",
-                    _applicationException);
+                "The response has been aborted due to an unhandled application exception.",
+                _applicationException);
         }
 
-        public void RejectRequest(RequestRejectionReasons reason)
+        public void RejectRequest(RequestRejectionReason reason)
         {
             var ex = BadHttpRequestException.GetException(reason);
             SetBadRequestState(ex);
             throw ex;
         }
 
-        public void RejectRequest(RequestRejectionReasons reason, string value)
+        public void RejectRequest(RequestRejectionReason reason, string value)
         {
             var ex = BadHttpRequestException.GetException(reason, value);
             SetBadRequestState(ex);

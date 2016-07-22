@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 long contentLength;
                 if (!long.TryParse(unparsedContentLength, out contentLength) || contentLength < 0)
                 {
-                    context.RejectRequest(RequestRejectionReasons.InvalidContentLength, unparsedContentLength);
+                    context.RejectRequest(RequestRejectionReason.InvalidContentLength, unparsedContentLength);
                 }
                 else
                 {
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     _inputLength -= actual;
                     if (actual == 0)
                     {
-                        _context.RejectRequest(RequestRejectionReasons.UnexpectedEndOfRequestContent);
+                        _context.RejectRequest(RequestRejectionReason.UnexpectedEndOfRequestContent);
                     }
                     return new ValueTask<int>(actual);
                 }
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 _inputLength -= actual;
                 if (actual == 0)
                 {
-                    _context.RejectRequest(RequestRejectionReasons.UnexpectedEndOfRequestContent);
+                    _context.RejectRequest(RequestRejectionReason.UnexpectedEndOfRequestContent);
                 }
 
                 return actual;
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         }
                         else if (fin)
                         {
-                            _context.RejectRequest(RequestRejectionReasons.ChunkedRequestIncomplete);
+                            _context.RejectRequest(RequestRejectionReason.ChunkedRequestIncomplete);
                         }
 
                         await input;
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         }
                         else if (fin)
                         {
-                            _context.RejectRequest(RequestRejectionReasons.ChunkedRequestIncomplete);
+                            _context.RejectRequest(RequestRejectionReason.ChunkedRequestIncomplete);
                         }
 
                         await input;
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         }
                         else if (fin)
                         {
-                            _context.RejectRequest(RequestRejectionReasons.ChunkedRequestIncomplete);
+                            _context.RejectRequest(RequestRejectionReason.ChunkedRequestIncomplete);
                         }
 
                         await input;
@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         }
                         else if (fin)
                         {
-                            _context.RejectRequest(RequestRejectionReasons.ChunkedRequestIncomplete);
+                            _context.RejectRequest(RequestRejectionReason.ChunkedRequestIncomplete);
                         }
 
                         await input;
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     }
                     else if (fin)
                     {
-                        _context.RejectRequest(RequestRejectionReasons.ChunkedRequestIncomplete);
+                        _context.RejectRequest(RequestRejectionReason.ChunkedRequestIncomplete);
                     }
 
                     await input;
@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             }
                             else
                             {
-                                _context.RejectRequest(RequestRejectionReasons.ChunkedRequestIncomplete);
+                                _context.RejectRequest(RequestRejectionReason.ChunkedRequestIncomplete);
                             }
                         }
 
@@ -504,7 +504,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     }
                     else
                     {
-                        _context.RejectRequest(RequestRejectionReasons.BadChunkSuffix);
+                        _context.RejectRequest(RequestRejectionReason.BadChunkSuffix);
                     }
                 }
                 finally
@@ -560,7 +560,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     }
                 }
 
-                _context.RejectRequest(RequestRejectionReasons.BadChunkSizeData);
+                _context.RejectRequest(RequestRejectionReason.BadChunkSizeData);
                 return -1; // can't happen, but compiler complains
             }
 

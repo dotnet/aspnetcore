@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                             if (requestLineStatus != RequestLineStatus.Done)
                             {
-                                RejectRequest(RequestRejectionReasons.MalformedRequestLineStatus, requestLineStatus.ToString());
+                                RejectRequest(RequestRejectionReason.MalformedRequestLineStatus, requestLineStatus.ToString());
                             }
 
                             break;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             // sent immediately before the a FIN from the client.
                             if (!TakeMessageHeaders(SocketInput, FrameRequestHeaders))
                             {
-                                RejectRequest(RequestRejectionReasons.MalformedRequestInvalidHeaders);
+                                RejectRequest(RequestRejectionReason.MalformedRequestInvalidHeaders);
                             }
 
                             break;

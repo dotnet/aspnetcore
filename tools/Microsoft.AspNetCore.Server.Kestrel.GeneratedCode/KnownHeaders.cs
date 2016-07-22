@@ -450,7 +450,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {{
                     if (!AsciiUtilities.TryGetAsciiString(ptr, keyBuffer, keyLength))
                     {{
-                        throw BadHttpRequestException.GetException(RequestRejectionReasons.InvalidCharactersInHeaderName);
+                        throw BadHttpRequestException.GetException(RequestRejectionReason.InvalidCharactersInHeaderName);
                     }}
                 }}
             }}

@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                     {
                         if (!AsciiUtilities.TryGetAsciiString(block.DataFixedPtr + inputOffset, output + outputOffset, following))
                         {
-                            throw BadHttpRequestException.GetException(RequestRejectionReasons.NonAsciiOrNullCharactersInInputString);
+                            throw BadHttpRequestException.GetException(RequestRejectionReason.NonAsciiOrNullCharactersInInputString);
                         }
 
                         outputOffset += following;

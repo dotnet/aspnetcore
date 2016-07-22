@@ -14,69 +14,69 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         }
 
-        internal static BadHttpRequestException GetException(RequestRejectionReasons reason)
+        internal static BadHttpRequestException GetException(RequestRejectionReason reason)
         {
             BadHttpRequestException ex;
             switch (reason)
             {
-                case RequestRejectionReasons.MissingMethod:
+                case RequestRejectionReason.MissingMethod:
                     ex = new BadHttpRequestException("Missing method.");
                     break;
-                case RequestRejectionReasons.InvalidMethod:
+                case RequestRejectionReason.InvalidMethod:
                     ex = new BadHttpRequestException("Invalid method.");
                     break;
-                case RequestRejectionReasons.MissingRequestTarget:
+                case RequestRejectionReason.MissingRequestTarget:
                     ex = new BadHttpRequestException("Missing request target.");
                     break;
-                case RequestRejectionReasons.MissingHTTPVersion:
+                case RequestRejectionReason.MissingHTTPVersion:
                     ex = new BadHttpRequestException("Missing HTTP version.");
                     break;
-                case RequestRejectionReasons.UnrecognizedHTTPVersion:
+                case RequestRejectionReason.UnrecognizedHTTPVersion:
                     ex = new BadHttpRequestException("Unrecognized HTTP version.");
                     break;
-                case RequestRejectionReasons.MissingLFInRequestLine:
+                case RequestRejectionReason.MissingLFInRequestLine:
                     ex = new BadHttpRequestException("Missing LF in request line.");
                     break;
-                case RequestRejectionReasons.HeadersCorruptedInvalidHeaderSequence:
+                case RequestRejectionReason.HeadersCorruptedInvalidHeaderSequence:
                     ex = new BadHttpRequestException("Headers corrupted, invalid header sequence.");
                     break;
-                case RequestRejectionReasons.HeaderLineMustNotStartWithWhitespace:
+                case RequestRejectionReason.HeaderLineMustNotStartWithWhitespace:
                     ex = new BadHttpRequestException("Header line must not start with whitespace.");
                     break;
-                case RequestRejectionReasons.NoColonCharacterFoundInHeaderLine:
+                case RequestRejectionReason.NoColonCharacterFoundInHeaderLine:
                     ex = new BadHttpRequestException("No ':' character found in header line.");
                     break;
-                case RequestRejectionReasons.WhitespaceIsNotAllowedInHeaderName:
+                case RequestRejectionReason.WhitespaceIsNotAllowedInHeaderName:
                     ex = new BadHttpRequestException("Whitespace is not allowed in header name.");
                     break;
-                case RequestRejectionReasons.HeaderLineMustEndInCRLFOnlyCRFound:
+                case RequestRejectionReason.HeaderLineMustEndInCRLFOnlyCRFound:
                     ex = new BadHttpRequestException("Header line must end in CRLF; only CR found.");
                     break;
-                case RequestRejectionReasons.HeaderValueLineFoldingNotSupported:
+                case RequestRejectionReason.HeaderValueLineFoldingNotSupported:
                     ex = new BadHttpRequestException("Header value line folding not supported.");
                     break;
-                case RequestRejectionReasons.MalformedRequestInvalidHeaders:
+                case RequestRejectionReason.MalformedRequestInvalidHeaders:
                     ex = new BadHttpRequestException("Malformed request: invalid headers.");
                     break;
-                case RequestRejectionReasons.UnexpectedEndOfRequestContent:
-                    ex = new BadHttpRequestException("Unexpected end of request content");
+                case RequestRejectionReason.UnexpectedEndOfRequestContent:
+                    ex = new BadHttpRequestException("Unexpected end of request content.");
                     break;
-                case RequestRejectionReasons.BadChunkSuffix:
-                    ex = new BadHttpRequestException("Bad chunk suffix");
+                case RequestRejectionReason.BadChunkSuffix:
+                    ex = new BadHttpRequestException("Bad chunk suffix.");
                     break;
-                case RequestRejectionReasons.BadChunkSizeData:
-                    ex = new BadHttpRequestException("Bad chunk size data");
+                case RequestRejectionReason.BadChunkSizeData:
+                    ex = new BadHttpRequestException("Bad chunk size data.");
                     break;
-                case RequestRejectionReasons.ChunkedRequestIncomplete:
-                    ex = new BadHttpRequestException("Chunked request incomplete");
+                case RequestRejectionReason.ChunkedRequestIncomplete:
+                    ex = new BadHttpRequestException("Chunked request incomplete.");
                     break;
-                case RequestRejectionReasons.PathContainsNullCharacters:
+                case RequestRejectionReason.PathContainsNullCharacters:
                     ex = new BadHttpRequestException("The path contains null characters.");
                     break;
-                case RequestRejectionReasons.InvalidCharactersInHeaderName:
+                case RequestRejectionReason.InvalidCharactersInHeaderName:
                     ex = new BadHttpRequestException("Invalid characters in header name.");
                     break;
-                case RequestRejectionReasons.NonAsciiOrNullCharactersInInputString:
+                case RequestRejectionReason.NonAsciiOrNullCharactersInInputString:
                     ex = new BadHttpRequestException("The input string contains non-ASCII or null characters.");
                     break;
                 default:
@@ -86,15 +86,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             return ex;
         }
 
-        internal static BadHttpRequestException GetException(RequestRejectionReasons reason, string value)
+        internal static BadHttpRequestException GetException(RequestRejectionReason reason, string value)
         {
             BadHttpRequestException ex;
             switch (reason)
             {
-                case RequestRejectionReasons.MalformedRequestLineStatus:
+                case RequestRejectionReason.MalformedRequestLineStatus:
                     ex = new BadHttpRequestException($"Malformed request: {value}");
                     break;
-                case RequestRejectionReasons.InvalidContentLength:
+                case RequestRejectionReason.InvalidContentLength:
                     ex = new BadHttpRequestException($"Invalid content length: {value}");
                     break;
                 default:

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
-    public enum RequestRejectionReasons
+    public enum RequestRejectionReason
     {
         MissingMethod,
         InvalidMethod,
