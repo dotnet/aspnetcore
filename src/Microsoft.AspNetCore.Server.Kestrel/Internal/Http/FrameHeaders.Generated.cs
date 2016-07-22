@@ -4197,7 +4197,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         
         public unsafe void Append(byte[] keyBytes, int keyOffset, int keyLength, string value)
         {
-            var key = new string('\0', keyLength);
+            string key;
             fixed (byte* ptr = &keyBytes[keyOffset])
             {
                 var pUB = ptr;
@@ -4899,6 +4899,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         break;
                 }
 
+                key = new string('\0', keyLength);
                 fixed(char *keyBuffer = key)
                 {
                     if (!AsciiUtilities.TryGetAsciiString(ptr, keyBuffer, keyLength))
