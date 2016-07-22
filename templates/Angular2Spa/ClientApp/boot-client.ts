@@ -1,3 +1,4 @@
+import 'es6-shim';
 require('zone.js');
 import 'bootstrap';
 import 'reflect-metadata';
