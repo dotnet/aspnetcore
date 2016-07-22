@@ -3,12 +3,14 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.ResponseCaching
+namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    internal class ResponseCachingEntry
+    internal class CachedResponse
     {
-        public int StatusCode { get; set; }
+        internal int StatusCode { get; set; }
+
         internal IHeaderDictionary Headers { get; set; } = new HeaderDictionary();
+
         internal byte[] Body { get; set; }
     }
 }

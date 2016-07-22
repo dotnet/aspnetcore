@@ -3,9 +3,11 @@
 
 using System;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.AspNetCore.ResponseCaching.Internal;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
@@ -13,15 +15,25 @@ namespace Microsoft.AspNetCore.ResponseCaching
     {
         private string _cacheKey;
 
-        public ResponseCachingContext(HttpContext httpContext, IMemoryCache cache)
+        public ResponseCachingContext(HttpContext httpContext, IResponseCache cache)
         {
+            if (cache == null)
+            {
+                throw new ArgumentNullException(nameof(cache));
+            }
+
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
             HttpContext = httpContext;
             Cache = cache;
         }
 
         private HttpContext HttpContext { get; }
 
-        private IMemoryCache Cache { get; }
+        private IResponseCache Cache { get; }
 
         private Stream OriginalResponseStream { get; set; }
 
@@ -46,38 +58,81 @@ namespace Microsoft.AspNetCore.ResponseCaching
         }
 
         // Only QueryString is treated as case sensitive
-        // GET;HTTP://MYDOMAIN.COM:80/PATHBASE/PATH?QueryString
+        // GET;/PATH;VaryBy
         private string CreateCacheKey()
         {
+            return CreateCacheKey(varyBy: null);
+        }
+
+        private string CreateCacheKey(CachedVaryBy varyBy)
+        {
             var request = HttpContext.Request;
-            return request.Method.ToUpperInvariant()
-                + ";"
-                + request.Scheme.ToUpperInvariant()
-                + "://"
-                + request.Host.Value.ToUpperInvariant()
-                + request.PathBase.Value.ToUpperInvariant()
-                + request.Path.Value.ToUpperInvariant()
-                + request.QueryString;
+            var builder = new StringBuilder()
+                .Append(request.Method.ToUpperInvariant())
+                .Append(";")
+                .Append(request.Path.Value.ToUpperInvariant())
+                .Append(CreateVaryByCacheKey(varyBy));
+
+            return builder.ToString();
+        }
+
+        private string CreateVaryByCacheKey(CachedVaryBy varyBy)
+        {
+            // TODO: resolve key format and delimiters
+            if (varyBy == null)
+            {
+                return string.Empty;
+            }
+
+            var request = HttpContext.Request;
+            var builder = new StringBuilder(";");
+
+            foreach (var header in varyBy.Headers)
+            {
+                var value = request.Headers[header].ToString();
+                // null vs Empty?
+                if (string.IsNullOrEmpty(value))
+                {
+                    value = "null";
+                }
+
+                builder.Append(header)
+                    .Append("=")
+                    .Append(value)
+                    .Append(";");
+            }
+
+            // Parse querystring params
+
+            return builder.ToString();
         }
 
         internal async Task<bool> TryServeFromCacheAsync()
         {
             _cacheKey = CreateCacheKey();
-            ResponseCachingEntry cacheEntry;
-            if (Cache.TryGetValue(_cacheKey, out cacheEntry))
+            var cacheEntry = Cache.Get(_cacheKey);
+
+            if (cacheEntry is CachedVaryBy)
+            {
+                // Request contains VaryBy rules, recompute key and try again
+                _cacheKey = CreateCacheKey(cacheEntry as CachedVaryBy);
+                cacheEntry = Cache.Get(_cacheKey);
+            }
+
+            if (cacheEntry is CachedResponse)
             {
                 // TODO: Compare cached request headers
-
-                // TODO: Evaluate Vary-By and select the most appropriate response
 
                 // TODO: Content negotiation if there are multiple cached response formats?
 
                 // TODO: Verify content freshness, or else re-validate the data?
 
+                var cachedResponse = cacheEntry as CachedResponse;
+
                 var response = HttpContext.Response;
                 // Copy the cached status code and response headers
-                response.StatusCode = cacheEntry.StatusCode;
-                foreach (var pair in cacheEntry.Headers)
+                response.StatusCode = cachedResponse.StatusCode;
+                foreach (var pair in cachedResponse.Headers)
                 {
                     response.Headers[pair.Key] = pair.Value;
                 }
@@ -86,7 +141,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 response.Headers["Served_From_Cache"] = DateTime.Now.ToString();
 
                 // Copy the cached response body
-                var body = cacheEntry.Body;
+                var body = cachedResponse.Body;
                 if (body.Length > 0)
                 {
                     await response.Body.WriteAsync(body, 0, body.Length);
@@ -120,15 +175,34 @@ namespace Microsoft.AspNetCore.ResponseCaching
         {
             if (CacheResponse)
             {
-                // Store the buffer to cache
-                var cacheEntry = new ResponseCachingEntry();
-                cacheEntry.StatusCode = HttpContext.Response.StatusCode;
+                var response = HttpContext.Response;
+                var varyHeaderValue = response.Headers["Vary"];
+
+                // Check if any VaryBy rules exist
+                if (!StringValues.IsNullOrEmpty(varyHeaderValue))
+                {
+                    var cachedVaryBy = new CachedVaryBy
+                    {
+                        // Only vary by headers for now
+                        Headers = varyHeaderValue
+                    };
+
+                    Cache.Set(_cacheKey, cachedVaryBy);
+                    _cacheKey = CreateCacheKey(cachedVaryBy);
+                }
+
+                // Store the response to cache
+                var cachedResponse = new CachedResponse
+                {
+                    StatusCode = HttpContext.Response.StatusCode,
+                    Body = Buffer.ToArray()
+                };
                 foreach (var pair in HttpContext.Response.Headers)
                 {
-                    cacheEntry.Headers[pair.Key] = pair.Value;
+                    cachedResponse.Headers[pair.Key] = pair.Value;
                 }
-                cacheEntry.Body = Buffer.ToArray();
-                Cache.Set(_cacheKey, cacheEntry); // TODO: Timeouts
+
+                Cache.Set(_cacheKey, cachedResponse); // TODO: Timeouts
             }
 
             // TODO: TEMP, flush the buffer to the client

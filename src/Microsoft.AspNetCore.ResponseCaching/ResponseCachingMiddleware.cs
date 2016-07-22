@@ -1,9 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
@@ -11,10 +11,20 @@ namespace Microsoft.AspNetCore.ResponseCaching
     public class ResponseCachingMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IMemoryCache _cache;
+        private readonly IResponseCache _cache;
 
-        public ResponseCachingMiddleware(RequestDelegate next, IMemoryCache cache)
+        public ResponseCachingMiddleware(RequestDelegate next, IResponseCache cache)
         {
+            if (cache == null)
+            {
+                throw new ArgumentNullException(nameof(cache));
+            }
+
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
             _next = next;
             _cache = cache;
         }

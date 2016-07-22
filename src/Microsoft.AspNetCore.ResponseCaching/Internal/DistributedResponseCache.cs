@@ -1,0 +1,60 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using Microsoft.Extensions.Caching.Distributed;
+
+namespace Microsoft.AspNetCore.ResponseCaching.Internal
+{
+    internal class DistributedResponseCache : IResponseCache
+    {
+        private readonly IDistributedCache _cache;
+
+        public DistributedResponseCache(IDistributedCache cache)
+        {
+            if (cache == null)
+            {
+                throw new ArgumentNullException(nameof(cache));
+            }
+
+            _cache = cache;
+        }
+
+        public object Get(string key)
+        {
+            try
+            {
+                return DefaultResponseCacheSerializer.Deserialize(_cache.Get(key));
+            }
+            catch
+            {
+                // TODO: Log error
+                return null;
+            }
+        }
+
+        public void Remove(string key)
+        {
+            try
+            {
+                _cache.Remove(key);
+            }
+            catch
+            {
+                // TODO: Log error
+            }
+        }
+
+        public void Set(string key, object entry)
+        {
+            try
+            {
+                _cache.Set(key, DefaultResponseCacheSerializer.Serialize(entry));
+            }
+            catch
+            {
+                // TODO: Log error
+            }
+        }
+    }
+}

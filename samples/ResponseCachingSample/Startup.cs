@@ -15,7 +15,7 @@ namespace ResponseCachingSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMemoryCache();
+            services.AddDistributedResponseCache();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -23,11 +23,14 @@ namespace ResponseCachingSample
             app.UseResponseCaching();
             app.Run(async (context) =>
             {
+                // These settings should be configured by context.Response.Cache.*
                 context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                 {
                     Public = true,
-                    MaxAge = TimeSpan.FromSeconds(10)                    
+                    MaxAge = TimeSpan.FromSeconds(10)
                 };
+                context.Response.Headers["Vary"] = new string[] { "Accept-Encoding", "Non-Existent" };
+
                 await context.Response.WriteAsync("Hello World! " + DateTime.UtcNow);
             });
         }
