@@ -785,14 +785,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var expectedPostElement = Environment.NewLine +
-                "<meta name=\"x-stylesheet-fallback-test\" content=\"\" class=\"hidden\" />" +
-                "<script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName(\"SCRIPT\")," +
-                "g=f[f.length-1].previousElementSibling," +
-                "h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;" +
-                "if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel=\"stylesheet\" href=\"'+c[d]+'\"/>')}(" +
-                "\"JavaScriptEncode[[visibility]]\",\"JavaScriptEncode[[hidden]]\"," +
-                "[\"JavaScriptEncode[[HtmlEncode[[/fallback.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]]]\"]);" +
-                "</script>";
+                "<meta name=\"x-stylesheet-fallback-test\" content=\"\" class=\"hidden\" /><script>!function" +
+                "(a,b,c,d){var e,f=document,g=f.getElementsByTagName(\"SCRIPT\"),h=g[g.length-1]." +
+                "previousElementSibling,i=f.defaultView&&f.defaultView.getComputedStyle?f.defaultView." +
+                "getComputedStyle(h):h.currentStyle;if(i&&i[a]!==b)for(e=0;e<c.length;e++)f.write('<link " +
+                "href=\"'+c[e]+'\" '+d+\"/>\")}(\"JavaScriptEncode[[visibility]]\",\"JavaScriptEncode[[hidden]]\"" +
+                ",[\"JavaScriptEncode[[HtmlEncode[[/fallback.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]]]\"]," +
+                " \"JavaScriptEncode[[rel=\"stylesheet\" ]]\");</script>";
             var context = MakeTagHelperContext(
                 attributes: new TagHelperAttributeList
                 {
@@ -802,8 +801,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     { "asp-fallback-test-property", "visibility" },
                     { "asp-fallback-test-value", "hidden" },
                     { "href", "/css/site.css" },
+                    { "rel", new HtmlString("stylesheet") },
                 });
-            var output = MakeTagHelperOutput("link", attributes: new TagHelperAttributeList());
+            var output = MakeTagHelperOutput(
+                "link",
+                attributes: new TagHelperAttributeList
+                {
+                    { "rel", new HtmlString("stylesheet") },
+                });
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
@@ -846,15 +851,16 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedContent = "<link encoded=\"contains \"quotes\"\" " +
                 "href=\"HtmlEncode[[/css/site.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]\" " +
                 "literal=\"HtmlEncode[[all HTML encoded]]\" " +
-                "mixed=\"HtmlEncode[[HTML encoded]] and contains \"quotes\"\" />" +
+                "mixed=\"HtmlEncode[[HTML encoded]] and contains \"quotes\"\" rel=\"stylesheet\" />" +
                 Environment.NewLine +
-                "<meta name=\"x-stylesheet-fallback-test\" content=\"\" class=\"HtmlEncode[[hidden]]\" />" +
-                "<script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName(\"SCRIPT\")," +
-                "g=f[f.length-1].previousElementSibling," +
-                "h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;" +
-                "if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel=\"stylesheet\" href=\"'+c[d]+'\"/>')}(" +
-                "\"JavaScriptEncode[[visibility]]\",\"JavaScriptEncode[[hidden]]\"," +
-                "[\"JavaScriptEncode[[HtmlEncode[[/fallback.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]]]\"]);" +
+                "<meta name=\"x-stylesheet-fallback-test\" content=\"\" class=\"HtmlEncode[[hidden]]\" /><script>" +
+                "!function(a,b,c,d){var e,f=document,g=f.getElementsByTagName(\"SCRIPT\"),h=g[g.length-1]." +
+                "previousElementSibling,i=f.defaultView&&f.defaultView.getComputedStyle?f.defaultView." +
+                "getComputedStyle(h):h.currentStyle;if(i&&i[a]!==b)for(e=0;e<c.length;e++)f.write('<link " +
+                "href=\"'+c[e]+'\" '+d+\"/>\")}(\"JavaScriptEncode[[visibility]]\",\"JavaScriptEncode[[hidden]]\"," +
+                "[\"JavaScriptEncode[[HtmlEncode[[/fallback.css?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk]]]]\"], " +
+                "\"JavaScriptEncode[[encoded=\"contains \"quotes\"\" literal=\"HtmlEncode[[all HTML encoded]]\" " +
+                "mixed=\"HtmlEncode[[HTML encoded]] and contains \"quotes\"\" rel=\"stylesheet\" ]]\");" +
                 "</script>";
             var mixed = new DefaultTagHelperContent();
             mixed.Append("HTML encoded");
@@ -871,6 +877,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     { "href", "/css/site.css" },
                     { "literal", "all HTML encoded" },
                     { "mixed", mixed },
+                    { "rel", new HtmlString("stylesheet") },
                 });
             var output = MakeTagHelperOutput(
                 "link",
@@ -879,6 +886,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     { "encoded", new HtmlString("contains \"quotes\"") },
                     { "literal", "all HTML encoded" },
                     { "mixed", mixed },
+                    { "rel", new HtmlString("stylesheet") },
                 });
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();

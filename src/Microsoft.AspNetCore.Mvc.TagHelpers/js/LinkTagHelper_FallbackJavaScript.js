@@ -8,9 +8,10 @@
   *
   * @param {string} cssTestPropertyName - The name of the CSS property to test.
   * @param {string} cssTestPropertyValue - The value to test the specified CSS property for.
-  * @param {string[]} fallbackHref - The URLs to the stylesheets to load in the case the test fails.
+  * @param {string[]} fallbackHrefs - The URLs to the stylesheets to load in the case the test fails.
+  * @param {string} extraAttributes - The extra attributes string that should be included on the generated link tags.
   */
- function loadFallbackStylesheet(cssTestPropertyName, cssTestPropertyValue, fallbackHref) {
+ function loadFallbackStylesheet(cssTestPropertyName, cssTestPropertyValue, fallbackHrefs, extraAttributes) {
     var doc = document,
         // Find the last script tag on the page which will be this one, as JS executes as it loads
         scriptElements = doc.getElementsByTagName("SCRIPT"),
@@ -22,8 +23,8 @@
         i;
 
     if (metaStyle && metaStyle[cssTestPropertyName] !== cssTestPropertyValue) {
-        for (i = 0; i < fallbackHref.length; i++) {
-            doc.write('<link rel="stylesheet" href="' + fallbackHref[i] + '"/>');
+        for (i = 0; i < fallbackHrefs.length; i++) {
+            doc.write('<link href="' + fallbackHrefs[i] + '" ' + extraAttributes + '/>');
         }
     }
 })();

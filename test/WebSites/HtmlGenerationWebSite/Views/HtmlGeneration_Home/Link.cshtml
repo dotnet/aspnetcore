@@ -1,4 +1,4 @@
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 <!doctype html>
 <html>
@@ -41,6 +41,20 @@
 
     <!-- Fallback to static href -->
     <link href="~/styles/site.min.css?a=b&c=d" rel="stylesheet" data-extra="test" title='"the" title'
+          asp-fallback-href="~/styles/site.css?a=b&c=d"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-property="visibility"
+          asp-fallback-test-value="hidden" />
+
+    <!-- Fallback to static href with dynamic attributes -->
+    <link href="~/styles/site.min.css?a=b&c=d" rel="@("stylesheet")" data-extra="@("test")" title='@(@"""the"" title")'
+          asp-fallback-href="~/styles/site.css?a=b&c=d"
+          asp-fallback-test-class="hidden"
+          asp-fallback-test-property="visibility"
+          asp-fallback-test-value="hidden" />
+
+    <!-- Fallback to static href with custom rel -->
+    <link href="~/styles/site.min.css?a=b&c=d" rel="x-stylesheet"
           asp-fallback-href="~/styles/site.css?a=b&c=d"
           asp-fallback-test-class="hidden"
           asp-fallback-test-property="visibility"
