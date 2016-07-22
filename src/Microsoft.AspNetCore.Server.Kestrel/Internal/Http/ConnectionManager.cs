@@ -21,16 +21,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             _threadPool = threadPool;
         }
 
-        public bool WalkConnectionsAndClose(TimeSpan timeout)
+        public async Task<bool> WalkConnectionsAndCloseAsync(TimeSpan timeout)
         {
-            var wh = new ManualResetEventSlim();
+            var tcs = new TaskCompletionSource<object>();
 
-            _thread.Post(state => ((ConnectionManager)state).WalkConnectionsAndCloseCore(wh), this);
+            _thread.Post(state => ((ConnectionManager)state).WalkConnectionsAndCloseCore(tcs), this);
 
-            return wh.Wait(timeout);
+            return await Task.WhenAny(tcs.Task, Task.Delay(timeout)).ConfigureAwait(false) == tcs.Task;
         }
 
-        private void WalkConnectionsAndCloseCore(ManualResetEventSlim wh)
+        private void WalkConnectionsAndCloseCore(TaskCompletionSource<object> tcs)
         {
             var connectionStopTasks = new List<Task>();
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             _threadPool.Run(() =>
             {
                 Task.WaitAll(connectionStopTasks.ToArray());
-                wh.Set();
+                tcs.SetResult(null);
             });
         }
     }

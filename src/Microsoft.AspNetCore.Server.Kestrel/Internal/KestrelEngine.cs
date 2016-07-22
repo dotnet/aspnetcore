@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 {
@@ -41,10 +43,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
         public void Dispose()
         {
-            foreach (var thread in Threads)
-            {
-                thread.Stop(TimeSpan.FromSeconds(2.5));
-            }
+            Task.WaitAll(Threads.Select(thread => thread.StopAsync(TimeSpan.FromSeconds(2.5))).ToArray());
+
             Threads.Clear();
         }
 
@@ -107,16 +107,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
         private void DisposeListeners(List<IAsyncDisposable> listeners)
         {
-            var disposeTasks = new List<Task>();
+            var disposeTasks = listeners.Select(listener => listener.DisposeAsync()).ToArray();
 
-            foreach (var listener in listeners)
+            if (!Task.WaitAll(disposeTasks, TimeSpan.FromSeconds(2.5)))
             {
-                 disposeTasks.Add(listener.DisposeAsync());
-            }
-
-            if (!Task.WhenAll(disposeTasks).Wait(ServerOptions.ShutdownTimeout))
-            {
-                Log.NotAllConnectionsClosedGracefully();
+                Log.LogError(0, null, "Disposing listeners failed");
             }
         }
     }

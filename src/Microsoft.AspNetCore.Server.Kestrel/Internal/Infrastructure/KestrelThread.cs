@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         private readonly KestrelEngine _engine;
         private readonly IApplicationLifetime _appLifetime;
         private readonly Thread _thread;
+        private readonly TaskCompletionSource<object> _threadTcs = new TaskCompletionSource<object>();
         private readonly UvLoopHandle _loop;
         private readonly UvAsyncHandle _post;
         private Queue<Work> _workAdding = new Queue<Work>(1024);
@@ -89,13 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             return tcs.Task;
         }
 
-        // This must be called from the libuv event loop.
-        public void AllowStop()
-        {
-            _post.Unreference();
-        }
-
-        public void Stop(TimeSpan timeout)
+        public async Task StopAsync(TimeSpan timeout)
         {
             lock (_startSync)
             {
@@ -105,27 +100,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                 }
             }
 
-            var stepTimeout = (int)(timeout.TotalMilliseconds / 3);
-
-            if (_thread.IsAlive)
+            if (!_threadTcs.Task.IsCompleted)
             {
                 // These operations need to run on the libuv thread so it only makes
                 // sense to attempt execution if it's still running
-                DisposeConnections();
+                await DisposeConnectionsAsync().ConfigureAwait(false);
+
+                var stepTimeout = TimeSpan.FromTicks(timeout.Ticks / 3);
 
                 Post(t => t.AllowStop());
-                if (!_thread.Join(stepTimeout))
+                if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                 {
-
                     try
                     {
                         Post(t => t.OnStopRude());
-                        if (!_thread.Join(stepTimeout))
+                        if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                         {
                             Post(t => t.OnStopImmediate());
-                            if (!_thread.Join(stepTimeout))
+                            if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                             {
-                                _log.LogError(0, null, "KestrelThread.Stop failed to terminate libuv thread.");
+                                _log.LogError(0, null, "KestrelThread.StopAsync failed to terminate libuv thread.");
                             }
                         }
                     }
@@ -133,9 +127,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                     {
                         // REVIEW: Should we log something here?
                         // Until we rework this logic, ODEs are bound to happen sometimes.
-                        if (!_thread.Join(stepTimeout))
+                        if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                         {
-                            _log.LogError(0, null, "KestrelThread.Stop failed to terminate libuv thread.");
+                            _log.LogError(0, null, "KestrelThread.StopAsync failed to terminate libuv thread.");
                         }
                     }
                 }
@@ -147,22 +141,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             }
         }
 
-        private void DisposeConnections()
+        private async Task DisposeConnectionsAsync()
         {
             try
             {
                 // Close and wait for all connections
-                if (!ConnectionManager.WalkConnectionsAndClose(_shutdownTimeout))
+                if (!await ConnectionManager.WalkConnectionsAndCloseAsync(_shutdownTimeout).ConfigureAwait(false))
                 {
-                    _log.LogError(0, null, "Waiting for connections timed out");
+                    _log.NotAllConnectionsClosedGracefully();
                 }
 
-                var result = PostAsync(state =>
+                var result = await WaitAsync(PostAsync(state =>
                 {
                     var listener = (KestrelThread)state;
                     listener.WriteReqPool.Dispose();
                 },
-                this).Wait(_shutdownTimeout);
+                this), _shutdownTimeout).ConfigureAwait(false);
 
                 if (!result)
                 {
@@ -173,6 +167,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             {
                 Memory.Dispose();
             }
+        }
+
+
+        private void AllowStop()
+        {
+            _post.Unreference();
         }
 
         private void OnStopRude()
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         {
             lock (_startSync)
             {
-                var tcs = (TaskCompletionSource<int>)parameter;
+                var tcs = (TaskCompletionSource<int>) parameter;
                 try
                 {
                     _loop.Init(_engine.Libuv);
@@ -301,6 +301,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                 // Request shutdown so we can rethrow this exception
                 // in Stop which should be observable.
                 _appLifetime.StopApplication();
+            }
+            finally
+            {
+                _threadTcs.SetResult(null);
             }
         }
 
@@ -383,6 +387,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             }
 
             return wasWork;
+        }
+
+        private static async Task<bool> WaitAsync(Task task, TimeSpan timeout)
+        {
+            return await Task.WhenAny(task, Task.Delay(timeout)).ConfigureAwait(false) == task;
         }
 
         private struct Work
