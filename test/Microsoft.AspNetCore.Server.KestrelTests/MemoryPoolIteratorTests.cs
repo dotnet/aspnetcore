@@ -381,5 +381,58 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             _pool.Return(block);
         }
+
+        [Theory]
+        [InlineData("HTTP/1.0\r", "HTTP/1.0")]
+        [InlineData("HTTP/1.1\r", "HTTP/1.1")]
+        public void KnownVersionsAreInterned(string input, string expected)
+        {
+            TestKnownStringsInterning(input, expected, MemoryPoolIteratorExtensions.GetKnownVersion);
+        }
+
+        [Theory]
+        [InlineData("CONNECT / HTTP/1.1", "CONNECT")]
+        [InlineData("DELETE / HTTP/1.1", "DELETE")]
+        [InlineData("GET / HTTP/1.1", "GET")]
+        [InlineData("HEAD / HTTP/1.1", "HEAD")]
+        [InlineData("PATCH / HTTP/1.1", "PATCH")]
+        [InlineData("POST / HTTP/1.1", "POST")]
+        [InlineData("PUT / HTTP/1.1", "PUT")]
+        [InlineData("OPTIONS / HTTP/1.1", "OPTIONS")]
+        [InlineData("TRACE / HTTP/1.1", "TRACE")]
+        public void KnownMethodsAreInterned(string input, string expected)
+        {
+            TestKnownStringsInterning(input, expected, MemoryPoolIteratorExtensions.GetKnownMethod);
+        }
+
+        private delegate bool GetKnownString(MemoryPoolIterator iter, out string result);
+
+        private void TestKnownStringsInterning(string input, string expected, GetKnownString action)
+        {
+            // Arrange
+            var chars = input.ToCharArray().Select(c => (byte)c).ToArray();
+            var block1 = _pool.Lease();
+            var block2 = _pool.Lease();
+            Buffer.BlockCopy(chars, 0, block1.Array, block1.Start, chars.Length);
+            Buffer.BlockCopy(chars, 0, block2.Array, block2.Start, chars.Length);
+            block1.End += chars.Length;
+            block2.End += chars.Length;
+            var begin1 = block1.GetIterator();
+            var begin2 = block2.GetIterator();
+
+            // Act
+            string knownString1, knownString2;
+            var result1 = action(begin1, out knownString1);
+            var result2 = action(begin2, out knownString2);
+
+            _pool.Return(block1);
+            _pool.Return(block2);
+
+            // Assert
+            Assert.True(result1);
+            Assert.True(result2);
+            Assert.Equal(knownString1, expected);
+            Assert.Same(knownString1, knownString2);
+        }
     }
 }
