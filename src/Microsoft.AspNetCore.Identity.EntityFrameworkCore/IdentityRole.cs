@@ -42,6 +42,19 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     public class IdentityRole<TKey> : IdentityRole<TKey, IdentityUserRole<TKey>, IdentityRoleClaim<TKey>>
         where TKey : IEquatable<TKey>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="IdentityRole{TKey}"/>.
+        /// </summary>
+        public IdentityRole() { }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="IdentityRole{TKey}"/>.
+        /// </summary>
+        /// <param name="roleName">The role name.</param>
+        public IdentityRole(string roleName) : this()
+        {
+            Name = roleName;
+        }
     }
 
     /// <summary>
