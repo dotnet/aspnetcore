@@ -146,8 +146,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 if (!_requestRejected)
                 {
+                    // SetBadRequestState logs the error.
                     SetBadRequestState(ex);
-                    Log.LogWarning(0, ex, "Connection processing ended abnormally");
                 }
             }
             catch (Exception ex)

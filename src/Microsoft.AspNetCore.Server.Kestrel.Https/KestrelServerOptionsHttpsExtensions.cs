@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Filter;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -83,7 +84,8 @@ namespace Microsoft.AspNetCore.Hosting
         public static KestrelServerOptions UseHttps(this KestrelServerOptions options, HttpsConnectionFilterOptions httpsOptions)
         {
             var prevFilter = options.ConnectionFilter ?? new NoOpConnectionFilter();
-            options.ConnectionFilter = new HttpsConnectionFilter(httpsOptions, prevFilter);
+            var loggerFactory = options.ApplicationServices.GetRequiredService<ILoggerFactory>();
+            options.ConnectionFilter = new HttpsConnectionFilter(httpsOptions, prevFilter, loggerFactory);
             return options;
         }
     }

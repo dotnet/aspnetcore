@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Filter;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https
 {
@@ -14,8 +16,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
     {
         private readonly HttpsConnectionFilterOptions _options;
         private readonly IConnectionFilter _previous;
+        private readonly ILogger _logger;
 
         public HttpsConnectionFilter(HttpsConnectionFilterOptions options, IConnectionFilter previous)
+            : this(options, previous, loggerFactory: null)
+        {
+        }
+
+        public HttpsConnectionFilter(HttpsConnectionFilterOptions options, IConnectionFilter previous, ILoggerFactory loggerFactory)
         {
             if (options == null)
             {
@@ -32,6 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
 
             _options = options;
             _previous = previous;
+            _logger = loggerFactory?.CreateLogger(nameof(HttpsConnectionFilter));
         }
 
         public async Task OnConnectionAsync(ConnectionFilterContext context)
@@ -41,11 +50,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
             if (string.Equals(context.Address.Scheme, "https", StringComparison.OrdinalIgnoreCase))
             {
                 SslStream sslStream;
+                bool certificateRequired;
+
                 if (_options.ClientCertificateMode == ClientCertificateMode.NoCertificate)
                 {
                     sslStream = new SslStream(context.Connection);
-                    await sslStream.AuthenticateAsServerAsync(_options.ServerCertificate, clientCertificateRequired: false,
-                        enabledSslProtocols: _options.SslProtocols, checkCertificateRevocation: _options.CheckCertificateRevocation);
+                    certificateRequired = false;
                 }
                 else
                 {
@@ -81,8 +91,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
 
                             return true;
                         });
-                    await sslStream.AuthenticateAsServerAsync(_options.ServerCertificate, clientCertificateRequired: true,
-                        enabledSslProtocols: _options.SslProtocols, checkCertificateRevocation: _options.CheckCertificateRevocation);
+
+                    certificateRequired = true;
+                }
+
+                context.Connection = sslStream;
+
+                try
+                {
+                    await sslStream.AuthenticateAsServerAsync(_options.ServerCertificate, certificateRequired,
+                            _options.SslProtocols, _options.CheckCertificateRevocation);
+                }
+                catch (IOException ex)
+                {
+                    _logger?.LogInformation(1, ex, "Failed to authenticate HTTPS connection.");
+                    return;
                 }
 
                 var previousPrepareRequest = context.PrepareRequest;
@@ -98,7 +121,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
 
                     features.Get<IHttpRequestFeature>().Scheme = "https";
                 };
-                context.Connection = sslStream;
             }
         }
 
