@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// <returns>The named <see cref="AuthorizationPolicy"/>.</returns>
         public virtual Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
         {
+            // MVC relies on DefaultAuthorizationPolicyProvider providing the same policy for the same requests.
             return Task.FromResult(_options.GetPolicy(policyName));
         }
     }

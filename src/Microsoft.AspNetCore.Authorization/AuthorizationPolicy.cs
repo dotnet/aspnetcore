@@ -122,28 +122,28 @@ namespace Microsoft.AspNetCore.Authorization
 
             var policyBuilder = new AuthorizationPolicyBuilder();
             var any = false;
-            foreach (var authorizeAttribute in authorizeData.OfType<AuthorizeAttribute>())
+            foreach (var authorizeDatum in authorizeData)
             {
                 any = true;
                 var useDefaultPolicy = true;
-                if (!string.IsNullOrWhiteSpace(authorizeAttribute.Policy))
+                if (!string.IsNullOrWhiteSpace(authorizeDatum.Policy))
                 {
-                    var policy = await policyProvider.GetPolicyAsync(authorizeAttribute.Policy);
+                    var policy = await policyProvider.GetPolicyAsync(authorizeDatum.Policy);
                     if (policy == null)
                     {
-                        throw new InvalidOperationException(Resources.FormatException_AuthorizationPolicyNotFound(authorizeAttribute.Policy));
+                        throw new InvalidOperationException(Resources.FormatException_AuthorizationPolicyNotFound(authorizeDatum.Policy));
                     }
                     policyBuilder.Combine(policy);
                     useDefaultPolicy = false;
                 }
-                var rolesSplit = authorizeAttribute.Roles?.Split(',');
+                var rolesSplit = authorizeDatum.Roles?.Split(',');
                 if (rolesSplit != null && rolesSplit.Any())
                 {
                     var trimmedRolesSplit = rolesSplit.Where(r => !string.IsNullOrWhiteSpace(r)).Select(r => r.Trim());
                     policyBuilder.RequireRole(trimmedRolesSplit);
                     useDefaultPolicy = false;
                 }
-                var authTypesSplit = authorizeAttribute.ActiveAuthenticationSchemes?.Split(',');
+                var authTypesSplit = authorizeDatum.ActiveAuthenticationSchemes?.Split(',');
                 if (authTypesSplit != null && authTypesSplit.Any())
                 {
                     foreach (var authType in authTypesSplit)
