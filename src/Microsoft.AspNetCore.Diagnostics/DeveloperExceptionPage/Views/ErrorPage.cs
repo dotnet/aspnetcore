@@ -214,7 +214,7 @@ WriteAttributeValue("", 1550, firstFrame.File, 1550, 16, false);
 
             WriteLiteral("        ");
 #line 56 "ErrorPage.cshtml"
-           
+          
             var reflectionTypeLoadException = Model.ErrorDetails.Last()?.Error as ReflectionTypeLoadException;
             if (reflectionTypeLoadException != null)
             {
@@ -224,42 +224,36 @@ WriteAttributeValue("", 1550, firstFrame.File, 1550, 16, false);
 #line default
 #line hidden
 
-            WriteLiteral("                    <h3>LoaderExceptions:</h3>\r\n");
-#line 63 "ErrorPage.cshtml"
-                }
+            WriteLiteral("                    <h3>Loader Exceptions:</h3>\r\n                    <ul>\r\n");
+#line 64 "ErrorPage.cshtml"
+                        
 
 #line default
 #line hidden
 
-            WriteLiteral("                <ul>\r\n");
-#line 65 "ErrorPage.cshtml"
-                    
+#line 64 "ErrorPage.cshtml"
+                         foreach (var ex in reflectionTypeLoadException.LoaderExceptions)
+                        {
 
 #line default
 #line hidden
 
-#line 65 "ErrorPage.cshtml"
-                     foreach (var ex in reflectionTypeLoadException.LoaderExceptions)
-                    {
-
-#line default
-#line hidden
-
-            WriteLiteral("                        <li>");
-#line 67 "ErrorPage.cshtml"
-                       Write(ex.Message);
+            WriteLiteral("                            <li>");
+#line 66 "ErrorPage.cshtml"
+                           Write(ex.Message);
 
 #line default
 #line hidden
             WriteLiteral("</li>\r\n");
-#line 68 "ErrorPage.cshtml"
-                    }
+#line 67 "ErrorPage.cshtml"
+                        }
 
 #line default
 #line hidden
 
-            WriteLiteral("                </ul>\r\n");
-#line 70 "ErrorPage.cshtml"
+            WriteLiteral("                    </ul>\r\n");
+#line 69 "ErrorPage.cshtml"
+                }
             }
         
 
@@ -338,9 +332,9 @@ WriteAttributeValue("", 1550, firstFrame.File, 1550, 16, false);
 #line hidden
 
             WriteLiteral("                            <li class=\"frame\"");
-            BeginWriteAttribute("tabindex", " tabindex=\"", 3570, "\"", 3590, 1);
+            BeginWriteAttribute("tabindex", " tabindex=\"", 3594, "\"", 3614, 1);
 #line 97 "ErrorPage.cshtml"
-WriteAttributeValue("", 3581, tabIndex, 3581, 9, false);
+WriteAttributeValue("", 3605, tabIndex, 3605, 9, false);
 
 #line default
 #line hidden
@@ -388,9 +382,9 @@ WriteAttributeValue("", 3581, tabIndex, 3581, 9, false);
 #line default
 #line hidden
             WriteLiteral(" in <code");
-            BeginWriteAttribute("title", " title=\"", 3985, "\"", 4004, 1);
+            BeginWriteAttribute("title", " title=\"", 4009, "\"", 4028, 1);
 #line 105 "ErrorPage.cshtml"
-WriteAttributeValue("", 3993, frame.File, 3993, 11, false);
+WriteAttributeValue("", 4017, frame.File, 4017, 11, false);
 
 #line default
 #line hidden
@@ -437,9 +431,9 @@ WriteAttributeValue("", 3993, frame.File, 3993, 11, false);
 #line hidden
 
             WriteLiteral("                                            <ol");
-            BeginWriteAttribute("start", " start=\"", 4435, "\"", 4464, 1);
+            BeginWriteAttribute("start", " start=\"", 4459, "\"", 4488, 1);
 #line 113 "ErrorPage.cshtml"
-WriteAttributeValue("", 4443, frame.PreContextLine, 4443, 21, false);
+WriteAttributeValue("", 4467, frame.PreContextLine, 4467, 21, false);
 
 #line default
 #line hidden
@@ -479,9 +473,9 @@ WriteAttributeValue("", 4443, frame.PreContextLine, 4443, 21, false);
 #line hidden
 
             WriteLiteral("\r\n                                        <ol");
-            BeginWriteAttribute("start", " start=\"", 4903, "\"", 4922, 1);
+            BeginWriteAttribute("start", " start=\"", 4927, "\"", 4946, 1);
 #line 121 "ErrorPage.cshtml"
-WriteAttributeValue("", 4911, frame.Line, 4911, 11, false);
+WriteAttributeValue("", 4935, frame.Line, 4935, 11, false);
 
 #line default
 #line hidden
@@ -528,9 +522,9 @@ WriteAttributeValue("", 4911, frame.Line, 4911, 11, false);
 #line hidden
 
             WriteLiteral("                                            <ol");
-            BeginWriteAttribute("start", " start=\'", 5415, "\'", 5440, 1);
+            BeginWriteAttribute("start", " start=\'", 5439, "\'", 5464, 1);
 #line 130 "ErrorPage.cshtml"
-WriteAttributeValue("", 5423, frame.Line + 1, 5423, 17, false);
+WriteAttributeValue("", 5447, frame.Line + 1, 5447, 17, false);
 
 #line default
 #line hidden
