@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 if (_isReadOnly)
                 {
-                    ThrowReadOnlyException();
+                    ThrowHeadersReadOnlyException();
                 }
                 SetValueFast(key, value);
             }
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
         }
 
-        protected void ThrowReadOnlyException()
+        protected void ThrowHeadersReadOnlyException()
         {
             throw new InvalidOperationException("Headers are read-only, response has already started.");
         }
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             if (_isReadOnly)
             {
-                ThrowReadOnlyException();
+                ThrowHeadersReadOnlyException();
             }
             AddValueFast(key, value);
         }
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             if (_isReadOnly)
             {
-                ThrowReadOnlyException();
+                ThrowHeadersReadOnlyException();
             }
             ClearFast();
         }
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             if (_isReadOnly)
             {
-                ThrowReadOnlyException();
+                ThrowHeadersReadOnlyException();
             }
             return RemoveFast(key);
         }
@@ -226,10 +226,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {
                     if (ch < 0x20 || ch > 0x7E)
                     {
-                        throw new InvalidOperationException(string.Format("Invalid non-ASCII or control character in header: 0x{0:X4}", (ushort)ch));
+                        ThrowInvalidHeaderCharacter(ch);
                     }
                 }
             }
+        }
+
+        private static void ThrowInvalidHeaderCharacter(char ch)
+        {
+            throw new InvalidOperationException(string.Format("Invalid non-ASCII or control character in header: 0x{0:X4}", (ushort)ch));
         }
     }
 }
