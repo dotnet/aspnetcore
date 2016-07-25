@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                     if (!_requestProcessingStopping)
                     {
-                        var messageBody = MessageBody.For(HttpVersion, FrameRequestHeaders, this);
+                        var messageBody = MessageBody.For(_httpVersion, FrameRequestHeaders, this);
                         _keepAlive = messageBody.RequestKeepAlive;
 
                         InitializeStreams(messageBody);
