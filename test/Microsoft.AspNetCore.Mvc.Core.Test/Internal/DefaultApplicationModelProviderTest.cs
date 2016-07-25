@@ -793,6 +793,29 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public void CreateActionModel_MixedHttpVerbsAndRoutes_WithRouteOnController()
+        {
+            // Arrange
+            var builder = new TestApplicationModelProvider();
+            var typeInfo = typeof(RouteAttributeOnController).GetTypeInfo();
+            var actionName = nameof(RouteAttributeOnController.Get);
+
+            // Act
+            var action = builder.CreateActionModel(typeInfo, typeInfo.AsType().GetMethod(actionName));
+
+            // Assert
+            Assert.Equal(2, action.Selectors.Count);
+
+            var selectorModel = Assert.Single(action.Selectors, s => s.AttributeRouteModel == null);
+            var methodConstraint = Assert.Single(selectorModel.ActionConstraints.OfType<HttpMethodActionConstraint>());
+            Assert.Equal(new string[] { "GET" }, methodConstraint.HttpMethods);
+
+            selectorModel = Assert.Single(action.Selectors, s => s.AttributeRouteModel?.Template == "id/{id?}");
+            methodConstraint = Assert.Single(selectorModel.ActionConstraints.OfType<HttpMethodActionConstraint>());
+            Assert.Equal(new string[] { "GET" }, methodConstraint.HttpMethods);
+        }
+
+        [Fact]
         public void CreateActionModel_MixedHttpVerbsAndRoutes_MultipleEmptyAndNonEmptyVerbs()
         {
             // Arrange
@@ -1122,6 +1145,23 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             [HttpGet]
             [HttpPost("Products")]
             public void Invalid() { }
+        }
+
+        [Route("api/[controller]")]
+        private class RouteAttributeOnController : Controller
+        {
+            [HttpGet]
+            [HttpGet("id/{id?}")]
+            public object Get(short? id)
+            {
+                return null;
+            }
+
+            [HttpDelete("{id}")]
+            public object Delete(int id)
+            {
+                return null;
+            }
         }
 
         // Here the constraints on the methods are acting as an IActionHttpMethodProvider and

@@ -158,6 +158,66 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Theory]
+        [InlineData("Get", "/Friends")]
+        [InlineData("Get", "/Friends/Peter")]
+        [InlineData("Delete", "/Friends")]
+        public async Task AttributeRoutedAction_AcceptRequestsWithValidMethods_InRoutesWithoutExtraTemplateSegmentsOnTheAction(
+            string method,
+            string url)
+        {
+            // Arrange
+            var request = new HttpRequestMessage(new HttpMethod(method), $"http://localhost{url}");
+
+            // Assert
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Contains(url, result.ExpectedUrls);
+            Assert.Equal("Friends", result.Controller);
+            Assert.Equal(method, result.Action);
+
+            Assert.Contains(
+                new KeyValuePair<string, object>("controller", "Friends"),
+                result.RouteValues);
+
+            Assert.Contains(
+                new KeyValuePair<string, object>("action", method),
+                result.RouteValues);
+
+            if (result.RouteValues.ContainsKey("id"))
+            {
+                Assert.Contains(
+                    new KeyValuePair<string, object>("id", "Peter"),
+                    result.RouteValues);
+            }
+        }
+
+        [Theory]
+        [InlineData("Post", "/Friends")]
+        [InlineData("Put", "/Friends")]
+        [InlineData("Patch", "/Friends")]
+        [InlineData("Options", "/Friends")]
+        [InlineData("Head", "/Friends")]
+        public async Task AttributeRoutedAction_RejectsRequestsWithWrongMethods_InRoutesWithoutExtraTemplateSegmentsOnTheAction(
+            string method,
+            string url)
+        {
+            // Arrange
+            var request = new HttpRequestMessage(new HttpMethod(method), $"http://localhost{url}");
+
+            // Assert
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Theory]
         [InlineData("http://localhost/api/v1/Maps")]
         [InlineData("http://localhost/api/v2/Maps")]
         public async Task AttributeRoutedAction_MultipleRouteAttributes_WorksWithNameAndOrder(string url)
@@ -1190,7 +1250,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 return Url + "?" + string.Join("&", Values.Select(kvp => kvp.Key + "=" + kvp.Value));
             }
 
-            public static implicit operator string (LinkBuilder builder)
+            public static implicit operator string(LinkBuilder builder)
             {
                 return builder.ToString();
             }
