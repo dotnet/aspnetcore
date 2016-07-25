@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 forwardedProto = context.Request.Headers.GetCommaSeparatedValues(XForwardedProtoHeaderName);
                 if (_options.RequireHeaderSymmetry && checkFor && forwardedFor.Length != forwardedProto.Length)
                 {
-                    _logger.LogDebug(1, "Parameter count mismatch between X-Forwarded-For and X-Forwarded-Proto.");
+                    _logger.LogWarning(1, "Parameter count mismatch between X-Forwarded-For and X-Forwarded-Proto.");
                     return;
                 }
                 entryCount = Math.Max(forwardedProto.Length, entryCount);
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     && ((checkFor && forwardedFor.Length != forwardedHost.Length)
                         || (checkProto && forwardedProto.Length != forwardedHost.Length)))
                 {
-                    _logger.LogDebug(1, "Parameter count mismatch between X-Forwarded-Host and X-Forwarded-For or X-Forwarded-Proto.");
+                    _logger.LogWarning(1, "Parameter count mismatch between X-Forwarded-Host and X-Forwarded-For or X-Forwarded-Proto.");
                     return;
                 }
                 entryCount =  Math.Max(forwardedHost.Length, entryCount);
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     }
                     else if (_options.RequireHeaderSymmetry)
                     {
-                        _logger.LogDebug(2, $"Failed to parse forwarded IPAddress: {currentValues.IpAndPortText}");
+                        _logger.LogWarning(2, $"Failed to parse forwarded IPAddress: {currentValues.IpAndPortText}");
                         return;
                     }
                 }
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     }
                     else if (_options.RequireHeaderSymmetry)
                     {
-                        _logger.LogDebug(3, $"Failed to parse forwarded scheme: {set.Scheme}");
+                        _logger.LogWarning(3, $"Forwarded scheme is not present, this is required by {nameof(_options.RequireHeaderSymmetry)}");
                         return;
                     }
                 }
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     }
                     else if (_options.RequireHeaderSymmetry)
                     {
-                        _logger.LogDebug(4, $"Failed to parse forwarded host: {set.Host}");
+                        _logger.LogWarning(4, $"Incorrect number of x-forwarded-proto header values, see {nameof(_options.RequireHeaderSymmetry)}.");
                         return;
                     }
                 }
