@@ -112,9 +112,9 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Authenticate the user identity with the identity provider. 
+        /// Authenticate the user identity with the identity provider.
         ///
-        /// This could be done through a back channel communication with the identity provider. 
+        /// The method process the request on the endpoint defined by CallbackPath.
         /// </summary>
         protected abstract Task<AuthenticateResult> HandleRemoteAuthenticateAsync();
 
