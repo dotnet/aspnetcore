@@ -3,12 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Rewrite.ModRewrite;
 using Microsoft.AspNetCore.Rewrite.RuleAbstraction;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Rewrite
 {
