@@ -37,18 +37,17 @@ namespace Microsoft.AspNetCore.Authentication
             try
             {
                 var authResult = await HandleRemoteAuthenticateAsync();
-                if (authResult != null && authResult.Skipped)
-                {
-                    return false;
-                }
-
                 if (authResult == null)
                 {
                     exception = new InvalidOperationException("Invalid return state, unable to redirect.");
                 }
+                else if (authResult.Skipped)
+                {
+                    return false;
+                }
                 else if (!authResult.Succeeded)
                 {
-                    exception = authResult?.Failure ??
+                    exception = authResult.Failure ??
                                 new InvalidOperationException("Invalid return state, unable to redirect.");
                 }
 
