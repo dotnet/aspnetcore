@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -32,17 +31,18 @@ namespace Microsoft.AspNetCore.Authentication
 
         protected virtual async Task<bool> HandleRemoteCallbackAsync()
         {
-            AuthenticateResult authResult = null;
+            AuthenticationTicket ticket = null;
             Exception exception = null;
 
             try
             {
-                authResult = await HandleRemoteAuthenticateAsync();
+                var authResult = await HandleRemoteAuthenticateAsync();
                 if (authResult != null && authResult.Skipped == true)
                 {
                     return false;
                 }
-                else if (authResult == null)
+
+                if (authResult == null)
                 {
                     exception = new InvalidOperationException("Invalid return state, unable to redirect.");
                 }
@@ -51,6 +51,8 @@ namespace Microsoft.AspNetCore.Authentication
                     exception = authResult?.Failure ??
                                 new InvalidOperationException("Invalid return state, unable to redirect.");
                 }
+
+                ticket = authResult.Ticket;
             }
             catch (Exception ex)
             {
@@ -67,18 +69,16 @@ namespace Microsoft.AspNetCore.Authentication
                 {
                     return true;
                 }
-                else if (errorContext.Skipped)
+
+                if (errorContext.Skipped)
                 {
                     return false;
                 }
-                else
-                {
-                    throw new AggregateException("Unhandled remote failure.", exception);
-                }
+
+                throw new AggregateException("Unhandled remote failure.", exception);
             }
 
             // We have a ticket if we get here
-            var ticket = authResult.Ticket;
             var context = new TicketReceivedContext(Context, Options, ticket)
             {
                 ReturnUri = ticket.Properties.RedirectUri,
