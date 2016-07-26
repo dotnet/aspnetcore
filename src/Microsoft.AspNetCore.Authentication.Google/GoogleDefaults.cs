@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
     /// </summary>
     public static class GoogleDefaults
     {
-        public static readonly string AuthenticationScheme = "Google";
+        public const string AuthenticationScheme = "Google";
 
         public static readonly string AuthorizationEndpoint = "https://accounts.google.com/o/oauth2/auth";
 
