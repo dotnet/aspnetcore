@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
+using System.Threading;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
@@ -119,14 +120,14 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 properties.StoreTokens(authTokens);
             }
 
-            try
+            var ticket = await CreateTicketAsync(identity, properties, tokens);
+            if (ticket != null)
             {
-                var ticket = await CreateTicketAsync(identity, properties, tokens);
                 return AuthenticateResult.Success(ticket);
             }
-            catch (Exception ex)
+            else
             {
-                return AuthenticateResult.Fail(ex);
+                return AuthenticateResult.Fail("Failed to retrieve user information from remote server.");
             }
         }
 

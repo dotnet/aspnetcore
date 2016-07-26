@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.Logging;
+using System.Net.Http;
 
 namespace Microsoft.AspNetCore.Authentication
 {
@@ -31,26 +32,49 @@ namespace Microsoft.AspNetCore.Authentication
 
         protected virtual async Task<bool> HandleRemoteCallbackAsync()
         {
-            var authResult = await HandleRemoteAuthenticateAsync();
-            if (authResult != null && authResult.Skipped)
+            AuthenticateResult authResult = null;
+            Exception exception = null;
+
+            try
             {
-                return false;
+                authResult = await HandleRemoteAuthenticateAsync();
+                if (authResult != null && authResult.Skipped == true)
+                {
+                    return false;
+                }
+                else if (authResult == null)
+                {
+                    exception = new InvalidOperationException("Invalide return state, unable to redirect.");
+                }
+                else if (!authResult.Succeeded)
+                {
+                    exception = authResult?.Failure ??
+                                new InvalidOperationException("Invalide return state, unable to redirect.");
+                }
             }
-            if (authResult == null || !authResult.Succeeded)
+            catch (Exception ex)
             {
-                var errorContext = new FailureContext(Context, authResult?.Failure ?? new Exception("Invalid return state, unable to redirect."));
-                Logger.RemoteAuthenticationError(errorContext.Failure.Message);
+                exception = ex;
+            }
+
+            if (exception != null)
+            {
+                Logger.RemoteAuthenticationError(exception.Message);
+                var errorContext = new FailureContext(Context, exception);
                 await Options.Events.RemoteFailure(errorContext);
+
                 if (errorContext.HandledResponse)
                 {
                     return true;
                 }
-                if (errorContext.Skipped)
+                else if (errorContext.Skipped)
                 {
                     return false;
                 }
-
-                throw new AggregateException("Unhandled remote failure.", errorContext.Failure);
+                else
+                {
+                    throw new AggregateException("Unhandled remote failure.", exception);
+                }
             }
 
             // We have a ticket if we get here
