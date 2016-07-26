@@ -21,5 +21,7 @@ namespace Microsoft.AspNetCore.NodeServices
         public string ProjectPath { get; set; }
         public string[] WatchFileExtensions { get; set; }
         public ILogger NodeInstanceOutputLogger { get; set; }
+        public bool LaunchWithDebugging { get; set; }
+        public int? DebuggingPort { get; set; }
     }
 }

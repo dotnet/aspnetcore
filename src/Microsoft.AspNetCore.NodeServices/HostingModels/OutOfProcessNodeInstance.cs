@@ -21,11 +21,22 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
     {
         protected readonly ILogger OutputLogger;
         private const string ConnectionEstablishedMessage = "[Microsoft.AspNetCore.NodeServices:Listening]";
+        private const string DebuggingStartedMessageFormat = @"-----
+*** Node.js debugging is enabled ***
+{0}
+
+To debug, run:
+   node-inspector{1}
+
+If you haven't yet installed node-inspector, you can do so as follows:
+   npm install -g node-inspector
+-----";
         private readonly TaskCompletionSource<object> _connectionIsReadySource = new TaskCompletionSource<object>();
         private bool _disposed;
         private readonly StringAsTempFile _entryPointScript;
         private FileSystemWatcher _fileSystemWatcher;
         private readonly Process _nodeProcess;
+        private int? _nodeDebuggingPort;
         private bool _nodeProcessNeedsRestart;
         private readonly string[] _watchFileExtensions;
 
@@ -34,7 +45,9 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             string projectPath,
             string[] watchFileExtensions,
             string commandLineArguments,
-            ILogger nodeOutputLogger)
+            ILogger nodeOutputLogger,
+            bool launchWithDebugging,
+            int? debuggingPort)
         {
             if (nodeOutputLogger == null)
             {
@@ -43,8 +56,9 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
             OutputLogger = nodeOutputLogger;
             _entryPointScript = new StringAsTempFile(entryPointScript);
-            
-            var startInfo = PrepareNodeProcessStartInfo(_entryPointScript.FileName, projectPath, commandLineArguments);
+
+            var startInfo = PrepareNodeProcessStartInfo(_entryPointScript.FileName, projectPath, commandLineArguments,
+                launchWithDebugging, debuggingPort);
             _nodeProcess = LaunchNodeProcess(startInfo);
             _watchFileExtensions = watchFileExtensions;
             _fileSystemWatcher = BeginFileWatcher(projectPath);
@@ -84,11 +98,23 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
         // This method is virtual, as it provides a way to override the NODE_PATH or the path to node.exe
         protected virtual ProcessStartInfo PrepareNodeProcessStartInfo(
-            string entryPointFilename, string projectPath, string commandLineArguments)
+            string entryPointFilename, string projectPath, string commandLineArguments,
+            bool launchWithDebugging, int? debuggingPort)
         {
+            string debuggingArgs;
+            if (launchWithDebugging)
+            {
+                debuggingArgs = debuggingPort.HasValue ? $"--debug={debuggingPort.Value} " : "--debug ";
+                _nodeDebuggingPort = debuggingPort;
+            }
+            else
+            {
+                debuggingArgs = string.Empty;    
+            }
+
             var startInfo = new ProcessStartInfo("node")
             {
-                Arguments = "\"" + entryPointFilename + "\" " + (commandLineArguments ?? string.Empty),
+                Arguments = debuggingArgs + "\"" + entryPointFilename + "\" " + (commandLineArguments ?? string.Empty),
                 UseShellExecute = false,
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
@@ -201,7 +227,12 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             {
                 if (evt.Data != null)
                 {
-                    if (!initializationIsCompleted)
+                    if (IsDebuggerListeningMessage(evt.Data))
+                    {
+                        var debugPortArg = _nodeDebuggingPort.HasValue ? $" --debug-port={_nodeDebuggingPort.Value}" : string.Empty;
+                        OutputLogger.LogWarning(string.Format(DebuggingStartedMessageFormat, evt.Data, debugPortArg));
+                    }
+                    else if (!initializationIsCompleted)
                     {
                         _connectionIsReadySource.SetException(
                             new InvalidOperationException("The Node.js process failed to initialize: " + evt.Data));
@@ -216,6 +247,11 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
             _nodeProcess.BeginOutputReadLine();
             _nodeProcess.BeginErrorReadLine();
+        }
+
+        private static bool IsDebuggerListeningMessage(string message)
+        {
+            return message.StartsWith("Debugger listening on port ", StringComparison.OrdinalIgnoreCase);
         }
 
         private FileSystemWatcher BeginFileWatcher(string rootDir)

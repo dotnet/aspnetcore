@@ -33,15 +33,18 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private bool _disposed;
         private int _portNumber;
 
-        public HttpNodeInstance(string projectPath, string[] watchFileExtensions, ILogger nodeInstanceOutputLogger, int port = 0)
-            : base(
+        public HttpNodeInstance(string projectPath, string[] watchFileExtensions, ILogger nodeInstanceOutputLogger,
+            bool launchWithDebugging, int? debuggingPort, int port = 0)
+        : base(
                 EmbeddedResourceReader.Read(
                     typeof(HttpNodeInstance),
                     "/Content/Node/entrypoint-http.js"),
                 projectPath,
                 watchFileExtensions,
                 MakeCommandLineOptions(port),
-                nodeInstanceOutputLogger)
+                nodeInstanceOutputLogger,
+                launchWithDebugging,
+                debuggingPort)
         {
             _client = new HttpClient();
         }
