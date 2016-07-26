@@ -44,12 +44,12 @@ namespace Microsoft.AspNetCore.Authentication
                 }
                 else if (authResult == null)
                 {
-                    exception = new InvalidOperationException("Invalide return state, unable to redirect.");
+                    exception = new InvalidOperationException("Invalid return state, unable to redirect.");
                 }
                 else if (!authResult.Succeeded)
                 {
                     exception = authResult?.Failure ??
-                                new InvalidOperationException("Invalide return state, unable to redirect.");
+                                new InvalidOperationException("Invalid return state, unable to redirect.");
                 }
             }
             catch (Exception ex)
