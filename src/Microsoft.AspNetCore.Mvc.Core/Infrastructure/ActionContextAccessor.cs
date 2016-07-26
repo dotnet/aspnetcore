@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if NET451
+using System;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 #else
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     public class ActionContextAccessor : IActionContextAccessor
     {
 #if NET451
-        private static string Key = typeof(ActionContext).FullName;
+        private static readonly string Key = typeof(ActionContext).FullName + AppDomain.CurrentDomain.Id;
 
         public ActionContext ActionContext
         {
