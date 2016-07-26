@@ -114,8 +114,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Authenticate the user identity with the identity provider. 
         ///
-        /// This could be done through a back channel communication with the identity provider. Exception thrown during
-        /// the authenticating should be saved to the AuthenticateResult.
+        /// This could be done through a back channel communication with the identity provider. 
         /// </summary>
         protected abstract Task<AuthenticateResult> HandleRemoteAuthenticateAsync();
 
