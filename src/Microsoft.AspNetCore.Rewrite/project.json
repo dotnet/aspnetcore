@@ -16,16 +16,15 @@
     },
     "tags": [
       "aspnetcore",
-      "proxy",
-      "headers",
-      "xforwarded"
+      "urlrewrite",
+      "mod_rewrite"
     ]
   },
   "dependencies": {
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.1.0-*",
     "Microsoft.AspNetCore.Http.Extensions": "1.1.0-*",
     "Microsoft.Extensions.Configuration.Abstractions": "1.1.0-*",
-    "Microsoft.Extensions.FileProviders.Physical": "1.1.0-*",
+    "Microsoft.Extensions.FileProviders.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.Options": "1.1.0-*",
     "System.Text.RegularExpressions": "4.1.0-*"
