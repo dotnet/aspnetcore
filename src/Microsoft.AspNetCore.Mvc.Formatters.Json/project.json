@@ -1,6 +1,6 @@
 {
   "description": "ASP.NET Core MVC formatters for JSON input and output and for JSON PATCH input using Json.NET.",
-  "version": "1.0.1-*",
+  "version": "1.0.1",
   "packOptions": {
     "repository": {
       "type": "git",
@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.JsonPatch": "1.0.0",
-    "Microsoft.AspNetCore.Mvc.Core": "1.0.1-*",
+    "Microsoft.AspNetCore.Mvc.Core": "1.0.1",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "version": "1.0.0-rtm-21431",
       "type": "build"

@@ -1,6 +1,6 @@
 {
   "description": "ASP.NET Core MVC Razor view engine for CSHTML files.",
-  "version": "1.0.1-*",
+  "version": "1.0.1",
   "packOptions": {
     "repository": {
       "type": "git",
@@ -22,8 +22,8 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc.Razor.Host": "1.0.1-*",
-    "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.1-*",
+    "Microsoft.AspNetCore.Mvc.Razor.Host": "1.0.1",
+    "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.1",
     "Microsoft.CodeAnalysis.CSharp": "1.3.0",
     "Microsoft.Extensions.FileProviders.Composite": "1.0.0",
     "Microsoft.Extensions.HashCodeCombiner.Sources": {

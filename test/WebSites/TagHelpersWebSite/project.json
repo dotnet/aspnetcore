@@ -6,8 +6,8 @@
     "preserveCompilationContext": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc": "1.0.1-*",
-    "Microsoft.AspNetCore.Mvc.TestConfiguration": "1.0.1-*",
+    "Microsoft.AspNetCore.Mvc": "1.0.1",
+    "Microsoft.AspNetCore.Mvc.TestConfiguration": "1.0.1",
     "Microsoft.AspNetCore.Razor.Tools": {
       "type": "build",
       "version": "1.0.0-preview2-final"

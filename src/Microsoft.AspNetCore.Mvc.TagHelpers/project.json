@@ -1,6 +1,6 @@
 {
   "description": "ASP.NET Core MVC default tag helpers. Contains tag helpers for anchor tags, HTML input elements, caching, scripts, links (for CSS), and more.",
-  "version": "1.0.1-*",
+  "version": "1.0.1",
   "packOptions": {
     "repository": {
       "type": "git",
@@ -22,7 +22,7 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc.Razor": "1.0.1-*",
+    "Microsoft.AspNetCore.Mvc.Razor": "1.0.1",
     "Microsoft.Extensions.Caching.Memory": "1.0.0",
     "Microsoft.Extensions.FileSystemGlobbing": "1.0.0",
     "Microsoft.Extensions.Logging.Abstractions": {

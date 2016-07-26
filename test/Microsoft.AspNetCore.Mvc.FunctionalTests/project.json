@@ -21,13 +21,13 @@
     "FiltersWebSite": "1.0.0",
     "FormatterWebSite": "1.0.0",
     "HtmlGenerationWebSite": "1.0.0",
-    "Microsoft.AspNetCore.Mvc": "1.0.1-*",
-    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.0.1-*",
+    "Microsoft.AspNetCore.Mvc": "1.0.1",
+    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.0.1",
     "Microsoft.AspNetCore.Mvc.TestCommon": {
       "version": "1.0.0-*",
       "type": "build"
     },
-    "Microsoft.AspNetCore.Mvc.TestConfiguration": "1.0.1-*",
+    "Microsoft.AspNetCore.Mvc.TestConfiguration": "1.0.1",
     "Microsoft.AspNetCore.TestHost": "1.0.0",
     "Microsoft.AspNetCore.WebUtilities": "1.0.0",
     "Microsoft.Extensions.Configuration.Json": "1.0.0",
