@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Authentication
             try
             {
                 var authResult = await HandleRemoteAuthenticateAsync();
-                if (authResult != null && authResult.Skipped == true)
+                if (authResult != null && authResult.Skipped)
                 {
                     return false;
                 }
