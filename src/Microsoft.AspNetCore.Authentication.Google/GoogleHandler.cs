@@ -22,7 +22,10 @@ namespace Microsoft.AspNetCore.Authentication.Google
         {
         }
 
-        protected override async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
+        protected override async Task<AuthenticationTicket> CreateTicketAsync(
+            ClaimsIdentity identity,
+            AuthenticationProperties properties,
+            OAuthTokenResponse tokens)
         {
             // Get the Google user
             var request = new HttpRequestMessage(HttpMethod.Get, Options.UserInformationEndpoint);
@@ -33,7 +36,8 @@ namespace Microsoft.AspNetCore.Authentication.Google
 
             var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
 
-            var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), properties, Options.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+            var ticket = new AuthenticationTicket(principal, properties, Options.AuthenticationScheme);
             var context = new OAuthCreatingTicketContext(ticket, Context, Options, Backchannel, tokens, payload);
 
             var identifier = GoogleHelper.GetId(payload);
@@ -100,8 +104,11 @@ namespace Microsoft.AspNetCore.Authentication.Google
             return authorizationEndpoint;
         }
 
-        private static void AddQueryString(IDictionary<string, string> queryStrings, AuthenticationProperties properties,
-            string name, string defaultValue = null)
+        private static void AddQueryString(
+            IDictionary<string, string> queryStrings,
+            AuthenticationProperties properties,
+            string name,
+            string defaultValue = null)
         {
             string value;
             if (!properties.Items.TryGetValue(name, out value))

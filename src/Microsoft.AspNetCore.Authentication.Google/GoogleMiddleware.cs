@@ -69,7 +69,10 @@ namespace Microsoft.AspNetCore.Authentication.Google
         /// <summary>
         /// Provides the <see cref="AuthenticationHandler{T}"/> object for processing authentication-related requests.
         /// </summary>
-        /// <returns>An <see cref="AuthenticationHandler{T}"/> configured with the <see cref="GoogleOptions"/> supplied to the constructor.</returns>
+        /// <returns>
+        /// An <see cref="AuthenticationHandler{T}"/> configured with the <see cref="GoogleOptions"/>
+        /// supplied to the constructor.
+        /// </returns>
         protected override AuthenticationHandler<GoogleOptions> CreateHandler()
         {
             return new GoogleHandler(Backchannel);
