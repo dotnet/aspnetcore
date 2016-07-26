@@ -18,6 +18,7 @@ module.exports = {
         vendor: [
             'bootstrap',
             'bootstrap/dist/css/bootstrap.css',
+            'es6-shim',
             'style-loader',
             'jquery',
             '@angular/common',

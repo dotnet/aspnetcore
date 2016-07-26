@@ -30,6 +30,7 @@
     "angular2-universal": "^0.104.5",
     "aspnet-prerendering": "^1.0.2",
     "css": "^2.2.1",
+    "es6-shim": "^0.35.1",
     "isomorphic-fetch": "^2.2.1",
     "preboot": "^2.0.10",
     "rxjs": "5.0.0-beta.6",
