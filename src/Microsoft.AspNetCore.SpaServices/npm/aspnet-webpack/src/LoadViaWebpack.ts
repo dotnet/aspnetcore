@@ -35,6 +35,12 @@ export function loadViaWebpack<T>(webpackConfigPath: string, modulePath: string,
     })
 }
 
+function setExtension(filePath: string, newExtension: string) {
+    const oldExtensionIfAny = path.extname(filePath);
+    const basenameWithoutExtension = path.basename(filePath, oldExtensionIfAny);
+    return path.join(path.dirname(filePath), basenameWithoutExtension) + newExtension;
+}
+
 function loadViaWebpackNoCache<T>(webpackConfigPath: string, modulePath: string) {
     return new Promise<T>((resolve, reject) => {
         // Load the Webpack config and make alterations needed for loading the output into Node
@@ -94,8 +100,13 @@ function loadViaWebpackNoCache<T>(webpackConfigPath: string, modulePath: string)
                             + stats.toString({ chunks: false }));
                     }
 
+                    // The dynamically-built module will only appear in node-inspector if it has some nonempty
+                    // file path. The following value is arbitrary (since there's no real compiled file on disk)
+                    // but is sufficient to enable debugging.
+                    const fakeModulePath = setExtension(modulePath, '.js');
+
                     const fileContent = compiler.outputFileSystem.readFileSync(outputVirtualPath, 'utf8');
-                    const moduleInstance = requireFromString<T>(fileContent);
+                    const moduleInstance = requireFromString<T>(fileContent, fakeModulePath);
                     resolve(moduleInstance);
                 } catch(ex) {
                     reject(ex);
