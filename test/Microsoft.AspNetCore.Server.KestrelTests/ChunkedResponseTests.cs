@@ -227,6 +227,42 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             }
         }
+
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task ChunksCanBeWrittenManually(TestServiceContext testContext)
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+                response.Headers["Transfer-Encoding"] = "chunked";
+
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("6\r\nHello \r\n"), 0, 11);
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("6\r\nWorld!\r\n"), 0, 11);
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("0\r\n\r\n"), 0, 5);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "6",
+                        "Hello ",
+                        "6",
+                        "World!",
+                        "0",
+                        "",
+                        "");
+                }
+            }
+        }
     }
 }
 
