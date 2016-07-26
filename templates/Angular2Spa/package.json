@@ -2,6 +2,7 @@
   "name": "WebApplicationBasic",
   "version": "0.0.0",
   "devDependencies": {
+    "aspnet-webpack": "^1.0.6",
     "bootstrap": "^3.3.6",
     "css-loader": "^0.23.1",
     "expose-loader": "^0.7.1",
@@ -28,7 +29,6 @@
     "@angular/router": "3.0.0-alpha.8",
     "angular2-universal": "^0.104.1",
     "aspnet-prerendering": "^1.0.2",
-    "aspnet-webpack": "^1.0.1",
     "css": "^2.2.1",
     "isomorphic-fetch": "^2.2.1",
     "preboot": "^2.0.10",

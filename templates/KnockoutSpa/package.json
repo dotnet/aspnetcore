@@ -2,7 +2,7 @@
   "name": "WebApplicationBasic",
   "version": "0.0.0",
   "devDependencies": {
-    "aspnet-webpack": "^1.0.0",
+    "aspnet-webpack": "^1.0.6",
     "bootstrap": "^3.3.6",
     "bundle-loader": "^0.5.4",
     "crossroads": "^0.12.2",
