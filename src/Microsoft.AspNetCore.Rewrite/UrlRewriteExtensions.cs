@@ -2,34 +2,67 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Rewrite;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Rewrite
 {
-    /// <summary>
-    /// Extension methods for the <see cref="UrlRewriteMiddleware"/> 
-    /// </summary>
     public static class UrlRewriteExtensions
     {
         /// <summary>
-        /// Checks if a given Url matches rules and conditions, and modifies the HttpContext on match.
+        /// Imports rules from a mod_rewrite file and adds the rules to current rules. 
         /// </summary>
-        /// <param name="app"></param>
-        /// <param name="options">Options for urlrewrite.</param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseRewriter(this IApplicationBuilder app, UrlRewriteOptions options)
+        /// <param name="options">The UrlRewrite options.</param>
+        /// <param name="hostingEnv"></param>
+        /// <param name="filePath">The path to the file containing urlrewrite rules.</param>
+        public static RewriteOptions ImportFromUrlRewrite(this RewriteOptions options, IHostingEnvironment hostingEnv, string filePath)
         {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
-            // put middleware in pipeline
-            return app.UseMiddleware<UrlRewriteMiddleware>(options);
+
+            if (hostingEnv == null)
+            {
+                throw new ArgumentNullException(nameof(hostingEnv));
+            }
+
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new ArgumentException(nameof(filePath));
+            }
+
+            var path = Path.Combine(hostingEnv.ContentRootPath, filePath);
+            using (var stream = File.OpenRead(path))
+            {
+                options.Rules.AddRange(UrlRewriteFileParser.Parse(new StreamReader(stream)));
+            };
+            return options;
+        }
+
+        /// <summary>
+        /// Imports rules from a mod_rewrite file and adds the rules to current rules. 
+        /// </summary>
+        /// <param name="options">The UrlRewrite options.</param>
+        /// <param name="stream">The text reader stream.</param>
+        public static RewriteOptions ImportFromUrlRewrite(this RewriteOptions options, TextReader stream)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (stream == null)
+            {
+                throw new ArgumentException(nameof(stream));
+            }
+
+            using (stream)
+            {
+                options.Rules.AddRange(UrlRewriteFileParser.Parse(stream));
+            };
+            return options;
         }
     }
 }

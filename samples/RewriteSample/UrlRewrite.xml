@@ -1,19 +1,12 @@
 ﻿<rewrite>
   <rules>
-    <rule name="Fail bad requests">
-      <match url=".*"/>
+    <rule name="Query String Rewrite">
+      <match url="page\.asp$" />
       <conditions>
-        <add input="{HTTP_HOST}" pattern="localhost" negate="true" />
+        <add input="{QUERY_STRING}" pattern="p1=(\d+)" />
+        <add input="##{C:1}##_{QUERY_STRING}" pattern="##([^#]+)##_.*p2=(\d+)" />
       </conditions>
-      <action type="AbortRequest" />
-    </rule>
-    <rule name="Redirect from blog">
-      <match url="^blog/([_0-9a-z-]+)/([0-9]+)" />
-      <action type="Redirect" url="article/{R:2}/{R:1}" redirectType="Found" />
-    </rule>
-    <rule name="Rewrite to article.aspx">
-      <match url="^article/([0-9]+)/([_0-9a-z-]+)" />
-      <action type="Rewrite" url="article.aspx?id={R:1}&amp;title={R:2}" />
+      <action type="rewrite" url="newpage.aspx?param1={C:1}&amp;param2={C:2}" appendQueryString="false"/>
     </rule>
   </rules>
 </rewrite>

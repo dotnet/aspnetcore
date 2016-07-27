@@ -4,7 +4,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Rewrite.UrlRewrite;
+using Microsoft.AspNetCore.Rewrite.Internal;
+using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite;
+using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite.UrlActions;
+using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite.UrlMatches;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
@@ -35,7 +38,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var res = UrlRewriteFileParser.Parse(new StringReader(xml));
 
             // assert
-           AssertUrlRewriteRuleEquality(res, expected);
+            AssertUrlRewriteRuleEquality(res, expected);
         }
 
         [Fact]
@@ -58,7 +61,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             condList.Add(new Condition
             {
                 Input = InputParser.ParseInputString("{HTTPS}"),
-                MatchPattern = new Regex("^OFF$")
+                Match = new RegexMatch(new Regex("^OFF$"), false)
             });
 
             var expected = new List<UrlRewriteRule>();
@@ -70,9 +73,9 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             // act
             var res = UrlRewriteFileParser.Parse(new StringReader(xml));
-            
+
             // assert
-            AssertUrlRewriteRuleEquality(expected, res);
+            AssertUrlRewriteRuleEquality(res, expected);
         }
 
         [Fact]
@@ -88,12 +91,12 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                                     </conditions>  
                                     <action type=""Rewrite"" url =""article.aspx?id={R:1}&amp;title={R:2}"" />
                                 </rule>
-                                <rule name=""Rewrite to article.aspx"">
+                                <rule name=""Rewrite to another article.aspx"">
                                     <match url = ""^article/([0-9]+)/([_0-9a-z-]+)"" />
                                     <conditions>  
                                         <add input=""{HTTPS}"" pattern=""^OFF$"" />  
                                     </conditions>  
-                                    <action type=""Redirect"" url =""article.aspx?id={R:1}&amp;title={R:2}"" />
+                                    <action type=""Rewrite"" url =""article.aspx?id={R:1}&amp;title={R:2}"" />
                                 </rule>
                             </rules>
                         </rewrite>";
@@ -102,7 +105,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             condList.Add(new Condition
             {
                 Input = InputParser.ParseInputString("{HTTPS}"),
-                MatchPattern = new Regex("^OFF$")
+                Match = new RegexMatch(new Regex("^OFF$"), false)
             });
 
             var expected = new List<UrlRewriteRule>();
@@ -113,15 +116,15 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 pattern: "article.aspx?id={R:1}&amp;title={R:2}"));
             expected.Add(CreateTestRule(condList,
                 Url: "^article/([0-9]+)/([_0-9a-z-]+)",
-                name: "Rewrite to article.aspx",
-                actionType: ActionType.Redirect,
+                name: "Rewrite to another article.aspx",
+                actionType: ActionType.Rewrite,
                 pattern: "article.aspx?id={R:1}&amp;title={R:2}"));
 
             // act
             var res = UrlRewriteFileParser.Parse(new StringReader(xml));
 
             // assert
-            AssertUrlRewriteRuleEquality(expected, res);
+            AssertUrlRewriteRuleEquality(res, expected);
         }
 
         // Creates a rule with appropriate default values of the url rewrite rule.
@@ -144,23 +147,13 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             return new UrlRewriteRule
             {
-                Action = new UrlAction
-                {
-                    Url = InputParser.ParseInputString(pattern),
-                    Type = actionType,
-                    AppendQueryString = appendQueryString,
-                    LogRewrittenUrl = rewrittenUrl,
-                    RedirectType = redirectType
-                },
+                Action = new RewriteAction(RuleTerminiation.Continue, InputParser.ParseInputString(Url), clearQuery: false),
                 Name = name,
                 Enabled = enabled,
                 StopProcessing = stopProcessing,
                 PatternSyntax = patternSyntax,
-                Match = new InitialMatch
+                InitialMatch = new RegexMatch(new Regex("^OFF$"), false)
                 {
-                    Url = new Regex(Url),
-                    IgnoreCase = ignoreCase,
-                    Negate = negate
                 },
                 Conditions = new Conditions
                 {
@@ -184,14 +177,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 Assert.Equal(r1.StopProcessing, r2.StopProcessing);
                 Assert.Equal(r1.PatternSyntax, r2.PatternSyntax);
 
-                Assert.Equal(r1.Match.IgnoreCase, r2.Match.IgnoreCase);
-                Assert.Equal(r1.Match.Negate, r2.Match.Negate);
-
-                Assert.Equal(r1.Action.Type, r2.Action.Type);
-                Assert.Equal(r1.Action.AppendQueryString, r2.Action.AppendQueryString);
-                Assert.Equal(r1.Action.RedirectType, r2.Action.RedirectType);
-                Assert.Equal(r1.Action.LogRewrittenUrl, r2.Action.LogRewrittenUrl);
-
                 // TODO conditions, url pattern, initial match regex
                 Assert.Equal(r1.Conditions.MatchType, r2.Conditions.MatchType);
                 Assert.Equal(r1.Conditions.TrackingAllCaptures, r2.Conditions.TrackingAllCaptures);
@@ -201,9 +186,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 {
                     var c1 = r1.Conditions.ConditionList[j];
                     var c2 = r2.Conditions.ConditionList[j];
-                    Assert.Equal(c1.IgnoreCase, c2.IgnoreCase);
-                    Assert.Equal(c1.Negate, c2.Negate);
-                    Assert.Equal(c1.MatchType, c2.MatchType);
                     Assert.Equal(c1.Input.PatternSegments.Count, c2.Input.PatternSegments.Count);
                 }
             }

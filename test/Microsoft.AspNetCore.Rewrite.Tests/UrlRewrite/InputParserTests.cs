@@ -2,12 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Rewrite.UrlRewrite;
+using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
@@ -21,8 +18,8 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var result = InputParser.ParseInputString(testString);
             Assert.Equal(result.PatternSegments.Count, 1);
         }
-
-        // Tests sizes of the pattern segments. These are all anonyomus lambdas, so cant check contents.
+        
+        // TODO update tests to check type
         [Theory]
         [InlineData("foo/bar/{R:1}/what", 3)]
         [InlineData("foo/{R:1}", 2)]
@@ -35,7 +32,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             Assert.Equal(result.PatternSegments.Count, expected);
         }
 
-        // Test actual evaluation of the lambdas, verifying the correct string comes from the evalation
+        // Test actual evaluation of the types, verifying the correct string comes from the evalation
         [Theory]
         [InlineData("hey/hello/what", "hey/hello/what")]
         [InlineData("hey/{R:1}/what", "hey/foo/what")]
@@ -98,16 +95,16 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             return context;
         }
 
-        private Match CreateTestRuleMatch()
+        private MatchResults CreateTestRuleMatch()
         {
             var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
-            return match;
+            return new MatchResults { BackReference = match.Groups, Success = match.Success };
         }
 
-        private Match CreateTestCondMatch()
+        private MatchResults CreateTestCondMatch()
         {
             var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
-            return match;
+            return new MatchResults { BackReference = match.Groups, Success = match.Success };
         }
     }
 }
