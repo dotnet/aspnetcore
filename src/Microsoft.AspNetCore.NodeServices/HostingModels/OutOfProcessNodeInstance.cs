@@ -251,7 +251,7 @@ If you haven't yet installed node-inspector, you can do so as follows:
 
         private static bool IsDebuggerListeningMessage(string message)
         {
-            return message.StartsWith("Debugger listening on port ", StringComparison.OrdinalIgnoreCase);
+            return message.StartsWith("Debugger listening ", StringComparison.OrdinalIgnoreCase);
         }
 
         private FileSystemWatcher BeginFileWatcher(string rootDir)
