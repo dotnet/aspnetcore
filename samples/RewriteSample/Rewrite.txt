@@ -1,5 +1,4 @@
 ﻿# Ensure Https
-RewriteCond %{REQUEST_URI} ^foo/  
 RewriteCond %{HTTPS} off   
 # U is a new flag to represent full URL rewrites
 RewriteRule ^(.*)$ https://www.example.com$1 [L,U]

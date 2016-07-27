@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite.ModRewrite;
 
-namespace Microsoft.AspNetCore.Rewrite
+namespace Microsoft.AspNetCore.Rewrite.ModRewrite
 {
     /// <summary>
     /// Contains a sequence of pattern segments, which on obtaining the context, will create the appropriate

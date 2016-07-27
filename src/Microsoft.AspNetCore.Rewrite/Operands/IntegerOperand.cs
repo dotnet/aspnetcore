@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Rewrite.Operands
             {
                 throw new FormatException("Syntax error for integers in comparison.");
             }
+            Value = compValue;
             Operation = operation;
         }
 

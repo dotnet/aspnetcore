@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Rewrite.ModRewrite;
 
 namespace Microsoft.AspNetCore.Rewrite
@@ -13,17 +14,27 @@ namespace Microsoft.AspNetCore.Rewrite
         /// Imports rules from a mod_rewrite file and adds the rules to current rules. 
         /// </summary>
         /// <param name="options">The UrlRewrite options.</param>
+        /// <param name="hostingEnv"></param>
         /// <param name="filePath">The path to the file containing mod_rewrite rules.</param>
-        public static UrlRewriteOptions ImportFromModRewrite(this UrlRewriteOptions options, string filePath)
+        public static UrlRewriteOptions ImportFromModRewrite(this UrlRewriteOptions options, IHostingEnvironment hostingEnv, string filePath)
         {
-            // TODO use IHostingEnvironment as param.
+            if (options == null)
+            {
+                throw new ArgumentNullException("UrlRewriteOptions is null");
+            }
+
+            if (hostingEnv == null)
+            {
+                throw new ArgumentNullException("HostingEnvironment is null");
+            }
+
             if (string.IsNullOrEmpty(filePath))
             {
                 throw new ArgumentException(nameof(filePath));
             }
-            // TODO IHosting to fix!
 
-            using (var stream = File.OpenRead(filePath))
+            var path = Path.Combine(hostingEnv.ContentRootPath, filePath);
+            using (var stream = File.OpenRead(path))
             {
                 options.Rules.AddRange(FileParser.Parse(new StreamReader(stream)));
             };
