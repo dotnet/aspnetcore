@@ -54,15 +54,10 @@ body .location {
         cursor: pointer;
     }
 
-        #header li:hover {
-            background: #a9e4f9;
-            color: #fff;
-        }
-
-        #header .selected {
-            background: #44c5f2;
-            color: #fff;
-        }
+    #header .selected {
+        background: #44c5f2;
+        color: #fff;
+    }
 
 #stackpage ul {
     list-style: none;
@@ -82,39 +77,29 @@ body .location {
     border-bottom: 1px #ddd solid;
 }
 
-    #stackpage .stackerror:hover {
-        background-color: #f0f0f0;
-    }
-
-#stackpage .frame:hover {
-    background-color: #f0f0f0;
-    text-decoration: none;
-}
 
 #stackpage .frame {
-    padding: 2px;
+    padding: 0;
     margin: 0 0 0 30px;
-    border-bottom: 1px #ddd solid;
-    cursor: pointer;
 }
 
     #stackpage .frame h3 {
-        padding: 5px;
+        padding: 2px;
         margin: 0;
     }
 
 #stackpage .source {
-    padding: 0;
+    padding: 0 0 0 30px;
 }
 
     #stackpage .source ol li {
         font-family: Consolas, "Courier New", courier, monospace;
         white-space: pre;
+        background-color: #fbfbfb;
     }
 
-#stackpage .frame:hover .source .highlight li span {
-    color: #fff;
-    background: #b20000;
+#stackpage .frame .source .highlight li span {
+    color: #FF0000;
 }
 
 #stackpage .source ol.collapsible li {
@@ -155,9 +140,9 @@ body .location {
         border-right: 1px transparent solid;
     }
 
-    .page .length {
-        text-align: right;
-    }
+.page .length {
+    text-align: right;
+}
 
 a {
     color: #1ba1e2;
@@ -168,3 +153,45 @@ a {
         color: #13709e;
         text-decoration: underline;
     }
+
+.showRawException {
+    cursor: pointer;
+    color: #44c5f2;
+    background-color: transparent;
+    font-size: 1.2em;
+    text-align: left;
+    text-decoration: none;
+    display: inline-block;
+    border: 0;
+    padding: 0;
+    outline: none;
+}
+
+.rawExceptionStackTrace {
+    font-size: 1.2em;
+}
+
+.rawExceptionBlock {
+    border-top: 1px #ddd solid;
+    border-bottom: 1px #ddd solid;
+}
+
+.showRawExceptionContainer {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.expandCollapseButton {
+    cursor: pointer;
+    float: left;
+    height: 16px;
+    width: 16px;
+    font-size: 10px;
+    position: absolute;
+    left: 10px;
+    outline: none;
+    background-color: #eee;
+    padding: 0;
+    border: 0;
+    margin: 0;
+}

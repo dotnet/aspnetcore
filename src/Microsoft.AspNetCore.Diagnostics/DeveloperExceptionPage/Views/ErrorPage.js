@@ -140,6 +140,17 @@
         ns(".source .collapsible", el).toggle();
     }
 
+    function expandCollapseButton(el) {
+        var frameId = el.getAttribute("data-frameId");
+        frame(document.getElementById(frameId));
+        if (el.innerText === "+") {
+            el.innerText = "-";
+        }
+        else {
+            el.innerText = "+";
+        }
+    }
+
     function tab(el) {
         var unselected = ns("#header .selected").removeClass("selected").attr("id");
         var selected = ns("#" + el.id).addClass("selected").attr("id");
@@ -148,27 +159,18 @@
         ns("#" + selected + "page").show();
     }
 
+    ns(".rawExceptionDetails").hide();
     ns(".collapsible").hide();
     ns(".page").hide();
     ns("#stackpage").show();
 
-    ns("#rawExceptionButton").click(function (event) {
-        var div = document.getElementById('rawException');
-        div.style.display = 'inline-block';
-        div.scrollIntoView(true);
-        event.preventDefault();
-        event.stopPropagation();
-
-        return false;
-    });
-
-    ns(".frame")
+    ns(".expandCollapseButton")
         .click(function () {
-            frame(this);
+            expandCollapseButton(this);
         })
         .keypress(function (e) {
             if (e.which === 13) {
-                frame(this);
+                expandCollapseButton(this);
             }
         });
 
@@ -180,5 +182,11 @@
             if (e.which === 13) {
                 tab(this);
             }
+        });
+
+    ns(".showRawException")
+        .click(function () {
+            var exceptionDetailId = this.getAttribute("data-exceptionDetailId");
+            ns("#" + exceptionDetailId).toggle();
         });
 })(window);

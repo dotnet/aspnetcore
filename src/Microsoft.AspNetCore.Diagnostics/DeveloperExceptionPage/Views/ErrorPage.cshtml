@@ -86,16 +86,28 @@
 
         <div id="stackpage" class="page">
             <ul>
-                @{ int tabIndex = 6; }
+                @{
+                    var exceptionCount = 0;
+                    var stackFrameCount = 0;
+                    var exceptionDetailId = "";
+                    var frameId = "";
+                }
                 @foreach (var errorDetail in Model.ErrorDetails)
                 {
+                    @{
+                        exceptionCount++;
+                        exceptionDetailId = "exceptionDetail" + exceptionCount;
+                    }
                     <li>
                         <h2 class="stackerror">@errorDetail.Error.GetType().Name: @errorDetail.Error.Message</h2>
                         <ul>
                         @foreach (var frame in errorDetail.StackFrames)
                         {
-                            <li class="frame" tabindex="@tabIndex">
-                                @{ tabIndex++; }
+                            @{
+                                stackFrameCount++;
+                                frameId = "frame" + stackFrameCount;
+                            }
+                            <li class="frame" id="@frameId">
                                 @if (string.IsNullOrEmpty(frame.File))
                                 {
                                     <h3>@frame.Function</h3>
@@ -107,6 +119,7 @@
 
                                 @if (frame.Line != 0 && frame.ContextCode.Any())
                                 {
+                                    <button class="expandCollapseButton" data-frameId="@frameId">+</button>
                                     <div class="source">
                                         @if (frame.PreContextCode.Any())
                                         {
@@ -143,11 +156,11 @@
                     <li>
                         <br/>
                         <div class="rawExceptionBlock">
-                            <div>
-                                <a href="#" id="rawExceptionButton">Show raw exception details</a>
+                            <div class="showRawExceptionContainer">
+                                <button class="showRawException" data-exceptionDetailId="@exceptionDetailId">Show raw exception details</button>
                             </div>
-                            <div id="rawException" style="display:none">
-                                <pre>@errorDetail.Error.ToString()</pre>
+                            <div id="@exceptionDetailId" class="rawExceptionDetails">
+                                <pre class="rawExceptionStackTrace">@errorDetail.Error.ToString()</pre>
                             </div>
                         </div>
                     </li>
