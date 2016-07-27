@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +16,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
     public class ResponseCachingContext
     {
         private string _cacheKey;
+        private RequestType _requestType;
 
         public ResponseCachingContext(HttpContext httpContext, IResponseCache cache)
         {
@@ -43,12 +46,24 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         private bool CacheResponse { get; set; }
 
+        private bool IsProxied { get; set; }
+
         public bool CheckRequestAllowsCaching()
         {
             // Verify the method
             // TODO: What other methods should be supported?
-            if (!string.Equals("GET", HttpContext.Request.Method, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals("GET", HttpContext.Request.Method, StringComparison.OrdinalIgnoreCase))
             {
+                _requestType = RequestType.FullReponse;
+            }
+            else if (string.Equals("HEAD", HttpContext.Request.Method, StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals("OPTIONS", HttpContext.Request.Method, StringComparison.OrdinalIgnoreCase))
+            {
+                _requestType = RequestType.HeadersOnly;
+            }
+            else
+            {
+                _requestType = RequestType.NotCached;
                 return false;
             }
 
@@ -137,14 +152,24 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     response.Headers[pair.Key] = pair.Value;
                 }
 
-                // TODO: Update cache headers (Age)
-                response.Headers["Served_From_Cache"] = DateTime.Now.ToString();
+                // TODO: Allow setting proxied _isProxied 
+                var age = Math.Max((DateTimeOffset.UtcNow - cacheEntry.Created).TotalSeconds, 0.0);
+                var ageString = (age > int.MaxValue ? int.MaxValue : (int)age).ToString(CultureInfo.InvariantCulture);
+                response.Headers[IsProxied ? "Age" : "X-Cache-Age"] = ageString;
 
-                // Copy the cached response body
-                var body = cachedResponse.Body;
-                if (body.Length > 0)
+                if (_requestType == RequestType.HeadersOnly)
                 {
-                    await response.Body.WriteAsync(body, 0, body.Length);
+                    response.Headers["Content-Length"] = "0";
+                }
+                else
+                {
+                    // Copy the cached response body
+                    var body = cachedResponse.Body;
+                    response.Headers["Content-Length"] = body.Length.ToString(CultureInfo.InvariantCulture);
+                    if (body.Length > 0)
+                    {
+                        await response.Body.WriteAsync(body, 0, body.Length);
+                    }
                 }
                 return true;
             }
@@ -173,7 +198,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         internal void FinalizeCaching()
         {
-            if (CacheResponse)
+            // Don't cache errors? 404 etc
+            if (CacheResponse && HttpContext.Response.StatusCode == 200)
             {
                 var response = HttpContext.Response;
                 var varyHeaderValue = response.Headers["Vary"];
@@ -194,12 +220,30 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 // Store the response to cache
                 var cachedResponse = new CachedResponse
                 {
+                    Created = DateTimeOffset.UtcNow,
                     StatusCode = HttpContext.Response.StatusCode,
                     Body = Buffer.ToArray()
                 };
-                foreach (var pair in HttpContext.Response.Headers)
+
+                var headers = HttpContext.Response.Headers;
+                var count = headers.Count
+                    - (headers.ContainsKey("Date") ? 1 : 0)
+                    - (headers.ContainsKey("Content-Length") ? 1 : 0)
+                    - (headers.ContainsKey("Age") ? 1 : 0);
+                var cachedHeaders = new List<KeyValuePair<string, StringValues>>(count);
+                var age = 0;
+                foreach (var entry in headers)
                 {
-                    cachedResponse.Headers[pair.Key] = pair.Value;
+                    // Reduce create date by Age 
+                    if (entry.Key == "Age" && int.TryParse(entry.Value, out age) && age > 0)
+                    {
+                        cacheEntry.Created -= new TimeSpan(0, 0, age);
+                    }
+                    // Don't copy Date header or Content-Length
+                    else if (entry.Key != "Date" && entry.Key != "Content-Length")
+                    {
+                        cachedHeaders.Add(entry);
+                    }
                 }
 
                 Cache.Set(_cacheKey, cachedResponse); // TODO: Timeouts
@@ -214,6 +258,13 @@ namespace Microsoft.AspNetCore.ResponseCaching
         {
             // Unhook the response stream.
             HttpContext.Response.Body = OriginalResponseStream;
+        }
+
+        private enum RequestType
+        {
+            NotCached = 0,
+            HeadersOnly,
+            FullReponse
         }
     }
 }
