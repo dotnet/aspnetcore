@@ -56,7 +56,6 @@ namespace Microsoft.AspNetCore.Rewrite.ModRewrite
                 else if (context.Current == Space || context.Current == Tab)
                 {
                     // time to capture!
-                    // TODO: This kinda sucks, set state and skip 
                     var token = context.Capture();
                     if (!string.IsNullOrEmpty(token))
                     {
