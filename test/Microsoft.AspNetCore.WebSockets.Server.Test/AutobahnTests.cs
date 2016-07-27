@@ -51,17 +51,17 @@ namespace Microsoft.AspNetCore.WebSockets.Server.Test
                     await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: true, environment: "ManagedSockets", expectationConfig: expect => expect
                         .NonStrict("6.4.3", "6.4.4")); // https://github.com/aspnet/WebSockets/issues/99
 
-                    if (IsIISExpress10Installed())
-                    {
-                        // IIS Express tests are a bit flaky, some tests fail occasionally or get non-strict passes
-                        // https://github.com/aspnet/WebSockets/issues/100
-                        await tester.DeployTestAndAddToSpec(ServerType.IISExpress, ssl: false, environment: "ManagedSockets", expectationConfig: expect => expect
-                            .OkOrFail(Enumerable.Range(1, 20).Select(i => $"5.{i}").ToArray()) // 5.* occasionally fail on IIS express
-                            .OkOrNonStrict("3.2", "3.3", "3.4", "4.1.3", "4.1.4", "4.1.5", "4.2.3", "4.2.4", "4.2.5", "5.15")); // These occasionally get non-strict results
-                    }
-
                     if (IsWindows8OrHigher())
                     {
+                        if (IsIISExpress10Installed())
+                        {
+                            // IIS Express tests are a bit flaky, some tests fail occasionally or get non-strict passes
+                            // https://github.com/aspnet/WebSockets/issues/100
+                            await tester.DeployTestAndAddToSpec(ServerType.IISExpress, ssl: false, environment: "ManagedSockets", expectationConfig: expect => expect
+                                .OkOrFail(Enumerable.Range(1, 20).Select(i => $"5.{i}").ToArray()) // 5.* occasionally fail on IIS express
+                                .OkOrNonStrict("3.2", "3.3", "3.4", "4.1.3", "4.1.4", "4.1.5", "4.2.3", "4.2.4", "4.2.5", "5.15")); // These occasionally get non-strict results
+                        }
+
                         await tester.DeployTestAndAddToSpec(ServerType.WebListener, ssl: false, environment: "ManagedSockets", expectationConfig: expect => expect
                             .Fail("6.1.2", "6.1.3") // https://github.com/aspnet/WebSockets/issues/97
                             .NonStrict("6.4.3", "6.4.4")); // https://github.com/aspnet/WebSockets/issues/99
