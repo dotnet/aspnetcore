@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -57,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         public static DefaultControllerArgumentBinder GetArgumentBinder(
-            IModelMetadataProvider metadataProvider, 
+            IModelMetadataProvider metadataProvider,
             IModelBinderProvider binderProvider = null)
         {
             var services = GetServices();
@@ -109,11 +110,13 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         private static IServiceProvider GetServices(Action<MvcOptions> updateOptions = null)
         {
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddAuthorization();
             serviceCollection.AddSingleton(new ApplicationPartManager());
             serviceCollection.AddMvc();
             serviceCollection
                 .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
-                .AddTransient<ILoggerFactory, LoggerFactory>();
+                .AddTransient<ILoggerFactory, LoggerFactory>()
+                .AddTransient<ILogger<DefaultAuthorizationService>, Logger<DefaultAuthorizationService>>();
 
             if (updateOptions != null)
             {

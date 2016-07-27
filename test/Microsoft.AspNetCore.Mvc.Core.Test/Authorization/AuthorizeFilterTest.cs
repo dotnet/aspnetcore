@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             var authorizeFilter = new AuthorizeFilter(policyProvider.Object, new AuthorizeAttribute[] { new AuthorizeAttribute("whatever") });
             var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization());
 
-            // Act
+            // Act & Assert
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
             Assert.Equal(1, getPolicyCount);
             Assert.Null(authorizationContext.Result);
@@ -64,6 +64,9 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
             Assert.Equal(3, getPolicyCount);
             Assert.Null(authorizationContext.Result);
+
+            // Make sure we don't cache the policy
+            Assert.Null(authorizeFilter.Policy);
         }
 
         [Fact]
@@ -98,7 +101,6 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         public async Task Invoke_EmptyClaimsShouldRejectAnonymousUser()
         {
             // Arrange
-            var authorizationOptions = new AuthorizationOptions();
             var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
             var authorizationContext = GetAuthorizationContext(services =>
                 services.AddAuthorization(),
