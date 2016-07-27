@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: Kestrel");
 
         private static Vector<byte> _vectorCRs = new Vector<byte>((byte)'\r');
+        private static Vector<byte> _vectorLFs = new Vector<byte>((byte)'\n');
         private static Vector<byte> _vectorColons = new Vector<byte>((byte)':');
         private static Vector<byte> _vectorSpaces = new Vector<byte>((byte)' ');
         private static Vector<byte> _vectorTabs = new Vector<byte>((byte)'\t');
@@ -801,13 +802,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                 _requestProcessingStatus = RequestProcessingStatus.RequestStarted;
 
+                var end = scan;
+                int bytesScanned;
+                if (end.Seek(ref _vectorLFs, out bytesScanned, ServerOptions.Limits.MaxRequestLineSize) == -1)
+                {
+                    if (bytesScanned >= ServerOptions.Limits.MaxRequestLineSize)
+                    {
+                        RejectRequest(RequestRejectionReason.RequestLineTooLong);
+                    }
+                    else
+                    {
+                        return RequestLineStatus.Incomplete;
+                    }
+                }
+
                 string method;
                 var begin = scan;
                 if (!begin.GetKnownMethod(out method))
                 {
-                    if (scan.Seek(ref _vectorSpaces) == -1)
+                    if (scan.Seek(ref _vectorSpaces, ref end) == -1)
                     {
-                        return RequestLineStatus.MethodIncomplete;
+                        RejectRequest(RequestRejectionReason.MissingSpaceAfterMethod);
                     }
 
                     method = begin.GetAsciiString(scan);
@@ -835,18 +850,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 scan.Take();
                 begin = scan;
                 var needDecode = false;
-                var chFound = scan.Seek(ref _vectorSpaces, ref _vectorQuestionMarks, ref _vectorPercentages);
+                var chFound = scan.Seek(ref _vectorSpaces, ref _vectorQuestionMarks, ref _vectorPercentages, ref end);
                 if (chFound == -1)
                 {
-                    return RequestLineStatus.TargetIncomplete;
+                    RejectRequest(RequestRejectionReason.MissingSpaceAfterTarget);
                 }
                 else if (chFound == '%')
                 {
                     needDecode = true;
-                    chFound = scan.Seek(ref _vectorSpaces, ref _vectorQuestionMarks);
+                    chFound = scan.Seek(ref _vectorSpaces, ref _vectorQuestionMarks, ref end);
                     if (chFound == -1)
                     {
-                        return RequestLineStatus.TargetIncomplete;
+                        RejectRequest(RequestRejectionReason.MissingSpaceAfterTarget);
                     }
                 }
 
@@ -857,9 +872,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 if (chFound == '?')
                 {
                     begin = scan;
-                    if (scan.Seek(ref _vectorSpaces) == -1)
+                    if (scan.Seek(ref _vectorSpaces, ref end) == -1)
                     {
-                        return RequestLineStatus.TargetIncomplete;
+                        RejectRequest(RequestRejectionReason.MissingSpaceAfterTarget);
                     }
                     queryString = begin.GetAsciiString(scan);
                 }
@@ -873,9 +888,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                 scan.Take();
                 begin = scan;
-                if (scan.Seek(ref _vectorCRs) == -1)
+                if (scan.Seek(ref _vectorCRs, ref end) == -1)
                 {
-                    return RequestLineStatus.VersionIncomplete;
+                    RejectRequest(RequestRejectionReason.MissingCrAfterVersion);
                 }
 
                 string httpVersion;
@@ -898,16 +913,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     }
                 }
 
-                scan.Take();
-                var next = scan.Take();
-                if (next == -1)
-                {
-                    return RequestLineStatus.Incomplete;
-                }
-                else if (next != '\n')
+                scan.Take(); // consume CR
+                if (scan.Block != end.Block || scan.Index != end.Index)
                 {
                     RejectRequest(RequestRejectionReason.MissingLFInRequestLine);
                 }
+                scan.Take(); // consume LF
 
                 // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
                 // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
@@ -1155,7 +1166,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                     // Trim trailing whitespace from header value by repeatedly advancing to next
                     // whitespace or CR.
-                    // 
+                    //
                     // - If CR is found, this is the end of the header value.
                     // - If whitespace is found, this is the _tentative_ end of the header value.
                     //   If non-whitespace is found after it and it's not CR, seek again to the next

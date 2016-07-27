@@ -47,9 +47,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             ConnectionId = GenerateConnectionId(Interlocked.Increment(ref _lastConnectionId));
 
-            if (ServerOptions.MaxRequestBufferSize.HasValue)
+            if (ServerOptions.Limits.MaxRequestBufferSize.HasValue)
             {
-                _bufferSizeControl = new BufferSizeControl(ServerOptions.MaxRequestBufferSize.Value, this, Thread);
+                _bufferSizeControl = new BufferSizeControl(ServerOptions.Limits.MaxRequestBufferSize.Value, this, Thread);
             }
 
             SocketInput = new SocketInput(Thread.Memory, ThreadPool, _bufferSizeControl);

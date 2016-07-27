@@ -2,41 +2,42 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Server.Kestrel;
-using Microsoft.Extensions.Configuration;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class KestrelServerInformationTests
     {
+#pragma warning disable CS0612
         [Fact]
-        public void MaxRequestBufferSizeDefault()
+        public void MaxRequestBufferSizeIsMarkedObsolete()
         {
-            Assert.Equal(1024 * 1024, (new KestrelServerOptions()).MaxRequestBufferSize);
+            Assert.NotNull(typeof(KestrelServerOptions)
+                .GetProperty(nameof(KestrelServerOptions.MaxRequestBufferSize))
+                .GetCustomAttributes(false)
+                .OfType<ObsoleteAttribute>()
+                .SingleOrDefault());
         }
 
-        [Theory]
-        [InlineData(-1)]
-        [InlineData(0)]
-        public void MaxRequestBufferSizeInvalid(int value)
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(() =>
-            {
-                (new KestrelServerOptions()).MaxRequestBufferSize = value;
-            });
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData(1)]
-        public void MaxRequestBufferSizeValid(int? value)
+        [Fact]
+        public void MaxRequestBufferSizeGetsLimitsProperty()
         {
             var o = new KestrelServerOptions();
-            o.MaxRequestBufferSize = value;
-            Assert.Equal(value, o.MaxRequestBufferSize);
+            o.Limits.MaxRequestBufferSize = 42;
+            Assert.Equal(42, o.MaxRequestBufferSize);
         }
+
+        [Fact]
+        public void MaxRequestBufferSizeSetsLimitsProperty()
+        {
+            var o = new KestrelServerOptions();
+            o.MaxRequestBufferSize = 42;
+            Assert.Equal(42, o.Limits.MaxRequestBufferSize);
+        }
+#pragma warning restore CS0612
 
         [Fact]
         public void SetThreadCountUsingProcessorCount()

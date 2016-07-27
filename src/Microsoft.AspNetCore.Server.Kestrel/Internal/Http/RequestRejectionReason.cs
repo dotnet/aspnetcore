@@ -26,6 +26,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         ChunkedRequestIncomplete,
         PathContainsNullCharacters,
         InvalidCharactersInHeaderName,
-        NonAsciiOrNullCharactersInInputString
+        NonAsciiOrNullCharactersInInputString,
+        RequestLineTooLong,
+        MissingSpaceAfterMethod,
+        MissingSpaceAfterTarget,
+        MissingCrAfterVersion,
     }
 }

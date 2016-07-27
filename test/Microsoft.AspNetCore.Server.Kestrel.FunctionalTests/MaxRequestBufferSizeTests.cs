@@ -25,8 +25,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             get
             {
                 var maxRequestBufferSizeValues = new Tuple<long?, bool>[] {
-                    // Smallest allowed buffer.  Server should call pause/resume between each read.
-                    Tuple.Create((long?)1, true),
+                    // Smallest buffer that can hold a POST request line to the root.
+                    Tuple.Create((long?)"POST / HTTP/1.1\r\n".Length, true),
 
                     // Small buffer, but large enough to hold all request headers.
                     Tuple.Create((long?)16 * 1024, true),
@@ -171,8 +171,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var host = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
-                    options.MaxRequestBufferSize = maxRequestBufferSize;
+                    options.Limits.MaxRequestBufferSize = maxRequestBufferSize;
                     options.UseHttps(@"TestResources/testCert.pfx", "testPassword");
+
+                    if (maxRequestBufferSize.HasValue &&
+                        maxRequestBufferSize.Value < options.Limits.MaxRequestLineSize)
+                    {
+                        options.Limits.MaxRequestLineSize = (int)maxRequestBufferSize;
+                    }
                 })
                 .UseUrls("http://127.0.0.1:0/", "https://127.0.0.1:0/")
                 .UseContentRoot(Directory.GetCurrentDirectory())

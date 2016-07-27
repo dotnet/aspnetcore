@@ -1,6 +1,3 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System;
 using Microsoft.AspNetCore.Server.Kestrel.Filter;
 
@@ -11,10 +8,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
     /// </summary>
     public class KestrelServerOptions
     {
-        // Matches the default client_max_body_size in nginx.  Also large enough that most requests
-        // should be under the limit.
-        private long? _maxRequestBufferSize = 1024 * 1024;
-
         /// <summary>
         /// Gets or sets whether the <c>Server</c> header should be included in each response.
         /// </summary>
@@ -41,27 +34,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         public IConnectionFilter ConnectionFilter { get; set; }
 
         /// <summary>
-        /// Maximum size of the request buffer.
-        /// If value is null, the size of the request buffer is unlimited.
+        /// <para>
+        /// This property is obsolete and will be removed in a future version.
+        /// Use <c>Limits.MaxRequestBufferSize</c> instead.
+        /// </para>
+        /// <para>
+        /// Gets or sets the maximum size of the request buffer.
+        /// </para>
         /// </summary>
         /// <remarks>
+        /// When set to null, the size of the request buffer is unlimited.
         /// Defaults to 1,048,576 bytes (1 MB).
         /// </remarks>
+        [Obsolete]
         public long? MaxRequestBufferSize
         {
             get
             {
-                return _maxRequestBufferSize;
+                return Limits.MaxRequestBufferSize;
             }
             set
             {
-                if (value.HasValue && value.Value <= 0)
-                {
-                    throw new ArgumentOutOfRangeException("value", "Value must be null or a positive integer.");
-                }
-                _maxRequestBufferSize = value;
+                Limits.MaxRequestBufferSize = value;
             }
         }
+
+        /// <summary>
+        /// Provides access to request limit options.
+        /// </summary>
+        public KestrelServerLimits Limits { get; } = new KestrelServerLimits();
 
         /// <summary>
         /// Set to false to enable Nagle's algorithm for all connections.

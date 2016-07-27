@@ -1,7 +1,12 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using System.Numerics;
+using System.Text;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -21,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
-        public void FindFirstEqualByte()
+        public void TestFindFirstEqualByte()
         {
             var bytes = Enumerable.Repeat<byte>(0xff, Vector<byte>.Count).ToArray();
             for (int i = 0; i < Vector<byte>.Count; i++)
@@ -41,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
-        public void FindFirstEqualByteSlow()
+        public void TestFindFirstEqualByteSlow()
         {
             var bytes = Enumerable.Repeat<byte>(0xff, Vector<byte>.Count).ToArray();
             for (int i = 0; i < Vector<byte>.Count; i++)
@@ -406,6 +411,255 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             TestKnownStringsInterning(input, expected, MemoryPoolIteratorExtensions.GetKnownMethod);
         }
 
+        [Theory]
+        [MemberData(nameof(SeekByteLimitData))]
+        public void TestSeekByteLimitWithinSameBlock(string input, char seek, int limit, int expectedBytesScanned, int expectedReturnValue)
+        {
+            MemoryPoolBlock block = null;
+
+            try
+            {
+                // Arrange
+                var seekVector = new Vector<byte>((byte)seek);
+
+                block = _pool.Lease();
+                var chars = input.ToString().ToCharArray().Select(c => (byte)c).ToArray();
+                Buffer.BlockCopy(chars, 0, block.Array, block.Start, chars.Length);
+                block.End += chars.Length;
+                var scan = block.GetIterator();
+
+                // Act
+                int bytesScanned;
+                var returnValue = scan.Seek(ref seekVector, out bytesScanned, limit);
+
+                // Assert
+                Assert.Equal(expectedBytesScanned, bytesScanned);
+                Assert.Equal(expectedReturnValue, returnValue);
+
+                Assert.Same(block, scan.Block);
+                var expectedEndIndex = expectedReturnValue != -1 ?
+                    block.Start + input.IndexOf(seek) :
+                    block.Start + expectedBytesScanned;
+                Assert.Equal(expectedEndIndex, scan.Index);
+            }
+            finally
+            {
+                // Cleanup
+                if (block != null) _pool.Return(block);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(SeekByteLimitData))]
+        public void TestSeekByteLimitAcrossBlocks(string input, char seek, int limit, int expectedBytesScanned, int expectedReturnValue)
+        {
+            MemoryPoolBlock block1 = null;
+            MemoryPoolBlock block2 = null;
+            MemoryPoolBlock emptyBlock = null;
+
+            try
+            {
+                // Arrange
+                var seekVector = new Vector<byte>((byte)seek);
+
+                var input1 = input.Substring(0, input.Length / 2);
+                block1 = _pool.Lease();
+                var chars1 = input1.ToCharArray().Select(c => (byte)c).ToArray();
+                Buffer.BlockCopy(chars1, 0, block1.Array, block1.Start, chars1.Length);
+                block1.End += chars1.Length;
+
+                emptyBlock = _pool.Lease();
+                block1.Next = emptyBlock;
+
+                var input2 = input.Substring(input.Length / 2);
+                block2 = _pool.Lease();
+                var chars2 = input2.ToCharArray().Select(c => (byte)c).ToArray();
+                Buffer.BlockCopy(chars2, 0, block2.Array, block2.Start, chars2.Length);
+                block2.End += chars2.Length;
+                emptyBlock.Next = block2;
+
+                var scan = block1.GetIterator();
+
+                // Act
+                int bytesScanned;
+                var returnValue = scan.Seek(ref seekVector, out bytesScanned, limit);
+
+                // Assert
+                Assert.Equal(expectedBytesScanned, bytesScanned);
+                Assert.Equal(expectedReturnValue, returnValue);
+
+                var seekCharIndex = input.IndexOf(seek);
+                var expectedEndBlock = limit <= input.Length / 2 ?
+                    block1 :
+                    (seekCharIndex != -1 && seekCharIndex < input.Length / 2 ? block1 : block2);
+                Assert.Same(expectedEndBlock, scan.Block);
+                var expectedEndIndex = expectedReturnValue != -1 ?
+                    expectedEndBlock.Start + (expectedEndBlock == block1 ? input1.IndexOf(seek) : input2.IndexOf(seek)) :
+                    expectedEndBlock.Start + (expectedEndBlock == block1 ? expectedBytesScanned : expectedBytesScanned - (input.Length / 2));
+                Assert.Equal(expectedEndIndex, scan.Index);
+            }
+            finally
+            {
+                // Cleanup
+                if (block1 != null) _pool.Return(block1);
+                if (emptyBlock != null) _pool.Return(emptyBlock);
+                if (block2 != null) _pool.Return(block2);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(SeekIteratorLimitData))]
+        public void TestSeekIteratorLimitWithinSameBlock(string input, char seek, char limitAt, int expectedReturnValue)
+        {
+            MemoryPoolBlock block = null;
+
+            try
+            {
+                // Arrange
+                var seekVector = new Vector<byte>((byte)seek);
+                var limitAtVector = new Vector<byte>((byte)limitAt);
+                var afterSeekVector = new Vector<byte>((byte)'B');
+
+                block = _pool.Lease();
+                var chars = input.ToCharArray().Select(c => (byte)c).ToArray();
+                Buffer.BlockCopy(chars, 0, block.Array, block.Start, chars.Length);
+                block.End += chars.Length;
+                var scan1 = block.GetIterator();
+                var scan2_1 = scan1;
+                var scan2_2 = scan1;
+                var scan3_1 = scan1;
+                var scan3_2 = scan1;
+                var scan3_3 = scan1;
+                var end = scan1;
+
+                // Act
+                var endReturnValue = end.Seek(ref limitAtVector);
+                var returnValue1 = scan1.Seek(ref seekVector, ref end);
+                var returnValue2_1 = scan2_1.Seek(ref seekVector, ref afterSeekVector, ref end);
+                var returnValue2_2 = scan2_2.Seek(ref afterSeekVector, ref seekVector, ref end);
+                var returnValue3_1 = scan3_1.Seek(ref seekVector, ref afterSeekVector, ref afterSeekVector, ref end);
+                var returnValue3_2 = scan3_2.Seek(ref afterSeekVector, ref seekVector, ref afterSeekVector, ref end);
+                var returnValue3_3 = scan3_3.Seek(ref afterSeekVector, ref afterSeekVector, ref seekVector, ref end);
+
+                // Assert
+                Assert.Equal(input.Contains(limitAt) ? limitAt : -1, endReturnValue);
+                Assert.Equal(expectedReturnValue, returnValue1);
+                Assert.Equal(expectedReturnValue, returnValue2_1);
+                Assert.Equal(expectedReturnValue, returnValue2_2);
+                Assert.Equal(expectedReturnValue, returnValue3_1);
+                Assert.Equal(expectedReturnValue, returnValue3_2);
+                Assert.Equal(expectedReturnValue, returnValue3_3);
+
+                Assert.Same(block, scan1.Block);
+                Assert.Same(block, scan2_1.Block);
+                Assert.Same(block, scan2_2.Block);
+                Assert.Same(block, scan3_1.Block);
+                Assert.Same(block, scan3_2.Block);
+                Assert.Same(block, scan3_3.Block);
+
+                var expectedEndIndex = expectedReturnValue != -1 ? block.Start + input.IndexOf(seek) : end.Index;
+                Assert.Equal(expectedEndIndex, scan1.Index);
+                Assert.Equal(expectedEndIndex, scan2_1.Index);
+                Assert.Equal(expectedEndIndex, scan2_2.Index);
+                Assert.Equal(expectedEndIndex, scan3_1.Index);
+                Assert.Equal(expectedEndIndex, scan3_2.Index);
+                Assert.Equal(expectedEndIndex, scan3_3.Index);
+            }
+            finally
+            {
+                // Cleanup
+                if (block != null) _pool.Return(block);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(SeekIteratorLimitData))]
+        public void TestSeekIteratorLimitAcrossBlocks(string input, char seek, char limitAt, int expectedReturnValue)
+        {
+            MemoryPoolBlock block1 = null;
+            MemoryPoolBlock block2 = null;
+            MemoryPoolBlock emptyBlock = null;
+
+            try
+            {
+                // Arrange
+                var seekVector = new Vector<byte>((byte)seek);
+                var limitAtVector = new Vector<byte>((byte)limitAt);
+                var afterSeekVector = new Vector<byte>((byte)'B');
+
+                var input1 = input.Substring(0, input.Length / 2);
+                block1 = _pool.Lease();
+                var chars1 = input1.ToCharArray().Select(c => (byte)c).ToArray();
+                Buffer.BlockCopy(chars1, 0, block1.Array, block1.Start, chars1.Length);
+                block1.End += chars1.Length;
+
+                emptyBlock = _pool.Lease();
+                block1.Next = emptyBlock;
+
+                var input2 = input.Substring(input.Length / 2);
+                block2 = _pool.Lease();
+                var chars2 = input2.ToCharArray().Select(c => (byte)c).ToArray();
+                Buffer.BlockCopy(chars2, 0, block2.Array, block2.Start, chars2.Length);
+                block2.End += chars2.Length;
+                emptyBlock.Next = block2;
+
+                var scan1 = block1.GetIterator();
+                var scan2_1 = scan1;
+                var scan2_2 = scan1;
+                var scan3_1 = scan1;
+                var scan3_2 = scan1;
+                var scan3_3 = scan1;
+                var end = scan1;
+
+                // Act
+                var endReturnValue = end.Seek(ref limitAtVector);
+                var returnValue1 = scan1.Seek(ref seekVector, ref end);
+                var returnValue2_1 = scan2_1.Seek(ref seekVector, ref afterSeekVector, ref end);
+                var returnValue2_2 = scan2_2.Seek(ref afterSeekVector, ref seekVector, ref end);
+                var returnValue3_1 = scan3_1.Seek(ref seekVector, ref afterSeekVector, ref afterSeekVector, ref end);
+                var returnValue3_2 = scan3_2.Seek(ref afterSeekVector, ref seekVector, ref afterSeekVector, ref end);
+                var returnValue3_3 = scan3_3.Seek(ref afterSeekVector, ref afterSeekVector, ref seekVector, ref end);
+
+                // Assert
+                Assert.Equal(input.Contains(limitAt) ? limitAt : -1, endReturnValue);
+                Assert.Equal(expectedReturnValue, returnValue1);
+                Assert.Equal(expectedReturnValue, returnValue2_1);
+                Assert.Equal(expectedReturnValue, returnValue2_2);
+                Assert.Equal(expectedReturnValue, returnValue3_1);
+                Assert.Equal(expectedReturnValue, returnValue3_2);
+                Assert.Equal(expectedReturnValue, returnValue3_3);
+
+                var seekCharIndex = input.IndexOf(seek);
+                var limitAtIndex = input.IndexOf(limitAt);
+                var expectedEndBlock = seekCharIndex != -1 && seekCharIndex < input.Length / 2 ?
+                    block1 :
+                    (limitAtIndex != -1 && limitAtIndex < input.Length / 2 ? block1 : block2);
+                Assert.Same(expectedEndBlock, scan1.Block);
+                Assert.Same(expectedEndBlock, scan2_1.Block);
+                Assert.Same(expectedEndBlock, scan2_2.Block);
+                Assert.Same(expectedEndBlock, scan3_1.Block);
+                Assert.Same(expectedEndBlock, scan3_2.Block);
+                Assert.Same(expectedEndBlock, scan3_3.Block);
+
+                var expectedEndIndex = expectedReturnValue != -1 ?
+                    expectedEndBlock.Start + (expectedEndBlock == block1 ? input1.IndexOf(seek) : input2.IndexOf(seek)) :
+                    end.Index;
+                Assert.Equal(expectedEndIndex, scan1.Index);
+                Assert.Equal(expectedEndIndex, scan2_1.Index);
+                Assert.Equal(expectedEndIndex, scan2_2.Index);
+                Assert.Equal(expectedEndIndex, scan3_1.Index);
+                Assert.Equal(expectedEndIndex, scan3_2.Index);
+                Assert.Equal(expectedEndIndex, scan3_3.Index);
+            }
+            finally
+            {
+                // Cleanup
+                if (block1 != null) _pool.Return(block1);
+                if (emptyBlock != null) _pool.Return(emptyBlock);
+                if (block2 != null) _pool.Return(block2);
+            }
+        }
+
         private delegate bool GetKnownString(MemoryPoolIterator iter, out string result);
 
         private void TestKnownStringsInterning(string input, string expected, GetKnownString action)
@@ -434,6 +688,128 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.True(result2);
             Assert.Equal(knownString1, expected);
             Assert.Same(knownString1, knownString2);
+        }
+
+        public static IEnumerable<object[]> SeekByteLimitData
+        {
+            get
+            {
+                var vectorSpan = Vector<byte>.Count;
+
+                // string input, char seek, int limit, int expectedBytesScanned, int expectedReturnValue
+                var data = new List<object[]>();
+
+                // Non-vector inputs
+
+                data.Add(new object[] { "hello, world", 'h', 12, 1, 'h' });
+                data.Add(new object[] { "hello, world", ' ', 12, 7, ' ' });
+                data.Add(new object[] { "hello, world", 'd', 12, 12, 'd' });
+                data.Add(new object[] { "hello, world", '!', 12, 12, -1 });
+                data.Add(new object[] { "hello, world", 'h', 13, 1, 'h' });
+                data.Add(new object[] { "hello, world", ' ', 13, 7, ' ' });
+                data.Add(new object[] { "hello, world", 'd', 13, 12, 'd' });
+                data.Add(new object[] { "hello, world", '!', 13, 12, -1 });
+                data.Add(new object[] { "hello, world", 'h', 5, 1, 'h' });
+                data.Add(new object[] { "hello, world", 'o', 5, 5, 'o' });
+                data.Add(new object[] { "hello, world", ',', 5, 5, -1 });
+                data.Add(new object[] { "hello, world", 'd', 5, 5, -1 });
+                data.Add(new object[] { "abba", 'a', 4, 1, 'a' });
+                data.Add(new object[] { "abba", 'b', 4, 2, 'b' });
+
+                // Vector inputs
+
+                // Single vector, no seek char in input, expect failure
+                data.Add(new object[] { new string('a', vectorSpan), 'b', vectorSpan, vectorSpan, -1 });
+                // Two vectors, no seek char in input, expect failure
+                data.Add(new object[] { new string('a', vectorSpan * 2), 'b', vectorSpan * 2, vectorSpan * 2, -1 });
+                // Two vectors plus non vector length (thus hitting slow path too), no seek char in input, expect failure
+                data.Add(new object[] { new string('a', vectorSpan * 2 + vectorSpan / 2), 'b', vectorSpan * 2 + vectorSpan / 2, vectorSpan * 2 + vectorSpan / 2, -1 });
+
+                // For each input length from 1/2 to 3 1/2 vector spans in 1/2 vector span increments...
+                for (var length = vectorSpan / 2; length <= vectorSpan * 3 + vectorSpan / 2; length += vectorSpan / 2)
+                {
+                    // ...place the seek char at vector and input boundaries...
+                    for (var i = Math.Min(vectorSpan - 1, length - 1); i < length; i += ((i + 1) % vectorSpan == 0) ? 1 : Math.Min(i + (vectorSpan - 1), length - 1))
+                    {
+                        var input = new StringBuilder(new string('a', length));
+                        input[i] = 'b';
+
+                        // ...and check with a seek byte limit before, at, and past the seek char position...
+                        for (var limitOffset = -1; limitOffset <= 1; limitOffset++)
+                        {
+                            var limit = (i + 1) + limitOffset;
+
+                            if (limit >= i + 1)
+                            {
+                                // ...that Seek() succeeds when the seek char is within that limit...
+                                data.Add(new object[] { input.ToString(), 'b', limit, i + 1, 'b' });
+                            }
+                            else
+                            {
+                                // ...and fails when it's not.
+                                data.Add(new object[] { input.ToString(), 'b', limit, Math.Min(length, limit), -1 });
+                            }
+                        }
+                    }
+                }
+
+                return data;
+            }
+        }
+
+        public static IEnumerable<object[]> SeekIteratorLimitData
+        {
+            get
+            {
+                var vectorSpan = Vector<byte>.Count;
+
+                // string input, char seek, char limitAt, int expectedReturnValue
+                var data = new List<object[]>();
+
+                // Non-vector inputs
+
+                data.Add(new object[] { "hello, world", 'h', 'd', 'h' });
+                data.Add(new object[] { "hello, world", ' ', 'd', ' ' });
+                data.Add(new object[] { "hello, world", 'd', 'd', 'd' });
+                data.Add(new object[] { "hello, world", '!', 'd', -1 });
+                data.Add(new object[] { "hello, world", 'h', 'w', 'h' });
+                data.Add(new object[] { "hello, world", 'o', 'w', 'o' });
+                data.Add(new object[] { "hello, world", 'r', 'w', -1 });
+                data.Add(new object[] { "hello, world", 'd', 'w', -1 });
+
+                // Vector inputs
+
+                // Single vector, no seek char in input, expect failure
+                data.Add(new object[] { new string('a', vectorSpan), 'b', 'b', -1 });
+                // Two vectors, no seek char in input, expect failure
+                data.Add(new object[] { new string('a', vectorSpan * 2), 'b', 'b', -1 });
+                // Two vectors plus non vector length (thus hitting slow path too), no seek char in input, expect failure
+                data.Add(new object[] { new string('a', vectorSpan * 2 + vectorSpan / 2), 'b', 'b', -1 });
+
+                // For each input length from 1/2 to 3 1/2 vector spans in 1/2 vector span increments...
+                for (var length = vectorSpan / 2; length <= vectorSpan * 3 + vectorSpan / 2; length += vectorSpan / 2)
+                {
+                    // ...place the seek char at vector and input boundaries...
+                    for (var i = Math.Min(vectorSpan - 1, length - 1); i < length; i += ((i + 1) % vectorSpan == 0) ? 1 : Math.Min(i + (vectorSpan - 1), length - 1))
+                    {
+                        var input = new StringBuilder(new string('a', length));
+                        input[i] = 'b';
+
+                        // ...along with sentinel characters to seek the limit iterator to...
+                        input[i - 1] = 'A';
+                        if (i < length - 1) input[i + 1] = 'B';
+
+                        // ...and check that Seek() succeeds with a limit iterator at or past the seek char position...
+                        data.Add(new object[] { input.ToString(), 'b', 'b', 'b' });
+                        if (i < length - 1) data.Add(new object[] { input.ToString(), 'b', 'B', 'b' });
+
+                        // ...and fails with a limit iterator before the seek char position.
+                        data.Add(new object[] { input.ToString(), 'b', 'A', -1 });
+                    }
+                }
+
+                return data;
+            }
         }
     }
 }

@@ -10,64 +10,47 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class BadHttpRequestTests
     {
-        // Don't send more data than necessary to fail, otherwise the test throws trying to
-        // send data after the server has already closed the connection. This would cause the
-        // test to fail on Windows, due to a winsock limitation: after the error when trying
-        // to write to the socket closed by the server, winsock disposes all resources used
-        // by that socket. The test then fails when we try to read the expected response
-        // from the server because, although it would have been buffered, it got discarded
-        // by winsock on the send() error.
-        // The solution for this is for the client to always try to receive before doing
-        // any sends, that way it can detect that the connection has been closed by the server
-        // and not try to send() on the closed connection, triggering the error that would cause
-        // any buffered received data to be lost.
-        // We do not deem necessary to mitigate this issue in TestConnection, since it would only
-        // be ensuring that we have a properly implemented HTTP client that can handle the
-        // winsock issue. There is nothing to be verified in Kestrel in this situation.
+        // All test cases for this theory must end in '\n', otherwise the server will spin forever
         [Theory]
         // Incomplete request lines
-        [InlineData("G")]
-        [InlineData("GE")]
-        [InlineData("GET")]
-        [InlineData("GET ")]
-        [InlineData("GET /")]
-        [InlineData("GET / ")]
-        [InlineData("GET / H")]
-        [InlineData("GET / HT")]
-        [InlineData("GET / HTT")]
-        [InlineData("GET / HTTP")]
-        [InlineData("GET / HTTP/")]
-        [InlineData("GET / HTTP/1")]
-        [InlineData("GET / HTTP/1.")]
-        [InlineData("GET / HTTP/1.1")]
-        [InlineData("GET / HTTP/1.1\r")]
-        [InlineData("GET / HTTP/1.0")]
-        [InlineData("GET / HTTP/1.0\r")]
+        [InlineData("G\r\n")]
+        [InlineData("GE\r\n")]
+        [InlineData("GET\r\n")]
+        [InlineData("GET \r\n")]
+        [InlineData("GET /\r\n")]
+        [InlineData("GET / \r\n")]
+        [InlineData("GET / H\r\n")]
+        [InlineData("GET / HT\r\n")]
+        [InlineData("GET / HTT\r\n")]
+        [InlineData("GET / HTTP\r\n")]
+        [InlineData("GET / HTTP/\r\n")]
+        [InlineData("GET / HTTP/1\r\n")]
+        [InlineData("GET / HTTP/1.\r\n")]
         // Missing method
-        [InlineData(" ")]
+        [InlineData(" \r\n")]
         // Missing second space
-        [InlineData("/ ")] // This fails trying to read the '/' because that's invalid for an HTTP method
+        [InlineData("/ \r\n")] // This fails trying to read the '/' because that's invalid for an HTTP method
         [InlineData("GET /\r\n")]
         // Missing target
-        [InlineData("GET  ")]
+        [InlineData("GET  \r\n")]
         // Missing version
-        [InlineData("GET / \r")]
+        [InlineData("GET / \r\n")]
         // Missing CR
         [InlineData("GET / \n")]
         // Unrecognized HTTP version
-        [InlineData("GET / http/1.0\r")]
-        [InlineData("GET / http/1.1\r")]
-        [InlineData("GET / HTTP/1.1 \r")]
-        [InlineData("GET / HTTP/1.1a\r")]
-        [InlineData("GET / HTTP/1.0\n\r")]
-        [InlineData("GET / HTTP/1.2\r")]
-        [InlineData("GET / HTTP/3.0\r")]
-        [InlineData("GET / H\r")]
-        [InlineData("GET / HTTP/1.\r")]
-        [InlineData("GET / hello\r")]
-        [InlineData("GET / 8charact\r")]
-        // Missing LF
-        [InlineData("GET / HTTP/1.0\rA")]
+        [InlineData("GET / http/1.0\r\n")]
+        [InlineData("GET / http/1.1\r\n")]
+        [InlineData("GET / HTTP/1.1 \r\n")]
+        [InlineData("GET / HTTP/1.1a\r\n")]
+        [InlineData("GET / HTTP/1.0\n\r\n")]
+        [InlineData("GET / HTTP/1.2\r\n")]
+        [InlineData("GET / HTTP/3.0\r\n")]
+        [InlineData("GET / H\r\n")]
+        [InlineData("GET / HTTP/1.\r\n")]
+        [InlineData("GET / hello\r\n")]
+        [InlineData("GET / 8charact\r\n")]
+        // Missing LF after CR
+        [InlineData("GET / HTTP/1.0\rA\n")]
         // Bad HTTP Methods (invalid according to RFC)
         [InlineData("( / HTTP/1.0\r\n")]
         [InlineData(") / HTTP/1.0\r\n")]
@@ -88,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("} / HTTP/1.0\r\n")]
         [InlineData("get@ / HTTP/1.0\r\n")]
         [InlineData("post= / HTTP/1.0\r\n")]
-        public async Task TestBadRequestLines(string request)
+        public async Task TestInvalidRequestLines(string request)
         {
             using (var server = new TestServer(context => TaskUtilities.CompletedTask))
             {
@@ -100,6 +83,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
+        // TODO: remove test once people agree to change this behavior
+        /*
         [Theory]
         [InlineData(" ")]
         [InlineData("GET  ")]
@@ -136,6 +121,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             }
         }
+        */
 
         [Theory]
         // Missing final CRLF
@@ -219,13 +205,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         private async Task ReceiveBadRequestResponse(TestConnection connection, string expectedDateHeaderValue)
         {
-            await connection.Receive(
-                "HTTP/1.1 400 Bad Request",
-                "");
-            await connection.Receive(
-                "Connection: close",
-                "");
             await connection.ReceiveForcedEnd(
+                "HTTP/1.1 400 Bad Request",
+                "Connection: close",
                 $"Date: {expectedDateHeaderValue}",
                 "Content-Length: 0",
                 "",
