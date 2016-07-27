@@ -17,9 +17,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     public interface IHtmlHelper
     {
         /// <summary>
-        /// Set this property to <see cref="Html5DateRenderingMode.Rfc3339"/> to have templated helpers such as
-        /// <see cref="Editor"/> and <see cref="IHtmlHelper{TModel}.EditorFor"/> render date and time values as RFC
-        /// 3339 compliant strings. By default these helpers render dates and times using the current culture.
+        /// Set this property to <see cref="Html5DateRenderingMode.CurrentCulture" /> to have templated helpers such as
+        /// <see cref="Editor" /> and <see cref="IHtmlHelper{TModel}.EditorFor" /> render date and time
+        /// values using the current culture. By default, these helpers render dates and times as RFC 3339 compliant strings.
         /// </summary>
         Html5DateRenderingMode Html5DateRenderingMode { get; set; }
 
