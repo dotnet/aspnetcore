@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Builder
     public static class WebpackDevMiddleware
     {
         private const string WebpackDevMiddlewareScheme = "http";
-        private const string WebpackDevMiddlewareHostname = "localhost";
         private const string WebpackHotMiddlewareEndpoint = "/__webpack_hmr";
         private const string DefaultConfigFile = "webpack.config.js";
 
@@ -64,19 +63,27 @@ namespace Microsoft.AspNetCore.Builder
                     JsonConvert.SerializeObject(devServerOptions)).Result;
 
             // Proxy the corresponding requests through ASP.NET and into the Node listener
+            // Note that this is hardcoded to make requests to "localhost" regardless of the hostname of the
+            // server as far as the client is concerned. This is because ConditionalProxyMiddlewareOptions is
+            // the one making the internal HTTP requests, and it's going to be to some port on this machine
+            // because aspnet-webpack hosts the dev server there. We can't use the hostname that the client
+            // sees, because that could be anything (e.g., some upstream load balancer) and we might not be
+            // able to make outbound requests to it from here.
             var proxyOptions = new ConditionalProxyMiddlewareOptions(WebpackDevMiddlewareScheme,
-                WebpackDevMiddlewareHostname, devServerInfo.Port.ToString());
+                "localhost", devServerInfo.Port.ToString());
             appBuilder.UseMiddleware<ConditionalProxyMiddleware>(devServerInfo.PublicPath, proxyOptions);
 
             // While it would be nice to proxy the /__webpack_hmr requests too, these return an EventStream,
             // and the Microsoft.AspNetCore.Proxy code doesn't handle that entirely - it throws an exception after
-            // a while. So, just serve a 302 for those.
+            // a while. So, just serve a 302 for those. But note that we must use the hostname that the client
+            // sees, not "localhost", so that it works even when you're not running on localhost (e.g., Docker).
             appBuilder.Map(WebpackHotMiddlewareEndpoint, builder =>
             {
                 builder.Use(next => async ctx =>
                 {
+                    var hostname = ctx.Request.Host.Host;
                     ctx.Response.Redirect(
-                        $"{WebpackDevMiddlewareScheme}://{WebpackDevMiddlewareHostname}:{devServerInfo.Port.ToString()}{WebpackHotMiddlewareEndpoint}");
+                        $"{WebpackDevMiddlewareScheme}://{hostname}:{devServerInfo.Port.ToString()}{WebpackHotMiddlewareEndpoint}");
                     await Task.Yield();
                 });
             });
