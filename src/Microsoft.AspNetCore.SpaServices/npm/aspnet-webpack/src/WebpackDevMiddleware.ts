@@ -16,6 +16,7 @@ interface CreateDevServerOptions {
 // These are the options configured in C# and then JSON-serialized, hence the C#-style naming
 interface DevServerOptions {
     HotModuleReplacement: boolean;
+    HotModuleReplacementServerPort: number;
     ReactHotModuleReplacement: boolean;
 }
 
@@ -35,9 +36,11 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
         return;
     }
 
+    // The default value, 0, means 'choose randomly'
+    const suggestedHMRPortOrZero = options.suppliedOptions.HotModuleReplacementServerPort;
+
     const app = connect();
-    const defaultPort = 0; // 0 means 'choose randomly'. Could allow an explicit value to be supplied instead.
-    const listener = app.listen(defaultPort, () => {
+    const listener = app.listen(suggestedHMRPortOrZero, () => {
         // Build the final Webpack config based on supplied options
         if (enableHotModuleReplacement) {
             // TODO: Stop assuming there's an entry point called 'main'
