@@ -16,14 +16,17 @@
 // permissions and limitations under the License.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.WebListener
 {
     public class WebListenerOptions
     {
+        internal static readonly int DefaultMaxAccepts = 5 * Environment.ProcessorCount;
+
         public Microsoft.Net.Http.Server.WebListener Listener { get; set; } = new Microsoft.Net.Http.Server.WebListener();
+
+        public int MaxAccepts { get; set; } = DefaultMaxAccepts;
+
+        public bool EnableResponseCaching { get; set; } = true;
     }
 }

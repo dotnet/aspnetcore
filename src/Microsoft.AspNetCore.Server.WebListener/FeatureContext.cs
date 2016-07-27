@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
 
         internal ITlsConnectionFeature GetTlsConnectionFeature()
         {
-            return Request.IsSecureConnection ? this : null;
+            return Request.IsHttps ? this : null;
         }
 
         byte[] ITlsTokenBindingFeature.GetProvidedTokenBindingId()
@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
 
         internal ITlsTokenBindingFeature GetTlsTokenBindingFeature()
         {
-            return Request.IsSecureConnection ? this : null;
+            return Request.IsHttps ? this : null;
         }
 
         void IHttpBufferingFeature.DisableRequestBuffering()

@@ -16,9 +16,6 @@
 // permissions and limitations under the License.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.WebListener;
 using Microsoft.AspNetCore.Server.WebListener.Internal;

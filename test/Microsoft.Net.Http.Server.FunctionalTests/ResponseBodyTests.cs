@@ -23,7 +23,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.ShouldBuffer = true;
                 context.Response.Body.Write(new byte[10], 0, 10);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
@@ -47,7 +47,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.ShouldBuffer = false;
                 context.Response.Body.Write(new byte[10], 0, 10);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
@@ -71,7 +71,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.Body.Write(new byte[10], 0, 10);
                 context.Response.Body.Flush();
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
@@ -94,7 +94,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.Headers["transfeR-Encoding"] = "CHunked";
                 Stream stream = context.Response.Body;
                 var responseBytes = Encoding.ASCII.GetBytes("10\r\nManually Chunked\r\n0\r\n\r\n");
@@ -119,7 +119,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.Headers["Content-lenGth"] = " 30 ";
                 Stream stream = context.Response.Body;
 #if NET451
@@ -150,12 +150,12 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Dispose();
 #if !NETCOREAPP1_0
                 // HttpClient retries the request because it didn't get a response.
-                context = await server.GetContextAsync();
+                context = await server.AcceptAsync();
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Dispose();
 #endif
@@ -171,13 +171,13 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Response.Body.Write(new byte[5], 0, 5);
                 context.Dispose();
 #if !NETCOREAPP1_0
                 // HttpClient retries the request because it didn't get a response.
-                context = await server.GetContextAsync();
+                context = await server.AcceptAsync();
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Response.Body.Write(new byte[5], 0, 5);
                 context.Dispose();
@@ -194,14 +194,14 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.Headers["Content-lenGth"] = " 10 ";
                 context.Response.Body.Write(new byte[5], 0, 5);
                 Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(new byte[6], 0, 6));
                 context.Dispose();
 #if !NETCOREAPP1_0
                 // HttpClient retries the request because it didn't get a response.
-                context = await server.GetContextAsync();
+                context = await server.AcceptAsync();
                 context.Response.Headers["Content-lenGth"] = " 10 ";
                 context.Response.Body.Write(new byte[5], 0, 5);
                 Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(new byte[6], 0, 6));
@@ -219,7 +219,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.Headers["Content-lenGth"] = " 10 ";
                 context.Response.Body.Write(new byte[10], 0, 10);
                 Assert.Throws<ObjectDisposedException>(() => context.Response.Body.Write(new byte[6], 0, 6));
@@ -244,7 +244,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.Body.Write(new byte[10], 0, 0);
                 Assert.True(context.Response.HasStarted);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 0);
@@ -268,7 +268,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.ShouldBuffer = true;
                 for (int i = 0; i < 4; i++)
                 {
@@ -299,7 +299,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.ShouldBuffer = true;
                 for (int i = 0; i < 4; i++)
                 {
@@ -330,7 +330,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
@@ -351,7 +351,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 var cts = new CancellationTokenSource();
                 cts.CancelAfter(TimeSpan.FromSeconds(1));
                 // First write sends headers
@@ -373,7 +373,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
@@ -395,7 +395,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);

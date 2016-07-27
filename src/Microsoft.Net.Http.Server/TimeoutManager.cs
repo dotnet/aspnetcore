@@ -22,7 +22,6 @@
 // -----------------------------------------------------------------------
 
 using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.Net.Http.Server
@@ -53,8 +52,6 @@ namespace Microsoft.Net.Http.Server
             //
             // No initialization is required because a value of zero indicates that system defaults should be used.
             _timeouts = new int[5];
-
-            LoadConfigurationSettings();
         }
 
         #region Properties
@@ -72,11 +69,11 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return GetTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.EntityBody);
+                return GetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.EntityBody);
             }
             set
             {
-                SetTimespanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.EntityBody, value);
+                SetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.EntityBody, value);
             }
         }
 
@@ -95,11 +92,11 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return GetTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.DrainEntityBody);
+                return GetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.DrainEntityBody);
             }
             set
             {
-                SetTimespanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.DrainEntityBody, value);
+                SetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.DrainEntityBody, value);
             }
         }
 
@@ -113,11 +110,11 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return GetTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.RequestQueue);
+                return GetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.RequestQueue);
             }
             set
             {
-                SetTimespanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.RequestQueue, value);
+                SetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.RequestQueue, value);
             }
         }
 
@@ -132,11 +129,11 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return GetTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.IdleConnection);
+                return GetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.IdleConnection);
             }
             set
             {
-                SetTimespanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.IdleConnection, value);
+                SetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.IdleConnection, value);
             }
         }
 
@@ -152,17 +149,19 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return GetTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.HeaderWait);
+                return GetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.HeaderWait);
             }
             set
             {
-                SetTimespanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.HeaderWait, value);
+                SetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.HeaderWait, value);
             }
         }
 
         /// <summary>
         /// The minimum send rate, in bytes-per-second, for the response. The default response send rate is 150 
         /// bytes-per-second.
+        /// 
+        /// Use 0 to indicate that system defaults should be used.
         ///
         /// To disable this timer set it to UInt32.MaxValue
         /// </summary>
@@ -181,60 +180,27 @@ namespace Microsoft.Net.Http.Server
                     throw new ArgumentOutOfRangeException("value");
                 }
 
-                SetServerTimeout(_timeouts, (uint)value);
+                SetServerTimeouts(_timeouts, (uint)value);
                 _minSendBytesPerSecond = (uint)value;
             }
         }
 
         #endregion Properties
 
-        // Initial values come from the config.  The values can then be overridden using this public API.
-        private void LoadConfigurationSettings()
-        {
-            long[] configTimeouts = new long[_timeouts.Length + 1]; // SettingsSectionInternal.Section.HttpListenerTimeouts;
-            Debug.Assert(configTimeouts != null);
-            Debug.Assert(configTimeouts.Length == (_timeouts.Length + 1));
-
-            bool setNonDefaults = false;
-            for (int i = 0; i < _timeouts.Length; i++)
-            {
-                if (configTimeouts[i] != 0)
-                {
-                    Debug.Assert(configTimeouts[i] <= ushort.MaxValue, "Timeout out of range: " + configTimeouts[i]);
-                    _timeouts[i] = (int)configTimeouts[i];
-                    setNonDefaults = true;
-                }
-            }
-
-            if (configTimeouts[5] != 0)
-            {
-                Debug.Assert(configTimeouts[5] <= uint.MaxValue, "Timeout out of range: " + configTimeouts[5]);
-                _minSendBytesPerSecond = (uint)configTimeouts[5];
-                setNonDefaults = true;
-            }
-
-            if (setNonDefaults)
-            {
-                SetServerTimeout(_timeouts, _minSendBytesPerSecond);
-            }
-        }
-
         #region Helpers
 
-        private TimeSpan GetTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE type)
+        private TimeSpan GetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE type)
         {
             // Since we maintain local state, GET is local.
             return new TimeSpan(0, 0, (int)_timeouts[(int)type]);
         }
 
-        private void SetTimespanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE type, TimeSpan value)
+        private void SetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE type, TimeSpan value)
         {
-            Int64 timeoutValue;
-
             // All timeouts are defined as USHORT in native layer (except MinSendRate, which is ULONG). Make sure that
             // timeout value is within range.
 
-            timeoutValue = Convert.ToInt64(value.TotalSeconds);
+            var timeoutValue = Convert.ToInt64(value.TotalSeconds);
 
             if (timeoutValue < 0 || timeoutValue > ushort.MaxValue)
             {
@@ -243,17 +209,15 @@ namespace Microsoft.Net.Http.Server
 
             // Use local state to get values for other timeouts. Call into the native layer and if that 
             // call succeeds, update local state.
-
-            int[] currentTimeouts = _timeouts;
-            currentTimeouts[(int)type] = (int)timeoutValue;
-            SetServerTimeout(currentTimeouts, _minSendBytesPerSecond);
+            var newTimeouts = (int[])_timeouts.Clone();
+            newTimeouts[(int)type] = (int)timeoutValue;
+            SetServerTimeouts(newTimeouts, _minSendBytesPerSecond);
             _timeouts[(int)type] = (int)timeoutValue;
         }
 
-        private unsafe void SetServerTimeout(int[] timeouts, uint minSendBytesPerSecond)
+        private unsafe void SetServerTimeouts(int[] timeouts, uint minSendBytesPerSecond)
         {
-            UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_LIMIT_INFO timeoutinfo =
-                new UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_LIMIT_INFO();
+            var timeoutinfo = new UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_LIMIT_INFO();
 
             timeoutinfo.Flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
             timeoutinfo.DrainEntityBody =
@@ -268,7 +232,7 @@ namespace Microsoft.Net.Http.Server
                 (ushort)timeouts[(int)UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.HeaderWait];
             timeoutinfo.MinSendRate = minSendBytesPerSecond;
 
-            IntPtr infoptr = new IntPtr(&timeoutinfo);
+            var infoptr = new IntPtr(&timeoutinfo);
 
             _server.UrlGroup.SetProperty(
                 UnsafeNclNativeMethods.HttpApi.HTTP_SERVER_PROPERTY.HttpServerTimeoutsProperty,

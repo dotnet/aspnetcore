@@ -1,4 +1,8 @@
 {
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
   "testRunner": "xunit",
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",

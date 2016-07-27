@@ -32,7 +32,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 await Assert.ThrowsAsync<FileNotFoundException>(() => 
                     context.Response.SendFileAsync("Missing.txt", 0, null, CancellationToken.None));
                 context.Dispose();
@@ -49,7 +49,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 context.Dispose();
 
@@ -70,7 +70,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 await context.Response.SendFileAsync(RelativeFilePath, 0, null, CancellationToken.None);
                 context.Dispose();
 
@@ -91,7 +91,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 context.Dispose();
 
@@ -112,7 +112,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 context.Dispose();
@@ -134,7 +134,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, FileLength / 2, CancellationToken.None);
                 context.Dispose();
 
@@ -155,7 +155,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
                     () => context.Response.SendFileAsync(AbsoluteFilePath, 1234567, null, CancellationToken.None));
                 context.Dispose();
@@ -172,7 +172,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
                     () => context.Response.SendFileAsync(AbsoluteFilePath, 0, 1234567, CancellationToken.None));
                 context.Dispose();
@@ -189,7 +189,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
                 context.Dispose();
 
@@ -214,7 +214,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 await context.Response.SendFileAsync(emptyFilePath, 0, null, CancellationToken.None);
                 Assert.True(context.Response.HasStartedSending);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10, CancellationToken.None);
@@ -238,7 +238,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.Headers["Content-lenGth"] = FileLength.ToString();
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
 
@@ -260,7 +260,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.Headers["Content-lenGth"] = "10";
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, 10, CancellationToken.None);
                 context.Dispose();
@@ -283,7 +283,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.Headers["Content-lenGth"] = "0";
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
                 context.Dispose();

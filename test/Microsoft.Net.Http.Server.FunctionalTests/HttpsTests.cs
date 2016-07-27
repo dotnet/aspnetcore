@@ -21,7 +21,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(Address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Dispose();
 
                 string response = await responseTask;
@@ -36,7 +36,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(Address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 byte[] body = Encoding.UTF8.GetBytes("Hello World");
                 context.Response.ContentLength = body.Length;
                 await context.Response.Body.WriteAsync(body, 0, body.Length);
@@ -54,7 +54,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(Address, "Hello World");
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 string input = new StreamReader(context.Request.Body).ReadToEnd();
                 Assert.Equal("Hello World", input);
                 context.Response.ContentLength = 11;
@@ -75,7 +75,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(Address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 var cert = await context.Request.GetClientCertificateAsync();
                 Assert.Null(cert);
                 context.Dispose();
@@ -94,7 +94,7 @@ namespace Microsoft.Net.Http.Server
                 Assert.NotNull(clientCert);
                 Task<string> responseTask = SendRequestAsync(Address, clientCert);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 var cert = await context.Request.GetClientCertificateAsync();
                 Assert.NotNull(cert);
                 context.Dispose();

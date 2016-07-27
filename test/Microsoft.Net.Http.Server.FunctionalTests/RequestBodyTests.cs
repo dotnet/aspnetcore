@@ -22,7 +22,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(address, "Hello World");
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 byte[] input = new byte[100];
                 int read = context.Request.Body.Read(input, 0, input.Length);
                 context.Response.ContentLength = read;
@@ -41,7 +41,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(address, "Hello World");
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 byte[] input = new byte[100];
                 int read = await context.Request.Body.ReadAsync(input, 0, input.Length);
                 context.Response.ContentLength = read;
@@ -60,7 +60,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(address, "Hello World");
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 byte[] input = new byte[100];
                 int read = context.Request.Body.EndRead(context.Request.Body.BeginRead(input, 0, input.Length, null, null));
                 context.Response.ContentLength = read;
@@ -80,7 +80,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(address, "Hello World");
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 byte[] input = new byte[100];
                 Assert.Throws<ArgumentNullException>("buffer", () => context.Request.Body.Read(null, 0, 1));
                 Assert.Throws<ArgumentOutOfRangeException>("offset", () => context.Request.Body.Read(input, -1, 1));
@@ -105,7 +105,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(address, content);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 byte[] input = new byte[10];
                 int read = context.Request.Body.Read(input, 0, input.Length);
                 Assert.Equal(5, read);
@@ -128,7 +128,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(address, content);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 byte[] input = new byte[10];
                 int read = await context.Request.Body.ReadAsync(input, 0, input.Length);
                 Assert.Equal(5, read);
@@ -150,7 +150,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendSocketRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 byte[] input = new byte[11];
                 int read = await context.Request.Body.ReadAsync(input, 0, input.Length);
                 Assert.Equal(10, read);
@@ -176,7 +176,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(address, "Hello World");
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
 
                 byte[] input = new byte[10];
                 var cts = new CancellationTokenSource();
@@ -201,7 +201,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(address, content);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 byte[] input = new byte[10];
                 var cts = new CancellationTokenSource();
                 int read = await context.Request.Body.ReadAsync(input, 0, input.Length, cts.Token);
@@ -225,7 +225,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(address, content);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 byte[] input = new byte[10];
                 var cts = new CancellationTokenSource();
                 cts.CancelAfter(TimeSpan.FromSeconds(5));
@@ -250,7 +250,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(address, content);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 byte[] input = new byte[10];
                 var cts = new CancellationTokenSource();
                 int read = await context.Request.Body.ReadAsync(input, 0, input.Length, cts.Token);
@@ -275,7 +275,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(address, content);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 byte[] input = new byte[10];
                 var cts = new CancellationTokenSource();
                 int read = await context.Request.Body.ReadAsync(input, 0, input.Length, cts.Token);
@@ -303,7 +303,7 @@ namespace Microsoft.Net.Http.Server
                 var client = new HttpClient();
                 var responseTask = client.PostAsync(address, content);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 byte[] input = new byte[10];
                 int read = await context.Request.Body.ReadAsync(input, 0, input.Length, context.DisconnectToken);
                 Assert.False(context.DisconnectToken.IsCancellationRequested);

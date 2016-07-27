@@ -138,17 +138,6 @@ namespace Microsoft.Net.Http.Server
             get { return _logger; }
         }
 
-        public UrlPrefixCollection UrlPrefixes
-        {
-            get { return _urlPrefixes; }
-        }
-
-        public bool BufferResponses
-        {
-            get { return _bufferResponses; }
-            set { _bufferResponses = value; }
-        }
-
         internal UrlGroup UrlGroup
         {
             get { return _urlGroup; }
@@ -164,29 +153,7 @@ namespace Microsoft.Net.Http.Server
             get { return _disconnectListener; }
         }
 
-        /// <summary>
-        /// Exposes the Http.Sys timeout configurations.  These may also be configured in the registry.
-        /// </summary>
-        public TimeoutManager TimeoutManager
-        {
-            get { return _timeoutManager; }
-        }
-
-        public AuthenticationManager AuthenticationManager
-        {
-            get { return _authManager; }
-        }
-
-        internal static bool IsSupported
-        {
-            get { return UnsafeNclNativeMethods.HttpApi.Supported; }
-        }
-
-        public bool IsListening
-        {
-            get { return _state == State.Started; }
-        }
-
+        // TODO: https://github.com/aspnet/WebListener/issues/173
         internal bool IgnoreWriteExceptions
         {
             get { return _ignoreWriteExceptions; }
@@ -195,6 +162,38 @@ namespace Microsoft.Net.Http.Server
                 CheckDisposed();
                 _ignoreWriteExceptions = value;
             }
+        }
+
+        public UrlPrefixCollection UrlPrefixes
+        {
+            get { return _urlPrefixes; }
+        }
+
+        public bool BufferResponses
+        {
+            get { return _bufferResponses; }
+            set { _bufferResponses = value; }
+        }
+
+        /// <summary>
+        /// Exposes the Http.Sys timeout configurations.  These may also be configured in the registry.
+        /// </summary>
+        public TimeoutManager TimeoutManager
+        {
+            get { return _timeoutManager; }
+        }
+
+        /// <summary>
+        /// Http.Sys authentication settings.
+        /// </summary>
+        public AuthenticationManager AuthenticationManager
+        {
+            get { return _authManager; }
+        }
+
+        public bool IsListening
+        {
+            get { return _state == State.Started; }
         }
 
         /// <summary>
@@ -208,6 +207,8 @@ namespace Microsoft.Net.Http.Server
             {
                 throw new ArgumentOutOfRangeException("limit", limit, string.Empty);
             }
+
+            // Don't try to change it if the new limit is the same
             if ((!_requestQueueLength.HasValue && limit == DefaultRequestQueueLength)
                 || (_requestQueueLength.HasValue && limit == _requestQueueLength.Value))
             {
@@ -218,6 +219,9 @@ namespace Microsoft.Net.Http.Server
             _requestQueue.SetLengthLimit(_requestQueueLength.Value);
         }
 
+        /// <summary>
+        /// Start accepting incoming requests.
+        /// </summary>
         public void Start()
         {
             CheckDisposed();
@@ -298,7 +302,6 @@ namespace Microsoft.Net.Http.Server
             Dispose(true);
         }
 
-        // old API, now private, and helper methods
         private void Dispose(bool disposing)
         {
             if (!disposing)
@@ -350,31 +353,10 @@ namespace Microsoft.Net.Http.Server
             _serverSession.Dispose();
         }
 
-        internal unsafe bool ValidateRequest(NativeRequestContext requestMemory)
-        {
-            // Block potential DOS attacks
-            if (requestMemory.RequestBlob->Headers.UnknownHeaderCount > UnknownHeaderLimit)
-            {
-                SendError(requestMemory.RequestBlob->RequestId, HttpStatusCode.BadRequest, authChallenges: null);
-                return false;
-            }
-            return true;
-        }
-
-        internal unsafe bool ValidateAuth(NativeRequestContext requestMemory)
-        {
-            var requestV2 = (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_V2*)requestMemory.RequestBlob;
-            if (!AuthenticationManager.AllowAnonymous && !AuthenticationManager.CheckAuthenticated(requestV2->pRequestInfo))
-            {
-                SendError(requestMemory.RequestBlob->RequestId, HttpStatusCode.Unauthorized,
-                    AuthenticationManager.GenerateChallenges(AuthenticationManager.AuthenticationSchemes));
-                return false;
-            }
-            return true;
-        }
-
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by callback")]
-        public Task<RequestContext> GetContextAsync()
+        /// <summary>
+        /// Accept a request from the incoming request queue.
+        /// </summary>
+        public Task<RequestContext> AcceptAsync()
         {
             AsyncAcceptContext asyncResult = null;
             try
@@ -402,6 +384,29 @@ namespace Microsoft.Net.Http.Server
             }
 
             return asyncResult.Task;
+        }
+
+        internal unsafe bool ValidateRequest(NativeRequestContext requestMemory)
+        {
+            // Block potential DOS attacks
+            if (requestMemory.RequestBlob->Headers.UnknownHeaderCount > UnknownHeaderLimit)
+            {
+                SendError(requestMemory.RequestBlob->RequestId, HttpStatusCode.BadRequest, authChallenges: null);
+                return false;
+            }
+            return true;
+        }
+
+        internal unsafe bool ValidateAuth(NativeRequestContext requestMemory)
+        {
+            var requestV2 = (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_V2*)requestMemory.RequestBlob;
+            if (!AuthenticationManager.AllowAnonymous && !AuthenticationManager.CheckAuthenticated(requestV2->pRequestInfo))
+            {
+                SendError(requestMemory.RequestBlob->RequestId, HttpStatusCode.Unauthorized,
+                    AuthenticationManager.GenerateChallenges(AuthenticationManager.AuthenticationSchemes));
+                return false;
+            }
+            return true;
         }
 
         private unsafe void SendError(ulong requestId, HttpStatusCode httpStatusCode, IList<string> authChallenges)
@@ -494,7 +499,7 @@ namespace Microsoft.Net.Http.Server
                 if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
                 {
                     // if we fail to send a 401 something's seriously wrong, abort the request
-                    RequestContext.CancelRequest(_requestQueue.Handle, requestId);
+                    UnsafeNclNativeMethods.HttpApi.HttpCancelHttpRequest(_requestQueue.Handle, requestId, IntPtr.Zero);
                 }
             }
             finally

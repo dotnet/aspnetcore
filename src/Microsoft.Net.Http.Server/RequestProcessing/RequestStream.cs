@@ -26,6 +26,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Net.Http.Server
 {
@@ -47,6 +48,12 @@ namespace Microsoft.Net.Http.Server
         {
             get { return _requestContext; }
         }
+
+        private SafeHandle RequestQueueHandle => RequestContext.Server.RequestQueue.Handle;
+
+        private ulong RequestId => RequestContext.Request.RequestId;
+
+        private ILogger Logger => RequestContext.Server.Logger;
 
         public override bool CanSeek
         {
@@ -173,8 +180,8 @@ namespace Microsoft.Net.Http.Server
 
                     statusCode =
                         UnsafeNclNativeMethods.HttpApi.HttpReceiveRequestEntityBody(
-                            _requestContext.RequestQueueHandle,
-                            _requestContext.RequestId,
+                            RequestQueueHandle,
+                            RequestId,
                             flags,
                             (IntPtr)(pBuffer + offset),
                             (uint)size,
@@ -186,7 +193,7 @@ namespace Microsoft.Net.Http.Server
                 if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
                 {
                     Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
-                    LogHelper.LogException(_requestContext.Logger, "Read", exception);
+                    LogHelper.LogException(Logger, "Read", exception);
                     Abort();
                     throw exception;
                 }
@@ -256,8 +263,8 @@ namespace Microsoft.Net.Http.Server
 
                     statusCode =
                         UnsafeNclNativeMethods.HttpApi.HttpReceiveRequestEntityBody(
-                            _requestContext.RequestQueueHandle,
-                            _requestContext.RequestId,
+                            RequestQueueHandle,
+                            RequestId,
                             flags,
                             asyncResult.PinnedBuffer,
                             (uint)size,
@@ -266,7 +273,7 @@ namespace Microsoft.Net.Http.Server
                 }
                 catch (Exception e)
                 {
-                    LogHelper.LogException(_requestContext.Logger, "BeginRead", e);
+                    LogHelper.LogException(Logger, "BeginRead", e);
                     asyncResult.Dispose();
                     throw;
                 }
@@ -282,7 +289,7 @@ namespace Microsoft.Net.Http.Server
                     else
                     {
                         Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
-                        LogHelper.LogException(_requestContext.Logger, "BeginRead", exception);
+                        LogHelper.LogException(Logger, "BeginRead", exception);
                         Abort();
                         throw exception;
                     }
@@ -368,7 +375,7 @@ namespace Microsoft.Net.Http.Server
                 var cancellationRegistration = default(CancellationTokenRegistration);
                 if (cancellationToken.CanBeCanceled)
                 {
-                    cancellationRegistration = cancellationToken.Register(RequestContext.AbortDelegate, _requestContext);
+                    cancellationRegistration = RequestContext.RegisterForCancellation(cancellationToken);
                 }
 
                 asyncResult = new RequestStreamAsyncResult(this, null, null, buffer, offset, dataRead, cancellationRegistration);
@@ -380,8 +387,8 @@ namespace Microsoft.Net.Http.Server
 
                     statusCode =
                         UnsafeNclNativeMethods.HttpApi.HttpReceiveRequestEntityBody(
-                            _requestContext.RequestQueueHandle,
-                            _requestContext.RequestId,
+                            RequestQueueHandle,
+                            RequestId,
                             flags,
                             asyncResult.PinnedBuffer,
                             (uint)size,
@@ -392,7 +399,7 @@ namespace Microsoft.Net.Http.Server
                 {
                     asyncResult.Dispose();
                     Abort();
-                    LogHelper.LogException(_requestContext.Logger, "ReadAsync", e);
+                    LogHelper.LogException(Logger, "ReadAsync", e);
                     throw;
                 }
 
@@ -409,7 +416,7 @@ namespace Microsoft.Net.Http.Server
                     else
                     {
                         Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
-                        LogHelper.LogException(_requestContext.Logger, "ReadAsync", exception);
+                        LogHelper.LogException(Logger, "ReadAsync", exception);
                         Abort();
                         throw exception;
                     }

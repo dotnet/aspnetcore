@@ -22,14 +22,12 @@
 //------------------------------------------------------------------------------
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -38,26 +36,26 @@ using static Microsoft.Net.Http.Server.UnsafeNclNativeMethods;
 
 namespace Microsoft.Net.Http.Server
 {
-    public sealed unsafe class Response
+    public sealed class Response
     {
         private ResponseState _responseState;
-        private HeaderCollection _headers;
         private string _reasonPhrase;
         private ResponseStream _nativeStream;
+        private AuthenticationSchemes _authChallenges;
+        private TimeSpan? _cacheTtl;
         private long _expectedBodyLength;
         private BoundaryType _boundaryType;
         private HttpApi.HTTP_RESPONSE_V2 _nativeResponse;
         private IList<Tuple<Func<object, Task>, object>> _onStartingActions;
         private IList<Tuple<Func<object, Task>, object>> _onCompletedActions;
 
-        private RequestContext _requestContext;
         private bool _bufferingEnabled;
 
         internal Response(RequestContext requestContext)
         {
             // TODO: Verbose log
-            _requestContext = requestContext;
-            _headers = new HeaderCollection();
+            RequestContext = requestContext;
+            Headers = new HeaderCollection();
             Reset();
         }
 
@@ -65,14 +63,13 @@ namespace Microsoft.Net.Http.Server
         {
             if (_responseState >= ResponseState.StartedSending)
             {
-                _requestContext.Abort();
                 throw new InvalidOperationException("The response has already been sent. Request Aborted.");
             }
             // We haven't started yet, or we're just buffered, we can clear any data, headers, and state so
             // that we can start over (e.g. to write an error message).
             _nativeResponse = new HttpApi.HTTP_RESPONSE_V2();
-            _headers.IsReadOnly = false;
-            _headers.Clear();
+            Headers.IsReadOnly = false;
+            Headers.Clear();
             _reasonPhrase = null;
             _boundaryType = BoundaryType.None;
             _nativeResponse.Response_V1.StatusCode = (ushort)HttpStatusCode.OK;
@@ -81,10 +78,11 @@ namespace Microsoft.Net.Http.Server
             _responseState = ResponseState.Created;
             _onStartingActions = new List<Tuple<Func<object, Task>, object>>();
             _onCompletedActions = new List<Tuple<Func<object, Task>, object>>();
-            _bufferingEnabled = _requestContext.Server.BufferResponses;
+            _bufferingEnabled = RequestContext.Server.BufferResponses;
             _expectedBodyLength = 0;
             _nativeStream = null;
-            CacheTtl = null;
+            _cacheTtl = null;
+            _authChallenges = RequestContext.Server.AuthenticationManager.AuthenticationSchemes & ~AuthenticationSchemes.AllowAnonymous;
         }
 
         private enum ResponseState
@@ -96,30 +94,19 @@ namespace Microsoft.Net.Http.Server
             Closed,
         }
 
-        private RequestContext RequestContext
-        {
-            get
-            {
-                return _requestContext;
-            }
-        }
+        private RequestContext RequestContext { get; }
 
-        private Request Request
-        {
-            get
-            {
-                return RequestContext.Request;
-            }
-        }
+        private Request Request => RequestContext.Request;
 
         public int StatusCode
         {
             get { return _nativeResponse.Response_V1.StatusCode; }
             set
             {
+                // Http.Sys automatically sends 100 Continue responses when you read from the request body.
                 if (value <= 100 || 999 < value)
                 {
-                    throw new ArgumentOutOfRangeException("value", value, string.Format(Resources.Exception_InvalidStatusCode, value));
+                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(Resources.Exception_InvalidStatusCode, value));
                 }
                 CheckResponseStarted();
                 _nativeResponse.Response_V1.StatusCode = (ushort)value;
@@ -157,26 +144,39 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal string GetReasonPhrase(int statusCode)
+        /// <summary>
+        /// The authentication challenges that will be added to the response if the status code is 401.
+        /// This must be a subset of the AuthenticationSchemes enabled on the server.
+        /// </summary>
+        public AuthenticationSchemes AuthenticationChallenges
+        {
+            get { return _authChallenges; }
+            set
+            {
+                CheckResponseStarted();
+                _authChallenges = value;
+            }
+        }
+
+        private string GetReasonPhrase(int statusCode)
         {
             string reasonPhrase = ReasonPhrase;
             if (string.IsNullOrWhiteSpace(reasonPhrase))
             {
-                // if the user hasn't set this, generated on the fly, if possible.
-                // We know this one is safe, no need to verify it as in the setter.
+                // If the user hasn't set this then it is generated on the fly if possible.
                 reasonPhrase = HttpReasonPhrase.Get(statusCode) ?? string.Empty;
             }
             return reasonPhrase;
         }
 
         // We MUST NOT send message-body when we send responses with these Status codes
-        private static readonly int[] NoResponseBody = { 100, 101, 204, 205, 304 };
+        private static readonly int[] StatusWithNoResponseBody = { 100, 101, 204, 205, 304 };
 
         private static bool CanSendResponseBody(int responseCode)
         {
-            for (int i = 0; i < NoResponseBody.Length; i++)
+            for (int i = 0; i < StatusWithNoResponseBody.Length; i++)
             {
-                if (responseCode == NoResponseBody[i])
+                if (responseCode == StatusWithNoResponseBody[i])
                 {
                     return false;
                 }
@@ -184,10 +184,7 @@ namespace Microsoft.Net.Http.Server
             return true;
         }
 
-        public HeaderCollection Headers
-        {
-            get { return _headers; }
-        }
+        public HeaderCollection Headers { get; }
 
         internal long ExpectedBodyLength
         {
@@ -261,6 +258,20 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
+        /// <summary>
+        /// Enable kernel caching for the response with the given timeout. Http.Sys determines if the response
+        /// can be cached.
+        /// </summary>
+        public TimeSpan? CacheTtl
+        {
+            get { return _cacheTtl; }
+            set
+            {
+                CheckResponseStarted();
+                _cacheTtl = value;
+            }
+        }
+
         // should only be called from RequestContext
         internal void Dispose()
         {
@@ -276,13 +287,17 @@ namespace Microsoft.Net.Http.Server
             _responseState = ResponseState.Closed;
         }
 
-        // old API, now private, and helper methods
-
         internal BoundaryType BoundaryType
         {
             get { return _boundaryType; }
         }
 
+        /// <summary>
+        /// Indicates if the response status, reason, and headers are prepared to send and can
+        /// no longer be modified. This is caused by the first write to the response body. However,
+        /// the response may not have been flushed to the network yet if the body is buffered.
+        /// See HasStartedSending.
+        /// </summary>
         public bool HasStarted
         {
             get { return _responseState >= ResponseState.Started; }
@@ -301,12 +316,13 @@ namespace Microsoft.Net.Http.Server
             get { return _responseState >= ResponseState.ComputedHeaders; }
         }
 
+        /// <summary>
+        /// Indicates the initial response has been flushed to the network and can no longer be modified or Reset.
+        /// </summary>
         public bool HasStartedSending
         {
             get { return _responseState >= ResponseState.StartedSending; }
         }
-
-        public TimeSpan? CacheTtl { get; set; }
 
         private void EnsureResponseStream()
         {
@@ -389,11 +405,10 @@ namespace Microsoft.Net.Http.Server
                 }
 
                 var cachePolicy = new HttpApi.HTTP_CACHE_POLICY();
-                var cacheTtl = CacheTtl;
-                if (cacheTtl.HasValue && cacheTtl.Value > TimeSpan.Zero)
+                if (_cacheTtl.HasValue && _cacheTtl.Value > TimeSpan.Zero)
                 {
                     cachePolicy.Policy = HttpApi.HTTP_CACHE_POLICY_TYPE.HttpCachePolicyTimeToLive;
-                    cachePolicy.SecondsToLive = (uint)Math.Min(cacheTtl.Value.Ticks / TimeSpan.TicksPerSecond, Int32.MaxValue);
+                    cachePolicy.SecondsToLive = (uint)Math.Min(_cacheTtl.Value.Ticks / TimeSpan.TicksPerSecond, Int32.MaxValue);
                 }
 
                 byte[] reasonPhraseBytes = HeaderEncoding.GetBytes(reasonPhrase);
@@ -405,7 +420,7 @@ namespace Microsoft.Net.Http.Server
                     {
                         statusCode =
                             HttpApi.HttpSendHttpResponse(
-                                RequestContext.RequestQueueHandle,
+                                RequestContext.Server.RequestQueue.Handle,
                                 Request.RequestId,
                                 (uint)flags,
                                 pResponse,
@@ -471,7 +486,7 @@ namespace Microsoft.Net.Http.Server
             var responseContentLength = ContentLength;
             var responseCloseSet = Matches(Constants.Close, responseConnectionString);
             var responseChunkedSet = Matches(Constants.Chunked, transferEncodingString);
-            var statusCanHaveBody = CanSendResponseBody(_requestContext.Response.StatusCode);
+            var statusCanHaveBody = CanSendResponseBody(RequestContext.Response.StatusCode);
 
             // Determine if the connection will be kept alive or closed.
             var keepConnectionAlive = true;
@@ -540,7 +555,7 @@ namespace Microsoft.Net.Http.Server
             return string.Equals(knownValue, input?.Trim(), StringComparison.OrdinalIgnoreCase);
         }
 
-        private List<GCHandle> SerializeHeaders(bool isOpaqueUpgrade)
+        private unsafe List<GCHandle> SerializeHeaders(bool isOpaqueUpgrade)
         {
             Headers.IsReadOnly = true; // Prohibit further modifications.
             HttpApi.HTTP_UNKNOWN_HEADER[] unknownHeaders = null;
@@ -736,12 +751,9 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal void CancelLastWrite(SafeHandle requestQueueHandle)
+        internal void CancelLastWrite()
         {
-            if (_nativeStream != null)
-            {
-                _nativeStream.CancelLastWrite(requestQueueHandle);
-            }
+            _nativeStream?.CancelLastWrite();
         }
 
         public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancel)

@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         internal AuthenticationHandler(RequestContext requestContext)
         {
             _requestContext = requestContext;
-            _authSchemes = requestContext.AuthenticationChallenges;
+            _authSchemes = requestContext.Response.AuthenticationChallenges;
             _customChallenges = AuthenticationSchemes.None;
         }
 
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 }
             }
             // A challenge was issued, it overrides any pre-set auth types.
-            _requestContext.AuthenticationChallenges = _customChallenges;
+            _requestContext.Response.AuthenticationChallenges = _customChallenges;
             return Task.FromResult(0);
         }
 

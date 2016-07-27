@@ -144,7 +144,7 @@ namespace Microsoft.Net.Http.Server
 
         internal void SetAuthenticationChallenge(RequestContext context)
         {
-            IList<string> challenges = GenerateChallenges(context.AuthenticationChallenges);
+            IList<string> challenges = GenerateChallenges(context.Response.AuthenticationChallenges);
 
             if (challenges.Count > 0)
             {

@@ -67,9 +67,11 @@ namespace Microsoft.Net.Http.Server
 
             if (cancellationToken.CanBeCanceled)
             {
-                _cancellationRegistration = cancellationToken.Register(RequestContext.AbortDelegate, _requestContext);
+                _cancellationRegistration = RequestContext.RegisterForCancellation(cancellationToken);
             }
         }
+
+        internal SafeHandle RequestQueueHandle => _requestContext.Server.RequestQueue.Handle;
 
         internal X509Certificate2 ClientCert
         {
@@ -184,8 +186,8 @@ namespace Microsoft.Net.Http.Server
 
                 uint statusCode =
                     UnsafeNclNativeMethods.HttpApi.HttpReceiveClientCertificate(
-                        RequestContext.RequestQueueHandle,
-                        RequestContext.Request.ConnectionId,
+                        RequestQueueHandle,
+                        RequestContext.Request.UConnectionId,
                         (uint)UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE,
                         RequestBlob,
                         size,
@@ -263,8 +265,8 @@ namespace Microsoft.Net.Http.Server
                     uint bytesReceived = 0;
                     errorCode =
                         UnsafeNclNativeMethods.HttpApi.HttpReceiveClientCertificate(
-                            requestContext.RequestQueueHandle,
-                            requestContext.Request.ConnectionId,
+                            requestContext.Server.RequestQueue.Handle,
+                            requestContext.Request.UConnectionId,
                             (uint)UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE,
                             asyncResult._memoryBlob,
                             asyncResult._size,

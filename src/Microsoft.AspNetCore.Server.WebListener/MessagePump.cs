@@ -29,10 +29,8 @@ using Microsoft.Net.Http.Server;
 
 namespace Microsoft.AspNetCore.Server.WebListener
 {
-    public class MessagePump : IServer
+    internal class MessagePump : IServer
     {
-        private static readonly int DefaultMaxAccepts = 5 * Environment.ProcessorCount;
-
         private readonly Microsoft.Net.Http.Server.WebListener _listener;
         private readonly ILogger _logger;
 
@@ -48,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
 
         private readonly ServerAddressesFeature _serverAddresses;
 
-        public MessagePump(IOptions<WebListenerOptions> options, ILoggerFactory loggerFactory)
+        internal MessagePump(IOptions<WebListenerOptions> options, ILoggerFactory loggerFactory)
         {
             if (options == null)
             {
@@ -66,32 +64,17 @@ namespace Microsoft.AspNetCore.Server.WebListener
             Features.Set<IServerAddressesFeature>(_serverAddresses);
 
             _processRequest = new Action<object>(ProcessRequestAsync);
-            _maxAccepts = DefaultMaxAccepts;
+            _maxAccepts = options.Value?.MaxAccepts ?? WebListenerOptions.DefaultMaxAccepts;
+            EnableResponseCaching = options.Value?.EnableResponseCaching ?? true;
             _shutdownSignal = new ManualResetEvent(false);
         }
 
-        public Microsoft.Net.Http.Server.WebListener Listener
+        internal Microsoft.Net.Http.Server.WebListener Listener
         {
             get { return _listener; }
         }
 
-        internal int MaxAccepts
-        {
-            get
-            {
-                return _maxAccepts;
-            }
-            set
-            {
-                _maxAccepts = value;
-                if (_listener.IsListening)
-                {
-                    ActivateRequestProcessingLimits();
-                }
-            }
-        }
-
-        internal bool EnableResponseCaching { get; set; } = true;
+        internal bool EnableResponseCaching { get; set; }
 
         public IFeatureCollection Features { get; }
 
@@ -123,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
 
         private void ActivateRequestProcessingLimits()
         {
-            for (int i = _acceptorCounts; i < MaxAccepts; i++)
+            for (int i = _acceptorCounts; i < _maxAccepts; i++)
             {
                 ProcessRequestsWorker();
             }
@@ -136,13 +119,13 @@ namespace Microsoft.AspNetCore.Server.WebListener
         private async void ProcessRequestsWorker()
         {
             int workerIndex = Interlocked.Increment(ref _acceptorCounts);
-            while (!_stopping && workerIndex <= MaxAccepts)
+            while (!_stopping && workerIndex <= _maxAccepts)
             {
                 // Receive a request
                 RequestContext requestContext;
                 try
                 {
-                    requestContext = await _listener.GetContextAsync().SupressContext();
+                    requestContext = await _listener.AcceptAsync().SupressContext();
                 }
                 catch (Exception exception)
                 {
@@ -236,7 +219,6 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 listener.UrlPrefixes.Add(UrlPrefix.Create(value));
             }
         }
-
 
         public void Dispose()
         {

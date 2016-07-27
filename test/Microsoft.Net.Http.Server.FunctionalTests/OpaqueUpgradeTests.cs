@@ -22,7 +22,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> clientTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 byte[] body = Encoding.UTF8.GetBytes("Hello World");
                 context.Response.Body.Write(body, 0, body.Length);
 
@@ -44,7 +44,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<Stream> clientTask = SendOpaqueRequestAsync("GET", address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.True(context.IsUpgradableRequest);
                 context.Response.Headers["Upgrade"] = "WebSocket"; // Win8.1 blocks anything but WebSocket
                 Stream serverStream = await context.UpgradeAsync();
@@ -88,7 +88,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<Stream> clientTask = SendOpaqueRequestAsync(method, address, extraHeader);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.True(context.IsUpgradableRequest);
                 context.Response.Headers["Upgrade"] = "WebSocket"; // Win8.1 blocks anything but WebSocket
                 Stream serverStream = await context.UpgradeAsync();
@@ -128,7 +128,7 @@ namespace Microsoft.Net.Http.Server
             using (var server = Utilities.CreateHttpServer(out address))
             {
                 var clientTask = SendOpaqueRequestAsync(method, address, extraHeader);
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.False(context.IsUpgradableRequest);
                 context.Dispose();
 

@@ -29,6 +29,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using static Microsoft.Net.Http.Server.UnsafeNclNativeMethods;
 
 namespace Microsoft.Net.Http.Server
@@ -55,6 +56,12 @@ namespace Microsoft.Net.Http.Server
         {
             get { return _requestContext; }
         }
+
+        private SafeHandle RequestQueueHandle => RequestContext.Server.RequestQueue.Handle;
+
+        private ulong RequestId => RequestContext.Request.RequestId;
+
+        private ILogger Logger => RequestContext.Server.Logger;
 
         public override bool CanSeek
         {
@@ -125,7 +132,7 @@ namespace Microsoft.Net.Http.Server
             {
                 _requestContext.Abort();
                 // This is logged rather than thrown because it is too late for an exception to be visible in user code.
-                LogHelper.LogError(_requestContext.Logger, "ResponseStream::Dispose", "Fewer bytes were written than were specified in the Content-Length.");
+                LogHelper.LogError(Logger, "ResponseStream::Dispose", "Fewer bytes were written than were specified in the Content-Length.");
                 return;
             }
 
@@ -153,8 +160,8 @@ namespace Microsoft.Net.Http.Server
                     fixed (HttpApi.HTTP_DATA_CHUNK* pDataChunks = dataChunks)
                     {
                         statusCode = HttpApi.HttpSendResponseEntityBody(
-                                _requestContext.RequestQueueHandle,
-                                _requestContext.RequestId,
+                                RequestQueueHandle,
+                                RequestId,
                                 (uint)flags,
                                 (ushort)dataChunks.Length,
                                 pDataChunks,
@@ -182,7 +189,7 @@ namespace Microsoft.Net.Http.Server
                 && (!endOfRequest || (statusCode != ErrorCodes.ERROR_CONNECTION_INVALID && statusCode != ErrorCodes.ERROR_INVALID_PARAMETER)))
             {
                 Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
-                LogHelper.LogException(_requestContext.Logger, "Flush", exception);
+                LogHelper.LogException(Logger, "Flush", exception);
                 Abort();
                 throw exception;
             }
@@ -287,7 +294,7 @@ namespace Microsoft.Net.Http.Server
             var cancellationRegistration = default(CancellationTokenRegistration);
             if (cancellationToken.CanBeCanceled)
             {
-                cancellationRegistration = cancellationToken.Register(RequestContext.AbortDelegate, _requestContext);
+                cancellationRegistration = RequestContext.RegisterForCancellation(cancellationToken);
             }
 
             var flags = ComputeLeftToWrite();
@@ -311,8 +318,8 @@ namespace Microsoft.Net.Http.Server
                 else
                 {
                     statusCode = HttpApi.HttpSendResponseEntityBody(
-                        _requestContext.RequestQueueHandle,
-                        _requestContext.RequestId,
+                        RequestQueueHandle,
+                        RequestId,
                         (uint)flags,
                         asyncResult.DataChunkCount,
                         asyncResult.DataChunks,
@@ -325,7 +332,7 @@ namespace Microsoft.Net.Http.Server
             }
             catch (Exception e)
             {
-                LogHelper.LogException(_requestContext.Logger, "FlushAsync", e);
+                LogHelper.LogException(Logger, "FlushAsync", e);
                 asyncResult.Dispose();
                 Abort();
                 throw;
@@ -341,7 +348,7 @@ namespace Microsoft.Net.Http.Server
                 else
                 {
                     Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
-                    LogHelper.LogException(_requestContext.Logger, "FlushAsync", exception);
+                    LogHelper.LogException(Logger, "FlushAsync", exception);
                     Abort();
                     throw exception;
                 }
@@ -408,8 +415,7 @@ namespace Microsoft.Net.Http.Server
             }
             if (_leftToWrite == long.MinValue)
             {
-                UnsafeNclNativeMethods.HttpApi.HTTP_VERB method = _requestContext.Request.GetKnownMethod();
-                if (method == UnsafeNclNativeMethods.HttpApi.HTTP_VERB.HttpVerbHEAD)
+                if (_requestContext.Request.IsHeadMethod)
                 {
                     _leftToWrite = 0;
                 }
@@ -578,7 +584,7 @@ namespace Microsoft.Net.Http.Server
             var cancellationRegistration = default(CancellationTokenRegistration);
             if (cancellationToken.CanBeCanceled)
             {
-                cancellationRegistration = cancellationToken.Register(RequestContext.AbortDelegate, _requestContext);
+                cancellationRegistration = RequestContext.RegisterForCancellation(cancellationToken);
             }
 
             uint statusCode;
@@ -615,8 +621,8 @@ namespace Microsoft.Net.Http.Server
                 {
                     // TODO: If opaque then include the buffer data flag.
                     statusCode = HttpApi.HttpSendResponseEntityBody(
-                            _requestContext.RequestQueueHandle,
-                            _requestContext.RequestId,
+                            RequestQueueHandle,
+                            RequestId,
                             (uint)flags,
                             asyncResult.DataChunkCount,
                             asyncResult.DataChunks,
@@ -629,7 +635,7 @@ namespace Microsoft.Net.Http.Server
             }
             catch (Exception e)
             {
-                LogHelper.LogException(_requestContext.Logger, "SendFileAsync", e);
+                LogHelper.LogException(Logger, "SendFileAsync", e);
                 asyncResult.Dispose();
                 Abort();
                 throw;
@@ -645,7 +651,7 @@ namespace Microsoft.Net.Http.Server
                 else
                 {
                     Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
-                    LogHelper.LogException(_requestContext.Logger, "SendFileAsync", exception);
+                    LogHelper.LogException(Logger, "SendFileAsync", exception);
                     Abort();
                     throw exception;
                 }
@@ -713,12 +719,12 @@ namespace Microsoft.Net.Http.Server
         // Sync can only be Canceled by CancelSynchronousIo, but we don't attempt this right now.
         [SuppressMessage("Microsoft.Usage", "CA1806:DoNotIgnoreMethodResults", Justification =
             "It is safe to ignore the return value on a cancel operation because the connection is being closed")]
-        internal unsafe void CancelLastWrite(SafeHandle requestQueueHandle)
+        internal unsafe void CancelLastWrite()
         {
             ResponseStreamAsyncResult asyncState = _lastWrite;
             if (asyncState != null && !asyncState.IsCompleted)
             {
-                UnsafeNclNativeMethods.CancelIoEx(requestQueueHandle, asyncState.NativeOverlapped);
+                UnsafeNclNativeMethods.CancelIoEx(RequestQueueHandle, asyncState.NativeOverlapped);
             }
         }
 

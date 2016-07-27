@@ -20,7 +20,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(root + "/basepath/SomePath?SomeQuery");
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
 
                 // General fields
                 var request = context.Request;
@@ -64,7 +64,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(root + requestPath);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
 
                 // General fields
                 var request = context.Request;
@@ -92,7 +92,7 @@ namespace Microsoft.Net.Http.Server
             using (var server = Utilities.CreateHttpServerReturnRoot("/", out root))
             {
                 var responseTask = SendSocketRequestAsync(root, requestPath);
-                var contextTask = server.GetContextAsync();
+                var contextTask = server.AcceptAsync();
                 var response = await responseTask;
                 var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
                 Assert.Equal("400", responseStatusCode);
@@ -106,7 +106,7 @@ namespace Microsoft.Net.Http.Server
             using (var server = Utilities.CreateHttpServerReturnRoot("/", out root))
             {
                 var responseTask = SendSocketRequestAsync(root, "/%252F");
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.Equal("/%2F", context.Request.Path);
             }
         }
@@ -142,7 +142,7 @@ namespace Microsoft.Net.Http.Server
 
                 Task<string> responseTask = SendRequestAsync(root + requestUri);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 var request = context.Request;
 
                 Assert.Equal(expectedPath, request.Path);

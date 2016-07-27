@@ -23,9 +23,7 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Security.Authentication.ExtendedProtection;
 using System.Security.Claims;
 using System.Threading;
@@ -36,47 +34,31 @@ namespace Microsoft.Net.Http.Server
 {
     public sealed class RequestContext : IDisposable
     {
-        internal static readonly Action<object> AbortDelegate = Abort;
+        private static readonly Action<object> AbortDelegate = Abort;
 
-        private WebListener _server;
-        private Request _request;
-        private Response _response;
         private NativeRequestContext _memoryBlob;
-        private bool _disposed;
         private CancellationTokenSource _requestAbortSource;
         private CancellationToken? _disconnectToken;
+        private bool _disposed;
 
         internal RequestContext(WebListener server, NativeRequestContext memoryBlob)
         {
             // TODO: Verbose log
-            _server = server;
+            Server = server;
             _memoryBlob = memoryBlob;
-            _request = new Request(this, _memoryBlob);
-            _response = new Response(this);
-            _request.ReleasePins();
-            AuthenticationChallenges = server.AuthenticationManager.AuthenticationSchemes & ~AuthenticationSchemes.AllowAnonymous;
+            Request = new Request(this, _memoryBlob);
+            Response = new Response(this);
         }
 
-        public Request Request
-        {
-            get
-            {
-                return _request;
-            }
-        }
+        internal WebListener Server { get; }
 
-        public Response Response
-        {
-            get
-            {
-                return _response;
-            }
-        }
+        internal ILogger Logger => Server.Logger;
 
-        public ClaimsPrincipal User
-        {
-            get { return _request.User; }
-        }
+        public Request Request { get; }
+
+        public Response Response { get; }
+
+        public ClaimsPrincipal User => Request.User;
 
         public CancellationToken DisconnectToken
         {
@@ -86,7 +68,7 @@ namespace Microsoft.Net.Http.Server
                 // We need to be able to dispose of the registrations each request to prevent leaks.
                 if (!_disconnectToken.HasValue)
                 {
-                    var connectionDisconnectToken = _server.DisconnectListener.GetTokenForConnection(Request.ConnectionId);
+                    var connectionDisconnectToken = Server.DisconnectListener.GetTokenForConnection(Request.UConnectionId);
 
                     if (connectionDisconnectToken.CanBeCanceled)
                     {
@@ -102,64 +84,29 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal WebListener Server
-        {
-            get
-            {
-                return _server;
-            }
-        }
-
-        internal ILogger Logger
-        {
-            get { return Server.Logger; }
-        }
-
-        internal SafeHandle RequestQueueHandle
-        {
-            get
-            {
-                return _server.RequestQueue.Handle;
-            }
-        }
-
-        internal ulong RequestId
-        {
-            get
-            {
-                return Request.RequestId;
-            }
-        }
-
         public unsafe Guid TraceIdentifier
         {
             get
             {
                 // This is the base GUID used by HTTP.SYS for generating the activity ID.
                 // HTTP.SYS overwrites the first 8 bytes of the base GUID with RequestId to generate ETW activity ID.
-
                 var guid = new Guid(0xffcb4c93, 0xa57f, 0x453c, 0xb6, 0x3f, 0x84, 0x71, 0xc, 0x79, 0x67, 0xbb);
                 *((ulong*)&guid) = Request.RequestId;
                 return guid;
             }
         }
 
-        /// <summary>
-        /// The authentication challengest that will be added to the response if the status code is 401.
-        /// This must be a subset of the AuthenticationSchemes enabled on the server.
-        /// </summary>
-        public AuthenticationSchemes AuthenticationChallenges { get; set; }
-
-        public bool IsUpgradableRequest
-        {
-            get { return _request.IsUpgradable; }
-        }
+        public bool IsUpgradableRequest => Request.IsUpgradable;
 
         public Task<Stream> UpgradeAsync()
         {
-            if (!IsUpgradableRequest || _response.HasStarted)
+            if (!IsUpgradableRequest)
             {
-                throw new InvalidOperationException("This request cannot be upgraded. It is incompatible, or the response has already started.");
+                throw new InvalidOperationException("This request cannot be upgraded, it is incompatible.");
+            }
+            if (Response.HasStarted)
+            {
+                throw new InvalidOperationException("This request cannot be upgraded, the response has already started.");
             }
 
             // Set the status code and reason phrase
@@ -176,19 +123,22 @@ namespace Microsoft.Net.Http.Server
         // TODO: Public when needed
         internal bool TryGetChannelBinding(ref ChannelBinding value)
         {
-            if (!Request.IsSecureConnection)
+            if (!Request.IsHttps)
             {
                 LogHelper.LogDebug(Logger, "TryGetChannelBinding", "Channel binding requires HTTPS.");
                 return false;
             }
 
-            value = ClientCertLoader.GetChannelBindingFromTls(Server.RequestQueue, Request.ConnectionId, Logger);
+            value = ClientCertLoader.GetChannelBindingFromTls(Server.RequestQueue, Request.UConnectionId, Logger);
 
             Debug.Assert(value != null, "GetChannelBindingFromTls returned null even though OS supposedly supports Extended Protection");
             LogHelper.LogInfo(Logger, "Channel binding retrieved.");
             return value != null;
         }
 
+        /// <summary>
+        /// Flushes and completes the response.
+        /// </summary>
         public void Dispose()
         {
             if (_disposed)
@@ -204,14 +154,17 @@ namespace Microsoft.Net.Http.Server
                 {
                     _requestAbortSource.Dispose();
                 }
-                _response.Dispose();
+                Response.Dispose();
             }
             finally
             {
-                _request.Dispose();
+                Request.Dispose();
             }
         }
 
+        /// <summary>
+        /// Forcibly terminate and dispose the request, closing the connection if necessary.
+        /// </summary>
         public void Abort()
         {
             // May be called from Dispose() code path, don't check _disposed.
@@ -229,8 +182,8 @@ namespace Microsoft.Net.Http.Server
                 }
                 _requestAbortSource.Dispose();
             }
-            ForceCancelRequest(RequestQueueHandle, _request.RequestId);
-            _request.Dispose();
+            ForceCancelRequest();
+            Request.Dispose();
         }
 
         private static void Abort(object state)
@@ -239,30 +192,25 @@ namespace Microsoft.Net.Http.Server
             context.Abort();
         }
 
-        // This is only called while processing incoming requests.  We don't have to worry about canceling 
-        // any response writes.
-        [SuppressMessage("Microsoft.Usage", "CA1806:DoNotIgnoreMethodResults", Justification =
-            "It is safe to ignore the return value on a cancel operation because the connection is being closed")]
-        internal static void CancelRequest(SafeHandle requestQueueHandle, ulong requestId)
+        internal CancellationTokenRegistration RegisterForCancellation(CancellationToken cancellationToken)
         {
-            UnsafeNclNativeMethods.HttpApi.HttpCancelHttpRequest(requestQueueHandle, requestId,
-                IntPtr.Zero);
+            return cancellationToken.Register(AbortDelegate, this);
         }
 
         // The request is being aborted, but large writes may be in progress. Cancel them.
-        internal void ForceCancelRequest(SafeHandle requestQueueHandle, ulong requestId)
+        internal void ForceCancelRequest()
         {
             try
             {
-                uint statusCode = UnsafeNclNativeMethods.HttpApi.HttpCancelHttpRequest(requestQueueHandle, requestId,
-                    IntPtr.Zero);
+                var statusCode = UnsafeNclNativeMethods.HttpApi.HttpCancelHttpRequest(Server.RequestQueue.Handle,
+                    Request.RequestId, IntPtr.Zero);
 
                 // Either the connection has already dropped, or the last write is in progress.
                 // The requestId becomes invalid as soon as the last Content-Length write starts.
                 // The only way to cancel now is with CancelIoEx.
                 if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_CONNECTION_INVALID)
                 {
-                    _response.CancelLastWrite(requestQueueHandle);
+                    Response.CancelLastWrite();
                 }
             }
             catch (ObjectDisposedException)

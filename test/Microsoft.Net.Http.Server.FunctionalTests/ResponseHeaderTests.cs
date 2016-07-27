@@ -22,7 +22,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Dispose();
 
                 HttpResponseMessage response = await responseTask;
@@ -44,7 +44,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address, usehttp11: false);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Dispose();
 
                 HttpResponseMessage response = await responseTask;
@@ -67,7 +67,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendHeadRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Dispose();
 
                 HttpResponseMessage response = await responseTask;
@@ -89,7 +89,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendHeadRequestAsync(address, usehttp11: false);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Dispose();
 
                 HttpResponseMessage response = await responseTask;
@@ -112,7 +112,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendHeadRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.ContentLength = 20;
                 context.Dispose();
 
@@ -135,7 +135,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.StatusCode = 204; // No Content
                 context.Dispose();
 
@@ -158,7 +158,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendHeadRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.StatusCode = 204; // No Content
                 context.Dispose();
 
@@ -182,7 +182,7 @@ namespace Microsoft.Net.Http.Server
                 WebRequest request = WebRequest.Create(address);
                 Task<WebResponse> responseTask = request.GetResponseAsync();
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 var responseHeaders = context.Response.Headers;
                 responseHeaders["WWW-Authenticate"] = "custom1";
                 context.Dispose();
@@ -207,7 +207,7 @@ namespace Microsoft.Net.Http.Server
                 WebRequest request = WebRequest.Create(address);
                 Task<WebResponse> responseTask = request.GetResponseAsync();
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 var responseHeaders = context.Response.Headers;
                 responseHeaders["WWW-Authenticate"] = new[] { "custom1, and custom2", "custom3" };
                 context.Dispose();
@@ -236,7 +236,7 @@ namespace Microsoft.Net.Http.Server
                 WebRequest request = WebRequest.Create(address);
                 Task<WebResponse> responseTask = request.GetResponseAsync();
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 var responseHeaders = context.Response.Headers;
                 responseHeaders["Custom-Header1"] = new[] { "custom1, and custom2", "custom3" };
                 context.Dispose();
@@ -264,7 +264,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 var responseHeaders = context.Response.Headers;
                 responseHeaders["Connection"] = "Close";
                 context.Dispose();
@@ -284,7 +284,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address, usehttp11: false);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Dispose();
 
                 HttpResponseMessage response = await responseTask;
@@ -307,7 +307,7 @@ namespace Microsoft.Net.Http.Server
                     request.Version = new Version(1, 0);
                     Task<HttpResponseMessage> responseTask = client.SendAsync(request);
 
-                    var context = await server.GetContextAsync();
+                    var context = await server.AcceptAsync();
                     var responseHeaders = context.Response.Headers;
                     responseHeaders["Transfer-Encoding"] = "chunked";
                     var responseBytes = Encoding.ASCII.GetBytes("10\r\nManually Chunked\r\n0\r\n\r\n");
@@ -335,7 +335,7 @@ namespace Microsoft.Net.Http.Server
                 // Http.Sys does not support 1.0 keep-alives.
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address, usehttp11: false, sendKeepAlive: true);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Dispose();
 
                 HttpResponseMessage response = await responseTask;
@@ -353,7 +353,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 var responseHeaders = context.Response.Headers;
 
                 responseHeaders["Custom1"] = new[] { "value1a", "value1b" };
@@ -389,7 +389,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 var responseHeaders = context.Response.Headers;
 
                 responseHeaders["Custom1"] = new[] { "value1a", "value1b" };
@@ -443,7 +443,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
 
                 var responseHeaders = context.Response.Headers;
 

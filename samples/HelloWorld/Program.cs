@@ -18,13 +18,13 @@ namespace HelloWorld
         {
             using (WebListener listener = new WebListener())
             {
-                listener.UrlPrefixes.Add(UrlPrefix.Create("http://localhost:8080"));
+                listener.UrlPrefixes.Add("http://localhost:8080");
                 listener.Start();
 
                 Console.WriteLine("Running...");
                 while (true)
                 {
-                    RequestContext context = await listener.GetContextAsync();
+                    RequestContext context = await listener.AcceptAsync();
                     Console.WriteLine("Accepted");
 
                     // Context:

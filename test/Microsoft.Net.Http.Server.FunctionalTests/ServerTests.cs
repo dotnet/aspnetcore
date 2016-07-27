@@ -23,7 +23,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Dispose();
 
                 var response = await responseTask;
@@ -39,7 +39,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(address);
                 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.ContentLength = 11;
                 using (var writer = new StreamWriter(context.Response.Body))
                 {
@@ -59,7 +59,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address, "Hello World");
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 string input = new StreamReader(context.Request.Body).ReadToEnd();
                 Assert.Equal("Hello World", input);
                 context.Response.ContentLength = 11;
@@ -86,7 +86,7 @@ namespace Microsoft.Net.Http.Server
                 {
                     var responseTask = client.GetAsync(address);
 
-                    var context = await server.GetContextAsync();
+                    var context = await server.AcceptAsync();
                     var ct = context.DisconnectToken;
                     Assert.True(ct.CanBeCanceled, "CanBeCanceled");
                     Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
@@ -115,7 +115,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 var ct = context.DisconnectToken;
                 Assert.True(ct.CanBeCanceled, "CanBeCanceled");
                 Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
@@ -125,7 +125,7 @@ namespace Microsoft.Net.Http.Server
                 Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
 #if !NETCOREAPP1_0
                 // HttpClient re-tries the request because it doesn't know if the request was received.
-                context = await server.GetContextAsync();
+                context = await server.AcceptAsync();
                 context.Abort();
 #endif
                 await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
@@ -143,7 +143,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 var ct = context.DisconnectToken;
                 Assert.True(ct.CanBeCanceled, "CanBeCanceled");
                 Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
@@ -174,7 +174,7 @@ namespace Microsoft.Net.Http.Server
                 server.SetRequestQueueLimit(1001);
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Dispose();
 
                 var response = await responseTask;
@@ -190,7 +190,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.Equal(string.Empty, context.Request.PathBase);
                 Assert.Equal("/", context.Request.Path);
                 context.Dispose();
@@ -203,7 +203,7 @@ namespace Microsoft.Net.Http.Server
 
                 responseTask = SendRequestAsync(address);
 
-                context = await server.GetContextAsync();
+                context = await server.AcceptAsync();
                 Assert.Equal("/pathbase", context.Request.PathBase);
                 Assert.Equal("/", context.Request.Path);
                 context.Dispose();
@@ -223,7 +223,7 @@ namespace Microsoft.Net.Http.Server
                 server.UrlPrefixes.Add(address);
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.Equal("/pathbase", context.Request.PathBase);
                 Assert.Equal("/", context.Request.Path);
                 context.Dispose();
@@ -235,7 +235,7 @@ namespace Microsoft.Net.Http.Server
 
                 responseTask = SendRequestAsync(address);
 
-                context = await server.GetContextAsync();
+                context = await server.AcceptAsync();
                 Assert.Equal(string.Empty, context.Request.PathBase);
                 Assert.Equal("/pathbase/", context.Request.Path);
                 context.Dispose();

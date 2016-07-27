@@ -22,7 +22,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> clientTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 byte[] body = Encoding.UTF8.GetBytes("Hello World");
                 context.Response.Body.Write(body, 0, body.Length);
 
@@ -43,7 +43,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<WebSocket> clientTask = SendWebSocketRequestAsync(ConvertToWebSocketAddress(address));
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.True(context.IsUpgradableRequest);
                 WebSocket serverWebSocket = await context.AcceptWebSocketAsync();
                 WebSocket clientWebSocket = await clientTask;
@@ -61,7 +61,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<WebSocket> clientTask = SendWebSocketRequestAsync(ConvertToWebSocketAddress(address));
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.True(context.IsWebSocketRequest());
                 WebSocket serverWebSocket = await context.AcceptWebSocketAsync();
                 WebSocket clientWebSocket = await clientTask;

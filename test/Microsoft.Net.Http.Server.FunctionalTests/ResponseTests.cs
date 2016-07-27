@@ -18,7 +18,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.Equal(200, context.Response.StatusCode);
                 context.Dispose();
 
@@ -38,7 +38,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.StatusCode = 201;
                 // TODO: env["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
                 context.Dispose();
@@ -59,7 +59,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.StatusCode = 201;
                 context.Response.ReasonPhrase = "CustomReasonPhrase";
                 // TODO: env["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
@@ -81,7 +81,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 context.Response.StatusCode = 901;
                 context.Dispose();
 
@@ -100,7 +100,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.Throws<ArgumentOutOfRangeException>(() => { context.Response.StatusCode = 100; });
                 context.Dispose();
 
@@ -116,7 +116,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.Throws<ArgumentOutOfRangeException>(() => { context.Response.StatusCode = 0; });
                 context.Dispose();
 

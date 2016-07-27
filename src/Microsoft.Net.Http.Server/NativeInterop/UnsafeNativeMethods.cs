@@ -1105,7 +1105,8 @@ namespace Microsoft.Net.Http.Server
                 }
             }
 
-            private static unsafe string GetVerb(HTTP_REQUEST* request, long fixup)
+            // This requires the HTTP_REQUEST to still be pinned in its original location.
+            internal static unsafe string GetVerb(HTTP_REQUEST* request)
             {
                 string verb = null;
 
@@ -1115,31 +1116,7 @@ namespace Microsoft.Net.Http.Server
                 }
                 else if (request->Verb == HTTP_VERB.HttpVerbUnknown && request->pUnknownVerb != null)
                 {
-                    verb = HeaderEncoding.GetString(request->pUnknownVerb + fixup, request->UnknownVerbLength);
-                }
-
-                return verb;
-            }
-
-            internal static unsafe string GetVerb(byte[] memoryBlob, int requestOffset, IntPtr originalAddress)
-            {
-                fixed (byte* pMemoryBlob = memoryBlob)
-                {
-                    return GetVerb((HTTP_REQUEST*)(pMemoryBlob + requestOffset), pMemoryBlob - (byte*)originalAddress);
-                }
-            }
-
-            internal static HTTP_VERB GetKnownVerb(byte[] memoryBlob, int requestOffset, IntPtr originalAddress)
-            {
-                // Return value.
-                HTTP_VERB verb = HTTP_VERB.HttpVerbUnknown;
-                fixed (byte* pMemoryBlob = memoryBlob)
-                {
-                    HTTP_REQUEST* request = (HTTP_REQUEST*)(pMemoryBlob + requestOffset);
-                    if ((int)request->Verb > (int)HTTP_VERB.HttpVerbUnparsed && (int)request->Verb < (int)HTTP_VERB.HttpVerbMaximum)
-                    {
-                        verb = request->Verb;
-                    }
+                    verb = HeaderEncoding.GetString(request->pUnknownVerb, request->UnknownVerbLength);
                 }
 
                 return verb;

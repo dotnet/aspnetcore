@@ -25,16 +25,16 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.NotNull(context.User);
                 Assert.False(context.User.Identity.IsAuthenticated);
                 if (authType == AuthenticationSchemes.AllowAnonymous)
                 {
-                    Assert.Equal(AuthenticationSchemes.None, context.AuthenticationChallenges);
+                    Assert.Equal(AuthenticationSchemes.None, context.Response.AuthenticationChallenges);
                 }
                 else
                 {
-                    Assert.Equal(authType, context.AuthenticationChallenges);
+                    Assert.Equal(authType, context.Response.AuthenticationChallenges);
                 }
                 context.Dispose();
 
@@ -57,7 +57,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var contextTask = server.GetContextAsync(); // Fails when the server shuts down, the challenge happens internally.
+                var contextTask = server.AcceptAsync(); // Fails when the server shuts down, the challenge happens internally.
                 var response = await responseTask;
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
                 Assert.Equal(authType.ToString(), response.Headers.WwwAuthenticate.ToString(), StringComparer.OrdinalIgnoreCase);
@@ -77,10 +77,10 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.NotNull(context.User);
                 Assert.False(context.User.Identity.IsAuthenticated);
-                Assert.Equal(authType, context.AuthenticationChallenges);
+                Assert.Equal(authType, context.Response.AuthenticationChallenges);
                 context.Response.StatusCode = 401;
                 context.Dispose();
 
@@ -104,10 +104,10 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.NotNull(context.User);
                 Assert.False(context.User.Identity.IsAuthenticated);
-                Assert.Equal(authType, context.AuthenticationChallenges);
+                Assert.Equal(authType, context.Response.AuthenticationChallenges);
                 context.Response.StatusCode = 401;
                 context.Dispose();
 
@@ -130,17 +130,17 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address, useDefaultCredentials: true);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.NotNull(context.User);
                 Assert.False(context.User.Identity.IsAuthenticated);
-                Assert.Equal(authType, context.AuthenticationChallenges);
+                Assert.Equal(authType, context.Response.AuthenticationChallenges);
                 context.Response.StatusCode = 401;
                 context.Dispose();
 
-                context = await server.GetContextAsync();
+                context = await server.AcceptAsync();
                 Assert.NotNull(context.User);
                 Assert.True(context.User.Identity.IsAuthenticated);
-                Assert.Equal(authType, context.AuthenticationChallenges);
+                Assert.Equal(authType, context.Response.AuthenticationChallenges);
                 context.Dispose();
 
                 var response = await responseTask;
@@ -161,10 +161,10 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address, useDefaultCredentials: true);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.NotNull(context.User);
                 Assert.True(context.User.Identity.IsAuthenticated);
-                Assert.Equal(authType, context.AuthenticationChallenges);
+                Assert.Equal(authType, context.Response.AuthenticationChallenges);
                 context.Dispose();
 
                 var response = await responseTask;
@@ -181,10 +181,10 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address, useDefaultCredentials: true);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.NotNull(context.User);
                 Assert.True(context.User.Identity.IsAuthenticated);
-                Assert.Equal(AuthenticationSchemes.Kerberos, context.AuthenticationChallenges);
+                Assert.Equal(AuthenticationSchemes.Kerberos, context.Response.AuthenticationChallenges);
                 context.Dispose();
 
                 var response = await responseTask;
@@ -201,10 +201,10 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
-                var context = await server.GetContextAsync();
+                var context = await server.AcceptAsync();
                 Assert.NotNull(context.User);
                 Assert.False(context.User.Identity.IsAuthenticated);
-                Assert.Equal(AuthenticationSchemes.Kerberos, context.AuthenticationChallenges);
+                Assert.Equal(AuthenticationSchemes.Kerberos, context.Response.AuthenticationChallenges);
                 context.Response.StatusCode = 401;
                 context.Dispose();
 
