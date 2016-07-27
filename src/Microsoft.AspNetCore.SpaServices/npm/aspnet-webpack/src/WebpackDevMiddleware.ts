@@ -37,7 +37,7 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
     }
 
     // The default value, 0, means 'choose randomly'
-    const suggestedHMRPortOrZero = options.suppliedOptions.HotModuleReplacementServerPort;
+    const suggestedHMRPortOrZero = options.suppliedOptions.HotModuleReplacementServerPort || 0;
 
     const app = connect();
     const listener = app.listen(suggestedHMRPortOrZero, () => {
