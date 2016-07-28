@@ -73,10 +73,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             {
                 return await HandleSignOutCallbackAsync();
             }
-            else
-            {
-                return await base.HandleRequestAsync();
-            }
+
+            return await base.HandleRequestAsync();
         }
 
         protected virtual async Task<bool> HandleRemoteSignOutAsync()
@@ -156,7 +154,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         {
             if (context == null)
             {
-                return;
+                throw new ArgumentNullException(nameof(context));
             }
 
             Logger.EnteringOpenIdAuthenticationHandlerHandleSignOutAsync(GetType().FullName);
@@ -168,9 +166,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             var message = new OpenIdConnectMessage()
             {
-                IssuerAddress = _configuration == null ? string.Empty : (_configuration.EndSessionEndpoint ?? string.Empty),
+                IssuerAddress = _configuration?.EndSessionEndpoint ?? string.Empty,
 
-                // Redirect back of SigneOutCallbackPath first before user agent is redirected to actual post logout redirect uri
+                // Redirect back to SigneOutCallbackPath first before user agent is redirected to actual post logout redirect uri
                 PostLogoutRedirectUri = BuildRedirectUriIfRelative(Options.SignedOutCallbackPath)
             };
 
@@ -268,14 +266,13 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             if (Request.Query.TryGetValue("State", out protectedState))
             {
                 var properties = Options.StateDataFormat.Unprotect(protectedState);
-                if (!string.IsNullOrEmpty(properties.RedirectUri))
+                if (!string.IsNullOrEmpty(properties?.RedirectUri))
                 {
                     Response.Redirect(properties.RedirectUri);
                     return Task.FromResult(true);
                 }
             }
 
-            Response.Redirect("/");
             return Task.FromResult(true);
         }
 

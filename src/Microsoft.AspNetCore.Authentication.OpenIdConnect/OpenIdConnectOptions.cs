@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -130,8 +129,8 @@ namespace Microsoft.AspNetCore.Builder
         /// The uri where the user agent will be returned to after application is signed out from the identity provider.
         /// The redirect will happen after the SignedOutCallbackPath is invoked.
         /// </summary>
-        /// <remarks>This URI is optional and it can be out of the application's domain.</remarks>
-        public string PostLogoutRedirectUri { get; set; }
+        /// <remarks>This URI can be out of the application's domain. By default it points to the root.</remarks>
+        public string PostLogoutRedirectUri { get; set; } = "/";
 
         /// <summary>
         /// Gets or sets if a metadata refresh should be attempted after a SecurityTokenSignatureKeyNotFoundException. This allows for automatic
