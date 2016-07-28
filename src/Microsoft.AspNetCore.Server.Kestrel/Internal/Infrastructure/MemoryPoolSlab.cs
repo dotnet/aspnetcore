@@ -61,6 +61,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         {
             if (!_disposedValue)
             {
+                _disposedValue = true;
+
                 if (disposing)
                 {
                     // N/A: dispose managed state (managed objects).
@@ -72,8 +74,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
                 // set large fields to null.
                 Array = null;
-
-                _disposedValue = true;
             }
         }
 

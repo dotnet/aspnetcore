@@ -317,6 +317,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.ThrowsAny<InvalidOperationException>(() => scan.Skip(8));
 
             _pool.Return(block);
+            _pool.Return(nextBlock);
         }
 
         [Theory]
