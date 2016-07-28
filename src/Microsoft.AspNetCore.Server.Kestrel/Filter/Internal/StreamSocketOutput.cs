@@ -24,8 +24,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter.Internal
 
         private bool _canWrite = true;
 
-        private object _writeLock = new object();
-
         public StreamSocketOutput(string connectionId, Stream outputStream, MemoryPool memory, IKestrelTrace logger)
         {
             _connectionId = connectionId;
@@ -36,54 +34,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter.Internal
 
         public void Write(ArraySegment<byte> buffer, bool chunk)
         {
-            lock (_writeLock)
+            if (buffer.Count == 0 )
             {
-                if (buffer.Count == 0 )
-                {
-                    return;
-                }
+                return;
+            }
 
-                try
-                {
-                    if (!_canWrite)
-                    {
-                        return;
-                    }
+            if (chunk && buffer.Array != null)
+            {
+                var beginChunkBytes = ChunkWriter.BeginChunkBytes(buffer.Count);
+                _outputStream.Write(beginChunkBytes.Array, beginChunkBytes.Offset, beginChunkBytes.Count);
+            }
 
-                    if (chunk && buffer.Array != null)
-                    {
-                        var beginChunkBytes = ChunkWriter.BeginChunkBytes(buffer.Count);
-                        _outputStream.Write(beginChunkBytes.Array, beginChunkBytes.Offset, beginChunkBytes.Count);
-                    }
+            _outputStream.Write(buffer.Array ?? _nullBuffer, buffer.Offset, buffer.Count);
 
-                    _outputStream.Write(buffer.Array ?? _nullBuffer, buffer.Offset, buffer.Count);
-
-                    if (chunk && buffer.Array != null)
-                    {
-                        _outputStream.Write(_endChunkBytes, 0, _endChunkBytes.Length);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _canWrite = false;
-                    _logger.ConnectionError(_connectionId, ex);
-                }
+            if (chunk && buffer.Array != null)
+            {
+                _outputStream.Write(_endChunkBytes, 0, _endChunkBytes.Length);
             }
         }
 
         public Task WriteAsync(ArraySegment<byte> buffer, bool chunk, CancellationToken cancellationToken)
         {
-#if NET451
-            Write(buffer, chunk);
-            return TaskUtilities.CompletedTask;
-#else
             if (chunk && buffer.Array != null)
             {
                 return WriteAsyncChunked(buffer, cancellationToken);
             }
 
             return _outputStream.WriteAsync(buffer.Array ?? _nullBuffer, buffer.Offset, buffer.Count, cancellationToken);
-#endif
         }
 
         private async Task WriteAsyncChunked(ArraySegment<byte> buffer, CancellationToken cancellationToken)
