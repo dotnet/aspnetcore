@@ -91,6 +91,7 @@ cd $binFolder
 & .\service.install.bat
 & .\service.start.bat
 
+& "$PSScriptRoot\Components\EnsureAutobahn.ps1" -setupFilesShare:$setupFilesShare
+
 Write-Host "`nUpdating TeamCity service account password configuration value and Starting the team city agent service..."
 & $changePasswordScript -teamAgentServiceAccountName $teamAgentServiceAccountName -teamAgentServiceAccountPassword $teamAgentServiceAccountPassword 
-
