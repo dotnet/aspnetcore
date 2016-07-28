@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// The uri where the user agent will be returned to after application is signed out from the identity provider.
-        /// The redirect will happen after the SignoutCallbackPath is invoked.
+        /// The redirect will happen after the SignedOutCallbackPath is invoked.
         /// </summary>
         /// <remarks>This URI is optional and it can be out of the application's domain.</remarks>
         public string PostLogoutRedirectUri { get; set; }
