@@ -50,7 +50,9 @@ namespace Microsoft.AspNetCore.Builder
             AutomaticChallenge = true;
             DisplayName = OpenIdConnectDefaults.Caption;
             CallbackPath = new PathString("/signin-oidc");
+            SignedOutCallbackPath = new PathString("/signout-callback-oidc");
             RemoteSignOutPath = new PathString("/signout-oidc");
+
             Events = new OpenIdConnectEvents();
             Scope.Add("openid");
             Scope.Add("profile");
@@ -120,9 +122,15 @@ namespace Microsoft.AspNetCore.Builder
         };
 
         /// <summary>
-        /// Gets or sets the 'post_logout_redirect_uri'
+        /// The request path within the application's base path where the user agent will be returned after sign out from the identity provider.
         /// </summary>
-        /// <remarks>This is sent to the OP as the redirect for the user-agent.</remarks>
+        public PathString SignedOutCallbackPath { get; set; }
+
+        /// <summary>
+        /// The uri where the user agent will be returned to after application is signed out from the identity provider.
+        /// The redirect will happen after the <paramref name="SignoutCallbackPath"/> is invoked.
+        /// </summary>
+        /// <remarks>This URI is optional and it can be out of the application's domain.</remarks>
         public string PostLogoutRedirectUri { get; set; }
 
         /// <summary>

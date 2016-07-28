@@ -16,6 +16,7 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, Exception> _redeemingCodeForTokens;
         private static Action<ILogger, string, Exception> _enteringOpenIdAuthenticationHandlerHandleRemoteAuthenticateAsync;
         private static Action<ILogger, string, Exception> _enteringOpenIdAuthenticationHandlerHandleUnauthorizedAsync;
+        private static Action<ILogger, string, Exception> _enteringOpenIdAuthenticationHandlerHandleSignOutAsync;
         private static Action<ILogger, string, Exception> _messageReceived;
         private static Action<ILogger, Exception> _messageReceivedContextHandledResponse;
         private static Action<ILogger, Exception> _messageReceivedContextSkipped;
@@ -47,6 +48,7 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, string, Exception> _invalidSecurityTokenType;
         private static Action<ILogger, string, Exception> _unableToValidateIdToken;
         private static Action<ILogger, string, Exception> _postAuthenticationLocalRedirect;
+        private static Action<ILogger, string, Exception> _postSignOutRedirect;
         private static Action<ILogger, Exception> _remoteSignOutHandledResponse;
         private static Action<ILogger, Exception> _remoteSignOutSkipped;
         private static Action<ILogger, Exception> _remoteSignOut;
@@ -72,6 +74,10 @@ namespace Microsoft.Extensions.Logging
                 eventId: 4,
                 logLevel: LogLevel.Trace,
                 formatString: "Entering {OpenIdConnectHandlerType}'s HandleUnauthorizedAsync.");
+            _enteringOpenIdAuthenticationHandlerHandleSignOutAsync = LoggerMessage.Define<string>(
+                eventId: 14,
+                logLevel: LogLevel.Trace,
+                formatString: "Entering {OpenIdConnectHandlerType}'s HandleSignOutAsync.");
             _postAuthenticationLocalRedirect = LoggerMessage.Define<string>(
                 eventId: 5,
                 logLevel: LogLevel.Trace,
@@ -180,6 +186,10 @@ namespace Microsoft.Extensions.Logging
                 eventId: 32,
                 logLevel: LogLevel.Debug,
                 formatString: "TokenResponseReceived.Skipped");
+            _postSignOutRedirect = LoggerMessage.Define<string>(
+                eventId: 33,
+                logLevel: LogLevel.Trace,
+                formatString: "Using properties.RedirectUri for redirect post authentication: '{RedirectUri}'.");
             _userInformationReceived = LoggerMessage.Define<string>(
                eventId: 35,
                logLevel: LogLevel.Trace,
@@ -430,6 +440,11 @@ namespace Microsoft.Extensions.Logging
             _enteringOpenIdAuthenticationHandlerHandleUnauthorizedAsync(logger, openIdConnectHandlerTypeName, null);
         }
 
+        public static void EnteringOpenIdAuthenticationHandlerHandleSignOutAsync(this ILogger logger, string openIdConnectHandlerTypeName)
+        {
+            _enteringOpenIdAuthenticationHandlerHandleSignOutAsync(logger, openIdConnectHandlerTypeName, null);
+        }
+
         public static void UserInformationReceived(this ILogger logger, string user)
         {
             _userInformationReceived(logger, user, null);
@@ -438,6 +453,11 @@ namespace Microsoft.Extensions.Logging
         public static void PostAuthenticationLocalRedirect(this ILogger logger, string redirectUri)
         {
             _postAuthenticationLocalRedirect(logger, redirectUri, null);
+        }
+
+        public static void PostSignOutRedirect(this ILogger logger, string redirectUri)
+        {
+            _postSignOutRedirect(logger, redirectUri, null);
         }
 
         public static void RemoteSignOutHandledResponse(this ILogger logger)

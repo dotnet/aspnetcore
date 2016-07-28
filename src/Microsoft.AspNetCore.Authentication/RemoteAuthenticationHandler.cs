@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 return await HandleRemoteCallbackAsync();
             }
+
             return false;
         }
 
