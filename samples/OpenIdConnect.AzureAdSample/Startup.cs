@@ -81,7 +81,7 @@ namespace OpenIdConnect.AzureAdSample
                 ClientSecret = clientSecret, // for code flow
                 Authority = authority,
                 ResponseType = OpenIdConnectResponseType.CodeIdToken,
-                PostLogoutRedirectUri = "/usersignout",
+                PostLogoutRedirectUri = "/signed-out",
                 // GetClaimsFromUserInfoEndpoint = true,
                 Events = new OpenIdConnectEvents()
                 {
@@ -128,10 +128,16 @@ namespace OpenIdConnect.AzureAdSample
                 else if (context.Request.Path.Equals("/signout-remote"))
                 {
                     await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                    await context.Authentication.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties
-                    {
-                        RedirectUri = "/remote-signedout"
-                    });
+                    await context.Authentication.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+                }
+                else if (context.Request.Path.Equals("/signed-out"))
+                {
+                    await WriteHtmlAsync(context.Response, 
+                        async response =>
+                        {
+                            await response.WriteAsync($"<h1>You have been signed out.</h1>");
+                            await response.WriteAsync("<a class=\"btn btn-primary\" href=\"/signin\">Sign In</a>");
+                        });
                 }
                 else if (context.Request.Path.Equals("/remote-signedout"))
                 {
