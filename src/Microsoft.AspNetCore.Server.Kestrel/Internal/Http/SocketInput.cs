@@ -67,39 +67,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return _pinned;
         }
 
-        public void IncomingData(byte[] buffer, int offset, int count)
-        {
-            lock (_sync)
-            {
-                // Must call Add() before bytes are available to consumer, to ensure that Length is >= 0
-                _bufferSizeControl?.Add(count);
-
-                if (count > 0)
-                {
-                    if (_tail == null)
-                    {
-                        _tail = _memory.Lease();
-                    }
-
-                    var iterator = new MemoryPoolIterator(_tail, _tail.End);
-                    iterator.CopyFrom(buffer, offset, count);
-
-                    if (_head == null)
-                    {
-                        _head = _tail;
-                    }
-
-                    _tail = iterator.Block;
-                }
-                else
-                {
-                    FinReceived();
-                }
-
-                Complete();
-            }
-        }
-
         public void IncomingComplete(int count, Exception error)
         {
             lock (_sync)
@@ -154,12 +121,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                 _pinned = null;
             }
-        }
-
-        public void IncomingFin()
-        {
-            // Force a FIN
-            IncomingData(null, 0, 0);
         }
 
         private void Complete()

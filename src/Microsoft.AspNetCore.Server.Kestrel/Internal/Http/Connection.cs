@@ -144,21 +144,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             if (_filteredStreamAdapter != null)
             {
-                _filteredStreamAdapter.Abort();
-                SocketInput.IncomingFin();
                 _readInputTask.ContinueWith((task, state) =>
                 {
                     var connection = (Connection)state;
                     connection._filterContext.Connection.Dispose();
                     connection._filteredStreamAdapter.Dispose();
-                    connection.SocketInput.Dispose();
                 }, this);
             }
-            else
-            {
-                SocketInput.Dispose();
-            }
 
+            SocketInput.Dispose();
             _socketClosedTcs.TrySetResult(null);
         }
 
@@ -175,9 +169,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             _frame.PrepareRequest = _filterContext.PrepareRequest;
-
-            // Reset needs to be called here so prepare request gets applied
-            _frame.Reset();
 
             _frame.Start();
         }

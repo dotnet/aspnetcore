@@ -72,7 +72,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             _pathBase = context.ServerAddress.PathBase;
 
             FrameControl = this;
-            Reset();
         }
 
         public string ConnectionIdFeature { get; set; }
@@ -313,6 +312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         /// </summary>
         public void Start()
         {
+            Reset();
             _requestProcessingTask =
                 Task.Factory.StartNew(
                     (o) => ((Frame)o).RequestProcessingAsync(),
