@@ -76,8 +76,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 #if NET451
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            ValidateState(default(CancellationToken));
-
             var task = ReadAsync(buffer, offset, count, default(CancellationToken), state);
             if (callback != null)
             {
@@ -93,11 +91,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
         {
-            ValidateState(cancellationToken);
-
             var tcs = new TaskCompletionSource<int>(state);
-            var task = _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
-            task.AsTask().ContinueWith((task2, state2) =>
+            var task = ReadAsync(buffer, offset, count, cancellationToken);
+            task.ContinueWith((task2, state2) =>
             {
                 var tcs2 = (TaskCompletionSource<int>)state2;
                 if (task2.IsCanceled)
