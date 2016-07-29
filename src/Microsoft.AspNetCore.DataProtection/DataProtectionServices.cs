@@ -5,12 +5,14 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.Cng;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Win32;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -92,7 +94,8 @@ namespace Microsoft.Extensions.DependencyInjection
                         {
                             // Final fallback - use an ephemeral repository since we don't know where else to go.
                             // This can only be used for development scenarios.
-                            keyRepositoryDescriptor = DataProtectionServiceDescriptors.IXmlRepository_InMemory();
+                            keyRepositoryDescriptor = ServiceDescriptor.Singleton<IXmlRepository>(
+                                s => new EphemeralXmlRepository(s));
 
                             log?.UsingEphemeralKeyRepository();
                         }
@@ -106,8 +109,13 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             // Provide root key management and data protection services
-            yield return DataProtectionServiceDescriptors.IKeyManager_Default();
-            yield return DataProtectionServiceDescriptors.IDataProtectionProvider_Default();
+            yield return ServiceDescriptor.Singleton<IKeyManager>(services => new XmlKeyManager(services));
+
+            yield return ServiceDescriptor.Singleton<IDataProtectionProvider>(
+                services => DataProtectionProviderFactory.GetProviderFromServices(
+                    options: services.GetRequiredService<IOptions<DataProtectionOptions>>().Value,
+                    services: services,
+                    mustCreateImmediately: true /* this is the ultimate fallback */));
 
             // Provide services required for XML encryption
 #if !NETSTANDARD1_3 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
@@ -115,7 +123,13 @@ namespace Microsoft.Extensions.DependencyInjection
 #endif
 
             // Hook up the logic which allows populating default options
-            yield return DataProtectionServiceDescriptors.ConfigureOptions_DataProtectionOptions();
+            yield return ServiceDescriptor.Transient<IConfigureOptions<DataProtectionOptions>>(services =>
+            {
+                return new ConfigureOptions<DataProtectionOptions>(options =>
+                {
+                    options.ApplicationDiscriminator = services.GetApplicationUniqueIdentifier();
+                });
+            });
 
             // Read and apply policy from the registry, overriding any other defaults.
             bool encryptorConfigurationReadFromRegistry = false;
@@ -134,7 +148,8 @@ namespace Microsoft.Extensions.DependencyInjection
             // Finally, provide a fallback encryptor configuration if one wasn't already specified.
             if (!encryptorConfigurationReadFromRegistry)
             {
-                yield return DataProtectionServiceDescriptors.IAuthenticatedEncryptorConfiguration_Default();
+                yield return DataProtectionServiceDescriptors.IAuthenticatedEncryptorConfiguration_FromSettings(
+                    new AuthenticatedEncryptionSettings());;
             }
         }
     }
