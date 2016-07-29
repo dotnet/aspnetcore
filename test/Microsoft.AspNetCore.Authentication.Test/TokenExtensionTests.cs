@@ -81,6 +81,51 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.Equal(3, props.GetTokens().Count());
         }
 
+        [Fact]
+        public void CanUpdateTokenValues()
+        {
+            var props = new AuthenticationProperties();
+            var tokens = new List<AuthenticationToken>();
+            var tok1 = new AuthenticationToken { Name = "One", Value = "1" };
+            var tok2 = new AuthenticationToken { Name = "Two", Value = "2" };
+            var tok3 = new AuthenticationToken { Name = "Three", Value = "3" };
+            tokens.Add(tok1);
+            tokens.Add(tok2);
+            tokens.Add(tok3);
+            props.StoreTokens(tokens);
+
+            Assert.True(props.UpdateTokenValue("One", ".11"));
+            Assert.True(props.UpdateTokenValue("Two", ".22"));
+            Assert.True(props.UpdateTokenValue("Three", ".33"));
+
+            Assert.Equal(".11", props.GetTokenValue("One"));
+            Assert.Equal(".22", props.GetTokenValue("Two"));
+            Assert.Equal(".33", props.GetTokenValue("Three"));
+            Assert.Equal(3, props.GetTokens().Count());
+        }
+
+        [Fact]
+        public void UpdateTokenValueReturnsFalseForUnknownToken()
+        {
+            var props = new AuthenticationProperties();
+            var tokens = new List<AuthenticationToken>();
+            var tok1 = new AuthenticationToken { Name = "One", Value = "1" };
+            var tok2 = new AuthenticationToken { Name = "Two", Value = "2" };
+            var tok3 = new AuthenticationToken { Name = "Three", Value = "3" };
+            tokens.Add(tok1);
+            tokens.Add(tok2);
+            tokens.Add(tok3);
+            props.StoreTokens(tokens);
+
+            Assert.False(props.UpdateTokenValue("ONE", ".11"));
+            Assert.False(props.UpdateTokenValue("Jigglypuff", ".11"));
+
+            Assert.Null(props.GetTokenValue("ONE"));
+            Assert.Null(props.GetTokenValue("Jigglypuff"));
+            Assert.Equal(3, props.GetTokens().Count());
+
+        }
+
         public class TestAuthHandler : IAuthenticationHandler
         {
             private readonly AuthenticationProperties _props;
