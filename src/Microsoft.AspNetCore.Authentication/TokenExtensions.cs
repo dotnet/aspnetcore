@@ -63,6 +63,26 @@ namespace Microsoft.AspNetCore.Authentication
                 : null;
         }
 
+        public static bool UpdateTokenValue(this AuthenticationProperties properties, string tokenName, string tokenValue)
+        {
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+            if (tokenName == null)
+            {
+                throw new ArgumentNullException(nameof(tokenName));
+            }
+
+            var tokenKey = TokenKeyPrefix + tokenName;
+            if (!properties.Items.ContainsKey(tokenKey))
+            {
+                return false;
+            }
+            properties.Items[tokenKey] = tokenValue;
+            return true;
+        }
+
         public static IEnumerable<AuthenticationToken> GetTokens(this AuthenticationProperties properties)
         {
             if (properties == null)
