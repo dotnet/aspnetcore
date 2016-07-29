@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Editor
 {
     public class SpanEditHandlerTest
     {
+#pragma warning disable 618 // Ignore obsolete warning for EditorHints
         public static TheoryData<SpanEditHandler, SpanEditHandler> MatchingTestDataSet
         {
             get
@@ -127,6 +128,7 @@ namespace Microsoft.AspNetCore.Razor.Editor
                 };
             }
         }
+#pragma warning restore 618 // Ignore obsolete warning for EditorHints
 
         [Theory]
         [MemberData(nameof(MatchingTestDataSet))]

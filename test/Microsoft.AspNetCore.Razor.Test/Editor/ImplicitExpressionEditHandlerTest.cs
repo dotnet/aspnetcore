@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Editor
 {
     public class ImplicitExpressionEditHandlerTest
     {
+#pragma warning disable 618 // Ignore obsolete warning for EditorHints
         public static TheoryData<ImplicitExpressionEditHandler, ImplicitExpressionEditHandler> MatchingTestDataSet
         {
             get
@@ -253,6 +254,7 @@ namespace Microsoft.AspNetCore.Razor.Editor
                 };
             }
         }
+#pragma warning restore 618 // Ignore obsolete warning for EditorHints
 
         [Theory]
         [MemberData(nameof(MatchingTestDataSet))]

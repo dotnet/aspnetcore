@@ -269,10 +269,12 @@ namespace Microsoft.AspNetCore.Razor.Test.Framework
             });
         }
 
+#pragma warning disable 618 // Ignore obsolete warning for EditorHints
         public static SpanConstructor WithEditorHints(this SpanConstructor self, EditorHints hints)
         {
             return self.With(eh => eh.EditorHints = hints);
         }
+#pragma warning restore 618 // Ignore obsolete warning for EditorHints
     }
 
     public class UnclassifiedCodeSpanConstructor

@@ -6,9 +6,10 @@ using System;
 namespace Microsoft.AspNetCore.Razor.Editor
 {
     /// <summary>
-    /// Used within <see cref="F:SpanEditHandler.EditorHints"/>.
+    /// This class is obsolete and will be removed in a future version.
     /// </summary>
     [Flags]
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public enum EditorHints
     {
         /// <summary>

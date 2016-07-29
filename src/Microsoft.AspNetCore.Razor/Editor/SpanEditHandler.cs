@@ -29,8 +29,9 @@ namespace Microsoft.AspNetCore.Razor.Editor
         public AcceptedCharacters AcceptedCharacters { get; set; }
 
         /// <summary>
-        /// Provides a set of hints to editors which may be manipulating the document in which this span is located.
+        /// This property is obsolete and will be removed in a future version.
         /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version.")]
         public EditorHints EditorHints { get; set; }
 
         public Func<string, IEnumerable<ISymbol>> Tokenizer { get; set; }
@@ -158,7 +159,10 @@ namespace Microsoft.AspNetCore.Razor.Editor
 
         public override string ToString()
         {
-            return GetType().Name + ";Accepts:" + AcceptedCharacters + ((EditorHints == EditorHints.None) ? string.Empty : (";Hints: " + EditorHints.ToString()));
+            return GetType().Name + ";Accepts:" + AcceptedCharacters +
+#pragma warning disable 618 // Ignore obsolete warning for EditorHints
+                ((EditorHints == EditorHints.None) ? string.Empty : (";Hints: " + EditorHints.ToString()));
+#pragma warning restore 618 // Ignore obsolete warning for EditorHints
         }
 
         public override bool Equals(object obj)
@@ -167,7 +171,9 @@ namespace Microsoft.AspNetCore.Razor.Editor
             return other != null &&
                 GetType() == other.GetType() &&
                 AcceptedCharacters == other.AcceptedCharacters &&
+#pragma warning disable 618 // Ignore obsolete warning for EditorHints
                 EditorHints == other.EditorHints;
+#pragma warning restore 618 // Ignore obsolete warning for EditorHints
         }
 
         public override int GetHashCode()
