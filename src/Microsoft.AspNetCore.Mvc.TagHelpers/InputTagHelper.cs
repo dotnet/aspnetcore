@@ -189,19 +189,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             TagBuilder tagBuilder;
             switch (inputType)
             {
+                case "hidden":
+                    tagBuilder = GenerateHidden(modelExplorer);
+                    break;
+
                 case "checkbox":
                     GenerateCheckBox(modelExplorer, output);
                     return;
-
-                case "hidden":
-                    tagBuilder = Generator.GenerateHidden(
-                        ViewContext,
-                        modelExplorer,
-                        For.Name,
-                        value: For.Model,
-                        useViewData: false,
-                        htmlAttributes: null);
-                    break;
 
                 case "password":
                     tagBuilder = Generator.GeneratePassword(
@@ -361,6 +355,29 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 For.Name,
                 value: modelExplorer.Model,
                 format: format,
+                htmlAttributes: htmlAttributes);
+        }
+
+        private TagBuilder GenerateHidden(ModelExplorer modelExplorer)
+        {
+            var value = For.Model;
+            var byteArrayValue = value as byte[];
+            if (byteArrayValue != null)
+            {
+                value = Convert.ToBase64String(byteArrayValue);
+            }
+
+            var htmlAttributes = new Dictionary<string, object>
+            {
+                { "type", "hidden" }
+            };
+
+            return Generator.GenerateTextBox(
+                ViewContext,
+                modelExplorer,
+                For.Name,
+                value: value,
+                format: Format,
                 htmlAttributes: htmlAttributes);
         }
 
