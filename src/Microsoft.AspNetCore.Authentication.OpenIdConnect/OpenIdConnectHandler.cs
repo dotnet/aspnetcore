@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// Sign out the Relying Party from the OpenID provider 
+        /// Redirect user to the identity provider for sign out
         /// </summary>
         /// <returns>A task executing the sign out procedure</returns>
         protected override async Task HandleSignOutAsync(SignOutContext context)
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         protected virtual Task<bool> HandleSignOutCallbackAsync()
         {
             StringValues protectedState;
-            if (Request.Query.TryGetValue("State", out protectedState))
+            if (Request.Query.TryGetValue(OpenIdConnectParameterNames.State, out protectedState))
             {
                 var properties = Options.StateDataFormat.Unprotect(protectedState);
                 if (!string.IsNullOrEmpty(properties?.RedirectUri))
