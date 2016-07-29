@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
         {
 #if !NETSTANDARD1_3
             // Environment.GetFolderPath returns null if the user profile isn't loaded.
-            string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var folderPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             if (!String.IsNullOrEmpty(folderPath))
             {
                 return GetKeyStorageDirectoryFromBaseAppDataPath(folderPath);
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             // the %HOME% variable to build up our base key storage path.
             if (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID")))
             {
-                string homeEnvVar = Environment.GetEnvironmentVariable("HOME");
+                var homeEnvVar = Environment.GetEnvironmentVariable("HOME");
                 if (!String.IsNullOrEmpty(homeEnvVar))
                 {
                     return GetKeyStorageDirectoryFromBaseAppDataPath(homeEnvVar);
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
             if (!IsSafeFilename(friendlyName))
             {
-                string newFriendlyName = Guid.NewGuid().ToString();
+                var newFriendlyName = Guid.NewGuid().ToString();
                 _logger?.NameIsNotSafeFileName(friendlyName, newFriendlyName);
                 friendlyName = newFriendlyName;
             }
@@ -217,8 +217,8 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             // crashes mid-write, we won't end up with a corrupt .xml file.
 
             Directory.Create(); // won't throw if the directory already exists
-            string tempFilename = Path.Combine(Directory.FullName, Guid.NewGuid().ToString() + ".tmp");
-            string finalFilename = Path.Combine(Directory.FullName, filename + ".xml");
+            var tempFilename = Path.Combine(Directory.FullName, Guid.NewGuid().ToString() + ".tmp");
+            var finalFilename = Path.Combine(Directory.FullName, filename + ".xml");
 
             try
             {

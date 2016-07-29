@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // we'll not use the fallback at all.
             yield return ServiceDescriptor.Singleton<IDefaultKeyServices>(services =>
             {
-                ILogger log = services.GetLogger(typeof(DataProtectionServices));
+                var log = services.GetLogger(typeof(DataProtectionServices));
 
                 ServiceDescriptor keyEncryptorDescriptor = null;
                 ServiceDescriptor keyRepositoryDescriptor = null;
@@ -132,7 +132,7 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             // Read and apply policy from the registry, overriding any other defaults.
-            bool encryptorConfigurationReadFromRegistry = false;
+            var encryptorConfigurationReadFromRegistry = false;
             if (OSVersionUtil.IsWindows())
             {
                 foreach (var descriptor in RegistryPolicyResolver.ResolveDefaultPolicy())

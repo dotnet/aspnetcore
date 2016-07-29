@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal
         /// </summary>
         internal CacheableKeyRing WithTemporaryExtendedLifetime(DateTimeOffset now)
         {
-            TimeSpan extension = TimeSpan.FromMinutes(2);
+            var extension = TimeSpan.FromMinutes(2);
             return new CacheableKeyRing(CancellationToken.None, now + extension, KeyRing);
         }
     }

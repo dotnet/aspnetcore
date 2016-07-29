@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.DataProtection
             {
                 if (propInfo.IsDefined(typeof(ApplyPolicyAttribute)))
                 {
-                    object valueFromRegistry = key.GetValue(propInfo.Name);
+                    var valueFromRegistry = key.GetValue(propInfo.Name);
                     if (valueFromRegistry != null)
                     {
                         if (propInfo.PropertyType == typeof(string))
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.DataProtection
             {
                 foreach (string sinkFromRegistry in sinksFromRegistry.Split(';'))
                 {
-                    string candidate = sinkFromRegistry.Trim();
+                    var candidate = sinkFromRegistry.Trim();
                     if (!String.IsNullOrEmpty(candidate))
                     {
                         typeof(IKeyEscrowSink).AssertIsAssignableFrom(Type.GetType(candidate, throwOnError: true));
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// </summary>
         public static ServiceDescriptor[] ResolveDefaultPolicy()
         {
-            RegistryKey subKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\DotNetPackages\Microsoft.AspNetCore.DataProtection");
+            var subKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\DotNetPackages\Microsoft.AspNetCore.DataProtection");
             if (subKey != null)
             {
                 using (subKey)

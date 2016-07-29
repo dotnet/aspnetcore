@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 //   <value>{base64}</value>
                 // </encryptedKey>
 
-                byte[] protectedSecret = Convert.FromBase64String((string)encryptedElement.Element("value"));
+                var protectedSecret = Convert.FromBase64String((string)encryptedElement.Element("value"));
                 if (_logger.IsDebugLevelEnabled())
                 {
                     string protectionDescriptorRule;
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                     _logger.DecryptingSecretElementUsingWindowsDPAPING(protectionDescriptorRule);
                 }
 
-                using (Secret secret = DpapiSecretSerializerHelper.UnprotectWithDpapiNG(protectedSecret))
+                using (var secret = DpapiSecretSerializerHelper.UnprotectWithDpapiNG(protectedSecret))
                 {
                     return secret.ToXElement();
                 }

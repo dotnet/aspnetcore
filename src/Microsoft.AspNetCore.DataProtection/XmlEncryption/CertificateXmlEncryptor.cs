@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             //   ...
             // </EncryptedData>
 
-            XElement encryptedElement = EncryptElement(plaintextElement);
+            var encryptedElement = EncryptElement(plaintextElement);
             return new EncryptedXmlInfo(encryptedElement, typeof(EncryptedXmlDecryptor));
         }
 

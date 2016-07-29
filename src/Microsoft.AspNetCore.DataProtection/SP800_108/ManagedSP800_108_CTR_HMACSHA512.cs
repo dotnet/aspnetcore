@@ -13,13 +13,13 @@ namespace Microsoft.AspNetCore.DataProtection.SP800_108
         public static void DeriveKeys(byte[] kdk, ArraySegment<byte> label, ArraySegment<byte> context, Func<byte[], HashAlgorithm> prfFactory, ArraySegment<byte> output)
         {
             // make copies so we can mutate these local vars
-            int outputOffset = output.Offset;
-            int outputCount = output.Count;
+            var outputOffset = output.Offset;
+            var outputCount = output.Count;
 
-            using (HashAlgorithm prf = prfFactory(kdk))
+            using (var prf = prfFactory(kdk))
             {
                 // See SP800-108, Sec. 5.1 for the format of the input to the PRF routine.
-                byte[] prfInput = new byte[checked(sizeof(uint) /* [i]_2 */ + label.Count + 1 /* 0x00 */ + context.Count + sizeof(uint) /* [K]_2 */)];
+                var prfInput = new byte[checked(sizeof(uint) /* [i]_2 */ + label.Count + 1 /* 0x00 */ + context.Count + sizeof(uint) /* [K]_2 */)];
 
                 // Copy [L]_2 to prfInput since it's stable over all iterations
                 uint outputSizeInBits = (uint)checked((int)outputCount * 8);
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.DataProtection.SP800_108
                 Buffer.BlockCopy(label.Array, label.Offset, prfInput, sizeof(uint), label.Count);
                 Buffer.BlockCopy(context.Array, context.Offset, prfInput, sizeof(int) + label.Count + 1, context.Count);
 
-                int prfOutputSizeInBytes = prf.GetDigestSizeInBytes();
+                var prfOutputSizeInBytes = prf.GetDigestSizeInBytes();
                 for (uint i = 1; outputCount > 0; i++)
                 {
                     // Copy [i]_2 to prfInput since it mutates with each iteration
@@ -42,9 +42,9 @@ namespace Microsoft.AspNetCore.DataProtection.SP800_108
                     prfInput[3] = (byte)(i);
 
                     // Run the PRF and copy the results to the output buffer
-                    byte[] prfOutput = prf.ComputeHash(prfInput);
+                    var prfOutput = prf.ComputeHash(prfInput);
                     CryptoUtil.Assert(prfOutputSizeInBytes == prfOutput.Length, "prfOutputSizeInBytes == prfOutput.Length");
-                    int numBytesToCopyThisIteration = Math.Min(prfOutputSizeInBytes, outputCount);
+                    var numBytesToCopyThisIteration = Math.Min(prfOutputSizeInBytes, outputCount);
                     Buffer.BlockCopy(prfOutput, 0, output.Array, outputOffset, numBytesToCopyThisIteration);
                     Array.Clear(prfOutput, 0, prfOutput.Length); // contains key material, so delete it
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.DataProtection.SP800_108
 
         public static void DeriveKeysWithContextHeader(byte[] kdk, ArraySegment<byte> label, byte[] contextHeader, ArraySegment<byte> context, Func<byte[], HashAlgorithm> prfFactory, ArraySegment<byte> output)
         {
-            byte[] combinedContext = new byte[checked(contextHeader.Length + context.Count)];
+            var combinedContext = new byte[checked(contextHeader.Length + context.Count)];
             Buffer.BlockCopy(contextHeader, 0, combinedContext, 0, contextHeader.Length);
             Buffer.BlockCopy(context.Array, context.Offset, combinedContext, contextHeader.Length, context.Count);
             DeriveKeys(kdk, label, new ArraySegment<byte>(combinedContext), prfFactory, output);

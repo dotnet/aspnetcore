@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
             foreach (string valueName in RegistryKey.GetValueNames())
             {
-                XElement element = ReadElementFromRegKey(RegistryKey, valueName);
+                var element = ReadElementFromRegKey(RegistryKey, valueName);
                 if (element != null)
                 {
                     yield return element;
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
                     // Even though this is in HKLM, WAS ensures that applications hosted in IIS are properly isolated.
                     // See APP_POOL::EnsureSharedMachineKeyStorage in WAS source for more info.
                     // The version number will need to change if IIS hosts Core CLR directly.
-                    string aspnetAutoGenKeysBaseKeyName = Invariant($@"SOFTWARE\Microsoft\ASP.NET\4.0.30319.0\AutoGenKeys\{WindowsIdentity.GetCurrent().User.Value}");
+                    var aspnetAutoGenKeysBaseKeyName = Invariant($@"SOFTWARE\Microsoft\ASP.NET\4.0.30319.0\AutoGenKeys\{WindowsIdentity.GetCurrent().User.Value}");
                     var aspnetBaseKey = hklmBaseKey.OpenSubKey(aspnetAutoGenKeysBaseKeyName, writable: true);
                     if (aspnetBaseKey != null)
                     {
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
         {
             _logger?.ReadingDataFromRegistryKeyValue(regKey, valueName);
 
-            string data = regKey.GetValue(valueName) as string;
+            var data = regKey.GetValue(valueName) as string;
             return (!String.IsNullOrEmpty(data)) ? XElement.Parse(data) : null;
         }
 
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
             if (!IsSafeRegistryValueName(friendlyName))
             {
-                string newFriendlyName = Guid.NewGuid().ToString();
+                var newFriendlyName = Guid.NewGuid().ToString();
                 _logger?.NameIsNotSafeRegistryValueName(friendlyName, newFriendlyName);
                 friendlyName = newFriendlyName;
             }

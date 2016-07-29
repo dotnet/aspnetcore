@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
             _logger?.UsingKeyAsDefaultKey(defaultKey.KeyId);
 
-            DateTimeOffset nextAutoRefreshTime = now + GetRefreshPeriodWithJitter(_keyManagementOptions.KeyRingRefreshPeriod);
+            var nextAutoRefreshTime = now + GetRefreshPeriodWithJitter(_keyManagementOptions.KeyRingRefreshPeriod);
 
             // The cached keyring should expire at the earliest of (default key expiration, next auto-refresh time).
             // Since the refresh period and safety window are not user-settable, we can guarantee that there's at
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             // update the keyring, and all other threads will continue to use the existing cached
             // keyring while the first thread performs the update. There is an exception: if there
             // is no usable existing cached keyring, all callers must block until the keyring exists.
-            bool acquiredLock = false;
+            var acquiredLock = false;
             try
             {
                 Monitor.TryEnter(_cacheableKeyRingLockObj, (existingCacheableKeyRing != null) ? 0 : Timeout.Infinite, ref acquiredLock);

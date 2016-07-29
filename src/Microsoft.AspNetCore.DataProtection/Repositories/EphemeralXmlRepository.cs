@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
                 throw new ArgumentNullException(nameof(element));
             }
 
-            XElement cloned = new XElement(element); // makes a deep copy so caller doesn't inadvertently modify it
+            var cloned = new XElement(element); // makes a deep copy so caller doesn't inadvertently modify it
 
             // under lock for thread safety
             lock (_storedElements)

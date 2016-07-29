@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
 
         private byte[] CreateContextHeader()
         {
-            byte[] retVal = new byte[checked(
+            var retVal = new byte[checked(
                 1 /* KDF alg */
                 + 1 /* chaining mode */
                 + sizeof(uint) /* sym alg key size */
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                 BitHelpers.WriteTo(ref ptr, _hmacAlgorithmDigestLengthInBytes);
 
                 // See the design document for an explanation of the following code.
-                byte[] tempKeys = new byte[_symmetricAlgorithmSubkeyLengthInBytes + _hmacAlgorithmSubkeyLengthInBytes];
+                var tempKeys = new byte[_symmetricAlgorithmSubkeyLengthInBytes + _hmacAlgorithmSubkeyLengthInBytes];
                 fixed (byte* pbTempKeys = tempKeys)
                 {
                     byte dummy;
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
 
             // Assumption: pbCipherText := { keyModifier | IV | encryptedData | MAC(IV | encryptedPayload) }
 
-            uint cbEncryptedData = checked(cbCiphertext - (KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _hmacAlgorithmDigestLengthInBytes));
+            var cbEncryptedData = checked(cbCiphertext - (KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _hmacAlgorithmDigestLengthInBytes));
 
             // Calculate offsets
             byte* pbKeyModifier = pbCiphertext;
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
 
             // Use the KDF to recreate the symmetric encryption and HMAC subkeys
             // We'll need a temporary buffer to hold them
-            uint cbTempSubkeys = checked(_symmetricAlgorithmSubkeyLengthInBytes + _hmacAlgorithmSubkeyLengthInBytes);
+            var cbTempSubkeys = checked(_symmetricAlgorithmSubkeyLengthInBytes + _hmacAlgorithmSubkeyLengthInBytes);
             byte* pbTempSubkeys = stackalloc byte[checked((int)cbTempSubkeys)];
             try
             {
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             // assume PKCS#7). So unfortunately we're stuck with the temporary buffer.
             // (Querying the output size won't mutate the IV.)
             uint dwEstimatedDecryptedByteCount;
-            int ntstatus = UnsafeNativeMethods.BCryptDecrypt(
+            var ntstatus = UnsafeNativeMethods.BCryptDecrypt(
                 hKey: symmetricKeyHandle,
                 pbInput: pbInput,
                 cbInput: cbInput,
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                 dwFlags: BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
             UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
 
-            byte[] decryptedPayload = new byte[dwEstimatedDecryptedByteCount];
+            var decryptedPayload = new byte[dwEstimatedDecryptedByteCount];
             uint dwActualDecryptedByteCount;
             fixed (byte* pbDecryptedPayload = decryptedPayload)
             {
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             else
             {
                 // payload takes up only a partial buffer
-                byte[] resizedDecryptedPayload = new byte[dwActualDecryptedByteCount];
+                var resizedDecryptedPayload = new byte[dwActualDecryptedByteCount];
                 Buffer.BlockCopy(decryptedPayload, 0, resizedDecryptedPayload, 0, resizedDecryptedPayload.Length);
                 return resizedDecryptedPayload;
             }
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             UnsafeBufferUtil.BlockCopy(from: pbIV, to: pbClonedIV, byteCount: _symmetricAlgorithmBlockSizeInBytes);
 
             uint dwEncryptedBytes;
-            int ntstatus = UnsafeNativeMethods.BCryptEncrypt(
+            var ntstatus = UnsafeNativeMethods.BCryptEncrypt(
                 hKey: symmetricKeyHandle,
                 pbInput: pbInput,
                 cbInput: cbInput,
@@ -303,13 +303,13 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
         {
             // This buffer will be used to hold the symmetric encryption and HMAC subkeys
             // used in the generation of this payload.
-            uint cbTempSubkeys = checked(_symmetricAlgorithmSubkeyLengthInBytes + _hmacAlgorithmSubkeyLengthInBytes);
+            var cbTempSubkeys = checked(_symmetricAlgorithmSubkeyLengthInBytes + _hmacAlgorithmSubkeyLengthInBytes);
             byte* pbTempSubkeys = stackalloc byte[checked((int)cbTempSubkeys)];
 
             try
             {
                 // Randomly generate the key modifier and IV.
-                uint cbKeyModifierAndIV = checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes);
+                var cbKeyModifierAndIV = checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes);
                 byte* pbKeyModifierAndIV = stackalloc byte[checked((int)cbKeyModifierAndIV)];
                 _genRandom.GenRandom(pbKeyModifierAndIV, cbKeyModifierAndIV);
 
@@ -335,10 +335,10 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                 {
                     // We can't assume PKCS#7 padding (maybe the underlying provider is really using CTS),
                     // so we need to query the padded output size before we can allocate the return value array.
-                    uint cbOutputCiphertext = GetCbcEncryptedOutputSizeWithPadding(symmetricKeyHandle, pbPlaintext, cbPlaintext);
+                    var cbOutputCiphertext = GetCbcEncryptedOutputSizeWithPadding(symmetricKeyHandle, pbPlaintext, cbPlaintext);
 
                     // Allocate return value array and start copying some data
-                    byte[] retVal = new byte[checked(cbPreBuffer + KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + cbOutputCiphertext + _hmacAlgorithmDigestLengthInBytes + cbPostBuffer)];
+                    var retVal = new byte[checked(cbPreBuffer + KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + cbOutputCiphertext + _hmacAlgorithmDigestLengthInBytes + cbPostBuffer)];
                     fixed (byte* pbRetVal = retVal)
                     {
                         // Calculate offsets
@@ -395,7 +395,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             // Calling BCryptEncrypt with a null output pointer will cause it to return the total number
             // of bytes required for the output buffer.
             uint dwResult;
-            int ntstatus = UnsafeNativeMethods.BCryptEncrypt(
+            var ntstatus = UnsafeNativeMethods.BCryptEncrypt(
                 hKey: symmetricKeyHandle,
                 pbInput: pbInput,
                 cbInput: cbInput,

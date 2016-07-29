@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             element.Save(memoryStream);
 
 #if !NETSTANDARD1_3
-            byte[] underlyingBuffer = memoryStream.GetBuffer();
+            var underlyingBuffer = memoryStream.GetBuffer();
             fixed (byte* __unused__ = underlyingBuffer) // try to limit this moving around in memory while we allocate
             {
                 try
@@ -168,13 +168,13 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         /// </summary>
         public static XElement ToXElement(this Secret secret)
         {
-            byte[] plaintextSecret = new byte[secret.Length];
+            var plaintextSecret = new byte[secret.Length];
             fixed (byte* __unused__ = plaintextSecret) // try to keep the GC from moving it around
             {
                 try
                 {
                     secret.WriteSecretIntoBuffer(new ArraySegment<byte>(plaintextSecret));
-                    MemoryStream memoryStream = new MemoryStream(plaintextSecret, writable: false);
+                    var memoryStream = new MemoryStream(plaintextSecret, writable: false);
                     return XElement.Load(memoryStream);
                 }
                 finally

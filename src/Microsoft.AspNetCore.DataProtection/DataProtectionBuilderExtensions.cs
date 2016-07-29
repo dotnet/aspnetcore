@@ -528,7 +528,7 @@ namespace Microsoft.AspNetCore.DataProtection
         private static void RemoveAllServicesOfType(IServiceCollection services, Type serviceType)
         {
             // We go backward since we're modifying the collection in-place.
-            for (int i = services.Count - 1; i >= 0; i--)
+            for (var i = services.Count - 1; i >= 0; i--)
             {
                 if (services[i]?.ServiceType == serviceType)
                 {

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.DataProtection
                 return arraySegment.Array;
             }
 
-            byte[] retVal = new byte[arraySegment.Count];
+            var retVal = new byte[arraySegment.Count];
             Buffer.BlockCopy(arraySegment.Array, arraySegment.Offset, retVal, 0, retVal.Length);
             return retVal;
         }

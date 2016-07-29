@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.DataProtection.SP800_108
     {
         public static void DeriveKeyWithContextHeader(this ISP800_108_CTR_HMACSHA512Provider provider, byte* pbLabel, uint cbLabel, byte[] contextHeader, byte* pbContext, uint cbContext, byte* pbDerivedKey, uint cbDerivedKey)
         {
-            uint cbCombinedContext = checked((uint)contextHeader.Length + cbContext);
+            var cbCombinedContext = checked((uint)contextHeader.Length + cbContext);
 
             // Try allocating the combined context on the stack to avoid temporary managed objects; only fall back to heap if buffers are too large.
             byte[] heapAllocatedCombinedContext = (cbCombinedContext > Constants.MAX_STACKALLOC_BYTES) ? new byte[cbCombinedContext] : null;

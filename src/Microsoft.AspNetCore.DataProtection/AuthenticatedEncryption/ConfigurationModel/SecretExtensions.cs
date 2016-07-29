@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
                 }
             }
 
-            XElement masterKeyElement = new XElement("masterKey",
+            var masterKeyElement = new XElement("masterKey",
                 new XComment(" Warning: the key below is in an unencrypted form. "),
                 new XElement("value", unprotectedSecretAsBase64String));
             masterKeyElement.MarkAsRequiresEncryption();

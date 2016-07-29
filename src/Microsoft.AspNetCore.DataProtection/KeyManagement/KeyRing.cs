@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             {
                 // simple double-check lock pattern
                 // we can't use LazyInitializer<T> because we don't have a simple value factory
-                IAuthenticatedEncryptor encryptor = Volatile.Read(ref _encryptor);
+                var encryptor = Volatile.Read(ref _encryptor);
                 if (encryptor == null)
                 {
                     lock (this)

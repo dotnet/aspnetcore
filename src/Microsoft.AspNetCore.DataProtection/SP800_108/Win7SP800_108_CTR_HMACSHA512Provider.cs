@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.DataProtection.SP800_108
             // NOTE: pbDerivedKey and cbDerivedKey are modified as data is copied to the output buffer.
 
             // this will be zero-inited
-            byte[] tempInputBuffer = new byte[checked(
+            var tempInputBuffer = new byte[checked(
                 sizeof(int) /* [i] */
                 + cbLabel /* Label */
                 + 1 /* 0x00 */

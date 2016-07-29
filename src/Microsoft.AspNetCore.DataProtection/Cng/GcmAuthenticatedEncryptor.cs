@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
 
         private byte[] CreateContextHeader()
         {
-            byte[] retVal = new byte[checked(
+            var retVal = new byte[checked(
                 1 /* KDF alg */
                 + 1 /* chaining mode */
                 + sizeof(uint) /* sym alg key size */
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                 BitHelpers.WriteTo(ref ptr, TAG_SIZE_IN_BYTES);
 
                 // See the design document for an explanation of the following code.
-                byte[] tempKeys = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
+                var tempKeys = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
                 fixed (byte* pbTempKeys = tempKeys)
                 {
                     byte dummy;
@@ -125,9 +125,9 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
 
             // Assumption: pbCipherText := { keyModifier || nonce || encryptedData || authenticationTag }
 
-            uint cbPlaintext = checked(cbCiphertext - (KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES));
+            var cbPlaintext = checked(cbCiphertext - (KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES));
 
-            byte[] retVal = new byte[cbPlaintext];
+            var retVal = new byte[cbPlaintext];
             fixed (byte* pbRetVal = retVal)
             {
                 // Calculate offsets
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
 
                         // The call to BCryptDecrypt will also validate the authentication tag
                         uint cbDecryptedBytesWritten;
-                        int ntstatus = UnsafeNativeMethods.BCryptDecrypt(
+                        var ntstatus = UnsafeNativeMethods.BCryptDecrypt(
                             hKey: decryptionSubkeyHandle,
                             pbInput: pbEncryptedData,
                             cbInput: cbPlaintext,
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             using (var keyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbKey, cbKey))
             {
                 uint cbResult;
-                int ntstatus = UnsafeNativeMethods.BCryptEncrypt(
+                var ntstatus = UnsafeNativeMethods.BCryptEncrypt(
                     hKey: keyHandle,
                     pbInput: pbPlaintextData,
                     cbInput: cbPlaintextData,
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
         {
             // Allocate a buffer to hold the key modifier, nonce, encrypted data, and tag.
             // In GCM, the encrypted output will be the same length as the plaintext input.
-            byte[] retVal = new byte[checked(cbPreBuffer + KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + cbPlaintext + TAG_SIZE_IN_BYTES + cbPostBuffer)];
+            var retVal = new byte[checked(cbPreBuffer + KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + cbPlaintext + TAG_SIZE_IN_BYTES + cbPostBuffer)];
             fixed (byte* pbRetVal = retVal)
             {
                 // Calculate offsets

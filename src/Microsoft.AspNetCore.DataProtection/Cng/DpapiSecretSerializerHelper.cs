@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
         {
             Debug.Assert(secret != null);
 
-            byte[] plaintextSecret = new byte[secret.Length];
+            var plaintextSecret = new byte[secret.Length];
             fixed (byte* pbPlaintextSecret = plaintextSecret)
             {
                 try
@@ -66,24 +66,24 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
         {
             byte dummy; // provides a valid memory address if the secret or entropy has zero length
 
-            DATA_BLOB dataIn = new DATA_BLOB()
+            var dataIn = new DATA_BLOB()
             {
                 cbData = cbSecret,
                 pbData = (pbSecret != null) ? pbSecret : &dummy
             };
-            DATA_BLOB entropy = new DATA_BLOB()
+            var entropy = new DATA_BLOB()
             {
                 cbData = cbOptionalEntropy,
                 pbData = (pbOptionalEntropy != null) ? pbOptionalEntropy : &dummy
             };
-            DATA_BLOB dataOut = default(DATA_BLOB);
+            var dataOut = default(DATA_BLOB);
 
 #if !NETSTANDARD1_3
             RuntimeHelpers.PrepareConstrainedRegions();
 #endif
             try
             {
-                bool success = UnsafeNativeMethods.CryptProtectData(
+                var success = UnsafeNativeMethods.CryptProtectData(
                     pDataIn: &dataIn,
                     szDataDescr: IntPtr.Zero,
                     pOptionalEntropy: &entropy,
@@ -93,12 +93,12 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                     pDataOut: out dataOut);
                 if (!success)
                 {
-                    int errorCode = Marshal.GetLastWin32Error();
+                    var errorCode = Marshal.GetLastWin32Error();
                     throw new CryptographicException(errorCode);
                 }
 
-                int dataLength = checked((int)dataOut.cbData);
-                byte[] retVal = new byte[dataLength];
+                var dataLength = checked((int)dataOut.cbData);
+                var retVal = new byte[dataLength];
                 Marshal.Copy((IntPtr)dataOut.pbData, retVal, 0, dataLength);
                 return retVal;
             }
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             Debug.Assert(secret != null);
             Debug.Assert(protectionDescriptorHandle != null);
 
-            byte[] plaintextSecret = new byte[secret.Length];
+            var plaintextSecret = new byte[secret.Length];
             fixed (byte* pbPlaintextSecret = plaintextSecret)
             {
                 try
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             // Perform the encryption operation, putting the protected data into LocalAlloc-allocated memory.
             LocalAllocHandle protectedData;
             uint cbProtectedData;
-            int ntstatus = UnsafeNativeMethods.NCryptProtectSecret(
+            var ntstatus = UnsafeNativeMethods.NCryptProtectSecret(
                 hDescriptor: protectionDescriptorHandle,
                 dwFlags: NCRYPT_SILENT_FLAG,
                 pbData: pbData,
@@ -162,12 +162,12 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             // Copy the data from LocalAlloc-allocated memory into a managed memory buffer.
             using (protectedData)
             {
-                byte[] retVal = new byte[cbProtectedData];
+                var retVal = new byte[cbProtectedData];
                 if (cbProtectedData > 0)
                 {
                     fixed (byte* pbRetVal = retVal)
                     {
-                        bool handleAcquired = false;
+                        var handleAcquired = false;
 #if !NETSTANDARD1_3
                         RuntimeHelpers.PrepareConstrainedRegions();
 #endif
@@ -206,24 +206,24 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
         {
             byte dummy; // provides a valid memory address if the secret or entropy has zero length
 
-            DATA_BLOB dataIn = new DATA_BLOB()
+            var dataIn = new DATA_BLOB()
             {
                 cbData = cbProtectedData,
                 pbData = (pbProtectedData != null) ? pbProtectedData : &dummy
             };
-            DATA_BLOB entropy = new DATA_BLOB()
+            var entropy = new DATA_BLOB()
             {
                 cbData = cbOptionalEntropy,
                 pbData = (pbOptionalEntropy != null) ? pbOptionalEntropy : &dummy
             };
-            DATA_BLOB dataOut = default(DATA_BLOB);
+            var dataOut = default(DATA_BLOB);
 
 #if !NETSTANDARD1_3
             RuntimeHelpers.PrepareConstrainedRegions();
 #endif
             try
             {
-                bool success = UnsafeNativeMethods.CryptUnprotectData(
+                var success = UnsafeNativeMethods.CryptUnprotectData(
                     pDataIn: &dataIn,
                     ppszDataDescr: IntPtr.Zero,
                     pOptionalEntropy: &entropy,
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                     pDataOut: out dataOut);
                 if (!success)
                 {
-                    int errorCode = Marshal.GetLastWin32Error();
+                    var errorCode = Marshal.GetLastWin32Error();
                     throw new CryptographicException(errorCode);
                 }
 
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             // First, decrypt the payload into LocalAlloc-allocated memory.
             LocalAllocHandle unencryptedPayloadHandle;
             uint cbUnencryptedPayload;
-            int ntstatus = UnsafeNativeMethods.NCryptUnprotectSecret(
+            var ntstatus = UnsafeNativeMethods.NCryptUnprotectSecret(
                 phDescriptor: IntPtr.Zero,
                 dwFlags: NCRYPT_SILENT_FLAG,
                 pbProtectedBlob: pbData,
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             // the window is extremely small and AppDomain unloads should not happen here in practice.
             using (unencryptedPayloadHandle)
             {
-                bool handleAcquired = false;
+                var handleAcquired = false;
 #if !NETSTANDARD1_3
                 RuntimeHelpers.PrepareConstrainedRegions();
 #endif
@@ -331,7 +331,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             NCryptDescriptorHandle descriptorHandle;
             LocalAllocHandle unprotectedDataHandle;
             uint cbUnprotectedData;
-            int ntstatus = UnsafeNativeMethods.NCryptUnprotectSecret(
+            var ntstatus = UnsafeNativeMethods.NCryptUnprotectSecret(
                 phDescriptor: out descriptorHandle,
                 dwFlags: NCRYPT_UNPROTECT_NO_DECRYPT,
                 pbProtectedBlob: pbData,

@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
             var EMPTY_ARRAY = new byte[0];
             var EMPTY_ARRAY_SEGMENT = new ArraySegment<byte>(EMPTY_ARRAY);
 
-            byte[] retVal = new byte[checked(
+            var retVal = new byte[checked(
                 1 /* KDF alg */
                 + 1 /* chaining mode */
                 + sizeof(uint) /* sym alg key size */
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                 + _symmetricAlgorithmBlockSizeInBytes /* ciphertext of encrypted empty string */
                 + _validationAlgorithmDigestLengthInBytes /* digest of HMACed empty string */)];
 
-            int idx = 0;
+            var idx = 0;
 
             // First is the two-byte header
             retVal[idx++] = 0; // 0x00 = SP800-108 CTR KDF w/ HMACSHA512 PRF
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
             BitHelpers.WriteTo(retVal, ref idx, _validationAlgorithmDigestLengthInBytes);
 
             // See the design document for an explanation of the following code.
-            byte[] tempKeys = new byte[_symmetricAlgorithmSubkeyLengthInBytes + _validationAlgorithmSubkeyLengthInBytes];
+            var tempKeys = new byte[_symmetricAlgorithmSubkeyLengthInBytes + _validationAlgorithmSubkeyLengthInBytes];
             ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
                 kdk: EMPTY_ARRAY,
                 label: EMPTY_ARRAY_SEGMENT,
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                     rgbKey: new ArraySegment<byte>(tempKeys, 0, _symmetricAlgorithmSubkeyLengthInBytes).AsStandaloneArray(),
                     rgbIV: new byte[_symmetricAlgorithmBlockSizeInBytes]))
                 {
-                    byte[] ciphertext = cryptoTransform.TransformFinalBlock(EMPTY_ARRAY, 0, 0);
+                    var ciphertext = cryptoTransform.TransformFinalBlock(EMPTY_ARRAY, 0, 0);
                     CryptoUtil.Assert(ciphertext != null && ciphertext.Length == _symmetricAlgorithmBlockSizeInBytes, "ciphertext != null && ciphertext.Length == _symmetricAlgorithmBlockSizeInBytes");
                     Buffer.BlockCopy(ciphertext, 0, retVal, idx, ciphertext.Length);
                 }
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
             // MAC a zero-length input string and copy the digest to the return buffer.
             using (var hashAlg = CreateValidationAlgorithm(new ArraySegment<byte>(tempKeys, _symmetricAlgorithmSubkeyLengthInBytes, _validationAlgorithmSubkeyLengthInBytes).AsStandaloneArray()))
             {
-                byte[] digest = hashAlg.ComputeHash(EMPTY_ARRAY);
+                var digest = hashAlg.ComputeHash(EMPTY_ARRAY);
                 CryptoUtil.Assert(digest != null && digest.Length == _validationAlgorithmDigestLengthInBytes, "digest != null && digest.Length == _validationAlgorithmDigestLengthInBytes");
                 Buffer.BlockCopy(digest, 0, retVal, idx, digest.Length);
             }
@@ -187,16 +187,16 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                 }
 
                 ArraySegment<byte> keyModifier = new ArraySegment<byte>(protectedPayload.Array, keyModifierOffset, ivOffset - keyModifierOffset);
-                byte[] iv = new byte[_symmetricAlgorithmBlockSizeInBytes];
+                var iv = new byte[_symmetricAlgorithmBlockSizeInBytes];
                 Buffer.BlockCopy(protectedPayload.Array, ivOffset, iv, 0, iv.Length);
 
                 // Step 2: Decrypt the KDK and use it to restore the original encryption and MAC keys.
                 // We pin all unencrypted keys to limit their exposure via GC relocation.
 
-                byte[] decryptedKdk = new byte[_keyDerivationKey.Length];
-                byte[] decryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
-                byte[] validationSubkey = new byte[_validationAlgorithmSubkeyLengthInBytes];
-                byte[] derivedKeysBuffer = new byte[checked(decryptionSubkey.Length + validationSubkey.Length)];
+                var decryptedKdk = new byte[_keyDerivationKey.Length];
+                var decryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
+                var validationSubkey = new byte[_validationAlgorithmSubkeyLengthInBytes];
+                var derivedKeysBuffer = new byte[checked(decryptionSubkey.Length + validationSubkey.Length)];
 
                 fixed (byte* __unused__1 = decryptedKdk)
                 fixed (byte* __unused__2 = decryptionSubkey)
@@ -289,8 +289,8 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                 // Step 1: Generate a random key modifier and IV for this operation.
                 // Both will be equal to the block size of the block cipher algorithm.
 
-                byte[] keyModifier = _genRandom.GenRandom(KEY_MODIFIER_SIZE_IN_BYTES);
-                byte[] iv = _genRandom.GenRandom(_symmetricAlgorithmBlockSizeInBytes);
+                var keyModifier = _genRandom.GenRandom(KEY_MODIFIER_SIZE_IN_BYTES);
+                var iv = _genRandom.GenRandom(_symmetricAlgorithmBlockSizeInBytes);
 
                 // Step 2: Copy the key modifier and the IV to the output stream since they'll act as a header.
 
@@ -302,10 +302,10 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                 // Step 3: Decrypt the KDK, and use it to generate new encryption and HMAC keys.
                 // We pin all unencrypted keys to limit their exposure via GC relocation.
 
-                byte[] decryptedKdk = new byte[_keyDerivationKey.Length];
-                byte[] encryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
-                byte[] validationSubkey = new byte[_validationAlgorithmSubkeyLengthInBytes];
-                byte[] derivedKeysBuffer = new byte[checked(encryptionSubkey.Length + validationSubkey.Length)];
+                var decryptedKdk = new byte[_keyDerivationKey.Length];
+                var encryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
+                var validationSubkey = new byte[_validationAlgorithmSubkeyLengthInBytes];
+                var derivedKeysBuffer = new byte[checked(encryptionSubkey.Length + validationSubkey.Length)];
 
                 fixed (byte* __unused__1 = decryptedKdk)
                 fixed (byte* __unused__2 = encryptionSubkey)
@@ -345,12 +345,12 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
                             {
 #if !NETSTANDARD1_3
                                 // As an optimization, avoid duplicating the underlying buffer if we're on desktop CLR.
-                                byte[] underlyingBuffer = outputStream.GetBuffer();
+                                var underlyingBuffer = outputStream.GetBuffer();
 #else
-                                byte[] underlyingBuffer = outputStream.ToArray();
+                                var underlyingBuffer = outputStream.ToArray();
 #endif
 
-                                byte[] mac = validationAlgorithm.ComputeHash(underlyingBuffer, KEY_MODIFIER_SIZE_IN_BYTES, checked((int)outputStream.Length - KEY_MODIFIER_SIZE_IN_BYTES));
+                                var mac = validationAlgorithm.ComputeHash(underlyingBuffer, KEY_MODIFIER_SIZE_IN_BYTES, checked((int)outputStream.Length - KEY_MODIFIER_SIZE_IN_BYTES));
                                 outputStream.Write(mac, 0, mac.Length);
 
                                 // At this point, outputStream := { keyModifier || IV || ciphertext || MAC(IV || ciphertext) } 
