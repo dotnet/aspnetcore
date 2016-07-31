@@ -69,6 +69,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         }
 
         // Serialization Format
+        // Creation time - UtcTicks (long)
         // Status code (int)
         // Header count (int)
         // Header(s)
@@ -78,6 +79,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         // Body (byte[])
         private static CachedResponse ReadCachedResponse(BinaryReader reader)
         {
+            var created = new DateTimeOffset(reader.ReadInt64(), TimeSpan.Zero);
             var statusCode = reader.ReadInt32();
             var headerCount = reader.ReadInt32();
             var headers = new HeaderDictionary();
@@ -90,7 +92,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             var bodyLength = reader.ReadInt32();
             var body = reader.ReadBytes(bodyLength);
 
-            return new CachedResponse { StatusCode = statusCode, Headers = headers, Body = body };
+            return new CachedResponse { Created = created, StatusCode = statusCode, Headers = headers, Body = body };
         }
 
         // Serialization Format
@@ -135,6 +137,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         private static void WriteCachedResponse(BinaryWriter writer, CachedResponse entry)
         {
             writer.Write(nameof(CachedResponse));
+            writer.Write(entry.Created.UtcTicks);
             writer.Write(entry.StatusCode);
             writer.Write(entry.Headers.Count);
             foreach (var header in entry.Headers)

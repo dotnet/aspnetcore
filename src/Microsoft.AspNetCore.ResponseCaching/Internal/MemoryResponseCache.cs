@@ -30,9 +30,15 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             _cache.Remove(key);
         }
 
-        public void Set(string key, object entry)
+        public void Set(string key, object entry, TimeSpan validFor)
         {
-            _cache.Set(key, entry);
+            _cache.Set(
+                key, 
+                entry, 
+                new MemoryCacheEntryOptions()
+                {
+                    AbsoluteExpirationRelativeToNow = validFor
+                });
         }
     }
 }

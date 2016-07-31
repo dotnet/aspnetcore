@@ -45,11 +45,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             }
         }
 
-        public void Set(string key, object entry)
+        public void Set(string key, object entry, TimeSpan validFor)
         {
             try
             {
-                _cache.Set(key, DefaultResponseCacheSerializer.Serialize(entry));
+                _cache.Set(
+                    key,
+                    DefaultResponseCacheSerializer.Serialize(entry),
+                    new DistributedCacheEntryOptions()
+                    {
+                        AbsoluteExpirationRelativeToNow = validFor
+                    });
             }
             catch
             {

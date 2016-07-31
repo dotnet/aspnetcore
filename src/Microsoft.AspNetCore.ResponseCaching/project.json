@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Http": "1.1.0-*",
+    "Microsoft.AspNetCore.Http.Extensions": "1.1.0-*",
     "Microsoft.Extensions.Caching.Memory": "1.1.0-*"
   },
   "frameworks": {

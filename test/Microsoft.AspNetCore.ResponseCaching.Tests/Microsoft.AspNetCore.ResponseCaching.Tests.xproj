@@ -7,7 +7,7 @@
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>151b2027-3936-44b9-a4a0-e1e5902125ab</ProjectGuid>
-    <RootNamespace>Microsoft.AspNet.ResponseCaching.Tests</RootNamespace>
+    <RootNamespace>Microsoft.AspNetCore.ResponseCaching.Tests</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
   </PropertyGroup>

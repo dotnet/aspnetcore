@@ -8,11 +8,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
     internal class CachedResponse
     {
+        internal DateTimeOffset Created { get; set; }
+
         internal int StatusCode { get; set; }
 
         internal IHeaderDictionary Headers { get; set; } = new HeaderDictionary();
 
         internal byte[] Body { get; set; }
-        public DateTimeOffset Created { get; set; }
     }
 }
