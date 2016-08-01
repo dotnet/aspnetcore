@@ -164,7 +164,6 @@ a {
     display: inline-block;
     border: 0;
     padding: 0;
-    outline: none;
 }
 
 .rawExceptionStackTrace {
@@ -189,7 +188,6 @@ a {
     font-size: 10px;
     position: absolute;
     left: 10px;
-    outline: none;
     background-color: #eee;
     padding: 0;
     border: 0;
