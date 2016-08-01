@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 actionModel.RouteValues.Add(routeValueProvider.RouteKey, routeValueProvider.RouteValue);
             }
-            
+
             //TODO: modify comment
             // Now we need to determine the action selection info (cross-section of routes and constraints)
             //
@@ -468,6 +468,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // 1. [HttpPost("Api/Things")]
             // 2. [HttpGet], [AcceptVerbs("POST", "PUT")]
             //
+            // Another example of this situation is:
+            //
+            // [Route("api/Products")]
+            // [AcceptVerbs("GET", "HEAD")]
+            // [HttpPost("api/Products/new")]
+            //
+            // This will generate 2 selectors:
+            // 1. [AcceptVerbs("GET", "HEAD")]
+            // 2. [HttpPost]
+            //
             // Note that having a route attribute that doesn't define a route template _might_ be an error. We
             // don't have enough context to really know at this point so we just pass it on.
             var routeProviders = new List<IRouteTemplateProvider>();
@@ -530,18 +540,25 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     var filteredAttributes = new List<object>();
                     foreach (var attribute in attributes)
                     {
-                        if (attribute == routeProvider)
+                        if (ReferenceEquals(attribute, routeProvider))
                         {
                             filteredAttributes.Add(attribute);
                         }
-                        else if (routeProviders.Contains(attribute))
+                        else if (InRouteProviders(routeProviders, attribute))
                         {
                             // Exclude other route template providers
+                            // Example:
+                            // [HttpGet("template")]
+                            // [Route("template/{id}")]
                         }
                         else if (
                             routeProvider is IActionHttpMethodProvider &&
                             attribute is IActionHttpMethodProvider)
                         {
+                            // Example:
+                            // [HttpGet("template")]
+                            // [AcceptVerbs("GET", "POST")]
+                            //
                             // Exclude other http method providers if this route is an
                             // http method provider.
                         }
@@ -559,7 +576,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     var filteredAttributes = new List<object>();
                     foreach (var attribute in attributes)
                     {
-                        if (!routeProviders.Contains(attribute))
+                        if (!InRouteProviders(routeProviders, attribute))
                         {
                             filteredAttributes.Add(attribute);
                         }
@@ -570,6 +587,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             return selectorModels;
+        }
+
+        private static bool InRouteProviders(List<IRouteTemplateProvider> routeProviders, object attribute)
+        {
+            foreach (var rp in routeProviders)
+            {
+                if (ReferenceEquals(rp, attribute))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static SelectorModel CreateSelectorModel(IRouteTemplateProvider route, IList<object> attributes)
