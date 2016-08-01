@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         public async Task SendAll(params string[] lines)
         {
-            var text = String.Join("\r\n", lines);
+            var text = string.Join("\r\n", lines);
             var writer = new StreamWriter(_stream, Encoding.GetEncoding("iso-8859-1"));
             await writer.WriteAsync(text);
             writer.Flush();
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         public async Task Send(params string[] lines)
         {
-            var text = String.Join("\r\n", lines);
+            var text = string.Join("\r\n", lines);
             var writer = new StreamWriter(_stream, Encoding.GetEncoding("iso-8859-1"));
             for (var index = 0; index < text.Length; index++)
             {
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         public async Task Receive(params string[] lines)
         {
-            var expected = String.Join("\r\n", lines);
+            var expected = string.Join("\r\n", lines);
             var actual = new char[expected.Length];
             var offset = 0;
             while (offset < expected.Length)

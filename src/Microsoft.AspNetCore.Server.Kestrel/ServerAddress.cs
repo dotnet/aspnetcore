@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         {
             if (IsUnixPipe)
             {
-                if (String.IsNullOrEmpty(PathBase))
+                if (string.IsNullOrEmpty(PathBase))
                 {
                     return Scheme.ToLowerInvariant() + "://" + Host.ToLowerInvariant();
                 }
