@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
 
         private readonly ServerAddressesFeature _serverAddresses;
 
-        internal MessagePump(IOptions<WebListenerOptions> options, ILoggerFactory loggerFactory)
+        public MessagePump(IOptions<WebListenerOptions> options, ILoggerFactory loggerFactory)
         {
             if (options == null)
             {
