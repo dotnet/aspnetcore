@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Authorization
     /// </summary>
     public class DefaultAuthorizationService : IAuthorizationService
     {
+        private readonly IAuthorizationEvaluator _evaluator;
         private readonly IAuthorizationPolicyProvider _policyProvider;
         private readonly IList<IAuthorizationHandler> _handlers;
         private readonly ILogger _logger;
@@ -26,7 +27,16 @@ namespace Microsoft.AspNetCore.Authorization
         /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/> used to provide policies.</param>
         /// <param name="handlers">The handlers used to fulfill <see cref="IAuthorizationRequirement"/>s.</param>
         /// <param name="logger">The logger used to log messages, warnings and errors.</param>  
-        public DefaultAuthorizationService(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizationHandler> handlers, ILogger<DefaultAuthorizationService> logger)
+        public DefaultAuthorizationService(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizationHandler> handlers, ILogger<DefaultAuthorizationService> logger) : this(policyProvider, handlers, logger, new DefaultAuthorizationEvaluator()) { }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="DefaultAuthorizationService"/>.
+        /// </summary>
+        /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/> used to provide policies.</param>
+        /// <param name="handlers">The handlers used to fulfill <see cref="IAuthorizationRequirement"/>s.</param>
+        /// <param name="logger">The logger used to log messages, warnings and errors.</param>  
+        /// <param name="evaluator">The <see cref="IAuthorizationEvaluator"/> used to determine if authorzation was successful.</param>  
+        public DefaultAuthorizationService(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizationHandler> handlers, ILogger<DefaultAuthorizationService> logger, IAuthorizationEvaluator evaluator)
         {
             if (policyProvider == null)
             {
@@ -40,10 +50,15 @@ namespace Microsoft.AspNetCore.Authorization
             {
                 throw new ArgumentNullException(nameof(logger));
             }
+            if (evaluator == null)
+            {
+                throw new ArgumentNullException(nameof(evaluator));
+            }
 
             _handlers = handlers.ToArray();
             _policyProvider = policyProvider;
             _logger = logger;
+            _evaluator = evaluator;
         }
 
         /// <summary>
@@ -69,7 +84,7 @@ namespace Microsoft.AspNetCore.Authorization
                 await handler.HandleAsync(authContext);
             }
 
-            if (authContext.HasSucceeded)
+            if (_evaluator.HasSucceeded(authContext))
             {
                 _logger.UserAuthorizationSucceeded(GetUserNameForLogging(user));
                 return true;

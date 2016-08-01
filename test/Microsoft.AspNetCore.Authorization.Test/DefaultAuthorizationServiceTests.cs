@@ -1019,5 +1019,30 @@ namespace Microsoft.AspNetCore.Authorization.Test
             Assert.True(await authorizationService.AuthorizeAsync(user, "2"));
             Assert.False(await authorizationService.AuthorizeAsync(user, "3"));
         }
+
+        public class SuccessEvaluator : IAuthorizationEvaluator
+        {
+            public bool HasFailed(AuthorizationHandlerContext context)
+            {
+                return false;
+            }
+
+            public bool HasSucceeded(AuthorizationHandlerContext context)
+            {
+                return true;
+            }
+        }
+
+        [Fact]
+        public async Task CanUseCustomEvaluatorThatOverridesRequirement()
+        {
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                // This will ignore the policy options
+                services.AddSingleton<IAuthorizationEvaluator, SuccessEvaluator>();
+                services.AddAuthorization(options => options.AddPolicy("Fail", p => p.RequireAssertion(c => false)));
+            });
+            Assert.True(await authorizationService.AuthorizeAsync(null, "Fail"));
+        }
     }
 }
