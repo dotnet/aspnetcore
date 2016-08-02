@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.KestrelTests
+namespace Microsoft.AspNetCore.Testing
 {
     /// <summary>
     /// Summary description for TestConnection
