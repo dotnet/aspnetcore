@@ -230,6 +230,30 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
         }
 
+        /// <summary>
+        /// Gets an &lt;input&gt; element's "type" attribute value based on the given <paramref name="modelExplorer"/>
+        /// or <see cref="InputType"/>.
+        /// </summary>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/> to use.</param>
+        /// <param name="inputTypeHint">When this method returns, contains the string, often the name of a
+        /// <see cref="ModelMetadata.ModelType"/> base class, used to determine this method's return value.</param>
+        /// <returns>An &lt;input&gt; element's "type" attribute value.</returns>
+        protected string GetInputType(ModelExplorer modelExplorer, out string inputTypeHint)
+        {
+            foreach (var hint in GetInputTypeHints(modelExplorer))
+            {
+                string inputType;
+                if (_defaultInputTypes.TryGetValue(hint, out inputType))
+                {
+                    inputTypeHint = hint;
+                    return inputType;
+                }
+            }
+
+            inputTypeHint = InputType.Text.ToString().ToLowerInvariant();
+            return inputTypeHint;
+        }
+
         private void GenerateCheckBox(ModelExplorer modelExplorer, TagHelperOutput output)
         {
             if (typeof(bool) != modelExplorer.ModelType)
@@ -369,22 +393,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
 
             return format;
-        }
-
-        private string GetInputType(ModelExplorer modelExplorer, out string inputTypeHint)
-        {
-            foreach (var hint in GetInputTypeHints(modelExplorer))
-            {
-                string inputType;
-                if (_defaultInputTypes.TryGetValue(hint, out inputType))
-                {
-                    inputTypeHint = hint;
-                    return inputType;
-                }
-            }
-
-            inputTypeHint = InputType.Text.ToString().ToLowerInvariant();
-            return inputTypeHint;
         }
 
         // A variant of TemplateRenderer.GetViewNames(). Main change relates to bool? handling.
