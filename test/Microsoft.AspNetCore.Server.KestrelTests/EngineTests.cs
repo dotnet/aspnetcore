@@ -1191,7 +1191,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
-                        $"Date: {connection.Server.Context.DateHeaderValue}",
+                        $"Date: {server.Context.DateHeaderValue}",
                         $"Content-Length: {expectedPath.Length.ToString()}",
                         "",
                         $"{expectedPath}");

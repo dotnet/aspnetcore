@@ -22,13 +22,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         private NetworkStream _stream;
         private StreamReader _reader;
 
-        public TestConnection(TestServer server)
+        public TestConnection(int port)
         {
-            Server = server;
-            Create(server.Port);
+            Create(port);
         }
-
-        public TestServer Server { get; }
 
         public void Create(int port)
         {

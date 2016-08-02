@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         public TestConnection CreateConnection()
         {
-            return new TestConnection(this);
+            return new TestConnection(Port);
         }
 
         public void Dispose()

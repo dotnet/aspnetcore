@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendAllTryEnd(request);
-                    await ReceiveBadRequestResponse(connection);
+                    await ReceiveBadRequestResponse(connection, server.Context.DateHeaderValue);
                 }
             }
         }
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendAll(request);
-                    await ReceiveBadRequestResponse(connection);
+                    await ReceiveBadRequestResponse(connection, server.Context.DateHeaderValue);
                 }
             }
         }
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendAllTryEnd($"GET / HTTP/1.1\r\n{rawHeaders}");
-                    await ReceiveBadRequestResponse(connection);
+                    await ReceiveBadRequestResponse(connection, server.Context.DateHeaderValue);
                 }
             }
         }
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "H\u00eb\u00e4d\u00ebr: value",
                         "",
                         "");
-                    await ReceiveBadRequestResponse(connection);
+                    await ReceiveBadRequestResponse(connection, server.Context.DateHeaderValue);
                 }
             }
         }
@@ -211,12 +211,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendAllTryEnd($"GET {path} HTTP/1.1\r\n");
-                    await ReceiveBadRequestResponse(connection);
+                    await ReceiveBadRequestResponse(connection, server.Context.DateHeaderValue);
                 }
             }
         }
 
-        private async Task ReceiveBadRequestResponse(TestConnection connection)
+        private async Task ReceiveBadRequestResponse(TestConnection connection, string expectedDateHeaderValue)
         {
             await connection.Receive(
                 "HTTP/1.1 400 Bad Request",
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 "Connection: close",
                 "");
             await connection.ReceiveForcedEnd(
-                $"Date: {connection.Server.Context.DateHeaderValue}",
+                $"Date: {expectedDateHeaderValue}",
                 "Content-Length: 0",
                 "",
                 "");
