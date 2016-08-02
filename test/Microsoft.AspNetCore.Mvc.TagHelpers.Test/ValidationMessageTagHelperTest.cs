@@ -149,7 +149,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [InlineData("\r\n  \r\n", "\r\n Something Else \r\n", "\r\n Something Else \r\n")]
         [InlineData("\r\n  \r\n", "Some Content", "Some Content")]
         public async Task ProcessAsync_DoesNotOverrideOutputContent(
-            string childContent, string outputContent, string expectedOutputContent)
+            string childContent,
+            string outputContent,
+            string expectedOutputContent)
         {
             // Arrange
             var tagBuilder = new TagBuilder("span2");
@@ -209,7 +211,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [InlineData("Content of validation message", "Content of validation message")]
         [InlineData("\r\n  \r\n", "New HTML")]
         public async Task ProcessAsync_MergesTagBuilderFromGenerateValidationMessage(
-            string childContent, string expectedOutputContent)
+            string childContent,
+            string expectedOutputContent)
         {
             // Arrange
             var tagBuilder = new TagBuilder("span2");

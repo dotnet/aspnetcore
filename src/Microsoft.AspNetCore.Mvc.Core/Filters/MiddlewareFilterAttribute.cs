@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc
         public int Order { get; set; }
 
         /// <inheritdoc />
-        public bool IsReusable { get; } = true;
+        public bool IsReusable => true;
 
         /// <inheritdoc />
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)

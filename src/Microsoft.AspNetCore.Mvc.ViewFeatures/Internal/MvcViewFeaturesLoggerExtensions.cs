@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
     internal static class MvcViewFeaturesLoggerExtensions
     {
         private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
-        private static readonly string[] EmptyArguments = new string[0];
 
         private static readonly Action<ILogger, string, string[], Exception> _viewComponentExecuting;
         private static readonly Action<ILogger, string, double, string, Exception> _viewComponentExecuted;
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         {
             if (arguments == null || arguments.Length == 0)
             {
-                return EmptyArguments;
+                return EmptyArray<string>.Instance;
             }
 
             var formattedArguments = new string[arguments.Length];

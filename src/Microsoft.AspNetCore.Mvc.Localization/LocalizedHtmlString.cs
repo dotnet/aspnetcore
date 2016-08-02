@@ -3,9 +3,9 @@
 
 using System;
 using System.IO;
-using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Localization
 {
@@ -14,11 +14,6 @@ namespace Microsoft.AspNetCore.Mvc.Localization
     /// </summary>
     public class LocalizedHtmlString : IHtmlContent
     {
-#if NETSTANDARD1_4
-        private static readonly object[] EmptyArguments = Array.Empty<object>();
-#else
-        private static readonly object[] EmptyArguments = new object[0];
-#endif
         private readonly object[] _arguments;
 
         /// <summary>
@@ -27,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         /// <param name="name">The name of the string resource.</param>
         /// <param name="value">The string resource.</param>
         public LocalizedHtmlString(string name, string value)
-            : this(name, value, isResourceNotFound: false, arguments: EmptyArguments)
+            : this(name, value, isResourceNotFound: false, arguments: EmptyArray<string>.Instance)
         {
         }
 
@@ -38,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         /// <param name="value">The string resource.</param>
         /// <param name="isResourceNotFound">A flag that indicates if the resource is not found.</param>
         public LocalizedHtmlString(string name, string value, bool isResourceNotFound)
-            : this(name, value, isResourceNotFound, arguments: EmptyArguments)
+            : this(name, value, isResourceNotFound, arguments: EmptyArray<string>.Instance)
         {
         }
 

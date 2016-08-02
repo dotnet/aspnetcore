@@ -558,6 +558,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             {
                 _attributes = attributes;
             }
+
             public int Count => _attributes.Count;
 
             public bool IsReadOnly => true;

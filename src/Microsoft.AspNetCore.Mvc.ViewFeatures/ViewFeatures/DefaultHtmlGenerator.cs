@@ -404,10 +404,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var resolvedLabelText = labelText ??
                 modelExplorer.Metadata.DisplayName ??
                 modelExplorer.Metadata.PropertyName;
-            if (resolvedLabelText == null)
+            if (resolvedLabelText == null && expression != null)
             {
-                resolvedLabelText =
-                    string.IsNullOrEmpty(expression) ? string.Empty : expression.Split('.').Last();
+                var index = expression.LastIndexOf('.');
+                if (index == -1)
+                {
+                    // Expression does not contain a dot separator.
+                    resolvedLabelText = expression;
+                }
+                else
+                {
+                    resolvedLabelText = expression.Substring(index + 1);
+                }
             }
 
             if (string.IsNullOrEmpty(resolvedLabelText))
@@ -1289,8 +1297,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     object typeAttributeValue;
                     if (htmlAttributes != null && htmlAttributes.TryGetValue("type", out typeAttributeValue))
                     {
-                        if (string.Equals(typeAttributeValue.ToString(), "file", StringComparison.OrdinalIgnoreCase) ||
-                            string.Equals(typeAttributeValue.ToString(), "image", StringComparison.OrdinalIgnoreCase))
+                        var typeAttributeString = typeAttributeValue.ToString();
+                        if (string.Equals(typeAttributeString, "file", StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(typeAttributeString, "image", StringComparison.OrdinalIgnoreCase))
                         {
                             // 'value' attribute is not needed for 'file' and 'image' input types.
                             addValue = false;

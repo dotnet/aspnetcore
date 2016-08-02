@@ -3,14 +3,13 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     public static class ValidationHelpers
     {
-        private static readonly ModelStateEntry[] EmptyModelStateEntries = new ModelStateEntry[0];
-
         public static string GetModelErrorMessageOrDefault(ModelError modelError)
         {
             Debug.Assert(modelError != null);
@@ -80,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 return entries;
             }
 
-            return EmptyModelStateEntries;
+            return EmptyArray<ModelStateEntry>.Instance;
         }
 
         private static void Visit(

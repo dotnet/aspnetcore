@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Initializes a new instance of <see cref="ChallengeResult"/>.
         /// </summary>
         public ChallengeResult()
-            : this(new string[] { })
+            : this(EmptyArray<string>.Instance)
         {
         }
 
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
         public ChallengeResult(AuthenticationProperties properties)
-            : this(new string[] { }, properties)
+            : this(EmptyArray<string>.Instance, properties)
         {
         }
 

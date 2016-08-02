@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     /// </summary>
     public class PrefixContainer
     {
-        private static readonly string[] EmptyArray = new string[0];
         private static readonly char[] Delimiters = new char[] { '[', '.' };
 
         private readonly ICollection<string> _originalValues;
@@ -31,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             if (_originalValues.Count == 0)
             {
-                _sortedValues = EmptyArray;
+                _sortedValues = EmptyArray<string>.Instance;
             }
             else
             {

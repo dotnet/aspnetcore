@@ -20,12 +20,12 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             get
             {
                 var expected1 = @"<input baz=""HtmlEncode[[BazValue]]"" id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" " +
-                                @"value=""HtmlEncode[[ModelStateValue]]"" />";
+                    @"value=""HtmlEncode[[ModelStateValue]]"" />";
                 yield return new object[] { new Dictionary<string, object> { { "baz", "BazValue" } }, expected1 };
                 yield return new object[] { new { baz = "BazValue" }, expected1 };
 
                 var expected2 = @"<input foo-baz=""HtmlEncode[[BazValue]]"" id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" " +
-                                @"value=""HtmlEncode[[ModelStateValue]]"" />";
+                    @"value=""HtmlEncode[[ModelStateValue]]"" />";
                 yield return new object[] { new Dictionary<string, object> { { "foo-baz", "BazValue" } }, expected2 };
                 yield return new object[] { new { foo_baz = "BazValue" }, expected2 };
             }
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         {
             // Arrange
             var expected = @"<input id=""HtmlEncode[[Property1]]"" key=""HtmlEncode[[value]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" " +
-                           @"value=""HtmlEncode[[test]]"" />";
+                @"value=""HtmlEncode[[test]]"" />";
             var attributes = new { key = "value" };
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNullModelAndNonNullViewData());
 
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         {
             // Arrange
             var expected = @"<input data-key=""HtmlEncode[[value]]"" id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" " +
-                           @"value=""HtmlEncode[[test]]"" />";
+                @"value=""HtmlEncode[[test]]"" />";
             var attributes = new Dictionary<string, object> { { "data-key", "value" } };
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNullModelAndNonNullViewData());
 
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         {
             // Arrange
             var expected = @"<input baz=""HtmlEncode[[BazValue]]"" id=""HtmlEncode[[keyNotFound]]"" name=""HtmlEncode[[keyNotFound]]"" type=""HtmlEncode[[hidden]]"" " +
-                           @"value="""" />";
+                @"value="""" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             var attributes = new Dictionary<string, object> { { "baz", "BazValue" } };
 

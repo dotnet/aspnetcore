@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.FileSystemGlobbing;
@@ -18,13 +19,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
     /// </summary>
     public class GlobbingUrlBuilder
     {
-        private static readonly IReadOnlyList<string> EmptyList =
-#if NET451
-            new string[0];
-#else
-            Array.Empty<string>();
-#endif
-
         // Valid whitespace characters defined by the HTML5 spec.
         private static readonly char[] ValidAttributeWhitespaceChars =
             new[] { '\t', '\n', '\u000C', '\r', ' ' };
@@ -116,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
         {
             if (string.IsNullOrEmpty(include))
             {
-                return EmptyList;
+                return EmptyArray<string>.Instance;
             }
 
             var cacheKey = new GlobbingUrlKey(include, exclude);
@@ -130,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             var includeEnumerator = includeTokenizer.GetEnumerator();
             if (!includeEnumerator.MoveNext())
             {
-                return EmptyList;
+                return EmptyArray<string>.Instance;
             }
 
             var options = new MemoryCacheEntryOptions();

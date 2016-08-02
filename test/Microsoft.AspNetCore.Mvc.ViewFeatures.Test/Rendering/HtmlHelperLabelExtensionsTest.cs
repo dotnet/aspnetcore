@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
         public void LabelHelpers_DisplayPropertyName()
         {
             // Arrange
+            var expectedLabel = "<label for=\"HtmlEncode[[Property1]]\">HtmlEncode[[Property1]]</label>";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper();
 
             // Act
@@ -45,14 +46,15 @@ namespace Microsoft.AspNetCore.Mvc.Core
             var labelForResult = helper.LabelFor(m => m.Property1);
 
             // Assert
-            Assert.Equal("<label for=\"HtmlEncode[[Property1]]\">HtmlEncode[[Property1]]</label>", HtmlContentUtilities.HtmlContentToString(labelResult));
-            Assert.Equal("<label for=\"HtmlEncode[[Property1]]\">HtmlEncode[[Property1]]</label>", HtmlContentUtilities.HtmlContentToString(labelForResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForResult));
         }
 
         [Fact]
         public void LabelHelpers_DisplayPropertyName_ForNestedProperty()
         {
             // Arrange
+            var expectedLabel = "<label for=\"HtmlEncode[[Inner_Id]]\">HtmlEncode[[Id]]</label>";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper<OuterClass>(model: null);
 
             // Act
@@ -60,8 +62,8 @@ namespace Microsoft.AspNetCore.Mvc.Core
             var labelForResult = helper.LabelFor(m => m.Inner.Id);
 
             // Assert
-            Assert.Equal("<label for=\"HtmlEncode[[Inner_Id]]\">HtmlEncode[[Id]]</label>", HtmlContentUtilities.HtmlContentToString(labelResult));
-            Assert.Equal("<label for=\"HtmlEncode[[Inner_Id]]\">HtmlEncode[[Id]]</label>", HtmlContentUtilities.HtmlContentToString(labelForResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForResult));
         }
 
         [Fact]

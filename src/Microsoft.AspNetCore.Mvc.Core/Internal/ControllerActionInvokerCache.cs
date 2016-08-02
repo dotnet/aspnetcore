@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -13,8 +12,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class ControllerActionInvokerCache
     {
-        private readonly IFilterMetadata[] EmptyFilterArray = new IFilterMetadata[0];
-
         private readonly IActionDescriptorCollectionProvider _collectionProvider;
         private readonly IFilterProvider[] _filterProviders;
 
@@ -134,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             if (count == 0)
             {
-                return EmptyFilterArray;
+                return EmptyArray<IFilterMetadata>.Instance;
             }
             else
             {

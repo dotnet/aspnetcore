@@ -15,14 +15,14 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         [Fact]
         public void TextAreaFor_GeneratesPlaceholderAttribute_WhenDisplayAttributePromptIsSetAndTypeIsValid()
         {
-            // Arrange            
+            // Arrange
             var model = new TextAreaModelWithAPlaceholder();
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
 
             // Act
             var textArea = helper.TextAreaFor(m => m.Property1);
 
-            // Assert 
+            // Assert
             var result = HtmlContentUtilities.HtmlContentToString(textArea);
             Assert.Contains(@"placeholder=""HtmlEncode[[placeholder]]""", result, StringComparison.Ordinal);
         }
@@ -30,14 +30,14 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         [Fact]
         public void TextAreaFor_DoesNotGeneratePlaceholderAttribute_WhenNoPlaceholderPresentInModel()
         {
-            // Arrange            
+            // Arrange
             var model = new TextAreaModelWithoutAPlaceholder();
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
 
             // Act
             var textArea = helper.TextAreaFor(m => m.Property1);
 
-            // Assert 
+            // Assert
             var result = HtmlContentUtilities.HtmlContentToString(textArea);
             Assert.DoesNotContain(@"placeholder=""HtmlEncode[[placeholder]]""", result, StringComparison.Ordinal);
         }

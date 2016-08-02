@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         }
 
         /// <summary>
-        /// Return valid HTML 4.01 "id" attribute for an element with the given <paramref name="name"/>.
+        /// Returns a valid HTML 4.01 "id" attribute value for an element with the given <paramref name="name"/>.
         /// </summary>
         /// <param name="name">The original element name.</param>
         /// <param name="invalidCharReplacement">
@@ -99,9 +99,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <paramref name="name"/>.
         /// </param>
         /// <returns>
-        /// Valid HTML 4.01 "id" attribute for an element with the given <paramref name="name"/>.
+        /// Valid HTML 4.01 "id" attribute value for an element with the given <paramref name="name"/>.
         /// </returns>
-        /// <remarks>Valid "id" attributes are defined in http://www.w3.org/TR/html401/types.html#type-id</remarks>
+        /// <remarks>
+        /// Valid "id" attributes are defined in http://www.w3.org/TR/html401/types.html#type-id
+        /// </remarks>
         public static string CreateSanitizedId(string name, string invalidCharReplacement)
         {
             if (invalidCharReplacement == null)
@@ -205,7 +207,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                     writer.Write(" ");
                     writer.Write(key);
                     writer.Write("=\"");
-                    encoder.Encode(writer, attribute.Value ?? string.Empty);
+                    if (attribute.Value != null)
+                    {
+                        encoder.Encode(writer, attribute.Value);
+                    }
+
                     writer.Write("\"");
                 }
             }

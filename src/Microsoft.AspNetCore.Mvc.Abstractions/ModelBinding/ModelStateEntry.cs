@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public abstract class ModelStateEntry
     {
         private ModelErrorCollection _errors;
+
         /// <summary>
         /// Gets the raw value from the request associated with this entry.
         /// </summary>

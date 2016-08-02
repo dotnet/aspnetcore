@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -18,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Sets mapping for the format to specified media type. 
+        /// Sets mapping for the format to specified media type.
         /// If the format already exists, the media type will be overwritten with the new value.
         /// </summary>
         /// <param name="format">The format value.</param>
@@ -39,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         /// <summary>
-        /// Sets mapping for the format to specified media type. 
+        /// Sets mapping for the format to specified media type.
         /// If the format already exists, the media type will be overwritten with the new value.
         /// </summary>
         /// <param name="format">The format value.</param>

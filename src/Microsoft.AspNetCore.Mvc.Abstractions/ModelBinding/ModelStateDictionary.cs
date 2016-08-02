@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
-        // Flag that indiciates if TooManyModelErrorException has already been added to this dictionary.
+        // Flag that indicates if TooManyModelErrorException has already been added to this dictionary.
         private bool HasRecordedMaxModelError { get; set; }
 
         /// <summary>
@@ -625,7 +625,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Removes all keys and values from ths instance of <see cref="ModelStateDictionary"/>.
+        /// Removes all keys and values from this instance of <see cref="ModelStateDictionary"/>.
         /// </summary>
         public void Clear()
         {

@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             if (bufferScope == null)
             {
-                throw new ArgumentNullException(nameof(_bufferScope));
+                throw new ArgumentNullException(nameof(bufferScope));
             }
 
             if (viewContext == null)

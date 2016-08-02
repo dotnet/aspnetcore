@@ -11,8 +11,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class ClientValidatorCache
     {
-        private readonly IReadOnlyList<IClientModelValidator> EmptyArray = new IClientModelValidator[0];
-
         private readonly ConcurrentDictionary<ModelMetadata, CacheEntry> _cacheEntries = new ConcurrentDictionary<ModelMetadata, CacheEntry>();
 
         public IReadOnlyList<IClientModelValidator> GetValidators(ModelMetadata metadata, IClientModelValidatorProvider validatorProvider)
@@ -106,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             if (count == 0)
             {
-                return EmptyArray;
+                return EmptyArray<IClientModelValidator>.Instance;
             }
 
             var validators = new IClientModelValidator[count];

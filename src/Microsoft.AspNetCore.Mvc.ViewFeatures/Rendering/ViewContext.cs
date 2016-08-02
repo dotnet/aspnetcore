@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             Writer = writer;
 
             FormContext = new FormContext();
-            
+
             ClientValidationEnabled = htmlHelperOptions.ClientValidationEnabled;
             Html5DateRenderingMode = htmlHelperOptions.Html5DateRenderingMode;
             ValidationSummaryMessageElement = htmlHelperOptions.ValidationSummaryMessageElement;
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
         public FormContext GetFormContextForClientValidation()
         {
-            return (ClientValidationEnabled) ? FormContext : null;
+            return ClientValidationEnabled ? FormContext : null;
         }
     }
 }

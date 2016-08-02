@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.Extensions.Caching.Memory;
@@ -31,8 +32,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         private const string ControllerKey = "controller";
         private const string AreaKey = "area";
-        private static readonly ViewLocationCacheItem[] EmptyViewStartLocationCacheItems =
-            new ViewLocationCacheItem[0];
         private static readonly TimeSpan _cacheExpirationDuration = TimeSpan.FromMinutes(20);
 
         private readonly IRazorPageFactoryProvider _pageFactory;
@@ -415,7 +414,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 // Only need to lookup _ViewStarts for the main page.
                 var viewStartPages = isMainPage ?
                     GetViewStartPages(relativePath, expirationTokens) :
-                    EmptyViewStartLocationCacheItems;
+                    EmptyArray<ViewLocationCacheItem>.Instance;
 
                 return new ViewLocationCacheResult(
                     new ViewLocationCacheItem(factoryResult.RazorPageFactory, relativePath),

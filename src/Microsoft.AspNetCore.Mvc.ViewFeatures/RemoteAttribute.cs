@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc
     public class RemoteAttribute : ValidationAttribute, IClientModelValidator
     {
         private string _additionalFields = string.Empty;
-        private string[] _additionalFieldsSplit = new string[0];
+        private string[] _additionalFieldsSplit = EmptyArray<string>.Instance;
         private bool _checkedForLocalizer;
         private IStringLocalizer _stringLocalizer;
 
@@ -275,7 +276,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             if (string.IsNullOrEmpty(original))
             {
-                return new string[0];
+                return EmptyArray<string>.Instance;
             }
 
             var split = original

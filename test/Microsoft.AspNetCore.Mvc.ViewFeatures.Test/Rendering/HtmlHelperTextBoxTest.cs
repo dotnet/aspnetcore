@@ -21,14 +21,14 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         [InlineData("number")]
         public void TextBoxFor_GeneratesPlaceholderAttribute_WhenDisplayAttributePromptIsSetAndTypeIsValid(string type)
         {
-            // Arrange            
+            // Arrange
             var model = new TextBoxModel();
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
 
             // Act
             var textBox = helper.TextBoxFor(m => m.Property1, new { type });
 
-            // Assert 
+            // Assert
             var result = HtmlContentUtilities.HtmlContentToString(textBox);
             Assert.Contains(@"placeholder=""HtmlEncode[[placeholder]]""", result, StringComparison.Ordinal);
         }
@@ -48,14 +48,14 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         [InlineData("file")]
         public void TextBoxFor_DoesNotGeneratePlaceholderAttribute_WhenDisplayAttributePromptIsSetAndTypeIsInvalid(string type)
         {
-            // Arrange            
+            // Arrange
             var model = new TextBoxModel();
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
 
             // Act
             var textBox = helper.TextBoxFor(m => m.Property1, new { type });
 
-            // Assert 
+            // Assert
             var result = HtmlContentUtilities.HtmlContentToString(textBox);
             Assert.DoesNotContain(@"placeholder=""HtmlEncode[[placeholder]]""", result, StringComparison.Ordinal);
         }

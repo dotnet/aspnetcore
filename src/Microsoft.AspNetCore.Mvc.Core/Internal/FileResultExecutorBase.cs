@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private void SetContentType(ActionContext context, FileResult result)
         {
             var response = context.HttpContext.Response;
-            response.ContentType = result.ContentType.ToString();
+            response.ContentType = result.ContentType;
         }
 
         protected static ILogger CreateLogger<T>(ILoggerFactory factory)

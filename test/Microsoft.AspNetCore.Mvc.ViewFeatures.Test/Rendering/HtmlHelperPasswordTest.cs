@@ -469,7 +469,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             Expression<Func<PasswordModel, string>> expression,
             string expected)
         {
-            // Arrange            
+            // Arrange
             var model = new PasswordModel();
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
             helper.ViewData.TemplateInfo.HtmlFieldPrefix = "pre";
@@ -489,7 +489,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             // Act
             var result = helper.PasswordFor(expression);
 
-            // Assert 
+            // Assert
             Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
         }
 

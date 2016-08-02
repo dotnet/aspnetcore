@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc
         // The value used is a non default value so that it avoids getting mixed with other action constraints
         // with default order.
         /// <inheritdoc />
-        int IActionConstraint.Order { get; } = ConsumesActionConstraintOrder;
+        int IActionConstraint.Order => ConsumesActionConstraintOrder;
 
         /// <summary>
         /// Gets or sets the supported request content types. Used to select an action when there would otherwise be

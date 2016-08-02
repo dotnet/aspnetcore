@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.Internal;
 #if NETSTANDARD1_6
 using System.Reflection;
 #endif
@@ -83,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             if (string.IsNullOrEmpty(original))
             {
-                return new string[0];
+                return EmptyArray<string>.Instance;
             }
 
             var split = original.Split(',').Select(piece => piece.Trim()).Where(piece => !string.IsNullOrEmpty(piece));

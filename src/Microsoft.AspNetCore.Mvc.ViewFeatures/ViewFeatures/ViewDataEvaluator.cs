@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
@@ -98,57 +99,58 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static ViewDataInfo InnerEvalComplexExpression(object indexableObject, string expression)
         {
-            foreach (var expressionPair in GetRightToLeftExpressions(expression))
+            Debug.Assert(expression != null);
+            var leftExpression = expression;
+            do
             {
-                var subExpression = expressionPair.Left;
-                var postExpression = expressionPair.Right;
-
-                var subTargetInfo = GetPropertyValue(indexableObject, subExpression);
-                if (subTargetInfo != null)
+                var targetInfo = GetPropertyValue(indexableObject, leftExpression);
+                if (targetInfo != null)
                 {
-                    if (string.IsNullOrEmpty(postExpression))
+                    if (leftExpression.Length == expression.Length)
                     {
-                        return subTargetInfo;
+                        // Nothing remaining in expression after leftExpression.
+                        return targetInfo;
                     }
 
-                    if (subTargetInfo.Value != null)
+                    if (targetInfo.Value != null)
                     {
-                        var potential = InnerEvalComplexExpression(subTargetInfo.Value, postExpression);
-                        if (potential != null)
+                        var rightExpression = expression.Substring(leftExpression.Length + 1);
+                        targetInfo = InnerEvalComplexExpression(targetInfo.Value, rightExpression);
+                        if (targetInfo != null)
                         {
-                            return potential;
+                            return targetInfo;
                         }
                     }
                 }
+
+                leftExpression = GetNextShorterExpression(leftExpression);
             }
+            while (!string.IsNullOrEmpty(leftExpression));
 
             return null;
         }
 
-        // Produces an enumeration of combinations of property names given a complex expression in the following order:
-        //  this["one.two.three.four"]
-        //  this["one.two.three][four"]
-        //  this["one.two][three.four"]
-        //  this["one][two.three.four"]
+        // Given "one.two.three.four" initially, calls return
+        //  "one.two.three"
+        //  "one.two"
+        //  "one"
+        //  ""
         // Recursion of InnerEvalComplexExpression() further sub-divides these cases to cover the full set of
         // combinations shown in Eval(ViewDataDictionary, string) comments.
-        private static IEnumerable<ExpressionPair> GetRightToLeftExpressions(string expression)
+        private static string GetNextShorterExpression(string expression)
         {
-            yield return new ExpressionPair(expression, string.Empty);
+            if (string.IsNullOrEmpty(expression))
+            {
+                return string.Empty;
+            }
 
             var lastDot = expression.LastIndexOf('.');
-
-            var subExpression = expression;
-            var postExpression = string.Empty;
-
-            while (lastDot > -1)
+            if (lastDot == -1)
             {
-                subExpression = expression.Substring(0, lastDot);
-                postExpression = expression.Substring(lastDot + 1);
-                yield return new ExpressionPair(subExpression, postExpression);
-
-                lastDot = subExpression.LastIndexOf('.');
+                return string.Empty;
             }
+
+            return expression.Substring(startIndex: 0, length: lastDot);
         }
 
         private static ViewDataInfo GetIndexedPropertyValue(object indexableObject, string key)
@@ -204,18 +206,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             return new ViewDataInfo(container, propertyInfo);
-        }
-
-        private struct ExpressionPair
-        {
-            public readonly string Left;
-            public readonly string Right;
-
-            public ExpressionPair(string left, string right)
-            {
-                Left = left;
-                Right = right;
-            }
         }
     }
 }

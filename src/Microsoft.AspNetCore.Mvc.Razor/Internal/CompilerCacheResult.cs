@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.Extensions.Primitives;
 
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// <param name="relativePath">Path of the view file relative to the application base.</param>
         /// <param name="compilationResult">The <see cref="Compilation.CompilationResult"/>.</param>
         public CompilerCacheResult(string relativePath, CompilationResult compilationResult)
-            : this(relativePath, compilationResult, new IChangeToken[0])
+            : this(relativePath, compilationResult, EmptyArray<IChangeToken>.Instance)
         {
         }
 
@@ -86,6 +87,5 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// Gets a delegate that creates an instance of the <see cref="IRazorPage"/>.
         /// </summary>
         public Func<IRazorPage> PageFactory { get; }
-
     }
 }

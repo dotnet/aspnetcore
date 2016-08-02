@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private object _model;
         private Func<object, object> _modelAccessor;
-        private Type _modelType;
         private List<ModelExplorer> _properties;
 
         /// <summary>
@@ -30,8 +29,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="metadata">The <see cref="ModelMetadata"/>.</param>
         /// <param name="model">The model object. May be <c>null</c>.</param>
         public ModelExplorer(
-            IModelMetadataProvider metadataProvider, 
-            ModelMetadata metadata, 
+            IModelMetadataProvider metadataProvider,
+            ModelMetadata metadata,
             object model)
         {
             if (metadataProvider == null)
@@ -172,29 +171,23 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             get
             {
-                if (_modelType == null)
+                if (Metadata.IsNullableValueType)
                 {
-                    if (Model == null)
-                    {
-                        // If the model is null, then use the declared model type;
-                        _modelType = Metadata.ModelType;
-                    }
-                    else if (Metadata.IsNullableValueType)
-                    {
-                        // We have a model, but if it's a nullable value type, then Model.GetType() will return
-                        // the non-nullable type (int? -> int). Since it's a value type, there's no subclassing,
-                        // just go with the declared type.
-                        _modelType = Metadata.ModelType;
-                    }
-                    else
-                    {
-                        // We have a model, and it's not a nullable so use the runtime type to handle
-                        // cases where the model is a subclass of the declared type and has extra data.
-                        _modelType = Model.GetType();
-                    }
+                    // We have a model, but if it's a nullable value type, then Model.GetType() will return
+                    // the non-nullable type (int? -> int). Since it's a value type, there's no subclassing,
+                    // just go with the declared type.
+                    return Metadata.ModelType;
                 }
 
-                return _modelType;
+                if (Model == null)
+                {
+                    // If the model is null, then use the declared model type;
+                    return Metadata.ModelType;
+                }
+
+                // We have a model, and it's not a nullable, so use the runtime type to handle
+                // cases where the model is a subclass of the declared type and has extra data.
+                return Model.GetType();
             }
         }
 
@@ -203,7 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </summary>
         /// <remarks>
         /// Includes a <see cref="ModelExplorer"/> for each property of the <see cref="ModelMetadata"/>
-        /// for <see cref="ModelType"/>. 
+        /// for <see cref="ModelType"/>.
         /// </remarks>
         public IEnumerable<ModelExplorer> Properties
         {
@@ -260,8 +253,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             return Properties.FirstOrDefault(p => string.Equals(
-                p.Metadata.PropertyName, 
-                name, 
+                p.Metadata.PropertyName,
+                name,
                 StringComparison.Ordinal));
         }
 
@@ -383,7 +376,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <returns>A <see cref="ModelExplorer"/>.</returns>
         /// <remarks>
         /// <para>
-        /// A <see cref="ModelExplorer"/> created by 
+        /// A <see cref="ModelExplorer"/> created by
         /// <see cref="GetExplorerForExpression(Type, Func{object, object})"/>
         /// represents the result of executing an arbitrary expression against the model contained
         /// in the current <see cref="ModelExplorer"/> instance.
@@ -411,7 +404,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <returns>A <see cref="ModelExplorer"/>.</returns>
         /// <remarks>
         /// <para>
-        /// A <see cref="ModelExplorer"/> created by 
+        /// A <see cref="ModelExplorer"/> created by
         /// <see cref="GetExplorerForExpression(ModelMetadata, Func{object, object})"/>
         /// represents the result of executing an arbitrary expression against the model contained
         /// in the current <see cref="ModelExplorer"/> instance.
@@ -444,7 +437,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         private ModelExplorer CreateExplorerForProperty(
-            ModelMetadata propertyMetadata, 
+            ModelMetadata propertyMetadata,
             PropertyHelper propertyHelper)
         {
             if (propertyHelper == null)

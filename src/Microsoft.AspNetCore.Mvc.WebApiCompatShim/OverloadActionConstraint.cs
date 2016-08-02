@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
     public class OverloadActionConstraint : IActionConstraint
     {
         /// <inheritdoc />
-        public int Order { get; } = int.MaxValue;
+        public int Order => int.MaxValue;
 
         /// <inheritdoc />
         public bool Accept(ActionConstraintContext context)

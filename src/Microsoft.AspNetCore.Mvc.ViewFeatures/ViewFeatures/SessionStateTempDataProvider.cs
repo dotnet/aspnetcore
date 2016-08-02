@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
@@ -156,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             {
                 // Since we call Save() after the response has been sent, we need to initialize an empty session
                 // so that it is established before the headers are sent.
-                session.Set(TempDataSessionStateKey, new byte[] { });
+                session.Set(TempDataSessionStateKey, EmptyArray<byte>.Instance);
             }
 
             return tempDataDictionary ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
