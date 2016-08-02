@@ -233,13 +233,41 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
+        /// <summary>
+        /// Handle the authentication for once.
+        ///
+        /// If the authentication has been done before returns the last authentication result.
+        /// </summary>
         protected Task<AuthenticateResult> HandleAuthenticateOnceAsync()
         {
             if (_authenticateTask == null)
             {
                 _authenticateTask = HandleAuthenticateAsync();
             }
+
             return _authenticateTask;
+        }
+
+        /// <summary>
+        /// Handle the authentication for once.
+        ///
+        /// If the authentication has been done before returns the last authentication result.
+        /// This method won't throw exception. Any exception thrown during the authentication will be convert
+        /// to a AuthenticateResult.
+        /// </summary>
+        protected Task<AuthenticateResult> HandleAuthenticateOnceSafeAsync()
+        {
+            try
+            {
+                return HandleAuthenticateOnceAsync().ContinueWith<AuthenticateResult>(
+                    task => task.IsFaulted ? AuthenticateResult.Fail(task.Exception) : task.Result
+                );
+            }
+            catch (Exception ex)
+            {
+                // capture exception which is thrown before the task is actually started
+                return Task.FromResult(AuthenticateResult.Fail(ex));
+            }
         }
 
         protected abstract Task<AuthenticateResult> HandleAuthenticateAsync();
@@ -313,7 +341,7 @@ namespace Microsoft.AspNetCore.Authentication
                 {
                     case ChallengeBehavior.Automatic:
                         // If there is a principal already, invoke the forbidden code path
-                        var result = await HandleAuthenticateOnceAsync();
+                        var result = await HandleAuthenticateOnceSafeAsync();
                         if (result?.Ticket?.Principal != null)
                         {
                             goto case ChallengeBehavior.Forbidden;

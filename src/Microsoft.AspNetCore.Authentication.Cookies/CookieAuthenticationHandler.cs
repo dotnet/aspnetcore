@@ -323,7 +323,6 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                     await Options.Events.RedirectToReturnUrl(redirectContext);
                 }
             }
-
         }
 
         private static bool IsHostRelative(string path)
