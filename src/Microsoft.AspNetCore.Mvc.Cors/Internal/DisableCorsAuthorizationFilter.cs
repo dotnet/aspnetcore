@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             if (string.Equals(
                     context.HttpContext.Request.Method,
                     CorsConstants.PreflightHttpMethod,
-                    StringComparison.Ordinal) &&
+                    StringComparison.OrdinalIgnoreCase) &&
                 !StringValues.IsNullOrEmpty(accessControlRequestMethod))
             {
                 // Short circuit if the request is preflight as that should not result in action execution.

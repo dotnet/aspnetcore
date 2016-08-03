@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
                 if (string.Equals(
                         request.Method,
                         CorsConstants.PreflightHttpMethod,
-                        StringComparison.Ordinal) &&
+                        StringComparison.OrdinalIgnoreCase) &&
                     !StringValues.IsNullOrEmpty(accessControlRequestMethod))
                 {
                     // If this was a preflight, there is no need to run anything else.

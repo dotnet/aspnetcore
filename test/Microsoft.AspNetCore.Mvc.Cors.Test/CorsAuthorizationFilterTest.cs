@@ -20,8 +20,11 @@ namespace Microsoft.AspNetCore.Mvc.Cors
 {
     public class CorsAuthorizationFilterTest
     {
-        [Fact]
-        public async Task PreFlightRequest_SuccessfulMatch_WritesHeaders()
+        [Theory]
+        [InlineData("options")]
+        [InlineData("Options")]
+        [InlineData("OPTIONS")]
+        public async Task CaseInsensitive_PreFlightRequest_SuccessfulMatch_WritesHeaders(string preflightRequestMethod)
         {
             // Arrange
             var mockEngine = GetPassingEngine(supportsCredentials:true);
@@ -31,6 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
                 new[] { new FilterDescriptor(filter, FilterScope.Action) },
                 GetRequestHeaders(true),
                 isPreflight: true);
+            authorizationContext.HttpContext.Request.Method = preflightRequestMethod;
 
             // Act
             await filter.OnAuthorizationAsync(authorizationContext);
