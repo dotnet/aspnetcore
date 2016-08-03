@@ -1038,11 +1038,52 @@ namespace Microsoft.AspNetCore.Authorization.Test
         {
             var authorizationService = BuildAuthorizationService(services =>
             {
-                // This will ignore the policy options
                 services.AddSingleton<IAuthorizationEvaluator, SuccessEvaluator>();
                 services.AddAuthorization(options => options.AddPolicy("Fail", p => p.RequireAssertion(c => false)));
             });
             Assert.True(await authorizationService.AuthorizeAsync(null, "Fail"));
         }
+
+
+        public class BadContextMaker : IAuthorizationHandlerContextFactory
+        {
+            public AuthorizationHandlerContext CreateContext(IEnumerable<IAuthorizationRequirement> requirements, ClaimsPrincipal user, object resource)
+            {
+                return new BadContext();
+            }
+        }
+
+        public class BadContext : AuthorizationHandlerContext
+        {
+            public BadContext() : base(new List<IAuthorizationRequirement>(), null, null) { }
+
+            public override bool HasFailed
+            {
+                get
+                {
+                    return true;
+                }
+            }
+
+            public override bool HasSucceeded
+            {
+                get
+                {
+                    return false;
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CanUseCustomContextThatAlwaysFails()
+        {
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                services.AddSingleton<IAuthorizationHandlerContextFactory, BadContextMaker>();
+                services.AddAuthorization(options => options.AddPolicy("Success", p => p.RequireAssertion(c => true)));
+            });
+            Assert.False(await authorizationService.AuthorizeAsync(null, "Success"));
+        }
+
     }
 }

@@ -42,32 +42,32 @@ namespace Microsoft.AspNetCore.Authorization
         /// <summary>
         /// The collection of all the <see cref="IAuthorizationRequirement"/> for the current authorization action.
         /// </summary>
-        public IEnumerable<IAuthorizationRequirement> Requirements { get; }
+        public virtual IEnumerable<IAuthorizationRequirement> Requirements { get; }
 
         /// <summary>
         /// The <see cref="ClaimsPrincipal"/> representing the current user.
         /// </summary>
-        public ClaimsPrincipal User { get; }
+        public virtual ClaimsPrincipal User { get; }
 
         /// <summary>
         /// The optional resource to evaluate the <see cref="AuthorizationHandlerContext.Requirements"/> against.
         /// </summary>
-        public object Resource { get; }
+        public virtual object Resource { get; }
 
         /// <summary>
         /// Gets the requirements that have not yet been marked as succeeded.
         /// </summary>
-        public IEnumerable<IAuthorizationRequirement> PendingRequirements { get { return _pendingRequirements; } }
+        public virtual IEnumerable<IAuthorizationRequirement> PendingRequirements { get { return _pendingRequirements; } }
 
         /// <summary>
         /// Flag indicating whether the current authorization processing has failed.
         /// </summary>
-        public bool HasFailed { get { return _failCalled; } }
+        public virtual bool HasFailed { get { return _failCalled; } }
 
         /// <summary>
         /// Flag indicating whether the current authorization processing has succeeded.
         /// </summary>
-        public bool HasSucceeded
+        public virtual bool HasSucceeded
         {
             get
             {
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// Called to indicate <see cref="AuthorizationHandlerContext.HasSucceeded"/> will
         /// never return true, even if all requirements are met.
         /// </summary>
-        public void Fail()
+        public virtual void Fail()
         {
             _failCalled = true;
         }
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// successfully evaluated.
         /// </summary>
         /// <param name="requirement">The requirement whose evaluation has succeeded.</param>
-        public void Succeed(IAuthorizationRequirement requirement)
+        public virtual void Succeed(IAuthorizationRequirement requirement)
         {
             _succeedCalled = true;
             _pendingRequirements.Remove(requirement);
