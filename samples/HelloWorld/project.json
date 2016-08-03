@@ -3,8 +3,7 @@
     "emitEntryPoint": true
   },
   "dependencies": {
-    "Microsoft.Net.Http.Server": "0.2.0-*",
-    "Microsoft.Net.WebSockets.Server": "0.2.0-*"
+    "Microsoft.Net.Http.Server": "0.2.0-*"
   },
   "commands": {
     "sample": "HelloWorld"

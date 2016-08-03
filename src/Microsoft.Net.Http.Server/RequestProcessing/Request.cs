@@ -207,7 +207,7 @@ namespace Microsoft.Net.Http.Server
 
         public HeaderCollection Headers { get; }
 
-        private UnsafeNclNativeMethods.HttpApi.HTTP_VERB KnownMethod { get; }
+        internal UnsafeNclNativeMethods.HttpApi.HTTP_VERB KnownMethod { get; }
 
         public bool IsHeadMethod => KnownMethod == UnsafeNclNativeMethods.HttpApi.HTTP_VERB.HttpVerbHEAD;
 

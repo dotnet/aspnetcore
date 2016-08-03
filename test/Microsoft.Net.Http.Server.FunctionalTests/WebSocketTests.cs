@@ -62,7 +62,7 @@ namespace Microsoft.Net.Http.Server
                 Task<WebSocket> clientTask = SendWebSocketRequestAsync(ConvertToWebSocketAddress(address));
 
                 var context = await server.AcceptAsync();
-                Assert.True(context.IsWebSocketRequest());
+                Assert.True(context.IsWebSocketRequest);
                 WebSocket serverWebSocket = await context.AcceptWebSocketAsync();
                 WebSocket clientWebSocket = await clientTask;
 

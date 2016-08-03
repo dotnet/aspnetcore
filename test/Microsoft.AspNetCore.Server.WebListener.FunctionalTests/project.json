@@ -19,7 +19,8 @@
         },
         "System.Net.Http.WinHttpHandler": "4.0.0-*",
         "System.Net.Requests": "4.0.11-*",
-        "System.Net.WebHeaderCollection": "4.0.1-*"
+        "System.Net.WebHeaderCollection": "4.0.1-*",
+        "System.Net.WebSockets.Client": "4.0.0"
       }
     },
     "net451": {

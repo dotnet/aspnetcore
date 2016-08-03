@@ -14,7 +14,7 @@
 // NON-INFRINGEMENT.
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
-#if WEBSOCKETS
+
 using System;
 using System.Net.Http;
 using System.Net.WebSockets;
@@ -159,10 +159,9 @@ namespace Microsoft.AspNetCore.Server.WebListener
 
         private async Task<WebSocket> SendWebSocketRequestAsync(string address)
         {
-            ClientWebSocket client = new ClientWebSocket();
+            var client = new ClientWebSocket();
             await client.ConnectAsync(new Uri(address), CancellationToken.None);
             return client;
         }
     }
 }
-#endif

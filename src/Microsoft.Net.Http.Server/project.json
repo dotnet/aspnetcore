@@ -10,7 +10,9 @@
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
-      "CS1591"
+      "CS1591",
+      "CS1572",
+      "CS1573"
     ],
     "xmlDoc": true
   },
@@ -31,6 +33,7 @@
         "System.IO": "4.1.0-*",
         "System.IO.FileSystem": "4.0.1-*",
         "System.Net.Primitives": "4.0.11-*",
+        "System.Net.WebSockets": "4.0.0-*",
         "System.Runtime.Extensions": "4.1.0-*",
         "System.Runtime.InteropServices": "4.1.0-*",
         "System.Security.Claims": "4.0.1-*",
@@ -38,7 +41,8 @@
         "System.Security.Principal.Windows": "4.0.0-*",
         "System.Text.Encoding.Extensions": "4.0.11-*",
         "System.Threading": "4.0.11-*",
-        "System.Threading.Overlapped": "4.0.1-*"
+        "System.Threading.Overlapped": "4.0.1-*",
+        "System.Threading.Timer": "4.0.1"
       }
     }
   }

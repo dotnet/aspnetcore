@@ -63,7 +63,7 @@ namespace HelloWorld
                     // Response
                     byte[] bytes = Encoding.ASCII.GetBytes("Hello World: " + DateTime.Now);
 
-                    if (context.IsWebSocketRequest())
+                    if (context.IsWebSocketRequest)
                     {
                         Console.WriteLine("WebSocket");
                         WebSocket webSocket = await context.AcceptWebSocketAsync();

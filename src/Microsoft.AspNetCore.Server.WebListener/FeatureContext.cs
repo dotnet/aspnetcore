@@ -41,9 +41,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         ITlsTokenBindingFeature,
         IHttpBufferingFeature,
         IHttpRequestLifetimeFeature,
-#if WEBSOCKETS
         IHttpWebSocketFeature,
-#endif
         IHttpAuthenticationFeature,
         IHttpUpgradeFeature,
         IHttpRequestIdentifierFeature
@@ -436,14 +434,8 @@ namespace Microsoft.AspNetCore.Server.WebListener
         {
             return _requestContext.UpgradeAsync();
         }
-#if WEBSOCKETS
-        bool IHttpWebSocketFeature.IsWebSocketRequest
-        {
-            get
-            {
-                return _requestContext.IsWebSocketRequest();
-            }
-        }
+
+        bool IHttpWebSocketFeature.IsWebSocketRequest => _requestContext.IsWebSocketRequest;
 
         Task<WebSocket> IHttpWebSocketFeature.AcceptAsync(WebSocketAcceptContext context)
         {
@@ -455,7 +447,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
             return _requestContext.AcceptWebSocketAsync(subProtocol);
         }
-#endif
+
         ClaimsPrincipal IHttpAuthenticationFeature.User
         {
             get
