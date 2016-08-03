@@ -26,7 +26,10 @@
         @foreach (var errorDetail in Model.ErrorDetails)
         {
             <div id="stackpage" class="page">
-                @{ int tabIndex = 6; }
+                @{
+                    var stackFrameCount = 0;
+                    var frameId = "";
+                 }
                 @{
                     var fileName = errorDetail.StackFrames.FirstOrDefault()?.File;
                     if (!string.IsNullOrEmpty(fileName))
@@ -42,8 +45,11 @@
                 <ul>
                 @foreach (var frame in errorDetail.StackFrames)
                 {
-                    <li class="frame" tabindex="@tabIndex">
-                        @{ tabIndex++; }
+                    @{
+                        stackFrameCount++;
+                        frameId = "frame" + stackFrameCount;
+                    }
+                    <li class="frame" id="@frameId">
                         @if (!string.IsNullOrEmpty(frame.ErrorDetails))
                         {
                             <h3>@frame.ErrorDetails</h3>
@@ -51,6 +57,7 @@
 
                         @if (frame.Line != 0 && frame.ContextCode.Any())
                         {
+                            <button class="expandCollapseButton" data-frameId="@frameId">+</button>
                             <div class="source">
                                 @if (frame.PreContextCode.Any())
                                 {
@@ -75,9 +82,9 @@
                                             <li><span>@line</span></li>
                                         }
                                     </ol>
-                                } 
+                                }
                             </div>
-                        } 
+                        }
                     </li>
                 }
                 </ul>
