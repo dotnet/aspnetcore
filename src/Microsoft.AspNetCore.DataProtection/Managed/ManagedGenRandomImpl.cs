@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
 
         public byte[] GenRandom(int numBytes)
         {
-            byte[] bytes = new byte[numBytes];
+            var bytes = new byte[numBytes];
             _rng.GetBytes(bytes);
             return bytes;
         }

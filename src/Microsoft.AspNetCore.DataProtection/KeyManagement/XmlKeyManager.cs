@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 {
                     // ProcessKeyElement can return null in the case of failure, and if this happens we'll move on.
                     // Still need to throw if we see duplicate keys with the same id.
-                    KeyBase key = ProcessKeyElement(element);
+                    var key = ProcessKeyElement(element);
                     if (key != null)
                     {
                         if (keyIdToKeyMap.ContainsKey(key.KeyId))
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 }
                 else if (element.Name == RevocationElementName)
                 {
-                    object revocationInfo = ProcessRevocationElement(element);
+                    var revocationInfo = ProcessRevocationElement(element);
                     if (revocationInfo is Guid)
                     {
                         // a single key was revoked
@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 else
                 {
                     // only one key is being revoked
-                    Guid keyId = XmlConvert.ToGuid(keyIdAsString);
+                    var keyId = XmlConvert.ToGuid(keyIdAsString);
                     _logger?.FoundRevocationOfKey(keyId);
                     return keyId;
                 }
@@ -397,7 +397,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var possiblyEncryptedKeyElement = KeyEncryptor?.EncryptIfNecessary(keyElement) ?? keyElement;
 
             // Persist it to the underlying repository and trigger the cancellation token.
-            string friendlyName = Invariant($"key-{keyId:D}");
+            var friendlyName = Invariant($"key-{keyId:D}");
             KeyRepository.StoreElement(possiblyEncryptedKeyElement, friendlyName);
             TriggerAndResetCacheExpirationToken();
 
@@ -415,11 +415,11 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             try
             {
                 // Figure out who will be deserializing this
-                XElement descriptorElement = keyElement.Element(DescriptorElementName);
+                var descriptorElement = keyElement.Element(DescriptorElementName);
                 string descriptorDeserializerTypeName = (string)descriptorElement.Attribute(DeserializerTypeAttributeName);
 
                 // Decrypt the descriptor element and pass it to the descriptor for consumption
-                XElement unencryptedInputToDeserializer = descriptorElement.Elements().Single().DecryptElement(_activator);
+                var unencryptedInputToDeserializer = descriptorElement.Elements().Single().DecryptElement(_activator);
                 var deserializerInstance = _activator.CreateInstance<IAuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
                 var descriptorInstance = deserializerInstance.ImportFromXml(unencryptedInputToDeserializer);
 
@@ -450,7 +450,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 new XElement(ReasonElementName, reason));
 
             // Persist it to the underlying repository and trigger the cancellation token
-            string friendlyName = Invariant($"revocation-{keyId:D}");
+            var friendlyName = Invariant($"revocation-{keyId:D}");
             KeyRepository.StoreElement(revocationElement, friendlyName);
             TriggerAndResetCacheExpirationToken();
         }

@@ -25,20 +25,6 @@ namespace Microsoft.Extensions.DependencyInjection
     internal static class DataProtectionServiceDescriptors
     {
         /// <summary>
-        /// An <see cref="IConfigureOptions{DataProtectionOptions}"/> backed by the host-provided defaults.
-        /// </summary>
-        public static ServiceDescriptor ConfigureOptions_DataProtectionOptions()
-        {
-            return ServiceDescriptor.Transient<IConfigureOptions<DataProtectionOptions>>(services =>
-            {
-                return new ConfigureOptions<DataProtectionOptions>(options =>
-                {
-                    options.ApplicationDiscriminator = services.GetApplicationUniqueIdentifier();
-                });
-            });
-        }
-
-        /// <summary>
         /// An <see cref="IConfigureOptions{KeyManagementOptions}"/> where the key lifetime is specified explicitly.
         /// </summary>
 
@@ -51,14 +37,6 @@ namespace Microsoft.Extensions.DependencyInjection
                     options.NewKeyLifetime = TimeSpan.FromDays(numDays);
                 });
             });
-        }
-
-        /// <summary>
-        /// An <see cref="IAuthenticatedEncryptorConfiguration"/> backed by default algorithmic options.
-        /// </summary>
-        public static ServiceDescriptor IAuthenticatedEncryptorConfiguration_Default()
-        {
-            return IAuthenticatedEncryptorConfiguration_FromSettings(new AuthenticatedEncryptionSettings());
         }
 
         /// <summary>
@@ -80,18 +58,6 @@ namespace Microsoft.Extensions.DependencyInjection
 #endif
 
         /// <summary>
-        /// An <see cref="IDataProtectionProvider"/> backed by the default keyring.
-        /// </summary>
-        public static ServiceDescriptor IDataProtectionProvider_Default()
-        {
-            return ServiceDescriptor.Singleton<IDataProtectionProvider>(
-                services => DataProtectionProviderFactory.GetProviderFromServices(
-                    options: services.GetRequiredService<IOptions<DataProtectionOptions>>().Value,
-                    services: services,
-                    mustCreateImmediately: true /* this is the ultimate fallback */));
-        }
-
-        /// <summary>
         /// An ephemeral <see cref="IDataProtectionProvider"/>.
         /// </summary>
         public static ServiceDescriptor IDataProtectionProvider_Ephemeral()
@@ -108,14 +74,6 @@ namespace Microsoft.Extensions.DependencyInjection
         public static ServiceDescriptor IKeyEscrowSink_FromTypeName(string implementationTypeName)
         {
             return ServiceDescriptor.Singleton<IKeyEscrowSink>(services => services.GetActivator().CreateInstance<IKeyEscrowSink>(implementationTypeName));
-        }
-
-        /// <summary>
-        /// An <see cref="IKeyManager"/> backed by the default XML key manager.
-        /// </summary>
-        public static ServiceDescriptor IKeyManager_Default()
-        {
-            return ServiceDescriptor.Singleton<IKeyManager>(services => new XmlKeyManager(services));
         }
 
 #if !NETSTANDARD1_3 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
@@ -165,14 +123,6 @@ namespace Microsoft.Extensions.DependencyInjection
         public static ServiceDescriptor IXmlRepository_FileSystem(DirectoryInfo directory)
         {
             return ServiceDescriptor.Singleton<IXmlRepository>(services => new FileSystemXmlRepository(directory, services));
-        }
-
-        /// <summary>
-        /// An <see cref="IXmlRepository"/> backed by volatile in-process memory.
-        /// </summary>
-        public static ServiceDescriptor IXmlRepository_InMemory()
-        {
-            return ServiceDescriptor.Singleton<IXmlRepository>(services => new EphemeralXmlRepository(services));
         }
 
         /// <summary>

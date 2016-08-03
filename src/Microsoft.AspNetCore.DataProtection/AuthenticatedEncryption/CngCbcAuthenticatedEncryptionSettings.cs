@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             }
 
             // Make sure we're using a hash algorithm. We require a minimum 128-bit digest.
-            uint digestSize = algorithmHandle.GetHashDigestLength();
+            var digestSize = algorithmHandle.GetHashDigestLength();
             AlgorithmAssert.IsAllowableValidationAlgorithmDigestSize(checked(digestSize * 8));
 
             // all good!

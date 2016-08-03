@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
         public static byte[] Encrypt(this IAuthenticatedEncryptor encryptor, ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize)
         {
             // Can we call the optimized version?
-            IOptimizedAuthenticatedEncryptor optimizedEncryptor = encryptor as IOptimizedAuthenticatedEncryptor;
+            var optimizedEncryptor = encryptor as IOptimizedAuthenticatedEncryptor;
             if (optimizedEncryptor != null)
             {
                 return optimizedEncryptor.Encrypt(plaintext, additionalAuthenticatedData, preBufferSize, postBufferSize);
@@ -25,8 +25,8 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             }
             else
             {
-                byte[] temp = encryptor.Encrypt(plaintext, additionalAuthenticatedData);
-                byte[] retVal = new byte[checked(preBufferSize + temp.Length + postBufferSize)];
+                var temp = encryptor.Encrypt(plaintext, additionalAuthenticatedData);
+                var retVal = new byte[checked(preBufferSize + temp.Length + postBufferSize)];
                 Buffer.BlockCopy(temp, 0, retVal, checked((int)preBufferSize), temp.Length);
                 return retVal;
             }
@@ -39,13 +39,13 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
         public static void PerformSelfTest(this IAuthenticatedEncryptor encryptor)
         {
             // Arrange
-            Guid plaintextAsGuid = Guid.NewGuid();
-            byte[] plaintextAsBytes = plaintextAsGuid.ToByteArray();
-            byte[] aad = Guid.NewGuid().ToByteArray();
+            var plaintextAsGuid = Guid.NewGuid();
+            var plaintextAsBytes = plaintextAsGuid.ToByteArray();
+            var aad = Guid.NewGuid().ToByteArray();
 
             // Act
-            byte[] protectedData = encryptor.Encrypt(new ArraySegment<byte>(plaintextAsBytes), new ArraySegment<byte>(aad));
-            byte[] roundTrippedData = encryptor.Decrypt(new ArraySegment<byte>(protectedData), new ArraySegment<byte>(aad));
+            var protectedData = encryptor.Encrypt(new ArraySegment<byte>(plaintextAsBytes), new ArraySegment<byte>(aad));
+            var roundTrippedData = encryptor.Decrypt(new ArraySegment<byte>(protectedData), new ArraySegment<byte>(aad));
 
             // Assert
             CryptoUtil.Assert(roundTrippedData != null && roundTrippedData.Length == plaintextAsBytes.Length && plaintextAsGuid == new Guid(roundTrippedData),

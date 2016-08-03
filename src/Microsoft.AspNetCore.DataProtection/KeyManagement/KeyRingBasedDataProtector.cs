@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         {
             if (originalPurposes != null && originalPurposes.Length > 0)
             {
-                string[] newPurposes = new string[originalPurposes.Length + 1];
+                var newPurposes = new string[originalPurposes.Length + 1];
                 Array.Copy(originalPurposes, 0, newPurposes, 0, originalPurposes.Length);
                 newPurposes[originalPurposes.Length] = newPurpose;
                 return newPurposes;
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
 
             UnprotectStatus status;
-            byte[] retVal = UnprotectCore(protectedData, ignoreRevocationErrors, status: out status);
+            var retVal = UnprotectCore(protectedData, ignoreRevocationErrors, status: out status);
             requiresMigration = (status != UnprotectStatus.Ok);
             wasRevoked = (status == UnprotectStatus.DecryptionKeyWasRevoked);
             return retVal;
@@ -117,10 +117,10 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
                 // We'll need to apply the default key id to the template if it hasn't already been applied.
                 // If the default key id has been updated since the last call to Protect, also write back the updated template.
-                byte[] aad = _aadTemplate.GetAadForKey(defaultKeyId, isProtecting: true);
+                var aad = _aadTemplate.GetAadForKey(defaultKeyId, isProtecting: true);
 
                 // We allocate a 20-byte pre-buffer so that we can inject the magic header and key id into the return value.
-                byte[] retVal = defaultEncryptorInstance.Encrypt(
+                var retVal = defaultEncryptorInstance.Encrypt(
                     plaintext: new ArraySegment<byte>(plaintext),
                     additionalAuthenticatedData: new ArraySegment<byte>(aad),
                     preBufferSize: (uint)(sizeof(uint) + sizeof(Guid)),
@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 {
                     writer.WriteBigEndian(MAGIC_HEADER_V0);
                     Debug.Assert(ms.Position == sizeof(uint));
-                    long posPurposeCount = writer.Seek(sizeof(Guid), SeekOrigin.Current); // skip over where the key id will be stored; we'll fill it in later
+                    var posPurposeCount = writer.Seek(sizeof(Guid), SeekOrigin.Current); // skip over where the key id will be stored; we'll fill it in later
                     writer.Seek(sizeof(uint), SeekOrigin.Current); // skip over where the purposeCount will be stored; we'll fill it in later
 
                     uint purposeCount = 0;
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             {
                 // Multiple threads might be trying to read and write the _aadTemplate field
                 // simultaneously. We need to make sure all accesses to it are thread-safe.
-                byte[] existingTemplate = Volatile.Read(ref _aadTemplate);
+                var existingTemplate = Volatile.Read(ref _aadTemplate);
                 Debug.Assert(existingTemplate.Length >= sizeof(uint) /* MAGIC_HEADER */ + sizeof(Guid) /* keyId */);
 
                 // If the template is already initialized to this key id, return it.

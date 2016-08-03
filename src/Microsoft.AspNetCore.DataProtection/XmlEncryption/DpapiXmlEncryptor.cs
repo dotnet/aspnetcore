@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             byte[] dpapiEncryptedData;
             try
             {
-                using (Secret plaintextElementAsSecret = plaintextElement.ToSecret())
+                using (var plaintextElementAsSecret = plaintextElement.ToSecret())
                 {
                     dpapiEncryptedData = DpapiSecretSerializerHelper.ProtectWithDpapi(plaintextElementAsSecret, protectToLocalMachine: _protectToLocalMachine);
                 }

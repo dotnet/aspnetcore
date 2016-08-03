@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.DataProtection
                 throw new ArgumentNullException(nameof(secret));
             }
 
-            Secret other = secret as Secret;
+            var other = secret as Secret;
             if (other != null)
             {
                 // Fast-track: simple deep copy scenario.
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.DataProtection
             {
                 // Copy the secret to a temporary managed buffer, then protect the buffer.
                 // We pin the temp buffer and zero it out when we're finished to limit exposure of the secret.
-                byte[] tempPlaintextBuffer = new byte[secret.Length];
+                var tempPlaintextBuffer = new byte[secret.Length];
                 fixed (byte* pbTempPlaintextBuffer = tempPlaintextBuffer)
                 {
                     try
@@ -136,14 +136,14 @@ namespace Microsoft.AspNetCore.DataProtection
             // mark this memory page as non-pageable, but this is fraught with peril.
             if (!OSVersionUtil.IsWindows())
             {
-                SecureLocalAllocHandle handle = SecureLocalAllocHandle.Allocate((IntPtr)checked((int)cbPlaintext));
+                var handle = SecureLocalAllocHandle.Allocate((IntPtr)checked((int)cbPlaintext));
                 UnsafeBufferUtil.BlockCopy(from: pbPlaintext, to: handle, byteCount: cbPlaintext);
                 return handle;
             }
 
             // We need to make sure we're a multiple of CRYPTPROTECTMEMORY_BLOCK_SIZE.
-            uint numTotalBytesToAllocate = cbPlaintext;
-            uint numBytesPaddingRequired = CRYPTPROTECTMEMORY_BLOCK_SIZE - (numTotalBytesToAllocate % CRYPTPROTECTMEMORY_BLOCK_SIZE);
+            var numTotalBytesToAllocate = cbPlaintext;
+            var numBytesPaddingRequired = CRYPTPROTECTMEMORY_BLOCK_SIZE - (numTotalBytesToAllocate % CRYPTPROTECTMEMORY_BLOCK_SIZE);
             if (numBytesPaddingRequired == CRYPTPROTECTMEMORY_BLOCK_SIZE)
             {
                 numBytesPaddingRequired = 0; // we're already a proper multiple of the block size
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.DataProtection
             CryptoUtil.Assert(numTotalBytesToAllocate % CRYPTPROTECTMEMORY_BLOCK_SIZE == 0, "numTotalBytesToAllocate % CRYPTPROTECTMEMORY_BLOCK_SIZE == 0");
 
             // Allocate and copy plaintext data; padding is uninitialized / undefined.
-            SecureLocalAllocHandle encryptedMemoryHandle = SecureLocalAllocHandle.Allocate((IntPtr)numTotalBytesToAllocate);
+            var encryptedMemoryHandle = SecureLocalAllocHandle.Allocate((IntPtr)numTotalBytesToAllocate);
             UnsafeBufferUtil.BlockCopy(from: pbPlaintext, to: encryptedMemoryHandle, byteCount: cbPlaintext);
 
             // Finally, CryptProtectMemory the whole mess.
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.DataProtection
                     return new Secret(ManagedGenRandomImpl.Instance.GenRandom(numBytes));
                 }
 
-                byte[] bytes = new byte[numBytes];
+                var bytes = new byte[numBytes];
                 fixed (byte* pbBytes = bytes)
                 {
                     try

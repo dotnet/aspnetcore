@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.DataProtection
     {
         public static InvalidOperationException CertificateXmlEncryptor_CertificateNotFound(string thumbprint)
         {
-            string message = Resources.FormatCertificateXmlEncryptor_CertificateNotFound(thumbprint);
+            var message = Resources.FormatCertificateXmlEncryptor_CertificateNotFound(thumbprint);
             return new InvalidOperationException(message);
         }
 
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
         public static ArgumentException Common_BufferIncorrectlySized(string parameterName, int actualSize, int expectedSize)
         {
-            string message = Resources.FormatCommon_BufferIncorrectlySized(actualSize, expectedSize);
+            var message = Resources.FormatCommon_BufferIncorrectlySized(actualSize, expectedSize);
             return new ArgumentException(message, parameterName);
         }
 
@@ -33,19 +33,19 @@ namespace Microsoft.AspNetCore.DataProtection
 
         public static CryptographicException CryptCommon_PayloadInvalid()
         {
-            string message = Resources.CryptCommon_PayloadInvalid;
+            var message = Resources.CryptCommon_PayloadInvalid;
             return new CryptographicException(message);
         }
 
         public static InvalidOperationException Common_PropertyCannotBeNullOrEmpty(string propertyName)
         {
-            string message = String.Format(CultureInfo.CurrentCulture, Resources.Common_PropertyCannotBeNullOrEmpty, propertyName);
+            var message = String.Format(CultureInfo.CurrentCulture, Resources.Common_PropertyCannotBeNullOrEmpty, propertyName);
             return new InvalidOperationException(message);
         }
 
         public static InvalidOperationException Common_PropertyMustBeNonNegative(string propertyName)
         {
-            string message = String.Format(CultureInfo.CurrentCulture, Resources.Common_PropertyMustBeNonNegative, propertyName);
+            var message = String.Format(CultureInfo.CurrentCulture, Resources.Common_PropertyMustBeNonNegative, propertyName);
             return new InvalidOperationException(message);
         }
 
@@ -56,13 +56,13 @@ namespace Microsoft.AspNetCore.DataProtection
 
         public static CryptographicException Common_KeyNotFound(Guid id)
         {
-            string message = String.Format(CultureInfo.CurrentCulture, Resources.Common_KeyNotFound, id);
+            var message = String.Format(CultureInfo.CurrentCulture, Resources.Common_KeyNotFound, id);
             return new CryptographicException(message);
         }
 
         public static CryptographicException Common_KeyRevoked(Guid id)
         {
-            string message = String.Format(CultureInfo.CurrentCulture, Resources.Common_KeyRevoked, id);
+            var message = String.Format(CultureInfo.CurrentCulture, Resources.Common_KeyRevoked, id);
             return new CryptographicException(message);
         }
 
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.DataProtection
         
         public static InvalidOperationException XmlKeyManager_DuplicateKey(Guid keyId)
         {
-            string message = String.Format(CultureInfo.CurrentCulture, Resources.XmlKeyManager_DuplicateKey, keyId);
+            var message = String.Format(CultureInfo.CurrentCulture, Resources.XmlKeyManager_DuplicateKey, keyId);
             return new InvalidOperationException(message);
         }
     }

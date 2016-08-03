@@ -45,14 +45,14 @@ namespace Microsoft.AspNetCore.DataProtection.SP800_108
             pBuffers[2].cbBuffer = checked(SHA512_ALG_CHAR_COUNT * sizeof(char));
 
             // Add the header which points to the buffers
-            BCryptBufferDesc bufferDesc = default(BCryptBufferDesc);
+            var bufferDesc = default(BCryptBufferDesc);
             BCryptBufferDesc.Initialize(ref bufferDesc);
             bufferDesc.cBuffers = 3;
             bufferDesc.pBuffers = pBuffers;
 
             // Finally, invoke the KDF 
             uint numBytesDerived;
-            int ntstatus = UnsafeNativeMethods.BCryptKeyDerivation(
+            var ntstatus = UnsafeNativeMethods.BCryptKeyDerivation(
                 hKey: _keyHandle,
                 pParameterList: &bufferDesc,
                 pbDerivedKey: pbDerivedKey,

@@ -56,8 +56,8 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 //   <value>{base64}</value>
                 // </encryptedKey>
 
-                byte[] protectedSecret = Convert.FromBase64String((string)encryptedElement.Element("value"));
-                using (Secret secret = DpapiSecretSerializerHelper.UnprotectWithDpapi(protectedSecret))
+                var protectedSecret = Convert.FromBase64String((string)encryptedElement.Element("value"));
+                using (var secret = DpapiSecretSerializerHelper.UnprotectWithDpapi(protectedSecret))
                 {
                     return secret.ToXElement();
                 }

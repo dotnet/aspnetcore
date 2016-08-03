@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
 
             CryptoUtil.AssertPlatformIsWindows8OrLater();
 
-            int ntstatus = UnsafeNativeMethods.NCryptCreateProtectionDescriptor(protectionDescriptorRule, (uint)flags, out _protectionDescriptorHandle);
+            var ntstatus = UnsafeNativeMethods.NCryptCreateProtectionDescriptor(protectionDescriptorRule, (uint)flags, out _protectionDescriptorHandle);
             UnsafeNativeMethods.ThrowExceptionForNCryptStatus(ntstatus);
             CryptoUtil.AssertSafeHandleIsValid(_protectionDescriptorHandle);
 
@@ -72,14 +72,14 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 throw new ArgumentNullException(nameof(plaintextElement));
             }
 
-            string protectionDescriptorRuleString = _protectionDescriptorHandle.GetProtectionDescriptorRuleString();
+            var protectionDescriptorRuleString = _protectionDescriptorHandle.GetProtectionDescriptorRuleString();
             _logger?.EncryptingToWindowsDPAPINGUsingProtectionDescriptorRule(protectionDescriptorRuleString);
 
             // Convert the XML element to a binary secret so that it can be run through DPAPI
             byte[] cngDpapiEncryptedData;
             try
             {
-                using (Secret plaintextElementAsSecret = plaintextElement.ToSecret())
+                using (var plaintextElementAsSecret = plaintextElement.ToSecret())
                 {
                     cngDpapiEncryptedData = DpapiSecretSerializerHelper.ProtectWithDpapiNG(plaintextElementAsSecret, _protectionDescriptorHandle);
                 }
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
 
             // Creates a SID=... protection descriptor string for the current user.
             // Reminder: DPAPI:NG provides only encryption, not authentication.
-            using (WindowsIdentity currentIdentity = WindowsIdentity.GetCurrent())
+            using (var currentIdentity = WindowsIdentity.GetCurrent())
             {
                 // use the SID to create an SDDL string
                 return Invariant($"SID={currentIdentity.User.Value}");

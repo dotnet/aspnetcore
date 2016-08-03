@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
         public DefaultKeyResolution ResolveDefaultKeyPolicy(DateTimeOffset now, IEnumerable<IKey> allKeys)
         {
-            DefaultKeyResolution retVal = default(DefaultKeyResolution);
+            var retVal = default(DefaultKeyResolution);
             retVal.DefaultKey = FindDefaultKey(now, allKeys, out retVal.FallbackKey, out retVal.ShouldGenerateNewKey);
             return retVal;
         }
