@@ -5,8 +5,7 @@
         ],
         "packages": {
             "Microsoft.AspNetCore.Server.WebListener": { },
-            "Microsoft.Net.Http.Server": { },
-            "Microsoft.Net.WebSockets.Server": { }
+            "Microsoft.Net.Http.Server": { }
         }
     },
     "Default": { // Ru les to run for packages not listed in any other set.
