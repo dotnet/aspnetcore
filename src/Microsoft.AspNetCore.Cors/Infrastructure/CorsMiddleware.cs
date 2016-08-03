@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                     if (string.Equals(
                             context.Request.Method,
                             CorsConstants.PreflightHttpMethod,
-                            StringComparison.Ordinal) &&
+                            StringComparison.OrdinalIgnoreCase) &&
                             !StringValues.IsNullOrEmpty(accessControlRequestMethod))
                     {
                         // Since there is a policy which was identified,

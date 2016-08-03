@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             var corsResult = new CorsResult();
             var accessControlRequestMethod = context.Request.Headers[CorsConstants.AccessControlRequestMethod];
-            if (string.Equals(context.Request.Method, CorsConstants.PreflightHttpMethod, StringComparison.Ordinal) &&
+            if (string.Equals(context.Request.Method, CorsConstants.PreflightHttpMethod, StringComparison.OrdinalIgnoreCase) &&
                 !StringValues.IsNullOrEmpty(accessControlRequestMethod))
             {
                 EvaluatePreflightRequest(context, policy, corsResult);
@@ -109,9 +109,23 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var requestHeaders =
                 context.Request.Headers.GetCommaSeparatedValues(CorsConstants.AccessControlRequestHeaders);
 
-            if (!policy.AllowAnyMethod && !policy.Methods.Contains(accessControlRequestMethod))
+            if (!policy.AllowAnyMethod)
             {
-                return;
+                var found = false;
+                for (var i = 0; i < policy.Methods.Count; i++)
+                {
+                    var method = policy.Methods[i];
+                    if (string.Equals(method, accessControlRequestMethod, StringComparison.OrdinalIgnoreCase))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    return;
+                }
             }
 
             if (!policy.AllowAnyHeader &&

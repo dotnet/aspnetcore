@@ -227,12 +227,17 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             Assert.Contains("PUT", result.AllowedMethods);
         }
 
-        [Fact]
-        public void EvaluatePolicy_PreflightRequest_OriginAllowed_ReturnsOrigin()
+        [Theory]
+        [InlineData("OpTions")]
+        [InlineData("OPTIONS")]
+        public void EvaluatePolicy_CaseInsensitivePreflightRequest_OriginAllowed_ReturnsOrigin(string preflightMethod)
         {
             // Arrange
             var corsService = new CorsService(new TestCorsOptions());
-            var requestContext = GetHttpContext(method: "OPTIONS", origin: "http://example.com", accessControlRequestMethod: "PUT");
+            var requestContext = GetHttpContext(
+                method: preflightMethod,
+                origin: "http://example.com",
+                accessControlRequestMethod: "PUT");
             var policy = new CorsPolicy();
             policy.Origins.Add(CorsConstants.AnyOrigin);
             policy.Origins.Add("http://example.com");
@@ -323,12 +328,17 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             Assert.Contains("GET", result.AllowedMethods);
         }
 
-        [Fact]
-        public void EvaluatePolicy_PreflightRequest_ListedMethod_ReturnsSubsetOfListedMethods()
+        [Theory]
+        [InlineData("Put")]
+        [InlineData("PUT")]
+        public void EvaluatePolicy_CaseInsensitivePreflightRequest_ListedMethod_ReturnsSubsetOfListedMethods(string method)
         {
             // Arrange
             var corsService = new CorsService(new TestCorsOptions());
-            var requestContext = GetHttpContext(method: "OPTIONS", origin: "http://example.com", accessControlRequestMethod: "PUT");
+            var requestContext = GetHttpContext(
+                method: "OPTIONS",
+                origin: "http://example.com",
+                accessControlRequestMethod: method);
             var policy = new CorsPolicy();
             policy.Origins.Add(CorsConstants.AnyOrigin);
             policy.Methods.Add("PUT");
@@ -339,7 +349,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             // Assert
             Assert.Equal(1, result.AllowedMethods.Count);
-            Assert.Contains("PUT", result.AllowedMethods);
+            Assert.Contains(method, result.AllowedMethods);
         }
 
         [Fact]

@@ -16,6 +16,41 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
     public class CorsMiddlewareTests
     {
+        [Theory]
+        [InlineData("PuT")]
+        [InlineData("PUT")]
+        public async Task CorsRequest_MatchesPolicy_OnCaseInsensitiveAccessControlRequestMethod(string accessControlRequestMethod)
+        {
+            // Arrange
+            var hostBuilder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseCors(builder =>
+                        builder.WithOrigins("http://localhost:5001")
+                               .WithMethods("PUT"));
+                    app.Run(async context =>
+                    {
+                        await context.Response.WriteAsync("Cross origin response");
+                    });
+                })
+                .ConfigureServices(services => services.AddCors());
+
+            using (var server = new TestServer(hostBuilder))
+            {
+                // Act
+                // Actual request.
+                var response = await server.CreateRequest("/")
+                    .AddHeader(CorsConstants.Origin, "http://localhost:5001")
+                    .SendAsync(accessControlRequestMethod);
+
+                // Assert
+                response.EnsureSuccessStatusCode();
+                Assert.Equal(1, response.Headers.Count());
+                Assert.Equal("Cross origin response", await response.Content.ReadAsStringAsync());
+                Assert.Equal("http://localhost:5001", response.Headers.GetValues(CorsConstants.AccessControlAllowOrigin).FirstOrDefault());
+            }
+        }
+
         [Fact]
         public async Task CorsRequest_MatchPolicy_SetsResponseHeaders()
         {
@@ -49,6 +84,48 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 Assert.Equal("Cross origin response", await response.Content.ReadAsStringAsync());
                 Assert.Equal("http://localhost:5001", response.Headers.GetValues(CorsConstants.AccessControlAllowOrigin).FirstOrDefault());
                 Assert.Equal("AllowedHeader", response.Headers.GetValues(CorsConstants.AccessControlExposeHeaders).FirstOrDefault());
+            }
+        }
+
+        [Theory]
+        [InlineData("OpTions")]
+        [InlineData("OPTIONS")]
+        public async Task PreFlight_MatchesPolicy_OnCaseInsensitiveOptionsMethod(string preflightMethod)
+        {
+            // Arrange
+            var policy = new CorsPolicy();
+            policy.Origins.Add("http://localhost:5001");
+            policy.Methods.Add("PUT");
+
+            var hostBuilder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseCors("customPolicy");
+                    app.Run(async context =>
+                    {
+                        await context.Response.WriteAsync("Cross origin response");
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddCors(options =>
+                    {
+                        options.AddPolicy("customPolicy", policy);
+                    });
+                });
+
+            using (var server = new TestServer(hostBuilder))
+            {
+                // Act
+                // Preflight request.
+                var response = await server.CreateRequest("/")
+                    .AddHeader(CorsConstants.Origin, "http://localhost:5001")
+                    .SendAsync(preflightMethod);
+
+                // Assert
+                response.EnsureSuccessStatusCode();
+                Assert.Equal(1, response.Headers.Count());
+                Assert.Equal("http://localhost:5001", response.Headers.GetValues(CorsConstants.AccessControlAllowOrigin).FirstOrDefault());
             }
         }
 
