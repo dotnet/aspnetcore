@@ -30,7 +30,7 @@ namespace Microsoft.Net.Http.Server
         private static byte[] ExtractIdentifierBlob(TOKENBINDING_RESULT_DATA* pTokenBindingResultData)
         {
             // Per http://tools.ietf.org/html/draft-ietf-tokbind-protocol-00, Sec. 4,
-            // the identifer is a tuple which contains (token binding type, hash algorithm
+            // the identifier is a tuple which contains (token binding type, hash algorithm
             // signature algorithm, key data). We'll strip off the token binding type and
             // return the remainder (starting with the hash algorithm) as an opaque blob.
             byte[] retVal = new byte[checked(pTokenBindingResultData->identifierSize - 1)];

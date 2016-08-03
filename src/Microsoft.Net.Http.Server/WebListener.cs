@@ -72,8 +72,6 @@ namespace Microsoft.Net.Http.Server
         // The native request queue
         private long? _requestQueueLength;
 
-        private bool _bufferResponses = true;
-
         public WebListener()
             : this(null)
         {
@@ -167,12 +165,6 @@ namespace Microsoft.Net.Http.Server
         public UrlPrefixCollection UrlPrefixes
         {
             get { return _urlPrefixes; }
-        }
-
-        public bool BufferResponses
-        {
-            get { return _bufferResponses; }
-            set { _bufferResponses = value; }
         }
 
         /// <summary>

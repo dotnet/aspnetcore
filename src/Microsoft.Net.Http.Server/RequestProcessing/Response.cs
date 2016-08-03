@@ -26,11 +26,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using static Microsoft.Net.Http.Server.UnsafeNclNativeMethods;
 
@@ -46,25 +44,12 @@ namespace Microsoft.Net.Http.Server
         private long _expectedBodyLength;
         private BoundaryType _boundaryType;
         private HttpApi.HTTP_RESPONSE_V2 _nativeResponse;
-        private IList<Tuple<Func<object, Task>, object>> _onStartingActions;
-        private IList<Tuple<Func<object, Task>, object>> _onCompletedActions;
-
-        private bool _bufferingEnabled;
 
         internal Response(RequestContext requestContext)
         {
             // TODO: Verbose log
             RequestContext = requestContext;
             Headers = new HeaderCollection();
-            Reset();
-        }
-
-        public void Reset()
-        {
-            if (_responseState >= ResponseState.StartedSending)
-            {
-                throw new InvalidOperationException("The response has already been sent. Request Aborted.");
-            }
             // We haven't started yet, or we're just buffered, we can clear any data, headers, and state so
             // that we can start over (e.g. to write an error message).
             _nativeResponse = new HttpApi.HTTP_RESPONSE_V2();
@@ -76,9 +61,6 @@ namespace Microsoft.Net.Http.Server
             _nativeResponse.Response_V1.Version.MajorVersion = 1;
             _nativeResponse.Response_V1.Version.MinorVersion = 1;
             _responseState = ResponseState.Created;
-            _onStartingActions = new List<Tuple<Func<object, Task>, object>>();
-            _onCompletedActions = new List<Tuple<Func<object, Task>, object>>();
-            _bufferingEnabled = RequestContext.Server.BufferResponses;
             _expectedBodyLength = 0;
             _nativeStream = null;
             _cacheTtl = null;
@@ -88,9 +70,8 @@ namespace Microsoft.Net.Http.Server
         private enum ResponseState
         {
             Created,
-            Started,
             ComputedHeaders,
-            StartedSending,
+            Started,
             Closed,
         }
 
@@ -121,16 +102,6 @@ namespace Microsoft.Net.Http.Server
                 // TODO: Validate user input for illegal chars, length limit, etc.?
                 CheckResponseStarted();
                 _reasonPhrase = value;
-            }
-        }
-
-        public bool ShouldBuffer
-        {
-            get { return _bufferingEnabled; }
-            set
-            {
-                CheckResponseStarted();
-                _bufferingEnabled = value;
             }
         }
 
@@ -279,8 +250,6 @@ namespace Microsoft.Net.Http.Server
             {
                 return;
             }
-            Start();
-            NotifyOnResponseCompleted();
             // TODO: Verbose log
             EnsureResponseStream();
             _nativeStream.Dispose();
@@ -292,11 +261,14 @@ namespace Microsoft.Net.Http.Server
             get { return _boundaryType; }
         }
 
+        internal bool HasComputedHeaders
+        {
+            get { return _responseState >= ResponseState.ComputedHeaders; }
+        }
+
         /// <summary>
         /// Indicates if the response status, reason, and headers are prepared to send and can
-        /// no longer be modified. This is caused by the first write to the response body. However,
-        /// the response may not have been flushed to the network yet if the body is buffered.
-        /// See HasStartedSending.
+        /// no longer be modified. This is caused by the first write or flush to the response body.
         /// </summary>
         public bool HasStarted
         {
@@ -309,19 +281,6 @@ namespace Microsoft.Net.Http.Server
             {
                 throw new InvalidOperationException("Headers already sent.");
             }
-        }
-
-        internal bool ComputedHeaders
-        {
-            get { return _responseState >= ResponseState.ComputedHeaders; }
-        }
-
-        /// <summary>
-        /// Indicates the initial response has been flushed to the network and can no longer be modified or Reset.
-        /// </summary>
-        public bool HasStartedSending
-        {
-            get { return _responseState >= ResponseState.StartedSending; }
         }
 
         private void EnsureResponseStream()
@@ -367,9 +326,9 @@ namespace Microsoft.Net.Http.Server
             HttpApi.HTTP_FLAGS flags,
             bool isOpaqueUpgrade)
         {
-            Debug.Assert(!HasStartedSending, "HttpListenerResponse::SendHeaders()|SentHeaders is true.");
+            Debug.Assert(!HasStarted, "HttpListenerResponse::SendHeaders()|SentHeaders is true.");
 
-            _responseState = ResponseState.StartedSending;
+            _responseState = ResponseState.Started;
             var reasonPhrase = GetReasonPhrase(StatusCode);
 
             /*
@@ -448,21 +407,8 @@ namespace Microsoft.Net.Http.Server
             return statusCode;
         }
 
-        internal void Start()
+        internal HttpApi.HTTP_FLAGS ComputeHeaders(bool endOfRequest = false)
         {
-            if (!HasStarted)
-            {
-                // Notify that this is absolutely the last chance to make changes.
-                NotifyOnSendingHeaders();
-                Headers.IsReadOnly = true; // Prohibit further modifications.
-                _responseState = ResponseState.Started;
-            }
-        }
-
-        internal HttpApi.HTTP_FLAGS ComputeHeaders(bool endOfRequest = false, int bufferedBytes = 0)
-        {
-            Headers.IsReadOnly = false; // Temporarily allow modification.
-
             // 401
             if (StatusCode == (ushort)HttpStatusCode.Unauthorized)
             {
@@ -470,7 +416,7 @@ namespace Microsoft.Net.Http.Server
             }
 
             var flags = HttpApi.HTTP_FLAGS.NONE;
-            Debug.Assert(!ComputedHeaders, "HttpListenerResponse::ComputeHeaders()|ComputedHeaders is true.");
+            Debug.Assert(!HasComputedHeaders, nameof(HasComputedHeaders) + " is true.");
             _responseState = ResponseState.ComputedHeaders;
 
             // Gather everything from the request that affects the response:
@@ -511,16 +457,12 @@ namespace Microsoft.Net.Http.Server
             }
             else if (endOfRequest && !(isHeadRequest && statusCanHaveBody)) // HEAD requests should always end without a body. Assume a GET response would have a body.
             {
-                if (bufferedBytes > 0)
-                {
-                    Headers[HttpKnownHeaderNames.ContentLength] = bufferedBytes.ToString(CultureInfo.InvariantCulture);
-                }
-                else if (statusCanHaveBody)
+                if (statusCanHaveBody)
                 {
                     Headers[HttpKnownHeaderNames.ContentLength] = Constants.Zero;
                 }
                 _boundaryType = BoundaryType.ContentLength;
-                _expectedBodyLength = bufferedBytes;
+                _expectedBodyLength = 0;
             }
             else if (keepConnectionAlive && requestVersion == Constants.V1_1)
             {
@@ -726,8 +668,6 @@ namespace Microsoft.Net.Http.Server
         // Subset of ComputeHeaders
         internal void SendOpaqueUpgrade()
         {
-            // Notify that this is absolutely the last chance to make changes.
-            Start();
             _boundaryType = BoundaryType.Close;
 
             // TODO: Send headers async?
@@ -765,70 +705,7 @@ namespace Microsoft.Net.Http.Server
         internal void SwitchToOpaqueMode()
         {
             EnsureResponseStream();
-            _bufferingEnabled = false;
             _nativeStream.SwitchToOpaqueMode();
-        }
-
-        public void OnStarting(Func<object, Task> callback, object state)
-        {
-            var actions = _onStartingActions;
-            if (actions == null)
-            {
-                throw new InvalidOperationException("Response already started");
-            }
-
-            actions.Add(new Tuple<Func<object, Task>, object>(callback, state));
-        }
-
-        public void OnCompleted(Func<object, Task> callback, object state)
-        {
-            var actions = _onCompletedActions;
-            if (actions == null)
-            {
-                throw new InvalidOperationException("Response already completed");
-            }
-
-            actions.Add(new Tuple<Func<object, Task>, object>(callback, state));
-        }
-
-        private void NotifyOnSendingHeaders()
-        {
-            var actions = Interlocked.Exchange(ref _onStartingActions, null);
-            if (actions == null)
-            {
-                // Something threw the first time, do not try again.
-                return;
-            }
-
-            // Execute last to first. This mimics a stack unwind.
-            foreach (var actionPair in actions.Reverse())
-            {
-                actionPair.Item1(actionPair.Item2);
-            }
-        }
-
-        private void NotifyOnResponseCompleted()
-        {
-            var actions = Interlocked.Exchange(ref _onCompletedActions, null);
-            if (actions == null)
-            {
-                // Something threw the first time, do not try again.
-                return;
-            }
-
-            foreach (var actionPair in actions)
-            {
-                try
-                {
-                    actionPair.Item1(actionPair.Item2);
-                }
-                catch (Exception ex)
-                {
-                    RequestContext.Logger.LogWarning(
-                        String.Format(Resources.Warning_ExceptionInOnResponseCompletedAction, nameof(OnCompleted)),
-                        ex);
-                }
-            }
         }
     }
 }

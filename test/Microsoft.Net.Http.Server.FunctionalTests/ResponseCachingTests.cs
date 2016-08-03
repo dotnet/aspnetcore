@@ -289,7 +289,6 @@ namespace Microsoft.Net.Http.Server
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
-                context.Response.ShouldBuffer = true;
                 context.Response.Body.Write(new byte[10], 0, 10);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
                 context.Dispose();

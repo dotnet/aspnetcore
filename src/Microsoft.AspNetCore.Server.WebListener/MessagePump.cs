@@ -166,26 +166,34 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 }
 
                 object context = null;
+                Interlocked.Increment(ref _outstandingRequests);
                 try
                 {
-                    Interlocked.Increment(ref _outstandingRequests);
-                    FeatureContext featureContext = new FeatureContext(requestContext, EnableResponseCaching);
+                    var featureContext = new FeatureContext(requestContext, EnableResponseCaching);
                     context = _application.CreateContext(featureContext.Features);
-                    await _application.ProcessRequestAsync(context).SupressContext();
-                    requestContext.Dispose();
-                    _application.DisposeContext(context, null);
+                    try
+                    {
+                        await _application.ProcessRequestAsync(context).SupressContext();
+                        await featureContext.OnStart();
+                        requestContext.Dispose();
+                        _application.DisposeContext(context, null);
+                    }
+                    finally
+                    {
+                        await featureContext.OnCompleted();
+                    }
                 }
                 catch (Exception ex)
                 {
                     LogHelper.LogException(_logger, "ProcessRequestAsync", ex);
-                    if (requestContext.Response.HasStartedSending)
+                    if (requestContext.Response.HasStarted)
                     {
                         requestContext.Abort();
                     }
                     else
                     {
                         // We haven't sent a response yet, try to send a 500 Internal Server Error
-                        requestContext.Response.Reset();
+                        requestContext.Response.Headers.Clear();
                         SetFatalResponse(requestContext, 500);
                     }
                     _application.DisposeContext(context, ex);

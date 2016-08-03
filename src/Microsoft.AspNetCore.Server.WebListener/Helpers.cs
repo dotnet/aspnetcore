@@ -28,10 +28,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
 {
     internal static class Helpers
     {
-        internal static Task CompletedTask()
-        {
-            return Task.FromResult<object>(null);
-        }
+        internal static Task CompletedTask { get; } = Task.FromResult(0);
 
         internal static ConfiguredTaskAwaitable SupressContext(this Task task)
         {

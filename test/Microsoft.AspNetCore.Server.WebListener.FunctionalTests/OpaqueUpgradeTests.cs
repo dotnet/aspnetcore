@@ -115,6 +115,40 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        public async Task OpaqueUpgrade_WithOnStarting_CallbackCalled()
+        {
+            var callbackCalled = false;
+            var waitHandle = new ManualResetEvent(false);
+            bool? upgraded = null;
+            string address;
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
+            {
+                httpContext.Response.OnStarting(_ =>
+                {
+                    callbackCalled = true;
+                    return Task.FromResult(0);
+                }, null);
+                httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
+                var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
+                Assert.NotNull(opaqueFeature);
+                Assert.True(opaqueFeature.IsUpgradableRequest);
+                await opaqueFeature.UpgradeAsync();
+                upgraded = true;
+                waitHandle.Set();
+            }))
+            {
+                using (Stream stream = await SendOpaqueRequestAsync("GET", address))
+                {
+                    Assert.True(waitHandle.WaitOne(TimeSpan.FromSeconds(1)), "Timed out");
+                    Assert.True(upgraded.HasValue, "Upgraded not set");
+                    Assert.True(upgraded.Value, "Upgrade failed");
+                    Assert.True(callbackCalled, "Callback not called");
+                }
+            }
+        }
+
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         // See HTTP_VERB for known verbs

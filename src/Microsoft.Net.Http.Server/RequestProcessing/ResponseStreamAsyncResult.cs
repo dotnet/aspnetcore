@@ -50,14 +50,14 @@ namespace Microsoft.Net.Http.Server
             _cancellationRegistration = cancellationRegistration;
         }
 
-        internal ResponseStreamAsyncResult(ResponseStream responseStream, BufferBuilder buffer, bool chunked,
+        internal ResponseStreamAsyncResult(ResponseStream responseStream, ArraySegment<byte> data, bool chunked,
             CancellationTokenRegistration cancellationRegistration)
             : this(responseStream, cancellationRegistration)
         {
             var boundHandle = _responseStream.RequestContext.Server.RequestQueue.BoundHandle;
             object[] objectsToPin;
 
-            if (buffer.TotalBytes == 0)
+            if (data.Count == 0)
             {
                 _dataChunks = null;
                 _overlapped = new SafeNativeOverlapped(boundHandle,
@@ -65,7 +65,7 @@ namespace Microsoft.Net.Http.Server
                 return;
             }
 
-            _dataChunks = new HttpApi.HTTP_DATA_CHUNK[buffer.BufferCount + (chunked ? 2 : 0)];
+            _dataChunks = new HttpApi.HTTP_DATA_CHUNK[1 + (chunked ? 2 : 0)];
             objectsToPin = new object[_dataChunks.Length + 1];
             objectsToPin[0] = _dataChunks;
             var currentChunk = 0;
@@ -74,14 +74,11 @@ namespace Microsoft.Net.Http.Server
             var chunkHeaderBuffer = new ArraySegment<byte>();
             if (chunked)
             {
-                chunkHeaderBuffer = Helpers.GetChunkHeader(buffer.TotalBytes);
+                chunkHeaderBuffer = Helpers.GetChunkHeader(data.Count);
                 SetDataChunk(_dataChunks, ref currentChunk, objectsToPin, ref currentPin, chunkHeaderBuffer);
             }
 
-            foreach (var segment in buffer.Buffers)
-            {
-                SetDataChunk(_dataChunks, ref currentChunk, objectsToPin, ref currentPin, segment);
-            }
+            SetDataChunk(_dataChunks, ref currentChunk, objectsToPin, ref currentPin, data);
 
             if (chunked)
             {
@@ -98,19 +95,15 @@ namespace Microsoft.Net.Http.Server
                 _dataChunks[currentChunk].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(chunkHeaderBuffer.Array, chunkHeaderBuffer.Offset);
                 currentChunk++;
             }
-            foreach (var segment in buffer.Buffers)
-            {
-                _dataChunks[currentChunk].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(segment.Array, segment.Offset);
-                currentChunk++;
-            }
+
+            _dataChunks[currentChunk].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(data.Array, data.Offset);
+            currentChunk++;
+
             if (chunked)
             {
                 _dataChunks[currentChunk].fromMemory.pBuffer = Marshal.UnsafeAddrOfPinnedArrayElement(Helpers.CRLF, 0);
                 currentChunk++;
             }
-
-            // We've captured a reference to all the buffers, clear the buffer so that it can be used to queue overlapped writes.
-            buffer.Clear();
         }
 
         internal ResponseStreamAsyncResult(ResponseStream responseStream, string fileName, long offset,

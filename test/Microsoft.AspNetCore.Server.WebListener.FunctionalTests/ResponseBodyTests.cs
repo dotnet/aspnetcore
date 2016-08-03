@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
     public class ResponseBodyTests
     {
         [Fact]
-        public async Task ResponseBody_WriteNoHeaders_BuffersAndSetsContentLength()
+        public async Task ResponseBody_WriteNoHeaders_SetsChunked()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
@@ -39,12 +39,12 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(address);
+                var response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.Equal(new Version(1, 1), response.Version);
                 IEnumerable<string> ignored;
-                Assert.True(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
-                Assert.False(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
+                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
+                Assert.True(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
                 Assert.Equal(new byte[20], await response.Content.ReadAsByteArrayAsync());
             }
         }
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 await httpContext.Response.Body.FlushAsync();
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(address);
+                var response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.Equal(new Version(1, 1), response.Version);
                 IEnumerable<string> ignored;
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 await stream.WriteAsync(responseBytes, 0, responseBytes.Length);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(address);
+                var response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.Equal(new Version(1, 1), response.Version);
                 IEnumerable<string> ignored;
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 await stream.WriteAsync(new byte[10], 0, 10);
             }))
             {
-                HttpResponseMessage response = await SendRequestAsync(address);
+                var response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.Equal(new Version(1, 1), response.Version);
                 IEnumerable<string> contentLength;
@@ -152,24 +152,26 @@ namespace Microsoft.AspNetCore.Server.WebListener
         [Fact]
         public async Task ResponseBody_WriteContentLengthTooMuchWritten_Throws()
         {
+            var completed = false;
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.Headers["Content-lenGth"] = " 10 ";
                 httpContext.Response.Body.Write(new byte[5], 0, 5);
-                httpContext.Response.Body.Write(new byte[6], 0, 6);
+                Assert.Throws<InvalidOperationException>(() => httpContext.Response.Body.Write(new byte[6], 0, 6));
+                completed = true;
                 return Task.FromResult(0);
             }))
             {
-                var response = await SendRequestAsync(address);
-                Assert.Equal(500, (int)response.StatusCode);
+                await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
+                Assert.True(completed);
             }
         }
 
         [Fact]
         public async Task ResponseBody_WriteContentLengthExtraWritten_Throws()
         {
-            ManualResetEvent waitHandle = new ManualResetEvent(false);
+            var waitHandle = new ManualResetEvent(false);
             bool? appThrew = null;
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
@@ -202,6 +204,89 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 Assert.True(waitHandle.WaitOne(100));
                 Assert.True(appThrew.HasValue, "appThrew.HasValue");
                 Assert.True(appThrew.Value, "appThrew.Value");
+            }
+        }
+
+        [Fact]
+        public async Task ResponseBody_Write_TriggersOnStarting()
+        {
+            var onStartingCalled = false;
+            string address;
+            using (Utilities.CreateHttpServer(out address, httpContext =>
+            {
+                httpContext.Response.OnStarting(state =>
+                {
+                    onStartingCalled = true;
+                    Assert.Same(state, httpContext);
+                    return Task.FromResult(0);
+                }, httpContext);
+                httpContext.Response.Body.Write(new byte[10], 0, 10);
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(address);
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal(new Version(1, 1), response.Version);
+                Assert.True(onStartingCalled);
+                IEnumerable<string> ignored;
+                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
+                Assert.True(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
+                Assert.Equal(new byte[10], await response.Content.ReadAsByteArrayAsync());
+            }
+        }
+#if NET451
+        [Fact]
+        public async Task ResponseBody_BeginWrite_TriggersOnStarting()
+        {
+            var onStartingCalled = false;
+            string address;
+            using (Utilities.CreateHttpServer(out address, httpContext =>
+            {
+                httpContext.Response.OnStarting(state =>
+                {
+                    onStartingCalled = true;
+                    Assert.Same(state, httpContext);
+                    return Task.FromResult(0);
+                }, httpContext);
+                httpContext.Response.Body.EndWrite(httpContext.Response.Body.BeginWrite(new byte[10], 0, 10, null, null));
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(address);
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal(new Version(1, 1), response.Version);
+                Assert.True(onStartingCalled);
+                IEnumerable<string> ignored;
+                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
+                Assert.True(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
+                Assert.Equal(new byte[10], await response.Content.ReadAsByteArrayAsync());
+            }
+        }
+#endif
+        [Fact]
+        public async Task ResponseBody_WriteAsync_TriggersOnStarting()
+        {
+            var onStartingCalled = false;
+            string address;
+            using (Utilities.CreateHttpServer(out address, httpContext =>
+            {
+                httpContext.Response.OnStarting(state =>
+                {
+                    onStartingCalled = true;
+                    Assert.Same(state, httpContext);
+                    return Task.FromResult(0);
+                }, httpContext);
+                return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
+            }))
+            {
+                var response = await SendRequestAsync(address);
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal(new Version(1, 1), response.Version);
+                Assert.True(onStartingCalled);
+                IEnumerable<string> ignored;
+                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
+                Assert.True(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
+                Assert.Equal(new byte[10], await response.Content.ReadAsByteArrayAsync());
             }
         }
 

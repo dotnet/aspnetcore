@@ -16,8 +16,10 @@
 // permissions and limitations under the License.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
 using System.Security.Claims;
@@ -46,8 +48,6 @@ namespace Microsoft.AspNetCore.Server.WebListener
         IHttpUpgradeFeature,
         IHttpRequestIdentifierFeature
     {
-        private static Func<object,Task> OnStartDelegate = OnStart;
-
         private RequestContext _requestContext;
         private IFeatureCollection _features;
         private bool _enableResponseCaching;
@@ -74,13 +74,18 @@ namespace Microsoft.AspNetCore.Server.WebListener
         private Stream _responseStream;
         private IHeaderDictionary _responseHeaders;
 
+        private List<Tuple<Func<object, Task>, object>> _onStartingActions = new List<Tuple<Func<object, Task>, object>>();
+        private List<Tuple<Func<object, Task>, object>> _onCompletedActions = new List<Tuple<Func<object, Task>, object>>();
+        private bool _responseStarted;
+        private bool _completed;
+
         internal FeatureContext(RequestContext requestContext, bool enableResponseCaching)
         {
             _requestContext = requestContext;
             _features = new FeatureCollection(new StandardFeatureCollection(this));
             _authHandler = new AuthenticationHandler(requestContext);
             _enableResponseCaching = enableResponseCaching;
-            requestContext.Response.OnStarting(OnStartDelegate, this);
+            _responseStream = new ResponseStream(requestContext.Response.Body, OnStart);
         }
 
         internal IFeatureCollection Features
@@ -346,7 +351,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
 
         void IHttpBufferingFeature.DisableResponseBuffering()
         {
-            Response.ShouldBuffer = false;
+            // TODO: What about native buffering?
         }
 
         Stream IHttpResponseFeature.Body
@@ -382,12 +387,30 @@ namespace Microsoft.AspNetCore.Server.WebListener
 
         void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
         {
-            Response.OnStarting(callback, state);
+            if (callback == null)
+            {
+                throw new ArgumentNullException(nameof(callback));
+            }
+            if (_onStartingActions == null)
+            {
+                throw new InvalidOperationException("Cannot register new callbacks, the response has already started.");
+            }
+
+            _onStartingActions.Add(new Tuple<Func<object, Task>, object>(callback, state));
         }
 
         void IHttpResponseFeature.OnCompleted(Func<object, Task> callback, object state)
         {
-            Response.OnCompleted(callback, state);
+            if (callback == null)
+            {
+                throw new ArgumentNullException(nameof(callback));
+            }
+            if (_onCompletedActions == null)
+            {
+                throw new InvalidOperationException("Cannot register new callbacks, the response has already completed.");
+            }
+
+            _onCompletedActions.Add(new Tuple<Func<object, Task>, object>(callback, state));
         }
 
         string IHttpResponseFeature.ReasonPhrase
@@ -402,9 +425,10 @@ namespace Microsoft.AspNetCore.Server.WebListener
             set { Response.StatusCode = value; }
         }
 
-        Task IHttpSendFileFeature.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
+        async Task IHttpSendFileFeature.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
         {
-            return Response.SendFileAsync(path, offset, length, cancellation);
+            await OnStart();
+            await Response.SendFileAsync(path, offset, length, cancellation);
         }
 
         CancellationToken IHttpRequestLifetimeFeature.RequestAborted
@@ -430,14 +454,15 @@ namespace Microsoft.AspNetCore.Server.WebListener
             get { return _requestContext.IsUpgradableRequest; }
         }
 
-        Task<Stream> IHttpUpgradeFeature.UpgradeAsync()
+        async Task<Stream> IHttpUpgradeFeature.UpgradeAsync()
         {
-            return _requestContext.UpgradeAsync();
+            await OnStart();
+            return await _requestContext.UpgradeAsync();
         }
 
         bool IHttpWebSocketFeature.IsWebSocketRequest => _requestContext.IsWebSocketRequest;
 
-        Task<WebSocket> IHttpWebSocketFeature.AcceptAsync(WebSocketAcceptContext context)
+        async Task<WebSocket> IHttpWebSocketFeature.AcceptAsync(WebSocketAcceptContext context)
         {
             // TODO: Advanced params
             string subProtocol = null;
@@ -445,7 +470,9 @@ namespace Microsoft.AspNetCore.Server.WebListener
             {
                 subProtocol = context.SubProtocol;
             }
-            return _requestContext.AcceptWebSocketAsync(subProtocol);
+
+            await OnStart();
+            return await _requestContext.AcceptWebSocketAsync(subProtocol);
         }
 
         ClaimsPrincipal IHttpAuthenticationFeature.User
@@ -480,22 +507,42 @@ namespace Microsoft.AspNetCore.Server.WebListener
             set { _requestId = value; }
         }
 
-        private static Task OnStart(object obj)
+        internal async Task OnStart()
         {
-            var featureContext = (FeatureContext)obj;
-
-            ConsiderEnablingResponseCache(featureContext);
-            return Task.FromResult(0);
+            if (_responseStarted)
+            {
+                return;
+            }
+            _responseStarted = true;
+            await NotifiyOnStartingAsync();
+            ConsiderEnablingResponseCache();
         }
 
-        private static void ConsiderEnablingResponseCache(FeatureContext featureContext)
+        private async Task NotifiyOnStartingAsync()
         {
-            if (featureContext._enableResponseCaching)
+            var actions = _onStartingActions;
+            _onStartingActions = null;
+            if (actions == null)
+            {
+                return;
+            }
+
+            actions.Reverse();
+            // Execute last to first. This mimics a stack unwind.
+            foreach (var actionPair in actions)
+            {
+                await actionPair.Item1(actionPair.Item2);
+            }
+        }
+
+        private void ConsiderEnablingResponseCache()
+        {
+            if (_enableResponseCaching)
             {
                 // We don't have to worry too much about what Http.Sys supports, caching is a best-effort feature.
                 // If there's something about the request or response that prevents it from caching then the response
                 // will complete normally without caching.
-                featureContext._requestContext.Response.CacheTtl = GetCacheTtl(featureContext._requestContext);
+                _requestContext.Response.CacheTtl = GetCacheTtl(_requestContext);
             }
         }
 
@@ -543,6 +590,33 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
 
             return null;
+        }
+
+        internal Task OnCompleted()
+        {
+            if (_completed)
+            {
+                return Helpers.CompletedTask;
+            }
+            _completed = true;
+            return NotifyOnCompletedAsync();
+        }
+
+        private async Task NotifyOnCompletedAsync()
+        {
+            var actions = _onCompletedActions;
+            _onCompletedActions = null;
+            if (actions == null)
+            {
+                return;
+            }
+
+            actions.Reverse();
+            // Execute last to first. This mimics a stack unwind.
+            foreach (var actionPair in actions)
+            {
+                await actionPair.Item1(actionPair.Item2);
+            }
         }
     }
 }

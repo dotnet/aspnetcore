@@ -216,7 +216,7 @@ namespace Microsoft.Net.Http.Server
 
                 var context = await server.AcceptAsync();
                 await context.Response.SendFileAsync(emptyFilePath, 0, null, CancellationToken.None);
-                Assert.True(context.Response.HasStartedSending);
+                Assert.True(context.Response.HasStarted);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10, CancellationToken.None);
                 context.Dispose();
                 File.Delete(emptyFilePath);

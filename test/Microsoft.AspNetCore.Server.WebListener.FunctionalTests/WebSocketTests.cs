@@ -112,6 +112,39 @@ namespace Microsoft.AspNetCore.Server.WebListener
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        public async Task WebSocketAccept_WithOnStarting_CallbackCalled()
+        {
+            var callbackCalled = false;
+            var waitHandle = new ManualResetEvent(false);
+            bool? upgraded = null;
+            string address;
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
+            {
+                httpContext.Response.OnStarting(_ =>
+                {
+                    callbackCalled = true;
+                    return Task.FromResult(0);
+                }, null);
+                var webSocketFeature = httpContext.Features.Get<IHttpWebSocketFeature>();
+                Assert.NotNull(webSocketFeature);
+                Assert.True(webSocketFeature.IsWebSocketRequest);
+                await webSocketFeature.AcceptAsync(null);
+                upgraded = true;
+                waitHandle.Set();
+            }))
+            {
+                using (WebSocket clientWebSocket = await SendWebSocketRequestAsync(ConvertToWebSocketAddress(address)))
+                {
+                    Assert.True(waitHandle.WaitOne(TimeSpan.FromSeconds(1)), "Timed out");
+                    Assert.True(upgraded.HasValue, "Upgraded not set");
+                    Assert.True(upgraded.Value, "Upgrade failed");
+                    Assert.True(callbackCalled, "Callback not called");
+                }
+            }
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task WebSocketAccept_SendAndReceive_Success()
         {
             byte[] clientBuffer = new byte[] { 0x00, 0x01, 0xFF, 0x00, 0x00 };

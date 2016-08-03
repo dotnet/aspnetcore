@@ -16,7 +16,7 @@ namespace Microsoft.Net.Http.Server
     public class ResponseBodyTests
     {
         [Fact]
-        public async Task ResponseBody_BufferWriteNoHeaders_DefaultsToContentLength()
+        public async Task ResponseBody_WriteNoHeaders_DefaultsToChunked()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
@@ -24,31 +24,6 @@ namespace Microsoft.Net.Http.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync();
-                context.Response.ShouldBuffer = true;
-                context.Response.Body.Write(new byte[10], 0, 10);
-                await context.Response.Body.WriteAsync(new byte[10], 0, 10);
-                context.Dispose();
-
-                HttpResponseMessage response = await responseTask;
-                Assert.Equal(200, (int)response.StatusCode);
-                Assert.Equal(new Version(1, 1), response.Version);
-                IEnumerable<string> ignored;
-                Assert.True(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
-                Assert.False(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
-                Assert.Equal(new byte[20], await response.Content.ReadAsByteArrayAsync());
-            }
-        }
-
-        [Fact]
-        public async Task ResponseBody_NoBufferWriteNoHeaders_DefaultsToChunked()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync();
-                context.Response.ShouldBuffer = false;
                 context.Response.Body.Write(new byte[10], 0, 10);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
                 context.Dispose();
@@ -64,7 +39,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Fact]
-        public async Task ResponseBody_FlushThenBuffer_DefaultsToChunkedAndTerminates()
+        public async Task ResponseBody_FlushThenWrite_DefaultsToChunkedAndTerminates()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
@@ -175,13 +150,7 @@ namespace Microsoft.Net.Http.Server
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Response.Body.Write(new byte[5], 0, 5);
                 context.Dispose();
-#if !NETCOREAPP1_0
-                // HttpClient retries the request because it didn't get a response.
-                context = await server.AcceptAsync();
-                context.Response.Headers["Content-lenGth"] = " 20 ";
-                context.Response.Body.Write(new byte[5], 0, 5);
-                context.Dispose();
-#endif
+
                 await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
             }
         }
@@ -199,14 +168,7 @@ namespace Microsoft.Net.Http.Server
                 context.Response.Body.Write(new byte[5], 0, 5);
                 Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(new byte[6], 0, 6));
                 context.Dispose();
-#if !NETCOREAPP1_0
-                // HttpClient retries the request because it didn't get a response.
-                context = await server.AcceptAsync();
-                context.Response.Headers["Content-lenGth"] = " 10 ";
-                context.Response.Body.Write(new byte[5], 0, 5);
-                Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(new byte[6], 0, 6));
-                context.Dispose();
-#endif
+
                 await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
             }
         }
@@ -237,7 +199,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Fact]
-        public async Task ResponseBody_WriteZeroCount_StartsResponse()
+        public async Task ResponseBody_WriteZeroCount_StartsChunkedResponse()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
@@ -254,71 +216,9 @@ namespace Microsoft.Net.Http.Server
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.Equal(new Version(1, 1), response.Version);
                 IEnumerable<string> ignored;
-                Assert.True(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
-                Assert.False(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
+                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
+                Assert.True(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
                 Assert.Equal(new byte[0], await response.Content.ReadAsByteArrayAsync());
-            }
-        }
-
-        [Fact]
-        public async Task ResponseBody_WriteMoreThanBufferLimitBufferWithNoHeaders_DefaultsToChunkedAndFlushes()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync();
-                context.Response.ShouldBuffer = true;
-                for (int i = 0; i < 4; i++)
-                {
-                    context.Response.Body.Write(new byte[1020], 0, 1020);
-                    Assert.True(context.Response.HasStarted);
-                    Assert.False(context.Response.HasStartedSending);
-                }
-                context.Response.Body.Write(new byte[1020], 0, 1020);
-                Assert.True(context.Response.HasStartedSending);
-                context.Response.Body.Write(new byte[1020], 0, 1020);
-                context.Dispose();
-
-                HttpResponseMessage response = await responseTask;
-                Assert.Equal(200, (int)response.StatusCode);
-                Assert.Equal(new Version(1, 1), response.Version);
-                IEnumerable<string> ignored;
-                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
-                Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
-                Assert.Equal(new byte[1020*6], await response.Content.ReadAsByteArrayAsync());
-            }
-        }
-
-        [Fact]
-        public async Task ResponseBody_WriteAsyncMoreThanBufferLimitBufferWithNoHeaders_DefaultsToChunkedAndFlushes()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync();
-                context.Response.ShouldBuffer = true;
-                for (int i = 0; i < 4; i++)
-                {
-                    await context.Response.Body.WriteAsync(new byte[1020], 0, 1020);
-                    Assert.True(context.Response.HasStarted);
-                    Assert.False(context.Response.HasStartedSending);
-                }
-                await context.Response.Body.WriteAsync(new byte[1020], 0, 1020);
-                Assert.True(context.Response.HasStartedSending);
-                await context.Response.Body.WriteAsync(new byte[1020], 0, 1020);
-                context.Dispose();
-
-                HttpResponseMessage response = await responseTask;
-                Assert.Equal(200, (int)response.StatusCode);
-                Assert.Equal(new Version(1, 1), response.Version);
-                IEnumerable<string> ignored;
-                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
-                Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
-                Assert.Equal(new byte[1020 * 6], await response.Content.ReadAsByteArrayAsync());
             }
         }
 

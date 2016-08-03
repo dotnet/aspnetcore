@@ -16,6 +16,7 @@
 // permissions and limitations under the License.
 
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -102,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         }
 
         [Fact]
-        public async Task Response_100_Throws()
+        public async Task Response_StatusCode100_Throws()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
@@ -117,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         }
 
         [Fact]
-        public async Task Response_0_Throws()
+        public async Task Response_StatusCode0_Throws()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
@@ -131,9 +132,98 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
+        [Fact]
+        public async Task Response_Empty_CallsOnStartingAndOnCompleted()
+        {
+            var onStartingCalled = false;
+            var onCompletedCalled = false;
+            string address;
+            using (Utilities.CreateHttpServer(out address, httpContext =>
+            {
+                httpContext.Response.OnStarting(state =>
+                {
+                    onStartingCalled = true;
+                    Assert.Same(state, httpContext);
+                    return Task.FromResult(0);
+                }, httpContext);
+                httpContext.Response.OnCompleted(state =>
+                {
+                    onCompletedCalled = true;
+                    Assert.Same(state, httpContext);
+                    return Task.FromResult(0);
+                }, httpContext);
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(address);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.True(onStartingCalled);
+                Assert.True(onCompletedCalled);
+            }
+        }
+
+        [Fact]
+        public async Task Response_OnStartingThrows_StillCallsOnCompleted()
+        {
+            var onStartingCalled = false;
+            var onCompletedCalled = false;
+            string address;
+            using (Utilities.CreateHttpServer(out address, httpContext =>
+            {
+                httpContext.Response.OnStarting(state =>
+                {
+                    onStartingCalled = true;
+                    throw new Exception("Failed OnStarting");
+                }, httpContext);
+                httpContext.Response.OnCompleted(state =>
+                {
+                    onCompletedCalled = true;
+                    Assert.Same(state, httpContext);
+                    return Task.FromResult(0);
+                }, httpContext);
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(address);
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+                Assert.True(onStartingCalled);
+                Assert.True(onCompletedCalled);
+            }
+        }
+
+        [Fact]
+        public async Task Response_OnStartingThrowsAfterWrite_WriteThrowsAndStillCallsOnCompleted()
+        {
+            var onStartingCalled = false;
+            var onCompletedCalled = false;
+            string address;
+            using (Utilities.CreateHttpServer(out address, httpContext =>
+            {
+                httpContext.Response.OnStarting(state =>
+                {
+                    onStartingCalled = true;
+                    throw new InvalidTimeZoneException("Failed OnStarting");
+                }, httpContext);
+                httpContext.Response.OnCompleted(state =>
+                {
+                    onCompletedCalled = true;
+                    Assert.Same(state, httpContext);
+                    return Task.FromResult(0);
+                }, httpContext);
+                Assert.Throws<InvalidTimeZoneException>(() => httpContext.Response.Body.Write(new byte[10], 0, 10));
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(address);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.True(onStartingCalled);
+                Assert.True(onCompletedCalled);
+            }
+        }
+
         private async Task<HttpResponseMessage> SendRequestAsync(string uri)
         {
-            using (HttpClient client = new HttpClient())
+            using (var client = new HttpClient())
             {
                 return await client.GetAsync(uri);
             }
