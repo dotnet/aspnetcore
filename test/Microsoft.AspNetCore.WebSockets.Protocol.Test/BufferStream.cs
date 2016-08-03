@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.WebSockets.Protocol.Test
         private SemaphoreSlim _readLock;
         private SemaphoreSlim _writeLock;
         private TaskCompletionSource<object> _readWaitingForData;
-        
+
         internal BufferStream()
         {
             _readLock = new SemaphoreSlim(1, 1);

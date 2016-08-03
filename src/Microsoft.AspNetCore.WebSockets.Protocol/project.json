@@ -11,14 +11,18 @@
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
-      "CS1591"
+      "CS1591",
+      "CS1572",
+      "CS1573"
     ],
-    "xmlDoc": true
+    "xmlDoc": true,
+    "allowUnsafe": true
   },
   "frameworks": {
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
+        "System.Diagnostics.Debug": "4.0.11-*",
         "System.Diagnostics.Contracts": "4.0.1-*",
         "System.Globalization": "4.0.11-*",
         "System.IO": "4.1.0-*",

@@ -290,9 +290,11 @@ namespace Microsoft.AspNetCore.WebSockets.Client.Test
             }
         }
 
-        [ConditionalFact]
+        [ConditionalTheory]
+        [InlineData(1024 * 16)]
+        [InlineData(0xFFFFFF)]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        public async Task ReceiveLongDataInSmallBuffer_Success()
+        public async Task ReceiveLongData(int receiveBufferSize)
         {
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
             using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
@@ -303,7 +305,7 @@ namespace Microsoft.AspNetCore.WebSockets.Client.Test
                 await webSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
             }))
             {
-                var client = new WebSocketClient();
+                var client = new WebSocketClient() { ReceiveBufferSize = receiveBufferSize };
                 using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
                 {
                     var clientBuffer = new byte[orriginalData.Length];
@@ -318,32 +320,6 @@ namespace Microsoft.AspNetCore.WebSockets.Client.Test
                     while (!result.EndOfMessage);
 
                     Assert.Equal(orriginalData.Length, receivedCount);
-                    Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
-                    Assert.Equal(orriginalData, clientBuffer);
-                }
-            }
-        }
-
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        public async Task ReceiveLongDataInLargeBuffer_Success()
-        {
-            var orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
-            using (var server = KestrelWebSocketHelpers.CreateServer(async context =>
-            {
-                Assert.True(context.WebSockets.IsWebSocketRequest);
-                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-
-                await webSocket.SendAsync(new ArraySegment<byte>(orriginalData), WebSocketMessageType.Binary, true, CancellationToken.None);
-            }))
-            {
-                var client = new WebSocketClient() { ReceiveBufferSize = 0xFFFFFF };
-                using (var clientSocket = await client.ConnectAsync(new Uri(ClientAddress), CancellationToken.None))
-                {
-                    var clientBuffer = new byte[orriginalData.Length];
-                    var result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(clientBuffer), CancellationToken.None);
-                    Assert.True(result.EndOfMessage);
-                    Assert.Equal(orriginalData.Length, result.Count);
                     Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
                     Assert.Equal(orriginalData, clientBuffer);
                 }

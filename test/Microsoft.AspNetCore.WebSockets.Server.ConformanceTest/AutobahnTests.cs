@@ -37,19 +37,22 @@ namespace Microsoft.AspNetCore.WebSockets.Server.Test
                 .IncludeCase("*")
                 .ExcludeCase("9.*", "12.*", "13.*");
 
-            var loggerFactory = new LoggerFactory(); // No logging! It's very loud...
+            var loggerFactory = new LoggerFactory(); // No logging by default! It's very loud...
+
+            if(string.Equals(Environment.GetEnvironmentVariable("AUTOBAHN_SUITES_LOG"), "1", StringComparison.Ordinal))
+            {
+                loggerFactory.AddConsole();
+            }
 
             AutobahnResult result;
             using (var tester = new AutobahnTester(loggerFactory, spec))
             {
-                await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: false, environment: "ManagedSockets", expectationConfig: expect => expect
-                    .NonStrict("6.4.3", "6.4.4")); // https://github.com/aspnet/WebSockets/issues/99
+                await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: false, environment: "ManagedSockets");
 
                 // Windows-only IIS tests, and Kestrel SSL tests (due to: https://github.com/aspnet/WebSockets/issues/102)
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: true, environment: "ManagedSockets", expectationConfig: expect => expect
-                        .NonStrict("6.4.3", "6.4.4")); // https://github.com/aspnet/WebSockets/issues/99
+                    await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: true, environment: "ManagedSockets");
 
                     if (IsWindows8OrHigher())
                     {
@@ -62,9 +65,7 @@ namespace Microsoft.AspNetCore.WebSockets.Server.Test
                                 .OkOrNonStrict("3.2", "3.3", "3.4", "4.1.3", "4.1.4", "4.1.5", "4.2.3", "4.2.4", "4.2.5", "5.15")); // These occasionally get non-strict results
                         }
 
-                        await tester.DeployTestAndAddToSpec(ServerType.WebListener, ssl: false, environment: "ManagedSockets", expectationConfig: expect => expect
-                            .Fail("6.1.2", "6.1.3") // https://github.com/aspnet/WebSockets/issues/97
-                            .NonStrict("6.4.3", "6.4.4")); // https://github.com/aspnet/WebSockets/issues/99
+                        await tester.DeployTestAndAddToSpec(ServerType.WebListener, ssl: false, environment: "ManagedSockets");
                     }
                 }
 

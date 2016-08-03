@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.WebSockets.Protocol.Test
 
         public DuplexStream()
             : this (new BufferStream(), new BufferStream())
-        {            
+        {
         }
 
         public DuplexStream(Stream readStream, Stream writeStream)

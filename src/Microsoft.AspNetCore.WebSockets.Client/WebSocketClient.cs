@@ -53,12 +53,6 @@ namespace Microsoft.AspNetCore.WebSockets.Client
             set;
         }
 
-        public bool UseZeroMask
-        {
-            get;
-            set;
-        }
-
         public Action<HttpWebRequest> ConfigureRequest
         {
             get;
@@ -114,7 +108,7 @@ namespace Microsoft.AspNetCore.WebSockets.Client
 
             Stream stream = response.GetResponseStream();
 
-            return CommonWebSocket.CreateClientWebSocket(stream, subProtocol, KeepAliveInterval, ReceiveBufferSize, useZeroMask: UseZeroMask);
+            return CommonWebSocket.CreateClientWebSocket(stream, subProtocol, KeepAliveInterval, ReceiveBufferSize);
         }
     }
 }
