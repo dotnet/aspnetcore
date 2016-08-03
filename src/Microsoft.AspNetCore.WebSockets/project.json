@@ -1,0 +1,32 @@
+{
+  "version": "0.2.0-*",
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [
+      "CS1591"
+    ],
+    "xmlDoc": true,
+    "allowUnsafe": true
+  },
+  "description": "ASP.NET 5 web socket middleware for use on top of opaque servers.",
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/websockets"
+    }
+  },
+  "dependencies": {
+    "Microsoft.AspNetCore.Http.Extensions": "1.1.0-*",
+    "Microsoft.Extensions.Options": "1.1.0-*"
+  },
+  "frameworks": {
+    "net451": {},
+    "netstandard1.3": {
+      "dependencies": {
+        "System.Text.Encoding.Extensions": "4.0.11",
+        "System.Threading.Timer": "4.0.1"
+      }
+    }
+  }
+}
