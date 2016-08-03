@@ -176,16 +176,17 @@ namespace Microsoft.AspNetCore.Http
             }
 
             object temp;
-            if (KnownParsers.TryGetValue(typeof(T), out temp))
-            {
-                var func = (Func<string, T>)temp;
-                return func(headers[name]);
-            }
-
             var value = headers[name];
+
             if (StringValues.IsNullOrEmpty(value))
             {
                 return default(T);
+            }
+
+            if (KnownParsers.TryGetValue(typeof(T), out temp))
+            {
+                var func = (Func<string, T>)temp;
+                return func(value);
             }
 
             return GetViaReflection<T>(value.ToString());
@@ -199,16 +200,17 @@ namespace Microsoft.AspNetCore.Http
             }
 
             object temp;
-            if (KnownListParsers.TryGetValue(typeof(T), out temp))
-            {
-                var func = (Func<IList<string>, IList<T>>)temp;
-                return func(headers[name]);
-            }
-
             var values = headers[name];
+
             if (StringValues.IsNullOrEmpty(values))
             {
                 return null;
+            }
+
+            if (KnownListParsers.TryGetValue(typeof(T), out temp))
+            {
+                var func = (Func<IList<string>, IList<T>>)temp;
+                return func(values);
             }
 
             return GetListViaReflection<T>(values);
