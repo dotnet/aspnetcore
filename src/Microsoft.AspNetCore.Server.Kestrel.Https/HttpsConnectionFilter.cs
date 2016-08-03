@@ -8,12 +8,15 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Filter;
+using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https
 {
     public class HttpsConnectionFilter : IConnectionFilter
     {
+        private static readonly ClosedStream _closedStream = new ClosedStream();
+
         private readonly HttpsConnectionFilterOptions _options;
         private readonly IConnectionFilter _previous;
         private readonly ILogger _logger;
@@ -95,8 +98,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                     certificateRequired = true;
                 }
 
-                context.Connection = sslStream;
-
                 try
                 {
                     await sslStream.AuthenticateAsServerAsync(_options.ServerCertificate, certificateRequired,
@@ -105,6 +106,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                 catch (IOException ex)
                 {
                     _logger?.LogInformation(1, ex, "Failed to authenticate HTTPS connection.");
+
+                    sslStream.Dispose();
+                    context.Connection = _closedStream;
+
                     return;
                 }
 
@@ -121,6 +126,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
 
                     features.Get<IHttpRequestFeature>().Scheme = "https";
                 };
+
+                context.Connection = sslStream;
             }
         }
 

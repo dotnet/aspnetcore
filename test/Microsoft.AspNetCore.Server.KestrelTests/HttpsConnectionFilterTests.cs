@@ -331,34 +331,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        [Fact]
-        public async Task ClientHandshakeFailureLoggedAsInformation()
-        {
-            var logger = new HandshakerErrorLogger();
-            var mockLoggerFactory = new Mock<ILoggerFactory>(MockBehavior.Strict);
-            mockLoggerFactory.Setup(m => m.CreateLogger(nameof(HttpsConnectionFilter))).Returns(logger);
-
-            var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
-                new HttpsConnectionFilterOptions { ServerCertificate = _x509Certificate2 },
-                new NoOpConnectionFilter(),
-                mockLoggerFactory.Object)
-            );
-
-            using (var server = new TestServer(App, serviceContext, _serverAddress))
-            {
-                using (await HttpClientSlim.GetSocket(new Uri($"https://localhost:{server.Port}/")))
-                {
-                    // Close socket immediately
-                }
-
-                await logger.LogTcs.Task;
-
-                Assert.Equal(1, logger.LastEventId.Id);
-                Assert.Equal(LogLevel.Information, logger.LastLogLevel);
-                mockLoggerFactory.VerifyAll();
-            }
-        }
-
         private static async Task App(HttpContext httpContext)
         {
             var request = httpContext.Request;
@@ -403,30 +375,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
                 catch (IOException) { }
                 Assert.Null(line);
-            }
-        }
-
-        private class HandshakerErrorLogger : ILogger
-        {
-            public LogLevel LastLogLevel { get; set; }
-            public EventId LastEventId { get; set; }
-            public TaskCompletionSource<object> LogTcs { get; } = new TaskCompletionSource<object>();
-
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-            {
-                LastLogLevel = logLevel;
-                LastEventId = eventId;
-                LogTcs.SetResult(null);
-            }
-
-            public bool IsEnabled(LogLevel logLevel)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IDisposable BeginScope<TState>(TState state)
-            {
-                throw new NotImplementedException();
             }
         }
     }
