@@ -205,6 +205,10 @@ namespace Microsoft.AspNetCore.Http
         /// <returns></returns>
         public bool Equals(HostString other)
         {
+            if (!HasValue && !other.HasValue)
+            {
+                return true;
+            }
             return string.Equals(_value, other._value, StringComparison.OrdinalIgnoreCase);
         }
 
@@ -217,7 +221,7 @@ namespace Microsoft.AspNetCore.Http
         {
             if (ReferenceEquals(null, obj))
             {
-                return false;
+                return !HasValue;
             }
             return obj is HostString && Equals((HostString)obj);
         }
@@ -228,7 +232,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns></returns>
         public override int GetHashCode()
         {
-            return (_value != null ? StringComparer.OrdinalIgnoreCase.GetHashCode(_value) : 0);
+            return (HasValue ? StringComparer.OrdinalIgnoreCase.GetHashCode(_value) : 0);
         }
 
         /// <summary>

@@ -11,6 +11,9 @@ namespace Microsoft.AspNetCore.Http.Extensions
     /// </summary>
     public static class UriHelper
     {
+        private const string ForwardSlash = "/";
+        private const string Pound = "#";
+        private const string QuestionMark = "?";
         private const string SchemeDelimiter = "://";
 
         /// <summary>
@@ -68,6 +71,67 @@ namespace Microsoft.AspNetCore.Http.Extensions
                 .Append(encodedQuery)
                 .Append(encodedFragment)
                 .ToString();
+        }
+
+        /// <summary>
+        /// Seperates the given absolute URI string into components. Assumes no PathBase.
+        /// </summary>
+        /// <param name="uri">A string representation of the uri.</param>
+        /// <param name="scheme">http, https, etc.</param>
+        /// <param name="host">The host portion of the uri normally included in the Host header. This may include the port.</param>
+        /// <param name="path">The portion of the request path that identifies the requested resource.</param>
+        /// <param name="query">The query, if any.</param>
+        /// <param name="fragment">The fragment, if any.</param>
+        public static void FromAbsolute(
+            string uri,
+            out string scheme,
+            out HostString host, 
+            out PathString path,
+            out QueryString query, 
+            out FragmentString fragment)
+        {
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+            // Satisfy the out parameters
+            path = new PathString();
+            query = new QueryString();
+            fragment = new FragmentString();
+            var startIndex = uri.IndexOf(SchemeDelimiter);
+
+            if (startIndex < 0)
+            {
+                throw new FormatException("No scheme delimiter in uri.");
+            }
+
+            scheme = uri.Substring(0, startIndex);
+
+            // PERF: Calculate the end of the scheme for next IndexOf
+            startIndex += SchemeDelimiter.Length;
+
+            var searchIndex = -1;
+            var limit = uri.Length;
+
+            if ((searchIndex = uri.IndexOf(Pound, startIndex)) >= 0 && searchIndex < limit)
+            {
+                fragment = FragmentString.FromUriComponent(uri.Substring(searchIndex));
+                limit = searchIndex;
+            }
+
+            if ((searchIndex = uri.IndexOf(QuestionMark, startIndex)) >= 0 && searchIndex < limit)
+            {
+                query = QueryString.FromUriComponent(uri.Substring(searchIndex, limit - searchIndex));
+                limit = searchIndex;
+            }
+
+            if ((searchIndex = uri.IndexOf(ForwardSlash, startIndex)) >= 0 && searchIndex < limit)
+            {
+                path = PathString.FromUriComponent(uri.Substring(searchIndex, limit - searchIndex));
+                limit = searchIndex;
+            }
+            
+            host = HostString.FromUriComponent(uri.Substring(startIndex, limit - startIndex));
         }
 
         /// <summary>

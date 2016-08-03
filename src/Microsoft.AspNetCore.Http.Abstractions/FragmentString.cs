@@ -107,21 +107,25 @@ namespace Microsoft.AspNetCore.Http
 
         public bool Equals(FragmentString other)
         {
-            return string.Equals(_value, other._value);
+            if (!HasValue && !other.HasValue)
+            {
+                return true;
+            }
+            return string.Equals(_value, other._value, StringComparison.Ordinal);
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
             {
-                return false;
+                return !HasValue;
             }
             return obj is FragmentString && Equals((FragmentString)obj);
         }
 
         public override int GetHashCode()
         {
-            return (_value != null ? _value.GetHashCode() : 0);
+            return (HasValue ? _value.GetHashCode() : 0);
         }
 
         public static bool operator ==(FragmentString left, FragmentString right)

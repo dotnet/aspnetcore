@@ -92,5 +92,36 @@ namespace Microsoft.AspNetCore.Http
             Assert.Equal(expectedHost, host);
             Assert.Equal(expectedPort, port);
         }
+
+        [Fact]
+        public void Equals_EmptyHostStringAndDefaultHostString()
+        {
+            // Act and Assert
+            Assert.Equal(new HostString(string.Empty), default(HostString));
+            Assert.Equal(default(HostString), new HostString(string.Empty));
+            // explicitly checking == operator
+            Assert.True(new HostString(string.Empty) == default(HostString));
+            Assert.True(default(HostString) == new HostString(string.Empty));
+        }
+
+        [Fact]
+        public void NotEquals_DefaultHostStringAndNonNullHostString()
+        {
+            // Arrange
+            var hostString = new HostString("example.com");
+
+            // Act and Assert
+            Assert.NotEqual(hostString, default(HostString));
+        }
+
+        [Fact]
+        public void NotEquals_EmptyHostStringAndNonNullHostString()
+        {
+            // Arrange
+            var hostString = new HostString("example.com");
+
+            // Act and Assert
+            Assert.NotEqual(hostString, new HostString(string.Empty));
+        }
     }
 }

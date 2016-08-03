@@ -215,21 +215,25 @@ namespace Microsoft.AspNetCore.Http
 
         public bool Equals(QueryString other)
         {
-            return string.Equals(_value, other._value);
+            if (!HasValue && !other.HasValue)
+            {
+                return true;
+            }
+            return string.Equals(_value, other._value, StringComparison.Ordinal);
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
             {
-                return false;
+                return !HasValue;
             }
             return obj is QueryString && Equals((QueryString)obj);
         }
 
         public override int GetHashCode()
         {
-            return _value?.GetHashCode() ?? 0;
+            return (HasValue ? _value.GetHashCode() : 0);
         }
 
         public static bool operator ==(QueryString left, QueryString right)

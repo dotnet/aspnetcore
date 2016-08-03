@@ -105,5 +105,36 @@ namespace Microsoft.AspNetCore.Http.Abstractions
             var q2 = q1.Add(name2, value2);
             Assert.Equal(expected, q2.Value);
         }
+
+        [Fact]
+        public void Equals_EmptyQueryStringAndDefaultQueryString()
+        {
+            // Act and Assert
+            Assert.Equal(QueryString.Empty, default(QueryString));
+            Assert.Equal(default(QueryString), QueryString.Empty);
+            // explicitly checking == operator
+            Assert.True(QueryString.Empty == default(QueryString));
+            Assert.True(default(QueryString) == QueryString.Empty);
+        }
+
+        [Fact]
+        public void NotEquals_DefaultQueryStringAndNonNullQueryString()
+        {
+            // Arrange
+            var queryString = new QueryString("?foo=1");
+
+            // Act and Assert
+            Assert.NotEqual(queryString, default(QueryString));
+        }
+
+        [Fact]
+        public void NotEquals_EmptyQueryStringAndNonNullQueryString()
+        {
+            // Arrange
+            var queryString = new QueryString("?foo=1");
+
+            // Act and Assert
+            Assert.NotEqual(queryString, QueryString.Empty);
+        }
     }
 }
