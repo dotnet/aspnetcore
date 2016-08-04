@@ -27,9 +27,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var connectionContext = new ConnectionContext()
                 {
                     DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
                 };
                 var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
                 frame.InitializeHeaders();
 
                 var headerArray = Encoding.ASCII.GetBytes("Header:value\r\n\r\n");
@@ -68,9 +70,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var connectionContext = new ConnectionContext()
                 {
                     DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
                 };
                 var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
                 frame.InitializeHeaders();
 
                 var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
@@ -109,8 +113,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     DateHeaderValueManager = new DateHeaderValueManager(),
                     ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
                 };
                 var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
                 frame.InitializeHeaders();
 
                 var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
@@ -148,8 +154,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     DateHeaderValueManager = new DateHeaderValueManager(),
                     ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
                 };
                 var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
                 frame.InitializeHeaders();
 
                 var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
@@ -187,23 +195,23 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     DateHeaderValueManager = new DateHeaderValueManager(),
                     ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
                     Log = trace
                 };
                 var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
                 frame.InitializeHeaders();
 
                 var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
                 socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+                Assert.Equal("Header value line folding not supported.", exception.Message);
             }
         }
 
-        [Theory]
-        [InlineData("Header-1: value1\r\r\n")]
-        [InlineData("Header-1: value1\rHeader-2: value2\r\n\r\n")]
-        [InlineData("Header-1: value1\r\nHeader-2: value2\r\r\n")]
-        public void ThrowsOnHeaderLineNotEndingInCRLF(string rawHeaders)
+        [Fact]
+        public void ThrowsOnHeaderValueWithLineFolding_CharacterNotAvailableOnFirstAttempt()
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
@@ -214,15 +222,54 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     DateHeaderValueManager = new DateHeaderValueManager(),
                     ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
                     Log = trace
                 };
                 var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
+                frame.InitializeHeaders();
+
+                var headerArray = Encoding.ASCII.GetBytes("Header-1: value1\r\n");
+                socketInput.IncomingData(headerArray, 0, headerArray.Length);
+
+                Assert.False(frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+
+                socketInput.IncomingData(Encoding.ASCII.GetBytes(" "), 0, 1);
+
+                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+                Assert.Equal("Header value line folding not supported.", exception.Message);
+            }
+        }
+
+        [Theory]
+        [InlineData("Header-1: value1\r\r\n")]
+        [InlineData("Header-1: val\rue1\r\n")]
+        [InlineData("Header-1: value1\rHeader-2: value2\r\n\r\n")]
+        [InlineData("Header-1: value1\r\nHeader-2: value2\r\r\n")]
+        [InlineData("Header-1: value1\r\nHeader-2: v\ralue2\r\n")]
+        public void ThrowsOnHeaderValueContainingCR(string rawHeaders)
+        {
+            var trace = new KestrelTrace(new TestKestrelTrace());
+            var ltp = new LoggingThreadPool(trace);
+            using (var pool = new MemoryPool())
+            using (var socketInput = new SocketInput(pool, ltp))
+            {
+                var connectionContext = new ConnectionContext()
+                {
+                    DateHeaderValueManager = new DateHeaderValueManager(),
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
+                    Log = trace
+                };
+                var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
                 frame.InitializeHeaders();
 
                 var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
                 socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+                Assert.Equal("Header value must not contain CR characters.", exception.Message);
             }
         }
 
@@ -241,15 +288,18 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     DateHeaderValueManager = new DateHeaderValueManager(),
                     ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
                     Log = trace
                 };
                 var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
                 frame.InitializeHeaders();
 
                 var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
                 socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+                Assert.Equal("No ':' character found in header line.", exception.Message);
             }
         }
 
@@ -258,8 +308,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("\tHeader: value\r\n\r\n")]
         [InlineData(" Header-1: value1\r\nHeader-2: value2\r\n\r\n")]
         [InlineData("\tHeader-1: value1\r\nHeader-2: value2\r\n\r\n")]
-        [InlineData("Header-1: value1\r\n Header-2: value2\r\n\r\n")]
-        [InlineData("Header-1: value1\r\n\tHeader-2: value2\r\n\r\n")]
         public void ThrowsOnHeaderLineStartingWithWhitespace(string rawHeaders)
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
@@ -271,15 +319,18 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     DateHeaderValueManager = new DateHeaderValueManager(),
                     ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
                     Log = trace
                 };
                 var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
                 frame.InitializeHeaders();
 
                 var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
                 socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+                Assert.Equal("Header line must not start with whitespace.", exception.Message);
             }
         }
 
@@ -303,21 +354,25 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     DateHeaderValueManager = new DateHeaderValueManager(),
                     ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
                     Log = trace
                 };
                 var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
                 frame.InitializeHeaders();
 
                 var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
                 socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+                Assert.Equal("Whitespace is not allowed in header name.", exception.Message);
             }
         }
 
         [Theory]
+        [InlineData("Header-1: value1\r\nHeader-2: value2\r\n\r\r")]
         [InlineData("Header-1: value1\r\nHeader-2: value2\r\n\r ")]
-        [InlineData("Header-1: value1\r\nHeader-2: value2\r\nEnd\r\n")]
+        [InlineData("Header-1: value1\r\nHeader-2: value2\r\n\r \n")]
         public void ThrowsOnHeadersNotEndingInCRLFLine(string rawHeaders)
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
@@ -329,15 +384,84 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     DateHeaderValueManager = new DateHeaderValueManager(),
                     ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
                     Log = trace
                 };
                 var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
                 frame.InitializeHeaders();
 
                 var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
                 socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+                Assert.Equal("Headers corrupted, invalid header sequence.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public void ThrowsWhenHeadersExceedTotalSizeLimit()
+        {
+            var trace = new KestrelTrace(new TestKestrelTrace());
+            var ltp = new LoggingThreadPool(trace);
+            using (var pool = new MemoryPool())
+            using (var socketInput = new SocketInput(pool, ltp))
+            {
+                const string headerLine = "Header: value\r\n";
+
+                var options = new KestrelServerOptions();
+                options.Limits.MaxRequestHeadersTotalSize = headerLine.Length - 1;
+
+                var connectionContext = new ConnectionContext()
+                {
+                    DateHeaderValueManager = new DateHeaderValueManager(),
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = options,
+                    Log = trace
+                };
+
+                var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
+                frame.InitializeHeaders();
+
+                var headerArray = Encoding.ASCII.GetBytes($"{headerLine}\r\n");
+                socketInput.IncomingData(headerArray, 0, headerArray.Length);
+
+                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+                Assert.Equal("Request headers too long.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public void ThrowsWhenHeadersExceedCountLimit()
+        {
+            var trace = new KestrelTrace(new TestKestrelTrace());
+            var ltp = new LoggingThreadPool(trace);
+            using (var pool = new MemoryPool())
+            using (var socketInput = new SocketInput(pool, ltp))
+            {
+                const string headerLines = "Header-1: value1\r\nHeader-2: value2\r\n";
+
+                var options = new KestrelServerOptions();
+                options.Limits.MaxRequestHeaderCount = 1;
+
+                var connectionContext = new ConnectionContext()
+                {
+                    DateHeaderValueManager = new DateHeaderValueManager(),
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = options,
+                    Log = trace
+                };
+
+                var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
+                frame.InitializeHeaders();
+
+                var headerArray = Encoding.ASCII.GetBytes($"{headerLines}\r\n");
+                socketInput.IncomingData(headerArray, 0, headerArray.Length);
+
+                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+                Assert.Equal("Request contains too many headers.", exception.Message);
             }
         }
 
@@ -358,9 +482,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var connectionContext = new ConnectionContext()
                 {
                     DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
                 };
                 var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
                 frame.InitializeHeaders();
 
                 var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
@@ -384,7 +510,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var connectionContext = new ConnectionContext()
             {
                 DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                ServerOptions = new KestrelServerOptions(),
             };
             var frame = new Frame<object>(application: null, context: connectionContext);
             frame.Scheme = "https";
@@ -394,6 +521,50 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             // Assert
             Assert.Equal("http", ((IFeatureCollection)frame).Get<IHttpRequestFeature>().Scheme);
+        }
+
+        [Fact]
+        public void ResetResetsHeaderLimits()
+        {
+            var trace = new KestrelTrace(new TestKestrelTrace());
+            var ltp = new LoggingThreadPool(trace);
+            using (var pool = new MemoryPool())
+            using (var socketInput = new SocketInput(pool, ltp))
+            {
+                const string headerLine1 = "Header-1: value1\r\n";
+                const string headerLine2 = "Header-2: value2\r\n";
+
+                var options = new KestrelServerOptions();
+                options.Limits.MaxRequestHeadersTotalSize = headerLine1.Length;
+                options.Limits.MaxRequestHeaderCount = 1;
+
+                var connectionContext = new ConnectionContext()
+                {
+                    DateHeaderValueManager = new DateHeaderValueManager(),
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = options
+                };
+
+                var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
+                frame.InitializeHeaders();
+
+                var headerArray1 = Encoding.ASCII.GetBytes($"{headerLine1}\r\n");
+                socketInput.IncomingData(headerArray1, 0, headerArray1.Length);
+
+                Assert.True(frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+                Assert.Equal(1, frame.RequestHeaders.Count);
+                Assert.Equal("value1", frame.RequestHeaders["Header-1"]);
+
+                frame.Reset();
+
+                var headerArray2 = Encoding.ASCII.GetBytes($"{headerLine2}\r\n");
+                socketInput.IncomingData(headerArray2, 0, headerArray1.Length);
+
+                Assert.True(frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+                Assert.Equal(1, frame.RequestHeaders.Count);
+                Assert.Equal("value2", frame.RequestHeaders["Header-2"]);
+            }
         }
 
         [Fact]

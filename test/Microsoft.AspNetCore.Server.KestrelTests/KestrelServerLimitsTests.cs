@@ -63,5 +63,61 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             o.MaxRequestLineSize = value;
             Assert.Equal(value, o.MaxRequestLineSize);
         }
+
+        [Fact]
+        public void MaxRequestHeaderTotalSizeDefault()
+        {
+            Assert.Equal(32 * 1024, (new KestrelServerLimits()).MaxRequestHeadersTotalSize);
+        }
+
+        [Theory]
+        [InlineData(int.MinValue)]
+        [InlineData(-1)]
+        [InlineData(0)]
+        public void MaxRequestHeaderTotalSizeInvalid(int value)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+            {
+                (new KestrelServerLimits()).MaxRequestHeadersTotalSize = value;
+            });
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(int.MaxValue)]
+        public void MaxRequestHeaderTotalSizeValid(int value)
+        {
+            var o = new KestrelServerLimits();
+            o.MaxRequestHeadersTotalSize = value;
+            Assert.Equal(value, o.MaxRequestHeadersTotalSize);
+        }
+
+        [Fact]
+        public void MaxRequestHeadersDefault()
+        {
+            Assert.Equal(100, (new KestrelServerLimits()).MaxRequestHeaderCount);
+        }
+
+        [Theory]
+        [InlineData(int.MinValue)]
+        [InlineData(-1)]
+        [InlineData(0)]
+        public void MaxRequestHeadersInvalid(int value)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+            {
+                (new KestrelServerLimits()).MaxRequestHeaderCount = value;
+            });
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(int.MaxValue)]
+        public void MaxRequestHeadersValid(int value)
+        {
+            var o = new KestrelServerLimits();
+            o.MaxRequestHeaderCount = value;
+            Assert.Equal(value, o.MaxRequestHeaderCount);
+        }
     }
 }

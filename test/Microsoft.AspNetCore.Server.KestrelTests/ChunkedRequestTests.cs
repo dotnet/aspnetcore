@@ -257,6 +257,89 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
+        public async Task TrailingHeadersCountTowardsHeadersTotalSizeLimit(TestServiceContext testContext)
+        {
+            const string transferEncodingHeaderLine = "Transfer-Encoding: chunked";
+            const string headerLine = "Header: value";
+            const string trailingHeaderLine = "Trailing-Header: trailing-value";
+
+            testContext.ServerOptions.Limits.MaxRequestHeadersTotalSize =
+                transferEncodingHeaderLine.Length + 2 +
+                headerLine.Length + 2 +
+                trailingHeaderLine.Length + 1;
+
+            using (var server = new TestServer(async context =>
+            {
+                var buffer = new byte[128];
+                while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) != 0) ; // read to end
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendAllTryEnd(
+                        "POST / HTTP/1.1",
+                        $"{transferEncodingHeaderLine}",
+                        $"{headerLine}",
+                        "",
+                        "2",
+                        "42",
+                        "0",
+                        $"{trailingHeaderLine}",
+                        "",
+                        "");
+                    await connection.ReceiveForcedEnd(
+                        "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task TrailingHeadersCountTowardsHeaderCountLimit(TestServiceContext testContext)
+        {
+            const string transferEncodingHeaderLine = "Transfer-Encoding: chunked";
+            const string headerLine = "Header: value";
+            const string trailingHeaderLine = "Trailing-Header: trailing-value";
+
+            testContext.ServerOptions.Limits.MaxRequestHeaderCount = 2;
+
+            using (var server = new TestServer(async context =>
+            {
+                var buffer = new byte[128];
+                while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) != 0) ; // read to end
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendAllTryEnd(
+                        "POST / HTTP/1.1",
+                        $"{transferEncodingHeaderLine}",
+                        $"{headerLine}",
+                        "",
+                        "2",
+                        "42",
+                        "0",
+                        $"{trailingHeaderLine}",
+                        "",
+                        "");
+                    await connection.ReceiveForcedEnd(
+                        "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
         public async Task ExtensionsAreIgnored(TestServiceContext testContext)
         {
             var requestCount = 10;

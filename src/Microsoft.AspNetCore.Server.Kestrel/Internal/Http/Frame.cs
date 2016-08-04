@@ -66,6 +66,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private readonly string _pathBase;
 
+        private int _remainingRequestHeadersBytesAllowed;
+        private int _requestHeadersParsed;
+
         public Frame(ConnectionContext context)
             : base(context)
         {
@@ -305,6 +308,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             _manuallySetRequestAbortToken = null;
             _abortedCts = null;
+
+            _remainingRequestHeadersBytesAllowed = ServerOptions.Limits.MaxRequestHeadersTotalSize;
+            _requestHeadersParsed = 0;
         }
 
         /// <summary>
@@ -1083,63 +1089,63 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         RejectRequest(RequestRejectionReason.HeaderLineMustNotStartWithWhitespace);
                     }
 
-                    var beginName = scan;
-                    if (scan.Seek(ref _vectorColons, ref _vectorCRs) == -1)
+                    // If we've parsed the max allowed numbers of headers and we're starting a new
+                    // one, we've gone over the limit.
+                    if (_requestHeadersParsed == ServerOptions.Limits.MaxRequestHeaderCount)
                     {
-                        return false;
-                    }
-                    var endName = scan;
-
-                    ch = scan.Take();
-                    if (ch != ':')
-                    {
-                        RejectRequest(RequestRejectionReason.NoColonCharacterFoundInHeaderLine);
+                        RejectRequest(RequestRejectionReason.TooManyHeaders);
                     }
 
-                    var validateName = beginName;
-                    if (validateName.Seek(ref _vectorSpaces, ref _vectorTabs, ref _vectorColons) != ':')
+                    var end = scan;
+                    int bytesScanned;
+                    if (end.Seek(ref _vectorLFs, out bytesScanned, _remainingRequestHeadersBytesAllowed) == -1)
                     {
-                        RejectRequest(RequestRejectionReason.WhitespaceIsNotAllowedInHeaderName);
-                    }
-
-                    var beginValue = scan;
-                    ch = scan.Peek();
-
-                    if (ch == -1)
-                    {
-                        return false;
-                    }
-
-                    // Skip header value leading whitespace.
-                    while (ch == ' ' || ch == '\t')
-                    {
-                        scan.Take();
-                        beginValue = scan;
-
-                        ch = scan.Peek();
-                        if (ch == -1)
+                        if (bytesScanned >= _remainingRequestHeadersBytesAllowed)
+                        {
+                            RejectRequest(RequestRejectionReason.HeadersExceedMaxTotalSize);
+                        }
+                        else
                         {
                             return false;
                         }
                     }
 
-                    scan = beginValue;
-                    if (scan.Seek(ref _vectorCRs) == -1)
+                    var beginName = scan;
+                    if (scan.Seek(ref _vectorColons, ref end) == -1)
                     {
-                        // no "\r" in sight, burn used bytes and go back to await more data
-                        return false;
+                        RejectRequest(RequestRejectionReason.NoColonCharacterFoundInHeaderLine);
+                    }
+                    var endName = scan;
+
+                    scan.Take();
+
+                    var validateName = beginName;
+                    if (validateName.Seek(ref _vectorSpaces, ref _vectorTabs, ref endName) != -1)
+                    {
+                        RejectRequest(RequestRejectionReason.WhitespaceIsNotAllowedInHeaderName);
+                    }
+
+                    var beginValue = scan;
+                    ch = scan.Take();
+
+                    while (ch == ' ' || ch == '\t')
+                    {
+                        beginValue = scan;
+                        ch = scan.Take();
+                    }
+
+                    scan = beginValue;
+                    if (scan.Seek(ref _vectorCRs, ref end) == -1)
+                    {
+                        RejectRequest(RequestRejectionReason.MissingCRInHeaderLine);
                     }
 
                     scan.Take(); // we know this is '\r'
                     ch = scan.Take(); // expecting '\n'
 
-                    if (ch == -1)
+                    if (ch != '\n')
                     {
-                        return false;
-                    }
-                    else if (ch != '\n')
-                    {
-                        RejectRequest(RequestRejectionReason.HeaderLineMustEndInCRLFOnlyCRFound);
+                        RejectRequest(RequestRejectionReason.HeaderValueMustNotContainCR);
                     }
 
                     var next = scan.Peek();
@@ -1195,6 +1201,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                     consumed = scan;
                     requestHeaders.Append(name.Array, name.Offset, name.Count, value);
+
+                    _remainingRequestHeadersBytesAllowed -= bytesScanned;
+                    _requestHeadersParsed++;
                 }
 
                 return false;

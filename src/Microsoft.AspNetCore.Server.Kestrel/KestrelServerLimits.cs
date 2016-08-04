@@ -14,6 +14,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         // Matches the default large_client_header_buffers in nginx.
         private int _maxRequestLineSize = 8 * 1024;
 
+        // Matches the default large_client_header_buffers in nginx.
+        private int _maxRequestHeadersTotalSize = 32 * 1024;
+
+        // Matches the default LimitRequestFields in Apache httpd.
+        private int _maxRequestHeaderCount = 100;
+
         /// <summary>
         /// Gets or sets the maximum size of the request buffer.
         /// </summary>
@@ -56,6 +62,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     throw new ArgumentOutOfRangeException(nameof(value), "Value must be a positive integer.");
                 }
                 _maxRequestLineSize = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum allowed size for the HTTP request headers.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to 32,768 bytes (32 KB).
+        /// </remarks>
+        public int MaxRequestHeadersTotalSize
+        {
+            get
+            {
+                return _maxRequestHeadersTotalSize;
+            }
+            set
+            {
+                if (value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), "Value must a positive integer.");
+                }
+                _maxRequestHeadersTotalSize = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum allowed number of headers per HTTP request.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to 100.
+        /// </remarks>
+        public int MaxRequestHeaderCount
+        {
+            get
+            {
+                return _maxRequestHeaderCount;
+            }
+            set
+            {
+                if (value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), "Value must a positive integer.");
+                }
+                _maxRequestHeaderCount = value;
             }
         }
     }

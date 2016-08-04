@@ -49,8 +49,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 case RequestRejectionReason.WhitespaceIsNotAllowedInHeaderName:
                     ex = new BadHttpRequestException("Whitespace is not allowed in header name.");
                     break;
-                case RequestRejectionReason.HeaderLineMustEndInCRLFOnlyCRFound:
-                    ex = new BadHttpRequestException("Header line must end in CRLF; only CR found.");
+                case RequestRejectionReason.HeaderValueMustNotContainCR:
+                    ex = new BadHttpRequestException("Header value must not contain CR characters.");
                     break;
                 case RequestRejectionReason.HeaderValueLineFoldingNotSupported:
                     ex = new BadHttpRequestException("Header value line folding not supported.");
@@ -90,6 +90,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     break;
                 case RequestRejectionReason.MissingCrAfterVersion:
                     ex = new BadHttpRequestException("Missing CR in request line.");
+                    break;
+                case RequestRejectionReason.HeadersExceedMaxTotalSize:
+                    ex = new BadHttpRequestException("Request headers too long.");
+                    break;
+                case RequestRejectionReason.MissingCRInHeaderLine:
+                    ex = new BadHttpRequestException("No CR character found in header line.");
+                    break;
+                case RequestRejectionReason.TooManyHeaders:
+                    ex = new BadHttpRequestException("Request contains too many headers.");
                     break;
                 default:
                     ex = new BadHttpRequestException("Bad request.");

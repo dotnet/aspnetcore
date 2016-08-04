@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         HeaderLineMustNotStartWithWhitespace,
         NoColonCharacterFoundInHeaderLine,
         WhitespaceIsNotAllowedInHeaderName,
-        HeaderLineMustEndInCRLFOnlyCRFound,
+        HeaderValueMustNotContainCR,
         HeaderValueLineFoldingNotSupported,
         MalformedRequestLineStatus,
         MalformedRequestInvalidHeaders,
@@ -31,5 +31,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         MissingSpaceAfterMethod,
         MissingSpaceAfterTarget,
         MissingCrAfterVersion,
+        HeadersExceedMaxTotalSize,
+        MissingCRInHeaderLine,
+        TooManyHeaders,
     }
 }
