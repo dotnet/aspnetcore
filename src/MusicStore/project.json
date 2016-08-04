@@ -5,18 +5,14 @@
   "description": "Music store application on ASP.NET 5",
   "version": "1.1.0-*",
   "buildOptions": {
-    "compile": {
-      "include": [
-        "../../shared/**/*.cs"
-      ]
-    },
     "copyToOutput": {
       "include": [
         "Areas",
         "Views",
         "wwwroot",
         "config.json",
-        "web.config"
+        "web.config",
+        "ForTesting/**/*.json"
       ]
     },
     "define": [
@@ -33,7 +29,8 @@
       "Views",
       "wwwroot",
       "config.json",
-      "web.config"
+      "web.config",
+      "ForTesting/**/*.json"
     ]
   },
   "dependencies": {

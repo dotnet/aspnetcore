@@ -1,10 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{44621553-AA7D-4893-8834-79582A7D8348}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7D749BDA-4638-4517-B66A-D40DEDEEB141}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
@@ -20,58 +18,6 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore", "src\MusicStore\MusicStore.xproj", "{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore.Test", "test\MusicStore.Test\MusicStore.Test.xproj", "{CA663205-77DE-4E55-B300-85594181B5A9}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mocks", "Mocks", "{D7CB3341-F932-4AC6-8F4E-EDC62F03C064}"
-	ProjectSection(SolutionItems) = preProject
-		shared\Mocks\Readme.md = shared\Mocks\Readme.md
-		shared\Mocks\StartupOpenIdConnectTesting.cs = shared\Mocks\StartupOpenIdConnectTesting.cs
-		shared\Mocks\StartupSocialTesting.cs = shared\Mocks\StartupSocialTesting.cs
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Facebook", "Facebook", "{B53E1D6D-4A18-4AA2-BE59-146D6B7F310D}"
-	ProjectSection(SolutionItems) = preProject
-		shared\Mocks\Facebook\FacebookMockBackChannelHttpHandler.cs = shared\Mocks\Facebook\FacebookMockBackChannelHttpHandler.cs
-		shared\Mocks\Facebook\TestFacebookEvents.cs = shared\Mocks\Facebook\TestFacebookEvents.cs
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{E839AEB0-7926-4FEE-B22C-11AF7EF5D4BF}"
-	ProjectSection(SolutionItems) = preProject
-		shared\MusicStoreConfig.cs = shared\MusicStoreConfig.cs
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{78715843-B625-414E-9074-56908C48EF28}"
-	ProjectSection(SolutionItems) = preProject
-		shared\Mocks\Common\CustomStateDataFormat.cs = shared\Mocks\Common\CustomStateDataFormat.cs
-		shared\Mocks\Common\Helpers.cs = shared\Mocks\Common\Helpers.cs
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Google", "Google", "{A6D34706-33E8-45D4-9E3D-8EB8C9EAD9B2}"
-	ProjectSection(SolutionItems) = preProject
-		shared\Mocks\Google\GoogleMockBackChannelHttpHandler.cs = shared\Mocks\Google\GoogleMockBackChannelHttpHandler.cs
-		shared\Mocks\Google\TestGoogleEvents.cs = shared\Mocks\Google\TestGoogleEvents.cs
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MicrosoftAccount", "MicrosoftAccount", "{86DDEB7E-F29D-41BD-9866-65EB01A8CFED}"
-	ProjectSection(SolutionItems) = preProject
-		shared\Mocks\MicrosoftAccount\MicrosoftAccountMockBackChannelHandler.cs = shared\Mocks\MicrosoftAccount\MicrosoftAccountMockBackChannelHandler.cs
-		shared\Mocks\MicrosoftAccount\TestMicrosoftAccountEvents.cs = shared\Mocks\MicrosoftAccount\TestMicrosoftAccountEvents.cs
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OpenIdConnect", "OpenIdConnect", "{B76F2C95-C066-4CAB-AA2B-287FA039C786}"
-	ProjectSection(SolutionItems) = preProject
-		shared\Mocks\OpenIdConnect\CustomStringDataFormat.cs = shared\Mocks\OpenIdConnect\CustomStringDataFormat.cs
-		shared\Mocks\OpenIdConnect\keys.json = shared\Mocks\OpenIdConnect\keys.json
-		shared\Mocks\OpenIdConnect\openid-configuration.json = shared\Mocks\OpenIdConnect\openid-configuration.json
-		shared\Mocks\OpenIdConnect\OpenIdConnectBackChannelHttpHandler.cs = shared\Mocks\OpenIdConnect\OpenIdConnectBackChannelHttpHandler.cs
-		shared\Mocks\OpenIdConnect\TestOpenIdConnectEvents.cs = shared\Mocks\OpenIdConnect\TestOpenIdConnectEvents.cs
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Twitter", "Twitter", "{6CA9AC03-039E-4993-8164-C27E418683C5}"
-	ProjectSection(SolutionItems) = preProject
-		shared\Mocks\Twitter\CustomTwitterStateDataFormat.cs = shared\Mocks\Twitter\CustomTwitterStateDataFormat.cs
-		shared\Mocks\Twitter\TestTwitterEvents.cs = shared\Mocks\Twitter\TestTwitterEvents.cs
-		shared\Mocks\Twitter\TwitterMockBackChannelHttpHandler.cs = shared\Mocks\Twitter\TwitterMockBackChannelHttpHandler.cs
-	EndProjectSection
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore.Standalone", "src\MusicStore.Standalone\MusicStore.Standalone.xproj", "{C4222506-9D5B-469D-90C1-196A3F27CB44}"
 EndProject
@@ -137,13 +83,6 @@ Global
 		{A319ACCE-060B-4385-9534-9F2202F6180E} = {363D2681-31A6-48C9-90BB-9ACFF4A41F06}
 		{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0} = {B7B176B6-8D4D-4EF1-BBD2-DDA650C78FFF}
 		{CA663205-77DE-4E55-B300-85594181B5A9} = {363D2681-31A6-48C9-90BB-9ACFF4A41F06}
-		{D7CB3341-F932-4AC6-8F4E-EDC62F03C064} = {E839AEB0-7926-4FEE-B22C-11AF7EF5D4BF}
-		{B53E1D6D-4A18-4AA2-BE59-146D6B7F310D} = {D7CB3341-F932-4AC6-8F4E-EDC62F03C064}
-		{78715843-B625-414E-9074-56908C48EF28} = {D7CB3341-F932-4AC6-8F4E-EDC62F03C064}
-		{A6D34706-33E8-45D4-9E3D-8EB8C9EAD9B2} = {D7CB3341-F932-4AC6-8F4E-EDC62F03C064}
-		{86DDEB7E-F29D-41BD-9866-65EB01A8CFED} = {D7CB3341-F932-4AC6-8F4E-EDC62F03C064}
-		{B76F2C95-C066-4CAB-AA2B-287FA039C786} = {D7CB3341-F932-4AC6-8F4E-EDC62F03C064}
-		{6CA9AC03-039E-4993-8164-C27E418683C5} = {D7CB3341-F932-4AC6-8F4E-EDC62F03C064}
 		{C4222506-9D5B-469D-90C1-196A3F27CB44} = {B7B176B6-8D4D-4EF1-BBD2-DDA650C78FFF}
 	EndGlobalSection
 EndGlobal

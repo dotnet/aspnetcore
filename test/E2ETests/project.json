@@ -1,11 +1,6 @@
 {
   "buildOptions": {
-    "warningsAsErrors": true,
-    "compile": {
-      "include": [
-        "../../shared/**/*.cs"
-      ]
-    }
+    "warningsAsErrors": true
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",

@@ -12,17 +12,17 @@
         "../MusicStore/obj"
       ],
       "include": [
-        "../../shared/**/*.cs",
         "../MusicStore/**/*.cs"
       ]
     },
     "copyToOutput": {
       "mappings": {
-      "Areas/": "../MusicStore/Areas/**/*.cshtml",
-      "Views/": "../MusicStore/Views/**/*.cshtml",
-      "wwwroot/": "../MusicStore/wwwroot/",
-      "web.config": "../MusicStore/web.config",
-      "config.json": "../MusicStore/config.json"
+        "Areas/": "../MusicStore/Areas/**/*.cshtml",
+        "Views/": "../MusicStore/Views/**/*.cshtml",
+        "wwwroot/": "../MusicStore/wwwroot/",
+        "web.config": "../MusicStore/web.config",
+        "config.json": "../MusicStore/config.json",
+        "ForTesting/": "../MusicStore/ForTesting/**/*.json"
       }
     },
     "define": [
@@ -39,7 +39,8 @@
       "Views/": "../MusicStore/Views/**/*.cshtml",
       "wwwroot/": "../MusicStore/wwwroot/",
       "web.config": "../MusicStore/web.config",
-      "config.json": "../MusicStore/config.json"
+      "config.json": "../MusicStore/config.json",
+      "ForTesting/": "../MusicStore/ForTesting/**/*.json"
     }
   },
   "dependencies": {

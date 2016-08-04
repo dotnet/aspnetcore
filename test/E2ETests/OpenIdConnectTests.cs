@@ -79,7 +79,7 @@ namespace E2ETests
                 // Override the connection strings using environment based configuration
                 deploymentParameters.EnvironmentVariables
                     .Add(new KeyValuePair<string, string>(
-                        MusicStore.StoreConfig.ConnectionStringKey,
+                        MusicStoreConfig.ConnectionStringKey,
                         DbUtils.CreateConnectionString(musicStoreDbName)));
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, _logger))
