@@ -428,4 +428,7 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="ParseError_IncompleteQuotesAroundDirective" xml:space="preserve">
     <value>Optional quote around the directive '{0}' is missing the corresponding opening or closing quote.</value>
   </data>
+  <data name="FatalException" xml:space="preserve">
+    <value>A fatal exception occurred when trying to parse '{0}':{1}{2}</value>
+  </data>
 </root>

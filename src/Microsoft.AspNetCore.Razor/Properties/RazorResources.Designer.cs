@@ -1562,6 +1562,22 @@ namespace Microsoft.AspNetCore.Razor
             return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_IncompleteQuotesAroundDirective"), p0);
         }
 
+        /// <summary>
+        /// A fatal exception occurred when trying to parse '{0}':{1}{2}
+        /// </summary>
+        internal static string FatalException
+        {
+            get { return GetString("FatalException"); }
+        }
+
+        /// <summary>
+        /// A fatal exception occurred when trying to parse '{0}':{1}{2}
+        /// </summary>
+        internal static string FormatFatalException(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("FatalException"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

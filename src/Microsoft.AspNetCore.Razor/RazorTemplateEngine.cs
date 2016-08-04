@@ -2,14 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using Microsoft.AspNetCore.Razor.Chunks;
 using Microsoft.AspNetCore.Razor.Chunks.Generators;
 using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Text;
 
 namespace Microsoft.AspNetCore.Razor
@@ -363,26 +368,50 @@ namespace Microsoft.AspNetCore.Razor
                 throw new ArgumentNullException(nameof(input));
             }
 
-            className = (className ?? Host.DefaultClassName) ?? DefaultClassName;
-            rootNamespace = (rootNamespace ?? Host.DefaultNamespace) ?? DefaultNamespace;
+            try
+            {
+                className = (className ?? Host.DefaultClassName) ?? DefaultClassName;
+                rootNamespace = (rootNamespace ?? Host.DefaultNamespace) ?? DefaultNamespace;
 
-            // Run the parser
-            var parser = CreateParser(sourceFileName);
-            Debug.Assert(parser != null);
-            var results = parser.Parse(input);
+                // Run the parser
+                var parser = CreateParser(sourceFileName);
+                Debug.Assert(parser != null);
+                var results = parser.Parse(input);
 
-            // Generate code
-            var chunkGenerator = CreateChunkGenerator(className, rootNamespace, sourceFileName);
-            chunkGenerator.DesignTimeMode = Host.DesignTimeMode;
-            chunkGenerator.Visit(results);
+                // Generate code
+                var chunkGenerator = CreateChunkGenerator(className, rootNamespace, sourceFileName);
+                chunkGenerator.DesignTimeMode = Host.DesignTimeMode;
+                chunkGenerator.Visit(results);
 
-            var codeGeneratorContext = new CodeGeneratorContext(chunkGenerator.Context, results.ErrorSink);
-            codeGeneratorContext.Checksum = checksum;
-            var codeGenerator = CreateCodeGenerator(codeGeneratorContext);
-            var codeGeneratorResult = codeGenerator.Generate();
+                var codeGeneratorContext = new CodeGeneratorContext(chunkGenerator.Context, results.ErrorSink);
+                codeGeneratorContext.Checksum = checksum;
+                var codeGenerator = CreateCodeGenerator(codeGeneratorContext);
+                var codeGeneratorResult = codeGenerator.Generate();
 
-            // Collect results and return
-            return new GeneratorResults(results, codeGeneratorResult, codeGeneratorContext.ChunkTreeBuilder.Root);
+                // Collect results and return
+                return new GeneratorResults(results, codeGeneratorResult, codeGeneratorContext.ChunkTreeBuilder.Root);
+            }
+            // During runtime we want code generation explosions to flow up into the calling code. At design time
+            // we want to capture these exceptions to prevent IDEs from crashing.
+            catch (Exception ex) when (Host.DesignTimeMode)
+            {
+                var errorSink = new ErrorSink();
+                errorSink.OnError(
+                    SourceLocation.Undefined,
+                    RazorResources.FormatFatalException(sourceFileName, Environment.NewLine, ex.Message),
+                    length: -1);
+                var emptyBlock = new BlockBuilder();
+                emptyBlock.Type = default(BlockType);
+
+                return new GeneratorResults(
+                    document: emptyBlock.Build(),
+                    tagHelperDescriptors: Enumerable.Empty<TagHelperDescriptor>(),
+                    errorSink: errorSink,
+                    codeGeneratorResult: new CodeGeneratorResult(
+                        code: string.Empty,
+                        designTimeLineMappings: new List<LineMapping>()),
+                    chunkTree: new ChunkTree());
+            }
         }
 
         protected internal virtual RazorChunkGenerator CreateChunkGenerator(

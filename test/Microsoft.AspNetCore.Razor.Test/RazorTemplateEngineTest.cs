@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -18,6 +19,53 @@ namespace Microsoft.AspNetCore.Razor
 {
     public class RazorTemplateEngineTest
     {
+        [Fact]
+        public void InvalidRazorEngineHostReturnsParseErrorsAtDesignTime()
+        {
+            // Arrange
+            var host = new InvalidRazorEngineHost(new CSharpRazorCodeLanguage())
+            {
+                DesignTimeMode = true
+            };
+            var razorEngine = new RazorTemplateEngine(host);
+            var input = new StringTextBuffer("<div>Hello @(\"World\")</div>");
+            var exception = new InvalidOperationException("Hello World");
+            var expectedError = RazorResources.FormatFatalException("test", Environment.NewLine, exception.Message);
+
+            // Act
+            var result = razorEngine.GenerateCode(input, className: null, rootNamespace: null, sourceFileName: "test");
+
+            // Assert
+            Assert.Empty(result.Document.Children);
+            Assert.Empty(result.ChunkTree.Children);
+            Assert.Empty(result.DesignTimeLineMappings);
+            Assert.Empty(result.GeneratedCode);
+
+            var error = Assert.Single(result.ParserErrors);
+            Assert.Equal(expectedError, error.Message, StringComparer.Ordinal);
+            Assert.Equal(SourceLocation.Undefined, error.Location);
+            Assert.Equal(-1, error.Length);
+        }
+
+        [Fact]
+        public void InvalidRazorEngineHostThrowsAtRuntime()
+        {
+            // Arrange
+            var host = new InvalidRazorEngineHost(new CSharpRazorCodeLanguage())
+            {
+                DesignTimeMode = false
+            };
+            var razorEngine = new RazorTemplateEngine(host);
+            var input = new StringTextBuffer("<div>Hello @(\"World\")</div>");
+
+            // Act
+            var thrownException = Assert.Throws<InvalidOperationException>(() =>
+                razorEngine.GenerateCode(input, className: null, rootNamespace: null, sourceFileName: "test"));
+
+            // Assert
+            Assert.Equal("Hello World", thrownException.Message, StringComparer.Ordinal);
+        }
+
         [Fact]
         public void ConstructorInitializesHost()
         {
@@ -337,6 +385,24 @@ namespace Microsoft.AspNetCore.Razor
             {
                 Checksum = checksum;
                 return null;
+            }
+        }
+
+        private class InvalidRazorEngineHost : RazorEngineHost
+        {
+            public InvalidRazorEngineHost(RazorCodeLanguage codeLanguage) : base(codeLanguage)
+            {
+            }
+
+            public override string DefaultClassName
+            {
+                get
+                {
+                    throw new InvalidOperationException("Hello World");
+                }
+                set
+                {
+                }
             }
         }
     }
