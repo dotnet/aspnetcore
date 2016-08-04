@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             var response = await Backchannel.GetAsync(endpoint, Context.RequestAborted);
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException($"Failed to retrived Facebook user information ({response.StatusCode}) Please check if the authentication information is correct and the corresponding Facebook Graph API is enabled.");
+                throw new HttpRequestException($"Failed to retrieve Facebook user information ({response.StatusCode}) Please check if the authentication information is correct and the corresponding Facebook Graph API is enabled.");
             }
 
             var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
