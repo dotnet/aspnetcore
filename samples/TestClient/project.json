@@ -1,9 +1,0 @@
-{
-  "dependencies": {
-    "Microsoft.AspNetCore.WebSockets.Protocol": "0.2.0-*",
-    "Microsoft.AspNetCore.WebSockets.Client": "0.2.0-*"
-  },
-  "frameworks": {
-    "net451": {}
-  }
-}
