@@ -4,9 +4,7 @@
             "AdxVerificationCompositeRule"
         ],
         "packages": {
-            "Microsoft.AspNetCore.WebSockets.Client": { },
-            "Microsoft.AspNetCore.WebSockets.Protocol": { },
-            "Microsoft.AspNetCore.WebSockets.Server": { }
+            "Microsoft.AspNetCore.WebSockets": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
