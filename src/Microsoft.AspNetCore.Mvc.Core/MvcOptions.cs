@@ -140,5 +140,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// is used. If not set the port won't be specified in the secured URL e.g. https://localhost/path.
         /// </summary>
         public int? SslPort { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default value for the Permanent property of <see cref="RequireHttpsAttribute"/>.
+        /// </summary>
+        public bool RequireHttpsPermanent { get; set; }
     }
 }
