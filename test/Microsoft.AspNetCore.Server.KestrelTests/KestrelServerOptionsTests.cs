@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class KestrelServerInformationTests
     {
-#pragma warning disable CS0612
+#pragma warning disable CS0618
         [Fact]
         public void MaxRequestBufferSizeIsMarkedObsolete()
         {
