@@ -4486,5 +4486,32 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
         {
             RunParseTreeRewriterTest(documentContent, expectedOutput, "p", "div");
         }
+
+        [Fact]
+        public void Rewrite_HandlesMalformedNestedNonTagHelperTags_Correctly()
+        {
+            var documentContent = "<div>@{</div>}";
+            var expectedOutput = new MarkupBlock(
+                new MarkupTagBlock(
+                    Factory.Markup("<div>")),
+                new StatementBlock(
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        new MarkupBlock(
+                            new MarkupTagBlock(
+                                Factory.Markup("</div>").Accepts(AcceptedCharacters.None))),
+                    Factory.EmptyCSharp().AsStatement(),
+                    Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                Factory.EmptyHtml());
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    "Encountered end tag \"div\" with no matching start tag.  Are your start/end tags properly balanced?",
+                    new SourceLocation(9, 0, 9),
+                    3),
+            };
+
+            RunParseTreeRewriterTest(documentContent, expectedOutput, expectedErrors);
+        }
     }
 }

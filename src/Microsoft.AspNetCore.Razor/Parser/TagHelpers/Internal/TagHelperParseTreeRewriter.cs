@@ -60,12 +60,12 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
 
         public void Rewrite(RewritingContext context)
         {
-            RewriteTags(context.SyntaxTree, context);
+            RewriteTags(context.SyntaxTree, context, depth: 0);
 
             context.SyntaxTree = _currentBlock.Build();
         }
 
-        private void RewriteTags(Block input, RewritingContext context)
+        private void RewriteTags(Block input, RewritingContext context, int depth)
         {
             // We want to start a new block without the children from existing (we rebuild them).
             TrackBlock(new BlockBuilder
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                             // Non-TagHelper tag.
                             ValidateParentAllowsPlainTag(childBlock, context.ErrorSink);
 
-                            TrackTagBlock(childBlock);
+                            TrackTagBlock(childBlock, depth);
                         }
 
                         // If we get to here it means that we're a normal html tag.  No need to iterate any deeper into
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                     else
                     {
                         // We're not an Html tag so iterate through children recursively.
-                        RewriteTags(childBlock, context);
+                        RewriteTags(childBlock, context, depth + 1);
                         continue;
                     }
                 }
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
             BuildCurrentlyTrackedBlock();
         }
 
-        private void TrackTagBlock(Block childBlock)
+        private void TrackTagBlock(Block childBlock, int depth)
         {
             var tagName = GetTagName(childBlock);
 
@@ -148,6 +148,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                 var parentTracker = _trackerStack.Count > 0 ? _trackerStack.Peek() : null;
                 if (parentTracker != null &&
                     !parentTracker.IsTagHelper &&
+                    depth == parentTracker.Depth &&
                     string.Equals(parentTracker.TagName, tagName, StringComparison.OrdinalIgnoreCase))
                 {
                     PopTrackerStack();
@@ -157,7 +158,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
             {
                 // If it's not a void element and it's not self-closing then we need to create a tag
                 // tracker for it.
-                var tracker = new TagBlockTracker(tagName, isTagHelper: false);
+                var tracker = new TagBlockTracker(tagName, isTagHelper: false, depth: depth);
                 PushTrackerStack(tracker);
             }
         }
@@ -802,15 +803,18 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
 
         private class TagBlockTracker
         {
-            public TagBlockTracker(string tagName, bool isTagHelper)
+            public TagBlockTracker(string tagName, bool isTagHelper, int depth)
             {
                 TagName = tagName;
                 IsTagHelper = isTagHelper;
+                Depth = depth;
             }
 
             public string TagName { get; }
 
             public bool IsTagHelper { get; }
+
+            public int Depth { get; }
         }
 
         private class TagHelperBlockTracker : TagBlockTracker
@@ -818,7 +822,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
             private IEnumerable<string> _prefixedAllowedChildren;
 
             public TagHelperBlockTracker(TagHelperBlockBuilder builder)
-                : base(builder.TagName, isTagHelper: true)
+                : base(builder.TagName, isTagHelper: true, depth: 0)
             {
                 Builder = builder;
 
