@@ -50,8 +50,10 @@ namespace Microsoft.AspNetCore.Server.Testing
         {
             string executableName;
             string executableArgs = string.Empty;
+            string workingDirectory = string.Empty;
             if (DeploymentParameters.PublishApplicationBeforeDeployment)
             {
+                workingDirectory = DeploymentParameters.PublishedApplicationRootPath;
                 var executableExtension =
                     DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? ".exe" :
                     DeploymentParameters.ApplicationType == ApplicationType.Portable ? ".dll" : "";
@@ -74,6 +76,7 @@ namespace Microsoft.AspNetCore.Server.Testing
             }
             else
             {
+                workingDirectory = DeploymentParameters.ApplicationPath;
                 var targetFramework = DeploymentParameters.TargetFramework ?? (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.0");
 
                 executableName = DotnetCommandName;
@@ -94,7 +97,8 @@ namespace Microsoft.AspNetCore.Server.Testing
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
                 // Trying a work around for https://github.com/aspnet/Hosting/issues/140.
-                RedirectStandardInput = true
+                RedirectStandardInput = true,
+                WorkingDirectory = workingDirectory
             };
 
             AddEnvironmentVariablesToProcess(startInfo);
