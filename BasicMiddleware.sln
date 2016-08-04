@@ -35,6 +35,12 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RewriteSample", "samples\Re
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Rewrite.Tests", "test\Microsoft.AspNetCore.Rewrite.Tests\Microsoft.AspNetCore.Rewrite.Tests.xproj", "{31794F9E-A1AA-4535-B03C-A3233737CD1A}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.ResponseCompression", "src\Microsoft.AspNetCore.ResponseCompression\Microsoft.AspNetCore.ResponseCompression.xproj", "{45308A9D-F4C6-46A8-A24F-E73D995CC223}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.ResponseCompression.Tests", "test\Microsoft.AspNetCore.ResponseCompression.Tests\Microsoft.AspNetCore.ResponseCompression.Tests.xproj", "{3360A5D1-70C0-49EE-9051-04A6A6B836DC}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ResponseCompressionSample", "samples\ResponseCompressionSample\ResponseCompressionSample.xproj", "{B2A3CE38-51B2-4486-982C-98C380AF140E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +83,18 @@ Global
 		{31794F9E-A1AA-4535-B03C-A3233737CD1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{31794F9E-A1AA-4535-B03C-A3233737CD1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{31794F9E-A1AA-4535-B03C-A3233737CD1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45308A9D-F4C6-46A8-A24F-E73D995CC223}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45308A9D-F4C6-46A8-A24F-E73D995CC223}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45308A9D-F4C6-46A8-A24F-E73D995CC223}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45308A9D-F4C6-46A8-A24F-E73D995CC223}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3360A5D1-70C0-49EE-9051-04A6A6B836DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3360A5D1-70C0-49EE-9051-04A6A6B836DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3360A5D1-70C0-49EE-9051-04A6A6B836DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3360A5D1-70C0-49EE-9051-04A6A6B836DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2A3CE38-51B2-4486-982C-98C380AF140E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2A3CE38-51B2-4486-982C-98C380AF140E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2A3CE38-51B2-4486-982C-98C380AF140E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2A3CE38-51B2-4486-982C-98C380AF140E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -91,5 +109,8 @@ Global
 		{0E7CA1A7-1DC3-4CE6-B9C7-1688FE1410F1} = {A5076D28-FA7E-4606-9410-FEDD0D603527}
 		{9E049645-13BC-4598-89E1-5B43D36E5D14} = {9587FE9F-5A17-42C4-8021-E87F59CECB98}
 		{31794F9E-A1AA-4535-B03C-A3233737CD1A} = {8437B0F3-3894-4828-A945-A9187F37631D}
+		{45308A9D-F4C6-46A8-A24F-E73D995CC223} = {A5076D28-FA7E-4606-9410-FEDD0D603527}
+		{3360A5D1-70C0-49EE-9051-04A6A6B836DC} = {8437B0F3-3894-4828-A945-A9187F37631D}
+		{B2A3CE38-51B2-4486-982C-98C380AF140E} = {9587FE9F-5A17-42C4-8021-E87F59CECB98}
 	EndGlobalSection
 EndGlobal
