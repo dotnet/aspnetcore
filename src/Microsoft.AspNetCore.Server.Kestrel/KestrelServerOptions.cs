@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         /// When set to null, the size of the request buffer is unlimited.
         /// Defaults to 1,048,576 bytes (1 MB).
         /// </remarks>
-        [Obsolete]
+        [Obsolete("This property is obsolete and will be removed in a future version. Use Limits.MaxRequestBufferSize instead.")]
         public long? MaxRequestBufferSize
         {
             get
