@@ -49,6 +49,24 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.Equal("No recognized listening addresses were configured.", exception.Message);
         }
 
+        [Theory]
+        [InlineData(1, 2)]
+        [InlineData(int.MaxValue - 1, int.MaxValue)]
+        public void StartWithMaxRequestBufferSizeLessThanMaxRequestLineSizeThrows(long maxRequestBufferSize, int maxRequestLineSize)
+        {
+            var options = new KestrelServerOptions();
+            options.Limits.MaxRequestBufferSize = maxRequestBufferSize;
+            options.Limits.MaxRequestLineSize = maxRequestLineSize;
+
+            var server = CreateServer(options);
+
+            var exception = Assert.Throws<InvalidOperationException>(() => StartDummyApplication(server));
+
+            Assert.Equal(
+                $"Maximum request buffer size ({maxRequestBufferSize}) must be greater than or equal to maximum request line size ({maxRequestLineSize}).",
+                exception.Message);
+        }
+
         private static KestrelServer CreateServer(KestrelServerOptions options)
         {
             var lifetime = new LifetimeNotImplemented();

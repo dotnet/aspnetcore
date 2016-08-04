@@ -67,21 +67,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [Theory]
-        [InlineData(1, 2)]
-        [InlineData(int.MaxValue - 1, int.MaxValue)]
-        public void ServerFailsToStartWhenMaxRequestBufferSizeIsLessThanMaxRequestLineSize(long maxRequestBufferSize, int maxRequestLineSize)
-        {
-            using (var host = BuildWebHost(options =>
-            {
-                options.Limits.MaxRequestBufferSize = maxRequestBufferSize;
-                options.Limits.MaxRequestLineSize = maxRequestLineSize;
-            }))
-            {
-                Assert.Throws<InvalidOperationException>(() => host.Start());
-            }
-        }
-
         private IWebHost BuildWebHost(Action<KestrelServerOptions> options)
         {
             var host = new WebHostBuilder()
