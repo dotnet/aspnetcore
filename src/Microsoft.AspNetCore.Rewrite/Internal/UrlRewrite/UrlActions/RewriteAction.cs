@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite.UrlActions
 {
     public class RewriteAction : UrlAction
     {
+        private readonly string ForwardSlash = "/";
         public RuleTerminiation Result { get; }
         public bool ClearQuery { get; }
 
@@ -46,12 +47,27 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite.UrlActions
                 var split = pattern.IndexOf('?');
                 if (split >= 0)
                 {
-                    context.Request.Path = new PathString("/" + pattern.Substring(0, split));
+                    var path = pattern.Substring(0, split);
+                    if (path.StartsWith(ForwardSlash))
+                    {
+                        context.Request.Path = new PathString(path);
+                    }
+                    else
+                    {
+                        context.Request.Path = new PathString(ForwardSlash + path);
+                    }
                     context.Request.QueryString = context.Request.QueryString.Add(new QueryString(pattern.Substring(split)));
                 }
                 else
                 {
-                    context.Request.Path = new PathString("/" + pattern);
+                    if (pattern.StartsWith(ForwardSlash))
+                    {
+                        context.Request.Path = new PathString(pattern);
+                    }
+                    else
+                    {
+                        context.Request.Path = new PathString(ForwardSlash + pattern);
+                    }
                 }
             }
             return new RuleResult { Result = Result };

@@ -1,0 +1,120 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.IO;
+using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite;
+using Xunit;
+
+namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
+{
+    public class FormatExceptionHandlingTests
+    {
+        [Theory]
+        [InlineData(
+@"<rewrite>
+    <rules>
+        <rule name=""Rewrite to article.aspx"">
+        </rule>
+    </rules>
+</rewrite>",
+            "Could not parse the UrlRewrite file. Message: 'Cannot have rule without match'. Line number '3': '10'.")]
+        [InlineData(
+@"<rewrite>
+    <rules>
+        <rule name=""Rewrite to article.aspx"">
+            <match url = ""(.*)"" />
+            <action type=""Rewrite"" url =""{"" />
+        </rule>
+    </rules>
+</rewrite>", 
+            "Could not parse the UrlRewrite file. Message: 'Missing close brace for parameter at string index: '1''. Line number '5': '14'.")]
+        [InlineData(
+@"<rewrite>
+    <rules>
+        <rule name=""Rewrite to article.aspx"">
+            <match url = ""(.*)"" />
+            <action type=""AbortRequest"" url ="""" />
+        </rule>
+    </rules>
+</rewrite>", 
+            "Could not parse the UrlRewrite file. Message: 'Abort Requests are not supported.'. Line number '5': '14'.")]
+        [InlineData(
+@"<rewrite>
+    <rules>
+        <rule name=""Rewrite to article.aspx"">
+            <match url = ""(.*)"" />
+            <action type=""CustomResponse"" url ="""" />
+        </rule>
+    </rules>
+</rewrite>", 
+            "Could not parse the UrlRewrite file. Message: 'Custom Responses are not supported'. Line number '5': '14'.")]
+        [InlineData(
+@"<rewrite>
+    <rules>
+        <rule name=""Rewrite to article.aspx"">
+            <match />
+        </rule>
+    </rules>
+</rewrite>", 
+            "Could not parse the UrlRewrite file. Message: 'Match must have Url Attribute'. Line number '4': '14'.")]
+        [InlineData(
+@"<rewrite>
+    <rules>
+        <rule name=""Rewrite to article.aspx"">
+            <match url = ""(.*)"" />
+            <conditions>  
+                <add input=""{HTTPS"" pattern=""^OFF$"" />  
+            </conditions>  
+            <action type=""Rewrite"" url =""foo"" />
+        </rule>
+    </rules>
+</rewrite>",
+            "Could not parse the UrlRewrite file. Message: 'Missing close brace for parameter at string index: '6''. Line number '6': '18'.")]
+        [InlineData(
+@"<rewrite>
+    <rules>
+        <rule name=""Rewrite to article.aspx"">
+            <match url = ""(.*)"" />
+            <conditions>  
+                <add pattern=""^OFF$"" />  
+            </conditions>  
+            <action type=""Rewrite"" url =""foo"" />
+        </rule>
+    </rules>
+</rewrite>", 
+            "Could not parse the UrlRewrite file. Message: 'Conditions must have an input attribute'. Line number '6': '18'.")]
+        [InlineData(
+@"<rewrite>
+    <rules>
+        <rule name=""Rewrite to article.aspx"">
+            <match url = ""(.*)"" />
+            <conditions>  
+                <add input=""{HTTPS}"" />  
+            </conditions>  
+            <action type=""Rewrite"" url =""foo"" />
+        </rule>
+    </rules>
+</rewrite>", 
+            "Could not parse the UrlRewrite file. Message: 'Match does not have an associated pattern attribute in condition'. Line number '6': '18'.")]
+        [InlineData(
+@"<rewrite>
+    <rules>
+        <rule name=""Rewrite to article.aspx"">
+            <match url = ""(.*)"" />
+            <conditions>  
+                <add input=""{HTTPS}"" patternSyntax=""ExactMatch""/>  
+            </conditions>  
+            <action type=""Rewrite"" url =""foo"" />
+        </rule>
+    </rules>
+</rewrite>", 
+            "Could not parse the UrlRewrite file. Message: 'Match does not have an associated pattern attribute in condition'. Line number '6': '18'.")]
+        public void ThrowFormatExceptionWithCorrectMessage(string input, string expected)
+        {
+            // Arrange, Act, Assert
+            var ex = Assert.Throws<FormatException>(() => UrlRewriteFileParser.Parse(new StringReader(input)));
+            Assert.Equal(ex.Message, expected);
+        }
+    }
+}

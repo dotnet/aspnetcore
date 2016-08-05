@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite.UrlActions;
 using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite.UrlMatches;
@@ -18,8 +19,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
 
         public static List<UrlRewriteRule> Parse(TextReader reader)
         {
-            var temp = XDocument.Load(reader);
-            var xmlRoot = temp.Descendants(RewriteTags.Rewrite).FirstOrDefault();
+            var xmlDoc = XDocument.Load(reader, LoadOptions.SetLineInfo);
+            var xmlRoot = xmlDoc.Descendants(RewriteTags.Rewrite).FirstOrDefault();
 
             if (xmlRoot != null)
             {
@@ -44,7 +45,12 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             {
                 var res = new UrlRewriteRule();
                 SetRuleAttributes(rule, res);
-                CreateUrlAction(rule.Element(RewriteTags.Action), res, isGlobalRule);
+                var action = rule.Element(RewriteTags.Action);
+                if (action == null)
+                {
+                    ThrowUrlFormatException(rule, "Rule does not have an associated action attribute");
+                }
+                CreateUrlAction(action, res, isGlobalRule);
                 if (res.Enabled)
                 {
                     result.Add(res);
@@ -74,18 +80,17 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             {
                 res.StopProcessing = stopProcessing;
             }
-
-            CreateMatch(rule.Element(RewriteTags.Match), res);
+            var match = rule.Element(RewriteTags.Match);
+            if (match == null)
+            {
+                ThrowUrlFormatException(rule, "Cannot have rule without match");
+            }
+            CreateMatch(match, res);
             CreateConditions(rule.Element(RewriteTags.Conditions), res);
         }
 
         private static void CreateMatch(XElement match, UrlRewriteRule res)
         {
-            if (match == null)
-            {
-                throw new FormatException("Rules must have an associated match.");
-            }
-
             var matchRes = new ParsedUrlMatch();
 
             bool parBool;
@@ -100,6 +105,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             }
 
             var parsedInputString = match.Attribute(RewriteTags.Url)?.Value;
+            if (parsedInputString == null)
+            {
+                ThrowUrlFormatException(match, "Match must have Url Attribute");
+            }
 
             switch (res.PatternSyntax)
             {
@@ -178,10 +187,18 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             var parsedString = condition.Attribute(RewriteTags.Input)?.Value;
             if (parsedString == null)
             {
-                throw new FormatException("Null input for condition");
+                ThrowUrlFormatException(condition, "Conditions must have an input attribute");
             }
 
-            var input = InputParser.ParseInputString(parsedString);
+            Pattern input = null;
+            try
+            {
+                input = InputParser.ParseInputString(parsedString);
+            }
+            catch (FormatException fe)
+            {
+                ThrowUrlFormatException(condition, fe.Message, fe);
+            }
 
             switch (res.PatternSyntax)
             {
@@ -194,7 +211,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                                     parsedString = condition.Attribute(RewriteTags.Pattern)?.Value;
                                     if (parsedString == null)
                                     {
-                                        throw new FormatException("Pattern match does not have an associated pattern attribute in condition.");
+                                        ThrowUrlFormatException(condition, "Match does not have an associated pattern attribute in condition");
+
                                     }
                                     Regex regex = null;
 
@@ -221,32 +239,30 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                                 }
                                 break;
                             default:
-                                throw new FormatException("Unrecognized matchType.");
+                                // TODO don't this this can ever be thrown
+                                ThrowUrlFormatException(condition, "Unrecognized matchType");
+                                break;
                         }
-
                     }
                     break;
                 case PatternSyntax.WildCard:
-                    throw new NotImplementedException("Wildcard syntax is not supported.");
+                    throw new NotImplementedException("Wildcard syntax is not supported");
                 case PatternSyntax.ExactMatch:
                     parsedString = condition.Attribute(RewriteTags.Pattern)?.Value;
                     if (parsedString == null)
                     {
-                        throw new FormatException("Pattern match does not have an associated pattern attribute in condition.");
+                        ThrowUrlFormatException(condition, "Pattern match does not have an associated pattern attribute in condition");
                     }
                     res.Conditions.ConditionList.Add(new Condition { Input = input, Match = new ExactMatch(parsedCondRes.IgnoreCase, parsedString, parsedCondRes.Negate) });
                     break;
                 default:
-                    throw new FormatException("Unrecognized pattern syntax.");
+                    ThrowUrlFormatException(condition, "Unrecognized pattern syntax");
+                    break;
             }
         }
 
         private static void CreateUrlAction(XElement urlAction, UrlRewriteRule res, bool globalRule)
         {
-            if (urlAction == null)
-            {
-                throw new FormatException("Action is a required element of a rule.");
-            }
 
             var actionRes = new ParsedUrlAction();
 
@@ -273,12 +289,19 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                 actionRes.RedirectType = redirectType;
             }
 
-            actionRes.Url = InputParser.ParseInputString(urlAction.Attribute(RewriteTags.Url)?.Value);
+            try
+            {
+                actionRes.Url = InputParser.ParseInputString(urlAction.Attribute(RewriteTags.Url)?.Value);
+            }
+            catch (FormatException fe)
+            {
+                ThrowUrlFormatException(urlAction, fe.Message, fe);
+            }
 
-            CreateUrlActionFromParsedAction(actionRes, globalRule, res);
+            CreateUrlActionFromParsedAction(urlAction, actionRes, globalRule, res);
         }
 
-        public static void CreateUrlActionFromParsedAction(ParsedUrlAction actionRes, bool globalRule, UrlRewriteRule res)
+        private static void CreateUrlActionFromParsedAction(XElement urlAction, ParsedUrlAction actionRes, bool globalRule, UrlRewriteRule res)
         {
             switch (actionRes.Type)
             {
@@ -306,11 +329,26 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                     }
                     break;
                 case ActionType.AbortRequest:
-                    throw new FormatException("Abort requests are not supported.");
+                    ThrowUrlFormatException(urlAction, "Abort Requests are not supported.");
+                    break;
                 case ActionType.CustomResponse:
                     // TODO
-                    throw new FormatException("Custom Responses are not supported");
+                    ThrowUrlFormatException(urlAction, "Custom Responses are not supported");
+                    break;
             }
+        }
+
+        private static void ThrowUrlFormatException(XElement element, string message)
+        {
+            var line = ((IXmlLineInfo)element).LineNumber;
+            var col = ((IXmlLineInfo)element).LinePosition;
+            throw new FormatException(Resources.FormatError_UrlRewriteParseError(message, line, col));
+        }
+        private static void ThrowUrlFormatException(XElement element, string message, Exception ex)
+        {
+            var line = ((IXmlLineInfo)element).LineNumber;
+            var col = ((IXmlLineInfo)element).LinePosition;
+            throw new FormatException(Resources.FormatError_UrlRewriteParseError(message, line, col), ex);
         }
     }
 }

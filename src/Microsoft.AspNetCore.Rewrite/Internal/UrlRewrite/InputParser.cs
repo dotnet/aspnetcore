@@ -42,7 +42,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                     // This is a server parameter, parse for a condition variable
                     if (!context.Next())
                     {
-                        throw new FormatException(context.Error());
+                        // missing {
+                        throw new FormatException(Resources.FormatError_InputParserMissingCloseBrace(context.Index));
                     }
                     ParseParameter(context, results);
                 }
@@ -100,10 +101,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                                 // has processed the new string.
                                 if (context.Current != CloseBrace)
                                 {
-                                    throw new FormatException("Lacking close brace for parameter at index: " + context.GetIndex());
+                                    throw new FormatException(Resources.FormatError_InputParserMissingCloseBrace(context.Index));
                                 }
+                                return;
                             }
-                            break;
                         case "UrlDecode":
                             {
                                 throw new NotImplementedException("UrlDecode is not supported.");
@@ -115,10 +116,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
 
                                 if (context.Current != CloseBrace)
                                 {
-                                    throw new FormatException("Lacking close brace for parameter at index: " + context.GetIndex());
+                                    throw new FormatException(Resources.FormatError_InputParserMissingCloseBrace(context.Index));
                                 }
+                                return;
                             }
-                            break;
                         case "R":
                             {
                                 var index = GetBackReferenceIndex(context);
@@ -132,17 +133,18 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                                 return;
                             }
                         default:
-                            throw new FormatException("Unrecognized parameter type: " + parameter + ", terminated at index: " + context.GetIndex());
+                            throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(parameter, context.Index));
                     }
                 }
             }
+            throw new FormatException(Resources.FormatError_InputParserMissingCloseBrace(context.Index));
         }
 
         private static int GetBackReferenceIndex(ParserContext context)
         {
             if (!context.Next())
             {
-                throw new FormatException("No index avaible for backreference at index: " + context.GetIndex());
+                throw new FormatException(Resources.FormatError_InputParserNoBackreference(context.Index));
             }
 
             context.Mark();
@@ -150,7 +152,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             {
                 if (!context.Next())
                 {
-                    throw new FormatException("Lacking close brace for parameter at index: " + context.GetIndex());
+                    throw new FormatException(Resources.FormatError_InputParserMissingCloseBrace(context.Index));
                 }
             }
 
@@ -158,12 +160,12 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             int index;
             if (!int.TryParse(res, out index))
             {
-                throw new FormatException("Syntax error, invalid integer in response parameter at index: " + context.GetIndex());
+                throw new FormatException(Resources.FormatError_InputParserInvalidInteger(res, context.Index));
             }
 
             if (index > 9 || index < 0)
             {
-                throw new FormatException("Invalid integer into backreference " + index + "at index: " + context.GetIndex());
+                throw new FormatException(Resources.FormatError_InputParserIndexOutOfRange(res, context.Index));
             }
             return index;
         }

@@ -82,6 +82,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [InlineData("{foo:1")]
         [InlineData("{UrlEncode:{R:}}")]
         [InlineData("{UrlEncode:{R:1}")]
+        [InlineData("{HTTPS")]
         public void FormatExceptionsOnBadSyntax(string testString)
         {
             Assert.Throws<FormatException>(() => InputParser.ParseInputString(testString));

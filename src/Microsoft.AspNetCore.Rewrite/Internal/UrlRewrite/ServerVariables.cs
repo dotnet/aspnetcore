@@ -28,8 +28,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                     return new HeaderSegment(HeaderNames.Cookie);
                 case "HTTP_HOST":
                     return new HeaderSegment(HeaderNames.Host);
-                case "HTTP_PROXY_CONNECTION":
-                    return new HeaderSegment(HeaderNames.ProxyAuthenticate);
                 case "HTTP_REFERER":
                     return new HeaderSegment(HeaderNames.Referer);
                 case "HTTP_USER_AGENT":
@@ -42,6 +40,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                     return new IsHttpsSegment();
                 case "LOCAL_ADDR":
                     return new LocalAddressSegment();
+                case "HTTP_PROXY_CONNECTION":
+                    throw new NotSupportedException("Proxy Connections not supported");
                 case "QUERY_STRING":
                     return new QueryStringSegment();
                 case "REMOTE_ADDR":
@@ -52,6 +52,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                     return new RemotePortSegment();
                 case "REQUEST_FILENAME":
                     return new RequestFileNameSegment();
+                case "REQUEST_URI":
+                    return new UrlSegment();
                 default:
                     throw new FormatException("Unrecognized server variable.");
             }

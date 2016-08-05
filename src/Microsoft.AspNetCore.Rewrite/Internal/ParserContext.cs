@@ -9,43 +9,43 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
     public class ParserContext
     {
         private readonly string _template;
-        private int _index;
+        public int Index { get; set; }
         private int? _mark;
 
         public ParserContext(string condition)
         {
             _template = condition;
-            _index = -1;
+            Index = -1;
         }
 
         public char Current
         {
-            get { return (_index < _template.Length && _index >= 0) ? _template[_index] : (char)0; }
+            get { return (Index < _template.Length && Index >= 0) ? _template[Index] : (char)0; }
         }
 
         public bool Back()
         {
-            return --_index >= 0;
+            return --Index >= 0;
         }
 
         public bool Next()
         {
-            return ++_index < _template.Length;
+            return ++Index < _template.Length;
         }
 
         public bool HasNext()
         {
-            return (_index + 1) < _template.Length;
+            return (Index + 1) < _template.Length;
         }
 
         public void Mark()
         {
-            _mark = _index;
+            _mark = Index;
         }
 
         public int GetIndex()
         {
-            return _index;
+            return Index;
         }
 
         public string Capture()
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
             // TODO make this return a range rather than a string.
             if (_mark.HasValue)
             {
-                var value = _template.Substring(_mark.Value, _index - _mark.Value);
+                var value = _template.Substring(_mark.Value, Index - _mark.Value);
                 _mark = null;
                 return value;
             }
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
         }
         public string Error()
         {
-            return string.Format("Syntax Error at index: ", _index, " with character: ", Current); 
+            return string.Format("Syntax Error at index: ", Index, " with character: ", Current); 
         }
     }
 }
