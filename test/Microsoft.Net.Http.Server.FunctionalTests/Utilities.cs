@@ -14,10 +14,11 @@ namespace Microsoft.Net.Http.Server
         private static int NextPort = BasePort;
         private static object PortLock = new object();
 
-        internal static WebListener CreateHttpAuthServer(AuthenticationSchemes authScheme, out string baseAddress)
+        internal static WebListener CreateHttpAuthServer(AuthenticationSchemes authScheme, bool allowAnonymos, out string baseAddress)
         {
             var listener = CreateHttpServer(out baseAddress);
             listener.AuthenticationManager.AuthenticationSchemes = authScheme;
+            listener.AuthenticationManager.AllowAnonymous = allowAnonymos;
             return listener;
         }
 

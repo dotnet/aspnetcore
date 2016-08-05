@@ -19,7 +19,8 @@ namespace SelfHostServer
             // Server options can be configured here instead of in Main.
             services.Configure<WebListenerOptions>(options =>
             {
-                options.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.AllowAnonymous;
+                options.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.None;
+                options.Listener.AuthenticationManager.AllowAnonymous = true;
             });
         }
 
@@ -51,7 +52,8 @@ namespace SelfHostServer
                 .UseStartup<Startup>()
                 .UseWebListener(options =>
                 {
-                    options.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.AllowAnonymous;
+                    options.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.None;
+                    options.Listener.AuthenticationManager.AllowAnonymous = true;
                 })
                 .Build();
 

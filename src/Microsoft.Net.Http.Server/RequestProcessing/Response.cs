@@ -82,7 +82,7 @@ namespace Microsoft.Net.Http.Server
             _expectedBodyLength = 0;
             _nativeStream = null;
             _cacheTtl = null;
-            _authChallenges = RequestContext.Server.AuthenticationManager.AuthenticationSchemes & ~AuthenticationSchemes.AllowAnonymous;
+            _authChallenges = RequestContext.Server.AuthenticationManager.AuthenticationSchemes;
         }
 
         private enum ResponseState

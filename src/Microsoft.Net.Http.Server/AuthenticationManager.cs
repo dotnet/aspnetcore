@@ -44,38 +44,29 @@ namespace Microsoft.Net.Http.Server
 
         private WebListener _server;
         private AuthenticationSchemes _authSchemes;
+        private bool _allowAnonymous = true;
 
         internal AuthenticationManager(WebListener listener)
         {
             _server = listener;
-            _authSchemes = AuthenticationSchemes.AllowAnonymous;
         }
 
         #region Properties
 
         public AuthenticationSchemes AuthenticationSchemes
         {
-            get
-            {
-                return _authSchemes;
-            }
+            get { return _authSchemes; }
             set
             {
-                if (_authSchemes == AuthenticationSchemes.None)
-                {
-                    throw new ArgumentException("value", "'None' is not a valid authentication type. Use 'AllowAnonymous' instead.");
-                }
                 _authSchemes = value;
                 SetServerSecurity();
             }
         }
 
-        internal bool AllowAnonymous
+        public bool AllowAnonymous
         {
-            get
-            {
-                return ((_authSchemes & AuthenticationSchemes.AllowAnonymous) == AuthenticationSchemes.AllowAnonymous);
-            }
+            get { return _allowAnonymous; }
+            set { _allowAnonymous = value; }
         }
 
         #endregion Properties
@@ -86,7 +77,7 @@ namespace Microsoft.Net.Http.Server
                 new UnsafeNclNativeMethods.HttpApi.HTTP_SERVER_AUTHENTICATION_INFO();
 
             authInfo.Flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
-            var authSchemes = (UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_TYPES)(_authSchemes & ~AuthenticationSchemes.AllowAnonymous);
+            var authSchemes = (UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_TYPES)_authSchemes;
             if (authSchemes != UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_TYPES.NONE)
             {
                 authInfo.AuthSchemes = authSchemes;

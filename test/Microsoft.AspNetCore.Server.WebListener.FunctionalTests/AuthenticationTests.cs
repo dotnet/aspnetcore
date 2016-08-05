@@ -29,8 +29,11 @@ namespace Microsoft.AspNetCore.Server.WebListener
 {
     public class AuthenticationTests
     {
+        private static bool AllowAnoymous = true;
+        private static bool DenyAnoymous = false;
+
         [Theory]
-        [InlineData(AuthenticationSchemes.AllowAnonymous)]
+        [InlineData(AuthenticationSchemes.None)]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)]
@@ -39,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         public async Task AuthTypes_AllowAnonymous_NoChallenge(AuthenticationSchemes authType)
         {
             string address;
-            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, httpContext =>
+            using (Utilities.CreateHttpAuthServer(authType, AllowAnoymous, out address, httpContext =>
             {
                 Assert.NotNull(httpContext.User);
                 Assert.NotNull(httpContext.User.Identity);
@@ -62,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         public async Task AuthType_RequireAuth_ChallengesAdded(AuthenticationSchemes authType)
         {
             string address;
-            using (Utilities.CreateHttpAuthServer(authType, out address, httpContext =>
+            using (Utilities.CreateHttpAuthServer(authType, DenyAnoymous, out address, httpContext =>
             {
                 throw new NotImplementedException();
             }))
@@ -82,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         public async Task AuthType_AllowAnonymousButSpecify401_ChallengesAdded(AuthenticationSchemes authType)
         {
             string address;
-            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, httpContext =>
+            using (Utilities.CreateHttpAuthServer(authType, AllowAnoymous, out address, httpContext =>
             {
                 Assert.NotNull(httpContext.User);
                 Assert.NotNull(httpContext.User.Identity);
@@ -106,8 +109,8 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 AuthenticationSchemes.Negotiate
                 | AuthenticationSchemes.NTLM
                 /* | AuthenticationSchemes.Digest TODO: Not implemented */
-                | AuthenticationSchemes.Basic
-                | AuthenticationSchemes.AllowAnonymous,
+                | AuthenticationSchemes.Basic,
+                true,
                 out address,
                 httpContext =>
             {
@@ -134,7 +137,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         {
             string address;
             int requestId = 0;
-            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, httpContext =>
+            using (Utilities.CreateHttpAuthServer(authType, AllowAnoymous, out address, httpContext =>
             {
                 Assert.NotNull(httpContext.User);
                 Assert.NotNull(httpContext.User.Identity);
@@ -169,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         public async Task AuthTypes_RequireAuth_Success(AuthenticationSchemes authType)
         {
             string address;
-            using (Utilities.CreateHttpAuthServer(authType, out address, httpContext =>
+            using (Utilities.CreateHttpAuthServer(authType, DenyAnoymous, out address, httpContext =>
             {
                 Assert.NotNull(httpContext.User);
                 Assert.NotNull(httpContext.User.Identity);
@@ -183,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         }
 
         [Theory]
-        [InlineData(AuthenticationSchemes.AllowAnonymous)]
+        [InlineData(AuthenticationSchemes.None)]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)]
@@ -191,10 +194,10 @@ namespace Microsoft.AspNetCore.Server.WebListener
         public async Task AuthTypes_GetSingleDescriptions(AuthenticationSchemes authType)
         {
             string address;
-            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, httpContext =>
+            using (Utilities.CreateHttpAuthServer(authType, AllowAnoymous, out address, httpContext =>
             {
                 var resultList = httpContext.Authentication.GetAuthenticationSchemes();
-                if (authType == AuthenticationSchemes.AllowAnonymous)
+                if (authType == AuthenticationSchemes.None)
                 {
                     Assert.Equal(0, resultList.Count());
                 }
@@ -224,7 +227,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 | AuthenticationSchemes.NTLM
                 | /*AuthenticationSchemes.Digest
                 |*/ AuthenticationSchemes.Basic;
-            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, httpContext =>
+            using (Utilities.CreateHttpAuthServer(authType, AllowAnoymous, out address, httpContext =>
             {
                 var resultList = httpContext.Authentication.GetAuthenticationSchemes();
                 Assert.Equal(3, resultList.Count());
@@ -247,7 +250,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         {
             string address;
             var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, async httpContext =>
+            using (Utilities.CreateHttpAuthServer(authType, AllowAnoymous, out address, async httpContext =>
             {
                 Assert.NotNull(httpContext.User);
                 Assert.NotNull(httpContext.User.Identity);
@@ -275,7 +278,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         {
             string address;
             var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            using (Utilities.CreateHttpAuthServer(authType, out address, async httpContext =>
+            using (Utilities.CreateHttpAuthServer(authType, DenyAnoymous, out address, async httpContext =>
             {
                 Assert.NotNull(httpContext.User);
                 Assert.NotNull(httpContext.User.Identity);
@@ -308,7 +311,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         {
             string address;
             var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, httpContext =>
+            using (Utilities.CreateHttpAuthServer(authType, AllowAnoymous, out address, httpContext =>
             {
                 Assert.NotNull(httpContext.User);
                 Assert.NotNull(httpContext.User.Identity);
@@ -333,7 +336,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         {
             string address;
             var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, async httpContext =>
+            using (Utilities.CreateHttpAuthServer(authType, AllowAnoymous, out address, async httpContext =>
             {
                 Assert.NotNull(httpContext.User);
                 Assert.NotNull(httpContext.User.Identity);
@@ -360,7 +363,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         {
             string address;
             var authTypes = AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationSchemes.Digest |*/ AuthenticationSchemes.Basic;
-            using (Utilities.CreateHttpAuthServer(authTypes | AuthenticationSchemes.AllowAnonymous, out address, httpContext =>
+            using (Utilities.CreateHttpAuthServer(authTypes, AllowAnoymous, out address, httpContext =>
             {
                 Assert.NotNull(httpContext.User);
                 Assert.NotNull(httpContext.User.Identity);
@@ -386,7 +389,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             var authTypes = AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationSchemes.Digest |*/ AuthenticationSchemes.Basic;
             authTypes = authTypes & ~authType;
             var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            using (Utilities.CreateHttpAuthServer(authTypes | AuthenticationSchemes.AllowAnonymous, out address, httpContext =>
+            using (Utilities.CreateHttpAuthServer(authTypes, AllowAnoymous, out address, httpContext =>
             {
                 Assert.NotNull(httpContext.User);
                 Assert.NotNull(httpContext.User.Identity);
@@ -408,8 +411,8 @@ namespace Microsoft.AspNetCore.Server.WebListener
         public async Task AuthTypes_Forbid_Forbidden(AuthenticationSchemes authType)
         {
             string address;
-            var authTypes = AuthenticationSchemes.AllowAnonymous | AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationSchemes.Digest |*/ AuthenticationSchemes.Basic;
-            using (Utilities.CreateHttpAuthServer(authTypes, out address, httpContext =>
+            var authTypes = AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationSchemes.Digest |*/ AuthenticationSchemes.Basic;
+            using (Utilities.CreateHttpAuthServer(authTypes, AllowAnoymous, out address, httpContext =>
             {
                 Assert.NotNull(httpContext.User);
                 Assert.NotNull(httpContext.User.Identity);
@@ -431,7 +434,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         public async Task AuthTypes_ChallengeAuthenticatedAuthType_Forbidden(AuthenticationSchemes authType)
         {
             string address;
-            using (Utilities.CreateHttpAuthServer(authType, out address, httpContext =>
+            using (Utilities.CreateHttpAuthServer(authType, DenyAnoymous, out address, httpContext =>
             {
                 Assert.NotNull(httpContext.User);
                 Assert.NotNull(httpContext.User.Identity);
@@ -454,7 +457,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         public async Task AuthTypes_ChallengeAuthenticatedAuthTypeWithEmptyChallenge_Forbidden(AuthenticationSchemes authType)
         {
             string address;
-            using (Utilities.CreateHttpAuthServer(authType, out address, httpContext =>
+            using (Utilities.CreateHttpAuthServer(authType, DenyAnoymous, out address, httpContext =>
             {
                 Assert.NotNull(httpContext.User);
                 Assert.NotNull(httpContext.User.Identity);
@@ -477,7 +480,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         public async Task AuthTypes_UnathorizedAuthenticatedAuthType_Unauthorized(AuthenticationSchemes authType)
         {
             string address;
-            using (Utilities.CreateHttpAuthServer(authType, out address, httpContext =>
+            using (Utilities.CreateHttpAuthServer(authType, DenyAnoymous, out address, httpContext =>
             {
                 Assert.NotNull(httpContext.User);
                 Assert.NotNull(httpContext.User.Identity);

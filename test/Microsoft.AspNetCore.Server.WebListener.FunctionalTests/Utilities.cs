@@ -38,22 +38,22 @@ namespace Microsoft.AspNetCore.Server.WebListener
         internal static IServer CreateHttpServer(out string baseAddress, RequestDelegate app)
         {
             string root;
-            return CreateDynamicHttpServer(string.Empty, AuthenticationSchemes.AllowAnonymous, out root, out baseAddress, app);
+            return CreateDynamicHttpServer(string.Empty, AuthenticationSchemes.None, true, out root, out baseAddress, app);
         }
 
         internal static IServer CreateHttpServerReturnRoot(string path, out string root, RequestDelegate app)
         {
             string baseAddress;
-            return CreateDynamicHttpServer(path, AuthenticationSchemes.AllowAnonymous, out root, out baseAddress, app);
+            return CreateDynamicHttpServer(path, AuthenticationSchemes.None, true, out root, out baseAddress, app);
         }
 
-        internal static IServer CreateHttpAuthServer(AuthenticationSchemes authType, out string baseAddress, RequestDelegate app)
+        internal static IServer CreateHttpAuthServer(AuthenticationSchemes authType, bool allowAnonymous, out string baseAddress, RequestDelegate app)
         {
             string root;
-            return CreateDynamicHttpServer(string.Empty, authType, out root, out baseAddress, app);
+            return CreateDynamicHttpServer(string.Empty, authType, allowAnonymous, out root, out baseAddress, app);
         }
 
-        internal static IServer CreateDynamicHttpServer(string basePath, AuthenticationSchemes authType, out string root, out string baseAddress, RequestDelegate app)
+        internal static IServer CreateDynamicHttpServer(string basePath, AuthenticationSchemes authType, bool allowAnonymous, out string root, out string baseAddress, RequestDelegate app)
         {
             lock (PortLock)
             {
@@ -68,6 +68,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
                     var server = new MessagePump(Options.Create(new WebListenerOptions()), new LoggerFactory());
                     server.Features.Get<IServerAddressesFeature>().Addresses.Add(baseAddress);
                     server.Listener.AuthenticationManager.AuthenticationSchemes = authType;
+                    server.Listener.AuthenticationManager.AllowAnonymous = allowAnonymous;
                     try
                     {
                         server.Start(new DummyApplication(app));

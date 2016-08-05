@@ -11,8 +11,11 @@ namespace Microsoft.Net.Http.Server
 {
     public class AuthenticationTests
     {
+        private static bool AllowAnoymous = true;
+        private static bool DenyAnoymous = false;
+
         [Theory]
-        [InlineData(AuthenticationSchemes.AllowAnonymous)]
+        [InlineData(AuthenticationSchemes.None)]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)]
@@ -21,21 +24,14 @@ namespace Microsoft.Net.Http.Server
         public async Task AuthTypes_AllowAnonymous_NoChallenge(AuthenticationSchemes authType)
         {
             string address;
-            using (var server = Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address))
+            using (var server = Utilities.CreateHttpAuthServer(authType, AllowAnoymous, out address))
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync();
                 Assert.NotNull(context.User);
                 Assert.False(context.User.Identity.IsAuthenticated);
-                if (authType == AuthenticationSchemes.AllowAnonymous)
-                {
-                    Assert.Equal(AuthenticationSchemes.None, context.Response.AuthenticationChallenges);
-                }
-                else
-                {
-                    Assert.Equal(authType, context.Response.AuthenticationChallenges);
-                }
+                Assert.Equal(authType, context.Response.AuthenticationChallenges);
                 context.Dispose();
 
                 var response = await responseTask;
@@ -53,7 +49,7 @@ namespace Microsoft.Net.Http.Server
         public async Task AuthType_RequireAuth_ChallengesAdded(AuthenticationSchemes authType)
         {
             string address;
-            using (var server = Utilities.CreateHttpAuthServer(authType, out address))
+            using (var server = Utilities.CreateHttpAuthServer(authType, DenyAnoymous, out address))
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
@@ -73,7 +69,7 @@ namespace Microsoft.Net.Http.Server
         public async Task AuthType_AllowAnonymousButSpecify401_ChallengesAdded(AuthenticationSchemes authType)
         {
             string address;
-            using (var server = Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address))
+            using (var server = Utilities.CreateHttpAuthServer(authType, AllowAnoymous, out address))
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
@@ -100,7 +96,7 @@ namespace Microsoft.Net.Http.Server
                 | AuthenticationSchemes.NTLM
                 /* | AuthenticationSchemes.Digest TODO: Not implemented */
                 | AuthenticationSchemes.Basic;
-            using (var server = Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address))
+            using (var server = Utilities.CreateHttpAuthServer(authType, AllowAnoymous, out address))
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
@@ -126,7 +122,7 @@ namespace Microsoft.Net.Http.Server
         public async Task AuthTypes_AllowAnonymousButSpecify401_Success(AuthenticationSchemes authType)
         {
             string address;
-            using (var server = Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address))
+            using (var server = Utilities.CreateHttpAuthServer(authType, AllowAnoymous, out address))
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address, useDefaultCredentials: true);
 
@@ -157,7 +153,7 @@ namespace Microsoft.Net.Http.Server
         public async Task AuthTypes_RequireAuth_Success(AuthenticationSchemes authType)
         {
             string address;
-            using (var server = Utilities.CreateHttpAuthServer(authType, out address))
+            using (var server = Utilities.CreateHttpAuthServer(authType, DenyAnoymous, out address))
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address, useDefaultCredentials: true);
 
@@ -177,7 +173,7 @@ namespace Microsoft.Net.Http.Server
         public async Task AuthTypes_RequireKerberosAuth_Success()
         {
             string address;
-            using (var server = Utilities.CreateHttpAuthServer(AuthenticationSchemes.Kerberos, out address))
+            using (var server = Utilities.CreateHttpAuthServer(AuthenticationSchemes.Kerberos, DenyAnoymous, out address))
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address, useDefaultCredentials: true);
 
@@ -197,7 +193,7 @@ namespace Microsoft.Net.Http.Server
         public async Task MultipleAuthTypes_KerberosAllowAnonymousButSpecify401_ChallengesAdded()
         {
             string address;
-            using (var server = Utilities.CreateHttpAuthServer(AuthenticationSchemes.Kerberos | AuthenticationSchemes.AllowAnonymous, out address))
+            using (var server = Utilities.CreateHttpAuthServer(AuthenticationSchemes.Kerberos, AllowAnoymous, out address))
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 

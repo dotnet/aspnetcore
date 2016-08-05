@@ -28,7 +28,6 @@ namespace Microsoft.Net.Http.Server
         // Digest = 0x2, // TODO: Verify this is no longer supported by Http.Sys
         NTLM = 0x4,
         Negotiate = 0x8,
-        Kerberos = 0x10,
-        AllowAnonymous = 0x1000
+        Kerberos = 0x10
     }
 }
