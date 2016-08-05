@@ -1,4 +1,3 @@
-#if TESTING
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -62,4 +61,3 @@ namespace MusicStore.Mocks.OpenIdConnect
         }
     }
 }
-#endif

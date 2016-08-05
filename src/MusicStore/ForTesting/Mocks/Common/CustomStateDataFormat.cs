@@ -1,4 +1,3 @@
-#if TESTING
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.Authentication;
 using Newtonsoft.Json;
@@ -41,4 +40,3 @@ namespace MusicStore.Mocks.Common
         }
     }
 } 
-#endif

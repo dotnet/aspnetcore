@@ -1,4 +1,3 @@
-#if TESTING
 using Microsoft.AspNetCore.Authentication;
 
 namespace MusicStore.Mocks.OpenIdConnect
@@ -28,4 +27,3 @@ namespace MusicStore.Mocks.OpenIdConnect
         }
     }
 }
-#endif

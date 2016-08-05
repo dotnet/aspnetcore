@@ -197,7 +197,7 @@ namespace MusicStore.Areas.Admin.Controllers
             return string.Format("album_{0}", id);
         }
 
-#if TESTING
+        // NOTE: this is used for end to end testing only
         //
         // GET: /StoreManager/GetAlbumIdFromName
         // Note: Added for automated testing purpose. Application does not use this.
@@ -215,6 +215,5 @@ namespace MusicStore.Areas.Admin.Controllers
 
             return Content(album.AlbumId.ToString());
         }
-#endif
     }
 }

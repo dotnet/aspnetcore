@@ -420,14 +420,13 @@ namespace MusicStore.Controllers
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
                 var result = await UserManager.CreateAsync(user);
 
-#if TESTING
+                // NOTE: Used for end to end testing only
                 //Just for automated testing adding a claim named 'ManageStore' - Not required for production
                 var manageClaim = info.Principal.Claims.Where(c => c.Type == "ManageStore").FirstOrDefault();
                 if (manageClaim != null)
                 {
                     await UserManager.AddClaimAsync(user, manageClaim);
                 }
-#endif
 
                 if (result.Succeeded)
                 {

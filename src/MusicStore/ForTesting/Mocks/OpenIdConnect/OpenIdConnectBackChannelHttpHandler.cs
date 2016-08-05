@@ -1,5 +1,4 @@
-﻿#if TESTING
-using System.IO;
+﻿using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +12,7 @@ namespace MusicStore.Mocks.OpenIdConnect
             var response = new HttpResponseMessage();
 
             var basePath = Path.GetFullPath(Path.Combine(
-                Directory.GetCurrentDirectory(), "ForTesting", "Mocks","OpenIdConnect"));
+                Directory.GetCurrentDirectory(), "ForTesting", "Mocks", "OpenIdConnect"));
 
             if (request.RequestUri.AbsoluteUri == "https://login.windows.net/[tenantName].onmicrosoft.com/.well-known/openid-configuration")
             {
@@ -32,4 +31,3 @@ namespace MusicStore.Mocks.OpenIdConnect
         }
     }
 }
-#endif

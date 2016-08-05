@@ -1,4 +1,3 @@
-#if TESTING
 using System;
 using System.Net;
 using System.Net.Http;
@@ -55,4 +54,3 @@ namespace MusicStore.Mocks.MicrosoftAccount
         }
     }
 }
-#endif

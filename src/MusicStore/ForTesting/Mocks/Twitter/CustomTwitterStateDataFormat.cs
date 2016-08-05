@@ -1,4 +1,3 @@
-#if TESTING
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Twitter;
 using Newtonsoft.Json;
@@ -45,4 +44,3 @@ namespace MusicStore.Mocks.Twitter
         }
     }
 }
-#endif

@@ -1,4 +1,3 @@
-#if TESTING
 using System;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -156,4 +155,3 @@ namespace MusicStore
         }
     }
 }
-#endif

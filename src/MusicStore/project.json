@@ -16,8 +16,7 @@
       ]
     },
     "define": [
-      "DEMO",
-      "TESTING"
+      "DEMO"
     ],
     "emitEntryPoint": true,
     "preserveCompilationContext": true,

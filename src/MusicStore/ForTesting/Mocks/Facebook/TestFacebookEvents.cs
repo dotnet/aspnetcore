@@ -1,4 +1,3 @@
-#if TESTING
 using System;
 using System.Linq;
 using System.Security.Claims;
@@ -55,4 +54,3 @@ namespace MusicStore.Mocks.Facebook
         }
     }
 }
-#endif

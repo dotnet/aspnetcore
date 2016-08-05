@@ -1,4 +1,3 @@
-#if TESTING
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -66,4 +65,3 @@ namespace MusicStore.Mocks.Twitter
         }
     }
 }
-#endif

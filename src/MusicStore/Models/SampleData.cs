@@ -105,7 +105,7 @@ namespace MusicStore.Models
                 await userManager.AddClaimAsync(user, new Claim("ManageStore", "Allowed"));
             }
 
-#if TESTING
+            // NOTE: For end to end testing only
             var envPerfLab = configuration["PERF_LAB"];
             if (envPerfLab == "true")
             {
@@ -119,7 +119,6 @@ namespace MusicStore.Models
                     }
                 }
             }
-#endif
         }
 
         private static Album[] GetAlbums(string imgUrl, Dictionary<string, Genre> genres, Dictionary<string, Artist> artists)

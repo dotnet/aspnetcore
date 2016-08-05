@@ -1,5 +1,4 @@
-﻿#if TESTING
-using System;
+﻿using System;
 
 namespace MusicStore.Mocks.Common
 {
@@ -14,4 +13,3 @@ namespace MusicStore.Mocks.Common
         }
     }
 } 
-#endif

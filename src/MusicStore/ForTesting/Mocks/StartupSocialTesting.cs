@@ -1,4 +1,3 @@
-#if TESTING
 using System;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authentication.Twitter;
@@ -200,4 +199,3 @@ namespace MusicStore
         }
     }
 }
-#endif
