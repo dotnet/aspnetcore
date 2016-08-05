@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             }
 
             // REVIEW: Should this check if there was an error, and then if that error was already handled??
-            var ticket = (await HandleAuthenticateOnceAsync())?.Ticket;
+            var ticket = (await HandleAuthenticateOnceSafeAsync())?.Ticket;
             if (ticket != null)
             {
                 if (_refreshIssuedUtc.HasValue)
