@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Builder
                 kvp =>
                 {
                     Assert.Equal(kvp.Key, "area");
-                    Assert.IsType<RegexRouteConstraint>(kvp.Value);
+                    Assert.IsType<StringRouteConstraint>(kvp.Value);
                 });
             Assert.Empty(route.DataTokens);
             Assert.Collection(
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.Builder
                 kvp =>
                 {
                     Assert.Equal(kvp.Key, "area");
-                    Assert.IsType<RegexRouteConstraint>(kvp.Value);
+                    Assert.IsType<StringRouteConstraint>(kvp.Value);
                 });
             Assert.Empty(route.DataTokens);
             Assert.Collection(
@@ -109,7 +110,7 @@ namespace Microsoft.AspNetCore.Builder
                 kvp =>
                 {
                     Assert.Equal(kvp.Key, "area");
-                    Assert.IsType<RegexRouteConstraint>(kvp.Value);
+                    Assert.IsType<StringRouteConstraint>(kvp.Value);
                 },
                 kvp =>
                 {
@@ -156,7 +157,7 @@ namespace Microsoft.AspNetCore.Builder
                 kvp =>
                 {
                     Assert.Equal(kvp.Key, "area");
-                    Assert.IsType<RegexRouteConstraint>(kvp.Value);
+                    Assert.IsType<StringRouteConstraint>(kvp.Value);
                 },
                 kvp =>
                 {
@@ -224,6 +225,48 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     Assert.Equal(kvp.Key, "area");
                     Assert.Equal(kvp.Value, "Home");
+                });
+        }
+
+        [Fact]
+        public void MapAreaRoute_UsesPassedInAreaNameAsIs()
+        {
+            // Arrange
+            var builder = CreateRouteBuilder();
+            var areaName = "user.admin";
+
+            // Act
+            builder.MapAreaRoute(name: null, areaName: areaName, template: "site/Admin/");
+
+            // Assert
+            var route = Assert.IsType<Route>((Assert.Single(builder.Routes)));
+
+            Assert.Null(route.Name);
+            Assert.Equal("site/Admin/", route.RouteTemplate);
+            Assert.Collection(
+                route.Constraints.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal(kvp.Key, "area");
+                    Assert.IsType<StringRouteConstraint>(kvp.Value);
+
+                    var values = new RouteValueDictionary(new { area = areaName });
+                    var match = kvp.Value.Match(
+                        httpContext: Mock.Of<HttpContext>(),
+                        route: new Mock<IRouter>().Object,
+                        routeKey: kvp.Key,
+                        values: values,
+                        routeDirection: RouteDirection.UrlGeneration);
+
+                    Assert.True(match);
+                });
+            Assert.Empty(route.DataTokens);
+            Assert.Collection(
+                route.Defaults.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal(kvp.Key, "area");
+                    Assert.Equal(kvp.Value, areaName);
                 });
         }
 
