@@ -36,15 +36,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     // Close socket immediately
                 }
-            }
 
-            await loggerFactory.FilterLogger.LogTcs.Task;
+                await loggerFactory.FilterLogger.LogTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+            }
 
             Assert.Equal(1, loggerFactory.FilterLogger.LastEventId.Id);
             Assert.Equal(LogLevel.Information, loggerFactory.FilterLogger.LastLogLevel);
             Assert.Equal(0, loggerFactory.ErrorLogger.TotalErrorsLogged);
         }
-
 
         [Fact]
         public async Task ClientHandshakeFailureLoggedAsInformation()
@@ -70,9 +69,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Send null bytes and close socket
                     await stream.WriteAsync(new byte[10], 0, 10);
                 }
-            }
 
-            await loggerFactory.FilterLogger.LogTcs.Task;
+                await loggerFactory.FilterLogger.LogTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+            }
 
             Assert.Equal(1, loggerFactory.FilterLogger.LastEventId.Id);
             Assert.Equal(LogLevel.Information, loggerFactory.FilterLogger.LastLogLevel);
@@ -94,7 +93,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     return ErrorLogger;
                 }
-
             }
 
             public void AddProvider(ILoggerProvider provider)
