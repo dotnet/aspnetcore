@@ -255,18 +255,15 @@ namespace Microsoft.AspNetCore.Authentication
         /// This method won't throw exception. Any exception thrown during the authentication will be convert
         /// to a AuthenticateResult.
         /// </summary>
-        protected Task<AuthenticateResult> HandleAuthenticateOnceSafeAsync()
+        protected async Task<AuthenticateResult> HandleAuthenticateOnceSafeAsync()
         {
             try
             {
-                return HandleAuthenticateOnceAsync().ContinueWith<AuthenticateResult>(
-                    task => task.IsFaulted ? AuthenticateResult.Fail(task.Exception) : task.Result
-                );
+                return await HandleAuthenticateOnceAsync();
             }
             catch (Exception ex)
             {
-                // capture exception which is thrown before the task is actually started
-                return Task.FromResult(AuthenticateResult.Fail(ex));
+                return AuthenticateResult.Fail(ex);
             }
         }
 
