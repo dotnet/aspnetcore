@@ -234,9 +234,8 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Handle the authentication for once.
-        ///
-        /// If the authentication has been done before returns the last authentication result.
+        /// Used to ensure HandleAuthenticateAsync is only invoked once. The subsequent calls
+        /// will return the same authenticate result.
         /// </summary>
         protected Task<AuthenticateResult> HandleAuthenticateOnceAsync()
         {
@@ -249,11 +248,9 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Handle the authentication for once.
-        ///
-        /// If the authentication has been done before returns the last authentication result.
-        /// This method won't throw exception. Any exception thrown during the authentication will be convert
-        /// to a AuthenticateResult.
+        /// Used to ensure HandleAuthenticateAsync is only invoked once safely. The subsequent
+        /// calls will return the same authentication result. Any exceptions will be converted
+        /// into a failed authenticatoin result containing the exception.
         /// </summary>
         protected async Task<AuthenticateResult> HandleAuthenticateOnceSafeAsync()
         {
