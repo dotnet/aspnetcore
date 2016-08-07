@@ -152,3 +152,9 @@ The NuGet.config file should look something like the following:
 </configuration>
 ```
 The important part of this is that you have a package source with aspnetvnext and nuget.org in it.
+
+Nuget restore also checks the hash on the package. So ensure that you have `libcrypto` available. To do this run: 
+
+```
+sudo apt-get install libssl-dev
+```
