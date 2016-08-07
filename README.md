@@ -128,7 +128,7 @@ The samples in this repo are basic starting points for you to experiment with.
 
 1. Clone the Home repository
 2. Change directory to the folder of the sample you want to run
-3. Run ```kpm restore``` to restore the packages required by that sample.
+3. Run ```kpm restore``` or ```dnu restore``` to restore the packages required by that sample.
 4. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet. 
 5. Run the sample using the appropriate `dnx` command:
     - For the console app run  ```dnx . run```.
