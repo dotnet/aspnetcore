@@ -1,26 +1,32 @@
 {
-    "version": "1.0.0-*",
-    "webroot": "wwwroot",
-    "exclude": [
-        "wwwroot"
+    "content": [
+        "wwwroot",
+        "Views"   
     ],
-    "packExclude": [
-        "**.kproj",
-        "**.user",
-        "**.vspscc"
-    ],
-    "dependencies": {
-        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-        "Microsoft.AspNet.IISPlatformHandler": "1.0.0-*",
-        "Microsoft.AspNet.Diagnostics": "1.0.0-*",
-        "Microsoft.AspNet.Mvc": "6.0.0-*",
-        "Microsoft.Framework.Logging.Console": "1.0.0-*"
+    "compilationOptions": {
+        "preserveCompilationContext": true,
+        "emitEntryPoint": true
     },
-    "commands": {
-        "web": "Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5004"
+    "dependencies": {
+        "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
+        "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+        "Microsoft.AspNetCore.Mvc": "1.0.0-*",
+        "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
+        "Microsoft.Extensions.Logging.Console": "1.0.0-*"
     },
     "frameworks": {
-         "dnx451": { },
-         "dnxcore50": { }
+         "dnxcore50": {
+             "dependencies": {
+                 "NETStandard.Library": "1.0.0-*"
+             },
+             "imports": "portable-net451+win8"
+         },
+         "dnx451": { }
+    },
+    "tools": {
+      "dotnet-publish-iis": "1.0.0-*"
+    },
+    "scripts": {
+      "postpublish": "dotnet publish-iis --publish-folder %publish:OutputPath%"
     }
 }

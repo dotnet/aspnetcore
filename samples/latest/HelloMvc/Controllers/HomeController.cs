@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNet.Mvc;
-using MvcSample.Web.Models;
+﻿using Microsoft.AspNetCore.Mvc;
 
-namespace MvcSample.Web
+namespace HelloMvc
 {
     public class HomeController : Controller
     {
