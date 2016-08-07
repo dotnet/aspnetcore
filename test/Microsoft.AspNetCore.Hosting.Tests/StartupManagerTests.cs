@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Hosting.Fakes;
 using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.AspNetCore.Hosting.Tests.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -22,6 +23,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         public void StartupClassMayHaveHostingServicesInjected()
         {
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
             serviceCollection.AddSingleton<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
 
@@ -46,8 +48,9 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [InlineData("BaseClass")]
         public void StartupClassAddsConfigureServicesToApplicationServices(string environment)
         {
-            var services = new ServiceCollection().BuildServiceProvider();
-
+            var services = new ServiceCollection()
+                .AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>()
+                .BuildServiceProvider();
             var type = StartupLoader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", environment);
             var startup = StartupLoader.LoadMethods(services, type, environment);
 
@@ -65,6 +68,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         public void StartupWithNoConfigureThrows()
         {
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
             serviceCollection.AddSingleton<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
             var type = StartupLoader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", "Boom");
@@ -76,6 +80,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         public void StartupWithTwoConfiguresThrows()
         {
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
             serviceCollection.AddSingleton<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
 
@@ -84,11 +89,12 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var ex = Assert.Throws<InvalidOperationException>(() => StartupLoader.LoadMethods(services, type, "TwoConfigures"));
             Assert.Equal("Having multiple overloads of method 'Configure' is not supported.", ex.Message);
         }
-        
+
         [Fact]
         public void StartupWithPrivateConfiguresThrows()
         {
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
             serviceCollection.AddSingleton<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
 
@@ -103,6 +109,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         public void StartupWithTwoConfigureServicesThrows()
         {
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
             serviceCollection.AddSingleton<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
 
@@ -116,6 +123,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         public void StartupClassCanHandleConfigureServicesThatReturnsNull()
         {
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
             var services = serviceCollection.BuildServiceProvider();
 
             var type = StartupLoader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", "WithNullConfigureServices");
@@ -132,6 +140,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         public void StartupClassWithConfigureServicesShouldMakeServiceAvailableInConfigure()
         {
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
             var services = serviceCollection.BuildServiceProvider();
 
             var type = StartupLoader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", "WithConfigureServices");
@@ -149,6 +158,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         public void StartupLoaderCanLoadByType()
         {
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
             var services = serviceCollection.BuildServiceProvider();
 
             var hostingEnv = new HostingEnvironment();
@@ -166,6 +176,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         public void StartupLoaderCanLoadByTypeWithEnvironment()
         {
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
             var services = serviceCollection.BuildServiceProvider();
 
             var startup = StartupLoader.LoadMethods(services, typeof(TestStartup), "No");
@@ -175,6 +186,181 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             var ex = Assert.Throws<TargetInvocationException>(() => startup.ConfigureDelegate(app));
             Assert.IsAssignableFrom(typeof(InvalidOperationException), ex.InnerException);
+        }
+
+        [Fact]
+        public void CustomProviderFactoryCallsConfigureContainer()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<MyContainer>, MyContainerFactory>();
+            var services = serviceCollection.BuildServiceProvider();
+
+            var startup = StartupLoader.LoadMethods(services, typeof(MyContainerStartup), "Development");
+
+            var app = new ApplicationBuilder(services);
+            app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
+
+            Assert.IsType(typeof(MyContainer), app.ApplicationServices);
+            Assert.True(((MyContainer)app.ApplicationServices).FancyMethodCalled);
+        }
+
+        [Fact]
+        public void CustomServiceProviderFactoryStartupBaseClassCallsConfigureContainer()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<MyContainer>, MyContainerFactory>();
+            var services = serviceCollection.BuildServiceProvider();
+
+            var startup = StartupLoader.LoadMethods(services, typeof(MyContainerStartupBaseClass), "Development");
+
+            var app = new ApplicationBuilder(services);
+            app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
+
+            Assert.IsType(typeof(MyContainer), app.ApplicationServices);
+            Assert.True(((MyContainer)app.ApplicationServices).FancyMethodCalled);
+        }
+
+        [Fact]
+        public void CustomServiceProviderFactoryEnvironmentBasedConfigureContainer()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<MyContainer>, MyContainerFactory>();
+            var services = serviceCollection.BuildServiceProvider();
+
+            var startup = StartupLoader.LoadMethods(services, typeof(MyContainerStartupEnvironmentBased), "Production");
+
+            var app = new ApplicationBuilder(services);
+            app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
+
+            Assert.IsType(typeof(MyContainer), app.ApplicationServices);
+            Assert.Equal(((MyContainer)app.ApplicationServices).Environment, "Production");
+        }
+
+        [Fact]
+        public void CustomServiceProviderFactoryThrowsIfNotRegisteredWithConfigureContainerMethod()
+        {
+            var serviceCollection = new ServiceCollection();
+            var services = serviceCollection.BuildServiceProvider();
+
+            var startup = StartupLoader.LoadMethods(services, typeof(MyContainerStartup), "Development");
+
+            Assert.Throws<InvalidOperationException>(() => startup.ConfigureServicesDelegate(serviceCollection));
+        }
+
+        [Fact]
+        public void CustomServiceProviderFactoryThrowsIfNotRegisteredWithConfigureContainerMethodStartupBase()
+        {
+            var serviceCollection = new ServiceCollection();
+            var services = serviceCollection.BuildServiceProvider();
+
+            Assert.Throws<InvalidOperationException>(() => StartupLoader.LoadMethods(services, typeof(MyContainerStartupBaseClass), "Development"));
+        }
+
+        [Fact]
+        public void CustomServiceProviderFactoryFailsWithOverloadsInStartup()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<MyContainer>, MyContainerFactory>();
+            var services = serviceCollection.BuildServiceProvider();
+
+            Assert.Throws<InvalidOperationException>(() => StartupLoader.LoadMethods(services, typeof(MyContainerStartupWithOverloads), "Development"));
+        }
+
+        [Fact]
+        public void BadServiceProviderFactoryFailsThatReturnsNullServiceProviderOverriddenByDefault()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<MyContainer>, MyBadContainerFactory>();
+            var services = serviceCollection.BuildServiceProvider();
+
+            var startup = StartupLoader.LoadMethods(services, typeof(MyContainerStartup), "Development");
+
+            var app = new ApplicationBuilder(services);
+            app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
+
+            Assert.NotNull(app.ApplicationServices);
+            Assert.IsNotType(typeof(MyContainer), app.ApplicationServices);
+        }
+
+        public class MyContainerStartupWithOverloads
+        {
+            public void ConfigureServices(IServiceCollection services)
+            {
+
+            }
+
+            public void ConfigureContainer(MyContainer container)
+            {
+                container.MyFancyContainerMethod();
+            }
+
+            public void ConfigureContainer(IServiceCollection services)
+            {
+
+            }
+
+            public void Configure(IApplicationBuilder app)
+            {
+
+            }
+        }
+
+        public class MyContainerStartupEnvironmentBased
+        {
+            public void ConfigureServices(IServiceCollection services)
+            {
+
+            }
+
+            public void ConfigureDevelopmentContainer(MyContainer container)
+            {
+                container.Environment = "Development";
+            }
+
+            public void ConfigureProductionContainer(MyContainer container)
+            {
+                container.Environment = "Production";
+            }
+
+            public void Configure(IApplicationBuilder app)
+            {
+
+            }
+        }
+
+        public class MyContainerStartup
+        {
+            public void ConfigureServices(IServiceCollection services)
+            {
+
+            }
+
+            public void ConfigureContainer(MyContainer container)
+            {
+                container.MyFancyContainerMethod();
+            }
+
+            public void Configure(IApplicationBuilder app)
+            {
+
+            }
+        }
+
+        public class MyContainerStartupBaseClass : StartupBase<MyContainer>
+        {
+            public MyContainerStartupBaseClass(IServiceProviderFactory<MyContainer> factory) : base(factory)
+            {
+            }
+
+            public override void Configure(IApplicationBuilder app)
+            {
+
+            }
+
+            public override void ConfigureContainer(MyContainer containerBuilder)
+            {
+                containerBuilder.MyFancyContainerMethod();
+            }
         }
 
         public class SimpleService

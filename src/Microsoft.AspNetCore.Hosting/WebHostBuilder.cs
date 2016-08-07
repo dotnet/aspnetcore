@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.PlatformAbstractions;
@@ -200,6 +201,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             // Conjure up a RequestServices
             services.AddTransient<IStartupFilter, AutoRequestServicesStartupFilter>();
+            services.AddTransient<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
 
             // Ensure object pooling is available everywhere.
             services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();

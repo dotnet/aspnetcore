@@ -16,4 +16,31 @@ namespace Microsoft.AspNetCore.Hosting
             return services.BuildServiceProvider();
         }
     }
+
+    public abstract class StartupBase<TContainerBuilder> : IStartup
+    {
+        private readonly IServiceProviderFactory<TContainerBuilder> _factory;
+
+        public StartupBase(IServiceProviderFactory<TContainerBuilder> factory)
+        {
+            _factory = factory;
+        }
+
+        public abstract void Configure(IApplicationBuilder app);
+
+        public virtual void ConfigureServices(IServiceCollection services)
+        {
+
+        }
+
+        IServiceProvider IStartup.ConfigureServices(IServiceCollection services)
+        {
+            ConfigureServices(services);
+            var builder = _factory.CreateBuilder(services);
+            ConfigureContainer(builder);
+            return _factory.CreateServiceProvider(builder);
+        }
+
+        public virtual void ConfigureContainer(TContainerBuilder containerBuilder) { }
+    }
 }
