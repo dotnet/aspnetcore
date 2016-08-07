@@ -88,6 +88,8 @@ sudo apt-get install curl
 
 ### Get Mono
 
+*To use Core CLR instead of Mono, follow the setup instructions on the [Core CLR Getting Started page](http://dotnet.github.io/core/getting-started/)*
+
 Mono is how .NET applications can run on platforms other than Windows. Mono is an ongoing effort to port the .NET Framework to other platforms. In the process of developing ASP.NET 5 we worked with the Mono team to fix some bugs and add features that are needed to run ASP.NET applications. These changes are only in builds of mono that are greater than 4.0.1.
 
 To get these builds you need to run:
