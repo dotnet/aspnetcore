@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
     }
 
-    public class UserStoreWithGenerics : UserStore<IdentityUserWithGenerics, MyIdentityRole, ContextWithGenerics, string, IdentityUserClaimWithIssuer, IdentityUserRoleWithDate, IdentityUserLoginWithContext, IdentityUserTokenWithStuff>
+    public class UserStoreWithGenerics : UserStore<IdentityUserWithGenerics, MyIdentityRole, ContextWithGenerics, string, IdentityUserClaimWithIssuer, IdentityUserRoleWithDate, IdentityUserLoginWithContext, IdentityUserTokenWithStuff, IdentityRoleClaimWithIssuer>
     {
         public string LoginContext { get; set; }
 
@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
     }
 
-    public class RoleStoreWithGenerics : RoleStore<MyIdentityRole, ContextWithGenerics, string, IdentityUserRoleWithDate, IdentityRoleClaim<string>>
+    public class RoleStoreWithGenerics : RoleStore<MyIdentityRole, ContextWithGenerics, string, IdentityUserRoleWithDate, IdentityRoleClaimWithIssuer>
     {
         private string _loginContext;
         public RoleStoreWithGenerics(ContextWithGenerics context, string loginContext) : base(context)
@@ -256,13 +256,30 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             _loginContext = loginContext;
         }
 
-        protected override IdentityRoleClaim<string> CreateRoleClaim(MyIdentityRole role, Claim claim)
+        protected override IdentityRoleClaimWithIssuer CreateRoleClaim(MyIdentityRole role, Claim claim)
         {
-            return new IdentityRoleClaim<string> { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value };
+            return new IdentityRoleClaimWithIssuer { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value, Issuer = claim.Issuer };
         }
     }
 
     public class IdentityUserClaimWithIssuer : IdentityUserClaim<string>
+    {
+        public string Issuer { get; set; }
+
+        public override Claim ToClaim()
+        {
+            return new Claim(ClaimType, ClaimValue, null, Issuer);
+        }
+
+        public override void InitializeFromClaim(Claim other)
+        {
+            ClaimValue = other.Value;
+            ClaimType = other.Type;
+            Issuer = other.Issuer;
+        }
+    }
+
+    public class IdentityRoleClaimWithIssuer : IdentityRoleClaim<string>
     {
         public string Issuer { get; set; }
 
@@ -284,7 +301,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         public DateTime Created { get; set; }
     }
 
-    public class MyIdentityRole : IdentityRole<string, IdentityUserRoleWithDate, IdentityRoleClaim<string>>
+    public class MyIdentityRole : IdentityRole<string, IdentityUserRoleWithDate, IdentityRoleClaimWithIssuer>
     {
         public MyIdentityRole() : base()
         {
@@ -307,7 +324,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         public string Context { get; set; }
     }
 
-    public class ContextWithGenerics : IdentityDbContext<IdentityUserWithGenerics, MyIdentityRole, string, IdentityUserClaimWithIssuer, IdentityUserRoleWithDate, IdentityUserLoginWithContext, IdentityRoleClaim<string>, IdentityUserTokenWithStuff>
+    public class ContextWithGenerics : IdentityDbContext<IdentityUserWithGenerics, MyIdentityRole, string, IdentityUserClaimWithIssuer, IdentityUserRoleWithDate, IdentityUserLoginWithContext, IdentityRoleClaimWithIssuer, IdentityUserTokenWithStuff>
     {
         public ContextWithGenerics(DbContextOptions options) : base(options) { }
     }

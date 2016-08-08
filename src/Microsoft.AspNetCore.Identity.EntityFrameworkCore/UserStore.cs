@@ -69,10 +69,10 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
     /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
     public class UserStore<TUser, TRole, TContext, TKey> : UserStore<TUser, TRole, TContext, TKey, IdentityUserClaim<TKey>, IdentityUserRole<TKey>, IdentityUserLogin<TKey>, IdentityUserToken<TKey>>
-    where TUser : IdentityUser<TKey>
-    where TRole : IdentityRole<TKey>
-    where TContext : DbContext
-    where TKey : IEquatable<TKey>
+        where TUser : IdentityUser<TKey>
+        where TRole : IdentityRole<TKey>
+        where TContext : DbContext
+        where TKey : IEquatable<TKey>
     {
         /// <summary>
         /// Constructs a new instance of <see cref="UserStore{TUser, TRole, TContext, TKey}"/>.
@@ -158,6 +158,38 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
     /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
     public abstract class UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken> :
+        UserStore<TUser, TRole, TContext, TKey,TUserClaim, TUserRole, TUserLogin, TUserToken, IdentityRoleClaim<TKey>>
+        where TUser : IdentityUser<TKey, TUserClaim, TUserRole, TUserLogin>
+        where TRole : IdentityRole<TKey, TUserRole, IdentityRoleClaim<TKey>>
+        where TContext : DbContext
+        where TKey : IEquatable<TKey>
+        where TUserClaim : IdentityUserClaim<TKey>
+        where TUserRole : IdentityUserRole<TKey>
+        where TUserLogin : IdentityUserLogin<TKey>
+        where TUserToken : IdentityUserToken<TKey>
+    {
+        /// <summary>
+        /// Creates a new instance of <see cref="UserStore"/>.
+        /// </summary>
+        /// <param name="context">The context used to access the store.</param>
+        /// <param name="describer">The <see cref="IdentityErrorDescriber"/> used to describe store errors.</param>
+        public UserStore(TContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
+    }
+
+
+    /// <summary>
+    /// Represents a new instance of a persistence store for the specified user and role types.
+    /// </summary>
+    /// <typeparam name="TUser">The type representing a user.</typeparam>
+    /// <typeparam name="TRole">The type representing a role.</typeparam>
+    /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
+    /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+    /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
+    /// <typeparam name="TUserRole">The type representing a user role.</typeparam>
+    /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
+    /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
+    /// <typeparam name="TRoleClaim">The type representing a role claim.</typeparam>
+    public abstract class UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim> :
         IUserLoginStore<TUser>,
         IUserRoleStore<TUser>,
         IUserClaimStore<TUser>,
@@ -170,13 +202,14 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         IUserTwoFactorStore<TUser>,
         IUserAuthenticationTokenStore<TUser>
         where TUser : IdentityUser<TKey, TUserClaim, TUserRole, TUserLogin>
-        where TRole : IdentityRole<TKey, TUserRole, IdentityRoleClaim<TKey>>
+        where TRole : IdentityRole<TKey, TUserRole, TRoleClaim>
         where TContext : DbContext
         where TKey : IEquatable<TKey>
         where TUserClaim : IdentityUserClaim<TKey>
         where TUserRole : IdentityUserRole<TKey>
         where TUserLogin : IdentityUserLogin<TKey>
         where TUserToken : IdentityUserToken<TKey>
+        where TRoleClaim : IdentityRoleClaim<TKey>
     {
         /// <summary>
         /// Creates a new instance of <see cref="UserStore"/>.
