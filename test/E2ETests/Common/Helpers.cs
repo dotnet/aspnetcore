@@ -40,5 +40,16 @@ namespace E2ETests
                 File.WriteAllText(overrideConfig, "{\"UseInMemoryDatabase\": \"true\"}");
             }
         }
+
+        public static string GetCurrentBuildConfiguration()
+        {
+            var configuration = "Debug";
+            if (string.Equals(Environment.GetEnvironmentVariable("Configuration"), "Release", StringComparison.OrdinalIgnoreCase))
+            {
+                configuration = "Release";
+            }
+
+            return configuration;
+        }
     }
 }

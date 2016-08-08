@@ -149,6 +149,7 @@ namespace E2ETests
                     ApplicationBaseUriHint = applicationBaseUrl,
                     PublishApplicationBeforeDeployment = true,
                     TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.0",
+                    Configuration = Helpers.GetCurrentBuildConfiguration(),
                     ApplicationType = applicationType,
                     UserAdditionalCleanup = parameters =>
                     {
