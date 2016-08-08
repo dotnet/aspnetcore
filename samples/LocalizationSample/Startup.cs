@@ -37,7 +37,8 @@ namespace LocalizationSample
 #if !NETCOREAPP1_0
             supportedCultures.Add(new CultureInfo("zh-CHT"));
 #endif
-            var options = new RequestLocalizationOptions {
+            var options = new RequestLocalizationOptions
+            {
                 DefaultRequestCulture = new RequestCulture("en-US"),
                 SupportedCultures = supportedCultures,
                 SupportedUICultures = supportedCultures

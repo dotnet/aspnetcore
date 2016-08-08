@@ -31,3 +31,4 @@ nuget.exe
 *.ipch
 *.sln.ide
 *launchSettings.json
+**/Resources/*.Designer.cs

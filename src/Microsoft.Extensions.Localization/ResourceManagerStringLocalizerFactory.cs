@@ -51,6 +51,70 @@ namespace Microsoft.Extensions.Localization
         }
 
         /// <summary>
+        /// Gets the resource prefix used to look up the resource.
+        /// </summary>
+        /// <param name="typeInfo">The type of the resource to be looked up.</param>
+        /// <returns>The prefix for resource lookup.</returns>
+        protected virtual string GetResourcePrefix(TypeInfo typeInfo)
+        {
+            if (typeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(typeInfo));
+            }
+
+            return GetResourcePrefix(typeInfo, _hostingEnvironment.ApplicationName, _resourcesRelativePath);
+        }
+
+        /// <summary>
+        /// Gets the resource prefix used to look up the resource.
+        /// </summary>
+        /// <param name="typeInfo">The type of the resource to be looked up.</param>
+        /// <param name="baseNamespace">The base namespace of the application.</param>
+        /// <param name="resourcesRelativePath">The folder containing all resources.</param>
+        /// <returns>The prefix for resource lookup.</returns>
+        /// <remarks>
+        /// For the type "Sample.Controllers.Home" if there's a resourceRelativePath return
+        /// "Sample.Resourcepath.Controllers.Home" if there isn't one then it would return "Sample.Controllers.Home".
+        /// </remarks>
+        protected virtual string GetResourcePrefix(TypeInfo typeInfo, string baseNamespace, string resourcesRelativePath)
+        {
+            if (typeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(typeInfo));
+            }
+
+            if (string.IsNullOrEmpty(baseNamespace))
+            {
+                throw new ArgumentNullException(nameof(baseNamespace));
+            }
+
+            return string.IsNullOrEmpty(resourcesRelativePath)
+                ? typeInfo.FullName
+                : baseNamespace + "." + resourcesRelativePath + TrimPrefix(typeInfo.FullName, baseNamespace + ".");
+        }
+
+        /// <summary>
+        /// Gets the resource prefix used to look up the resource.
+        /// </summary>
+        /// <param name="baseResourceName">The name of the resource to be looked up</param>
+        /// <param name="baseNamespace">The base namespace of the application.</param>
+        /// <returns>The prefix for resource lookup.</returns>
+        protected virtual string GetResourcePrefix(string baseResourceName, string baseNamespace)
+        {
+            if (string.IsNullOrEmpty(baseResourceName))
+            {
+                throw new ArgumentNullException(nameof(baseResourceName));
+            }
+
+            var locationPath = baseNamespace == _hostingEnvironment.ApplicationName ?
+                baseNamespace + "." + _resourcesRelativePath :
+                baseNamespace + ".";
+            baseResourceName = locationPath + TrimPrefix(baseResourceName, baseNamespace + ".");
+
+            return baseResourceName;
+        }
+
+        /// <summary>
         /// Creates a <see cref="ResourceManagerStringLocalizer"/> using the <see cref="Assembly"/> and
         /// <see cref="Type.FullName"/> of the specified <see cref="Type"/>.
         /// </summary>
@@ -67,10 +131,7 @@ namespace Microsoft.Extensions.Localization
             var assembly = typeInfo.Assembly;
 
             // Re-root the base name if a resources path is set
-            var baseName = string.IsNullOrEmpty(_resourcesRelativePath)
-                ? typeInfo.FullName
-                : _hostingEnvironment.ApplicationName + "." + _resourcesRelativePath
-                    + TrimPrefix(typeInfo.FullName, _hostingEnvironment.ApplicationName + ".");
+            var baseName = GetResourcePrefix(typeInfo);
 
             return _localizerCache.GetOrAdd(baseName, _ =>
                 new ResourceManagerStringLocalizer(
@@ -96,7 +157,7 @@ namespace Microsoft.Extensions.Localization
 
             location = location ?? _hostingEnvironment.ApplicationName;
 
-            baseName = location + "." + _resourcesRelativePath + TrimPrefix(baseName, location + ".");
+            baseName = GetResourcePrefix(baseName, location);
 
             return _localizerCache.GetOrAdd($"B={baseName},L={location}", _ =>
             {
