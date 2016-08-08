@@ -81,6 +81,8 @@ namespace Microsoft.AspNetCore.Server.Testing
         /// </summary>
         public bool PublishApplicationBeforeDeployment { get; set; }
 
+        public bool DeletePublishedApplicationOnDispose { get; set; } = true;
+
         public ApplicationType ApplicationType { get; set; }
 
         public string PublishedApplicationRootPath { get; set; }

@@ -82,14 +82,23 @@ namespace Microsoft.AspNetCore.Server.Testing
 
         protected void CleanPublishedOutput()
         {
-            try
+            if (DeploymentParameters.DeletePublishedApplicationOnDispose)
             {
-                // We've originally published the application in a temp folder. We need to delete it.
-                Directory.Delete(DeploymentParameters.PublishedApplicationRootPath, true);
+                try
+                {
+                    // We've originally published the application in a temp folder. We need to delete it.
+                    Directory.Delete(DeploymentParameters.PublishedApplicationRootPath, true);
+                }
+                catch (Exception exception)
+                {
+                    Logger.LogWarning($"Failed to delete directory : {exception.Message}");
+                }
             }
-            catch (Exception exception)
+            else
             {
-                Logger.LogWarning($"Failed to delete directory : {exception.Message}");
+                Logger.LogWarning(
+                    "Skipping deleting the locally published folder as property " +
+                    $"'{nameof(DeploymentParameters.DeletePublishedApplicationOnDispose)}' is set to 'false'.");
             }
         }
 
