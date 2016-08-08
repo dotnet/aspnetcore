@@ -433,7 +433,19 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
         /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
         /// for the sign-in attempt.</returns>
-        public virtual async Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent)
+        public virtual Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent) 
+            => ExternalLoginSignInAsync(loginProvider, providerKey, isPersistent, bypassTwoFactor: false);
+
+        /// <summary>
+        /// Signs in a user via a previously registered third party login, as an asynchronous operation.
+        /// </summary>
+        /// <param name="loginProvider">The login provider to use.</param>
+        /// <param name="providerKey">The unique provider identifier for the user.</param>
+        /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
+        /// <param name="bypassTwoFactor">Flag indicating whether to bypass two factor authentication.</param>
+        /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
+        /// for the sign-in attempt.</returns>
+        public virtual async Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent, bool bypassTwoFactor)
         {
             var user = await UserManager.FindByLoginAsync(loginProvider, providerKey);
             if (user == null)
@@ -446,7 +458,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 return error;
             }
-            return await SignInOrTwoFactorAsync(user, isPersistent, loginProvider);
+            return await SignInOrTwoFactorAsync(user, isPersistent, loginProvider, bypassTwoFactor);
         }
 
         /// <summary>
@@ -582,9 +594,10 @@ namespace Microsoft.AspNetCore.Identity
         }
 
 
-        private async Task<SignInResult> SignInOrTwoFactorAsync(TUser user, bool isPersistent, string loginProvider = null)
+        private async Task<SignInResult> SignInOrTwoFactorAsync(TUser user, bool isPersistent, string loginProvider = null, bool bypassTwoFactor = false)
         {
-            if (UserManager.SupportsUserTwoFactor &&
+            if (!bypassTwoFactor &&
+                UserManager.SupportsUserTwoFactor &&
                 await UserManager.GetTwoFactorEnabledAsync(user) &&
                 (await UserManager.GetValidTwoFactorProvidersAsync(user)).Count > 0)
             {

@@ -315,6 +315,52 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 
         [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ExternalSignInRequiresVerificationIfNotBypassed(bool bypass)
+        {
+            // Setup
+            var user = new TestUser { UserName = "Foo" };
+            const string loginProvider = "login";
+            const string providerKey = "fookey";
+            var manager = SetupUserManager(user);
+            manager.Setup(m => m.SupportsUserLockout).Returns(false).Verifiable();
+            manager.Setup(m => m.FindByLoginAsync(loginProvider, providerKey)).ReturnsAsync(user).Verifiable();
+            if (!bypass)
+            {
+                IList<string> providers = new List<string>();
+                providers.Add("PhoneNumber");
+                manager.Setup(m => m.GetValidTwoFactorProvidersAsync(user)).Returns(Task.FromResult(providers)).Verifiable();
+                manager.Setup(m => m.SupportsUserTwoFactor).Returns(true).Verifiable();
+                manager.Setup(m => m.GetTwoFactorEnabledAsync(user)).ReturnsAsync(true).Verifiable();
+            }
+            var context = new Mock<HttpContext>();
+            var auth = new Mock<AuthenticationManager>();
+            context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
+            var helper = SetupSignInManager(manager.Object, context.Object);
+
+            if (bypass)
+            {
+                SetupSignIn(auth, user.Id, false, loginProvider);
+            }
+            else
+            {
+                auth.Setup(a => a.SignInAsync(helper.Options.Cookies.TwoFactorUserIdCookieAuthenticationScheme,
+                    It.Is<ClaimsPrincipal>(id => id.FindFirstValue(ClaimTypes.Name) == user.Id))).Returns(Task.FromResult(0)).Verifiable();
+            }
+
+            // Act
+            var result = await helper.ExternalLoginSignInAsync(loginProvider, providerKey, isPersistent: false, bypassTwoFactor: bypass);
+
+            // Assert
+            Assert.Equal(bypass, result.Succeeded);
+            Assert.Equal(!bypass, result.RequiresTwoFactor);
+            manager.Verify();
+            context.Verify();
+            auth.Verify();
+        }
+
+        [Theory]
         [InlineData(true, true)]
         [InlineData(true, false)]
         [InlineData(false, true)]
