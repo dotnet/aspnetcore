@@ -32,6 +32,7 @@ namespace MusicStore
                     builder.UseWebListener(options =>
                     {
                         options.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.NTLM;
+                        options.Listener.AuthenticationManager.AllowAnonymous = false;
                     });
                 }
                 else
