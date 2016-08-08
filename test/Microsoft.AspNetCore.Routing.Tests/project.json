@@ -11,7 +11,7 @@
     "Microsoft.Extensions.Logging": "1.1.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.1.0-*",
     "Microsoft.Extensions.WebEncoders": "1.1.0-*",
-    "Moq": "4.6.25-*",
+    "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
   },
   "frameworks": {
@@ -22,8 +22,7 @@
           "type": "platform"
         },
         "System.Diagnostics.TraceSource": "4.0.0-*"
-      },
-      "imports": "dotnet5.4"
+      }
     },
     "net451": {}
   },
