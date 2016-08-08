@@ -4,12 +4,12 @@
 using System.Text;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Rewrite.Internal
+namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
 {
-    public class SchemeRule : Rule
+    public class RedirectToHttpsRule : Rule
     {
         public int? SSLPort { get; set; }
-        public Transformation OnCompletion { get; set; } = Transformation.Rewrite;
+        public int StatusCode { get; set; }
         public override RuleResult ApplyRule(RewriteContext context)
         {
 
@@ -26,20 +26,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                 {
                     // clear the port
                     host = new HostString(host.Host);
-                }
-
-                if ((OnCompletion != Transformation.Redirect))
-                {
-                    context.HttpContext.Request.Scheme = "https";
-                    context.HttpContext.Request.Host = host;
-                    if (OnCompletion == Transformation.TerminatingRewrite)
-                    {
-                        return RuleResult.StopRules;
-                    }
-                    else
-                    {
-                        return RuleResult.Continue;
-                    }
                 }
 
                 var req = context.HttpContext.Request;

@@ -5,11 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite.UrlActions;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite.UrlMatches;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
 {
@@ -27,14 +24,14 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                 var result = new List<UrlRewriteRule>();
                 // TODO Global rules are currently not treated differently than normal rules, fix. 
                 // See: https://github.com/aspnet/BasicMiddleware/issues/59
-                ParseRules(xmlRoot.Descendants(RewriteTags.GlobalRules).FirstOrDefault(), result, isGlobalRule: true);
-                ParseRules(xmlRoot.Descendants(RewriteTags.Rules).FirstOrDefault(), result, isGlobalRule: false);
+                ParseRules(xmlRoot.Descendants(RewriteTags.GlobalRules).FirstOrDefault(), result);
+                ParseRules(xmlRoot.Descendants(RewriteTags.Rules).FirstOrDefault(), result);
                 return result;
             }
             return null;
         }
 
-        private static void ParseRules(XElement rules, List<UrlRewriteRule> result, bool isGlobalRule)
+        private static void ParseRules(XElement rules, List<UrlRewriteRule> result)
         {
             if (rules == null)
             {
@@ -43,296 +40,175 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
 
             foreach (var rule in rules.Elements(RewriteTags.Rule))
             {
-                var res = new UrlRewriteRule();
-                SetRuleAttributes(rule, res);
-                var action = rule.Element(RewriteTags.Action);
-                if (action == null)
+                var builder = new UrlRewriteRuleBuilder();
+                ParseRuleAttributes(rule, builder);
+                
+                if (builder.Enabled)
                 {
-                    ThrowUrlFormatException(rule, "Rule does not have an associated action attribute");
-                }
-                CreateUrlAction(action, res, isGlobalRule);
-                if (res.Enabled)
-                {
-                    result.Add(res);
+                    result.Add(builder.Build());
                 }
             }
         }
 
-        private static void SetRuleAttributes(XElement rule, UrlRewriteRule res)
+        private static void ParseRuleAttributes(XElement rule, UrlRewriteRuleBuilder builder)
         {
-
-            res.Name = rule.Attribute(RewriteTags.Name)?.Value;
+            builder.Name = rule.Attribute(RewriteTags.Name)?.Value;
 
             bool enabled;
-            if (bool.TryParse(rule.Attribute(RewriteTags.Enabled)?.Value, out enabled))
+            if (!bool.TryParse(rule.Attribute(RewriteTags.Enabled)?.Value, out enabled))
             {
-                res.Enabled = enabled;
+                builder.Enabled = true;
             }
 
             PatternSyntax patternSyntax;
-            if (Enum.TryParse(rule.Attribute(RewriteTags.PatternSyntax)?.Value, out patternSyntax))
+            if (!Enum.TryParse(rule.Attribute(RewriteTags.PatternSyntax)?.Value, out patternSyntax))
             {
-                res.PatternSyntax = patternSyntax;
+                patternSyntax = PatternSyntax.ECMAScript;
             }
 
             bool stopProcessing;
-            if (bool.TryParse(rule.Attribute(RewriteTags.StopProcessing)?.Value, out stopProcessing))
+            if (!bool.TryParse(rule.Attribute(RewriteTags.StopProcessing)?.Value, out stopProcessing))
             {
-                res.StopProcessing = stopProcessing;
+                stopProcessing = false;
             }
+
             var match = rule.Element(RewriteTags.Match);
             if (match == null)
             {
                 ThrowUrlFormatException(rule, "Cannot have rule without match");
             }
-            CreateMatch(match, res);
-            CreateConditions(rule.Element(RewriteTags.Conditions), res);
+
+            var action = rule.Element(RewriteTags.Action);
+            if (action == null)
+            {
+                ThrowUrlFormatException(rule, "Rule does not have an associated action attribute");
+            }
+
+            ParseMatch(match, builder, patternSyntax);
+            ParseConditions(rule.Element(RewriteTags.Conditions), builder, patternSyntax);
+            ParseUrlAction(action, builder, stopProcessing);
         }
 
-        private static void CreateMatch(XElement match, UrlRewriteRule res)
+        private static void ParseMatch(XElement match, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
         {
-            var matchRes = new ParsedUrlMatch();
-
-            bool parBool;
-            if (bool.TryParse(match.Attribute(RewriteTags.IgnoreCase)?.Value, out parBool))
-            {
-                matchRes.IgnoreCase = parBool;
-            }
-
-            if (bool.TryParse(match.Attribute(RewriteTags.Negate)?.Value, out parBool))
-            {
-                matchRes.Negate = parBool;
-            }
-
             var parsedInputString = match.Attribute(RewriteTags.Url)?.Value;
             if (parsedInputString == null)
             {
                 ThrowUrlFormatException(match, "Match must have Url Attribute");
             }
 
-            switch (res.PatternSyntax)
+            bool ignoreCase;
+            if (!bool.TryParse(match.Attribute(RewriteTags.IgnoreCase)?.Value, out ignoreCase))
             {
-                case PatternSyntax.ECMAScript:
-                    {
-                        if (matchRes.IgnoreCase)
-                        {
-                            var regex = new Regex(parsedInputString, RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexTimeout);
-                            res.InitialMatch = new RegexMatch(regex, matchRes.Negate);
-                        }
-                        else
-                        {
-                            var regex = new Regex(parsedInputString, RegexOptions.Compiled, RegexTimeout);
-                            res.InitialMatch = new RegexMatch(regex, matchRes.Negate);
-                        }
-                    }
-                    break;
-                case PatternSyntax.WildCard:
-                    throw new NotImplementedException("Wildcard syntax is not supported.");
-                case PatternSyntax.ExactMatch:
-                    res.InitialMatch = new ExactMatch(matchRes.IgnoreCase, parsedInputString, matchRes.Negate);
-                    break;
+                ignoreCase = true; // default
             }
+
+            bool negate;
+            if (!bool.TryParse(match.Attribute(RewriteTags.Negate)?.Value, out negate))
+            {
+                negate = false;
+            }
+            builder.AddUrlMatch(parsedInputString, ignoreCase, negate, patternSyntax);
         }
 
-        private static void CreateConditions(XElement conditions, UrlRewriteRule res)
+
+
+        private static void ParseConditions(XElement conditions, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
         {
-            // This is to avoid nullptr exception on referencing conditions.
-            res.Conditions = new Conditions();
             if (conditions == null)
             {
                 return;
             }
 
             LogicalGrouping grouping;
-            if (Enum.TryParse(conditions.Attribute(RewriteTags.MatchType)?.Value, out grouping))
+            if (!Enum.TryParse(conditions.Attribute(RewriteTags.MatchType)?.Value, out grouping))
             {
-                res.Conditions.MatchType = grouping;
+                 grouping = LogicalGrouping.MatchAll;
             }
 
-            bool parBool;
-            if (bool.TryParse(conditions.Attribute(RewriteTags.TrackingAllCaptures)?.Value, out parBool))
+            bool trackingAllCaptures;
+            if (!bool.TryParse(conditions.Attribute(RewriteTags.TrackingAllCaptures)?.Value, out trackingAllCaptures))
             {
-                res.Conditions.TrackingAllCaptures = parBool;
+                trackingAllCaptures = false;
             }
+
+            builder.AddUrlConditions(grouping, trackingAllCaptures);
 
             foreach (var cond in conditions.Elements(RewriteTags.Add))
             {
-                CreateCondition(cond, res);
+                ParseCondition(cond, builder, patternSyntax);
             }
         }
 
-        private static void CreateCondition(XElement condition, UrlRewriteRule res)
+        private static void ParseCondition(XElement condition, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
         {
-            var parsedCondRes = new ParsedCondition();
-
-            bool parBool;
-            if (bool.TryParse(condition.Attribute(RewriteTags.IgnoreCase)?.Value, out parBool))
+            bool ignoreCase;
+            if (!bool.TryParse(condition.Attribute(RewriteTags.IgnoreCase)?.Value, out ignoreCase))
             {
-                parsedCondRes.IgnoreCase = parBool;
+                ignoreCase = true;
             }
 
-            if (bool.TryParse(condition.Attribute(RewriteTags.Negate)?.Value, out parBool))
+            bool negate;
+            if (!bool.TryParse(condition.Attribute(RewriteTags.Negate)?.Value, out negate))
             {
-                parsedCondRes.Negate = parBool;
+                ignoreCase = false;
             }
 
             MatchType matchType;
-            if (Enum.TryParse(condition.Attribute(RewriteTags.MatchType)?.Value, out matchType))
+            if (!Enum.TryParse(condition.Attribute(RewriteTags.MatchType)?.Value, out matchType))
             {
-                parsedCondRes.MatchType = matchType;
+                matchType = MatchType.Pattern;
             }
 
-            var parsedString = condition.Attribute(RewriteTags.Input)?.Value;
-            if (parsedString == null)
+            var parsedInputString = condition.Attribute(RewriteTags.Input)?.Value;
+            if (parsedInputString == null)
             {
                 ThrowUrlFormatException(condition, "Conditions must have an input attribute");
             }
 
+            var parsedPatternString = condition.Attribute(RewriteTags.Pattern)?.Value;
+
             Pattern input = null;
             try
             {
-                input = InputParser.ParseInputString(parsedString);
+                input = InputParser.ParseInputString(parsedInputString);
+                builder.AddUrlCondition(input, parsedPatternString, patternSyntax, matchType, ignoreCase, negate);
+
             }
             catch (FormatException formatException)
             {
                 ThrowUrlFormatException(condition, formatException.Message, formatException);
             }
-
-            switch (res.PatternSyntax)
-            {
-                case PatternSyntax.ECMAScript:
-                    {
-                        switch (parsedCondRes.MatchType)
-                        {
-                            case MatchType.Pattern:
-                                {
-                                    parsedString = condition.Attribute(RewriteTags.Pattern)?.Value;
-                                    if (parsedString == null)
-                                    {
-                                        ThrowUrlFormatException(condition, "Match does not have an associated pattern attribute in condition");
-
-                                    }
-                                    Regex regex = null;
-
-                                    if (parsedCondRes.IgnoreCase)
-                                    {
-                                        regex = new Regex(parsedString, RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexTimeout);
-                                    }
-                                    else
-                                    {
-                                        regex = new Regex(parsedString, RegexOptions.Compiled, RegexTimeout);
-                                    }
-
-                                    res.Conditions.ConditionList.Add(new Condition { Input = input, Match = new RegexMatch(regex, parsedCondRes.Negate) });
-                                }
-                                break;
-                            case MatchType.IsDirectory:
-                                {
-                                    res.Conditions.ConditionList.Add(new Condition { Input = input, Match = new IsDirectoryMatch(parsedCondRes.Negate) });
-                                }
-                                break;
-                            case MatchType.IsFile:
-                                {
-                                    res.Conditions.ConditionList.Add(new Condition { Input = input, Match = new IsFileMatch(parsedCondRes.Negate) });
-                                }
-                                break;
-                            default:
-                                // TODO don't this this can ever be thrown
-                                ThrowUrlFormatException(condition, "Unrecognized matchType");
-                                break;
-                        }
-                    }
-                    break;
-                case PatternSyntax.WildCard:
-                    throw new NotImplementedException("Wildcard syntax is not supported");
-                case PatternSyntax.ExactMatch:
-                    parsedString = condition.Attribute(RewriteTags.Pattern)?.Value;
-                    if (parsedString == null)
-                    {
-                        ThrowUrlFormatException(condition, "Pattern match does not have an associated pattern attribute in condition");
-                    }
-                    res.Conditions.ConditionList.Add(new Condition { Input = input, Match = new ExactMatch(parsedCondRes.IgnoreCase, parsedString, parsedCondRes.Negate) });
-                    break;
-                default:
-                    ThrowUrlFormatException(condition, "Unrecognized pattern syntax");
-                    break;
-            }
         }
 
-        private static void CreateUrlAction(XElement urlAction, UrlRewriteRule res, bool globalRule)
+        private static void ParseUrlAction(XElement urlAction, UrlRewriteRuleBuilder builder, bool stopProcessing)
         {
-
-            var actionRes = new ParsedUrlAction();
-
             ActionType actionType;
-            if (Enum.TryParse(urlAction.Attribute(RewriteTags.Type)?.Value, out actionType))
+            if (!Enum.TryParse(urlAction.Attribute(RewriteTags.Type)?.Value, out actionType))
             {
-                actionRes.Type = actionType;
+                actionType = ActionType.None;
             }
 
-            bool parseBool;
-            if (bool.TryParse(urlAction.Attribute(RewriteTags.AppendQuery)?.Value, out parseBool))
+            bool appendQuery;
+            if (!bool.TryParse(urlAction.Attribute(RewriteTags.AppendQueryString)?.Value, out appendQuery))
             {
-                actionRes.AppendQueryString = parseBool;
-            }
-
-            if (bool.TryParse(urlAction.Attribute(RewriteTags.LogRewrittenUrl)?.Value, out parseBool))
-            {
-                actionRes.LogRewrittenUrl = parseBool;
+                appendQuery = true;
             }
 
             RedirectType redirectType;
-            if (Enum.TryParse(urlAction.Attribute(RewriteTags.RedirectType)?.Value, out redirectType))
+            if (!Enum.TryParse(urlAction.Attribute(RewriteTags.RedirectType)?.Value, out redirectType))
             {
-                actionRes.RedirectType = redirectType;
+                redirectType = RedirectType.Permanent;
             }
 
             try
             {
-                actionRes.Url = InputParser.ParseInputString(urlAction.Attribute(RewriteTags.Url)?.Value);
+                var input = InputParser.ParseInputString(urlAction.Attribute(RewriteTags.Url)?.Value);
+                builder.AddUrlAction(input, actionType, appendQuery, stopProcessing, (int)redirectType);
             }
             catch (FormatException formatException)
             {
                 ThrowUrlFormatException(urlAction, formatException.Message, formatException);
-            }
-
-            CreateUrlActionFromParsedAction(urlAction, actionRes, globalRule, res);
-        }
-
-        private static void CreateUrlActionFromParsedAction(XElement urlAction, ParsedUrlAction actionRes, bool globalRule, UrlRewriteRule res)
-        {
-            switch (actionRes.Type)
-            {
-                case ActionType.None:
-                    res.Action = new VoidAction();
-                    break;
-                case ActionType.Rewrite:
-                    if (actionRes.AppendQueryString)
-                    {
-                        res.Action = new RewriteAction(res.StopProcessing ? RuleTerminiation.StopRules : RuleTerminiation.Continue, actionRes.Url, clearQuery: false);
-                    }
-                    else
-                    {
-                        res.Action = new RewriteAction(res.StopProcessing ? RuleTerminiation.StopRules : RuleTerminiation.Continue, actionRes.Url, clearQuery: true);
-                    }
-                    break;
-                case ActionType.Redirect:
-                    if (actionRes.AppendQueryString)
-                    {
-                        res.Action = new RedirectAction((int)actionRes.RedirectType, actionRes.Url);
-                    }
-                    else
-                    {
-                        res.Action = new RedirectClearQueryAction((int)actionRes.RedirectType, actionRes.Url);
-                    }
-                    break;
-                case ActionType.AbortRequest:
-                    ThrowUrlFormatException(urlAction, "Abort Requests are not supported.");
-                    break;
-                case ActionType.CustomResponse:
-                    // TODO
-                    ThrowUrlFormatException(urlAction, "Custom Responses are not supported");
-                    break;
             }
         }
 
@@ -342,6 +218,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             var col = ((IXmlLineInfo)element).LinePosition;
             throw new FormatException(Resources.FormatError_UrlRewriteParseError(message, line, col));
         }
+
         private static void ThrowUrlFormatException(XElement element, string message, Exception ex)
         {
             var line = ((IXmlLineInfo)element).LineNumber;

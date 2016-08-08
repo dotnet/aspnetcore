@@ -5,6 +5,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.HttpOverrides", "src\Microsoft.AspNetCore.HttpOverrides\Microsoft.AspNetCore.HttpOverrides.xproj", "{517308C3-B477-4B01-B461-CAB9C10B6928}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A5076D28-FA7E-4606-9410-FEDD0D603527}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{8437B0F3-3894-4828-A945-A9187F37631D}"
 EndProject

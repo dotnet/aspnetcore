@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Rewrite.Internal.ModRewrite.Operands;
 
-namespace Microsoft.AspNetCore.Rewrite.Internal
+namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
 {
     public class RuleExpression
     {

@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         </rule>
     </rules>
 </rewrite>", 
-            "Could not parse the UrlRewrite file. Message: 'Abort Requests are not supported.'. Line number '5': '14'.")]
+            "Could not parse the UrlRewrite file. Message: 'Abort Requests are not supported'. Line number '5': '14'.")]
         [InlineData(
 @"<rewrite>
     <rules>
@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
     <rules>
         <rule name=""Rewrite to article.aspx"">
             <match />
+            <action type=""Rewrite"" url=""foo"" />
         </rule>
     </rules>
 </rewrite>", 

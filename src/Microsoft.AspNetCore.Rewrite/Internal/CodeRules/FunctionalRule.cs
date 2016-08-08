@@ -3,12 +3,11 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Rewrite.Internal
+namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
 {
     public class FunctionalRule : Rule
     {
         public Func<RewriteContext, RuleResult> OnApplyRule { get; set; }
-        public Transformation OnCompletion { get; set; } = Transformation.Rewrite;
         public override RuleResult ApplyRule(RewriteContext context) => OnApplyRule(context);
     }
 }

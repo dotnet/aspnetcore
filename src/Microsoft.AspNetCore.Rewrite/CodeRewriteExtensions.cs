@@ -3,8 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Rewrite.Internal;
+using Microsoft.AspNetCore.Rewrite.Internal.CodeRules;
+using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite;
 
 namespace Microsoft.AspNetCore.Rewrite
 {
@@ -35,69 +36,69 @@ namespace Microsoft.AspNetCore.Rewrite
             return options;
         }
 
-        /// <summary>
-        /// Creates a rewrite path rule.
-        /// </summary>
-        /// <param name="options">The Url rewrite options.</param>
-        /// <param name="regex">The string regex pattern to compare against the http context.</param>
-        /// <param name="newPath">The string to replace the path with (with capture parameters).</param>
-        /// <param name="stopRewriteOnSuccess">Whether or not to stop rewriting on success of rule.</param>
-        /// <returns></returns>
-        public static RewriteOptions RewritePath(this RewriteOptions options, string regex, string newPath, bool stopRewriteOnSuccess = false)
+        public static RewriteOptions RewriteRule(this RewriteOptions options, string regex, string onMatch)
         {
-            options.Rules.Add(new PathRule { MatchPattern = new Regex(regex, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1)), OnMatch = newPath, OnCompletion = stopRewriteOnSuccess ? Transformation.TerminatingRewrite : Transformation.Rewrite });
+            return RewriteRule(options, regex, onMatch, stopProcessing: false);
+        }
+
+        public static RewriteOptions RewriteRule(this RewriteOptions options, string regex, string onMatch, bool stopProcessing)
+        {
+            var builder = new UrlRewriteRuleBuilder();
+            var pattern = InputParser.ParseInputString(onMatch);
+
+            builder.AddUrlMatch(regex);
+            builder.AddUrlAction(pattern, actionType: ActionType.Rewrite, stopProcessing: stopProcessing);
+            options.Rules.Add(builder.Build());
             return options;
         }
 
-        /// <summary>
-        /// Rewrite http to https.
-        /// </summary>
-        /// <param name="options">The Url rewrite options.</param>
-        /// <param name="stopRewriteOnSuccess">Whether or not to stop rewriting on success of rule.</param>
-        /// <returns></returns>
-        public static RewriteOptions RewriteScheme(this RewriteOptions options, bool stopRewriteOnSuccess = false)
+        public static RewriteOptions RedirectRule(this RewriteOptions options, string regex, string onMatch, int statusCode)
         {
-            options.Rules.Add(new SchemeRule {OnCompletion = stopRewriteOnSuccess ? Transformation.TerminatingRewrite : Transformation.Rewrite });
+            return RedirectRule(options, regex, onMatch, statusCode, stopProcessing: false);
+        }
+
+        public static RewriteOptions RedirectRule(this RewriteOptions options, string regex, string onMatch, int statusCode, bool stopProcessing)
+        {
+            var builder = new UrlRewriteRuleBuilder();
+            var pattern = InputParser.ParseInputString(onMatch);
+
+            builder.AddUrlMatch(regex);
+            builder.AddUrlAction(pattern, actionType: ActionType.Redirect, stopProcessing: stopProcessing);
+            options.Rules.Add(builder.Build());
             return options;
         }
 
-        /// <summary>
-        /// Redirect a path to another path.
-        /// </summary>
-        /// <param name="options">The Url rewrite options.</param>
-        /// <param name="regex">The string regex pattern to compare against the http context.</param>
-        /// <param name="newPath">The string to replace the path with (with capture parameters).</param>
-        /// <param name="stopRewriteOnSuccess">Whether or not to stop rewriting on success of rule.</param>
-        /// <returns></returns>
-        public static RewriteOptions RedirectPath(this RewriteOptions options, string regex, string newPath, bool stopRewriteOnSuccess = false)
+        public static RewriteOptions RedirectToHttps(this RewriteOptions options, int statusCode)
         {
-            options.Rules.Add(new PathRule { MatchPattern = new Regex(regex, RegexOptions.Compiled, TimeSpan.FromMilliseconds(1)), OnMatch = newPath, OnCompletion = Transformation.Redirect });
+            return RedirectToHttps(options, statusCode, null);
+        }
+
+        // TODO Don't do this, it doesn't work in all cases. Will refactor tonight/ tomorrow.
+        public static RewriteOptions RedirectToHttps(this RewriteOptions options, int statusCode, int? sslPort)
+        {
+            options.Rules.Add(new RedirectToHttpsRule { StatusCode = statusCode, SSLPort = sslPort });
             return options;
         }
 
-        /// <summary>
-        /// Redirect http to https.
-        /// </summary>
-        /// <param name="options">The Url rewrite options.</param>
-        /// <param name="sslPort">The port to redirect the scheme to.</param>
-        /// <returns></returns>
-        public static RewriteOptions RedirectScheme(this RewriteOptions options, int? sslPort)
+        public static RewriteOptions RewriteToHttps(this RewriteOptions options)
+        { 
+            return RewriteToHttps(options, sslPort: null,  stopProcessing: false);
+        }
+
+        public static RewriteOptions RewriteToHttps(this RewriteOptions options, int? sslPort)
         {
-            options.Rules.Add(new SchemeRule { SSLPort = sslPort, OnCompletion = Transformation.Redirect });
+            return RewriteToHttps(options, sslPort, stopProcessing: false);
+        }
+
+        public static RewriteOptions RewriteToHttps(this RewriteOptions options, int? sslPort, bool stopProcessing)
+        {
+            options.Rules.Add(new RewriteToHttpsRule {SSLPort = sslPort, stopProcessing = stopProcessing });
             return options;
         }
 
-        /// <summary>
-        /// User generated rule to do a specific match on a path and what to do on success of the match.
-        /// </summary>
-        /// <param name="options"></param>
-        /// <param name="onApplyRule"></param>
-        /// <param name="transform"></param>
-        /// <param name="description"></param>
-        /// <returns></returns>
-        public static RewriteOptions CustomRule(this RewriteOptions options, Func<RewriteContext, RuleResult> onApplyRule, Transformation transform, string description = null)
+        public static RewriteOptions AddRule(this RewriteOptions options, Func<RewriteContext, RuleResult> rule)
         {
-            options.Rules.Add(new FunctionalRule { OnApplyRule = onApplyRule, OnCompletion = transform});
+            options.Rules.Add(new FunctionalRule { OnApplyRule = rule});
             return options;
         }
     }
