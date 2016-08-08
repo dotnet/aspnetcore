@@ -288,6 +288,11 @@ namespace Microsoft.AspNetCore.Authentication
 
         public async Task SignOutAsync(SignOutContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (ShouldHandleScheme(context.AuthenticationScheme, handleAutomatic: false))
             {
                 SignOutAccepted = true;

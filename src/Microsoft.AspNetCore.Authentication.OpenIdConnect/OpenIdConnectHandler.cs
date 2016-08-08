@@ -152,11 +152,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <returns>A task executing the sign out procedure</returns>
         protected override async Task HandleSignOutAsync(SignOutContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Logger.EnteringOpenIdAuthenticationHandlerHandleSignOutAsync(GetType().FullName);
 
             if (_configuration == null && Options.ConfigurationManager != null)
