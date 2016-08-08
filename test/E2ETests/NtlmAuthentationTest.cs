@@ -39,6 +39,7 @@ namespace E2ETests
                 {
                     PublishApplicationBeforeDeployment = true,
                     TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.0",
+                    Configuration = Helpers.GetCurrentBuildConfiguration(),
                     ApplicationType = applicationType,
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "NtlmAuthentication", //Will pick the Start class named 'StartupNtlmAuthentication'
