@@ -241,32 +241,10 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var error = await PreSignInCheck(user);
-            if (error != null)
-            {
-                return error;
-            }
-            if (await IsLockedOut(user))
-            {
-                return await LockedOut(user);
-            }
-            if (await UserManager.CheckPasswordAsync(user, password))
-            {
-                await ResetLockout(user);
-                return await SignInOrTwoFactorAsync(user, isPersistent);
-            }
-            Logger.LogWarning(2, "User {userId} failed to provide the correct password.", await UserManager.GetUserIdAsync(user));
-
-            if (UserManager.SupportsUserLockout && lockoutOnFailure)
-            {
-                // If lockout is requested, increment access failed count which might lock out the user
-                await UserManager.AccessFailedAsync(user);
-                if (await UserManager.IsLockedOutAsync(user))
-                {
-                    return await LockedOut(user);
-                }
-            }
-            return SignInResult.Failed;
+            var attempt = await CheckPasswordSignInAsync(user, password, lockoutOnFailure);
+            return attempt.Succeeded 
+                ? await SignInOrTwoFactorAsync(user, isPersistent)
+                : attempt;
         }
 
         /// <summary>
@@ -290,6 +268,52 @@ namespace Microsoft.AspNetCore.Identity
 
             return await PasswordSignInAsync(user, password, isPersistent, lockoutOnFailure);
         }
+
+        /// <summary>
+        /// Attempts a password sign in for a user.
+        /// </summary>
+        /// <param name="user">The user to sign in.</param>
+        /// <param name="password">The password to attempt to sign in with.</param>
+        /// <param name="lockoutOnFailure">Flag indicating if the user account should be locked if the sign in fails.</param>
+        /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
+        /// for the sign-in attempt.</returns>
+        /// <returns></returns>
+        public virtual async Task<SignInResult> CheckPasswordSignInAsync(TUser user, string password, bool lockoutOnFailure)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            var error = await PreSignInCheck(user);
+            if (error != null)
+            {
+                return error;
+            }
+
+            if (await IsLockedOut(user))
+            {
+                return await LockedOut(user);
+            }
+            if (await UserManager.CheckPasswordAsync(user, password))
+            {
+                await ResetLockout(user);
+                return SignInResult.Success;
+            }
+            Logger.LogWarning(2, "User {userId} failed to provide the correct password.", await UserManager.GetUserIdAsync(user));
+
+            if (UserManager.SupportsUserLockout && lockoutOnFailure)
+            {
+                // If lockout is requested, increment access failed count which might lock out the user
+                await UserManager.AccessFailedAsync(user);
+                if (await UserManager.IsLockedOutAsync(user))
+                {
+                    return await LockedOut(user);
+                }
+            }
+            return SignInResult.Failed;
+        }
+
 
         /// <summary>
         /// Returns a flag indicating if the current client browser has been remembered by two factor authentication

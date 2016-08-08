@@ -136,6 +136,37 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Verify();
         }
 
+        [Fact]
+        public async Task CheckPasswordSignInReturnsLockedOutWhenLockedOut()
+        {
+            // Setup
+            var user = new TestUser { UserName = "Foo" };
+            var manager = SetupUserManager(user);
+            manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
+            manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(true).Verifiable();
+
+            var context = new Mock<HttpContext>();
+            var contextAccessor = new Mock<IHttpContextAccessor>();
+            contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
+            var roleManager = MockHelpers.MockRoleManager<TestRole>();
+            var identityOptions = new IdentityOptions();
+            var options = new Mock<IOptions<IdentityOptions>>();
+            options.Setup(a => a.Value).Returns(identityOptions);
+            var claimsFactory = new UserClaimsPrincipalFactory<TestUser, TestRole>(manager.Object, roleManager.Object, options.Object);
+            var logStore = new StringBuilder();
+            var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
+            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger.Object);
+
+            // Act
+            var result = await helper.CheckPasswordSignInAsync(user, "bogus", false);
+
+            // Assert
+            Assert.False(result.Succeeded);
+            Assert.True(result.IsLockedOut);
+            Assert.True(logStore.ToString().Contains($"User {user.Id} is currently locked out."));
+            manager.Verify();
+        }
+
         private static Mock<UserManager<TestUser>> SetupUserManager(TestUser user)
         {
             var manager = MockHelpers.MockUserManager<TestUser>();
@@ -534,9 +565,11 @@ namespace Microsoft.AspNetCore.Identity.Test
             var helper = SetupSignInManager(manager.Object, context.Object, logStore);
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, false);
+            var checkResult = await helper.CheckPasswordSignInAsync(user, "bogus", false);
 
             // Assert
             Assert.False(result.Succeeded);
+            Assert.False(checkResult.Succeeded);
             Assert.True(logStore.ToString().Contains($"User {user.Id} failed to provide the correct password."));
             manager.Verify();
             context.Verify();
@@ -580,6 +613,33 @@ namespace Microsoft.AspNetCore.Identity.Test
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, true);
+
+            // Assert
+            Assert.False(result.Succeeded);
+            Assert.True(result.IsLockedOut);
+            manager.Verify();
+        }
+
+        [Fact]
+        public async Task CheckPasswordSignInFailsWithWrongPasswordCanAccessFailedAndLockout()
+        {
+            // Setup
+            var user = new TestUser { UserName = "Foo" };
+            var manager = SetupUserManager(user);
+            var lockedout = false;
+            manager.Setup(m => m.AccessFailedAsync(user)).Returns(() =>
+            {
+                lockedout = true;
+                return Task.FromResult(IdentityResult.Success);
+            }).Verifiable();
+            manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
+            manager.Setup(m => m.IsLockedOutAsync(user)).Returns(() => Task.FromResult(lockedout));
+            manager.Setup(m => m.CheckPasswordAsync(user, "bogus")).ReturnsAsync(false).Verifiable();
+            var context = new Mock<HttpContext>();
+            var helper = SetupSignInManager(manager.Object, context.Object);
+
+            // Act
+            var result = await helper.CheckPasswordSignInAsync(user, "bogus", true);
 
             // Assert
             Assert.False(result.Succeeded);
