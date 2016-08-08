@@ -4,7 +4,7 @@
     "Microsoft.AspNetCore.Cryptography.Internal": "1.1.0-*",
     "Microsoft.AspNetCore.DataProtection.Abstractions": "1.1.0-*",
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
-    "Moq": "4.6.25-*",
+    "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
   },
   "frameworks": {
@@ -15,8 +15,7 @@
           "type": "platform"
         },
         "System.Diagnostics.TraceSource": "4.0.0-*"
-      },
-      "imports": "dotnet5.4"
+      }
     },
     "net451": {}
   },
