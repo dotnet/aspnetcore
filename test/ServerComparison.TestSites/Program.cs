@@ -33,8 +33,9 @@ namespace ServerComparison.TestSites
                     // modify the applicationHost.config to enable NTLM.
                     builder.UseWebListener(options =>
                     {
+                        options.Listener.AuthenticationManager.AllowAnonymous = true;
                         options.Listener.AuthenticationManager.AuthenticationSchemes =
-                            AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | AuthenticationSchemes.AllowAnonymous;
+                            AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM;
                     });
                 }
                 else
