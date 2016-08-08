@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -140,6 +141,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
                     Assert.False(onStartingCalled);
                     Assert.True(onCompletedCalled);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task OnStartingThrowsWhenSetAfterResponseHasAlreadyStarted()
+        {
+            InvalidOperationException ex = null;
+
+            var hostBuilder = new WebHostBuilder()
+                .UseKestrel()
+                .UseUrls("http://127.0.0.1:0/")
+                .Configure(app =>
+                {
+                    app.Run(async context =>
+                    {
+                        await context.Response.WriteAsync("hello, world");
+                        await context.Response.Body.FlushAsync();
+                        ex = Assert.Throws<InvalidOperationException>(() => context.Response.OnStarting(_ => TaskUtilities.CompletedTask, null));
+                    });
+                });
+
+            using (var host = hostBuilder.Build())
+            {
+                host.Start();
+
+                using (var client = new HttpClient())
+                {
+                    var response = await client.GetAsync($"http://localhost:{host.GetPort()}/");
+
+                    // Despite the error, the response had already started
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    Assert.NotNull(ex);
                 }
             }
         }
