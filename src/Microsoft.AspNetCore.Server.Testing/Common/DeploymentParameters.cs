@@ -72,6 +72,11 @@ namespace Microsoft.AspNetCore.Server.Testing
         public string TargetFramework { get; set; }
 
         /// <summary>
+        /// Configuration under which to build (ex: Release or Debug)
+        /// </summary>
+        public string Configuration { get; set; } = "Debug";
+
+        /// <summary>
         /// To publish the application before deployment.
         /// </summary>
         public bool PublishApplicationBeforeDeployment { get; set; }
