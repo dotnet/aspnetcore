@@ -9,7 +9,7 @@
     },
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Newtonsoft.Json": "9.0.1",
-    "Moq": "4.6.25-*",
+    "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
   },
   "testRunner": "xunit",
@@ -21,8 +21,7 @@
           "type": "platform"
         },
         "System.Diagnostics.TraceSource": "4.0.0-*"
-      },
-      "imports": "dotnet5.4"
+      }
     },
     "net451": {
       "frameworkAssemblies": {
