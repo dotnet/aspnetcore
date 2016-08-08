@@ -18,7 +18,7 @@ namespace E2ETests
 
         public static string GetApplicationPath(ApplicationType applicationType)
         {
-            return Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "src", applicationType == ApplicationType.Standalone ? "MusicStore.Standalone" : "MusicStore"));
+            return Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "samples", applicationType == ApplicationType.Standalone ? "MusicStore.Standalone" : "MusicStore"));
         }
 
         public static void SetInMemoryStoreForIIS(DeploymentParameters deploymentParameters, ILogger logger)

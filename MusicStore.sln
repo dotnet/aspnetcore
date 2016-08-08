@@ -9,17 +9,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		NuGet.config = NuGet.config
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B7B176B6-8D4D-4EF1-BBD2-DDA650C78FFF}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{B7B176B6-8D4D-4EF1-BBD2-DDA650C78FFF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{363D2681-31A6-48C9-90BB-9ACFF4A41F06}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "E2ETests", "test\E2ETests\E2ETests.xproj", "{A319ACCE-060B-4385-9534-9F2202F6180E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore", "src\MusicStore\MusicStore.xproj", "{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore", "samples\MusicStore\MusicStore.xproj", "{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore.Test", "test\MusicStore.Test\MusicStore.Test.xproj", "{CA663205-77DE-4E55-B300-85594181B5A9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore.Standalone", "src\MusicStore.Standalone\MusicStore.Standalone.xproj", "{C4222506-9D5B-469D-90C1-196A3F27CB44}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore.Standalone", "samples\MusicStore.Standalone\MusicStore.Standalone.xproj", "{C4222506-9D5B-469D-90C1-196A3F27CB44}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
