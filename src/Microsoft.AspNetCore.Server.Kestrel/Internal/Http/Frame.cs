@@ -382,6 +382,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             lock (_onStartingSync)
             {
+                if (HasResponseStarted)
+                {
+                    ThrowResponseAlreadyStartedException(nameof(OnStarting));
+                }
+
                 if (_onStarting == null)
                 {
                     _onStarting = new List<KeyValuePair<Func<object, Task>, object>>();

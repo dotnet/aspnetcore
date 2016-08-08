@@ -441,6 +441,26 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
+        public void ThrowsWhenOnStartingIsSetAfterResponseStarted()
+        {
+            // Arrange
+            var connectionContext = new ConnectionContext()
+            {
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                ServerOptions = new KestrelServerOptions(),
+                SocketOutput = new MockSocketOuptut()
+            };
+            var frame = new Frame<object>(application: null, context: connectionContext);
+            frame.InitializeHeaders();
+            frame.Write(new ArraySegment<byte>(new byte[1]));
+
+            // Act/Assert
+            Assert.True(frame.HasResponseStarted);
+            Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)frame).OnStarting(_ => TaskUtilities.CompletedTask, null));
+        }
+
+        [Fact]
         public void InitializeHeadersResetsRequestHeaders()
         {
             // Arrange
