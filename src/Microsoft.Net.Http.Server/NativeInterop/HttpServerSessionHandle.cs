@@ -55,7 +55,7 @@ namespace Microsoft.Net.Http.Server
                 if (Interlocked.Increment(ref disposed) == 1)
                 {
                     // Closing server session also closes all open url groups under that server session.
-                    return (UnsafeNclNativeMethods.HttpApi.HttpCloseServerSession(serverSessionId) ==
+                    return (HttpApi.HttpCloseServerSession(serverSessionId) ==
                         UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS);
                 }
             }

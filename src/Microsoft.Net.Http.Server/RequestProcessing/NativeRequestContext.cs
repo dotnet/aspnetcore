@@ -32,7 +32,7 @@ namespace Microsoft.Net.Http.Server
     {
         private const int DefaultBufferSize = 4096;
         private const int AlignmentPadding = 8;
-        private UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST* _memoryBlob;
+        private HttpApi.HTTP_REQUEST* _memoryBlob;
         private IntPtr _originalBlobAddress;
         private byte[] _backingBuffer;
         private int _bufferAlignment;
@@ -42,7 +42,7 @@ namespace Microsoft.Net.Http.Server
         internal NativeRequestContext(AsyncAcceptContext result)
         {
             _acceptResult = result;
-            UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST* requestBlob = Allocate(0);
+            HttpApi.HTTP_REQUEST* requestBlob = Allocate(0);
             if (requestBlob == null)
             {
                 GC.SuppressFinalize(this);
@@ -61,7 +61,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST* RequestBlob
+        internal HttpApi.HTTP_REQUEST* RequestBlob
         {
             get
             {
@@ -98,7 +98,7 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST* blob = _memoryBlob;
+                HttpApi.HTTP_REQUEST* blob = _memoryBlob;
                 return blob == null ? _originalBlobAddress : (IntPtr)blob;
             }
         }
@@ -138,7 +138,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        private void SetBlob(UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST* requestBlob)
+        private void SetBlob(HttpApi.HTTP_REQUEST* requestBlob)
         {
             Debug.Assert(_memoryBlob != null || _backingBuffer == null, "RequestContextBase::Dispose()|SetBlob() called after ReleasePins().");
             if (requestBlob == null)
@@ -170,7 +170,7 @@ namespace Microsoft.Net.Http.Server
             _backingBuffer = new byte[size + AlignmentPadding];
         }
 
-        private UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST* Allocate(uint size)
+        private HttpApi.HTTP_REQUEST* Allocate(uint size)
         {
             // We can't reuse overlapped objects
             if (_nativeOverlapped != null)
@@ -191,7 +191,7 @@ namespace Microsoft.Net.Http.Server
             var requestAddress = Marshal.UnsafeAddrOfPinnedArrayElement(RequestBuffer, 0);
             _bufferAlignment = (int)(requestAddress.ToInt64() & 0x07);
 
-            return (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST*)(requestAddress + _bufferAlignment);
+            return (HttpApi.HTTP_REQUEST*)(requestAddress + _bufferAlignment);
         }
 
         internal void Reset(ulong requestId, uint size)

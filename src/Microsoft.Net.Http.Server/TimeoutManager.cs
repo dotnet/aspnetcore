@@ -35,7 +35,7 @@ namespace Microsoft.Net.Http.Server
     public sealed class TimeoutManager
     {
         private static readonly int TimeoutLimitSize =
-            Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_LIMIT_INFO>();
+            Marshal.SizeOf<HttpApi.HTTP_TIMEOUT_LIMIT_INFO>();
 
         private WebListener _server;
         private int[] _timeouts;
@@ -69,11 +69,11 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return GetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.EntityBody);
+                return GetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.EntityBody);
             }
             set
             {
-                SetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.EntityBody, value);
+                SetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.EntityBody, value);
             }
         }
 
@@ -92,11 +92,11 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return GetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.DrainEntityBody);
+                return GetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.DrainEntityBody);
             }
             set
             {
-                SetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.DrainEntityBody, value);
+                SetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.DrainEntityBody, value);
             }
         }
 
@@ -110,11 +110,11 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return GetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.RequestQueue);
+                return GetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.RequestQueue);
             }
             set
             {
-                SetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.RequestQueue, value);
+                SetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.RequestQueue, value);
             }
         }
 
@@ -129,11 +129,11 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return GetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.IdleConnection);
+                return GetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.IdleConnection);
             }
             set
             {
-                SetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.IdleConnection, value);
+                SetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.IdleConnection, value);
             }
         }
 
@@ -149,11 +149,11 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return GetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.HeaderWait);
+                return GetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.HeaderWait);
             }
             set
             {
-                SetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.HeaderWait, value);
+                SetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.HeaderWait, value);
             }
         }
 
@@ -189,13 +189,13 @@ namespace Microsoft.Net.Http.Server
 
         #region Helpers
 
-        private TimeSpan GetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE type)
+        private TimeSpan GetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE type)
         {
             // Since we maintain local state, GET is local.
             return new TimeSpan(0, 0, (int)_timeouts[(int)type]);
         }
 
-        private void SetTimeSpanTimeout(UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE type, TimeSpan value)
+        private void SetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE type, TimeSpan value)
         {
             // All timeouts are defined as USHORT in native layer (except MinSendRate, which is ULONG). Make sure that
             // timeout value is within range.
@@ -217,25 +217,25 @@ namespace Microsoft.Net.Http.Server
 
         private unsafe void SetServerTimeouts(int[] timeouts, uint minSendBytesPerSecond)
         {
-            var timeoutinfo = new UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_LIMIT_INFO();
+            var timeoutinfo = new HttpApi.HTTP_TIMEOUT_LIMIT_INFO();
 
-            timeoutinfo.Flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
+            timeoutinfo.Flags = HttpApi.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
             timeoutinfo.DrainEntityBody =
-                (ushort)timeouts[(int)UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.DrainEntityBody];
+                (ushort)timeouts[(int)HttpApi.HTTP_TIMEOUT_TYPE.DrainEntityBody];
             timeoutinfo.EntityBody =
-                (ushort)timeouts[(int)UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.EntityBody];
+                (ushort)timeouts[(int)HttpApi.HTTP_TIMEOUT_TYPE.EntityBody];
             timeoutinfo.RequestQueue =
-                (ushort)timeouts[(int)UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.RequestQueue];
+                (ushort)timeouts[(int)HttpApi.HTTP_TIMEOUT_TYPE.RequestQueue];
             timeoutinfo.IdleConnection =
-                (ushort)timeouts[(int)UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.IdleConnection];
+                (ushort)timeouts[(int)HttpApi.HTTP_TIMEOUT_TYPE.IdleConnection];
             timeoutinfo.HeaderWait =
-                (ushort)timeouts[(int)UnsafeNclNativeMethods.HttpApi.HTTP_TIMEOUT_TYPE.HeaderWait];
+                (ushort)timeouts[(int)HttpApi.HTTP_TIMEOUT_TYPE.HeaderWait];
             timeoutinfo.MinSendRate = minSendBytesPerSecond;
 
             var infoptr = new IntPtr(&timeoutinfo);
 
             _server.UrlGroup.SetProperty(
-                UnsafeNclNativeMethods.HttpApi.HTTP_SERVER_PROPERTY.HttpServerTimeoutsProperty,
+                HttpApi.HTTP_SERVER_PROPERTY.HttpServerTimeoutsProperty,
                 infoptr, (uint)TimeoutLimitSize);
         }
 

@@ -35,7 +35,7 @@ namespace Microsoft.Net.Http.Server
 
         protected override bool ReleaseHandle()
         {
-            return (UnsafeNclNativeMethods.SafeNetHandles.HttpCloseRequestQueue(handle) ==
+            return (HttpApi.HttpCloseRequestQueue(handle) ==
                         UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS);
         }
     }

@@ -25,8 +25,8 @@ namespace Microsoft.Net.Http.Server
         internal unsafe ServerSession()
         {
             ulong serverSessionId = 0;
-            var statusCode = UnsafeNclNativeMethods.HttpApi.HttpCreateServerSession(
-                UnsafeNclNativeMethods.HttpApi.Version, &serverSessionId, 0);
+            var statusCode = HttpApi.HttpCreateServerSession(
+                HttpApi.Version, &serverSessionId, 0);
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {

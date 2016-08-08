@@ -164,10 +164,10 @@ namespace Microsoft.Net.Http.Server
             {
                 retry = false;
                 uint bytesTransferred = 0;
-                statusCode = UnsafeNclNativeMethods.HttpApi.HttpReceiveHttpRequest(
+                statusCode = HttpApi.HttpReceiveHttpRequest(
                     Server.RequestQueue.Handle,
                     _nativeRequestContext.RequestBlob->RequestId,
-                    (uint)UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY,
+                    (uint)HttpApi.HTTP_FLAGS.HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY,
                     _nativeRequestContext.RequestBlob,
                     _nativeRequestContext.Size,
                     &bytesTransferred,

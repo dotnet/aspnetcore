@@ -43,11 +43,11 @@ namespace Microsoft.Net.Http.Server
         private const uint CertBoblSize = 1500;
         private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(WaitCallback);
         private static readonly int RequestChannelBindStatusSize =
-            Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_CHANNEL_BIND_STATUS>();
+            Marshal.SizeOf<HttpApi.HTTP_REQUEST_CHANNEL_BIND_STATUS>();
 
         private SafeNativeOverlapped _overlapped;
         private byte[] _backingBuffer;
-        private UnsafeNclNativeMethods.HttpApi.HTTP_SSL_CLIENT_CERT_INFO* _memoryBlob;
+        private HttpApi.HTTP_SSL_CLIENT_CERT_INFO* _memoryBlob;
         private uint _size;
         private TaskCompletionSource<object> _tcs;
         private RequestContext _requestContext;
@@ -124,7 +124,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        private UnsafeNclNativeMethods.HttpApi.HTTP_SSL_CLIENT_CERT_INFO* RequestBlob
+        private HttpApi.HTTP_SSL_CLIENT_CERT_INFO* RequestBlob
         {
             get
             {
@@ -154,7 +154,7 @@ namespace Microsoft.Net.Http.Server
             var boundHandle = RequestContext.Server.RequestQueue.BoundHandle;
             _overlapped = new SafeNativeOverlapped(boundHandle,
                 boundHandle.AllocateNativeOverlapped(IOCallback, this, _backingBuffer));
-            _memoryBlob = (UnsafeNclNativeMethods.HttpApi.HTTP_SSL_CLIENT_CERT_INFO*)Marshal.UnsafeAddrOfPinnedArrayElement(_backingBuffer, 0);
+            _memoryBlob = (HttpApi.HTTP_SSL_CLIENT_CERT_INFO*)Marshal.UnsafeAddrOfPinnedArrayElement(_backingBuffer, 0);
         }
 
         // When you use netsh to configure HTTP.SYS with clientcertnegotiation = enable
@@ -185,10 +185,10 @@ namespace Microsoft.Net.Http.Server
                 uint bytesReceived = 0;
 
                 uint statusCode =
-                    UnsafeNclNativeMethods.HttpApi.HttpReceiveClientCertificate(
+                    HttpApi.HttpReceiveClientCertificate(
                         RequestQueueHandle,
                         RequestContext.Request.UConnectionId,
-                        (uint)UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE,
+                        (uint)HttpApi.HTTP_FLAGS.NONE,
                         RequestBlob,
                         size,
                         &bytesReceived,
@@ -196,7 +196,7 @@ namespace Microsoft.Net.Http.Server
 
                 if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
                 {
-                    UnsafeNclNativeMethods.HttpApi.HTTP_SSL_CLIENT_CERT_INFO* pClientCertInfo = RequestBlob;
+                    HttpApi.HTTP_SSL_CLIENT_CERT_INFO* pClientCertInfo = RequestBlob;
                     size = bytesReceived + pClientCertInfo->CertEncodedSize;
                     Reset(size);
                     retry = true;
@@ -259,15 +259,15 @@ namespace Microsoft.Net.Http.Server
                     // return the size of the initial cert structure.  To get the full size,
                     // we need to add the certificate encoding size as well.
 
-                    UnsafeNclNativeMethods.HttpApi.HTTP_SSL_CLIENT_CERT_INFO* pClientCertInfo = asyncResult.RequestBlob;
+                    HttpApi.HTTP_SSL_CLIENT_CERT_INFO* pClientCertInfo = asyncResult.RequestBlob;
                     asyncResult.Reset(numBytes + pClientCertInfo->CertEncodedSize);
 
                     uint bytesReceived = 0;
                     errorCode =
-                        UnsafeNclNativeMethods.HttpApi.HttpReceiveClientCertificate(
+                        HttpApi.HttpReceiveClientCertificate(
                             requestContext.Server.RequestQueue.Handle,
                             requestContext.Request.UConnectionId,
-                            (uint)UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE,
+                            (uint)HttpApi.HTTP_FLAGS.NONE,
                             asyncResult._memoryBlob,
                             asyncResult._size,
                             &bytesReceived,
@@ -291,7 +291,7 @@ namespace Microsoft.Net.Http.Server
                 }
                 else
                 {
-                    UnsafeNclNativeMethods.HttpApi.HTTP_SSL_CLIENT_CERT_INFO* pClientCertInfo = asyncResult._memoryBlob;
+                    HttpApi.HTTP_SSL_CLIENT_CERT_INFO* pClientCertInfo = asyncResult._memoryBlob;
                     if (pClientCertInfo == null)
                     {
                         asyncResult.Complete(0, null);
@@ -391,10 +391,10 @@ namespace Microsoft.Net.Http.Server
                 {
                     // Http.sys team: ServiceName will always be null if
                     // HTTP_RECEIVE_SECURE_CHANNEL_TOKEN flag is set.
-                    statusCode = UnsafeNclNativeMethods.HttpApi.HttpReceiveClientCertificate(
+                    statusCode = HttpApi.HttpReceiveClientCertificate(
                         requestQueue.Handle,
                         connectionId,
-                        (uint)UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_RECEIVE_SECURE_CHANNEL_TOKEN,
+                        (uint)HttpApi.HTTP_FLAGS.HTTP_RECEIVE_SECURE_CHANNEL_TOKEN,
                         blobPtr,
                         (uint)size,
                         &bytesReceived,
@@ -438,7 +438,7 @@ namespace Microsoft.Net.Http.Server
         private static int GetTokenOffsetFromBlob(IntPtr blob)
         {
             Debug.Assert(blob != IntPtr.Zero);
-            IntPtr tokenPointer = Marshal.ReadIntPtr(blob, (int)Marshal.OffsetOf<UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_CHANNEL_BIND_STATUS>("ChannelToken"));
+            IntPtr tokenPointer = Marshal.ReadIntPtr(blob, (int)Marshal.OffsetOf<HttpApi.HTTP_REQUEST_CHANNEL_BIND_STATUS>("ChannelToken"));
             Debug.Assert(tokenPointer != IntPtr.Zero);
             return (int)IntPtrHelper.Subtract(tokenPointer, blob);
         }
@@ -446,7 +446,7 @@ namespace Microsoft.Net.Http.Server
         private static int GetTokenSizeFromBlob(IntPtr blob)
         {
             Debug.Assert(blob != IntPtr.Zero);
-            return Marshal.ReadInt32(blob, (int)Marshal.OffsetOf<UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_CHANNEL_BIND_STATUS>("ChannelTokenSize"));
+            return Marshal.ReadInt32(blob, (int)Marshal.OffsetOf<HttpApi.HTTP_REQUEST_CHANNEL_BIND_STATUS>("ChannelTokenSize"));
         }
     }
 }

@@ -81,15 +81,15 @@ namespace Microsoft.Net.Http.Server
 
         public WebListener(ILoggerFactory factory)
         {
-            if (!UnsafeNclNativeMethods.HttpApi.Supported)
+            if (!HttpApi.Supported)
             {
                 throw new PlatformNotSupportedException();
             }
 
             _logger = LogHelper.CreateLogger(factory, typeof(WebListener));
 
-            Debug.Assert(UnsafeNclNativeMethods.HttpApi.ApiVersion ==
-                UnsafeNclNativeMethods.HttpApi.HTTP_API_VERSION.Version20, "Invalid Http api version");
+            Debug.Assert(HttpApi.ApiVersion ==
+                HttpApi.HTTP_API_VERSION.Version20, "Invalid Http api version");
 
             _state = State.Stopped;
             _internalLock = new object();
@@ -399,7 +399,7 @@ namespace Microsoft.Net.Http.Server
 
         internal unsafe bool ValidateAuth(NativeRequestContext requestMemory)
         {
-            var requestV2 = (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_V2*)requestMemory.RequestBlob;
+            var requestV2 = (HttpApi.HTTP_REQUEST_V2*)requestMemory.RequestBlob;
             if (!AuthenticationManager.AllowAnonymous && !AuthenticationManager.CheckAuthenticated(requestV2->pRequestInfo))
             {
                 SendError(requestMemory.RequestBlob->RequestId, HttpStatusCode.Unauthorized,
@@ -411,8 +411,8 @@ namespace Microsoft.Net.Http.Server
 
         private unsafe void SendError(ulong requestId, HttpStatusCode httpStatusCode, IList<string> authChallenges)
         {
-            UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_V2 httpResponse = new UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_V2();
-            httpResponse.Response_V1.Version = new UnsafeNclNativeMethods.HttpApi.HTTP_VERSION();
+            HttpApi.HTTP_RESPONSE_V2 httpResponse = new HttpApi.HTTP_RESPONSE_V2();
+            httpResponse.Response_V1.Version = new HttpApi.HTTP_VERSION();
             httpResponse.Response_V1.Version.MajorVersion = (ushort)1;
             httpResponse.Response_V1.Version.MinorVersion = (ushort)1;
 
@@ -425,25 +425,25 @@ namespace Microsoft.Net.Http.Server
                 {
                     pinnedHeaders = new List<GCHandle>();
 
-                    UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO[] knownHeaderInfo = null;
-                    knownHeaderInfo = new UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO[1];
+                    HttpApi.HTTP_RESPONSE_INFO[] knownHeaderInfo = null;
+                    knownHeaderInfo = new HttpApi.HTTP_RESPONSE_INFO[1];
                     gcHandle = GCHandle.Alloc(knownHeaderInfo, GCHandleType.Pinned);
                     pinnedHeaders.Add(gcHandle);
-                    httpResponse.pResponseInfo = (UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO*)gcHandle.AddrOfPinnedObject();
+                    httpResponse.pResponseInfo = (HttpApi.HTTP_RESPONSE_INFO*)gcHandle.AddrOfPinnedObject();
 
-                    knownHeaderInfo[httpResponse.ResponseInfoCount].Type = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
+                    knownHeaderInfo[httpResponse.ResponseInfoCount].Type = HttpApi.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
                     knownHeaderInfo[httpResponse.ResponseInfoCount].Length =
-                        (uint)Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS>();
+                        (uint)Marshal.SizeOf<HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS>();
 
-                    UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS header = new UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS();
+                    HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS header = new HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS();
 
-                    header.HeaderId = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_HEADER_ID.Enum.HttpHeaderWwwAuthenticate;
-                    header.Flags = UnsafeNclNativeMethods.HttpApi.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // The docs say this is for www-auth only.
+                    header.HeaderId = HttpApi.HTTP_RESPONSE_HEADER_ID.Enum.HttpHeaderWwwAuthenticate;
+                    header.Flags = HttpApi.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // The docs say this is for www-auth only.
 
-                    UnsafeNclNativeMethods.HttpApi.HTTP_KNOWN_HEADER[] nativeHeaderValues = new UnsafeNclNativeMethods.HttpApi.HTTP_KNOWN_HEADER[authChallenges.Count];
+                    HttpApi.HTTP_KNOWN_HEADER[] nativeHeaderValues = new HttpApi.HTTP_KNOWN_HEADER[authChallenges.Count];
                     gcHandle = GCHandle.Alloc(nativeHeaderValues, GCHandleType.Pinned);
                     pinnedHeaders.Add(gcHandle);
-                    header.KnownHeaders = (UnsafeNclNativeMethods.HttpApi.HTTP_KNOWN_HEADER*)gcHandle.AddrOfPinnedObject();
+                    header.KnownHeaders = (HttpApi.HTTP_KNOWN_HEADER*)gcHandle.AddrOfPinnedObject();
 
                     for (int headerValueIndex = 0; headerValueIndex < authChallenges.Count; headerValueIndex++)
                     {
@@ -460,7 +460,7 @@ namespace Microsoft.Net.Http.Server
                     // This type is a struct, not an object, so pinning it causes a boxed copy to be created. We can't do that until after all the fields are set.
                     gcHandle = GCHandle.Alloc(header, GCHandleType.Pinned);
                     pinnedHeaders.Add(gcHandle);
-                    knownHeaderInfo[0].pInfo = (UnsafeNclNativeMethods.HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS*)gcHandle.AddrOfPinnedObject();
+                    knownHeaderInfo[0].pInfo = (HttpApi.HTTP_MULTIPLE_KNOWN_HEADERS*)gcHandle.AddrOfPinnedObject();
 
                     httpResponse.ResponseInfoCount = 1;
                 }
@@ -483,7 +483,7 @@ namespace Microsoft.Net.Http.Server
                         httpResponse.Response_V1.Headers.UnknownHeaderCount = 0;
 
                         statusCode =
-                            UnsafeNclNativeMethods.HttpApi.HttpSendHttpResponse(
+                            HttpApi.HttpSendHttpResponse(
                                 _requestQueue.Handle,
                                 requestId,
                                 0,
@@ -499,7 +499,7 @@ namespace Microsoft.Net.Http.Server
                 if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
                 {
                     // if we fail to send a 401 something's seriously wrong, abort the request
-                    UnsafeNclNativeMethods.HttpApi.HttpCancelHttpRequest(_requestQueue.Handle, requestId, IntPtr.Zero);
+                    HttpApi.HttpCancelHttpRequest(_requestQueue.Handle, requestId, IntPtr.Zero);
                 }
             }
             finally

@@ -40,7 +40,7 @@ namespace Microsoft.Net.Http.Server
     public sealed class AuthenticationManager
     {
         private static readonly int AuthInfoSize =
-            Marshal.SizeOf<UnsafeNclNativeMethods.HttpApi.HTTP_SERVER_AUTHENTICATION_INFO>();
+            Marshal.SizeOf<HttpApi.HTTP_SERVER_AUTHENTICATION_INFO>();
 
         private WebListener _server;
         private AuthenticationSchemes _authSchemes;
@@ -73,12 +73,12 @@ namespace Microsoft.Net.Http.Server
 
         private unsafe void SetServerSecurity()
         {
-            UnsafeNclNativeMethods.HttpApi.HTTP_SERVER_AUTHENTICATION_INFO authInfo =
-                new UnsafeNclNativeMethods.HttpApi.HTTP_SERVER_AUTHENTICATION_INFO();
+            HttpApi.HTTP_SERVER_AUTHENTICATION_INFO authInfo =
+                new HttpApi.HTTP_SERVER_AUTHENTICATION_INFO();
 
-            authInfo.Flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
-            var authSchemes = (UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_TYPES)_authSchemes;
-            if (authSchemes != UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_TYPES.NONE)
+            authInfo.Flags = HttpApi.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
+            var authSchemes = (HttpApi.HTTP_AUTH_TYPES)_authSchemes;
+            if (authSchemes != HttpApi.HTTP_AUTH_TYPES.NONE)
             {
                 authInfo.AuthSchemes = authSchemes;
 
@@ -92,7 +92,7 @@ namespace Microsoft.Net.Http.Server
                 IntPtr infoptr = new IntPtr(&authInfo);
 
                 _server.UrlGroup.SetProperty(
-                    UnsafeNclNativeMethods.HttpApi.HTTP_SERVER_PROPERTY.HttpServerAuthenticationProperty,
+                    HttpApi.HTTP_SERVER_PROPERTY.HttpServerAuthenticationProperty,
                     infoptr, (uint)AuthInfoSize);
             }
         }
@@ -144,25 +144,25 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal static unsafe bool CheckAuthenticated(UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO* requestInfo)
+        internal static unsafe bool CheckAuthenticated(HttpApi.HTTP_REQUEST_INFO* requestInfo)
         {
             if (requestInfo != null
-                && requestInfo->InfoType == UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
-                && requestInfo->pInfo->AuthStatus == UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                && requestInfo->InfoType == HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
+                && requestInfo->pInfo->AuthStatus == HttpApi.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
             {
                 return true;
             }
             return false;
         }
 
-        internal static unsafe ClaimsPrincipal GetUser(UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO* requestInfo, int infoCount)
+        internal static unsafe ClaimsPrincipal GetUser(HttpApi.HTTP_REQUEST_INFO* requestInfo, int infoCount)
         {
             for (int i = 0; i < infoCount; i++)
             {
                 var info = &requestInfo[i];
                 if (requestInfo != null
-                    && info->InfoType == UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
-                    && info->pInfo->AuthStatus == UnsafeNclNativeMethods.HttpApi.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                    && info->InfoType == HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
+                    && info->pInfo->AuthStatus == HttpApi.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
                 {
                     return new WindowsPrincipal(new WindowsIdentity(info->pInfo->AccessToken,
                         GetAuthTypeFromRequest(info->pInfo->AuthType).ToString()));
@@ -171,19 +171,19 @@ namespace Microsoft.Net.Http.Server
             return new ClaimsPrincipal(new ClaimsIdentity()); // Anonymous / !IsAuthenticated
         }
 
-        private static AuthenticationSchemes GetAuthTypeFromRequest(UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE input)
+        private static AuthenticationSchemes GetAuthTypeFromRequest(HttpApi.HTTP_REQUEST_AUTH_TYPE input)
         {
             switch (input)
             {
-                case UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeBasic:
+                case HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeBasic:
                     return AuthenticationSchemes.Basic;
-                // case UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeDigest:
+                // case HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeDigest:
                 //  return AuthenticationSchemes.Digest;
-                case UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNTLM:
+                case HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNTLM:
                     return AuthenticationSchemes.NTLM;
-                case UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNegotiate:
+                case HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNegotiate:
                     return AuthenticationSchemes.Negotiate;
-                case UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeKerberos:
+                case HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeKerberos:
                     return AuthenticationSchemes.Kerberos;
                 default:
                     throw new NotImplementedException(input.ToString());

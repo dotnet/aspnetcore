@@ -85,13 +85,13 @@ namespace Microsoft.Net.Http.Server
 
         private string GetKnownHeader(HttpSysRequestHeader header)
         {
-            return UnsafeNclNativeMethods.HttpApi.GetKnownHeader(_requestMemoryBlob.RequestBuffer,
+            return HttpApi.GetKnownHeader(_requestMemoryBlob.RequestBuffer,
                 _requestMemoryBlob.BufferAlignment, _requestMemoryBlob.OriginalBlobAddress, (int)header);
         }
 
         private void GetUnknownHeaders(IDictionary<string, StringValues> extra)
         {
-            UnsafeNclNativeMethods.HttpApi.GetUnknownHeaders(extra, _requestMemoryBlob.RequestBuffer,
+            HttpApi.GetUnknownHeaders(extra, _requestMemoryBlob.RequestBuffer,
                 _requestMemoryBlob.BufferAlignment, _requestMemoryBlob.OriginalBlobAddress);
         }
 

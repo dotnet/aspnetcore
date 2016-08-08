@@ -33,7 +33,7 @@ namespace Microsoft.Net.Http.Server
             _logger = logger;
 
             ulong urlGroupId = 0;
-            var statusCode = UnsafeNclNativeMethods.HttpApi.HttpCreateUrlGroup(
+            var statusCode = HttpApi.HttpCreateUrlGroup(
                 _serverSession.Id.DangerousGetServerSessionId(), &urlGroupId, 0);
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
@@ -47,11 +47,11 @@ namespace Microsoft.Net.Http.Server
 
         internal ulong Id { get; private set; }
 
-        internal void SetProperty(UnsafeNclNativeMethods.HttpApi.HTTP_SERVER_PROPERTY property, IntPtr info, uint infosize, bool throwOnError = true)
+        internal void SetProperty(HttpApi.HTTP_SERVER_PROPERTY property, IntPtr info, uint infosize, bool throwOnError = true)
         {            
             Debug.Assert(info != IntPtr.Zero, "SetUrlGroupProperty called with invalid pointer");
             
-            var statusCode = UnsafeNclNativeMethods.HttpApi.HttpSetUrlGroupProperty(Id, property, info, infosize);
+            var statusCode = HttpApi.HttpSetUrlGroupProperty(Id, property, info, infosize);
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
@@ -68,7 +68,7 @@ namespace Microsoft.Net.Http.Server
         {
             LogHelper.LogInfo(_logger, "Listening on prefix: " + uriPrefix);
 
-            var statusCode = UnsafeNclNativeMethods.HttpApi.HttpAddUrlToUrlGroup(Id, uriPrefix, (ulong)contextId, 0);
+            var statusCode = HttpApi.HttpAddUrlToUrlGroup(Id, uriPrefix, (ulong)contextId, 0);
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
@@ -87,7 +87,7 @@ namespace Microsoft.Net.Http.Server
         {
             LogHelper.LogInfo(_logger, "Stop listening on prefix: " + uriPrefix);
 
-            var statusCode = UnsafeNclNativeMethods.HttpApi.HttpRemoveUrlFromUrlGroup(Id, uriPrefix, 0);
+            var statusCode = HttpApi.HttpRemoveUrlFromUrlGroup(Id, uriPrefix, 0);
 
             if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_NOT_FOUND)
             {
@@ -107,7 +107,7 @@ namespace Microsoft.Net.Http.Server
 
             Debug.Assert(Id != 0, "HttpCloseUrlGroup called with invalid url group id");
 
-            uint statusCode = UnsafeNclNativeMethods.HttpApi.HttpCloseUrlGroup(Id);
+            uint statusCode = HttpApi.HttpCloseUrlGroup(Id);
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {

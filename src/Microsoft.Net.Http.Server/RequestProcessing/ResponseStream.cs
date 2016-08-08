@@ -406,9 +406,9 @@ namespace Microsoft.Net.Http.Server
             _requestContext.Abort();
         }
 
-        private UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS ComputeLeftToWrite(bool endOfRequest = false)
+        private HttpApi.HTTP_FLAGS ComputeLeftToWrite(bool endOfRequest = false)
         {
-            UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS flags = UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS.NONE;
+            HttpApi.HTTP_FLAGS flags = HttpApi.HTTP_FLAGS.NONE;
             if (!_requestContext.Response.ComputedHeaders)
             {
                 flags = _requestContext.Response.ComputeHeaders(endOfRequest, _buffer.TotalBytes);
@@ -565,7 +565,7 @@ namespace Microsoft.Net.Http.Server
         internal unsafe Task SendFileAsyncCore(string fileName, long offset, long? count, CancellationToken cancellationToken)
         {
             _requestContext.Response.Start();
-            UnsafeNclNativeMethods.HttpApi.HTTP_FLAGS flags = ComputeLeftToWrite();
+            HttpApi.HTTP_FLAGS flags = ComputeLeftToWrite();
             if (count == 0 && _leftToWrite != 0)
             {
                 return Helpers.CompletedTask();

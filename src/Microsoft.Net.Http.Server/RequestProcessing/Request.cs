@@ -68,7 +68,7 @@ namespace Microsoft.Net.Http.Server
                 RawUrl = Marshal.PtrToStringAnsi((IntPtr)memoryBlob.RequestBlob->pRawUrl, memoryBlob.RequestBlob->RawUrlLength);
             }
 
-            UnsafeNclNativeMethods.HttpApi.HTTP_COOKED_URL cookedUrl = memoryBlob.RequestBlob->CookedUrl;
+            HttpApi.HTTP_COOKED_URL cookedUrl = memoryBlob.RequestBlob->CookedUrl;
             if (cookedUrl.pHost != null && cookedUrl.HostLength > 0)
             {
                 // TODO: Unused
@@ -119,10 +119,10 @@ namespace Microsoft.Net.Http.Server
             }
 
             KnownMethod = memoryBlob.RequestBlob->Verb;
-            Method = UnsafeNclNativeMethods.HttpApi.GetVerb(memoryBlob.RequestBlob);
+            Method = HttpApi.GetVerb(memoryBlob.RequestBlob);
             Headers = new HeaderCollection(new RequestHeaders(_nativeRequestContext));
 
-            var requestV2 = (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_V2*)memoryBlob.RequestBlob;
+            var requestV2 = (HttpApi.HTTP_REQUEST_V2*)memoryBlob.RequestBlob;
             User = AuthenticationManager.GetUser(requestV2->pRequestInfo, requestV2->RequestInfoCount);
 
             GetTlsTokenBindingInfo();
@@ -207,9 +207,9 @@ namespace Microsoft.Net.Http.Server
 
         public HeaderCollection Headers { get; }
 
-        internal UnsafeNclNativeMethods.HttpApi.HTTP_VERB KnownMethod { get; }
+        internal HttpApi.HTTP_VERB KnownMethod { get; }
 
-        public bool IsHeadMethod => KnownMethod == UnsafeNclNativeMethods.HttpApi.HTTP_VERB.HttpVerbHEAD;
+        public bool IsHeadMethod => KnownMethod == HttpApi.HTTP_VERB.HttpVerbHEAD;
 
         public string Method { get; }
 
@@ -251,7 +251,7 @@ namespace Microsoft.Net.Http.Server
             {
                 if (_remoteEndPoint == null)
                 {
-                    _remoteEndPoint = UnsafeNclNativeMethods.HttpApi.GetRemoteEndPoint(RequestBuffer, BufferAlignment, OriginalBlobAddress);
+                    _remoteEndPoint = HttpApi.GetRemoteEndPoint(RequestBuffer, BufferAlignment, OriginalBlobAddress);
                 }
 
                 return _remoteEndPoint;
@@ -264,7 +264,7 @@ namespace Microsoft.Net.Http.Server
             {
                 if (_localEndPoint == null)
                 {
-                    _localEndPoint = UnsafeNclNativeMethods.HttpApi.GetLocalEndPoint(RequestBuffer, BufferAlignment, OriginalBlobAddress);
+                    _localEndPoint = HttpApi.GetLocalEndPoint(RequestBuffer, BufferAlignment, OriginalBlobAddress);
                 }
 
                 return _localEndPoint;
@@ -349,13 +349,13 @@ namespace Microsoft.Net.Http.Server
         // Value: "iexplore.exe"=dword:00000001
         private unsafe void GetTlsTokenBindingInfo()
         {
-            var nativeRequest = (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_V2*)_nativeRequestContext.RequestBlob;
+            var nativeRequest = (HttpApi.HTTP_REQUEST_V2*)_nativeRequestContext.RequestBlob;
             for (int i = 0; i < nativeRequest->RequestInfoCount; i++)
             {
                 var pThisInfo = &nativeRequest->pRequestInfo[i];
-                if (pThisInfo->InfoType == UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslTokenBinding)
+                if (pThisInfo->InfoType == HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslTokenBinding)
                 {
-                    var pTokenBindingInfo = (UnsafeNclNativeMethods.HttpApi.HTTP_REQUEST_TOKEN_BINDING_INFO*)pThisInfo->pInfo;
+                    var pTokenBindingInfo = (HttpApi.HTTP_REQUEST_TOKEN_BINDING_INFO*)pThisInfo->pInfo;
                     _providedTokenBindingId = TokenBindingUtil.GetProvidedTokenIdFromBindingInfo(pTokenBindingInfo, out _referredTokenBindingId);
                 }
             }

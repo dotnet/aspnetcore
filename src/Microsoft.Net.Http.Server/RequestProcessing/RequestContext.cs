@@ -136,7 +136,7 @@ namespace Microsoft.Net.Http.Server
                     return false;
                 }
 
-                if (Request.KnownMethod != UnsafeNclNativeMethods.HttpApi.HTTP_VERB.HttpVerbGET)
+                if (Request.KnownMethod != HttpApi.HTTP_VERB.HttpVerbGET)
                 {
                     return false;
                 }
@@ -186,7 +186,7 @@ namespace Microsoft.Net.Http.Server
                 throw new InvalidOperationException("This request is not a valid upgrade request.");
             }
 
-            if (Request.KnownMethod != UnsafeNclNativeMethods.HttpApi.HTTP_VERB.HttpVerbGET)
+            if (Request.KnownMethod != HttpApi.HTTP_VERB.HttpVerbGET)
             {
                 throw new InvalidOperationException("This request is not a valid upgrade request; invalid verb: " + Request.Method);
             }
@@ -352,7 +352,7 @@ namespace Microsoft.Net.Http.Server
         {
             try
             {
-                var statusCode = UnsafeNclNativeMethods.HttpApi.HttpCancelHttpRequest(Server.RequestQueue.Handle,
+                var statusCode = HttpApi.HttpCancelHttpRequest(Server.RequestQueue.Handle,
                     Request.RequestId, IntPtr.Zero);
 
                 // Either the connection has already dropped, or the last write is in progress.

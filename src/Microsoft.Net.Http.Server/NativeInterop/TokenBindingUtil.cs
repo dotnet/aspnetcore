@@ -17,7 +17,7 @@
 
 using System;
 using System.Runtime.InteropServices;
-using static Microsoft.Net.Http.Server.UnsafeNclNativeMethods.HttpApi;
+using static Microsoft.Net.Http.Server.HttpApi;
 using static Microsoft.Net.Http.Server.UnsafeNclNativeMethods.TokenBinding;
 
 namespace Microsoft.Net.Http.Server
