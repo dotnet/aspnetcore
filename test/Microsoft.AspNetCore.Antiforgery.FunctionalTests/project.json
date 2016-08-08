@@ -3,7 +3,7 @@
     "dotnet-test-xunit": "2.2.0-*",
     "AntiforgerySample": "1.1.0-*",
     "Microsoft.AspNetCore.TestHost": "1.1.0-*",
-    "Moq": "4.6.25-*",
+    "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
   },
   "testRunner": "xunit",
@@ -15,8 +15,7 @@
           "type": "platform"
         },
         "System.Net.Http": "4.1.0-*"
-      },
-      "imports": "dotnet5.4"
+      }
     },
     "net451": {
       "frameworkAssemblies": {
