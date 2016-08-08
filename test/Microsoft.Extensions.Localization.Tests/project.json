@@ -7,12 +7,11 @@
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
     "Microsoft.Extensions.Localization": "1.1.0-*",
-    "Moq": "4.6.25-*",
+    "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
   },
   "frameworks": {
     "netcoreapp1.0": {
-      "imports": "dotnet5.4",
       "dependencies": {
         "Microsoft.NETCore.App": {
           "version": "1.0.0-*",
