@@ -126,7 +126,7 @@ If you haven't yet installed node-inspector, you can do so as follows:
             var existingNodePath = Environment.GetEnvironmentVariable("NODE_PATH") ?? string.Empty;
             if (existingNodePath != string.Empty)
             {
-                existingNodePath += ":";
+                existingNodePath += Path.PathSeparator;
             }
 
             var nodePathValue = existingNodePath + Path.Combine(projectPath, "node_modules");
