@@ -5,7 +5,7 @@
     "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
     "Microsoft.AspNetCore.Server.Kestrel.Https": "1.1.0-*",
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
-    "Moq": "4.6.25-*",
+    "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
   },
   "frameworks": {
@@ -22,8 +22,7 @@
         "System.Net.Http.WinHttpHandler": "4.0.0-*",
         "System.Net.Sockets": "4.1.0-*",
         "System.Runtime.Handles": "4.0.1-*"
-      },
-      "imports": "dotnet5.4"
+      }
     },
     "net451": {
       "frameworkAssemblies": {
