@@ -1,0 +1,19 @@
+use-standard-lifecycle
+k-standard-goals
+
+#run-nano-tests .compile
+    @{
+        var configuration = Environment.GetEnvironmentVariable("Configuration");
+        if (string.IsNullOrEmpty(configuration))
+        {
+            configuration = "Debug";
+        }
+
+        var e2eTestsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "test", "E2ETests");
+        var testArgs = "";
+        testArgs += " --configuration " + configuration;
+        testArgs += " -trait E2ETests=NanoServer";
+        testArgs += " -parallel none";
+
+        Dotnet("test" + testArgs, e2eTestsDirectory);
+    }
