@@ -66,6 +66,7 @@ namespace E2ETests
                 var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
                 {
                     PublishApplicationBeforeDeployment = true,
+                    PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
                     TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.0",
                     Configuration = Helpers.GetCurrentBuildConfiguration(),
                     ApplicationType = applicationType,

@@ -51,5 +51,23 @@ namespace E2ETests
 
             return configuration;
         }
+
+        public static bool PreservePublishedApplicationForDebugging
+        {
+            get
+            {
+                var deletePublishedFolder = Environment.GetEnvironmentVariable("ASPNETCORE_DELETEPUBLISHEDFOLDER");
+
+                if (string.Equals("false", deletePublishedFolder, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals("0", deletePublishedFolder, StringComparison.OrdinalIgnoreCase))
+                {
+                    // preserve the published folder and do not delete it
+                    return true;
+                }
+
+                // do not preserve the published folder and delete it
+                return false;
+            }
+        }
     }
 }

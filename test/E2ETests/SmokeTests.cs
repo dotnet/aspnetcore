@@ -184,6 +184,7 @@ namespace E2ETests
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
                     SiteName = "MusicStoreTestSite",
                     PublishApplicationBeforeDeployment = true,
+                    PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
                     TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.0",
                     Configuration = Helpers.GetCurrentBuildConfiguration(),
                     ApplicationType = applicationType,
