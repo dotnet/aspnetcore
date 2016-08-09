@@ -69,14 +69,49 @@ function Provision-AutoGenKeys {
 }
 
 $ErrorActionPreference = "Stop"
+if (Get-Command Get-IISAppPool -errorAction SilentlyContinue)
+{
+    $processModel = (Get-IISAppPool $appPoolName).processModel
+}
+else
+{
+    Import-Module WebAdministration
+    $processModel = Get-ItemProperty -Path "IIS:\AppPools\$appPoolName" -Name "processModel"
+}
+
+$identityType = $processModel.identityType
+Write-Output "Pool process model: '$identityType'"
+
+Switch ($identityType)
+{
+    "LocalService" {
+        $userName = "LocalService";
+    }
+    "LocalSystem" {
+        $userName = "System";
+    }
+    "NetworkService" {
+        $userName = "NetworkService";
+    }
+    "ApplicationPoolIdentity" {
+        $userName = "IIS APPPOOL\$appPoolName";
+    }
+    "SpecificUser" {
+        $userName = $processModel.userName;
+    }
+}
+Write-Output "Pool user name: '$userName'"
+
 Try
 {
-    $poolSid = (New-Object System.Security.Principal.NTAccount("IIS APPPOOL\$appPoolName")).Translate([System.Security.Principal.SecurityIdentifier]).Value
+    $poolSid = (New-Object System.Security.Principal.NTAccount($userName)).Translate([System.Security.Principal.SecurityIdentifier]).Value
 }
 Catch [System.Security.Principal.IdentityNotMappedException]
 {
     Write-Error "Application pool '$appPoolName' account cannot be resolved."
 }
 
-Provision-AutoGenKeys "4.0" "32" $poolSid 
+Write-Output "Pool SID: '$poolSid'"
+
+Provision-AutoGenKeys "4.0" "32" $poolSid
 Provision-AutoGenKeys "4.0" "64" $poolSid
