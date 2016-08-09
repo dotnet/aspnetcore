@@ -1210,6 +1210,102 @@ namespace Microsoft.AspNetCore.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("OutputFormattersAreRequired"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// Having multiple overloads of method '{0}' is not supported.
+        /// </summary>
+        internal static string MiddewareFilter_ConfigureMethodOverload
+        {
+            get { return GetString("MiddewareFilter_ConfigureMethodOverload"); }
+        }
+
+        /// <summary>
+        /// Having multiple overloads of method '{0}' is not supported.
+        /// </summary>
+        internal static string FormatMiddewareFilter_ConfigureMethodOverload(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MiddewareFilter_ConfigureMethodOverload"), p0);
+        }
+
+        /// <summary>
+        /// A public method named '{0}' could not be found in the '{1}' type.
+        /// </summary>
+        internal static string MiddewareFilter_NoConfigureMethod
+        {
+            get { return GetString("MiddewareFilter_NoConfigureMethod"); }
+        }
+
+        /// <summary>
+        /// A public method named '{0}' could not be found in the '{1}' type.
+        /// </summary>
+        internal static string FormatMiddewareFilter_NoConfigureMethod(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MiddewareFilter_NoConfigureMethod"), p0, p1);
+        }
+
+        /// <summary>
+        /// Could not find '{0}' in the feature list.
+        /// </summary>
+        internal static string MiddlewareFilterBuilder_NoMiddlewareFeature
+        {
+            get { return GetString("MiddlewareFilterBuilder_NoMiddlewareFeature"); }
+        }
+
+        /// <summary>
+        /// Could not find '{0}' in the feature list.
+        /// </summary>
+        internal static string FormatMiddlewareFilterBuilder_NoMiddlewareFeature(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MiddlewareFilterBuilder_NoMiddlewareFeature"), p0);
+        }
+
+        /// <summary>
+        /// '{0}' property cannot be null.
+        /// </summary>
+        internal static string MiddlewareFilterBuilder_NullApplicationBuilder
+        {
+            get { return GetString("MiddlewareFilterBuilder_NullApplicationBuilder"); }
+        }
+
+        /// <summary>
+        /// '{0}' property cannot be null.
+        /// </summary>
+        internal static string FormatMiddlewareFilterBuilder_NullApplicationBuilder(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MiddlewareFilterBuilder_NullApplicationBuilder"), p0);
+        }
+
+        /// <summary>
+        /// The '{0}' method in the type '{1}' must have a return type of '{2}'.
+        /// </summary>
+        internal static string MiddlewareFilter_InvalidConfigureReturnType
+        {
+            get { return GetString("MiddlewareFilter_InvalidConfigureReturnType"); }
+        }
+
+        /// <summary>
+        /// The '{0}' method in the type '{1}' must have a return type of '{2}'.
+        /// </summary>
+        internal static string FormatMiddlewareFilter_InvalidConfigureReturnType(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MiddlewareFilter_InvalidConfigureReturnType"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// Could not resolve a service of type '{0}' for the parameter '{1}' of method '{2}' on type '{3}'.
+        /// </summary>
+        internal static string MiddlewareFilter_ServiceResolutionFail
+        {
+            get { return GetString("MiddlewareFilter_ServiceResolutionFail"); }
+        }
+
+        /// <summary>
+        /// Could not resolve a service of type '{0}' for the parameter '{1}' of method '{2}' on type '{3}'.
+        /// </summary>
+        internal static string FormatMiddlewareFilter_ServiceResolutionFail(object p0, object p1, object p2, object p3)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MiddlewareFilter_ServiceResolutionFail"), p0, p1, p2, p3);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
