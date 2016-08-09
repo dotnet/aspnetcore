@@ -36,7 +36,7 @@ namespace Microsoft.Net.Http.Server
             Port = port;
             PortValue = portValue;
             Path = path;
-            Whole = string.Format(CultureInfo.InvariantCulture, "{0}://{1}:{2}{3}", Scheme, Host, Port, Path);
+            FullPrefix = string.Format(CultureInfo.InvariantCulture, "{0}://{1}:{2}{3}", Scheme, Host, Port, Path);
         }
 
         /// <summary>
@@ -169,21 +169,21 @@ namespace Microsoft.Net.Http.Server
         public string Port { get; private set; }
         public int PortValue { get; private set; }
         public string Path { get; private set; }
-        public string Whole { get; private set; }
+        public string FullPrefix { get; private set; }
 
         public override bool Equals(object obj)
         {
-            return string.Equals(Whole, Convert.ToString(obj), StringComparison.OrdinalIgnoreCase);
+            return string.Equals(FullPrefix, Convert.ToString(obj), StringComparison.OrdinalIgnoreCase);
         }
 
         public override int GetHashCode()
         {
-            return StringComparer.OrdinalIgnoreCase.GetHashCode(Whole);
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(FullPrefix);
         }
 
         public override string ToString()
         {
-            return Whole;
+            return FullPrefix;
         }
     }
 }

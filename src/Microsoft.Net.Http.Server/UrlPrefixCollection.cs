@@ -49,7 +49,7 @@ namespace Microsoft.Net.Http.Server
                 var id = _nextId++;
                 if (_webListener.IsListening)
                 {
-                    _webListener.UrlGroup.RegisterPrefix(item.Whole, id);
+                    _webListener.UrlGroup.RegisterPrefix(item.FullPrefix, id);
                 }
                 _prefixes.Add(id, item);
             }
@@ -108,7 +108,7 @@ namespace Microsoft.Net.Http.Server
                         id = pair.Key;
                         if (_webListener.IsListening)
                         {
-                            _webListener.UrlGroup.UnregisterPrefix(pair.Value.Whole);
+                            _webListener.UrlGroup.UnregisterPrefix(pair.Value.FullPrefix);
                         }
                     }
                 }
@@ -142,7 +142,7 @@ namespace Microsoft.Net.Http.Server
                 foreach (var pair in _prefixes)
                 {
                     // We'll get this index back on each request and use it to look up the prefix to calculate PathBase.
-                    _webListener.UrlGroup.RegisterPrefix(pair.Value.Whole, pair.Key);
+                    _webListener.UrlGroup.RegisterPrefix(pair.Value.FullPrefix, pair.Key);
                 }
             }
         }
@@ -155,7 +155,7 @@ namespace Microsoft.Net.Http.Server
                 foreach (var prefix in _prefixes.Values)
                 {
                     // ignore possible failures
-                    _webListener.UrlGroup.UnregisterPrefix(prefix.Whole);
+                    _webListener.UrlGroup.UnregisterPrefix(prefix.FullPrefix);
                 }
             }
         }

@@ -209,7 +209,7 @@ namespace Microsoft.Net.Http.Server
 
         internal HttpApi.HTTP_VERB KnownMethod { get; }
 
-        public bool IsHeadMethod => KnownMethod == HttpApi.HTTP_VERB.HttpVerbHEAD;
+        internal bool IsHeadMethod => KnownMethod == HttpApi.HTTP_VERB.HttpVerbHEAD;
 
         public string Method { get; }
 
