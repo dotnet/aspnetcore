@@ -90,7 +90,6 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             Assert.True(responded.Single().StartsWith("http://example.com/Account/Login"));
         }
 
-
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -1050,6 +1049,53 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var location = transaction.Response.Headers.Location;
             Assert.Equal("/base/page", location.LocalPath);
             Assert.Equal("?ReturnUrl=%2F", location.Query);
+        }
+
+        [Fact]
+        public async Task RedirectUriIsHoneredAfterSignin()
+        {
+            var options = new CookieAuthenticationOptions
+            {
+                LoginPath = "/testpath",
+                CookieName = "TestCookie"
+            };
+
+            var server = CreateServer(options, async context =>
+            {
+                await context.Authentication.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", CookieAuthenticationDefaults.AuthenticationScheme))),
+                    new AuthenticationProperties { RedirectUri = "/redirect_test" });
+            });
+            var transaction = await SendAsync(server, "http://example.com/testpath");
+
+            Assert.NotEmpty(transaction.SetCookie);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/redirect_test", transaction.Response.Headers.Location.ToString());
+        }
+
+        [Fact]
+        public async Task EnsurePrecedenceOfRedirectUriAfterSignin()
+        {
+            var options = new CookieAuthenticationOptions
+            {
+                LoginPath = "/testpath",
+                ReturnUrlParameter = "return",
+                CookieName = "TestCookie"
+            };
+
+            var server = CreateServer(options, async context =>
+            {
+                await context.Authentication.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", CookieAuthenticationDefaults.AuthenticationScheme))),
+                    new AuthenticationProperties { RedirectUri = "/redirect_test" });
+            });
+            var transaction = await SendAsync(server, "http://example.com/testpath?return=%2Fret_path_2");
+
+            Assert.NotEmpty(transaction.SetCookie);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/ret_path_2", transaction.Response.Headers.Location.ToString());
         }
 
         [Fact]
