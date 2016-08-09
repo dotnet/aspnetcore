@@ -44,7 +44,7 @@
             {
                 var original = File.ReadAllText(nugetConfigPath);
                 var modified = original
-                    .Replace("https://www.myget.org/F/aspnetcidev", "https://www.myget.org/F/aspnetcirelease");
+                    .Replace("https://dotnet.myget.org/F/aspnetcore-ci-dev", "https://dotnet.myget.org/F/aspnetcore-ci-release");
 
                 if (!string.Equals(original, modified, StringComparison.Ordinal))
                 {

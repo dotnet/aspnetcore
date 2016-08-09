@@ -310,9 +310,6 @@ var buildTarget = "compile"
         }
 
         Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ASPNETVNEXT", Path.Combine(coherencePath, "packages-expanded"));
-
-        var externalFeed = string.Format("https://www.myget.org/f/aspnetexternal{0}/api/v3/index.json", buildBranch);
-        Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_EXTERNAL", externalFeed);
     }
 
 #change-default-build-target-to-verify
