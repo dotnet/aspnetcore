@@ -53,18 +53,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public MemoryPoolBlock IncomingStart()
         {
-            const int minimumSize = 2048;
-
-            if (_tail != null && minimumSize <= _tail.Data.Offset + _tail.Data.Count - _tail.End)
+            lock (_sync)
             {
-                _pinned = _tail;
-            }
-            else
-            {
-                _pinned = _memory.Lease();
-            }
+                const int minimumSize = 2048;
 
-            return _pinned;
+                if (_tail != null && minimumSize <= _tail.Data.Offset + _tail.Data.Count - _tail.End)
+                {
+                    _pinned = _tail;
+                }
+                else
+                {
+                    _pinned = _memory.Lease();
+                }
+
+                return _pinned;
+            }
         }
 
         public void IncomingComplete(int count, Exception error)
@@ -112,14 +115,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             Debug.Assert(_pinned != null);
 
-            if (_pinned != null)
+            lock (_sync)
             {
-                if (_pinned != _tail)
+                if (_pinned != null)
                 {
-                    _memory.Return(_pinned);
-                }
+                    if (_pinned != _tail)
+                    {
+                        _memory.Return(_pinned);
+                    }
 
-                _pinned = null;
+                    _pinned = null;
+                }
             }
         }
 
@@ -172,18 +178,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         }
 
                         returnStart = _head;
-                        returnEnd = consumed.Block;
-                        _head = consumed.Block;
-                        _head.Start = consumed.Index;
+
+                        var consumedAll = !consumed.IsDefault && consumed.IsEnd;
+                        if (consumedAll && _pinned != _tail)
+                        {
+                            // Everything has been consumed and no data is being written to the
+                            // _tail block, so return all blocks between _head and _tail inclusive.
+                            returnEnd = null;
+                            _head = null;
+                            _tail = null;
+                        }
+                        else
+                        {
+                            returnEnd = consumed.Block;
+                            _head = consumed.Block;
+                            _head.Start = consumed.Index;
+                        }
 
                         // Must call Subtract() after _head has been advanced, to avoid producer starting too early and growing
                         // buffer beyond max length.
                         _bufferSizeControl?.Subtract(lengthConsumed);
                     }
 
-                    if (!examined.IsDefault &&
-                        examined.IsEnd &&
-                        ReadingInput)
+                    // If _head is null, everything has been consumed and examined.
+                    var examinedAll = (!examined.IsDefault && examined.IsEnd) || _head == null;
+                    if (examinedAll && ReadingInput)
                     {
                         _manualResetEvent.Reset();
 
