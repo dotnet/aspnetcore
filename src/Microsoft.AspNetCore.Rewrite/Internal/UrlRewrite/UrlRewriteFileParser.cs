@@ -134,7 +134,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             }
         }
 
-
         private static void CreateConditions(XElement conditions, UrlRewriteRule res)
         {
             // This is to avoid nullptr exception on referencing conditions.
@@ -164,7 +163,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
 
         private static void CreateCondition(XElement condition, UrlRewriteRule res)
         {
-
             var parsedCondRes = new ParsedCondition();
 
             bool parBool;
@@ -195,9 +193,9 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             {
                 input = InputParser.ParseInputString(parsedString);
             }
-            catch (FormatException fe)
+            catch (FormatException formatException)
             {
-                ThrowUrlFormatException(condition, fe.Message, fe);
+                ThrowUrlFormatException(condition, formatException.Message, formatException);
             }
 
             switch (res.PatternSyntax)
@@ -293,9 +291,9 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             {
                 actionRes.Url = InputParser.ParseInputString(urlAction.Attribute(RewriteTags.Url)?.Value);
             }
-            catch (FormatException fe)
+            catch (FormatException formatException)
             {
-                ThrowUrlFormatException(urlAction, fe.Message, fe);
+                ThrowUrlFormatException(urlAction, formatException.Message, formatException);
             }
 
             CreateUrlActionFromParsedAction(urlAction, actionRes, globalRule, res);
