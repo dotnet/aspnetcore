@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         {
             // Arrange
             var masterKey = "k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==".ToSecret();
-            var descriptor = new ManagedAuthenticatedEncryptorDescriptor(new ManagedAuthenticatedEncryptionSettings()
+            var descriptor = new ManagedAuthenticatedEncryptorDescriptor(new ManagedAuthenticatedEncryptorConfiguration()
             {
                 EncryptionAlgorithmType = typeof(MySymmetricAlgorithm),
                 EncryptionAlgorithmKeySize = 2048,
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
             // Assert
             Assert.Equal(typeof(ManagedAuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
-            string expectedXml = String.Format(@"
+            string expectedXml = string.Format(@"
                 <descriptor>
                   <encryption algorithm='{0}' keyLength='2048' />
                   <validation algorithm='{1}' />
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         {
             // Arrange
             var masterKey = "k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==".ToSecret();
-            var descriptor = new ManagedAuthenticatedEncryptorDescriptor(new ManagedAuthenticatedEncryptionSettings()
+            var descriptor = new ManagedAuthenticatedEncryptorDescriptor(new ManagedAuthenticatedEncryptorConfiguration()
             {
                 EncryptionAlgorithmType = encryptionAlgorithmType,
                 EncryptionAlgorithmKeySize = 2048,
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
             // Assert
             Assert.Equal(typeof(ManagedAuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
-            string expectedXml = String.Format(@"
+            string expectedXml = string.Format(@"
                 <descriptor>
                   <encryption algorithm='{0}' keyLength='2048' />
                   <validation algorithm='{1}' />

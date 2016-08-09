@@ -8,9 +8,11 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
 using Microsoft.AspNetCore.DataProtection.Cng;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.Managed;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
@@ -38,7 +40,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
                 symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_CBC,
                 symmetricAlgorithmKeySizeInBytes: (uint)(keyLengthInBits / 8),
                 hmacAlgorithmHandle: BCryptAlgorithmHandle.OpenAlgorithmHandle(hashAlgorithm, hmac: true));
-            var test = CreateDescriptor(encryptionAlgorithm, validationAlgorithm, masterKey).CreateEncryptorInstance();
+            var test = CreateEncryptorInstanceFromDescriptor(CreateDescriptor(encryptionAlgorithm, validationAlgorithm, masterKey));
 
             // Act & assert - data round trips properly from control to test
             byte[] plaintext = new byte[] { 1, 2, 3, 4, 5 };
@@ -64,7 +66,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
                 keyDerivationKey: masterKey,
                 symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_GCM,
                 symmetricAlgorithmKeySizeInBytes: (uint)(keyLengthInBits / 8));
-            var test = CreateDescriptor(encryptionAlgorithm, ValidationAlgorithm.HMACSHA256 /* unused */, masterKey).CreateEncryptorInstance();
+            var test = CreateEncryptorInstanceFromDescriptor(CreateDescriptor(encryptionAlgorithm, ValidationAlgorithm.HMACSHA256 /* unused */, masterKey));
 
             // Act & assert - data round trips properly from control to test
             byte[] plaintext = new byte[] { 1, 2, 3, 4, 5 };
@@ -102,7 +104,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
                 symmetricAlgorithmFactory: () => Aes.Create(),
                 symmetricAlgorithmKeySizeInBytes: keyLengthInBits / 8,
                 validationAlgorithmFactory: validationAlgorithmFactory);
-            var test = CreateDescriptor(encryptionAlgorithm, validationAlgorithm, masterKey).CreateEncryptorInstance();
+            var test = CreateEncryptorInstanceFromDescriptor(CreateDescriptor(encryptionAlgorithm, validationAlgorithm, masterKey));
 
             // Act & assert - data round trips properly from control to test
             byte[] plaintext = new byte[] { 1, 2, 3, 4, 5 };
@@ -160,11 +162,26 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
         private static AuthenticatedEncryptorDescriptor CreateDescriptor(EncryptionAlgorithm encryptionAlgorithm, ValidationAlgorithm validationAlgorithm, ISecret masterKey)
         {
-            return new AuthenticatedEncryptorDescriptor(new AuthenticatedEncryptionSettings()
+            return new AuthenticatedEncryptorDescriptor(new AuthenticatedEncryptorConfiguration()
             {
                 EncryptionAlgorithm = encryptionAlgorithm,
                 ValidationAlgorithm = validationAlgorithm
             }, masterKey);
+        }
+
+        private static IAuthenticatedEncryptor CreateEncryptorInstanceFromDescriptor(AuthenticatedEncryptorDescriptor descriptor)
+        {
+            // Dummy key with the specified descriptor.
+            var key = new Key(
+                Guid.NewGuid(),
+                DateTimeOffset.Now,
+                DateTimeOffset.Now + TimeSpan.FromHours(1),
+                DateTimeOffset.Now + TimeSpan.FromDays(30),
+                descriptor);
+
+            var encryptorFactory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
+
+            return encryptorFactory.CreateEncryptorInstance(key);
         }
     }
 }

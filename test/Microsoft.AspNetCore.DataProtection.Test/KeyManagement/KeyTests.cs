@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Moq;
 using Xunit;
@@ -19,15 +18,17 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var creationDate = DateTimeOffset.Now;
             var activationDate = creationDate.AddDays(2);
             var expirationDate = creationDate.AddDays(90);
+            var descriptor = Mock.Of<IAuthenticatedEncryptorDescriptor>();
 
             // Act
-            var key = new Key(keyId, creationDate, activationDate, expirationDate, new Mock<IAuthenticatedEncryptorDescriptor>().Object);
+            var key = new Key(keyId, creationDate, activationDate, expirationDate, descriptor);
 
             // Assert
             Assert.Equal(keyId, key.KeyId);
             Assert.Equal(creationDate, key.CreationDate);
             Assert.Equal(activationDate, key.ActivationDate);
             Assert.Equal(expirationDate, key.ExpirationDate);
+            Assert.Same(descriptor, key.Descriptor);
         }
 
         [Fact]
@@ -41,24 +42,6 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             Assert.False(key.IsRevoked);
             key.SetRevoked();
             Assert.True(key.IsRevoked);
-        }
-
-        [Fact]
-        public void CreateEncryptorInstance()
-        {
-            // Arrange
-            var expected = new Mock<IAuthenticatedEncryptor>().Object;
-            var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
-            mockDescriptor.Setup(o => o.CreateEncryptorInstance()).Returns(expected);
-
-            var now = DateTimeOffset.UtcNow;
-            var key = new Key(Guid.Empty, now, now, now, mockDescriptor.Object);
-
-            // Act
-            var actual = key.CreateEncryptorInstance();
-
-            // Assert
-            Assert.Same(expected, actual);
         }
     }
 }

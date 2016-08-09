@@ -12,13 +12,13 @@ namespace Microsoft.AspNetCore.DataProtection
         private const string To = "Microsoft.AspNetCore.DataProtection";
         private readonly ILogger _logger;
 
-        public RC1ForwardingActivator(IServiceProvider services) : this(services, null)
+        public RC1ForwardingActivator(IServiceProvider services) : this(services, DataProtectionProviderFactory.GetDefaultLoggerFactory())
         {
         }
 
         public RC1ForwardingActivator(IServiceProvider services, ILoggerFactory loggerFactory) : base(services)
         {
-            _logger = loggerFactory?.CreateLogger(typeof(RC1ForwardingActivator));
+            _logger = loggerFactory.CreateLogger(typeof(RC1ForwardingActivator));
         }
 
         public override object CreateInstance(Type expectedBaseType, string implementationTypeName)
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.DataProtection
                 var type = Type.GetType(forwardedImplementationTypeName, false);
                 if (type != null)
                 {
-                    _logger?.LogDebug("Forwarded activator type request from {FromType} to {ToType}",
+                    _logger.LogDebug("Forwarded activator type request from {FromType} to {ToType}",
                         implementationTypeName,
                         forwardedImplementationTypeName);
 

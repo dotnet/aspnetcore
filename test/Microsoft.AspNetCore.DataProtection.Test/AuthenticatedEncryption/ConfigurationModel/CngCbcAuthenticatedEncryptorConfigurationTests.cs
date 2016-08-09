@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         public void CreateNewDescriptor_CreatesUniqueCorrectlySizedMasterKey()
         {
             // Arrange
-            var configuration = new CngCbcAuthenticatedEncryptorConfiguration(new CngCbcAuthenticatedEncryptionSettings());
+            var configuration = new CngCbcAuthenticatedEncryptorConfiguration();
 
             // Act
             var masterKey1 = ((CngCbcAuthenticatedEncryptorDescriptor)configuration.CreateNewDescriptor()).MasterKey;
@@ -28,13 +28,13 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         public void CreateNewDescriptor_PropagatesOptions()
         {
             // Arrange
-            var configuration = new CngCbcAuthenticatedEncryptorConfiguration(new CngCbcAuthenticatedEncryptionSettings());
+            var configuration = new CngCbcAuthenticatedEncryptorConfiguration();
 
             // Act
             var descriptor = (CngCbcAuthenticatedEncryptorDescriptor)configuration.CreateNewDescriptor();
 
             // Assert
-            Assert.Equal(configuration.Settings, descriptor.Settings);
+            Assert.Equal(configuration, descriptor.Configuration);
         }
     }
 }

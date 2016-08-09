@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         {
             // Arrange
             var originalXml = XElement.Parse(@"<mySecret value='265ee4ea-ade2-43b1-b706-09b259e58b6b' />");
-            var encryptor = new DpapiXmlEncryptor(protectToLocalMachine);
+            var encryptor = new DpapiXmlEncryptor(protectToLocalMachine, NullLoggerFactory.Instance);
             var decryptor = new DpapiXmlDecryptor();
 
             // Act & assert - run through encryptor and make sure we get back an obfuscated element
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         {
             // Arrange
             var originalXml = XElement.Parse(@"<mySecret value='265ee4ea-ade2-43b1-b706-09b259e58b6b' />");
-            var encryptor = new DpapiXmlEncryptor(protectToLocalMachine: false);
+            var encryptor = new DpapiXmlEncryptor(protectToLocalMachine: false, loggerFactory: NullLoggerFactory.Instance);
             var decryptor = new DpapiXmlDecryptor();
 
             // Act & assert - run through encryptor and make sure we get back an obfuscated element

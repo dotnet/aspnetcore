@@ -13,17 +13,6 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
     public interface IAuthenticatedEncryptorDescriptor
     {
         /// <summary>
-        /// Creates an <see cref="IAuthenticatedEncryptor"/> instance based on the current descriptor.
-        /// </summary>
-        /// <returns>An <see cref="IAuthenticatedEncryptor"/> instance.</returns>
-        /// <remarks>
-        /// For a given descriptor, any two instances returned by this method should
-        /// be considered equivalent, e.g., the payload returned by one's <see cref="IAuthenticatedEncryptor.Encrypt(ArraySegment{byte}, ArraySegment{byte})"/>
-        /// method should be consumable by the other's <see cref="IAuthenticatedEncryptor.Decrypt(ArraySegment{byte}, ArraySegment{byte})"/> method.
-        /// </remarks>
-        IAuthenticatedEncryptor CreateEncryptorInstance();
-
-        /// <summary>
         /// Exports the current descriptor to XML.
         /// </summary>
         /// <returns>

@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Security.Principal;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
 using Microsoft.AspNetCore.DataProtection.Cng;
 using Microsoft.Extensions.Logging;
-
-using static System.FormattableString;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
 {
@@ -29,18 +28,8 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         /// </summary>
         /// <param name="protectionDescriptorRule">The rule string from which to create the protection descriptor.</param>
         /// <param name="flags">Flags controlling the creation of the protection descriptor.</param>
-        public DpapiNGXmlEncryptor(string protectionDescriptorRule, DpapiNGProtectionDescriptorFlags flags)
-            : this(protectionDescriptorRule, flags, services: null)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new instance of a <see cref="DpapiNGXmlEncryptor"/>.
-        /// </summary>
-        /// <param name="protectionDescriptorRule">The rule string from which to create the protection descriptor.</param>
-        /// <param name="flags">Flags controlling the creation of the protection descriptor.</param>
-        /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public DpapiNGXmlEncryptor(string protectionDescriptorRule, DpapiNGProtectionDescriptorFlags flags, IServiceProvider services)
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        public DpapiNGXmlEncryptor(string protectionDescriptorRule, DpapiNGProtectionDescriptorFlags flags, ILoggerFactory loggerFactory)
         {
             if (protectionDescriptorRule == null)
             {
@@ -53,7 +42,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             UnsafeNativeMethods.ThrowExceptionForNCryptStatus(ntstatus);
             CryptoUtil.AssertSafeHandleIsValid(_protectionDescriptorHandle);
 
-            _logger = services.GetLogger<DpapiNGXmlEncryptor>();
+            _logger = loggerFactory.CreateLogger<DpapiNGXmlEncryptor>();
         }
 
         /// <summary>
@@ -73,7 +62,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             }
 
             var protectionDescriptorRuleString = _protectionDescriptorHandle.GetProtectionDescriptorRuleString();
-            _logger?.EncryptingToWindowsDPAPINGUsingProtectionDescriptorRule(protectionDescriptorRuleString);
+            _logger.EncryptingToWindowsDPAPINGUsingProtectionDescriptorRule(protectionDescriptorRuleString);
 
             // Convert the XML element to a binary secret so that it can be run through DPAPI
             byte[] cngDpapiEncryptedData;
@@ -86,7 +75,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             }
             catch (Exception ex)
             {
-                _logger?.ErrorOccurredWhileEncryptingToWindowsDPAPING(ex);
+                _logger.ErrorOccurredWhileEncryptingToWindowsDPAPING(ex);
                 throw;
             }
 
@@ -118,7 +107,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             using (var currentIdentity = WindowsIdentity.GetCurrent())
             {
                 // use the SID to create an SDDL string
-                return Invariant($"SID={currentIdentity.User.Value}");
+                return string.Format(CultureInfo.InvariantCulture, "SID={0}", currentIdentity.User.Value);
             }
         }
     }

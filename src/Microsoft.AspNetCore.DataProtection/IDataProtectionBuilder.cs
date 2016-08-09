@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using System.IO;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.DataProtection
     /// <para>
     /// Similarly, when a developer modifies the default protected payload cryptographic
     /// algorithms, it is intended that he also select an explitiy key storage location.
-    /// A call to <see cref="DataProtectionBuilderExtensions.UseCryptographicAlgorithms(IDataProtectionBuilder,AuthenticatedEncryptionSettings)"/>
+    /// A call to <see cref="DataProtectionBuilderExtensions.UseCryptographicAlgorithms(IDataProtectionBuilder,AuthenticatedEncryptorConfiguration)"/>
     /// should therefore generally be paired with a call to <see cref="DataProtectionBuilderExtensions.PersistKeysToFileSystem(IDataProtectionBuilder,DirectoryInfo)"/>,
     /// for example.
     /// </para>
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.DataProtection
     /// <para>
     /// Similarly, when a developer modifies the default protected payload cryptographic
     /// algorithms, it is intended that he also select an explitiy key storage location.
-    /// A call to <see cref="DataProtectionBuilderExtensions.UseCryptographicAlgorithms(IDataProtectionBuilder,AuthenticatedEncryptionSettings)"/>
+    /// A call to <see cref="DataProtectionBuilderExtensions.UseCryptographicAlgorithms(IDataProtectionBuilder,AuthenticatedEncryptorConfiguration)"/>
     /// should therefore generally be paired with a call to <see cref="DataProtectionBuilderExtensions.PersistKeysToFileSystem(IDataProtectionBuilder,DirectoryInfo)"/>,
     /// for example.
     /// </para>

@@ -2,42 +2,57 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Cryptography;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
     /// <summary>
     /// Represents a generalized authenticated encryption mechanism.
     /// </summary>
-    public sealed class AuthenticatedEncryptorConfiguration : IAuthenticatedEncryptorConfiguration, IInternalAuthenticatedEncryptorConfiguration
+    public sealed class AuthenticatedEncryptorConfiguration : AlgorithmConfiguration, IInternalAlgorithmConfiguration
     {
-        private readonly IServiceProvider _services;
+        /// <summary>
+        /// The algorithm to use for symmetric encryption (confidentiality).
+        /// </summary>
+        /// <remarks>
+        /// The default value is <see cref="EncryptionAlgorithm.AES_256_CBC"/>.
+        /// </remarks>
+        public EncryptionAlgorithm EncryptionAlgorithm { get; set; } = EncryptionAlgorithm.AES_256_CBC;
 
-        public AuthenticatedEncryptorConfiguration(AuthenticatedEncryptionSettings settings)
-            : this(settings, services: null)
+        /// <summary>
+        /// The algorithm to use for message authentication (tamper-proofing).
+        /// </summary>
+        /// <remarks>
+        /// The default value is <see cref="ValidationAlgorithm.HMACSHA256"/>.
+        /// This property is ignored if <see cref="EncryptionAlgorithm"/> specifies a 'GCM' algorithm.
+        /// </remarks>
+        public ValidationAlgorithm ValidationAlgorithm { get; set; } = ValidationAlgorithm.HMACSHA256;
+
+        public override IAuthenticatedEncryptorDescriptor CreateNewDescriptor()
         {
+            var internalConfiguration = (IInternalAlgorithmConfiguration)this;
+            return internalConfiguration.CreateDescriptorFromSecret(Secret.Random(KDK_SIZE_IN_BYTES));
         }
 
-        public AuthenticatedEncryptorConfiguration(AuthenticatedEncryptionSettings settings, IServiceProvider services)
+        IAuthenticatedEncryptorDescriptor IInternalAlgorithmConfiguration.CreateDescriptorFromSecret(ISecret secret)
         {
-            if (settings == null)
+            return new AuthenticatedEncryptorDescriptor(this, secret);
+        }
+
+        void IInternalAlgorithmConfiguration.Validate()
+        {
+            var factory = new AuthenticatedEncryptorFactory(DataProtectionProviderFactory.GetDefaultLoggerFactory());
+            // Run a sample payload through an encrypt -> decrypt operation to make sure data round-trips properly.
+            var encryptor = factory.CreateAuthenticatedEncryptorInstance(Secret.Random(512 / 8), this);
+            try
             {
-                throw new ArgumentNullException(nameof(settings));
+                encryptor.PerformSelfTest();
             }
-
-            Settings = settings;
-            _services = services;
-        }
-
-        public AuthenticatedEncryptionSettings Settings { get; }
-
-        public IAuthenticatedEncryptorDescriptor CreateNewDescriptor()
-        {
-            return this.CreateNewDescriptorCore();
-        }
-
-        IAuthenticatedEncryptorDescriptor IInternalAuthenticatedEncryptorConfiguration.CreateDescriptorFromSecret(ISecret secret)
-        {
-            return new AuthenticatedEncryptorDescriptor(Settings, secret, _services);
+            finally
+            {
+                (encryptor as IDisposable)?.Dispose();
+            }
         }
     }
 }

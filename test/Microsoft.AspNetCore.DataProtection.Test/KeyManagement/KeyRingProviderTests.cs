@@ -7,13 +7,14 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
-
-using static System.FormattableString;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 {
@@ -353,62 +354,6 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             Assert.Equal(new[] { "GetCacheExpirationToken", "GetAllKeys", "ResolveDefaultKeyPolicy" }, callSequence);
         }
 
-        private static ICacheableKeyRingProvider SetupCreateCacheableKeyRingTestAndCreateKeyManager(
-            IList<string> callSequence,
-            IEnumerable<CancellationToken> getCacheExpirationTokenReturnValues,
-            IEnumerable<IReadOnlyCollection<IKey>> getAllKeysReturnValues,
-            IEnumerable<Tuple<DateTimeOffset, DateTimeOffset, IKey>> createNewKeyCallbacks,
-            IEnumerable<Tuple<DateTimeOffset, IEnumerable<IKey>, DefaultKeyResolution>> resolveDefaultKeyPolicyReturnValues,
-            KeyManagementOptions keyManagementOptions = null)
-        {
-            var getCacheExpirationTokenReturnValuesEnumerator = getCacheExpirationTokenReturnValues.GetEnumerator();
-            var mockKeyManager = new Mock<IKeyManager>(MockBehavior.Strict);
-            mockKeyManager.Setup(o => o.GetCacheExpirationToken())
-                .Returns(() =>
-                {
-                    callSequence.Add("GetCacheExpirationToken");
-                    getCacheExpirationTokenReturnValuesEnumerator.MoveNext();
-                    return getCacheExpirationTokenReturnValuesEnumerator.Current;
-                });
-
-            var getAllKeysReturnValuesEnumerator = getAllKeysReturnValues.GetEnumerator();
-            mockKeyManager.Setup(o => o.GetAllKeys())
-              .Returns(() =>
-              {
-                  callSequence.Add("GetAllKeys");
-                  getAllKeysReturnValuesEnumerator.MoveNext();
-                  return getAllKeysReturnValuesEnumerator.Current;
-              });
-
-            if (createNewKeyCallbacks != null)
-            {
-                var createNewKeyCallbacksEnumerator = createNewKeyCallbacks.GetEnumerator();
-                mockKeyManager.Setup(o => o.CreateNewKey(It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
-                    .Returns<DateTimeOffset, DateTimeOffset>((activationDate, expirationDate) =>
-                    {
-                        callSequence.Add("CreateNewKey");
-                        createNewKeyCallbacksEnumerator.MoveNext();
-                        Assert.Equal(createNewKeyCallbacksEnumerator.Current.Item1, activationDate);
-                        Assert.Equal(createNewKeyCallbacksEnumerator.Current.Item2, expirationDate);
-                        return createNewKeyCallbacksEnumerator.Current.Item3;
-                    });
-            }
-
-            var resolveDefaultKeyPolicyReturnValuesEnumerator = resolveDefaultKeyPolicyReturnValues.GetEnumerator();
-            var mockDefaultKeyResolver = new Mock<IDefaultKeyResolver>(MockBehavior.Strict);
-            mockDefaultKeyResolver.Setup(o => o.ResolveDefaultKeyPolicy(It.IsAny<DateTimeOffset>(), It.IsAny<IEnumerable<IKey>>()))
-                .Returns<DateTimeOffset, IEnumerable<IKey>>((now, allKeys) =>
-                 {
-                     callSequence.Add("ResolveDefaultKeyPolicy");
-                     resolveDefaultKeyPolicyReturnValuesEnumerator.MoveNext();
-                     Assert.Equal(resolveDefaultKeyPolicyReturnValuesEnumerator.Current.Item1, now);
-                     Assert.Equal(resolveDefaultKeyPolicyReturnValuesEnumerator.Current.Item2, allKeys);
-                     return resolveDefaultKeyPolicyReturnValuesEnumerator.Current.Item3;
-                 });
-
-            return CreateKeyRingProvider(mockKeyManager.Object, mockDefaultKeyResolver.Object, keyManagementOptions);
-        }
-
         [Fact]
         public void GetCurrentKeyRing_NoKeyRingCached_CachesAndReturns()
         {
@@ -586,24 +531,90 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             mockCacheableKeyRingProvider.Verify(o => o.GetCacheableKeyRing(updatedKeyRingTime), Times.Once);
         }
 
+        private static ICacheableKeyRingProvider SetupCreateCacheableKeyRingTestAndCreateKeyManager(
+            IList<string> callSequence,
+            IEnumerable<CancellationToken> getCacheExpirationTokenReturnValues,
+            IEnumerable<IReadOnlyCollection<IKey>> getAllKeysReturnValues,
+            IEnumerable<Tuple<DateTimeOffset, DateTimeOffset, IKey>> createNewKeyCallbacks,
+            IEnumerable<Tuple<DateTimeOffset, IEnumerable<IKey>, DefaultKeyResolution>> resolveDefaultKeyPolicyReturnValues,
+            KeyManagementOptions keyManagementOptions = null)
+        {
+            var getCacheExpirationTokenReturnValuesEnumerator = getCacheExpirationTokenReturnValues.GetEnumerator();
+            var mockKeyManager = new Mock<IKeyManager>(MockBehavior.Strict);
+            mockKeyManager.Setup(o => o.GetCacheExpirationToken())
+                .Returns(() =>
+                {
+                    callSequence.Add("GetCacheExpirationToken");
+                    getCacheExpirationTokenReturnValuesEnumerator.MoveNext();
+                    return getCacheExpirationTokenReturnValuesEnumerator.Current;
+                });
+
+            var getAllKeysReturnValuesEnumerator = getAllKeysReturnValues.GetEnumerator();
+            mockKeyManager.Setup(o => o.GetAllKeys())
+              .Returns(() =>
+              {
+                  callSequence.Add("GetAllKeys");
+                  getAllKeysReturnValuesEnumerator.MoveNext();
+                  return getAllKeysReturnValuesEnumerator.Current;
+              });
+
+            if (createNewKeyCallbacks != null)
+            {
+                var createNewKeyCallbacksEnumerator = createNewKeyCallbacks.GetEnumerator();
+                mockKeyManager.Setup(o => o.CreateNewKey(It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
+                    .Returns<DateTimeOffset, DateTimeOffset>((activationDate, expirationDate) =>
+                    {
+                        callSequence.Add("CreateNewKey");
+                        createNewKeyCallbacksEnumerator.MoveNext();
+                        Assert.Equal(createNewKeyCallbacksEnumerator.Current.Item1, activationDate);
+                        Assert.Equal(createNewKeyCallbacksEnumerator.Current.Item2, expirationDate);
+                        return createNewKeyCallbacksEnumerator.Current.Item3;
+                    });
+            }
+
+            var resolveDefaultKeyPolicyReturnValuesEnumerator = resolveDefaultKeyPolicyReturnValues.GetEnumerator();
+            var mockDefaultKeyResolver = new Mock<IDefaultKeyResolver>(MockBehavior.Strict);
+            mockDefaultKeyResolver.Setup(o => o.ResolveDefaultKeyPolicy(It.IsAny<DateTimeOffset>(), It.IsAny<IEnumerable<IKey>>()))
+                .Returns<DateTimeOffset, IEnumerable<IKey>>((now, allKeys) =>
+                {
+                    callSequence.Add("ResolveDefaultKeyPolicy");
+                    resolveDefaultKeyPolicyReturnValuesEnumerator.MoveNext();
+                    Assert.Equal(resolveDefaultKeyPolicyReturnValuesEnumerator.Current.Item1, now);
+                    Assert.Equal(resolveDefaultKeyPolicyReturnValuesEnumerator.Current.Item2, allKeys);
+                    return resolveDefaultKeyPolicyReturnValuesEnumerator.Current.Item3;
+                });
+
+            return CreateKeyRingProvider(mockKeyManager.Object, mockDefaultKeyResolver.Object, keyManagementOptions);
+        }
+
         private static KeyRingProvider CreateKeyRingProvider(ICacheableKeyRingProvider cacheableKeyRingProvider)
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<ICacheableKeyRingProvider>(cacheableKeyRingProvider);
+            var mockEncryptorFactory = new Mock<IAuthenticatedEncryptorFactory>();
+            mockEncryptorFactory.Setup(m => m.CreateEncryptorInstance(It.IsAny<IKey>())).Returns(new Mock<IAuthenticatedEncryptor>().Object);
+            var options = new KeyManagementOptions();
+            options.AuthenticatedEncryptorFactories.Add(mockEncryptorFactory.Object);
+
             return new KeyRingProvider(
                 keyManager: null,
-                keyManagementOptions: null,
-                services: serviceCollection.BuildServiceProvider());
+                keyManagementOptions: Options.Create(options),
+                cacheableKeyRingProvider: cacheableKeyRingProvider,
+                defaultKeyResolver: null,
+                loggerFactory: NullLoggerFactory.Instance);
         }
 
         private static ICacheableKeyRingProvider CreateKeyRingProvider(IKeyManager keyManager, IDefaultKeyResolver defaultKeyResolver, KeyManagementOptions keyManagementOptions= null)
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IDefaultKeyResolver>(defaultKeyResolver);
+            var mockEncryptorFactory = new Mock<IAuthenticatedEncryptorFactory>();
+            mockEncryptorFactory.Setup(m => m.CreateEncryptorInstance(It.IsAny<IKey>())).Returns(new Mock<IAuthenticatedEncryptor>().Object);
+            keyManagementOptions = keyManagementOptions ?? new KeyManagementOptions();
+            keyManagementOptions.AuthenticatedEncryptorFactories.Add(mockEncryptorFactory.Object);
+
             return new KeyRingProvider(
                 keyManager: keyManager,
-                keyManagementOptions: keyManagementOptions,
-                services: serviceCollection.BuildServiceProvider());
+                keyManagementOptions: Options.Create(keyManagementOptions),
+                cacheableKeyRingProvider: null,
+                defaultKeyResolver: defaultKeyResolver,
+                loggerFactory: NullLoggerFactory.Instance);
         }
 
         private static void AssertWithinJitterRange(DateTimeOffset actual, DateTimeOffset now)
@@ -620,7 +631,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         private static IKey CreateKey()
         {
             var now = DateTimeOffset.Now;
-            return CreateKey(Invariant($"{now:u}"), Invariant($"{now.AddDays(90):u}"));
+            return CreateKey(
+                string.Format(CultureInfo.InvariantCulture, "{0:u}", now),
+                string.Format(CultureInfo.InvariantCulture, "{0:u}", now.AddDays(90)));
         }
 
         private static IKey CreateKey(string activationDate, string expirationDate, bool isRevoked = false)
@@ -630,7 +643,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             mockKey.Setup(o => o.ActivationDate).Returns(DateTimeOffset.ParseExact(activationDate, "u", CultureInfo.InvariantCulture));
             mockKey.Setup(o => o.ExpirationDate).Returns(DateTimeOffset.ParseExact(expirationDate, "u", CultureInfo.InvariantCulture));
             mockKey.Setup(o => o.IsRevoked).Returns(isRevoked);
-            mockKey.Setup(o => o.CreateEncryptorInstance()).Returns(new Mock<IAuthenticatedEncryptor>().Object);
+            mockKey.Setup(o => o.Descriptor).Returns(new Mock<IAuthenticatedEncryptorDescriptor>().Object);
             return mockKey.Object;
         }
     }

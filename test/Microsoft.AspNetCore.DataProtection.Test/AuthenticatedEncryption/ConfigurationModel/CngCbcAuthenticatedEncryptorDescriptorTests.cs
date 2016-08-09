@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         {
             // Arrange
             var masterKey = "k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==".ToSecret();
-            var descriptor = new CngCbcAuthenticatedEncryptorDescriptor(new CngCbcAuthenticatedEncryptionSettings()
+            var descriptor = new CngCbcAuthenticatedEncryptorDescriptor(new CngCbcAuthenticatedEncryptorConfiguration()
             {
                 EncryptionAlgorithm = "enc-alg",
                 EncryptionAlgorithmKeySize = 2048,
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         {
             // Arrange
             var masterKey = "k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==".ToSecret();
-            var descriptor = new CngCbcAuthenticatedEncryptorDescriptor(new CngCbcAuthenticatedEncryptionSettings()
+            var descriptor = new CngCbcAuthenticatedEncryptorDescriptor(new CngCbcAuthenticatedEncryptorConfiguration()
             {
                 EncryptionAlgorithm = "enc-alg",
                 EncryptionAlgorithmKeySize = 2048,

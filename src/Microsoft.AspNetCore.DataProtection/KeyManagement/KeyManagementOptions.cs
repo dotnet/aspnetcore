@@ -2,6 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.Repositories;
+using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 {
@@ -24,8 +29,21 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         {
             if (other != null)
             {
-                this.AutoGenerateKeys = other.AutoGenerateKeys;
-                this._newKeyLifetime = other._newKeyLifetime;
+                AutoGenerateKeys = other.AutoGenerateKeys;
+                _newKeyLifetime = other._newKeyLifetime;
+                XmlEncryptor = other.XmlEncryptor;
+                XmlRepository = other.XmlRepository;
+                AuthenticatedEncryptorConfiguration = other.AuthenticatedEncryptorConfiguration;
+
+                foreach (var keyEscrowSink in other.KeyEscrowSinks)
+                {
+                    KeyEscrowSinks.Add(keyEscrowSink);
+                }
+
+                foreach (var encryptorFactory in other.AuthenticatedEncryptorFactories)
+                {
+                    AuthenticatedEncryptorFactories.Add(encryptorFactory);
+                }
             }
         }
 
@@ -119,5 +137,32 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 _newKeyLifetime = value;
             }
         }
+
+        /// <summary>
+        /// The <see cref="AlgorithmConfiguration"/> instance that can be used to create
+        /// the <see cref="IAuthenticatedEncryptorDescriptor"/> instance.
+        /// </summary>
+        public AlgorithmConfiguration AuthenticatedEncryptorConfiguration { get; set; }
+
+        /// <summary>
+        /// The list of <see cref="IKeyEscrowSink"/> to store the key material in.
+        /// </summary>
+        public IList<IKeyEscrowSink> KeyEscrowSinks { get; } = new List<IKeyEscrowSink>();
+
+        /// <summary>
+        /// The <see cref="IXmlRepository"/> to use for storing and retrieving XML elements.
+        /// </summary>
+        public IXmlRepository XmlRepository { get; set; }
+
+        /// <summary>
+        /// The <see cref="IXmlEncryptor"/> to use for encrypting XML elements.
+        /// </summary>
+        public IXmlEncryptor XmlEncryptor { get; set; }
+
+        /// <summary>
+        /// The list of <see cref="IAuthenticatedEncryptorFactory"/> that will be used for creating
+        /// <see cref="IAuthenticatedEncryptor"/>s.
+        /// </summary>
+        public IList<IAuthenticatedEncryptorFactory> AuthenticatedEncryptorFactories { get; } = new List<IAuthenticatedEncryptorFactory>();
     }
 }

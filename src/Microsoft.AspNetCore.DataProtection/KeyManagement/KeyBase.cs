@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 {
@@ -11,15 +12,15 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
     /// </summary>
     internal abstract class KeyBase : IKey
     {
-        private readonly Lazy<IAuthenticatedEncryptor> _lazyEncryptor;
+        private readonly Lazy<IAuthenticatedEncryptorDescriptor> _lazyDescriptor;
 
-        public KeyBase(Guid keyId, DateTimeOffset creationDate, DateTimeOffset activationDate, DateTimeOffset expirationDate, Lazy<IAuthenticatedEncryptor> lazyEncryptor)
+        public KeyBase(Guid keyId, DateTimeOffset creationDate, DateTimeOffset activationDate, DateTimeOffset expirationDate, Lazy<IAuthenticatedEncryptorDescriptor> lazyDescriptor)
         {
             KeyId = keyId;
             CreationDate = creationDate;
             ActivationDate = activationDate;
             ExpirationDate = expirationDate;
-            _lazyEncryptor = lazyEncryptor;
+            _lazyDescriptor = lazyDescriptor;
         }
 
         public DateTimeOffset ActivationDate { get; }
@@ -32,9 +33,12 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
         public Guid KeyId { get; }
 
-        public IAuthenticatedEncryptor CreateEncryptorInstance()
+        public IAuthenticatedEncryptorDescriptor Descriptor
         {
-            return _lazyEncryptor.Value;
+            get
+            {
+                return _lazyDescriptor.Value;
+            }
         }
 
         internal void SetRevoked()

@@ -17,12 +17,12 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         private readonly KeyHolder _defaultKeyHolder;
         private readonly Dictionary<Guid, KeyHolder> _keyIdToKeyHolderMap;
 
-        public KeyRing(IKey defaultKey, IEnumerable<IKey> allKeys)
+        public KeyRing(IKey defaultKey, IEnumerable<IKey> allKeys, IEnumerable<IAuthenticatedEncryptorFactory> encryptorFactories)
         {
             _keyIdToKeyHolderMap = new Dictionary<Guid, KeyHolder>();
             foreach (IKey key in allKeys)
             {
-                _keyIdToKeyHolderMap.Add(key.KeyId, new KeyHolder(key));
+                _keyIdToKeyHolderMap.Add(key.KeyId, new KeyHolder(key, encryptorFactories));
             }
 
             // It's possible under some circumstances that the default key won't be part of 'allKeys',
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             // wasn't in the underlying repository. In this case, we just add it now.
             if (!_keyIdToKeyHolderMap.ContainsKey(defaultKey.KeyId))
             {
-                _keyIdToKeyHolderMap.Add(defaultKey.KeyId, new KeyHolder(defaultKey));
+                _keyIdToKeyHolderMap.Add(defaultKey.KeyId, new KeyHolder(defaultKey, encryptorFactories));
             }
 
             DefaultKeyId = defaultKey.KeyId;
@@ -61,17 +61,19 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         {
             private readonly IKey _key;
             private IAuthenticatedEncryptor _encryptor;
+            private readonly IEnumerable<IAuthenticatedEncryptorFactory> _encryptorFactories;
 
-            internal KeyHolder(IKey key)
+            internal KeyHolder(IKey key, IEnumerable<IAuthenticatedEncryptorFactory> encryptorFactories)
             {
                 _key = key;
+                _encryptorFactories = encryptorFactories;
             }
 
             internal IAuthenticatedEncryptor GetEncryptorInstance(out bool isRevoked)
             {
                 // simple double-check lock pattern
                 // we can't use LazyInitializer<T> because we don't have a simple value factory
-                var encryptor = Volatile.Read(ref _encryptor);
+                IAuthenticatedEncryptor encryptor = Volatile.Read(ref _encryptor);
                 if (encryptor == null)
                 {
                     lock (this)
@@ -79,7 +81,14 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                         encryptor = Volatile.Read(ref _encryptor);
                         if (encryptor == null)
                         {
-                            encryptor = _key.CreateEncryptorInstance();
+                            foreach (var factory in _encryptorFactories)
+                            {
+                                encryptor = factory.CreateEncryptorInstance(_key);
+                                if (encryptor != null)
+                                {
+                                    break;
+                                }
+                            }
                             Volatile.Write(ref _encryptor, encryptor);
                         }
                     }

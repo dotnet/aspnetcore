@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// Sets up a mock such that given the name of a deserializer class and the XML node that class's
         /// Import method should expect returns a descriptor which produces the given authenticator.
         /// </summary>
-        public static void ReturnAuthenticatedEncryptorGivenDeserializerTypeNameAndInput(this Mock<IActivator> mockActivator, string typeName, string xml, IAuthenticatedEncryptor encryptor)
+        public static void ReturnDescriptorGivenDeserializerTypeNameAndInput(this Mock<IActivator> mockActivator, string typeName, string xml, IAuthenticatedEncryptorDescriptor descriptor)
         {
             mockActivator
                 .Setup(o => o.CreateInstance(typeof(IAuthenticatedEncryptorDescriptorDeserializer), typeName))
@@ -30,9 +30,7 @@ namespace Microsoft.AspNetCore.DataProtection
                         {
                             // Only return the descriptor if the XML matches
                             XmlAssert.Equal(xml, el);
-                            var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
-                            mockDescriptor.Setup(o => o.CreateEncryptorInstance()).Returns(encryptor);
-                            return mockDescriptor.Object;
+                            return descriptor;
                         });
                     return mockDeserializer.Object;
                 });

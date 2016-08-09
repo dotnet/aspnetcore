@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 {
@@ -28,6 +29,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
         private readonly ILogger _logger;
 
+        private readonly IEnumerable<IAuthenticatedEncryptorFactory> _encryptorFactories;
+
         /// <summary>
         /// The maximum skew that is allowed between servers.
         /// This is used to allow newly-created keys to be used across servers even though
@@ -39,23 +42,38 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// </remarks>
         private readonly TimeSpan _maxServerToServerClockSkew;
 
-        public DefaultKeyResolver(TimeSpan keyPropagationWindow, TimeSpan maxServerToServerClockSkew, IServiceProvider services)
+        public DefaultKeyResolver(IOptions<KeyManagementOptions> keyManagementOptions, ILoggerFactory loggerFactory)
         {
-            _keyPropagationWindow = keyPropagationWindow;
-            _maxServerToServerClockSkew = maxServerToServerClockSkew;
-            _logger = services.GetLogger<DefaultKeyResolver>();
+            _keyPropagationWindow = keyManagementOptions.Value.KeyPropagationWindow;
+            _maxServerToServerClockSkew = keyManagementOptions.Value.MaxServerClockSkew;
+            _encryptorFactories = keyManagementOptions.Value.AuthenticatedEncryptorFactories;
+            _logger = loggerFactory.CreateLogger<DefaultKeyResolver>();
         }
 
         private bool CanCreateAuthenticatedEncryptor(IKey key)
         {
             try
             {
-                var encryptorInstance = key.CreateEncryptorInstance() ?? CryptoUtil.Fail<IAuthenticatedEncryptor>("CreateEncryptorInstance returned null.");
+                IAuthenticatedEncryptor encryptorInstance = null;
+                foreach (var factory in _encryptorFactories)
+                {
+                    encryptorInstance = factory.CreateEncryptorInstance(key);
+                    if (encryptorInstance != null)
+                    {
+                        break;
+                    }
+                }
+
+                if (encryptorInstance == null)
+                {
+                    CryptoUtil.Fail<IAuthenticatedEncryptor>("CreateEncryptorInstance returned null.");
+                }
+
                 return true;
             }
             catch (Exception ex)
             {
-                _logger?.KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed(key.KeyId, nameof(IKey.CreateEncryptorInstance), ex);
+                _logger.KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed(key.KeyId, nameof(IAuthenticatedEncryptorFactory.CreateEncryptorInstance), ex);
                 return false;
             }
         }
@@ -70,12 +88,12 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
             if (preferredDefaultKey != null)
             {
-                _logger?.ConsideringKeyWithExpirationDateAsDefaultKey(preferredDefaultKey.KeyId, preferredDefaultKey.ExpirationDate);
+                _logger.ConsideringKeyWithExpirationDateAsDefaultKey(preferredDefaultKey.KeyId, preferredDefaultKey.ExpirationDate);
 
                 // if the key has been revoked or is expired, it is no longer a candidate
                 if (preferredDefaultKey.IsRevoked || preferredDefaultKey.IsExpired(now) || !CanCreateAuthenticatedEncryptor(preferredDefaultKey))
                 {
-                    _logger?.KeyIsNoLongerUnderConsiderationAsDefault(preferredDefaultKey.KeyId);
+                    _logger.KeyIsNoLongerUnderConsiderationAsDefault(preferredDefaultKey.KeyId);
                     preferredDefaultKey = null;
                 }
             }
@@ -98,7 +116,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
                 if (callerShouldGenerateNewKey)
                 {
-                    _logger?.DefaultKeyExpirationImminentAndRepository();
+                    _logger.DefaultKeyExpirationImminentAndRepository();
                 }
 
                 fallbackKey = null;
@@ -119,7 +137,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                            where !key.IsRevoked && CanCreateAuthenticatedEncryptor(key)
                            select key).FirstOrDefault();
 
-            _logger?.RepositoryContainsNoViableDefaultKey();
+            _logger.RepositoryContainsNoViableDefaultKey();
 
             callerShouldGenerateNewKey = true;
             return null;

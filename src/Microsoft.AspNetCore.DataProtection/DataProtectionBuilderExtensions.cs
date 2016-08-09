@@ -4,11 +4,16 @@
 using System;
 using System.ComponentModel;
 using System.IO;
+using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Win32;
 
 #if !NETSTANDARD1_3 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
@@ -68,7 +73,11 @@ namespace Microsoft.AspNetCore.DataProtection
                 throw new ArgumentNullException(nameof(sink));
             }
 
-            builder.Services.AddSingleton<IKeyEscrowSink>(sink);
+            builder.Services.Configure<KeyManagementOptions>(options =>
+            {
+                options.KeyEscrowSinks.Add(sink);
+            });
+
             return builder;
         }
 
@@ -89,7 +98,15 @@ namespace Microsoft.AspNetCore.DataProtection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.Services.AddSingleton<IKeyEscrowSink, TImplementation>();
+            builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
+            {
+                var implementationInstance = services.GetRequiredService<TImplementation>();
+                return new ConfigureOptions<KeyManagementOptions>(options =>
+                {
+                    options.KeyEscrowSinks.Add(implementationInstance);
+                });
+            });
+
             return builder;
         }
 
@@ -114,7 +131,15 @@ namespace Microsoft.AspNetCore.DataProtection
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            builder.Services.AddSingleton<IKeyEscrowSink>(factory);
+            builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
+            {
+                var instance = factory(services);
+                return new ConfigureOptions<KeyManagementOptions>(options =>
+                {
+                    options.KeyEscrowSinks.Add(instance);
+                });
+            });
+
             return builder;
         }
 
@@ -182,7 +207,15 @@ namespace Microsoft.AspNetCore.DataProtection
                 throw new ArgumentNullException(nameof(directory));
             }
 
-            Use(builder.Services, DataProtectionServiceDescriptors.IXmlRepository_FileSystem(directory));
+            builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
+            {
+                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+                return new ConfigureOptions<KeyManagementOptions>(options =>
+                {
+                    options.XmlRepository = new FileSystemXmlRepository(directory, loggerFactory);
+                });
+            });
+
             return builder;
         }
 
@@ -204,7 +237,15 @@ namespace Microsoft.AspNetCore.DataProtection
                 throw new ArgumentNullException(nameof(registryKey));
             }
 
-            Use(builder.Services, DataProtectionServiceDescriptors.IXmlRepository_Registry(registryKey));
+            builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
+            {
+                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+                return new ConfigureOptions<KeyManagementOptions>(options =>
+                {
+                    options.XmlRepository = new RegistryXmlRepository(registryKey, loggerFactory);
+                });
+            });
+
             return builder;
         }
 
@@ -228,7 +269,15 @@ namespace Microsoft.AspNetCore.DataProtection
                 throw new ArgumentNullException(nameof(certificate));
             }
 
-            Use(builder.Services, DataProtectionServiceDescriptors.IXmlEncryptor_Certificate(certificate));
+            builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
+            {
+                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+                return new ConfigureOptions<KeyManagementOptions>(options =>
+                {
+                    options.XmlEncryptor = new CertificateXmlEncryptor(certificate, loggerFactory);
+                });
+            });
+
             return builder;
         }
 
@@ -256,12 +305,20 @@ namespace Microsoft.AspNetCore.DataProtection
                 throw Error.CertificateXmlEncryptor_CertificateNotFound(thumbprint);
             }
 
-            var services = builder.Services;
-
             // ICertificateResolver is necessary for this type to work correctly, so register it
             // if it doesn't already exist.
-            services.TryAdd(DataProtectionServiceDescriptors.ICertificateResolver_Default());
-            Use(services, DataProtectionServiceDescriptors.IXmlEncryptor_Certificate(thumbprint));
+            builder.Services.TryAddSingleton<ICertificateResolver, CertificateResolver>();
+
+            builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
+            {
+                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+                var certificateResolver = services.GetRequiredService<ICertificateResolver>();
+                return new ConfigureOptions<KeyManagementOptions>(options =>
+                {
+                    options.XmlEncryptor = new CertificateXmlEncryptor(thumbprint, certificateResolver, loggerFactory);
+                });
+            });
+
             return builder;
         }
 
@@ -305,7 +362,16 @@ namespace Microsoft.AspNetCore.DataProtection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            Use(builder.Services, DataProtectionServiceDescriptors.IXmlEncryptor_Dpapi(protectToLocalMachine));
+            builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
+            {
+                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+                return new ConfigureOptions<KeyManagementOptions>(options =>
+                {
+                    CryptoUtil.AssertPlatformIsWindows();
+                    options.XmlEncryptor = new DpapiXmlEncryptor(protectToLocalMachine, loggerFactory);
+                });
+            });
+
             return builder;
         }
 
@@ -358,7 +424,16 @@ namespace Microsoft.AspNetCore.DataProtection
                 throw new ArgumentNullException(nameof(protectionDescriptorRule));
             }
 
-            Use(builder.Services, DataProtectionServiceDescriptors.IXmlEncryptor_DpapiNG(protectionDescriptorRule, flags));
+            builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
+            {
+                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+                return new ConfigureOptions<KeyManagementOptions>(options =>
+                {
+                    CryptoUtil.AssertPlatformIsWindows8OrLater();
+                    options.XmlEncryptor = new DpapiNGXmlEncryptor(protectionDescriptorRule, flags, loggerFactory);
+                });
+            });
+
             return builder;
         }
 
@@ -395,21 +470,21 @@ namespace Microsoft.AspNetCore.DataProtection
         /// by default when generating protected payloads.
         /// </summary>
         /// <param name="builder">The <see cref="IDataProtectionBuilder"/>.</param>
-        /// <param name="settings">Information about what cryptographic algorithms should be used.</param>
+        /// <param name="configuration">Information about what cryptographic algorithms should be used.</param>
         /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
-        public static IDataProtectionBuilder UseCryptographicAlgorithms(this IDataProtectionBuilder builder, AuthenticatedEncryptionSettings settings)
+        public static IDataProtectionBuilder UseCryptographicAlgorithms(this IDataProtectionBuilder builder, AuthenticatedEncryptorConfiguration configuration)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (settings == null)
+            if (configuration == null)
             {
-                throw new ArgumentNullException(nameof(settings));
+                throw new ArgumentNullException(nameof(configuration));
             }
 
-            return UseCryptographicAlgorithmsCore(builder, settings);
+            return UseCryptographicAlgorithmsCore(builder, configuration);
         }
 
         /// <summary>
@@ -419,25 +494,25 @@ namespace Microsoft.AspNetCore.DataProtection
         /// <see cref="ValidationAlgorithm"/> enumerations.
         /// </summary>
         /// <param name="builder">The <see cref="IDataProtectionBuilder"/>.</param>
-        /// <param name="settings">Information about what cryptographic algorithms should be used.</param>
+        /// <param name="configuration">Information about what cryptographic algorithms should be used.</param>
         /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
         /// <remarks>
         /// This API is only available on Windows.
         /// </remarks>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public static IDataProtectionBuilder UseCustomCryptographicAlgorithms(this IDataProtectionBuilder builder, CngCbcAuthenticatedEncryptionSettings settings)
+        public static IDataProtectionBuilder UseCustomCryptographicAlgorithms(this IDataProtectionBuilder builder, CngCbcAuthenticatedEncryptorConfiguration configuration)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (settings == null)
+            if (configuration == null)
             {
-                throw new ArgumentNullException(nameof(settings));
+                throw new ArgumentNullException(nameof(configuration));
             }
 
-            return UseCryptographicAlgorithmsCore(builder, settings);
+            return UseCryptographicAlgorithmsCore(builder, configuration);
         }
 
         /// <summary>
@@ -447,25 +522,25 @@ namespace Microsoft.AspNetCore.DataProtection
         /// <see cref="ValidationAlgorithm"/> enumerations.
         /// </summary>
         /// <param name="builder">The <see cref="IDataProtectionBuilder"/>.</param>
-        /// <param name="settings">Information about what cryptographic algorithms should be used.</param>
+        /// <param name="configuration">Information about what cryptographic algorithms should be used.</param>
         /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
         /// <remarks>
         /// This API is only available on Windows.
         /// </remarks>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public static IDataProtectionBuilder UseCustomCryptographicAlgorithms(this IDataProtectionBuilder builder, CngGcmAuthenticatedEncryptionSettings settings)
+        public static IDataProtectionBuilder UseCustomCryptographicAlgorithms(this IDataProtectionBuilder builder, CngGcmAuthenticatedEncryptorConfiguration configuration)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (settings == null)
+            if (configuration == null)
             {
-                throw new ArgumentNullException(nameof(settings));
+                throw new ArgumentNullException(nameof(configuration));
             }
 
-            return UseCryptographicAlgorithmsCore(builder, settings);
+            return UseCryptographicAlgorithmsCore(builder, configuration);
         }
 
         /// <summary>
@@ -475,28 +550,33 @@ namespace Microsoft.AspNetCore.DataProtection
         /// <see cref="ValidationAlgorithm"/> enumerations.
         /// </summary>
         /// <param name="builder">The <see cref="IDataProtectionBuilder"/>.</param>
-        /// <param name="settings">Information about what cryptographic algorithms should be used.</param>
+        /// <param name="configuration">Information about what cryptographic algorithms should be used.</param>
         /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public static IDataProtectionBuilder UseCustomCryptographicAlgorithms(this IDataProtectionBuilder builder, ManagedAuthenticatedEncryptionSettings settings)
+        public static IDataProtectionBuilder UseCustomCryptographicAlgorithms(this IDataProtectionBuilder builder, ManagedAuthenticatedEncryptorConfiguration configuration)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (settings == null)
+            if (configuration == null)
             {
-                throw new ArgumentNullException(nameof(settings));
+                throw new ArgumentNullException(nameof(configuration));
             }
 
-            return UseCryptographicAlgorithmsCore(builder, settings);
+            return UseCryptographicAlgorithmsCore(builder, configuration);
         }
 
-        private static IDataProtectionBuilder UseCryptographicAlgorithmsCore(IDataProtectionBuilder builder, IInternalAuthenticatedEncryptionSettings settings)
+        private static IDataProtectionBuilder UseCryptographicAlgorithmsCore(IDataProtectionBuilder builder, AlgorithmConfiguration configuration)
         {
-            settings.Validate(); // perform self-test
-            Use(builder.Services, DataProtectionServiceDescriptors.IAuthenticatedEncryptorConfiguration_FromSettings(settings));
+            ((IInternalAlgorithmConfiguration)configuration).Validate(); // perform self-test
+
+            builder.Services.Configure<KeyManagementOptions>(options =>
+            {
+                options.AuthenticatedEncryptorConfiguration = configuration;
+            });
+
             return builder;
         }
 
@@ -517,30 +597,9 @@ namespace Microsoft.AspNetCore.DataProtection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            Use(builder.Services, DataProtectionServiceDescriptors.IDataProtectionProvider_Ephemeral());
+            builder.Services.Replace(ServiceDescriptor.Singleton<IDataProtectionProvider, EphemeralDataProtectionProvider>());
+
             return builder;
-        }
-
-        /*
-         * UTILITY ISERVICECOLLECTION METHODS
-         */
-
-        private static void RemoveAllServicesOfType(IServiceCollection services, Type serviceType)
-        {
-            // We go backward since we're modifying the collection in-place.
-            for (var i = services.Count - 1; i >= 0; i--)
-            {
-                if (services[i]?.ServiceType == serviceType)
-                {
-                    services.RemoveAt(i);
-                }
-            }
-        }
-
-        private static void Use(IServiceCollection services, ServiceDescriptor descriptor)
-        {
-            RemoveAllServicesOfType(services, descriptor.ServiceType);
-            services.Add(descriptor);
         }
     }
 }

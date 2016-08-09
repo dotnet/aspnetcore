@@ -3,10 +3,10 @@
 
 using System;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -22,15 +22,25 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var creationDate = DateTimeOffset.Now;
             var activationDate = creationDate.AddDays(2);
             var expirationDate = creationDate.AddDays(90);
+            var mockDescriptor = Mock.Of<IAuthenticatedEncryptorDescriptor>();
+            var mockInternalKeyManager = new Mock<IInternalXmlKeyManager>();
+            mockInternalKeyManager.Setup(o => o.DeserializeDescriptorFromKeyElement(It.IsAny<XElement>()))
+                .Returns<XElement>(element =>
+                {
+                    XmlAssert.Equal(@"<node />", element);
+                    return mockDescriptor;
+                });
+            var options = Options.Create(new KeyManagementOptions());
 
             // Act
-            var key = new DeferredKey(keyId, creationDate, activationDate, expirationDate, new Mock<IInternalXmlKeyManager>().Object, XElement.Parse(@"<node />"));
+            var key = new DeferredKey(keyId, creationDate, activationDate, expirationDate, mockInternalKeyManager.Object, XElement.Parse(@"<node />"));
 
             // Assert
             Assert.Equal(keyId, key.KeyId);
             Assert.Equal(creationDate, key.CreationDate);
             Assert.Equal(activationDate, key.ActivationDate);
             Assert.Equal(expirationDate, key.ExpirationDate);
+            Assert.Same(mockDescriptor, key.Descriptor);
         }
 
         [Fact]
@@ -38,6 +48,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         {
             // Arrange
             var now = DateTimeOffset.UtcNow;
+            var options = Options.Create(new KeyManagementOptions());
             var key = new DeferredKey(Guid.Empty, now, now, now, new Mock<IInternalXmlKeyManager>().Object, XElement.Parse(@"<node />"));
 
             // Act & assert
@@ -47,32 +58,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         }
 
         [Fact]
-        public void CreateEncryptorInstance_Success()
-        {
-            // Arrange
-            var expectedEncryptor = new Mock<IAuthenticatedEncryptor>().Object;
-            var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
-            mockDescriptor.Setup(o => o.CreateEncryptorInstance()).Returns(expectedEncryptor);
-            var mockKeyManager = new Mock<IInternalXmlKeyManager>();
-            mockKeyManager.Setup(o => o.DeserializeDescriptorFromKeyElement(It.IsAny<XElement>()))
-                .Returns<XElement>(element =>
-                {
-                    XmlAssert.Equal(@"<node />", element);
-                    return mockDescriptor.Object;
-                });
-
-            var now = DateTimeOffset.UtcNow;
-            var key = new DeferredKey(Guid.Empty, now, now, now, mockKeyManager.Object, XElement.Parse(@"<node />"));
-
-            // Act
-            var actual = key.CreateEncryptorInstance();
-
-            // Assert
-            Assert.Same(expectedEncryptor, actual);
-        }
-
-        [Fact]
-        public void CreateEncryptorInstance_CachesFailures()
+        public void Get_Descriptor_CachesFailures()
         {
             // Arrange
             int numTimesCalled = 0;
@@ -88,8 +74,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var key = new DeferredKey(Guid.Empty, now, now, now, mockKeyManager.Object, XElement.Parse(@"<node />"));
 
             // Act & assert
-            ExceptionAssert.Throws<Exception>(() => key.CreateEncryptorInstance(), "How exceptional.");
-            ExceptionAssert.Throws<Exception>(() => key.CreateEncryptorInstance(), "How exceptional.");
+            ExceptionAssert.Throws<Exception>(() => key.Descriptor, "How exceptional.");
+            ExceptionAssert.Throws<Exception>(() => key.Descriptor, "How exceptional.");
             Assert.Equal(1, numTimesCalled);
         }
     }

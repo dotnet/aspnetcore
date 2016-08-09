@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 {
@@ -45,10 +46,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         Guid KeyId { get; }
 
         /// <summary>
-        /// Creates an IAuthenticatedEncryptor instance that can be used to encrypt data
-        /// to and decrypt data from this key.
+        /// Gets the <see cref="IAuthenticatedEncryptorDescriptor"/> instance associated with this key.
         /// </summary>
-        /// <returns>An IAuthenticatedEncryptor.</returns>
-        IAuthenticatedEncryptor CreateEncryptorInstance();
+        IAuthenticatedEncryptorDescriptor Descriptor { get; }
     }
 }

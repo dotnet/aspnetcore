@@ -6,14 +6,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.DataProtection.XmlEncryption;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -32,41 +34,39 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         public void Ctor_WithoutEncryptorOrRepository_UsesFallback()
         {
             // Arrange
-            var expectedEncryptor = new Mock<IXmlEncryptor>().Object;
-            var expectedRepository = new Mock<IXmlRepository>().Object;
-            var mockFallback = new Mock<IDefaultKeyServices>();
-            mockFallback.Setup(o => o.GetKeyEncryptor()).Returns(expectedEncryptor);
-            mockFallback.Setup(o => o.GetKeyRepository()).Returns(expectedRepository);
-
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IDefaultKeyServices>(mockFallback.Object);
-            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
-            var services = serviceCollection.BuildServiceProvider();
+            var options = Options.Create(new KeyManagementOptions()
+            {
+                AuthenticatedEncryptorConfiguration = new Mock<AlgorithmConfiguration>().Object,
+                XmlRepository = null,
+                XmlEncryptor = null
+            });
 
             // Act
-            var keyManager = new XmlKeyManager(services);
+            var keyManager = new XmlKeyManager(options, SimpleActivator.DefaultWithoutServices, NullLoggerFactory.Instance);
 
             // Assert
-            Assert.Same(expectedEncryptor, keyManager.KeyEncryptor);
-            Assert.Same(expectedRepository, keyManager.KeyRepository);
+            Assert.NotNull(keyManager.KeyRepository);
+
+            if (OSVersionUtil.IsWindows())
+            {
+                Assert.NotNull(keyManager.KeyEncryptor);
+            }
         }
 
         [Fact]
         public void Ctor_WithEncryptorButNoRepository_IgnoresFallback_FailsWithServiceNotFound()
         {
             // Arrange
-            var mockFallback = new Mock<IDefaultKeyServices>();
-            mockFallback.Setup(o => o.GetKeyEncryptor()).Returns(new Mock<IXmlEncryptor>().Object);
-            mockFallback.Setup(o => o.GetKeyRepository()).Returns(new Mock<IXmlRepository>().Object);
-
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IDefaultKeyServices>(mockFallback.Object);
-            serviceCollection.AddSingleton<IXmlEncryptor>(new Mock<IXmlEncryptor>().Object);
-            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
-            var services = serviceCollection.BuildServiceProvider();
+            var options = Options.Create(new KeyManagementOptions()
+            {
+                AuthenticatedEncryptorConfiguration = new Mock<AlgorithmConfiguration>().Object,
+                XmlRepository = null,
+                XmlEncryptor = new Mock<IXmlEncryptor>().Object
+            });
 
             // Act & assert - we don't care about exception type, only exception message
-            Exception ex = Assert.ThrowsAny<Exception>(() => new XmlKeyManager(services));
+            Exception ex = Assert.ThrowsAny<Exception>(
+                () => new XmlKeyManager(options, SimpleActivator.DefaultWithoutServices, NullLoggerFactory.Instance));
             Assert.Contains("IXmlRepository", ex.Message);
         }
 
@@ -79,15 +79,16 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var expirationDate = new DateTimeOffset(2014, 03, 01, 0, 0, 0, TimeSpan.Zero);
             var keyId = new Guid("3d6d01fd-c0e7-44ae-82dd-013b996b4093");
 
-            // Arrange - mocks
+            // Arrange
             XElement elementStoredInRepository = null;
             string friendlyNameStoredInRepository = null;
             var expectedAuthenticatedEncryptor = new Mock<IAuthenticatedEncryptor>().Object;
             var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
             mockDescriptor.Setup(o => o.ExportToXml()).Returns(new XmlSerializedDescriptorInfo(serializedDescriptor, typeof(MyDeserializer)));
-            mockDescriptor.Setup(o => o.CreateEncryptorInstance()).Returns(expectedAuthenticatedEncryptor);
-            var mockConfiguration = new Mock<IAuthenticatedEncryptorConfiguration>();
-            mockConfiguration.Setup(o => o.CreateNewDescriptor()).Returns(mockDescriptor.Object);
+            var expectedDescriptor = mockDescriptor.Object;
+            var testEncryptorFactory = new TestEncryptorFactory(expectedDescriptor, expectedAuthenticatedEncryptor);
+            var mockConfiguration = new Mock<AlgorithmConfiguration>();
+            mockConfiguration.Setup(o => o.CreateNewDescriptor()).Returns(expectedDescriptor);
             var mockXmlRepository = new Mock<IXmlRepository>();
             mockXmlRepository
                 .Setup(o => o.StoreElement(It.IsAny<XElement>(), It.IsAny<string>()))
@@ -96,13 +97,15 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                     elementStoredInRepository = el;
                     friendlyNameStoredInRepository = friendlyName;
                 });
+            var options = Options.Create(new KeyManagementOptions()
+            {
+                AuthenticatedEncryptorConfiguration = mockConfiguration.Object,
+                XmlRepository = mockXmlRepository.Object,
+                XmlEncryptor = null
+            });
+            options.Value.AuthenticatedEncryptorFactories.Add(testEncryptorFactory);
 
-            // Arrange - services
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IXmlRepository>(mockXmlRepository.Object);
-            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(mockConfiguration.Object);
-            var services = serviceCollection.BuildServiceProvider();
-            var keyManager = new XmlKeyManager(services);
+            var keyManager = new XmlKeyManager(options, SimpleActivator.DefaultWithoutServices, NullLoggerFactory.Instance);
 
             // Act & assert
 
@@ -126,11 +129,12 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             Assert.Equal(creationDate, newKey.CreationDate);
             Assert.Equal(activationDate, newKey.ActivationDate);
             Assert.Equal(expirationDate, newKey.ExpirationDate);
+            Assert.Same(expectedDescriptor, newKey.Descriptor);
             Assert.False(newKey.IsRevoked);
-            Assert.Same(expectedAuthenticatedEncryptor, newKey.CreateEncryptorInstance());
+            Assert.Same(expectedAuthenticatedEncryptor, testEncryptorFactory.CreateEncryptorInstance(newKey));
 
             // Finally, was the correct element stored in the repository?
-            string expectedXml = String.Format(@"
+            string expectedXml = string.Format(@"
                 <key id='3d6d01fd-c0e7-44ae-82dd-013b996b4093' version='1' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
                   {1}
                   {2}
@@ -160,7 +164,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var expirationDate = new DateTimeOffset(2014, 03, 01, 0, 0, 0, TimeSpan.Zero);
             var keyId = new Guid("3d6d01fd-c0e7-44ae-82dd-013b996b4093");
 
-            // Arrange - mocks
+            // Arrange
             XElement elementStoredInEscrow = null;
             Guid? keyIdStoredInEscrow = null;
             XElement elementStoredInRepository = null;
@@ -168,9 +172,10 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var expectedAuthenticatedEncryptor = new Mock<IAuthenticatedEncryptor>().Object;
             var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
             mockDescriptor.Setup(o => o.ExportToXml()).Returns(new XmlSerializedDescriptorInfo(serializedDescriptor, typeof(MyDeserializer)));
-            mockDescriptor.Setup(o => o.CreateEncryptorInstance()).Returns(expectedAuthenticatedEncryptor);
-            var mockConfiguration = new Mock<IAuthenticatedEncryptorConfiguration>();
-            mockConfiguration.Setup(o => o.CreateNewDescriptor()).Returns(mockDescriptor.Object);
+            var expectedDescriptor = mockDescriptor.Object;
+            var testEncryptorFactory = new TestEncryptorFactory(expectedDescriptor, expectedAuthenticatedEncryptor);
+            var mockConfiguration = new Mock<AlgorithmConfiguration>();
+            mockConfiguration.Setup(o => o.CreateNewDescriptor()).Returns(expectedDescriptor);
             var mockXmlRepository = new Mock<IXmlRepository>();
             mockXmlRepository
                 .Setup(o => o.StoreElement(It.IsAny<XElement>(), It.IsAny<string>()))
@@ -188,14 +193,15 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                     elementStoredInEscrow = el;
                 });
 
-            // Arrange - services
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IXmlRepository>(mockXmlRepository.Object);
-            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(mockConfiguration.Object);
-            serviceCollection.AddSingleton<IKeyEscrowSink>(mockKeyEscrow.Object);
-            serviceCollection.AddSingleton<IXmlEncryptor, NullXmlEncryptor>();
-            var services = serviceCollection.BuildServiceProvider();
-            var keyManager = new XmlKeyManager(services);
+            var options = Options.Create(new KeyManagementOptions()
+            {
+                AuthenticatedEncryptorConfiguration = mockConfiguration.Object,
+                XmlRepository = mockXmlRepository.Object,
+                XmlEncryptor = new NullXmlEncryptor()
+            });
+            options.Value.AuthenticatedEncryptorFactories.Add(testEncryptorFactory);
+            options.Value.KeyEscrowSinks.Add(mockKeyEscrow.Object);
+            var keyManager = new XmlKeyManager(options, SimpleActivator.DefaultWithoutServices, NullLoggerFactory.Instance);
 
             // Act & assert
 
@@ -219,12 +225,13 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             Assert.Equal(creationDate, newKey.CreationDate);
             Assert.Equal(activationDate, newKey.ActivationDate);
             Assert.Equal(expirationDate, newKey.ExpirationDate);
+            Assert.Same(expectedDescriptor, newKey.Descriptor);
             Assert.False(newKey.IsRevoked);
-            Assert.Same(expectedAuthenticatedEncryptor, newKey.CreateEncryptorInstance());
+            Assert.Same(expectedAuthenticatedEncryptor, testEncryptorFactory.CreateEncryptorInstance(newKey));
 
             // Was the correct element stored in escrow?
             // This should not have gone through the encryptor.
-            string expectedEscrowXml = String.Format(@"
+            string expectedEscrowXml = string.Format(@"
                 <key id='3d6d01fd-c0e7-44ae-82dd-013b996b4093' version='1' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
                   {1}
                   {2}
@@ -275,7 +282,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         [Fact]
         public void CreateNewKey_CallsInternalManager()
         {
-            // Arrange - mocks
+            // Arrange
             DateTimeOffset minCreationDate = DateTimeOffset.UtcNow;
             DateTimeOffset? actualCreationDate = null;
             DateTimeOffset activationDate = minCreationDate + TimeSpan.FromDays(7);
@@ -288,13 +295,13 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                     actualCreationDate = innerCreationDate;
                 });
 
-            // Arrange - services
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IXmlRepository>(new Mock<IXmlRepository>().Object);
-            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
-            serviceCollection.AddSingleton<IInternalXmlKeyManager>(mockInternalKeyManager.Object);
-            var services = serviceCollection.BuildServiceProvider();
-            var keyManager = new XmlKeyManager(services);
+            var options = Options.Create(new KeyManagementOptions()
+            {
+                AuthenticatedEncryptorConfiguration = new Mock<AlgorithmConfiguration>().Object,
+                XmlRepository = new Mock<IXmlRepository>().Object,
+                XmlEncryptor = null
+            });
+            var keyManager = new XmlKeyManager(options, SimpleActivator.DefaultWithoutServices, NullLoggerFactory.Instance, mockInternalKeyManager.Object);
 
             // Act
             keyManager.CreateNewKey(activationDate, expirationDate);
@@ -344,11 +351,11 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                   </key>
                 </root>";
 
-            var encryptorA = new Mock<IAuthenticatedEncryptor>().Object;
-            var encryptorB = new Mock<IAuthenticatedEncryptor>().Object;
+            var descriptorA = new Mock<IAuthenticatedEncryptorDescriptor>().Object;
+            var descriptorB = new Mock<IAuthenticatedEncryptorDescriptor>().Object;
             var mockActivator = new Mock<IActivator>();
-            mockActivator.ReturnAuthenticatedEncryptorGivenDeserializerTypeNameAndInput("deserializer-A", "<elementA />", encryptorA);
-            mockActivator.ReturnAuthenticatedEncryptorGivenDeserializerTypeNameAndInput("deserializer-B", "<elementB />", encryptorB);
+            mockActivator.ReturnDescriptorGivenDeserializerTypeNameAndInput("deserializer-A", "<elementA />", descriptorA);
+            mockActivator.ReturnDescriptorGivenDeserializerTypeNameAndInput("deserializer-B", "<elementB />", descriptorB);
 
             // Act
             var keys = RunGetAllKeysCore(xml, mockActivator.Object).ToArray();
@@ -360,13 +367,13 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             Assert.Equal(XmlConvert.ToDateTimeOffset("2015-02-01T00:00:00Z"), keys[0].ActivationDate);
             Assert.Equal(XmlConvert.ToDateTimeOffset("2015-03-01T00:00:00Z"), keys[0].ExpirationDate);
             Assert.False(keys[0].IsRevoked);
-            Assert.Same(encryptorA, keys[0].CreateEncryptorInstance());
+            Assert.Same(descriptorA, keys[0].Descriptor);
             Assert.Equal(new Guid("041be4c0-52d7-48b4-8d32-f8c0ff315459"), keys[1].KeyId);
             Assert.Equal(XmlConvert.ToDateTimeOffset("2015-04-01T00:00:00Z"), keys[1].CreationDate);
             Assert.Equal(XmlConvert.ToDateTimeOffset("2015-05-01T00:00:00Z"), keys[1].ActivationDate);
             Assert.Equal(XmlConvert.ToDateTimeOffset("2015-06-01T00:00:00Z"), keys[1].ExpirationDate);
             Assert.False(keys[1].IsRevoked);
-            Assert.Same(encryptorB, keys[1].CreateEncryptorInstance());
+            Assert.Same(descriptorB, keys[1].Descriptor);
         }
 
         [Fact]
@@ -425,7 +432,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 </root>";
 
             var mockActivator = new Mock<IActivator>();
-            mockActivator.ReturnAuthenticatedEncryptorGivenDeserializerTypeNameAndInput("theDeserializer", "<node />", new Mock<IAuthenticatedEncryptor>().Object);
+            mockActivator.ReturnDescriptorGivenDeserializerTypeNameAndInput("theDeserializer", "<node />", new Mock<IAuthenticatedEncryptorDescriptor>().Object);
 
             // Act
             var keys = RunGetAllKeysCore(xml, mockActivator.Object).ToArray();
@@ -460,10 +467,10 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                   </key>
                 </root>";
 
-            var expectedEncryptor = new Mock<IAuthenticatedEncryptor>().Object;
+            var expectedDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>().Object;
             var mockActivator = new Mock<IActivator>();
             mockActivator.ReturnDecryptedElementGivenDecryptorTypeNameAndInput("theDecryptor", "<node xmlns='private' />", "<decryptedNode />");
-            mockActivator.ReturnAuthenticatedEncryptorGivenDeserializerTypeNameAndInput("theDeserializer", "<decryptedNode />", expectedEncryptor);
+            mockActivator.ReturnDescriptorGivenDeserializerTypeNameAndInput("theDeserializer", "<decryptedNode />", expectedDescriptor);
 
             // Act
             var keys = RunGetAllKeysCore(xml, mockActivator.Object).ToArray();
@@ -471,7 +478,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             // Assert
             Assert.Equal(1, keys.Length);
             Assert.Equal(new Guid("09712588-ba68-438a-a5ee-fe842b3453b2"), keys[0].KeyId);
-            Assert.Same(expectedEncryptor, keys[0].CreateEncryptorInstance());
+            Assert.Same(expectedDescriptor, keys[0].Descriptor);
         }
 
         [Fact]
@@ -500,9 +507,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                   </key>
                 </root>";
 
-            var expectedEncryptor = new Mock<IAuthenticatedEncryptor>().Object;
+            var expectedDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>().Object;
             var mockActivator = new Mock<IActivator>();
-            mockActivator.ReturnAuthenticatedEncryptorGivenDeserializerTypeNameAndInput("goodDeserializer", "<node xmlns='private' />", expectedEncryptor);
+            mockActivator.ReturnDescriptorGivenDeserializerTypeNameAndInput("goodDeserializer", "<node xmlns='private' />", expectedDescriptor);
 
             // Act
             var keys = RunGetAllKeysCore(xml, mockActivator.Object).ToArray();
@@ -510,7 +517,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             // Assert
             Assert.Equal(1, keys.Length);
             Assert.Equal(new Guid("49c0cda9-0232-4d8c-a541-de20cc5a73d6"), keys[0].KeyId);
-            Assert.Same(expectedEncryptor, keys[0].CreateEncryptorInstance());
+            Assert.Same(expectedDescriptor, keys[0].Descriptor);
         }
 
         [Fact]
@@ -580,21 +587,16 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
         private static IReadOnlyCollection<IKey> RunGetAllKeysCore(string xml, IActivator activator, ILoggerFactory loggerFactory = null)
         {
-            // Arrange - mocks
+            // Arrange
             var mockXmlRepository = new Mock<IXmlRepository>();
             mockXmlRepository.Setup(o => o.GetAllElements()).Returns(XElement.Parse(xml).Elements().ToArray());
-
-            // Arrange - services
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IXmlRepository>(mockXmlRepository.Object);
-            serviceCollection.AddSingleton<IActivator>(activator);
-            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
-            if (loggerFactory != null)
+            var options = Options.Create(new KeyManagementOptions()
             {
-                serviceCollection.AddSingleton<ILoggerFactory>(loggerFactory);
-            }
-            var services = serviceCollection.BuildServiceProvider();
-            var keyManager = new XmlKeyManager(services);
+                AuthenticatedEncryptorConfiguration = new Mock<AlgorithmConfiguration>().Object,
+                XmlRepository = mockXmlRepository.Object,
+                XmlEncryptor = null
+            });
+            var keyManager = new XmlKeyManager(options, activator, loggerFactory ?? NullLoggerFactory.Instance);
 
             // Act
             return keyManager.GetAllKeys();
@@ -603,7 +605,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         [Fact]
         public void RevokeAllKeys()
         {
-            // Arrange - mocks
+            // Arrange
             XElement elementStoredInRepository = null;
             string friendlyNameStoredInRepository = null;
             var mockXmlRepository = new Mock<IXmlRepository>();
@@ -615,12 +617,13 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                     friendlyNameStoredInRepository = friendlyName;
                 });
 
-            // Arrange - services
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IXmlRepository>(mockXmlRepository.Object);
-            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
-            var services = serviceCollection.BuildServiceProvider();
-            var keyManager = new XmlKeyManager(services);
+            var options = Options.Create(new KeyManagementOptions()
+            {
+                AuthenticatedEncryptorConfiguration = new Mock<AlgorithmConfiguration>().Object,
+                XmlRepository = mockXmlRepository.Object,
+                XmlEncryptor = null
+            });
+            var keyManager = new XmlKeyManager(options, SimpleActivator.DefaultWithoutServices, NullLoggerFactory.Instance);
 
             var revocationDate = XmlConvert.ToDateTimeOffset("2015-03-01T19:13:19.7573854-08:00");
 
@@ -664,12 +667,13 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                     friendlyNameStoredInRepository = friendlyName;
                 });
 
-            // Arrange - services
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IXmlRepository>(mockXmlRepository.Object);
-            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
-            var services = serviceCollection.BuildServiceProvider();
-            var keyManager = new XmlKeyManager(services);
+            var options = Options.Create(new KeyManagementOptions()
+            {
+                AuthenticatedEncryptorConfiguration = new Mock<AlgorithmConfiguration>().Object,
+                XmlRepository = mockXmlRepository.Object,
+                XmlEncryptor = null
+            });
+            var keyManager = new XmlKeyManager(options, SimpleActivator.DefaultWithoutServices, NullLoggerFactory.Instance);
 
             var revocationDate = new DateTimeOffset(2014, 01, 01, 0, 0, 0, TimeSpan.Zero);
 
@@ -704,7 +708,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         [Fact]
         public void RevokeKey_CallsInternalManager()
         {
-            // Arrange - mocks
+            // Arrange
             var keyToRevoke = new Guid("a11f35fc-1fed-4bd4-b727-056a63b70932");
             DateTimeOffset minRevocationDate = DateTimeOffset.UtcNow;
             DateTimeOffset? actualRevocationDate = null;
@@ -716,13 +720,13 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                     actualRevocationDate = innerRevocationDate;
                 });
 
-            // Arrange - services
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IXmlRepository>(new Mock<IXmlRepository>().Object);
-            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
-            serviceCollection.AddSingleton<IInternalXmlKeyManager>(mockInternalKeyManager.Object);
-            var services = serviceCollection.BuildServiceProvider();
-            var keyManager = new XmlKeyManager(services);
+            var options = Options.Create(new KeyManagementOptions()
+            {
+                AuthenticatedEncryptorConfiguration = new Mock<AlgorithmConfiguration>().Object,
+                XmlRepository = new Mock<IXmlRepository>().Object,
+                XmlEncryptor = null
+            });
+            var keyManager = new XmlKeyManager(options, SimpleActivator.DefaultWithoutServices, NullLoggerFactory.Instance, mockInternalKeyManager.Object);
 
             // Act
             keyManager.RevokeKey(keyToRevoke, "Here's some reason text.");
@@ -736,6 +740,28 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             public IAuthenticatedEncryptorDescriptor ImportFromXml(XElement element)
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        private class TestEncryptorFactory : IAuthenticatedEncryptorFactory
+        {
+            private IAuthenticatedEncryptorDescriptor _associatedDescriptor;
+            private IAuthenticatedEncryptor _expectedEncryptor;
+
+            public TestEncryptorFactory(IAuthenticatedEncryptorDescriptor associatedDescriptor = null, IAuthenticatedEncryptor expectedEncryptor = null)
+            {
+                _associatedDescriptor = associatedDescriptor;
+                _expectedEncryptor = expectedEncryptor;
+            }
+
+            public IAuthenticatedEncryptor CreateEncryptorInstance(IKey key)
+            {
+                if (_associatedDescriptor != null && _associatedDescriptor != key.Descriptor)
+                {
+                    return null;
+                }
+
+                return _expectedEncryptor ?? new Mock<IAuthenticatedEncryptor>().Object;
             }
         }
     }

@@ -24,21 +24,8 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
         /// Creates a <see cref="FileSystemXmlRepository"/> with keys stored at the given directory.
         /// </summary>
         /// <param name="directory">The directory in which to persist key material.</param>
-        public FileSystemXmlRepository(DirectoryInfo directory)
-            : this(directory, services: null)
-        {
-            if (directory == null)
-            {
-                throw new ArgumentNullException(nameof(directory));
-            }
-        }
-
-        /// <summary>
-        /// Creates a <see cref="FileSystemXmlRepository"/> with keys stored at the given directory.
-        /// </summary>
-        /// <param name="directory">The directory in which to persist key material.</param>
-        /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public FileSystemXmlRepository(DirectoryInfo directory, IServiceProvider services)
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        public FileSystemXmlRepository(DirectoryInfo directory, ILoggerFactory loggerFactory)
         {
             if (directory == null)
             {
@@ -46,8 +33,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             }
 
             Directory = directory;
-            Services = services;
-            _logger = services?.GetLogger<FileSystemXmlRepository>();
+            _logger = loggerFactory.CreateLogger<FileSystemXmlRepository>();
         }
 
         /// <summary>
@@ -64,11 +50,6 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
         /// The directory into which key material will be written.
         /// </summary>
         public DirectoryInfo Directory { get; }
-
-        /// <summary>
-        /// The <see cref="IServiceProvider"/> provided to the constructor.
-        /// </summary>
-        protected IServiceProvider Services { get; }
 
         private const string DataProtectionKeysFolderName = "DataProtection-Keys";
 
@@ -185,7 +166,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
         private XElement ReadElementFromFile(string fullPath)
         {
-            _logger?.ReadingDataFromFile(fullPath);
+            _logger.ReadingDataFromFile(fullPath);
 
             using (var fileStream = File.OpenRead(fullPath))
             {
@@ -203,7 +184,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             if (!IsSafeFilename(friendlyName))
             {
                 var newFriendlyName = Guid.NewGuid().ToString();
-                _logger?.NameIsNotSafeFileName(friendlyName, newFriendlyName);
+                _logger.NameIsNotSafeFileName(friendlyName, newFriendlyName);
                 friendlyName = newFriendlyName;
             }
 
@@ -229,7 +210,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
                 // Once the file has been fully written, perform the rename.
                 // Renames are atomic operations on the file systems we support.
-                _logger?.WritingDataToFile(finalFilename);
+                _logger.WritingDataToFile(finalFilename);
                 File.Move(tempFilename, finalFilename);
             }
             finally

@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal
 {
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal
         /// The default key, may be null if no key is a good default candidate.
         /// </summary>
         /// <remarks>
-        /// If this property is non-null, its <see cref="IKey.CreateEncryptorInstance"/> method will succeed
+        /// If this property is non-null, its <see cref="IAuthenticatedEncryptorFactory.CreateEncryptorInstance(IKey)"/> method will succeed
         /// so is appropriate for use with deferred keys.
         /// </remarks>
         public IKey DefaultKey;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal
         /// be null if there is no viable fallback key.
         /// </summary>
         /// <remarks>
-        /// If this property is non-null, its <see cref="IKey.CreateEncryptorInstance"/> method will succeed
+        /// If this property is non-null, its <see cref="IAuthenticatedEncryptorFactory.CreateEncryptorInstance(IKey)"/> method will succeed
         /// so is appropriate for use with deferred keys.
         /// </remarks>
         public IKey FallbackKey;

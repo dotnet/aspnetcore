@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             mockKeyEscrowSink.Setup(o => o.Store(It.IsAny<Guid>(), It.IsAny<XElement>()))
                 .Callback<Guid, XElement>((keyId, element) =>
                 {
-                    output.Add(String.Format(CultureInfo.InvariantCulture, "{0:D}: {1}", keyId, element.Name.LocalName));
+                    output.Add(string.Format(CultureInfo.InvariantCulture, "{0:D}: {1}", keyId, element.Name.LocalName));
                 });
 
             var serviceCollection = new ServiceCollection();
@@ -64,14 +64,14 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             mockKeyEscrowSink1.Setup(o => o.Store(It.IsAny<Guid>(), It.IsAny<XElement>()))
                 .Callback<Guid, XElement>((keyId, element) =>
                 {
-                    output.Add(String.Format(CultureInfo.InvariantCulture, "[sink1] {0:D}: {1}", keyId, element.Name.LocalName));
+                    output.Add(string.Format(CultureInfo.InvariantCulture, "[sink1] {0:D}: {1}", keyId, element.Name.LocalName));
                 });
 
             var mockKeyEscrowSink2 = new Mock<IKeyEscrowSink>();
             mockKeyEscrowSink2.Setup(o => o.Store(It.IsAny<Guid>(), It.IsAny<XElement>()))
                 .Callback<Guid, XElement>((keyId, element) =>
                 {
-                    output.Add(String.Format(CultureInfo.InvariantCulture, "[sink2] {0:D}: {1}", keyId, element.Name.LocalName));
+                    output.Add(string.Format(CultureInfo.InvariantCulture, "[sink2] {0:D}: {1}", keyId, element.Name.LocalName));
                 });
 
             var serviceCollection = new ServiceCollection();

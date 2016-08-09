@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
             {
-                string message = String.Format(CultureInfo.InvariantCulture,
+                string message = string.Format(CultureInfo.InvariantCulture,
                     "Provider: {0}" + Environment.NewLine +
                     "Log level: {1}" + Environment.NewLine +
                     "Event id: {2}" + Environment.NewLine +

@@ -9,7 +9,6 @@ using System.Security.Cryptography.Xml;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Cryptography;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
@@ -24,28 +23,12 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         private readonly ILogger _logger;
 
         /// <summary>
-        /// Creates a <see cref="CertificateXmlEncryptor"/> given a certificate's thumbprint and an
-        /// <see cref="ICertificateResolver"/> that can be used to resolve the certificate.
-        /// </summary>
-        /// <param name="thumbprint">The thumbprint (as a hex string) of the certificate with which to
-        /// encrypt the key material. The certificate must be locatable by <paramref name="certificateResolver"/>.</param>
-        /// <param name="certificateResolver">A resolver which can locate <see cref="X509Certificate2"/> objects.</param>
-        public CertificateXmlEncryptor(string thumbprint, ICertificateResolver certificateResolver)
-            : this(thumbprint, certificateResolver, services: null)
-        {
-        }
-
-        /// <summary>
         /// Creates a <see cref="CertificateXmlEncryptor"/> given a certificate's thumbprint, an
         /// <see cref="ICertificateResolver"/> that can be used to resolve the certificate, and
         /// an <see cref="IServiceProvider"/>.
         /// </summary>
-        /// <param name="thumbprint">The thumbprint (as a hex string) of the certificate with which to
-        /// encrypt the key material. The certificate must be locatable by <paramref name="certificateResolver"/>.</param>
-        /// <param name="certificateResolver">A resolver which can locate <see cref="X509Certificate2"/> objects.</param>
-        /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public CertificateXmlEncryptor(string thumbprint, ICertificateResolver certificateResolver, IServiceProvider services)
-            : this(services)
+        public CertificateXmlEncryptor(string thumbprint, ICertificateResolver certificateResolver, ILoggerFactory loggerFactory)
+            : this(loggerFactory, encryptor: null)
         {
             if (thumbprint == null)
             {
@@ -61,22 +44,11 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         }
 
         /// <summary>
-        /// Creates a <see cref="CertificateXmlEncryptor"/> given an <see cref="X509Certificate2"/> instance.
-        /// </summary>
-        /// <param name="certificate">The <see cref="X509Certificate2"/> with which to encrypt the key material.</param>
-        public CertificateXmlEncryptor(X509Certificate2 certificate)
-            : this(certificate, services: null)
-        {
-        }
-
-        /// <summary>
         /// Creates a <see cref="CertificateXmlEncryptor"/> given an <see cref="X509Certificate2"/> instance
         /// and an <see cref="IServiceProvider"/>.
         /// </summary>
-        /// <param name="certificate">The <see cref="X509Certificate2"/> with which to encrypt the key material.</param>
-        /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public CertificateXmlEncryptor(X509Certificate2 certificate, IServiceProvider services)
-            : this(services)
+        public CertificateXmlEncryptor(X509Certificate2 certificate, ILoggerFactory loggerFactory)
+            : this(loggerFactory, encryptor: null)
         {
             if (certificate == null)
             {
@@ -86,10 +58,10 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             _certFactory = () => certificate;
         }
 
-        internal CertificateXmlEncryptor(IServiceProvider services)
+        internal CertificateXmlEncryptor(ILoggerFactory loggerFactory, IInternalCertificateXmlEncryptor encryptor)
         {
-            _encryptor = services?.GetService<IInternalCertificateXmlEncryptor>() ?? this;
-            _logger = services.GetLogger<CertificateXmlEncryptor>();
+            _encryptor = encryptor ?? this;
+            _logger = loggerFactory.CreateLogger<CertificateXmlEncryptor>();
         }
 
         /// <summary>
@@ -149,7 +121,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 }
                 catch (Exception ex)
                 {
-                    _logger?.ExceptionWhileTryingToResolveCertificateWithThumbprint(thumbprint, ex);
+                    _logger.ExceptionWhileTryingToResolveCertificateWithThumbprint(thumbprint, ex);
 
                     throw;
                 }
@@ -161,7 +133,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             var cert = _certFactory()
                 ?? CryptoUtil.Fail<X509Certificate2>("Cert factory returned null.");
 
-            _logger?.EncryptingToX509CertificateWithThumbprint(cert.Thumbprint);
+            _logger.EncryptingToX509CertificateWithThumbprint(cert.Thumbprint);
 
             try
             {
@@ -169,7 +141,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             }
             catch (Exception ex)
             {
-                _logger?.AnErrorOccurredWhileEncryptingToX509CertificateWithThumbprint(cert.Thumbprint, ex);
+                _logger.AnErrorOccurredWhileEncryptingToX509CertificateWithThumbprint(cert.Thumbprint, ex);
                 throw;
             }
         }

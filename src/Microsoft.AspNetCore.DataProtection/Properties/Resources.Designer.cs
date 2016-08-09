@@ -394,6 +394,22 @@ namespace Microsoft.AspNetCore.DataProtection
             return string.Format(CultureInfo.CurrentCulture, GetString("LifetimeMustNotBeNegative"), p0);
         }
 
+        /// <summary>
+        /// The '{0}' instance could not be found. When an '{1}' instance is set, a corresponding '{0}' instance must also be set.
+        /// </summary>
+        internal static string XmlKeyManager_IXmlRepositoryNotFound
+        {
+            get { return GetString("XmlKeyManager_IXmlRepositoryNotFound"); }
+        }
+
+        /// <summary>
+        /// The '{0}' instance could not be found. When an '{1}' instance is set, a corresponding '{0}' instance must also be set.
+        /// </summary>
+        internal static string FormatXmlKeyManager_IXmlRepositoryNotFound(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("XmlKeyManager_IXmlRepositoryNotFound"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

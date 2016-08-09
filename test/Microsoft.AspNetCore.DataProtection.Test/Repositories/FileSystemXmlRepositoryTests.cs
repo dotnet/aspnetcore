@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.Repositories
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             WithUniqueTempDirectory(dirInfo =>
             {
                 // Arrange
-                var repository = new FileSystemXmlRepository(dirInfo);
+                var repository = new FileSystemXmlRepository(dirInfo, NullLoggerFactory.Instance);
 
                 // Act
                 var retVal = repository.Directory;
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             WithUniqueTempDirectory(dirInfo =>
             {
                 // Arrange
-                var repository = new FileSystemXmlRepository(dirInfo);
+                var repository = new FileSystemXmlRepository(dirInfo, NullLoggerFactory.Instance);
 
                 // Act
                 var allElements = repository.GetAllElements();
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             {
                 // Arrange
                 var element = XElement.Parse("<element1 />");
-                var repository = new FileSystemXmlRepository(dirInfo);
+                var repository = new FileSystemXmlRepository(dirInfo, NullLoggerFactory.Instance);
 
                 // Act
                 repository.StoreElement(element, "valid-friendly-name");
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             {
                 // Arrange
                 var element = XElement.Parse("<element1 />");
-                var repository = new FileSystemXmlRepository(dirInfo);
+                var repository = new FileSystemXmlRepository(dirInfo, NullLoggerFactory.Instance);
 
                 // Act
                 repository.StoreElement(element, friendlyName);
@@ -121,7 +122,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             WithUniqueTempDirectory(dirInfo =>
             {
                 // Arrange
-                var repository = new FileSystemXmlRepository(dirInfo);
+                var repository = new FileSystemXmlRepository(dirInfo, NullLoggerFactory.Instance);
 
                 // Act
                 repository.StoreElement(new XElement("element1"), friendlyName: null);

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Win32;
 using Xunit;
 
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             WithUniqueTempRegKey(regKey =>
             {
                 // Arrange
-                var repository = new RegistryXmlRepository(regKey);
+                var repository = new RegistryXmlRepository(regKey, NullLoggerFactory.Instance);
 
                 // Act
                 var retVal = repository.RegistryKey;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             WithUniqueTempRegKey(regKey =>
             {
                 // Arrange
-                var repository = new RegistryXmlRepository(regKey);
+                var repository = new RegistryXmlRepository(regKey, NullLoggerFactory.Instance);
 
                 // Act
                 var allElements = repository.GetAllElements();
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             {
                 // Arrange
                 var element = XElement.Parse("<element1 />");
-                var repository = new RegistryXmlRepository(regKey);
+                var repository = new RegistryXmlRepository(regKey, NullLoggerFactory.Instance);
 
                 // Act
                 repository.StoreElement(element, "valid-friendly-name");
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             {
                 // Arrange
                 var element = XElement.Parse("<element1 />");
-                var repository = new RegistryXmlRepository(regKey);
+                var repository = new RegistryXmlRepository(regKey, NullLoggerFactory.Instance);
 
                 // Act
                 repository.StoreElement(element, friendlyName);
@@ -112,7 +113,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             WithUniqueTempRegKey(regKey =>
             {
                 // Arrange
-                var repository = new RegistryXmlRepository(regKey);
+                var repository = new RegistryXmlRepository(regKey, NullLoggerFactory.Instance);
 
                 // Act
                 repository.StoreElement(new XElement("element1"), friendlyName: null);

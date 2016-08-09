@@ -13,18 +13,6 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
     /// </summary>
     public sealed class ManagedAuthenticatedEncryptorDescriptorDeserializer : IAuthenticatedEncryptorDescriptorDeserializer
     {
-        private readonly IServiceProvider _services;
-
-        public ManagedAuthenticatedEncryptorDescriptorDeserializer()
-            : this(services: null)
-        {
-        }
-
-        public ManagedAuthenticatedEncryptorDescriptorDeserializer(IServiceProvider services)
-        {
-            _services = services;
-        }
-
         /// <summary>
         /// Imports the <see cref="ManagedAuthenticatedEncryptorDescriptor"/> from serialized XML.
         /// </summary>
@@ -42,18 +30,18 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
             //   <masterKey>...</masterKey>
             // </descriptor>
 
-            var settings = new ManagedAuthenticatedEncryptionSettings();
+            var configuration = new ManagedAuthenticatedEncryptorConfiguration();
 
             var encryptionElement = element.Element("encryption");
-            settings.EncryptionAlgorithmType = FriendlyNameToType((string)encryptionElement.Attribute("algorithm"));
-            settings.EncryptionAlgorithmKeySize = (int)encryptionElement.Attribute("keyLength");
+            configuration.EncryptionAlgorithmType = FriendlyNameToType((string)encryptionElement.Attribute("algorithm"));
+            configuration.EncryptionAlgorithmKeySize = (int)encryptionElement.Attribute("keyLength");
 
             var validationElement = element.Element("validation");
-            settings.ValidationAlgorithmType = FriendlyNameToType((string)validationElement.Attribute("algorithm"));
+            configuration.ValidationAlgorithmType = FriendlyNameToType((string)validationElement.Attribute("algorithm"));
 
             Secret masterKey = ((string)element.Element("masterKey")).ToSecret();
 
-            return new ManagedAuthenticatedEncryptorDescriptor(settings, masterKey, _services);
+            return new ManagedAuthenticatedEncryptorDescriptor(configuration, masterKey);
         }
 
         // Any changes to this method should also be be reflected

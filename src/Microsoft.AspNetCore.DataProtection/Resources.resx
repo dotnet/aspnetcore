@@ -189,4 +189,7 @@
   <data name="LifetimeMustNotBeNegative" xml:space="preserve">
     <value>{0} must not be negative</value>
   </data>
+  <data name="XmlKeyManager_IXmlRepositoryNotFound" xml:space="preserve">
+    <value>The '{0}' instance could not be found. When an '{1}' instance is set, a corresponding '{0}' instance must also be set.</value>
+  </data>
 </root>

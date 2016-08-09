@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal
 {
@@ -14,8 +15,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal
     {
         private readonly CancellationToken _expirationToken;
 
-        internal CacheableKeyRing(CancellationToken expirationToken, DateTimeOffset expirationTime, IKey defaultKey, IEnumerable<IKey> allKeys)
-            : this(expirationToken, expirationTime, keyRing: new KeyRing(defaultKey, allKeys))
+        internal CacheableKeyRing(CancellationToken expirationToken, DateTimeOffset expirationTime, IKey defaultKey, IEnumerable<IKey> allKeys, IEnumerable<IAuthenticatedEncryptorFactory> encryptorFactories)
+            : this(expirationToken, expirationTime, keyRing: new KeyRing(defaultKey, allKeys, encryptorFactories))
         {
         }
 

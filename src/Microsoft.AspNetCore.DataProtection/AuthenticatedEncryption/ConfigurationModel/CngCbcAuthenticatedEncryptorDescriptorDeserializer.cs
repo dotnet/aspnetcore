@@ -12,18 +12,6 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
     /// </summary>
     public sealed class CngCbcAuthenticatedEncryptorDescriptorDeserializer : IAuthenticatedEncryptorDescriptorDeserializer
     {
-        private readonly IServiceProvider _services;
-
-        public CngCbcAuthenticatedEncryptorDescriptorDeserializer()
-            : this(services: null)
-        {
-        }
-
-        public CngCbcAuthenticatedEncryptorDescriptorDeserializer(IServiceProvider services)
-        {
-            _services = services;
-        }
-
         /// <summary>
         /// Imports the <see cref="CngCbcAuthenticatedEncryptorDescriptor"/> from serialized XML.
         /// </summary>
@@ -41,20 +29,20 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
             //   <masterKey>...</masterKey>
             // </descriptor>
 
-            var settings = new CngCbcAuthenticatedEncryptionSettings();
+            var configuration = new CngCbcAuthenticatedEncryptorConfiguration();
 
             var encryptionElement = element.Element("encryption");
-            settings.EncryptionAlgorithm = (string)encryptionElement.Attribute("algorithm");
-            settings.EncryptionAlgorithmKeySize = (int)encryptionElement.Attribute("keyLength");
-            settings.EncryptionAlgorithmProvider = (string)encryptionElement.Attribute("provider"); // could be null
+            configuration.EncryptionAlgorithm = (string)encryptionElement.Attribute("algorithm");
+            configuration.EncryptionAlgorithmKeySize = (int)encryptionElement.Attribute("keyLength");
+            configuration.EncryptionAlgorithmProvider = (string)encryptionElement.Attribute("provider"); // could be null
 
             var hashElement = element.Element("hash");
-            settings.HashAlgorithm = (string)hashElement.Attribute("algorithm");
-            settings.HashAlgorithmProvider = (string)hashElement.Attribute("provider"); // could be null
+            configuration.HashAlgorithm = (string)hashElement.Attribute("algorithm");
+            configuration.HashAlgorithmProvider = (string)hashElement.Attribute("provider"); // could be null
 
             Secret masterKey = ((string)element.Element("masterKey")).ToSecret();
 
-            return new CngCbcAuthenticatedEncryptorDescriptor(settings, masterKey, _services);
+            return new CngCbcAuthenticatedEncryptorDescriptor(configuration, masterKey);
         }
     }
 }

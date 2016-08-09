@@ -8,6 +8,8 @@ using System.Security.Cryptography.Xml;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -22,7 +24,6 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             var symmetricAlgorithm = new TripleDESCryptoServiceProvider();
             symmetricAlgorithm.GenerateKey();
 
-            var serviceCollection = new ServiceCollection();
             var mockInternalEncryptor = new Mock<IInternalCertificateXmlEncryptor>();
             mockInternalEncryptor.Setup(o => o.PerformEncryption(It.IsAny<EncryptedXml>(), It.IsAny<XmlElement>()))
                 .Returns<EncryptedXml, XmlElement>((encryptedXml, element) =>
@@ -30,7 +31,6 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                     encryptedXml.AddKeyNameMapping("theKey", symmetricAlgorithm); // use symmetric encryption
                     return encryptedXml.Encrypt(element, "theKey");
                 });
-            serviceCollection.AddSingleton<IInternalCertificateXmlEncryptor>(mockInternalEncryptor.Object);
 
             var mockInternalDecryptor = new Mock<IInternalEncryptedXmlDecryptor>();
             mockInternalDecryptor.Setup(o => o.PerformPreDecryptionSetup(It.IsAny<EncryptedXml>()))
@@ -38,10 +38,12 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 {
                     encryptedXml.AddKeyNameMapping("theKey", symmetricAlgorithm); // use symmetric encryption
                 });
+
+            var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IInternalEncryptedXmlDecryptor>(mockInternalDecryptor.Object);
 
             var services = serviceCollection.BuildServiceProvider();
-            var encryptor = new CertificateXmlEncryptor(services);
+            var encryptor = new CertificateXmlEncryptor(NullLoggerFactory.Instance, mockInternalEncryptor.Object);
             var decryptor = new EncryptedXmlDecryptor(services);
 
             var originalXml = XElement.Parse(@"<mySecret value='265ee4ea-ade2-43b1-b706-09b259e58b6b' />");

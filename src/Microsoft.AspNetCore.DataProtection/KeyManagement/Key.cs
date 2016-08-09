@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
     internal sealed class Key : KeyBase
     {
         public Key(Guid keyId, DateTimeOffset creationDate, DateTimeOffset activationDate, DateTimeOffset expirationDate, IAuthenticatedEncryptorDescriptor descriptor)
-            : base(keyId, creationDate, activationDate, expirationDate, new Lazy<IAuthenticatedEncryptor>(descriptor.CreateEncryptorInstance))
+            : base(keyId, creationDate, activationDate, expirationDate, new Lazy<IAuthenticatedEncryptorDescriptor>(() => descriptor))
         {
         }
     }

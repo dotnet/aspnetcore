@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                   </node2>
                 </rootNode>");
 
-            var expected = String.Format(@"
+            var expected = string.Format(@"
                 <rootNode xmlns:x='http://schemas.asp.net/2015/03/dataProtection'>
                   <x:encryptedSecret decryptorType='{0}'>
                     <node1_encrypted />
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                   </node2>
                 </rootNode>");
 
-            var expected = String.Format(@"
+            var expected = string.Format(@"
                 <rootNode xmlns:x='http://schemas.asp.net/2015/03/dataProtection'>
                   <x:encryptedSecret decryptorType='{0}'>
                     <node1 x:requiresEncryption='true'>
