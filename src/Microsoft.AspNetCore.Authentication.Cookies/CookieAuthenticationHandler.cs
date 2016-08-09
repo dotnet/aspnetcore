@@ -311,14 +311,24 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             Response.Headers[HeaderNames.CacheControl] = HeaderValueNoCache;
             Response.Headers[HeaderNames.Pragma] = HeaderValueNoCache;
             Response.Headers[HeaderNames.Expires] = HeaderValueMinusOne;
+
             if (shouldRedirectToReturnUrl && Response.StatusCode == 200)
             {
+                CookieRedirectContext redirectContext = null;
+                
                 var query = Request.Query;
                 var redirectUri = query[Options.ReturnUrlParameter];
-                if (!StringValues.IsNullOrEmpty(redirectUri)
-                    && IsHostRelative(redirectUri))
+                if (!StringValues.IsNullOrEmpty(redirectUri) && IsHostRelative(redirectUri))
                 {
-                    var redirectContext = new CookieRedirectContext(Context, Options, redirectUri, properties);
+                    redirectContext = new CookieRedirectContext(Context, Options, redirectUri, properties);
+                }
+                else if (!string.IsNullOrEmpty(properties.RedirectUri) && IsHostRelative(properties.RedirectUri))
+                {
+                    redirectContext = new CookieRedirectContext(Context, Options, properties.RedirectUri, properties);
+                }
+
+                if (redirectContext != null)
+                {
                     await Options.Events.RedirectToReturnUrl(redirectContext);
                 }
             }
