@@ -106,6 +106,38 @@ namespace Microsoft.AspNetCore.Rewrite
             return string.Format(CultureInfo.CurrentCulture, GetString("Error_InputParserUnrecognizedParameter"), p0, p1);
         }
 
+        /// <summary>
+        /// Could not parse the mod_rewrite file. Message: '{0}'.  Line number '{1}'.
+        /// </summary>
+        internal static string Error_ModRewriteParseError
+        {
+            get { return GetString("Error_ModRewriteParseError"); }
+        }
+
+        /// <summary>
+        /// Could not parse the mod_rewrite file. Message: '{0}'.  Line number '{1}'.
+        /// </summary>
+        internal static string FormatError_ModRewriteParseError(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_ModRewriteParseError"), p0, p1);
+        }
+
+        /// <summary>
+        /// Could not parse the mod_rewrite file.  Line number '{0}'.
+        /// </summary>
+        internal static string Error_ModRewriteGeneralParseError
+        {
+            get { return GetString("Error_ModRewriteGeneralParseError"); }
+        }
+
+        /// <summary>
+        /// Could not parse the mod_rewrite file.  Line number '{0}'.
+        /// </summary>
+        internal static string FormatError_ModRewriteGeneralParseError(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_ModRewriteGeneralParseError"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

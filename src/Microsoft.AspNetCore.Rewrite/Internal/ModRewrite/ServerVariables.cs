@@ -2,11 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Net.Sockets;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Rewrite.Internal;
+using Microsoft.AspNetCore.Rewrite.Internal.PatternSegments;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
@@ -16,164 +13,112 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
     /// </summary>
     public static class ServerVariables
     {
-        public static HashSet<string> ValidServerVariables = new HashSet<string>()
-        {
-            "HTTP_ACCEPT",
-            "HTTP_COOKIE",
-            "HTTP_FORWARDED",
-            "HTTP_HOST",
-            "HTTP_PROXY_CONNECTION",
-            "HTTP_REFERER",
-            "HTTP_USER_AGENT",
-            "AUTH_TYPE",
-            "CONN_REMOTE_ADDR",
-            "CONTEXT_PREFIX",
-            "CONTEXT_DOCUMENT_ROOT",
-            "IPV6",
-            "PATH_INFO",
-            "QUERY_STRING",
-            "REMOTE_ADDR",
-            "REMOTE_HOST",
-            "REMOTE_IDENT",
-            "REMOTE_PORT",
-            "REMOTE_USER",
-            "REQUEST_METHOD",
-            "SCRIPT_FILENAME",
-            "DOCUMENT_ROOT",
-            "SCRIPT_GROUP",
-            "SCRIPT_USER",
-            "SERVER_ADDR",
-            "SERVER_ADMIN",
-            "SERVER_NAME",
-            "SERVER_PORT",
-            "SERVER_PROTOCOL",
-            "SERVER_SOFTWARE",
-            "TIME_YEAR",
-            "TIME_MON",
-            "TIME_DAY",
-            "TIME_HOUR",
-            "TIME_MIN",
-            "TIME_SEC",
-            "TIME_WDAY",
-            "TIME",
-            "API_VERSION",
-            "HTTPS",
-            "IS_SUBREQ",
-            "REQUEST_FILENAME",
-            "REQUEST_SCHEME",
-            "REQUEST_URI",
-            "THE_REQUEST"
-
-        };
 
         /// <summary>
         /// Translates mod_rewrite server variables strings to an enum of different server variables.
         /// </summary>
         /// <param name="variable">The server variable string.</param>
-        /// <param name="context">The HttpContext context.</param>
+        /// <param name="context">The Parser context</param>
         /// <returns>The appropriate enum if the server variable exists, else ServerVariable.None</returns>
-        public static string Resolve(string variable, HttpContext context)
+        public static PatternSegment FindServerVariable(string variable, ParserContext context)
         {
-            // TODO talk about perf here
             switch (variable)
             {
                 case "HTTP_ACCEPT":
-                    return context.Request.Headers[HeaderNames.Accept];
+                    return new HeaderSegment(HeaderNames.Accept);
                 case "HTTP_COOKIE":
-                    return context.Request.Headers[HeaderNames.Cookie];
-                case "HTTP_FORWARDED":
-                    return context.Request.Headers["Forwarded"];
+                    return new HeaderSegment(HeaderNames.Cookie);
                 case "HTTP_HOST":
-                    return context.Request.Headers[HeaderNames.Host];
-                case "HTTP_PROXY_CONNECTION":
-                    return context.Request.Headers[HeaderNames.ProxyAuthenticate];
+                    return new HeaderSegment(HeaderNames.Host);
                 case "HTTP_REFERER":
-                    return context.Request.Headers[HeaderNames.Referer];
+                    return new HeaderSegment(HeaderNames.Referer);
                 case "HTTP_USER_AGENT":
-                    return context.Request.Headers[HeaderNames.UserAgent];
+                    return new HeaderSegment(HeaderNames.UserAgent);
+                case "HTTP_CONNECTION":
+                    return new HeaderSegment(HeaderNames.Connection);
+                case "HTTP_FORWARDED":
+                    return new HeaderSegment("Forwarded");
                 case "AUTH_TYPE":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Auth-Type server variable is not supported");
                 case "CONN_REMOTE_ADDR":
-                    return context.Connection.RemoteIpAddress?.ToString();
+                    return new RemoteAddressSegment();
                 case "CONTEXT_PREFIX":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Context-prefix server variable is not supported");
                 case "CONTEXT_DOCUMENT_ROOT":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Context-Document-Root server variable is not supported");
                 case "IPV6":
-                    return context.Connection.LocalIpAddress.AddressFamily == AddressFamily.InterNetworkV6 ? "on" : "off";
+                    return new IsIPV6Segment();
                 case "PATH_INFO":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Path-Info server variable is not supported");
                 case "QUERY_STRING":
-                    return context.Request.QueryString.Value;
+                    return new QueryStringSegment();
                 case "REMOTE_ADDR":
-                    return context.Connection.RemoteIpAddress?.ToString();
+                    return new RemoteAddressSegment();
                 case "REMOTE_HOST":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Remote-Host server variable is not supported");
                 case "REMOTE_IDENT":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Remote-Identity server variable is not supported");
                 case "REMOTE_PORT":
-                    return context.Connection.RemotePort.ToString(CultureInfo.InvariantCulture);
+                    return new RemotePortSegment();
                 case "REMOTE_USER":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Remote-User server variable is not supported");
                 case "REQUEST_METHOD":
-                    return context.Request.Method;
+                    return new RequestMethodSegment();
                 case "SCRIPT_FILENAME":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Script-Filename server variable is not supported");
                 case "DOCUMENT_ROOT":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Document-Root server variable is not supported");
                 case "SCRIPT_GROUP":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Script-Group server variable is not supported");
                 case "SCRIPT_USER":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Script-User server variable is not supported");
                 case "SERVER_ADDR":
-                    return context.Connection.LocalIpAddress?.ToString();
+                    return new LocalAddressSegment();
                 case "SERVER_ADMIN":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Server-Admin server variable is not supported");
                 case "SERVER_NAME":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Server-Name server variable is not supported");
                 case "SERVER_PORT":
-                    return context.Connection.LocalPort.ToString(CultureInfo.InvariantCulture);
+                    return new LocalPortSegment();
                 case "SERVER_PROTOCOL":
-                    return context.Features.Get<IHttpRequestFeature>()?.Protocol;
+                    return new ServerProtocolSegment();
                 case "SERVER_SOFTWARE":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Server-Software server variable is not supported");
                 case "TIME_YEAR":
-                    return DateTimeOffset.UtcNow.Year.ToString(CultureInfo.InvariantCulture);
+                    return new DateTimeSegment(variable);
                 case "TIME_MON":
-                    return DateTimeOffset.UtcNow.Month.ToString(CultureInfo.InvariantCulture);
+                    return new DateTimeSegment(variable);
                 case "TIME_DAY":
-                    return DateTimeOffset.UtcNow.Day.ToString(CultureInfo.InvariantCulture);
+                    return new DateTimeSegment(variable);
                 case "TIME_HOUR":
-                    return DateTimeOffset.UtcNow.Hour.ToString(CultureInfo.InvariantCulture);
+                    return new DateTimeSegment(variable);
                 case "TIME_MIN":
-                    return DateTimeOffset.UtcNow.Minute.ToString(CultureInfo.InvariantCulture);
+                    return new DateTimeSegment(variable);
                 case "TIME_SEC":
-                    return DateTimeOffset.UtcNow.Second.ToString(CultureInfo.InvariantCulture);
+                    return new DateTimeSegment(variable);
                 case "TIME_WDAY":
-                    return  ((int) DateTimeOffset.UtcNow.DayOfWeek).ToString(CultureInfo.InvariantCulture);
+                    return new DateTimeSegment(variable);
                 case "TIME":
-                    return DateTimeOffset.UtcNow.ToString(CultureInfo.InvariantCulture);
+                    return new DateTimeSegment(variable);
                 case "API_VERSION":
                     throw new NotImplementedException();
                 case "HTTPS":
-                    return context.Request.IsHttps ? "on" : "off";
+                    return new IsHttpsModSegment();
                 case "HTTP2":
-                    return context.Request.Scheme == "http2" ? "on" : "off";
+                    throw new NotImplementedException("Http2 server variable is not supported");
                 case "IS_SUBREQ":
                     // TODO maybe can do this? context.Request.HttpContext ?
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Is-Subrequest server variable is not supported");
                 case "REQUEST_FILENAME":
-                    return context.Request.Path.Value.Substring(1);
+                    return new RequestFileNameSegment();
                 case "REQUEST_SCHEME":
-                    return context.Request.Scheme;
+                    return new SchemeSegment();
                 case "REQUEST_URI":
-                    // TODO This isn't an ideal solution. What this assumes is that all conditions don't have a leading slash before it.
-                    return context.Request.Path.Value.Substring(1);
+                    return new UrlSegment();
                 case "THE_REQUEST":
-                    // TODO
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("The-Request server variable is not supported");
                 default:
-                    return null;
+                    throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(variable, context.Index));
             }
         }
     }

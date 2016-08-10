@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Rewrite.Internal;
+using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
+using Microsoft.AspNetCore.Rewrite.Internal.UrlMatches;
 using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite.UrlActions;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite.UrlMatches;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
@@ -155,9 +155,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 },
                 Conditions = new Conditions
                 {
-                    ConditionList = conditions,
-                    MatchType = condGrouping,
-                    TrackingAllCaptures = condTracking
+                    ConditionList = conditions
                 }
             };
         }
@@ -184,8 +182,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 }
                 else
                 {
-                    Assert.Equal(r1.Conditions.MatchType, r2.Conditions.MatchType);
-                    Assert.Equal(r1.Conditions.TrackingAllCaptures, r2.Conditions.TrackingAllCaptures);
                     Assert.Equal(r1.Conditions.ConditionList.Count, r2.Conditions.ConditionList.Count);
                     for (var j = 0; j < r1.Conditions.ConditionList.Count; j++)
                     {

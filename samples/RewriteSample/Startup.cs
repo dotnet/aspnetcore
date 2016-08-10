@@ -27,18 +27,17 @@ namespace RewriteSample
             // AddFunctionalRule(Func);
             // TODO make this startup do something useful.
             app.UseRewriter(new RewriteOptions()
-                  .ImportFromUrlRewrite(hostingEnv, "UrlRewrite.xml")
-                  .ImportFromModRewrite(hostingEnv, "Rewrite.txt")
-                  .RedirectToHttps(StatusCodes.Status307TemporaryRedirect)
-                  .RewriteRule("/foo/(.*)/bar", "{R:1}/bar")
-                  .AddRule(ctx =>
-                  {
-                      ctx.HttpContext.Request.Path = "/index";
-                      return RuleResult.Continue;
-                  }));
+                .ImportFromUrlRewrite(hostingEnv, "UrlRewrite.xml")
+                .ImportFromModRewrite(hostingEnv, "Rewrite.txt")
+                .RedirectToHttps(StatusCodes.Status307TemporaryRedirect)
+                .RewriteRule("/foo/(.*)/bar", "{R:1}/bar")
+                .AddRule(ctx =>
+                {
+                    ctx.HttpContext.Request.Path = "/index";
+                    return RuleResult.Continue;
+                }));
 
             app.Run(context => context.Response.WriteAsync(context.Request.Path));
-
         }
 
         public static void Main(string[] args)

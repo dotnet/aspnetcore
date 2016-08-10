@@ -1,7 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
+using System;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Rewrite.Internal;
+
+namespace Microsoft.AspNetCore.Rewrite.Internal
 {
     public class UrlRewriteRule : Rule
     {
@@ -39,7 +44,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             }
 
             // at this point we know the rule passed, evaluate the replacement.
-            return Action.ApplyAction(context.HttpContext, initMatchRes, condMatchRes);
+            return Action.ApplyAction(context, initMatchRes, condMatchRes);
         }
     }
 }

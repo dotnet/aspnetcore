@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Rewrite
             var path = Path.Combine(hostingEnv.ContentRootPath, filePath);
             using (var stream = File.OpenRead(path))
             {
-                options.Rules.AddRange(FileParser.Parse(new StreamReader(stream)));
+                options.Rules.AddRange(new FileParser().Parse(new StreamReader(stream)));
             };
             return options;
         }
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Rewrite
             {
                 throw new ArgumentNullException(nameof(reader));
             }
-            options.Rules.AddRange(FileParser.Parse(reader));
+            options.Rules.AddRange(new FileParser().Parse(reader));
             return options;
         }
 
@@ -79,7 +79,8 @@ namespace Microsoft.AspNetCore.Rewrite
                 throw new ArgumentNullException(nameof(rule));
             }
 
-            var builder = new RuleBuilder(rule);
+            var builder = new RuleBuilder();
+            builder.AddRule(rule);
             options.Rules.Add(builder.Build());
             return options;
         }

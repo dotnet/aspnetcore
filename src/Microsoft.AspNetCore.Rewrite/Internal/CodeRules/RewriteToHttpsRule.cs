@@ -1,4 +1,6 @@
-﻿
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
@@ -10,7 +12,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
         public int? SSLPort { get; set; }
         public override RuleResult ApplyRule(RewriteContext context)
         {
-            // TODO this only does http to https, add more features in the future. 
             if (!context.HttpContext.Request.IsHttps)
             {
                 var host = context.HttpContext.Request.Host;
@@ -27,14 +28,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
 
                 context.HttpContext.Request.Scheme = "https";
                 context.HttpContext.Request.Host = host;
-                if (stopProcessing)
-                {
-                    return RuleResult.StopRules;
-                }
-                else
-                {
-                    return RuleResult.Continue;
-                }
+                return stopProcessing ? RuleResult.StopRules: RuleResult.Continue;
             }
             return RuleResult.Continue;
         }

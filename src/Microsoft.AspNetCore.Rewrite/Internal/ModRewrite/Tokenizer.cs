@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Rewrite.Internal;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
 {
@@ -50,7 +49,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                     if (!context.Next())
                     {
                         // Means that a character was not escaped appropriately Ex: "foo\"
-                        throw new ArgumentException();
+                        throw new FormatException("Invalid escaper character in string " + rule);
                     }
                 }
                 else if (context.Current == Space || context.Current == Tab)

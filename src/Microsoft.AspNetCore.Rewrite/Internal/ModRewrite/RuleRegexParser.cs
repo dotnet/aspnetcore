@@ -7,19 +7,19 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
 {
     public static class RuleRegexParser
     {
-        public static ParsedModRewriteExpression ParseRuleRegex(string regex)
+        public static ParsedModRewriteInput ParseRuleRegex(string regex)
         {
-            if (regex == null || regex == String.Empty)
+            if (regex == null || regex == string.Empty)
             {
-                throw new FormatException();
+                throw new FormatException("Regex expression is null");
             }
             if (regex.StartsWith("!"))
             {
-                return new ParsedModRewriteExpression { Invert = true, Operand = regex.Substring(1) };
+                return new ParsedModRewriteInput { Invert = true, Operand = regex.Substring(1) };
             }
             else
             {
-                return new ParsedModRewriteExpression { Invert = false, Operand = regex};
+                return new ParsedModRewriteInput { Invert = false, Operand = regex};
             }
         }
     }

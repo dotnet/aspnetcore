@@ -5,8 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite.UrlActions;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite.UrlMatches;
+using Microsoft.AspNetCore.Rewrite.Internal;
+using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
+using Microsoft.AspNetCore.Rewrite.Internal.UrlMatches;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
 {
@@ -20,6 +21,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
         private UrlMatch _initialMatch;
         private Conditions _conditions;
         private UrlAction _action;
+        private bool _matchAny;
 
         public UrlRewriteRule Build()
         {
@@ -96,10 +98,12 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
         // TODO make this take two overloads and handle regex vs non regex case.
         public void AddUrlCondition(Pattern input, string pattern, PatternSyntax patternSyntax, MatchType matchType, bool ignoreCase, bool negate)
         {
+            // If there are no conditions specified, 
             if (_conditions == null)
             {
                 AddUrlConditions(LogicalGrouping.MatchAll, trackingAllCaptures: false);
             }
+
             switch (patternSyntax)
             {
                 case PatternSyntax.ECMAScript:
@@ -123,17 +127,17 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                                         regex = new Regex(pattern, RegexOptions.Compiled, RegexTimeout);
                                     }
 
-                                    _conditions.ConditionList.Add(new Condition { Input = input, Match = new RegexMatch(regex, negate) });
+                                    _conditions.ConditionList.Add(new Condition { Input = input, Match = new RegexMatch(regex, negate), OrNext = _matchAny});
                                     break;
                                 }
                             case MatchType.IsDirectory:
                                 {
-                                    _conditions.ConditionList.Add(new Condition { Input = input, Match = new IsDirectoryMatch(negate) });
+                                    _conditions.ConditionList.Add(new Condition { Input = input, Match = new IsDirectoryMatch(negate), OrNext = _matchAny });
                                     break;
                                 }
                             case MatchType.IsFile:
                                 {
-                                    _conditions.ConditionList.Add(new Condition { Input = input, Match = new IsFileMatch(negate) });
+                                    _conditions.ConditionList.Add(new Condition { Input = input, Match = new IsFileMatch(negate), OrNext = _matchAny });
                                     break;
                                 }
                             default:
@@ -149,7 +153,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                     {
                         throw new FormatException("Match does not have an associated pattern attribute in condition");
                     }
-                    _conditions.ConditionList.Add(new Condition { Input = input, Match = new ExactMatch(ignoreCase, pattern, negate) });
+                    _conditions.ConditionList.Add(new Condition { Input = input, Match = new ExactMatch(ignoreCase, pattern, negate), OrNext = _matchAny });
                     break;
                 default:
                     throw new FormatException("Unrecognized pattern syntax");
@@ -160,8 +164,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
         {
             var conditions = new Conditions();
             conditions.ConditionList = new List<Condition>();
-            conditions.MatchType = logicalGrouping;
-            conditions.TrackingAllCaptures = trackingAllCaptures;
+            _matchAny = logicalGrouping == LogicalGrouping.MatchAny;
             _conditions = conditions;
         }
     }

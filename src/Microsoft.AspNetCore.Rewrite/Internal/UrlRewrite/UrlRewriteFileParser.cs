@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Rewrite.Internal;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
 {
@@ -110,8 +111,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             }
             builder.AddUrlMatch(parsedInputString, ignoreCase, negate, patternSyntax);
         }
-
-
 
         private static void ParseConditions(XElement conditions, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
         {

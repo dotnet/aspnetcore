@@ -26,17 +26,17 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
         /// </summary>
         /// <param name="condition">The CondPattern portion of a mod_rewrite RewriteCond.</param>
         /// <returns>A new parsed condition.</returns>
-        public static ParsedModRewriteExpression ParseActionCondition(string condition)
+        public static ParsedModRewriteInput ParseActionCondition(string condition)
         {
-            if (condition == null)
+            if (condition ==  null)
             {
                 condition = string.Empty;
             }
             var context = new ParserContext(condition);
-            var results = new ParsedModRewriteExpression();
+            var results = new ParsedModRewriteInput();
             if (!context.Next())
             {
-                throw new FormatException(context.Error());
+                throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(condition, context.Index));
             }
 
             // If we hit a !, make sure the condition is inverted when resolving the string
@@ -45,88 +45,90 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                 results.Invert = true;
                 if (!context.Next())
                 {
-                    throw new FormatException(context.Error());
+                    // Dangling !
+                    throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(condition, context.Index));
                 }
             }
 
             // Control Block for strings. Set the operation and type fields based on the sign 
+            // Switch on current character
             switch (context.Current)
             {
                 case Greater:
                     if (!context.Next())
                     {
                         // Dangling ">"
-                        throw new FormatException(context.Error());
+                        throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(condition, context.Index));
                     }
                     if (context.Current == EqualSign)
                     {
                         if (!context.Next())
                         {
                             // Dangling ">="
-                            throw new FormatException(context.Error());
+                            throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(condition, context.Index));
                         }
-                        results.Operation = OperationType.GreaterEqual;
-                        results.Type = ConditionType.StringComp;
+                        results.OperationType = OperationType.GreaterEqual;
+                        results.ConditionType = ConditionType.StringComp;
                     }
                     else
                     {
-                        results.Operation = OperationType.Greater;
-                        results.Type = ConditionType.StringComp;
+                        results.OperationType = OperationType.Greater;
+                        results.ConditionType = ConditionType.StringComp;
                     }
                     break;
                 case Less:
                     if (!context.Next())
                     {
                         // Dangling "<"
-                        throw new FormatException(context.Error());
+                        throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(condition, context.Index));
                     }
                     if (context.Current == EqualSign)
                     {
                         if (!context.Next())
                         {
                             // Dangling "<="
-                            throw new FormatException(context.Error());
+                            throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(condition, context.Index));
                         }
-                        results.Operation = OperationType.LessEqual;
-                        results.Type = ConditionType.StringComp;
+                        results.OperationType = OperationType.LessEqual;
+                        results.ConditionType = ConditionType.StringComp;
                     }
                     else
                     {
-                        results.Operation = OperationType.Less;
-                        results.Type = ConditionType.StringComp;
+                        results.OperationType = OperationType.Less;
+                        results.ConditionType = ConditionType.StringComp;
                     }
                     break;
                 case EqualSign:
                     if (!context.Next())
                     {
                         // Dangling "="
-                        throw new FormatException(context.Error());
+                        throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(condition, context.Index));
                     }
-                    results.Operation = OperationType.Equal;
-                    results.Type = ConditionType.StringComp;
+                    results.OperationType = OperationType.Equal;
+                    results.ConditionType = ConditionType.StringComp;
                     break;
                 case Dash:
                     results = ParseProperty(context, results.Invert);
-                    if (results.Type == ConditionType.PropertyTest)
+                    if (results.ConditionType == ConditionType.PropertyTest)
                     {
                         return results;
                     }
                     context.Next();
                     break;
                 default:
-                    results.Type = ConditionType.Regex;
+                    results.ConditionType = ConditionType.Regex;
                     break;
             }
 
             // Capture the rest of the string guarantee validity.
-            results.Operand = (condition.Substring(context.GetIndex()));
+            results.Operand = condition.Substring(context.GetIndex()); 
             if (IsValidActionCondition(results))
             {
                 return results;
             }
             else
             {
-                throw new FormatException(context.Error());
+                throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(condition, context.Index));
             }
         }
 
@@ -137,37 +139,37 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
         /// <param name="context"></param>
         /// <param name="invert"></param>
         /// <returns></returns>
-        public static ParsedModRewriteExpression ParseProperty(ParserContext context, bool invert)
+        public static ParsedModRewriteInput ParseProperty(ParserContext context, bool invert)
         {
             if (!context.Next())
             {
-                throw new FormatException(context.Error());
+                throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(context.Template, context.Index));
             }
+
             switch (context.Current)
             {
                 case 'd':
-                    return new ParsedModRewriteExpression(invert, ConditionType.PropertyTest, OperationType.Directory, null);
+                    return new ParsedModRewriteInput(invert, ConditionType.PropertyTest, OperationType.Directory, operand: null);
                 case 'f':
-                    return new ParsedModRewriteExpression(invert, ConditionType.PropertyTest, OperationType.RegularFile, null);
+                    return new ParsedModRewriteInput(invert, ConditionType.PropertyTest, OperationType.RegularFile, operand: null);
                 case 'F':
-                    return new ParsedModRewriteExpression(invert, ConditionType.PropertyTest, OperationType.ExistingFile, null);
+                    return new ParsedModRewriteInput(invert, ConditionType.PropertyTest, OperationType.ExistingFile, operand: null);
                 case 'h':
                 case 'L':
-                    return new ParsedModRewriteExpression(invert, ConditionType.PropertyTest, OperationType.SymbolicLink, null);
+                    return new ParsedModRewriteInput(invert, ConditionType.PropertyTest, OperationType.SymbolicLink, operand: null);
                 case 's':
-                    return new ParsedModRewriteExpression(invert, ConditionType.PropertyTest, OperationType.Size, null);
+                    return new ParsedModRewriteInput(invert, ConditionType.PropertyTest, OperationType.Size, operand: null);
                 case 'U':
-                    return new ParsedModRewriteExpression(invert, ConditionType.PropertyTest, OperationType.ExistingUrl, null);
+                    return new ParsedModRewriteInput(invert, ConditionType.PropertyTest, OperationType.ExistingUrl, operand: null);
                 case 'x':
-                    return new ParsedModRewriteExpression(invert, ConditionType.PropertyTest, OperationType.Executable, null);
+                    return new ParsedModRewriteInput(invert, ConditionType.PropertyTest, OperationType.Executable, operand: null);
                 case 'e':
-
                     if (!context.Next() || context.Current != 'q')
                     {
                         // Illegal statement.
-                        throw new FormatException(context.Error());
+                        throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(context.Template, context.Index));
                     }
-                    return new ParsedModRewriteExpression(invert, ConditionType.IntComp, OperationType.Equal, null);
+                    return new ParsedModRewriteInput(invert, ConditionType.IntComp, OperationType.Equal, operand: null);
                 case 'g':
                     if (!context.Next())
                     {
@@ -175,47 +177,49 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                     }
                     if (context.Current == 't')
                     {
-                        return new ParsedModRewriteExpression(invert, ConditionType.IntComp, OperationType.Greater, null);
+                        return new ParsedModRewriteInput(invert, ConditionType.IntComp, OperationType.Greater, operand: null);
                     }
                     else if (context.Current == 'e')
                     {
-                        return new ParsedModRewriteExpression(invert, ConditionType.IntComp, OperationType.GreaterEqual, null);
+                        return new ParsedModRewriteInput(invert, ConditionType.IntComp, OperationType.GreaterEqual, operand: null);
                     }
                     else
                     {
                         throw new FormatException(context.Error());
                     }
                 case 'l':
+                    // name conflict with -l and -lt/-le, so the assumption is if there is no 
+                    // charcters after -l, we assume it a symbolic link
                     if (!context.Next())
                     {
-                        return new ParsedModRewriteExpression(invert, ConditionType.PropertyTest, OperationType.SymbolicLink, null);
+                        return new ParsedModRewriteInput(invert, ConditionType.PropertyTest, OperationType.SymbolicLink, operand: null);
                     }
                     if (context.Current == 't')
                     {
-                        return new ParsedModRewriteExpression(invert, ConditionType.IntComp, OperationType.Less, null);
+                        return new ParsedModRewriteInput(invert, ConditionType.IntComp, OperationType.Less, operand: null);
                     }
                     else if (context.Current == 'e')
                     {
-                        return new ParsedModRewriteExpression(invert, ConditionType.IntComp, OperationType.LessEqual, null);
+                        return new ParsedModRewriteInput(invert, ConditionType.IntComp, OperationType.LessEqual, operand: null);
                     }
                     else
                     {
-                        throw new FormatException(context.Error());
+                        throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(context.Template, context.Index));
                     }
                 case 'n':
                     if (!context.Next() || context.Current != 'e')
                     {
-                        throw new FormatException(context.Error());
+                        throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(context.Template, context.Index));
                     }
-                    return new ParsedModRewriteExpression(invert, ConditionType.IntComp, OperationType.NotEqual, null);
+                    return new ParsedModRewriteInput(invert, ConditionType.IntComp, OperationType.NotEqual, operand: null);
                 default:
-                    throw new FormatException(context.Error());
+                    throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(context.Template, context.Index));
             }
         }
 
-        private static bool IsValidActionCondition(ParsedModRewriteExpression results)
+        private static bool IsValidActionCondition(ParsedModRewriteInput results)
         {
-            if (results.Type == ConditionType.IntComp)
+            if (results.ConditionType == ConditionType.IntComp)
             {
                 // If the type is an integer, verify operand is actually an int
                 int res;

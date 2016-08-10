@@ -12,8 +12,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
         public int StatusCode { get; set; }
         public override RuleResult ApplyRule(RewriteContext context)
         {
-
-            // TODO this only does http to https, add more features in the future. 
             if (!context.HttpContext.Request.IsHttps)
             {
                 var host = context.HttpContext.Request.Host;

@@ -135,4 +135,10 @@
   <data name="Error_InputParserUnrecognizedParameter" xml:space="preserve">
     <value>Unrecognized parameter type: '{0}', terminated at string index: '{1}'</value>
   </data>
+  <data name="Error_ModRewriteParseError" xml:space="preserve">
+    <value>Could not parse the mod_rewrite file. Message: '{0}'.  Line number '{1}'.</value>
+  </data>
+  <data name="Error_ModRewriteGeneralParseError" xml:space="preserve">
+    <value>Could not parse the mod_rewrite file.  Line number '{0}'.</value>
+  </data>
 </root>

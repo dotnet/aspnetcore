@@ -4,23 +4,20 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNetCore.Rewrite.Internal;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class FileParser
+    public class FileParser
     {
-        public static List<Rule> Parse(TextReader input)
+        public List<Rule> Parse(TextReader input)
         {
             string line = null;
             var rules = new List<Rule>();
-            var conditions = new List<Condition>();
-            // TODO consider passing Itokenizer and Ifileparser and provide implementations
+            var builder = new RuleBuilder();
+            var lineNum = 0;
             while ((line = input.ReadLine()) != null)
             {
+                lineNum++;
                 if (string.IsNullOrEmpty(line))
                 {
                     continue;
@@ -33,71 +30,65 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                 if (tokens.Count > 4)
                 {
                     // This means the line didn't have an appropriate format, throw format exception
-                    throw new FormatException();
+                    throw new FormatException(Resources.FormatError_ModRewriteParseError("Too many tokens on line", lineNum));
                 }
-                // TODO make a new class called rule parser that does and either return an exception or return the rule.
+
                 switch (tokens[0])
                 {
                     case "RewriteBase":
-                        throw new NotSupportedException();
-                    //if (tokens.Count == 2)
-                    //{
-                    //    ModRewriteBase.Base = tokens[1];
-                    //}
-                    //else
-                    //{
-                    //    throw new FormatException("");
-                    //}
-                    //break;
+                        throw new NotImplementedException("RewriteBase is not implemented");
                     case "RewriteCond":
+                        try
                         {
-                            ConditionBuilder builder = null;
-                            if (tokens.Count == 3)
+                            var pattern = TestStringParser.Parse(tokens[1]);
+                            var condActionParsed = ConditionPatternParser.ParseActionCondition(tokens[2]);
+
+                            var flags = new Flags();
+                            if (tokens.Count == 4)
                             {
-                                builder = new ConditionBuilder(tokens[1], tokens[2]);
+                                flags = FlagParser.Parse(tokens[3]);
                             }
-                            else if (tokens.Count == 4)
-                            {
-                                builder = new ConditionBuilder(tokens[1], tokens[2], tokens[3]);
-                            }
-                            else
-                            {
-                                throw new FormatException();
-                            }
-                            conditions.Add(builder.Build());
-                            break;
+
+                            builder.AddConditionFromParts(pattern, condActionParsed, flags);
                         }
+                        catch (FormatException formatException)
+                        {
+                            throw new FormatException(Resources.FormatError_ModRewriteGeneralParseError(lineNum), formatException);
+                        }
+                        break;
                     case "RewriteRule":
+                        try
                         {
-                            RuleBuilder builder = null;
-                            if (tokens.Count == 3)
+                            var regex = RuleRegexParser.ParseRuleRegex(tokens[1]);
+                            var pattern = TestStringParser.Parse(tokens[2]);
+
+                            // TODO see if we can have flags be null.
+                            var flags = new Flags();
+                            if (tokens.Count == 4)
                             {
-                                builder = new RuleBuilder(tokens[1], tokens[2]);
+                                flags = FlagParser.Parse(tokens[3]);
                             }
-                            else if (tokens.Count == 4)
-                            {
-                                builder = new RuleBuilder(tokens[1], tokens[2], tokens[3]);
-                            }
-                            else
-                            {
-                                throw new FormatException();
-                            }
-                            builder.AddConditions(conditions);
+
+                            builder.AddMatch(regex, flags);
+                            builder.AddAction(pattern, flags);
                             rules.Add(builder.Build());
-                            conditions = new List<Condition>();
-                            break;
+                            builder = new RuleBuilder();
+                        } 
+                        catch (FormatException formatException)
+                        {
+                            throw new FormatException(Resources.FormatError_ModRewriteGeneralParseError(lineNum), formatException);
                         }
+                        break;
                     case "RewriteMap":
-                        throw new NotImplementedException("RewriteMaps to be added soon.");
+                        throw new NotImplementedException("RewriteMap to be added soon.");
                     case "RewriteEngine":
                         // Explicitly do nothing here, no notion of turning on regex engine.
                         break;
                     default:
-                        throw new FormatException(tokens[0]);
+                        throw new FormatException(Resources.FormatError_ModRewriteParseError("Unrecognized keyword: " + tokens[0], lineNum));
                 }
             }
             return rules;
         }
-
     }
 }

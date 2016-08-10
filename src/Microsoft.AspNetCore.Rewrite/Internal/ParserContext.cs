@@ -8,19 +8,19 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
     /// </summary>
     public class ParserContext
     {
-        private readonly string _template;
+        public readonly string Template;
         public int Index { get; set; }
         private int? _mark;
 
         public ParserContext(string condition)
         {
-            _template = condition;
+            Template = condition;
             Index = -1;
         }
 
         public char Current
         {
-            get { return (Index < _template.Length && Index >= 0) ? _template[Index] : (char)0; }
+            get { return (Index < Template.Length && Index >= 0) ? Template[Index] : (char)0; }
         }
 
         public bool Back()
@@ -30,12 +30,12 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
 
         public bool Next()
         {
-            return ++Index < _template.Length;
+            return ++Index < Template.Length;
         }
 
         public bool HasNext()
         {
-            return (Index + 1) < _template.Length;
+            return (Index + 1) < Template.Length;
         }
 
         public void Mark()
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
             // TODO make this return a range rather than a string.
             if (_mark.HasValue)
             {
-                var value = _template.Substring(_mark.Value, Index - _mark.Value);
+                var value = Template.Substring(_mark.Value, Index - _mark.Value);
                 _mark = null;
                 return value;
             }

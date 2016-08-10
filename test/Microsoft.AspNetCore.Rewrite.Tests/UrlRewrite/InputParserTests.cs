@@ -4,6 +4,7 @@
 using System;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Rewrite.Internal;
 using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite;
 using Xunit;
 
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         public void EvaluateBackReferenceRule(string testString, string expected)
         {
             var middle = InputParser.ParseInputString(testString);
-            var result = middle.Evaluate(CreateTestHttpContext(), CreateTestRuleMatch(), CreateTestCondMatch());
+            var result = middle.Evaluate(CreateTestRewriteContext(), CreateTestRuleMatch(), CreateTestCondMatch());
             Assert.Equal(result, expected);
         }
         
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         public void EvaluatToLowerRule(string testString, string expected)
         {
             var middle = InputParser.ParseInputString(testString);
-            var result = middle.Evaluate(CreateTestHttpContext(), CreateTestRuleMatch(), CreateTestCondMatch());
+            var result = middle.Evaluate(CreateTestRewriteContext(), CreateTestRuleMatch(), CreateTestCondMatch());
             Assert.Equal(result, expected);
         }
 
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         public void EvaluatUriEncodeRule(string testString, string expected)
         {
             var middle = InputParser.ParseInputString(testString);
-            var result = middle.Evaluate(CreateTestHttpContext(), CreateTestRuleMatch(), CreateTestCondMatch());
+            var result = middle.Evaluate(CreateTestRewriteContext(), CreateTestRuleMatch(), CreateTestCondMatch());
             Assert.Equal(result, expected);
         }
 
@@ -88,12 +89,12 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             Assert.Throws<FormatException>(() => InputParser.ParseInputString(testString));
         }
 
-        private HttpContext CreateTestHttpContext()
+        private RewriteContext CreateTestRewriteContext()
         {
 
-            HttpContext context = new DefaultHttpContext();
+            var context = new DefaultHttpContext();
             // TODO add fields if necessary
-            return context;
+            return new RewriteContext { HttpContext = context, FileProvider = null };
         }
 
         private MatchResults CreateTestRuleMatch()

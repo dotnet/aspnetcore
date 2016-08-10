@@ -1,7 +1,6 @@
 ﻿# Ensure Https
 RewriteCond %{HTTPS} off   
-# U is a new flag to represent full URL rewrites
-RewriteRule ^(.*)$ https://www.example.com$1 [L,U]
+RewriteRule ^(.*)$ https://www.example.com$1 [L]
 
 # Rewrite path with additional sub directory
 RewriteRule ^(.*)$ /foo$1

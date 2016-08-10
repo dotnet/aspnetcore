@@ -3,12 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite.PatternSegments;
+using Microsoft.AspNetCore.Rewrite.Internal;
+using Microsoft.AspNetCore.Rewrite.Internal.PatternSegments;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
 {
-    /// <summary>
-    /// </summary>
     public class InputParser
     {
         private const char Colon = ':';

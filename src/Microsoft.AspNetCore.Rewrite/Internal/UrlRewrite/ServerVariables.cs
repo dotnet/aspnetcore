@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite.PatternSegments;
+using Microsoft.AspNetCore.Rewrite.Internal;
+using Microsoft.AspNetCore.Rewrite.Internal.PatternSegments;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
@@ -15,9 +16,9 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             {
                 // TODO Add all server variables here.
                 case "ALL_RAW":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("All-Raw server variable not implemented");
                 case "APP_POOL_ID":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("All-Pool-Id server variable not implemented");
                 case "CONTENT_LENGTH":
                     return new HeaderSegment(HeaderNames.ContentLength);
                 case "CONTENT_TYPE":
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                 case "REMOTE_ADDR":
                     return new RemoteAddressSegment();
                 case "REMOTE_HOST":
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Remote-Host server variable not implemented");
                 case "REMOTE_PORT":
                     return new RemotePortSegment();
                 case "REQUEST_FILENAME":

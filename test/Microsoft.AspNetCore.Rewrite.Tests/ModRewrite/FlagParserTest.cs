@@ -13,10 +13,10 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public void FlagParser_CheckSingleTerm()
         {
-            var results = FlagParser.ParseRuleFlags("[NC]");
-            var dict = new Dictionary<RuleFlagType, string>();
-            dict.Add(RuleFlagType.NoCase, string.Empty);
-            var expected = new RuleFlags(dict);
+            var results = FlagParser.Parse("[NC]");
+            var dict = new Dictionary<FlagType, string>();
+            dict.Add(FlagType.NoCase, string.Empty);
+            var expected = new Flags(dict);
 
             Assert.True(DictionaryContentsEqual(results.FlagDictionary, expected.FlagDictionary));
         }
@@ -24,12 +24,12 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public void FlagParser_CheckManyTerms()
         {
-            var results = FlagParser.ParseRuleFlags("[NC,F,L]");
-            var dict = new Dictionary<RuleFlagType, string>();
-            dict.Add(RuleFlagType.NoCase, string.Empty);
-            dict.Add(RuleFlagType.Forbidden, string.Empty);
-            dict.Add(RuleFlagType.Last, string.Empty);
-            var expected = new RuleFlags(dict);
+            var results = FlagParser.Parse("[NC,F,L]");
+            var dict = new Dictionary<FlagType, string>();
+            dict.Add(FlagType.NoCase, string.Empty);
+            dict.Add(FlagType.Forbidden, string.Empty);
+            dict.Add(FlagType.Last, string.Empty);
+            var expected = new Flags(dict);
 
             Assert.True(DictionaryContentsEqual(results.FlagDictionary, expected.FlagDictionary));
         }
@@ -37,12 +37,12 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public void FlagParser_CheckManyTermsWithEquals()
         {
-            var results = FlagParser.ParseRuleFlags("[NC,F,R=301]");
-            var dict = new Dictionary<RuleFlagType, string>();
-            dict.Add(RuleFlagType.NoCase, string.Empty);
-            dict.Add(RuleFlagType.Forbidden, string.Empty);
-            dict.Add(RuleFlagType.Redirect, "301");
-            var expected = new RuleFlags(dict);
+            var results = FlagParser.Parse("[NC,F,R=301]");
+            var dict = new Dictionary<FlagType, string>();
+            dict.Add(FlagType.NoCase, string.Empty);
+            dict.Add(FlagType.Forbidden, string.Empty);
+            dict.Add(FlagType.Redirect, "301");
+            var expected = new Flags(dict);
 
             Assert.True(DictionaryContentsEqual(results.FlagDictionary, expected.FlagDictionary));
         }

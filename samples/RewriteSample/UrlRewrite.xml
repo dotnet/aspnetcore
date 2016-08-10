@@ -1,12 +1,8 @@
 ﻿<rewrite>
   <rules>
-    <rule name="Query String Rewrite">
-      <match url="page\.asp$" />
-      <conditions>
-        <add input="{QUERY_STRING}" pattern="p1=(\d+)" />
-        <add input="##{C:1}##_{QUERY_STRING}" pattern="##([^#]+)##_.*p2=(\d+)" />
-      </conditions>
-      <action type="rewrite" url="newpage.aspx?param1={C:1}&amp;param2={C:2}" appendQueryString="false"/>
+    <rule name="Example" stopProcessing="true">
+      <match url="(.*)" />
+      <action type="Rewrite" url="http://example.com/{R:1}" />
     </rule>
   </rules>
 </rewrite>

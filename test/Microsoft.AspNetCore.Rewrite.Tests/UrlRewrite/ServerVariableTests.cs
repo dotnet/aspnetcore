@@ -3,6 +3,7 @@
 
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Rewrite.Internal;
 using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             Assert.Equal(expected, lookup);
         }
 
-        private HttpContext CreateTestHttpContext()
+        private RewriteContext CreateTestHttpContext()
         {
             var context = new DefaultHttpContext();
             context.Request.Host = new HostString("example.com");
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             context.Request.Headers[HeaderNames.Referer] = "referer";
             context.Request.Headers[HeaderNames.UserAgent] = "useragent";
             context.Request.Headers[HeaderNames.Connection] = "connection";
-            return context;
+            return new RewriteContext { HttpContext = context };
         }
 
         private MatchResults CreateTestRuleMatch()

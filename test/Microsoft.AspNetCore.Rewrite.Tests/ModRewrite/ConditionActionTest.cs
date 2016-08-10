@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         {
             var results = ConditionPatternParser.ParseActionCondition(condition);
 
-            var expected = new ParsedModRewriteExpression { Operation = operation, Type = conditionType, Operand = variable, Invert = false };
+            var expected = new ParsedModRewriteInput { OperationType = operation, ConditionType = conditionType, Operand = variable, Invert = false };
             Assert.True(CompareConditions(results, expected));
         }
 
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             var condition = @"(.*)";
             var results = ConditionPatternParser.ParseActionCondition(condition);
 
-            var expected = new ParsedModRewriteExpression { Type = ConditionType.Regex, Operand = "(.*)",  Invert = false };
+            var expected = new ParsedModRewriteInput { ConditionType = ConditionType.Regex, Operand = "(.*)",  Invert = false };
             Assert.True(CompareConditions(results, expected));
         }
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         {
             var results = ConditionPatternParser.ParseActionCondition(condition);
 
-            var expected = new ParsedModRewriteExpression { Type = cond, Operation = operation , Invert = false };
+            var expected = new ParsedModRewriteInput { ConditionType = cond, OperationType = operation , Invert = false };
             Assert.True(CompareConditions(results, expected));
         }
 
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         {
             var results = ConditionPatternParser.ParseActionCondition(condition);
 
-            var expected = new ParsedModRewriteExpression { Type = cond, Operation = operation, Invert = true };
+            var expected = new ParsedModRewriteInput { ConditionType = cond, OperationType = operation, Invert = true };
             Assert.True(CompareConditions(results, expected));
         }
 
@@ -79,15 +79,15 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         {
             var results = ConditionPatternParser.ParseActionCondition(condition);
 
-            var expected = new ParsedModRewriteExpression { Type = cond, Operation = operation, Invert = false, Operand = variable };
+            var expected = new ParsedModRewriteInput { ConditionType = cond, OperationType = operation, Invert = false, Operand = variable };
             Assert.True(CompareConditions(results, expected));
         }
 
         // TODO negative tests
-        private bool CompareConditions(ParsedModRewriteExpression i1, ParsedModRewriteExpression i2)
+        private bool CompareConditions(ParsedModRewriteInput i1, ParsedModRewriteInput i2)
         {
-            if (i1.Operation != i2.Operation ||
-                i1.Type != i2.Type ||
+            if (i1.OperationType != i2.OperationType ||
+                i1.ConditionType != i2.ConditionType ||
                 i1.Operand != i2.Operand ||
                 i1.Invert != i2.Invert)
             {
