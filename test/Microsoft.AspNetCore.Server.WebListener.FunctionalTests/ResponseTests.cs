@@ -19,6 +19,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Xunit;
@@ -135,21 +136,21 @@ namespace Microsoft.AspNetCore.Server.WebListener
         [Fact]
         public async Task Response_Empty_CallsOnStartingAndOnCompleted()
         {
-            var onStartingCalled = false;
-            var onCompletedCalled = false;
+            var onStartingCalled = new ManualResetEvent(false);
+            var onCompletedCalled = new ManualResetEvent(false);
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.OnStarting(state =>
                 {
-                    onStartingCalled = true;
                     Assert.Same(state, httpContext);
+                    onStartingCalled.Set();
                     return Task.FromResult(0);
                 }, httpContext);
                 httpContext.Response.OnCompleted(state =>
                 {
-                    onCompletedCalled = true;
                     Assert.Same(state, httpContext);
+                    onCompletedCalled.Set();
                     return Task.FromResult(0);
                 }, httpContext);
                 return Task.FromResult(0);
@@ -157,28 +158,29 @@ namespace Microsoft.AspNetCore.Server.WebListener
             {
                 var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.True(onStartingCalled);
-                Assert.True(onCompletedCalled);
+                Assert.True(onStartingCalled.WaitOne(0));
+                // Fires after the response completes
+                Assert.True(onCompletedCalled.WaitOne(TimeSpan.FromSeconds(5)));
             }
         }
 
         [Fact]
         public async Task Response_OnStartingThrows_StillCallsOnCompleted()
         {
-            var onStartingCalled = false;
-            var onCompletedCalled = false;
+            var onStartingCalled = new ManualResetEvent(false);
+            var onCompletedCalled = new ManualResetEvent(false);
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.OnStarting(state =>
                 {
-                    onStartingCalled = true;
+                    onStartingCalled.Set();
                     throw new Exception("Failed OnStarting");
                 }, httpContext);
                 httpContext.Response.OnCompleted(state =>
                 {
-                    onCompletedCalled = true;
                     Assert.Same(state, httpContext);
+                    onCompletedCalled.Set();
                     return Task.FromResult(0);
                 }, httpContext);
                 return Task.FromResult(0);
@@ -186,28 +188,29 @@ namespace Microsoft.AspNetCore.Server.WebListener
             {
                 var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-                Assert.True(onStartingCalled);
-                Assert.True(onCompletedCalled);
+                Assert.True(onStartingCalled.WaitOne(0));
+                // Fires after the response completes
+                Assert.True(onCompletedCalled.WaitOne(TimeSpan.FromSeconds(5)));
             }
         }
 
         [Fact]
         public async Task Response_OnStartingThrowsAfterWrite_WriteThrowsAndStillCallsOnCompleted()
         {
-            var onStartingCalled = false;
-            var onCompletedCalled = false;
+            var onStartingCalled = new ManualResetEvent(false);
+            var onCompletedCalled = new ManualResetEvent(false);
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.OnStarting(state =>
                 {
-                    onStartingCalled = true;
+                    onStartingCalled.Set();
                     throw new InvalidTimeZoneException("Failed OnStarting");
                 }, httpContext);
                 httpContext.Response.OnCompleted(state =>
                 {
-                    onCompletedCalled = true;
                     Assert.Same(state, httpContext);
+                    onCompletedCalled.Set();
                     return Task.FromResult(0);
                 }, httpContext);
                 Assert.Throws<InvalidTimeZoneException>(() => httpContext.Response.Body.Write(new byte[10], 0, 10));
@@ -216,8 +219,9 @@ namespace Microsoft.AspNetCore.Server.WebListener
             {
                 var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.True(onStartingCalled);
-                Assert.True(onCompletedCalled);
+                Assert.True(onStartingCalled.WaitOne(0));
+                // Fires after the response completes
+                Assert.True(onCompletedCalled.WaitOne(TimeSpan.FromSeconds(5)));
             }
         }
 
