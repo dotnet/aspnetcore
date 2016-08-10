@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Http.Abstractions;
+using Microsoft.AspNetCore.Http.Internal;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -123,20 +124,29 @@ namespace Microsoft.AspNetCore.Http
                 return string.Empty;
             }
 
-            string host, port;
-
-            GetParts(out host, out port);
-
-            if (host.IndexOf('[') == -1)
-            { 
-                var mapping = new IdnMapping();
-                host = mapping.GetAscii(host);
+            int i;
+            for (i = 0; i < _value.Length; ++i)
+            {
+                if (!HostStringHelper.IsSafeHostStringChar(_value[i]))
+                {
+                    break;
+                }
             }
 
-            return string.IsNullOrEmpty(port)
-                ? host
-                : string.Concat(host, ":", port);
-            
+            if (i != _value.Length)
+            {
+                string host, port;
+                GetParts(out host, out port);
+
+                var mapping = new IdnMapping();
+                host = mapping.GetAscii(host);
+
+                return string.IsNullOrEmpty(port)
+                    ? host
+                    : string.Concat(host, ":", port);
+            }
+
+            return _value;
         }
 
         /// <summary>
