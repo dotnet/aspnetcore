@@ -82,7 +82,13 @@ namespace Microsoft.AspNetCore.Server.Testing
 
         protected void CleanPublishedOutput()
         {
-            if (DeploymentParameters.DeletePublishedApplicationOnDispose)
+            if (DeploymentParameters.PreservePublishedApplicationForDebugging)
+            {
+                Logger.LogWarning(
+                    "Skipping deleting the locally published folder as property " +
+                    $"'{nameof(DeploymentParameters.PreservePublishedApplicationForDebugging)}' is set to 'true'.");
+            }
+            else
             {
                 try
                 {
@@ -93,12 +99,6 @@ namespace Microsoft.AspNetCore.Server.Testing
                 {
                     Logger.LogWarning($"Failed to delete directory : {exception.Message}");
                 }
-            }
-            else
-            {
-                Logger.LogWarning(
-                    "Skipping deleting the locally published folder as property " +
-                    $"'{nameof(DeploymentParameters.DeletePublishedApplicationOnDispose)}' is set to 'false'.");
             }
         }
 

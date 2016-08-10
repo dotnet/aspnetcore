@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Testing
         /// </summary>
         public bool PublishApplicationBeforeDeployment { get; set; }
 
-        public bool DeletePublishedApplicationOnDispose { get; set; } = true;
+        public bool PreservePublishedApplicationForDebugging { get; set; } = false;
 
         public ApplicationType ApplicationType { get; set; }
 
