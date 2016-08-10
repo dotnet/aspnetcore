@@ -135,6 +135,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Hello World");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
                         "",
                         "Hello World");
@@ -259,6 +260,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Hello World");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
                         "",
                         "Hello World");
@@ -289,6 +291,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "\r\n");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 7",
                         "",
@@ -322,6 +325,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "\r\n");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
                         "",
                         "Goodbye");
@@ -354,6 +358,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Hello World");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 7",
                         "",
@@ -407,6 +412,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "\r\n");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
                         "\r\n");
                 }
@@ -472,6 +478,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
                         "",
                         "");
@@ -1050,6 +1057,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
                     await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
+                        "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
                         "",

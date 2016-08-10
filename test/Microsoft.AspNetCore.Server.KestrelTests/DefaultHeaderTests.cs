@@ -24,12 +24,20 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "",
                         "GET / HTTP/1.0",
                         "",
                         "");
 
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "Server: Kestrel",
+                        "",
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
                         "Server: Kestrel",
                         "",

@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     await connection.SendEnd(sendString);
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        "Connection: close",
                         $"Date: {serviceContext.DateHeaderValue}",
                         "",
                         "Hello World!");
@@ -68,6 +69,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Hello World?");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
+                        "Connection: close",
                         $"Date: {serviceContext.DateHeaderValue}",
                         "",
                         "Hello World!");

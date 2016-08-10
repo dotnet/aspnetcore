@@ -767,7 +767,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
             }
 
-            if (!_keepAlive && !hasConnection && _httpVersion != Http.HttpVersion.Http10)
+            if (!_keepAlive && !hasConnection)
             {
                 responseHeaders.SetRawConnection("close", _bytesConnectionClose);
             }
