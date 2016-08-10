@@ -47,9 +47,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         protected bool _requestRejected;
         private Streams _frameStreams;
 
-        protected List<KeyValuePair<Func<object, Task>, object>> _onStarting;
-
-        protected List<KeyValuePair<Func<object, Task>, object>> _onCompleted;
+        protected Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
+        protected Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
         private Task _requestProcessingTask;
         protected volatile bool _requestProcessingStopping; // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
@@ -395,9 +394,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                 if (_onStarting == null)
                 {
-                    _onStarting = new List<KeyValuePair<Func<object, Task>, object>>();
+                    _onStarting = new Stack<KeyValuePair<Func<object, Task>, object>>();
                 }
-                _onStarting.Add(new KeyValuePair<Func<object, Task>, object>(callback, state));
+                _onStarting.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
             }
         }
 
@@ -407,15 +406,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 if (_onCompleted == null)
                 {
-                    _onCompleted = new List<KeyValuePair<Func<object, Task>, object>>();
+                    _onCompleted = new Stack<KeyValuePair<Func<object, Task>, object>>();
                 }
-                _onCompleted.Add(new KeyValuePair<Func<object, Task>, object>(callback, state));
+                _onCompleted.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
             }
         }
 
         protected async Task FireOnStarting()
         {
-            List<KeyValuePair<Func<object, Task>, object>> onStarting = null;
+            Stack<KeyValuePair<Func<object, Task>, object>> onStarting = null;
             lock (_onStartingSync)
             {
                 onStarting = _onStarting;
@@ -439,7 +438,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         protected async Task FireOnCompleted()
         {
-            List<KeyValuePair<Func<object, Task>, object>> onCompleted = null;
+            Stack<KeyValuePair<Func<object, Task>, object>> onCompleted = null;
             lock (_onCompletedSync)
             {
                 onCompleted = _onCompleted;

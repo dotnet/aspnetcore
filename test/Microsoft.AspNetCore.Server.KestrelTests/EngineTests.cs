@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -833,9 +834,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "");
 
-                    Assert.Equal(2, onStartingCallCount1);
-                    // The second OnStarting callback should not be called since the first failed.
-                    Assert.Equal(0, onStartingCallCount2);
+                    Assert.Equal(2, onStartingCallCount2);
+
+                    // The first registered OnStarting callback should not be called,
+                    // since they are called LIFO and the other one failed.
+                    Assert.Equal(0, onStartingCallCount1);
+
                     Assert.Equal(2, testLogger.ApplicationErrorsLogged);
                 }
             }
@@ -1196,6 +1200,94 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         $"Content-Length: {expectedPath.Length.ToString()}",
                         "",
                         $"{expectedPath}");
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task OnStartingCallbacksAreCalledInLastInFirstOutOrder(TestServiceContext testContext)
+        {
+            const string response = "hello, world";
+
+            var callOrder = new Stack<int>();
+
+            using (var server = new TestServer(async context =>
+            {
+                context.Response.OnStarting(_ =>
+                {
+                    callOrder.Push(1);
+                    return TaskUtilities.CompletedTask;
+                }, null);
+                context.Response.OnStarting(_ =>
+                {
+                    callOrder.Push(2);
+                    return TaskUtilities.CompletedTask;
+                }, null);
+                
+                context.Response.ContentLength = response.Length;
+                await context.Response.WriteAsync(response);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        $"Content-Length: {response.Length}",
+                        "",
+                        "hello, world");
+
+                    Assert.Equal(1, callOrder.Pop());
+                    Assert.Equal(2, callOrder.Pop());
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task OnCompletedCallbacksAreCalledInLastInFirstOutOrder(TestServiceContext testContext)
+        {
+            const string response = "hello, world";
+
+            var callOrder = new Stack<int>();
+
+            using (var server = new TestServer(async context =>
+            {
+                context.Response.OnCompleted(_ =>
+                {
+                    callOrder.Push(1);
+                    return TaskUtilities.CompletedTask;
+                }, null);
+                context.Response.OnCompleted(_ =>
+                {
+                    callOrder.Push(2);
+                    return TaskUtilities.CompletedTask;
+                }, null);
+
+                context.Response.ContentLength = response.Length;
+                await context.Response.WriteAsync(response);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        $"Content-Length: {response.Length}",
+                        "",
+                        "hello, world");
+
+                    Assert.Equal(1, callOrder.Pop());
+                    Assert.Equal(2, callOrder.Pop());
                 }
             }
         }
