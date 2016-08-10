@@ -63,6 +63,68 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
+        public async Task ResponsesAreChunkedAutomaticallyForHttp11NonKeepAliveRequests(TestServiceContext testContext)
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "Connection: close",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "6",
+                        "Hello ",
+                        "6",
+                        "World!",
+                        "0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task ResponsesAreNotChunkedAutomaticallyForHttp10Requests(TestServiceContext testContext)
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.0",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "",
+                        "Hello World!");
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
         public async Task ZeroLengthWritesAreIgnored(TestServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>

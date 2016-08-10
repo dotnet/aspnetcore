@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             IHeaderDictionary lastResponseHeaders = null;
 
             using (var server = new TestServer(
-                context =>
+                async context =>
                     {
                         if (context.Request.Body != lastStream)
                         {
@@ -204,7 +204,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                             lastResponseHeaders = context.Response.Headers;
                             responseHeadersCount++;
                         }
-                        return context.Request.Body.CopyToAsync(context.Response.Body);
+
+                        var ms = new MemoryStream();
+                        await context.Request.Body.CopyToAsync(ms);
+                        var request = ms.ToArray();
+
+                        context.Response.ContentLength = request.Length;
+
+                        await context.Response.Body.WriteAsync(request, 0, request.Length);
                     },
                     testContext))
             {
@@ -226,6 +233,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "HTTP/1.1 200 OK",
                         "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 7",
                         "",
                         "Goodbye"
                     });
@@ -414,6 +422,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "HTTP/1.1 200 OK",
                         "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
                         "\r\n");
                 }
             }
@@ -451,7 +460,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ZeroContentLengthNotSetAutomaticallyForNonKeepAliveRequests(TestServiceContext testContext)
+        public async Task ZeroContentLengthSetAutomaticallyForNonKeepAliveRequests(TestServiceContext testContext)
         {
             using (var server = new TestServer(EmptyApp, testContext))
             {
@@ -466,6 +475,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "HTTP/1.1 200 OK",
                         "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -480,6 +490,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "HTTP/1.1 200 OK",
                         "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
                         "",
                         "");
                 }

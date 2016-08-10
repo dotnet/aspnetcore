@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "HTTP/1.1 200 OK",
                         "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
                         "Server: Kestrel",
                         "",
                         "");

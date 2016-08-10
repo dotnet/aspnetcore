@@ -733,7 +733,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
             }
 
-            if (_keepAlive && !responseHeaders.HasTransferEncoding && !responseHeaders.HasContentLength)
+            if (!responseHeaders.HasTransferEncoding && !responseHeaders.HasContentLength)
             {
                 if (appCompleted)
                 {
