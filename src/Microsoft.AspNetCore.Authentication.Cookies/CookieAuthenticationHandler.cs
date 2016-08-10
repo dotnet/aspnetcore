@@ -315,20 +315,23 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             if (shouldRedirectToReturnUrl && Response.StatusCode == 200)
             {
                 CookieRedirectContext redirectContext = null;
-                
-                var query = Request.Query;
-                var redirectUri = query[Options.ReturnUrlParameter];
-                if (!StringValues.IsNullOrEmpty(redirectUri) && IsHostRelative(redirectUri))
+
+                // set redirect uri in order:
+                // 1. properties.RedirectUri
+                // 2. query parameter ReturnUrlParameter
+                var redirectUri = properties.RedirectUri;
+                if (string.IsNullOrEmpty(redirectUri) || !IsHostRelative(redirectUri))
                 {
-                    redirectContext = new CookieRedirectContext(Context, Options, redirectUri, properties);
-                }
-                else if (!string.IsNullOrEmpty(properties.RedirectUri) && IsHostRelative(properties.RedirectUri))
-                {
-                    redirectContext = new CookieRedirectContext(Context, Options, properties.RedirectUri, properties);
+                    redirectUri = Request.Query[Options.ReturnUrlParameter];
+                    if (string.IsNullOrEmpty(redirectUri) || !IsHostRelative(redirectUri))
+                    {
+                        redirectUri = null;
+                    }
                 }
 
-                if (redirectContext != null)
+                if (redirectUri != null)
                 {
+                    redirectContext = new CookieRedirectContext(Context, Options, redirectUri, properties);
                     await Options.Events.RedirectToReturnUrl(redirectContext);
                 }
             }

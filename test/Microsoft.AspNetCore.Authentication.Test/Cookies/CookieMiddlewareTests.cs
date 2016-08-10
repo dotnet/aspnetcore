@@ -1075,6 +1075,29 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         }
 
         [Fact]
+        public async Task RedirectUriInQueryIsHoneredAfterSignin()
+        {
+            var options = new CookieAuthenticationOptions
+            {
+                LoginPath = "/testpath",
+                ReturnUrlParameter = "return",
+                CookieName = "TestCookie"
+            };
+
+            var server = CreateServer(options, async context =>
+            {
+                await context.Authentication.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", CookieAuthenticationDefaults.AuthenticationScheme))));
+            });
+            var transaction = await SendAsync(server, "http://example.com/testpath?return=%2Fret_path_2");
+
+            Assert.NotEmpty(transaction.SetCookie);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/ret_path_2", transaction.Response.Headers.Location.ToString());
+        }
+
+        [Fact]
         public async Task EnsurePrecedenceOfRedirectUriAfterSignin()
         {
             var options = new CookieAuthenticationOptions
@@ -1095,7 +1118,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
             Assert.NotEmpty(transaction.SetCookie);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-            Assert.Equal("/ret_path_2", transaction.Response.Headers.Location.ToString());
+            Assert.Equal("/redirect_test", transaction.Response.Headers.Location.ToString());
         }
 
         [Fact]
