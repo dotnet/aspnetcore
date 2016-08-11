@@ -5,7 +5,7 @@
     "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
     "Microsoft.EntityFrameworkCore.SqlServer": "1.1.0-*",
-    "Microsoft.EntityFrameworkCore.Tools": {
+    "Microsoft.EntityFrameworkCore.Tools.VisualStudio": {
       "version": "1.0.0-*",
       "type": "build"
     }
@@ -31,7 +31,7 @@
   },
   "tools": {
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.0.0-*",
-    "Microsoft.EntityFrameworkCore.Tools": "1.0.0-*"
+    "Microsoft.EntityFrameworkCore.Tools.DotNet": "1.0.0-*"
   },
   "scripts": {
     "postpublish": "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%"
