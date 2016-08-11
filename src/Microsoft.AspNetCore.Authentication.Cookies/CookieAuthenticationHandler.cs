@@ -316,6 +316,9 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 // set redirect uri in order:
                 // 1. properties.RedirectUri
                 // 2. query parameter ReturnUrlParameter
+                //
+                // Absolute uri is not allowed if it is from query string as query string is not
+                // a trusted source.
                 var redirectUri = properties.RedirectUri;
                 if (string.IsNullOrEmpty(redirectUri))
                 {
