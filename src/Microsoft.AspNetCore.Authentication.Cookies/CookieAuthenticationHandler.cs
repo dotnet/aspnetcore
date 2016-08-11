@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
-using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies
@@ -314,8 +313,6 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
             if (shouldRedirectToReturnUrl && Response.StatusCode == 200)
             {
-                CookieRedirectContext redirectContext = null;
-
                 // set redirect uri in order:
                 // 1. properties.RedirectUri
                 // 2. query parameter ReturnUrlParameter
@@ -331,8 +328,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
                 if (redirectUri != null)
                 {
-                    redirectContext = new CookieRedirectContext(Context, Options, redirectUri, properties);
-                    await Options.Events.RedirectToReturnUrl(redirectContext);
+                    await Options.Events.RedirectToReturnUrl(
+                        new CookieRedirectContext(Context, Options, redirectUri, properties));
                 }
             }
         }

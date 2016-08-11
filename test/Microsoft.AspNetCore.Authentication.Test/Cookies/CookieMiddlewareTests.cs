@@ -1100,7 +1100,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         }
 
         [Fact]
-        public async Task AbsoluteRedirectUriIsRejected()
+        public async Task AbsoluteRedirectUriInQueryStringIsRejected()
         {
             var options = new CookieAuthenticationOptions
             {
