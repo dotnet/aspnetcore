@@ -1051,8 +1051,10 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             Assert.Equal("?ReturnUrl=%2F", location.Query);
         }
 
-        [Fact]
-        public async Task RedirectUriIsHoneredAfterSignin()
+        [Theory]
+        [InlineData("/redirect_test")]
+        [InlineData("http://example.com/redirect_to")]
+        public async Task RedirectUriIsHoneredAfterSignin(string redirectUrl)
         {
             var options = new CookieAuthenticationOptions
             {
@@ -1065,13 +1067,13 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 await context.Authentication.SignInAsync(
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", CookieAuthenticationDefaults.AuthenticationScheme))),
-                    new AuthenticationProperties { RedirectUri = "/redirect_test" });
+                    new AuthenticationProperties { RedirectUri = redirectUrl });
             });
             var transaction = await SendAsync(server, "http://example.com/testpath");
 
             Assert.NotEmpty(transaction.SetCookie);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-            Assert.Equal("/redirect_test", transaction.Response.Headers.Location.ToString());
+            Assert.Equal(redirectUrl, transaction.Response.Headers.Location.ToString());
         }
 
         [Fact]
@@ -1095,6 +1097,28 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             Assert.NotEmpty(transaction.SetCookie);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/ret_path_2", transaction.Response.Headers.Location.ToString());
+        }
+
+        [Fact]
+        public async Task AbsoluteRedirectUriIsRejected()
+        {
+            var options = new CookieAuthenticationOptions
+            {
+                LoginPath = "/testpath",
+                ReturnUrlParameter = "return",
+                CookieName = "TestCookie"
+            };
+
+            var server = CreateServer(options, async context =>
+            {
+                await context.Authentication.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", CookieAuthenticationDefaults.AuthenticationScheme))));
+            });
+            var transaction = await SendAsync(server, "http://example.com/testpath?return=http%3A%2F%2Fexample.com%2Fredirect_to");
+
+            Assert.NotEmpty(transaction.SetCookie);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
         [Fact]

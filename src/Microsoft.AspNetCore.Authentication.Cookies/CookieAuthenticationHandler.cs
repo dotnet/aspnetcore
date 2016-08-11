@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 // 1. properties.RedirectUri
                 // 2. query parameter ReturnUrlParameter
                 var redirectUri = properties.RedirectUri;
-                if (string.IsNullOrEmpty(redirectUri) || !IsHostRelative(redirectUri))
+                if (string.IsNullOrEmpty(redirectUri))
                 {
                     redirectUri = Request.Query[Options.ReturnUrlParameter];
                     if (string.IsNullOrEmpty(redirectUri) || !IsHostRelative(redirectUri))
