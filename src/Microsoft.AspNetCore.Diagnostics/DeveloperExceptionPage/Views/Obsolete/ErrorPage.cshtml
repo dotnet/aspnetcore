@@ -3,7 +3,7 @@
 @using System.Linq
 @using System.Net
 @using System.Reflection
-@using Microsoft.AspNetCore.Diagnostics.RazorViews
+@using Microsoft.AspNetCore.Diagnostics.Views
 @using Microsoft.AspNetCore.Diagnostics
 @functions
 {
@@ -42,18 +42,19 @@
             }
             if (!string.IsNullOrEmpty(location) && firstFrame != null && !string.IsNullOrEmpty(firstFrame.File))
             {
-                <p class="location">@location in <code title="@firstFrame.File">@System.IO.Path.GetFileName(firstFrame.File)</code>, line @firstFrame.Line</p>
+            <p class="location">@location in <code title="@firstFrame.File">@System.IO.Path.GetFileName(firstFrame.File)</code>, line @firstFrame.Line</p>
             }
             else if (!string.IsNullOrEmpty(location))
             {
-                <p class="location">@location</p>
+            <p class="location">@location</p>
             }
             else
             {
-                <p class="location">@Resources.ErrorPageHtml_UnknownLocation</p>
+            <p class="location">@Resources.ErrorPageHtml_UnknownLocation</p>
             }
-
-            var reflectionTypeLoadException = errorDetail.Error as ReflectionTypeLoadException;
+        }
+        @{
+            var reflectionTypeLoadException = Model.ErrorDetails.Last()?.Error as ReflectionTypeLoadException;
             if (reflectionTypeLoadException != null)
             {
                 if (reflectionTypeLoadException.LoaderExceptions.Length > 0)

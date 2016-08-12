@@ -3,9 +3,8 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Diagnostics.Elm.Views;
+using Microsoft.AspNetCore.Diagnostics.Elm.RazorViews;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Linq;

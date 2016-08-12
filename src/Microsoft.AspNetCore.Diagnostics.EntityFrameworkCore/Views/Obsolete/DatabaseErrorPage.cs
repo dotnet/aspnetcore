@@ -25,7 +25,7 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 #line hidden
     ;
     using System.Threading.Tasks;
-
+    [Obsolete("This type is for internal use only and will be removed in a future version.")]
     public class DatabaseErrorPage : Microsoft.AspNetCore.DiagnosticsViewPage.Views.BaseView
     {
 #line 11 "DatabaseErrorPage.cshtml"
@@ -53,7 +53,7 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
         public override async Task ExecuteAsync()
         {
 #line 5 "DatabaseErrorPage.cshtml"
-  
+
     Response.StatusCode = 500;
     Response.ContentType = "text/html";
     Response.ContentLength = null; // Clear any prior Content-Length
@@ -69,7 +69,7 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 #line hidden
             WriteLiteral("</h1>\r\n    <p>\r\n");
 #line 37 "DatabaseErrorPage.cshtml"
-        
+
 
 #line default
 #line hidden
@@ -102,7 +102,7 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 
             WriteLiteral("    </p>\r\n    <hr />\r\n\r\n");
 #line 45 "DatabaseErrorPage.cshtml"
-    
+
 
 #line default
 #line hidden
@@ -179,7 +179,7 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 #line hidden
             WriteLiteral("</p>\r\n\r\n            <ul>\r\n");
 #line 65 "DatabaseErrorPage.cshtml"
-                
+
 
 #line default
 #line hidden

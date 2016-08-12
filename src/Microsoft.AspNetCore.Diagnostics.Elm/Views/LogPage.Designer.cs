@@ -1,4 +1,4 @@
-namespace Microsoft.AspNetCore.Diagnostics.Elm.Views
+namespace Microsoft.AspNetCore.Diagnostics.Elm.RazorViews
 {
 #line 1 "LogPage.cshtml"
 using System
@@ -31,13 +31,13 @@ using Microsoft.AspNetCore.Diagnostics.Elm
 #line hidden
     ;
 #line 6 "LogPage.cshtml"
-using Microsoft.AspNetCore.Diagnostics.Elm.Views
+using Microsoft.AspNetCore.Diagnostics.Elm.RazorViews
 
 #line default
 #line hidden
     ;
 #line 7 "LogPage.cshtml"
-using Microsoft.AspNetCore.DiagnosticsViewPage.Views
+using Microsoft.Extensions.RazorViews
 
 #line default
 #line hidden
@@ -50,7 +50,7 @@ using Microsoft.Extensions.Logging
     ;
     using System.Threading.Tasks;
 
-    public class LogPage : Microsoft.AspNetCore.DiagnosticsViewPage.Views.BaseView
+    internal class LogPage : Microsoft.Extensions.RazorViews.BaseView
     {
 #line 11 "LogPage.cshtml"
 
@@ -168,8 +168,8 @@ using Microsoft.Extensions.Logging
         {
             WriteLiteral("\r\n");
 #line 114 "LogPage.cshtml"
-   
-    Response.ContentType = "text/html";
+  
+    Response.ContentType = "text/html; charset=utf-8";
 
 #line default
 #line hidden
@@ -182,22 +182,153 @@ using Microsoft.Extensions.Logging
     <title>ASP.NET Core Logs</title>
     <script src=""//ajax.aspnetcdn.com/ajax/jquery/jquery-2.1.1.min.js""></script>
     <style>
-        body {\r\n    font-size: .813em;\r\n    white-space: nowrap;\r\n    margin: 20px;\r\n}\r\n\r\ncol:nth-child(2n) {\r\n    background-color: #FAFAFA;\r\n}\r\n\r\nform { \r\n    display: inline-block; \r\n}\r\n\r\nh1 {\r\n    margin-left: 25px;\r\n}\r\n\r\ntable {\r\n    margin: 0px auto;\r\n    border-collapse: collapse;\r\n    border-spacing: 0px;\r\n    table-layout: fixed;\r\n    width: 100%;\r\n}\r\n\r\ntd, th {\r\n    padding: 4px;\r\n}\r\n\r\nthead {\r\n    font-size: 1em;\r\n    font-family: Arial;\r\n}\r\n\r\ntr {\r\n    height: 23px;\r\n}\r\n\r\n#requestHeader {\r\n    border-bottom: solid 1px gray;\r\n    border-top: solid 1px gray;\r\n    margin-bottom: 2px;\r\n    font-size: 1em;\r\n    line-height: 2em;\r\n}\r\n\r\n.collapse {\r\n    color: black;\r\n    float: right;\r\n    font-weight: normal;\r\n    width: 1em;\r\n}\r\n\r\n.date, .time {\r\n    width: 70px; \r\n}\r\n\r\n.logHeader {\r\n    border-bottom: 1px solid lightgray;\r\n    color: gray;\r\n    text-align: left;\r\n}\r\n\r\n.logState {\r\n    text-overflow: ellipsis;\r\n    overflow: hidden;\r\n}\r\n\r\n.logTd {\r\n    border-left: 1px solid gray;\r\n    padding: 0px;\r\n}\r\n\r\n.logs {\r\n    width: 80%;\r\n}\r\n\r\n.logRow:hover {\r\n    background-color: #D6F5FF;\r\n}\r\n\r\n.requestRow>td {\r\n    border-bottom: solid 1px gray;\r\n}\r\n\r\n.severity {\r\n    width: 80px;\r\n}\r\n\r\n.summary {\r\n    color: black;\r\n    line-height: 1.8em;\r\n}\r\n\r\n.summary>th {\r\n    font-weight: normal;\r\n}\r\n\r\n.tab {\r\n    margin-left: 30px;\r\n}\r\n\r\n#viewOptions {\r\n    margin: 20px;\r\n}\r\n\r\n#viewOptions > * {\r\n    margin: 5px;\r\n}
-        body {\r\n    font-family: 'Segoe UI', Tahoma, Arial, Helvtica, sans-serif;\r\n    line-height: 1.4em;\r\n}\r\n\r\nh1 {\r\n    font-family: 'Segoe UI', Helvetica, sans-serif;\r\n    font-size: 2.5em;\r\n}\r\n\r\ntd {\r\n    text-overflow: ellipsis;\r\n    overflow: hidden;\r\n}\r\n\r\ntr:nth-child(2n) {\r\n    background-color: #F6F6F6;\r\n}\r\n\r\n.critical {\r\n    background-color: red;\r\n    color: white;\r\n}\r\n\r\n.error {\r\n    color: red;\r\n}\r\n\r\n.information {\r\n    color: blue;\r\n}\r\n\r\n.debug {\r\n    color: black;\r\n}\r\n\r\n.warning {\r\n    color: orange;\r\n}
-    </style>
-</head>
-<body>
-    <h1>ASP.NET Core Logs</h1>
-    <form id=""viewOptions"" method=""get"">
-        <select name=""level"">
+        body {
+    font-size: .813em;
+    white-space: nowrap;
+    margin: 20px;
+}
+
+col:nth-child(2n) {
+    background-color: #FAFAFA;
+}
+
+form { 
+    display: inline-block; 
+}
+
+h1 {
+    margin-left: 25px;
+}
+
+table {
+    margin: 0px auto;
+    border-collapse: collapse;
+    border-spacing: 0px;
+    table-layout: fixed;
+    width: 100%;
+}
+
+td, th {
+    padding: 4px;
+}
+
+thead {
+    font-size: 1em;
+    font-family: Arial;
+}
+
+tr {
+    height: 23px;
+}
+
+#requestHeader {
+    border-bottom: solid 1px gray;
+    border-top: solid 1px gray;
+    margin-bottom: 2px;
+    font-size: 1em;
+    line-height: 2em;
+}
+
+.collapse {
+    color: black;
+    float: right;
+    font-weight: normal;
+    width: 1em;
+}
+
+.date, .time {
+    width: 70px; 
+}
+
+.logHeader {
+    border-bottom: 1px ");
+            WriteLiteral(@"solid lightgray;
+    color: gray;
+    text-align: left;
+}
+
+.logState {
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.logTd {
+    border-left: 1px solid gray;
+    padding: 0px;
+}
+
+.logs {
+    width: 80%;
+}
+
+.logRow:hover {
+    background-color: #D6F5FF;
+}
+
+.requestRow>td {
+    border-bottom: solid 1px gray;
+}
+
+.severity {
+    width: 80px;
+}
+
+.summary {
+    color: black;
+    line-height: 1.8em;
+}
+
+.summary>th {
+    font-weight: normal;
+}
+
+.tab {
+    margin-left: 30px;
+}
+
+#viewOptions {
+    margin: 20px;
+}
+
+#viewOptions > * {
+    margin: 5px;
+}
+        body {
+    font-family: 'Segoe UI', Tahoma, Arial, Helvtica, sans-serif;
+    line-height: 1.4em;
+}
+
+h1 {
+    font-family: 'Segoe UI', Helvetica, sans-serif;
+    font-size: 2.5em;
+}
+
+td {
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+tr:nth-child(2n) {
+    background-color: #F6F6F6;
+}
+
+.critical {
+    background-color: red;
+    color: white;
+}
+
+.error {
+    color: red;
+}
 ");
-#line 133 "LogPage.cshtml"
+            WriteLiteral("\r\n.information {\r\n    color: blue;\r\n}\r\n\r\n.debug {\r\n    color: black;\r\n}\r\n\r\n.warning {\r\n    color: orange;\r\n}\r\n    </style>\r\n</head>\r\n<body>\r\n    <h1>ASP.NET Core Logs</h1>\r\n    <form id=\"viewOptions\" method=\"get\">\r\n        <select name=\"level\">\r\n");
+#line 280 "LogPage.cshtml"
             
 
 #line default
 #line hidden
 
-#line 133 "LogPage.cshtml"
+#line 280 "LogPage.cshtml"
              foreach (var severity in Enum.GetValues(typeof(LogLevel)))
             {
                 var severityInt = (int)severity;
@@ -208,21 +339,21 @@ using Microsoft.Extensions.Logging
 #line hidden
 
             WriteLiteral("                    <option");
-            BeginWriteAttribute("value", " value=\"", 4934, "\"", 4954, 1);
-#line 138 "LogPage.cshtml"
-WriteAttributeValue("", 4942, severityInt, 4942, 12, false);
+            BeginWriteAttribute("value", " value=\"", 6825, "\"", 6845, 1);
+#line 285 "LogPage.cshtml"
+WriteAttributeValue("", 6833, severityInt, 6833, 12, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" selected=\"selected\">");
-#line 138 "LogPage.cshtml"
+#line 285 "LogPage.cshtml"
                                                                 Write(severity);
 
 #line default
 #line hidden
             WriteLiteral("</option>\r\n");
-#line 139 "LogPage.cshtml"
+#line 286 "LogPage.cshtml"
                 }
                 else
                 {
@@ -231,21 +362,21 @@ WriteAttributeValue("", 4942, severityInt, 4942, 12, false);
 #line hidden
 
             WriteLiteral("                    <option");
-            BeginWriteAttribute("value", " value=\"", 5083, "\"", 5103, 1);
-#line 142 "LogPage.cshtml"
-WriteAttributeValue("", 5091, severityInt, 5091, 12, false);
+            BeginWriteAttribute("value", " value=\"", 6974, "\"", 6994, 1);
+#line 289 "LogPage.cshtml"
+WriteAttributeValue("", 6982, severityInt, 6982, 12, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(">");
-#line 142 "LogPage.cshtml"
+#line 289 "LogPage.cshtml"
                                             Write(severity);
 
 #line default
 #line hidden
             WriteLiteral("</option>\r\n");
-#line 143 "LogPage.cshtml"
+#line 290 "LogPage.cshtml"
                 }
             }
 
@@ -253,9 +384,9 @@ WriteAttributeValue("", 5091, severityInt, 5091, 12, false);
 #line hidden
 
             WriteLiteral("        </select>\r\n        <input type=\"text\" name=\"name\"");
-            BeginWriteAttribute("value", " value=\"", 5216, "\"", 5249, 1);
-#line 146 "LogPage.cshtml"
-WriteAttributeValue("", 5224, Model.Options.NamePrefix, 5224, 25, false);
+            BeginWriteAttribute("value", " value=\"", 7107, "\"", 7140, 1);
+#line 293 "LogPage.cshtml"
+WriteAttributeValue("", 7115, Model.Options.NamePrefix, 7115, 25, false);
 
 #line default
 #line hidden
@@ -285,13 +416,13 @@ WriteAttributeValue("", 5224, Model.Options.NamePrefix, 5224, 25, false);
             <col />
         </colgroup>
 ");
-#line 170 "LogPage.cshtml"
+#line 317 "LogPage.cshtml"
         
 
 #line default
 #line hidden
 
-#line 170 "LogPage.cshtml"
+#line 317 "LogPage.cshtml"
          foreach (var activity in Model.Activities.Reverse())
         {
 
@@ -299,13 +430,13 @@ WriteAttributeValue("", 5224, Model.Options.NamePrefix, 5224, 25, false);
 #line hidden
 
             WriteLiteral("            <tbody>\r\n                <tr class=\"requestRow\">\r\n");
-#line 174 "LogPage.cshtml"
+#line 321 "LogPage.cshtml"
                     
 
 #line default
 #line hidden
 
-#line 174 "LogPage.cshtml"
+#line 321 "LogPage.cshtml"
                       
                         var activityPath = Model.Path.Value + "/" + activity.Id;
                         if (activity.HttpInfo != null)
@@ -315,46 +446,46 @@ WriteAttributeValue("", 5224, Model.Options.NamePrefix, 5224, 25, false);
 #line hidden
 
             WriteLiteral("                        \t<td><a");
-            BeginWriteAttribute("href", " href=\"", 6313, "\"", 6333, 1);
-#line 178 "LogPage.cshtml"
-WriteAttributeValue("", 6320, activityPath, 6320, 13, false);
+            BeginWriteAttribute("href", " href=\"", 8204, "\"", 8224, 1);
+#line 325 "LogPage.cshtml"
+WriteAttributeValue("", 8211, activityPath, 8211, 13, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("title", " title=\"", 6334, "\"", 6365, 1);
-#line 178 "LogPage.cshtml"
-WriteAttributeValue("", 6342, activity.HttpInfo.Path, 6342, 23, false);
+            BeginWriteAttribute("title", " title=\"", 8225, "\"", 8256, 1);
+#line 325 "LogPage.cshtml"
+WriteAttributeValue("", 8233, activity.HttpInfo.Path, 8233, 23, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(">");
-#line 178 "LogPage.cshtml"
+#line 325 "LogPage.cshtml"
                                                                                    Write(activity.HttpInfo.Path);
 
 #line default
 #line hidden
             WriteLiteral("</a></td>\r\n                            <td>");
-#line 179 "LogPage.cshtml"
+#line 326 "LogPage.cshtml"
                            Write(activity.HttpInfo.Method);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                            <td>");
-#line 180 "LogPage.cshtml"
+#line 327 "LogPage.cshtml"
                            Write(activity.HttpInfo.Host);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n                            <td>");
-#line 181 "LogPage.cshtml"
+#line 328 "LogPage.cshtml"
                            Write(activity.HttpInfo.StatusCode);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n");
-#line 182 "LogPage.cshtml"
+#line 329 "LogPage.cshtml"
                         }
                         else if (activity.RepresentsScope)
                         {
@@ -363,28 +494,28 @@ WriteAttributeValue("", 6342, activity.HttpInfo.Path, 6342, 23, false);
 #line hidden
 
             WriteLiteral("                            <td colspan=\"4\"><a");
-            BeginWriteAttribute("href", " href=\"", 6755, "\"", 6775, 1);
-#line 185 "LogPage.cshtml"
-WriteAttributeValue("", 6762, activityPath, 6762, 13, false);
+            BeginWriteAttribute("href", " href=\"", 8646, "\"", 8666, 1);
+#line 332 "LogPage.cshtml"
+WriteAttributeValue("", 8653, activityPath, 8653, 13, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("title", " title=\"", 6776, "\"", 6804, 1);
-#line 185 "LogPage.cshtml"
-WriteAttributeValue("", 6784, activity.Root.State, 6784, 20, false);
+            BeginWriteAttribute("title", " title=\"", 8667, "\"", 8695, 1);
+#line 332 "LogPage.cshtml"
+WriteAttributeValue("", 8675, activity.Root.State, 8675, 20, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(">");
-#line 185 "LogPage.cshtml"
+#line 332 "LogPage.cshtml"
                                                                                             Write(activity.Root.State);
 
 #line default
 #line hidden
             WriteLiteral("</a></td>\r\n");
-#line 186 "LogPage.cshtml"
+#line 333 "LogPage.cshtml"
                         }
                         else
                         {
@@ -393,15 +524,15 @@ WriteAttributeValue("", 6784, activity.Root.State, 6784, 20, false);
 #line hidden
 
             WriteLiteral("                            <td colspan=\"4\"><a");
-            BeginWriteAttribute("href", " href=\"", 6967, "\"", 6987, 1);
-#line 189 "LogPage.cshtml"
-WriteAttributeValue("", 6974, activityPath, 6974, 13, false);
+            BeginWriteAttribute("href", " href=\"", 8858, "\"", 8878, 1);
+#line 336 "LogPage.cshtml"
+WriteAttributeValue("", 8865, activityPath, 8865, 13, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(">Non-scope Log</a></td>\r\n");
-#line 190 "LogPage.cshtml"
+#line 337 "LogPage.cshtml"
                         }
                     
 
@@ -421,18 +552,18 @@ WriteAttributeValue("", 6974, activityPath, 6974, 13, false);
                                 </tr>
                             </thead>
 ");
-#line 204 "LogPage.cshtml"
+#line 351 "LogPage.cshtml"
                             
 
 #line default
 #line hidden
 
-#line 204 "LogPage.cshtml"
+#line 351 "LogPage.cshtml"
                               
                                 var counts = new Dictionary<string, int>();
                                 counts["Critical"] = 0;
                                 counts["Error"] = 0;
-                                counts["Warning"] = 0;                                
+                                counts["Warning"] = 0;
                                 counts["Information"] = 0;
                                 counts["Debug"] = 0;
                             
@@ -441,13 +572,13 @@ WriteAttributeValue("", 6974, activityPath, 6974, 13, false);
 #line hidden
 
             WriteLiteral("                            <tbody class=\"logBody\">\r\n");
-#line 213 "LogPage.cshtml"
+#line 360 "LogPage.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 213 "LogPage.cshtml"
+#line 360 "LogPage.cshtml"
                                  if (!activity.RepresentsScope)
                                 {
                                     // message not within a scope
@@ -457,12 +588,12 @@ WriteAttributeValue("", 6974, activityPath, 6974, 13, false);
 #line default
 #line hidden
 
-#line 217 "LogPage.cshtml"
+#line 364 "LogPage.cshtml"
                                Write(LogRow(logInfo, 0));
 
 #line default
 #line hidden
-#line 217 "LogPage.cshtml"
+#line 364 "LogPage.cshtml"
                                                        
                                     counts[logInfo.Severity.ToString()] = 1;
                                 }
@@ -473,12 +604,12 @@ WriteAttributeValue("", 6974, activityPath, 6974, 13, false);
 #line default
 #line hidden
 
-#line 222 "LogPage.cshtml"
+#line 369 "LogPage.cshtml"
                                Write(Traverse(activity.Root, 0, counts));
 
 #line default
 #line hidden
-#line 222 "LogPage.cshtml"
+#line 369 "LogPage.cshtml"
                                                                        
                                 }
 
@@ -486,19 +617,19 @@ WriteAttributeValue("", 6974, activityPath, 6974, 13, false);
 #line hidden
 
             WriteLiteral("                            </tbody>\r\n                            <tbody class=\"summary\">\r\n                                <tr class=\"logRow\">\r\n                                    <td>");
-#line 227 "LogPage.cshtml"
+#line 374 "LogPage.cshtml"
                                    Write(activity.Time.ToString("MM-dd-yyyy HH:mm:ss"));
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n");
-#line 228 "LogPage.cshtml"
+#line 375 "LogPage.cshtml"
                                     
 
 #line default
 #line hidden
 
-#line 228 "LogPage.cshtml"
+#line 375 "LogPage.cshtml"
                                      foreach (var kvp in counts)
                                     {
                                         if (string.Equals("Debug", kvp.Key)) {
@@ -507,19 +638,19 @@ WriteAttributeValue("", 6974, activityPath, 6974, 13, false);
 #line hidden
 
             WriteLiteral("                                            <td>");
-#line 231 "LogPage.cshtml"
+#line 378 "LogPage.cshtml"
                                            Write(kvp.Value);
 
 #line default
 #line hidden
             WriteLiteral(" ");
-#line 231 "LogPage.cshtml"
+#line 378 "LogPage.cshtml"
                                                       Write(kvp.Key);
 
 #line default
 #line hidden
             WriteLiteral("<span class=\"collapse\">v</span></td>\r\n");
-#line 232 "LogPage.cshtml"
+#line 379 "LogPage.cshtml"
                                         }
                                         else
                                         {
@@ -528,19 +659,19 @@ WriteAttributeValue("", 6974, activityPath, 6974, 13, false);
 #line hidden
 
             WriteLiteral("                                            <td>");
-#line 235 "LogPage.cshtml"
+#line 382 "LogPage.cshtml"
                                            Write(kvp.Value);
 
 #line default
 #line hidden
             WriteLiteral(" ");
-#line 235 "LogPage.cshtml"
+#line 382 "LogPage.cshtml"
                                                       Write(kvp.Key);
 
 #line default
 #line hidden
             WriteLiteral("</td>\r\n");
-#line 236 "LogPage.cshtml"
+#line 383 "LogPage.cshtml"
                                         }
                                     }
 
@@ -548,7 +679,7 @@ WriteAttributeValue("", 6974, activityPath, 6974, 13, false);
 #line hidden
 
             WriteLiteral("                                </tr>\r\n                            </tbody>\r\n                        </table>\r\n                    </td>\r\n                </tr>\r\n            </tbody>\r\n");
-#line 244 "LogPage.cshtml"
+#line 391 "LogPage.cshtml"
         }
 
 #line default

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Utilities;
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.RazorViews;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         /// <param name="next">Delegate to execute the next piece of middleware in the request pipeline.</param>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to resolve services from.</param>
         /// <param name="loggerFactory">
-        /// The <see cref="ILoggerFactory"/> for the application. This middleware both produces logging messages and 
+        /// The <see cref="ILoggerFactory"/> for the application. This middleware both produces logging messages and
         /// consumes them to detect database related exception.
         /// </param>
         /// <param name="options">The options to control what information is displayed on the error page.</param>

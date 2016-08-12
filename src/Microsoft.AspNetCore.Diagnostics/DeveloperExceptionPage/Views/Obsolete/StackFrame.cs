@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,6 +11,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Views
     /// <summary>
     /// Detailed exception stack information used to generate a view
     /// </summary>
+    [Obsolete("This type is for internal use only and will be removed in a future version.")]
     public class StackFrame
     {
         /// <summary>

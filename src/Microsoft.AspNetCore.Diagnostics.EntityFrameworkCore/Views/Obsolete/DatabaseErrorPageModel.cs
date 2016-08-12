@@ -7,9 +7,10 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Utilities;
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.RazorViews
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 {
-    internal class DatabaseErrorPageModel
+    [Obsolete("This type is for internal use only and will be removed in a future version.")]
+    public class DatabaseErrorPageModel
     {
         private readonly Type _contextType;
         private readonly Exception _exception;
