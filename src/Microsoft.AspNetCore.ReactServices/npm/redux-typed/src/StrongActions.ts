@@ -38,5 +38,5 @@ export interface Reducer<TState> extends Function {
 }
 
 export interface ActionCreatorGeneric<TState> extends Function {
-    (dispatch: Dispatch, getState: () => TState): any;
+    (dispatch: Dispatch<TState>, getState: () => TState): any;
 }

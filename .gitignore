@@ -36,3 +36,4 @@ npm-debug.log
 # repo have to be excluded here.
 /templates/*/node_modules/
 /templates/*/wwwroot/dist/
+.vscode/

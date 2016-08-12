@@ -5,6 +5,8 @@ import { fakeData } from '../data/fakeData.js';
 import { columnMeta } from '../data/columnMeta.jsx';
 const resultsPerPage = 10;
 
+const fakeDataWithAction = fakeData.map(data => Object.assign(data, {actions: ''}));
+
 export class PeopleGrid extends React.Component {
     render() {
         var pageIndex = this.props.params ? (this.props.params.pageIndex || 1) - 1 : 0;
@@ -12,7 +14,7 @@ export class PeopleGrid extends React.Component {
             <div>
                 <h1>People</h1>
                 <div id="table-area">
-                    <Griddle results={fakeData}
+                    <Griddle results={fakeDataWithAction}
                         columns={columnMeta.map(x => x.columnName)}
                         columnMetadata={columnMeta}
                         resultsPerPage={resultsPerPage}
