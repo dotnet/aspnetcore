@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Chunks.Generators;
 using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Editor;
 using Microsoft.AspNetCore.Razor.Parser.Internal;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -468,7 +469,8 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                                 spanBuilder.ChunkGenerator = new MarkupChunkGenerator();
                             }
 
-                            spanBuilder.Kind = SpanKind.Code;
+                            ConfigureNonStringAttribute(spanBuilder);
+
                             span = spanBuilder.Build();
                         }
                     }
@@ -628,7 +630,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
             // SyntaxTreeNode reflects that.
             if (isBoundNonStringAttribute)
             {
-                builder.Kind = SpanKind.Code;
+                ConfigureNonStringAttribute(builder);
             }
 
             return builder.Build();
@@ -699,6 +701,18 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
         {
             return htmlSymbol.Type == HtmlSymbolType.DoubleQuote ||
                    htmlSymbol.Type == HtmlSymbolType.SingleQuote;
+        }
+
+        private static void ConfigureNonStringAttribute(SpanBuilder builder)
+        {
+            builder.Kind = SpanKind.Code;
+            builder.EditHandler = new ImplicitExpressionEditHandler(
+                    builder.EditHandler.Tokenizer,
+                    CSharpCodeParser.DefaultKeywords,
+                    acceptTrailingDot: true)
+            {
+                AcceptedCharacters = AcceptedCharacters.AnyExceptNewline
+            };
         }
 
         private class TryParseResult

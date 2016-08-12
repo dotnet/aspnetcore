@@ -154,11 +154,13 @@ namespace Microsoft.AspNetCore.Razor.Parser.SyntaxTree
             }
         }
 
-        public Span LocateOwner(TextChange change)
+        public virtual Span LocateOwner(TextChange change) => LocateOwner(change, Children);
+
+        protected static Span LocateOwner(TextChange change, IEnumerable<SyntaxTreeNode> elements)
         {
             // Ask each child recursively
             Span owner = null;
-            foreach (SyntaxTreeNode element in Children)
+            foreach (var element in elements)
             {
                 var span = element as Span;
                 if (span == null)

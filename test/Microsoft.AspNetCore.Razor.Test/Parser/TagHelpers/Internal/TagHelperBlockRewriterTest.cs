@@ -1013,9 +1013,8 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                                                 new ExpressionBlock(
                                                     factory.CodeTransition(),
                                                     factory
-                                                        .Code("DateTime.Now.Year")
-                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                        .Accepts(AcceptedCharacters.NonWhiteSpace)))))
+                                                        .CSharpCodeMarkup("DateTime.Now.Year")
+                                                        .With(new ExpressionChunkGenerator())))))
                                 }))
                     },
                     {
@@ -1031,14 +1030,10 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                                             new MarkupBlock(
                                                 factory.CodeMarkup(" "),
                                                 new ExpressionBlock(
+                                                    factory.CSharpCodeMarkup("@"),
                                                     factory
-                                                        .CodeTransition()
-                                                        .As(SpanKind.Code)
-                                                        .With(new MarkupChunkGenerator()),
-                                                    factory
-                                                        .Code("DateTime.Now.Year")
-                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                        .Accepts(AcceptedCharacters.NonWhiteSpace)))))
+                                                        .CSharpCodeMarkup("DateTime.Now.Year")
+                                                        .With(new ExpressionChunkGenerator())))))
                                 }))
                     },
                     {
@@ -1078,14 +1073,9 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                                             new MarkupBlock(
                                                 factory.CodeMarkup(" "),
                                                 new ExpressionBlock(
-                                                    factory
-                                                        .CodeTransition()
-                                                        .As(SpanKind.Code)
-                                                        .With(new MarkupChunkGenerator()),
-                                                    factory
-                                                        .Code("value")
-                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                        .Accepts(AcceptedCharacters.NonWhiteSpace))),
+                                                    factory.CSharpCodeMarkup("@"),
+                                                    factory.CSharpCodeMarkup("value")
+                                                        .With(new ExpressionChunkGenerator()))),
                                             factory.CodeMarkup(" +"),
                                             factory.CodeMarkup(" 2"))),
                                     new TagHelperAttributeNode(
@@ -1094,33 +1084,26 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                                             factory.CodeMarkup("(bool)"),
                                             new MarkupBlock(
                                                 new ExpressionBlock(
+                                                    factory.CSharpCodeMarkup("@"),
                                                     factory
-                                                        .CodeTransition()
-                                                        .As(SpanKind.Code)
-                                                        .With(new MarkupChunkGenerator()),
-                                                    factory
-                                                        .Code("Bag[\"val\"]")
-                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                        .Accepts(AcceptedCharacters.NonWhiteSpace))),
+                                                        .CSharpCodeMarkup("Bag[\"val\"]")
+                                                        .With(new ExpressionChunkGenerator()))),
                                             factory.CodeMarkup(" ?"),
                                             new MarkupBlock(
-                                                factory.CodeMarkup(" @").Accepts(AcceptedCharacters.None),
+                                                factory.CodeMarkup(" @")
+                                                    .As(SpanKind.Code),
                                                 factory.CodeMarkup("@")
-                                                    .With(SpanChunkGenerator.Null)
-                                                    .Accepts(AcceptedCharacters.None)),
+                                                    .As(SpanKind.Code)
+                                                    .With(SpanChunkGenerator.Null)),
                                             factory.CodeMarkup("DateTime"),
                                             factory.CodeMarkup(" :"),
                                             new MarkupBlock(
                                                 factory.CodeMarkup(" "),
                                                 new ExpressionBlock(
+                                                    factory.CSharpCodeMarkup("@"),
                                                     factory
-                                                        .CodeTransition()
-                                                        .As(SpanKind.Code)
-                                                        .With(new MarkupChunkGenerator()),
-                                                    factory
-                                                        .Code("DateTime.Now")
-                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                        .Accepts(AcceptedCharacters.NonWhiteSpace)))),
+                                                        .CSharpCodeMarkup("DateTime.Now")
+                                                        .With(new ExpressionChunkGenerator())))),
                                         HtmlAttributeValueStyle.SingleQuotes)
                                 }))
                     },
@@ -1196,27 +1179,19 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                                         "age",
                                         new MarkupBlock(
                                             new MarkupBlock(
+                                                factory.CodeMarkup("@"),
                                                 factory.CodeMarkup("@")
-                                                    .Accepts(AcceptedCharacters.None)
-                                                    .With(new MarkupChunkGenerator()),
-                                                factory.CodeMarkup("@")
-                                                    .With(SpanChunkGenerator.Null)
-                                                    .Accepts(AcceptedCharacters.None)),
+                                                    .With(SpanChunkGenerator.Null)),
                                             new MarkupBlock(
-                                                factory.EmptyHtml().As(SpanKind.Code),
+                                                factory.EmptyHtml()
+                                                    .AsCodeMarkup()
+                                                    .As(SpanKind.Code),
                                                 new ExpressionBlock(
-                                                    factory.CodeTransition()
-                                                        .As(SpanKind.Code)
-                                                        .With(new MarkupChunkGenerator()),
-                                                    factory.MetaCode("(")
-                                                        .Accepts(AcceptedCharacters.None)
-                                                        .As(SpanKind.Code)
-                                                        .With(new MarkupChunkGenerator()),
-                                                    factory.Code("11+1").AsExpression(),
-                                                    factory.MetaCode(")")
-                                                        .Accepts(AcceptedCharacters.None)
-                                                        .As(SpanKind.Code)
-                                                        .With(new MarkupChunkGenerator()))))),
+                                                    factory.CSharpCodeMarkup("@"),
+                                                    factory.CSharpCodeMarkup("("),
+                                                    factory.CSharpCodeMarkup("11+1")
+                                                        .With(new ExpressionChunkGenerator()),
+                                                    factory.CSharpCodeMarkup(")"))))),
                                     new TagHelperAttributeNode(
                                         "birthday",
                                         factory.CodeMarkup("DateTime.Now")),
@@ -2237,12 +2212,9 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                                                 new MarkupBlock(
                                                 factory.CodeMarkup("    "),
                                                 new ExpressionBlock(
-                                                    factory.CodeTransition()
-                                                        .As(SpanKind.Code)
-                                                        .With(new MarkupChunkGenerator()),
-                                                    factory.Code("true")
-                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                        .Accepts(AcceptedCharacters.NonWhiteSpace))),
+                                                    factory.CSharpCodeMarkup("@"),
+                                                    factory.CSharpCodeMarkup("true")
+                                                        .With(new ExpressionChunkGenerator()))),
                                                 factory.CodeMarkup("  ")),
                                             HtmlAttributeValueStyle.SingleQuotes)
                                     }
@@ -2264,18 +2236,11 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                                                 new MarkupBlock(
                                                 factory.CodeMarkup("    "),
                                                 new ExpressionBlock(
-                                                    factory.CodeTransition()
-                                                        .As(SpanKind.Code)
-                                                        .With(new MarkupChunkGenerator()),
-                                                    factory.MetaCode("(")
-                                                        .Accepts(AcceptedCharacters.None)
-                                                        .As(SpanKind.Code)
-                                                        .With(new MarkupChunkGenerator()),
-                                                    factory.Code("true").AsExpression(),
-                                                    factory.MetaCode(")")
-                                                        .Accepts(AcceptedCharacters.None)
-                                                        .As(SpanKind.Code)
-                                                        .With(new MarkupChunkGenerator()))),
+                                                    factory.CSharpCodeMarkup("@"),
+                                                    factory.CSharpCodeMarkup("("),
+                                                    factory.CSharpCodeMarkup("true")
+                                                        .With(new ExpressionChunkGenerator()),
+                                                    factory.CSharpCodeMarkup(")"))),
                                                 factory.CodeMarkup("  ")),
                                             HtmlAttributeValueStyle.SingleQuotes)
                                     }

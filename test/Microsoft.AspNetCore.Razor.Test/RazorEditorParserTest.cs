@@ -2,17 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Web.WebPages.TestUtils;
+using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Microsoft.AspNetCore.Razor.Editor;
 using Microsoft.AspNetCore.Razor.Parser;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Parser.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Razor.Test.CodeGenerators;
 using Microsoft.AspNetCore.Razor.Test.Framework;
 using Microsoft.AspNetCore.Razor.Test.Utils;
 using Microsoft.AspNetCore.Razor.Text;
 using Microsoft.AspNetCore.Testing;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor
@@ -22,6 +26,273 @@ namespace Microsoft.AspNetCore.Razor
         private static readonly TestFile SimpleCSHTMLDocument = TestFile.Create("TestFiles/DesignTime/Simple.cshtml");
         private static readonly TestFile SimpleCSHTMLDocumentGenerated = TestFile.Create("TestFiles/DesignTime/Simple.txt");
         private const string TestLinePragmaFileName = "C:\\This\\Path\\Is\\Just\\For\\Line\\Pragmas.cshtml";
+
+        public static TheoryData TagHelperPartialParseRejectData
+        {
+            get
+            {
+                var factory = SpanFactory.CreateCsHtml();
+
+                // change, expectedDocument
+                return new TheoryData<TextChange, MarkupBlock>
+                {
+                    {
+                        CreateInsertionChange("<p></p>", 2, " "),
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p"))
+                    },
+                    {
+                        CreateInsertionChange("<p></p>", 6, " "),
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock("p"))
+                    },
+                    {
+                        CreateInsertionChange("<p some-attr></p>", 12, " "),
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new List<TagHelperAttributeNode>
+                                {
+                                    new TagHelperAttributeNode(
+                                        "some-attr",
+                                        value: null,
+                                        valueStyle: HtmlAttributeValueStyle.Minimized)
+                                }))
+                    },
+                    {
+                        CreateInsertionChange("<p some-attr></p>", 12, "ibute"),
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new List<TagHelperAttributeNode>
+                                {
+                                    new TagHelperAttributeNode(
+                                        "some-attribute",
+                                        value: null,
+                                        valueStyle: HtmlAttributeValueStyle.Minimized)
+                                }))
+                    },
+                    {
+                        CreateInsertionChange("<p some-attr></p>", 2, " before"),
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new List<TagHelperAttributeNode>
+                                {
+                                    new TagHelperAttributeNode(
+                                        "before",
+                                        value: null,
+                                        valueStyle: HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode(
+                                        "some-attr",
+                                        value: null,
+                                        valueStyle: HtmlAttributeValueStyle.Minimized)
+                                }))
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TagHelperPartialParseRejectData))]
+        public void TagHelperTagBodiesRejectPartialChanges(TextChange change, MarkupBlock expectedDocument)
+        {
+            // Arrange
+            var descriptors = new[]
+            {
+                new TagHelperDescriptor
+                {
+                    TagName = "p",
+                    TypeName = "PTagHelper"
+                },
+            };
+            var descriptorResolver = new Mock<ITagHelperDescriptorResolver>();
+            descriptorResolver
+                .Setup(resolver => resolver.Resolve(It.IsAny<TagHelperDescriptorResolutionContext>()))
+                .Returns(descriptors);
+            var host = CreateHost(descriptorResolver.Object);
+            var parser = new RazorEditorParser(host, @"C:\This\Is\A\Test\Path");
+
+            using (var manager = new TestParserManager(parser))
+            {
+                manager.InitializeWithDocument(change.OldBuffer);
+
+                // Act
+                var result = manager.CheckForStructureChangesAndWait(change);
+
+                // Assert
+                Assert.Equal(PartialParseResult.Rejected, result);
+                Assert.Equal(2, manager.ParseCount);
+                ParserTestBase.EvaluateParseTree(manager.Parser.CurrentParseTree, expectedDocument);
+            }
+        }
+
+        public static TheoryData TagHelperAttributeAcceptData
+        {
+            get
+            {
+                var factory = SpanFactory.CreateCsHtml();
+
+                // change, expectedDocument, partialParseResult
+                return new TheoryData<TextChange, MarkupBlock, PartialParseResult>
+                {
+                    {
+                        CreateInsertionChange("<p str-attr='@DateTime'></p>", 22, "."),
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new List<TagHelperAttributeNode>
+                                {
+                                    new TagHelperAttributeNode(
+                                        "str-attr",
+                                        new MarkupBlock(
+                                            new MarkupBlock(
+                                                new ExpressionBlock(
+                                                    factory.CodeTransition(),
+                                                    factory
+                                                        .Code("DateTime.")
+                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                                        .Accepts(AcceptedCharacters.NonWhiteSpace)))),
+                                        HtmlAttributeValueStyle.SingleQuotes)
+                                })),
+                        PartialParseResult.Accepted | PartialParseResult.Provisional
+                    },
+                    {
+                        CreateInsertionChange("<p obj-attr='DateTime'></p>", 21, "."),
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new List<TagHelperAttributeNode>
+                                {
+                                    new TagHelperAttributeNode(
+                                        "obj-attr",
+                                        factory.CodeMarkup("DateTime."),
+                                        HtmlAttributeValueStyle.SingleQuotes)
+                                })),
+                        PartialParseResult.Accepted
+                    },
+                    {
+                        CreateInsertionChange("<p obj-attr='1 + DateTime'></p>", 25, "."),
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new List<TagHelperAttributeNode>
+                                {
+                                    new TagHelperAttributeNode(
+                                        "obj-attr",
+                                        factory.CodeMarkup("1 + DateTime."),
+                                        HtmlAttributeValueStyle.SingleQuotes)
+                                })),
+                        PartialParseResult.Accepted
+                    },
+                    {
+                        CreateInsertionChange("<p before-attr str-attr='@DateTime' after-attr></p>", 34, "."),
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new List<TagHelperAttributeNode>
+                                {
+                                    new TagHelperAttributeNode(
+                                        "before-attr",
+                                        value: null,
+                                        valueStyle: HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode(
+                                        "str-attr",
+                                        new MarkupBlock(
+                                            new MarkupBlock(
+                                                new ExpressionBlock(
+                                                    factory.CodeTransition(),
+                                                    factory
+                                                        .Code("DateTime.")
+                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                                        .Accepts(AcceptedCharacters.NonWhiteSpace)))),
+                                        HtmlAttributeValueStyle.SingleQuotes),
+                                    new TagHelperAttributeNode(
+                                        "after-attr",
+                                        value: null,
+                                        valueStyle: HtmlAttributeValueStyle.Minimized),
+                                })),
+                        PartialParseResult.Accepted | PartialParseResult.Provisional
+                    },
+                    {
+                        CreateInsertionChange("<p str-attr='before @DateTime after'></p>", 29, "."),
+                        new MarkupBlock(
+                            new MarkupTagHelperBlock(
+                                "p",
+                                attributes: new List<TagHelperAttributeNode>
+                                {
+                                    new TagHelperAttributeNode(
+                                        "str-attr",
+                                        new MarkupBlock(
+                                            factory.Markup("before"),
+                                            new MarkupBlock(
+                                                factory.Markup(" "),
+                                                new ExpressionBlock(
+                                                    factory.CodeTransition(),
+                                                    factory
+                                                        .Code("DateTime.")
+                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                                        .Accepts(AcceptedCharacters.NonWhiteSpace))),
+                                            factory.Markup(" after")),
+                                        HtmlAttributeValueStyle.SingleQuotes)
+                                })),
+                        PartialParseResult.Accepted | PartialParseResult.Provisional
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TagHelperAttributeAcceptData))]
+        public void TagHelperAttributesAreLocatedAndAcceptChangesCorrectly(
+            TextChange change,
+            MarkupBlock expectedDocument,
+            PartialParseResult partialParseResult)
+        {
+            // Arrange
+            var descriptors = new[]
+            {
+                new TagHelperDescriptor
+                {
+                    TagName = "p",
+                    TypeName = "PTagHelper",
+                    Attributes = new[]
+                    {
+                        new TagHelperAttributeDescriptor
+                        {
+                            Name = "obj-attr",
+                            TypeName = typeof(object).FullName,
+                            PropertyName = "ObjectAttribute",
+                        },
+                        new TagHelperAttributeDescriptor
+                        {
+                            Name = "str-attr",
+                            TypeName = typeof(string).FullName,
+                            PropertyName = "StringAttribute",
+                        },
+                    }
+                },
+            };
+            var descriptorResolver = new Mock<ITagHelperDescriptorResolver>();
+            descriptorResolver
+                .Setup(resolver => resolver.Resolve(It.IsAny<TagHelperDescriptorResolutionContext>()))
+                .Returns(descriptors);
+            var host = CreateHost(descriptorResolver.Object);
+            var parser = new RazorEditorParser(host, @"C:\This\Is\A\Test\Path");
+
+            using (var manager = new TestParserManager(parser))
+            {
+                manager.InitializeWithDocument(change.OldBuffer);
+
+                // Act
+                var result = manager.CheckForStructureChangesAndWait(change);
+
+                // Assert
+                Assert.Equal(partialParseResult, result);
+                Assert.Equal(1, manager.ParseCount);
+                ParserTestBase.EvaluateParseTree(manager.Parser.CurrentParseTree, expectedDocument);
+            }
+        }
 
         [Fact]
         public void ConstructorRequiresNonNullPhysicalPath()
@@ -897,6 +1168,15 @@ namespace Microsoft.AspNetCore.Razor
         private static RazorEngineHost CreateCodeGenTestHost()
         {
             return new CodeGenTestHost(new CSharpRazorCodeLanguage()) { DesignTimeMode = true };
+        }
+
+        private static TextChange CreateInsertionChange(string initialText, int insertionLocation, string insertionText)
+        {
+            var changedText = initialText.Insert(insertionLocation, insertionText);
+
+            var original = new StringTextBuffer(initialText);
+            var changed = new StringTextBuffer(changedText);
+            return new TextChange(insertionLocation, 0, original, insertionText.Length, changed);
         }
     }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Web.WebPages.TestUtils;
 using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Test.Framework;
 using Microsoft.AspNetCore.Razor.Test.Utils;
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor
             return new TestParserManager(parser);
         }
 
-        protected static RazorEngineHost CreateHost()
+        protected static RazorEngineHost CreateHost(ITagHelperDescriptorResolver descriptorResolver = null)
         {
             return new RazorEngineHost(new TLanguage())
             {
@@ -71,7 +72,8 @@ namespace Microsoft.AspNetCore.Razor
                     "Template",
                     "DefineSection",
                     new GeneratedTagHelperContext()),
-                DesignTimeMode = true
+                DesignTimeMode = true,
+                TagHelperDescriptorResolver = descriptorResolver
             };
         }
 

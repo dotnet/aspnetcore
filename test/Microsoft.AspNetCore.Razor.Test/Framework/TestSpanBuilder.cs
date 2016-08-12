@@ -139,7 +139,27 @@ namespace Microsoft.AspNetCore.Razor.Test.Framework
 
         public static SpanConstructor CodeMarkup(this SpanFactory self, params string[] content)
         {
-            return self.Span(SpanKind.Code, content, markup: true).With(new MarkupChunkGenerator());
+            return self
+                .Span(SpanKind.Code, content, markup: true)
+                .AsCodeMarkup();
+        }
+
+        public static SpanConstructor CSharpCodeMarkup(this SpanFactory self, string content)
+        {
+            return self.Code(content)
+                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
+                .AsCodeMarkup();
+        }
+
+        public static SpanConstructor AsCodeMarkup(this SpanConstructor self)
+        {
+            return self
+                .With(new ImplicitExpressionEditHandler(
+                    SpanConstructor.TestTokenizer,
+                    CSharpCodeParser.DefaultKeywords,
+                    acceptTrailingDot: true))
+                .With(new MarkupChunkGenerator())
+                .Accepts(AcceptedCharacters.AnyExceptNewline);
         }
 
         public static SourceLocation GetLocationAndAdvance(this SourceLocationTracker self, string content)

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Chunks.Generators;
 using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Editor;
 using Microsoft.AspNetCore.Razor.Parser.Internal;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -2452,8 +2453,8 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                                                     new ExpressionBlock(
                                                         factory.CodeTransition(),
                                                         factory.Code("DateTime.Now")
-                                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                            .Accepts(AcceptedCharacters.NonWhiteSpace)))))
+                                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
+                                                            .Accepts(AcceptedCharacters.AnyExceptNewline)))))
                                     }
                                 })),
                         availableDescriptorsColon
@@ -2474,8 +2475,8 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                                                     new ExpressionBlock(
                                                         factory.CodeTransition(),
                                                         factory.Code("DateTime.Now")
-                                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                            .Accepts(AcceptedCharacters.NonWhiteSpace)))))
+                                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
+                                                            .Accepts(AcceptedCharacters.AnyExceptNewline)))))
                                     }
                                 })),
                         availableDescriptorsText
@@ -2493,24 +2494,19 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
                                             "bound",
                                             new MarkupBlock(
                                                 new MarkupBlock(
+                                                    factory.CodeMarkup("@"),
                                                     factory
                                                         .CodeMarkup("@")
-                                                        .With(new MarkupChunkGenerator())
-                                                        .Accepts(AcceptedCharacters.None),
-                                                    factory
-                                                        .CodeMarkup("@")
-                                                        .With(SpanChunkGenerator.Null)
-                                                        .Accepts(AcceptedCharacters.None)),
+                                                        .With(SpanChunkGenerator.Null)),
                                                 new MarkupBlock(
-                                                    factory.EmptyHtml().As(SpanKind.Code),
+                                                    factory
+                                                        .EmptyHtml()
+                                                        .As(SpanKind.Code)
+                                                        .AsCodeMarkup(),
                                                     new ExpressionBlock(
-                                                        factory
-                                                            .CodeTransition()
-                                                            .As(SpanKind.Code)
-                                                            .With(new MarkupChunkGenerator()),
-                                                        factory.Code("DateTime.Now")
-                                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                            .Accepts(AcceptedCharacters.NonWhiteSpace)))))
+                                                        factory.CSharpCodeMarkup("@"),
+                                                        factory.CSharpCodeMarkup("DateTime.Now")
+                                                            .With(new ExpressionChunkGenerator())))))
                                     }
                                 })),
                         availableDescriptorsText
