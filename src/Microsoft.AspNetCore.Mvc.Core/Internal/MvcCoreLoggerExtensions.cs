@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 "Executing FileResult, sending file as {FileDownloadName}");
 
             _authorizationFailure = LoggerMessage.Define<object>(
-                LogLevel.Warning,
+                LogLevel.Information,
                 1,
                 "Authorization failed for the request at filter '{AuthorizationFilter}'.");
 
