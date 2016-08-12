@@ -5,16 +5,20 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Hosting.Views;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.StackTrace.Sources;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
 {
@@ -168,15 +172,44 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 // Generate an HTML error page.
                 var hostingEnv = _applicationServices.GetRequiredService<IHostingEnvironment>();
                 var showDetailedErrors = hostingEnv.IsDevelopment() || _options.DetailedErrors;
-                var errorBytes = StartupExceptionPage.GenerateErrorHtml(showDetailedErrors, ex);
 
+                var model = new ErrorPageModel();
+                var runtimeType = Microsoft.Extensions.Internal.RuntimeEnvironment.RuntimeType;
+                model.RuntimeDisplayName = (runtimeType == "CoreCLR") ? ".NET Core" : runtimeType == "CLR" ? ".NET Framework" : "Mono";
+#if NETSTANDARD1_3
+                var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;
+                var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName).Version.ToString();
+                var clrVersion = assemblyVersion;
+#else
+                var clrVersion = Environment.Version.ToString();
+#endif
+                model.RuntimeArchitecture = RuntimeInformation.ProcessArchitecture.ToString();
+                var currentAssembly = typeof(ErrorPage).GetTypeInfo().Assembly;
+                model.CurrentAssemblyVesion = currentAssembly
+                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                    .InformationalVersion;
+                model.ClrVersion = clrVersion;
+                model.OperatingSystemDescription = RuntimeInformation.OSDescription;
+
+                if (showDetailedErrors)
+                {
+                    var exceptionDetailProvider = new ExceptionDetailsProvider(
+                        hostingEnv.ContentRootFileProvider,
+                        sourceCodeLineCount: 6);
+
+                    model.ErrorDetails = exceptionDetailProvider.GetDetails(ex);
+                }
+                else
+                {
+                    model.ErrorDetails = new ExceptionDetails[0];
+                }
+
+                var errorPage = new ErrorPage(model);
                 return context =>
                 {
                     context.Response.StatusCode = 500;
-                    context.Response.Headers["Cache-Control"] = "private, max-age=0";
-                    context.Response.ContentType = "text/html; charset=utf-8";
-                    context.Response.ContentLength = errorBytes.Length;
-                    return context.Response.Body.WriteAsync(errorBytes, 0, errorBytes.Length);
+                    context.Response.Headers["Cache-Control"] = "no-cache";
+                    return errorPage.ExecuteAsync(context);
                 };
             }
         }

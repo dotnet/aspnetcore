@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Hosting
             using (host)
             {
                 host.Start();
-                await AssertResponseContains(server.RequestDelegate, "Message from the LoaderException</span>");
+                await AssertResponseContains(server.RequestDelegate, "Message from the LoaderException</div>");
             }
         }
 
@@ -481,20 +481,20 @@ namespace Microsoft.AspNetCore.Hosting
             var hostingEnv = host.Services.GetService<IHostingEnvironment>();
             Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
         }
-        
+
         [Fact]
         public void Configure_SupportsStaticMethodDelegate()
         {
             var host = new WebHostBuilder()
                 .UseServer(new TestServer())
-                .Configure(StaticConfigureMethod) 
+                .Configure(StaticConfigureMethod)
                 .Build();
 
             var hostingEnv = host.Services.GetService<IHostingEnvironment>();
             Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
         }
 
-        private static void StaticConfigureMethod(IApplicationBuilder app) 
+        private static void StaticConfigureMethod(IApplicationBuilder app)
         { }
 
         private IWebHostBuilder CreateWebHostBuilder()

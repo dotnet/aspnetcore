@@ -24,13 +24,17 @@
     "Microsoft.AspNetCore.Hosting.Server.Abstractions": "1.1.0-*",
     "Microsoft.AspNetCore.Http": "1.1.0-*",
     "Microsoft.AspNetCore.Http.Extensions": "1.1.0-*",
-    "Microsoft.Extensions.FileProviders.Physical": "1.1.0-*",
-    "Microsoft.Extensions.Options": "1.1.0-*",
     "Microsoft.Extensions.Configuration": "1.1.0-*",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.1.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
+    "Microsoft.Extensions.FileProviders.Physical": "1.1.0-*",
     "Microsoft.Extensions.Logging": "1.1.0-*",
+    "Microsoft.Extensions.Options": "1.1.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.1.0-*",
+    "Microsoft.Extensions.RazorViews.Sources": {
+      "type": "build",
+      "version": "1.1.0-*"
+    },
     "Microsoft.Extensions.RuntimeEnvironment.Sources": {
       "type": "build",
       "version": "1.1.0-*"
@@ -68,5 +72,8 @@
         "System.Reflection.Extensions": "4.0.1-*"
       }
     }
+  },
+  "tools": {
+    "RazorPageGenerator": "1.1.0-*"
   }
 }
