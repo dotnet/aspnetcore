@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Testing
+namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
     /// <summary>
     /// Factory to create an appropriate deployer based on <see cref="DeploymentParameters"/>.
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Testing
                     return new NginxDeployer(deploymentParameters, logger);
                 default:
                     throw new NotSupportedException(
-                        string.Format("Found no deployers suitable for server type '{0}' with the current runtime.", 
+                        string.Format("Found no deployers suitable for server type '{0}' with the current runtime.",
                         deploymentParameters.ServerType)
                         );
             }

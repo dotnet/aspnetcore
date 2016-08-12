@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // See License.txt in the project root for license information
 
-namespace Microsoft.AspNetCore.Server.Testing
+namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
     public class RemoteWindowsDeploymentParameters : DeploymentParameters
     {

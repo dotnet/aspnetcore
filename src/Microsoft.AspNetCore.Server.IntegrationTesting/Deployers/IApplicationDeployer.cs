@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Server.Testing
+namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
     /// <summary>
     /// Common operations on an application deployer.

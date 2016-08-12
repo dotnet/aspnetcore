@@ -6,10 +6,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Microsoft.AspNetCore.Server.Testing.Common;
+using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Testing
+namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
     /// <summary>
     /// Deployer for WebListener and Kestrel.

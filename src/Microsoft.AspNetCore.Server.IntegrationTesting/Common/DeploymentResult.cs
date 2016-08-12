@@ -3,7 +3,7 @@
 
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Server.Testing
+namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
     /// <summary>
     /// Result of a deployment.
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Testing
         public string ApplicationBaseUri { get; set; }
 
         /// <summary>
-        /// The folder where the application is hosted. This path can be different from the 
+        /// The folder where the application is hosted. This path can be different from the
         /// original application source location if published before deployment.
         /// </summary>
         public string ContentRoot { get; set; }

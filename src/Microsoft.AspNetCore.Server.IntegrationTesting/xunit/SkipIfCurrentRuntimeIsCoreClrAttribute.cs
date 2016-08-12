@@ -2,23 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Testing.xunit;
 
-namespace Microsoft.AspNetCore.Server.Testing
+namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
     /// <summary>
-    /// Skips a 64 bit test if the current Windows OS is 32-bit.
+    /// Skips a test if the runtime used to run the test is CoreClr.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class SkipOn32BitOSAttribute : Attribute, ITestCondition
+    public class SkipIfCurrentRuntimeIsCoreClrAttribute : Attribute, ITestCondition
     {
         public bool IsMet
         {
             get
             {
-                // Directory found only on 64-bit OS.
-                return Directory.Exists(Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), "SysWOW64"));
+                return !Process.GetCurrentProcess().ProcessName.ToLower().Contains("coreclr");
             }
         }
 
@@ -26,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Testing
         {
             get
             {
-                return "Skipping the x64 test since Windows is 32-bit";
+                return "Cannot run these test variations using CoreCLR runtime as helpers are not available on CoreCLR.";
             }
         }
     }

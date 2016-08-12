@@ -9,7 +9,7 @@ using System.Threading;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Testing
+namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
     /// <summary>
     /// Abstract base class of all deployers with implementation of some of the common helpers.

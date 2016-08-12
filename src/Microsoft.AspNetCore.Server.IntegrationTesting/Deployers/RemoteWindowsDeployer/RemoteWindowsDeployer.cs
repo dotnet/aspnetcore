@@ -11,7 +11,7 @@ using System.Xml.Linq;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Testing
+namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
     public class RemoteWindowsDeployer : ApplicationDeployer
     {
@@ -306,9 +306,10 @@ namespace Microsoft.AspNetCore.Server.Testing
 
             // Copy the scripts from this assembly's embedded resources to the temp path on the machine where these
             // tests are being run
+            var assembly = typeof(RemoteWindowsDeployer).GetTypeInfo().Assembly;
             var embeddedFileProvider = new EmbeddedFileProvider(
-                typeof(RemoteWindowsDeployer).GetTypeInfo().Assembly,
-                "Microsoft.AspNetCore.Server.Testing.Deployers.RemoteWindowsDeployer");
+                assembly,
+                $"{assembly.GetName().Name}.Deployers.RemoteWindowsDeployer");
 
             var filesOnDisk = new string[embeddedFileNames.Length];
             for (var i = 0; i < embeddedFileNames.Length; i++)

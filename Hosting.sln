@@ -24,7 +24,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Hostin
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Hosting.Server.Abstractions", "src\Microsoft.AspNetCore.Hosting.Server.Abstractions\Microsoft.AspNetCore.Hosting.Server.Abstractions.xproj", "{FDBBA081-5248-4FC0-9E08-B46BEF3FA438}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.Testing", "src\Microsoft.AspNetCore.Server.Testing\Microsoft.AspNetCore.Server.Testing.xproj", "{3DA89347-6731-4366-80C4-548F24E8607B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.IntegrationTesting", "src\Microsoft.AspNetCore.Server.IntegrationTesting\Microsoft.AspNetCore.Server.IntegrationTesting.xproj", "{3DA89347-6731-4366-80C4-548F24E8607B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{9C7520A0-F2EB-411C-8BB2-80B39C937217}"
 EndProject
