@@ -6,5 +6,6 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
         public int HotModuleReplacementServerPort { get; set; }
         public bool ReactHotModuleReplacement { get; set; }
         public string ConfigFile { get; set; }
+        public string ProjectPath { get; set; }
     }
 }

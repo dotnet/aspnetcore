@@ -35,15 +35,25 @@ namespace Microsoft.AspNetCore.Builder
                     "To enable ReactHotModuleReplacement, you must also enable HotModuleReplacement.");
             }
 
+            string projectPath;
+            if (options.ProjectPath == null)
+            {
+                var hostEnv = (IHostingEnvironment)appBuilder.ApplicationServices.GetService(typeof(IHostingEnvironment));
+                projectPath = hostEnv.ContentRootPath;
+            }
+            else
+            {
+                projectPath = options.ProjectPath;
+            }
+
             // Unlike other consumers of NodeServices, WebpackDevMiddleware dosen't share Node instances, nor does it
             // use your DI configuration. It's important for WebpackDevMiddleware to have its own private Node instance
             // because it must *not* restart when files change (if it did, you'd lose all the benefits of Webpack
             // middleware). And since this is a dev-time-only feature, it doesn't matter if the default transport isn't
             // as fast as some theoretical future alternative.
-            var hostEnv = (IHostingEnvironment)appBuilder.ApplicationServices.GetService(typeof(IHostingEnvironment));
             var nodeServices = Configuration.CreateNodeServices(new NodeServicesOptions
             {
-                ProjectPath = hostEnv.ContentRootPath,
+                ProjectPath = projectPath,
                 WatchFileExtensions = new string[] { } // Don't watch anything
             });
 
@@ -55,7 +65,7 @@ namespace Microsoft.AspNetCore.Builder
             // Tell Node to start the server hosting webpack-dev-middleware
             var devServerOptions = new
             {
-                webpackConfigPath = Path.Combine(hostEnv.ContentRootPath, options.ConfigFile ?? DefaultConfigFile),
+                webpackConfigPath = Path.Combine(projectPath, options.ConfigFile ?? DefaultConfigFile),
                 suppliedOptions = options
             };
             var devServerInfo =
