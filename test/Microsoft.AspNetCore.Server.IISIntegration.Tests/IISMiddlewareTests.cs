@@ -73,6 +73,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         }
 
         [Fact]
+        public void UrlDelayRegistered()
+        {
+            var builder = new WebHostBuilder()
+                .UseSetting("TOKEN", "TestToken")
+                .UseSetting("PORT", "12345")
+                .UseSetting("APPL_PATH", "/")
+                .UseIISIntegration();
+
+            Assert.Null(builder.GetSetting(WebHostDefaults.ServerUrlsKey));
+
+            // Adds a server and calls Build()
+            var server = new TestServer(builder);
+
+            Assert.Equal("http://localhost:12345/", builder.GetSetting(WebHostDefaults.ServerUrlsKey));
+        }
+
+        [Fact]
         public async Task AddsAuthenticationHandlerByDefault()
         {
             var assertsExecuted = false;

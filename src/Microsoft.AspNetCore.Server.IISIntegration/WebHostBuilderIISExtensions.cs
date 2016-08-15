@@ -20,27 +20,28 @@ namespace Microsoft.AspNetCore.Hosting
         /// Configures the port and base path the server should listen on when running behind AspNetCoreModule.
         /// The app will also be configured to capture startup errors.
         /// </summary>
-        /// <param name="app"></param>
+        /// <param name="hostBuilder"></param>
         /// <returns></returns>
-        public static IWebHostBuilder UseIISIntegration(this IWebHostBuilder app)
+        public static IWebHostBuilder UseIISIntegration(this IWebHostBuilder hostBuilder)
         {
-            if (app == null)
+            if (hostBuilder == null)
             {
-                throw new ArgumentNullException(nameof(app));
+                throw new ArgumentNullException(nameof(hostBuilder));
             }
 
-            var port = app.GetSetting(ServerPort) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{ServerPort}");
-            var path = app.GetSetting(ServerPath) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{ServerPath}");
-            var pairingToken = app.GetSetting(PairingToken) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{PairingToken}");
+            var port = hostBuilder.GetSetting(ServerPort) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{ServerPort}");
+            var path = hostBuilder.GetSetting(ServerPath) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{ServerPath}");
+            var pairingToken = hostBuilder.GetSetting(PairingToken) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{PairingToken}");
 
             if (!string.IsNullOrEmpty(port) && !string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(pairingToken))
             {
                 var address = "http://localhost:" + port + path;
-                app.UseSetting(WebHostDefaults.ServerUrlsKey, address);
-                app.CaptureStartupErrors(true);
+                hostBuilder.CaptureStartupErrors(true);
 
-                app.ConfigureServices(services =>
+                hostBuilder.ConfigureServices(services =>
                 {
+                    // Delay register the url so users don't accidently overwrite it.
+                    hostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, address);
                     services.AddSingleton<IStartupFilter>(new IISSetupFilter(pairingToken));
                     services.Configure<ForwardedHeadersOptions>(options =>
                     {
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.Hosting
                 });
             }
 
-            return app;
+            return hostBuilder;
         }
     }
 }
