@@ -7,7 +7,7 @@
     "Microsoft.AspNetCore.Authentication.Cookies": "1.1.0-*",
     "Microsoft.AspNetCore.Authentication.OpenIdConnect": "1.1.0-*",
     "Microsoft.AspNetCore.Identity": "1.1.0-*",
-    "Microsoft.AspNetCore.Server.Testing": "0.2.0-*",
+    "Microsoft.AspNetCore.Server.IntegrationTesting": "0.2.0-*",
     "Microsoft.AspNetCore.WebUtilities": "1.1.0-*",
     "Microsoft.Extensions.Configuration.Binder": "1.1.0-*",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.1.0-*",

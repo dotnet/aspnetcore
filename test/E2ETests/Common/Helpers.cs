@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.AspNetCore.Server.Testing;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging;
 
 namespace E2ETests
