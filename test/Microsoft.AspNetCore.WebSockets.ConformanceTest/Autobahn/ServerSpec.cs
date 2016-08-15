@@ -1,5 +1,4 @@
-﻿using System;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.AspNetCore.Server.Testing;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
 
 namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
 {

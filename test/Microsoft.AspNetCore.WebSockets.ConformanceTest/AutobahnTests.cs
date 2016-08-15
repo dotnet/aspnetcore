@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Testing;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn;
 using Microsoft.Extensions.Logging;
