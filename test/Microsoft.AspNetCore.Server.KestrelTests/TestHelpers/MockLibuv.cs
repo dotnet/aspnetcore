@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
@@ -11,6 +12,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
     {
         private UvAsyncHandle _postHandle;
         private uv_async_cb _onPost;
+        private TaskCompletionSource<object> _onPostTcs;
+        private object _postLock = new object();
 
         private bool _stopLoop;
         private readonly ManualResetEventSlim _loopWh = new ManualResetEventSlim();
@@ -32,8 +35,17 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 
             _uv_async_send = postHandle =>
             {
-                PostCount++;
-                _loopWh.Set();
+                lock (_postLock)
+                {
+                    if (_onPostTcs == null || _onPostTcs.Task.IsCompleted)
+                    {
+                        _onPostTcs = new TaskCompletionSource<object>();
+                    }
+
+                    PostCount++;
+
+                    _loopWh.Set();
+                }
 
                 return 0;
             };
@@ -51,8 +63,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
                 while (!_stopLoop)
                 {
                     _loopWh.Wait();
-                    _loopWh.Reset();
-                    _onPost(_postHandle.InternalGetHandle());
+                    KestrelThreadBlocker.Wait();
+
+                    lock (_postLock)
+                    {
+                        _loopWh.Reset();
+                        _onPost(_postHandle.InternalGetHandle());
+                        _onPostTcs.TrySetResult(null);
+                    }
                 }
 
                 return 0;
@@ -96,6 +114,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
         public uv_read_cb ReadCallback { get; set; }
 
         public int PostCount { get; set; }
+
+        public Task OnPostTask => _onPostTcs.Task;
+
+        public ManualResetEventSlim KestrelThreadBlocker { get; } = new ManualResetEventSlim(true);
 
         private int UvReadStart(UvStreamHandle handle, uv_alloc_cb allocCallback, uv_read_cb readCallback)
         {
