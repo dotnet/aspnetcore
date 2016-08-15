@@ -3,7 +3,7 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore.Server.Testing;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace ServerComparison.FunctionalTests
