@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,32 +8,32 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Builder.Extensions
 {
     /// <summary>
-    /// Respresents a middleware that maps a request path to a sub-request pipeline.
+    /// Represents a middleware that extracts the specified path base from request path and postpend it to the request path base.
     /// </summary>
-    public class MapMiddleware
+    public class UsePathBaseMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly MapOptions _options;
+        private readonly PathString _pathBase;
 
         /// <summary>
-        /// Creates a new instace of <see cref="MapMiddleware"/>.
+        /// Creates a new instace of <see cref="UsePathBaseMiddleware"/>.
         /// </summary>
         /// <param name="next">The delegate representing the next middleware in the request pipeline.</param>
-        /// <param name="options">The middleware options.</param>
-        public MapMiddleware(RequestDelegate next, MapOptions options)
+        /// <param name="pathBase">The path base to extract.</param>
+        public UsePathBaseMiddleware(RequestDelegate next, PathString pathBase)
         {
             if (next == null)
             {
                 throw new ArgumentNullException(nameof(next));
             }
 
-            if (options == null)
+            if (!pathBase.HasValue)
             {
-                throw new ArgumentNullException(nameof(options));
+                throw new ArgumentException($"{nameof(pathBase)} cannot be null or empty.");
             }
 
             _next = next;
-            _options = options;
+            _pathBase = pathBase;
         }
 
         /// <summary>
@@ -51,22 +51,21 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             PathString matchedPath;
             PathString remainingPath;
 
-            if (context.Request.Path.StartsWithSegments(_options.PathMatch, out matchedPath, out remainingPath))
+            if (context.Request.Path.StartsWithSegments(_pathBase, out matchedPath, out remainingPath))
             {
-                // Update the path
-                var path = context.Request.Path;
-                var pathBase = context.Request.PathBase;
-                context.Request.PathBase = pathBase.Add(matchedPath);
+                var originalPath = context.Request.Path;
+                var originalPathBase = context.Request.PathBase;
                 context.Request.Path = remainingPath;
+                context.Request.PathBase = originalPathBase.Add(matchedPath);
 
                 try
                 {
-                    await _options.Branch(context);
+                    await _next(context);
                 }
                 finally
                 {
-                    context.Request.PathBase = pathBase;
-                    context.Request.Path = path;
+                    context.Request.Path = originalPath;
+                    context.Request.PathBase = originalPathBase;
                 }
             }
             else

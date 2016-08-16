@@ -75,6 +75,13 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         [InlineData("/foo", "/Bar", "/foo/cho/")]
         [InlineData("/foo/cho", "/Bar", "/foo/cho")]
         [InlineData("/foo/cho", "/Bar", "/foo/cho/do")]
+        [InlineData("/foo", "", "/Foo")]
+        [InlineData("/foo", "", "/Foo/")]
+        [InlineData("/foo", "/Bar", "/Foo")]
+        [InlineData("/foo", "/Bar", "/Foo/Cho")]
+        [InlineData("/foo", "/Bar", "/Foo/Cho/")]
+        [InlineData("/foo/cho", "/Bar", "/Foo/Cho")]
+        [InlineData("/foo/cho", "/Bar", "/Foo/Cho/do")]
         public void PathMatchAction_BranchTaken(string matchPath, string basePath, string requestPath)
         {
             HttpContext context = CreateRequest(basePath, requestPath);
@@ -84,7 +91,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             app.Invoke(context).Wait();
 
             Assert.Equal(200, context.Response.StatusCode);
-            Assert.Equal(basePath + matchPath, context.Items["test.PathBase"]);
+            Assert.Equal(basePath + requestPath.Substring(0, matchPath.Length), (string)context.Items["test.PathBase"]);
             Assert.Equal(requestPath.Substring(matchPath.Length), context.Items["test.Path"]);
         }
 
