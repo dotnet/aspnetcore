@@ -11,9 +11,15 @@ namespace Microsoft.AspNetCore.AngularServices
 {
     public static class PrimeCacheHelper
     {
-        public static async Task<HtmlString> PrimeCache(this IHtmlHelper html, string url)
+        [Obsolete("Use PrimeCacheAsync instead")]
+        public static Task<IHtmlContent> PrimeCache(this IHtmlHelper html, string url)
         {
-            // TODO: Consider deduplicating the PrimeCache calls (that is, if there are multiple requests to precache
+            return PrimeCacheAsync(html, url);
+        }
+
+        public static async Task<IHtmlContent> PrimeCacheAsync(this IHtmlHelper html, string url)
+        {
+            // TODO: Consider deduplicating the PrimeCacheAsync calls (that is, if there are multiple requests to precache
             // the same URL, only return nonempty for one of them). This will make it easier to auto-prime-cache any
             // HTTP requests made during server-side rendering, without risking unnecessary duplicate requests.
 

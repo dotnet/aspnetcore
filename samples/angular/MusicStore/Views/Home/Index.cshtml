@@ -4,8 +4,8 @@
 
 <cache vary-by="@Context.Request.Path">
     <app asp-prerender-module="wwwroot/ng-app/boot-server">Loading...</app>
-    @await Html.PrimeCache(Url.Action("GenreMenuList", "GenresApi"))
-    @await Html.PrimeCache(Url.Action("MostPopular", "AlbumsApi"))
+    @await Html.PrimeCacheAsync(Url.Action("GenreMenuList", "GenresApi"))
+    @await Html.PrimeCacheAsync(Url.Action("MostPopular", "AlbumsApi"))
 </cache>
 
 @section scripts {
