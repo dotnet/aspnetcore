@@ -35,16 +35,8 @@ namespace Microsoft.AspNetCore.Builder
                     "To enable ReactHotModuleReplacement, you must also enable HotModuleReplacement.");
             }
 
-            string projectPath;
-            if (options.ProjectPath == null)
-            {
-                var hostEnv = (IHostingEnvironment)appBuilder.ApplicationServices.GetService(typeof(IHostingEnvironment));
-                projectPath = hostEnv.ContentRootPath;
-            }
-            else
-            {
-                projectPath = options.ProjectPath;
-            }
+            var hostEnv = (IHostingEnvironment)appBuilder.ApplicationServices.GetService(typeof(IHostingEnvironment));
+            var projectPath = options.ProjectPath ?? hostEnv.ContentRootPath;
 
             // Unlike other consumers of NodeServices, WebpackDevMiddleware dosen't share Node instances, nor does it
             // use your DI configuration. It's important for WebpackDevMiddleware to have its own private Node instance
@@ -55,7 +47,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 ProjectPath = projectPath,
                 WatchFileExtensions = new string[] { } // Don't watch anything
-            });
+            }.AddDefaultEnvironmentVariables(hostEnv.IsDevelopment()));
 
             // Get a filename matching the middleware Node script
             var script = EmbeddedResourceReader.Read(typeof(WebpackDevMiddleware),

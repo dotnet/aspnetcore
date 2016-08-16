@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
                 _nodeServices = _fallbackNodeServices = Configuration.CreateNodeServices(new NodeServicesOptions
                 {
                     ProjectPath = _applicationBasePath
-                });
+                }.AddDefaultEnvironmentVariables(hostEnv.IsDevelopment()));
             }
         }
 

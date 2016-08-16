@@ -20,11 +20,14 @@ namespace Microsoft.AspNetCore.NodeServices
             {
                 // Since this instance is being created through DI, we can access the IHostingEnvironment
                 // to populate options.ProjectPath if it wasn't explicitly specified.                
+                var hostEnv = serviceProvider.GetRequiredService<IHostingEnvironment>();
                 if (string.IsNullOrEmpty(options.ProjectPath))
                 {
-                    var hostEnv = serviceProvider.GetRequiredService<IHostingEnvironment>();
                     options.ProjectPath = hostEnv.ContentRootPath;
                 }
+
+                // Similarly, we can determine the 'is development' value from the hosting environment
+                options.AddDefaultEnvironmentVariables(hostEnv.IsDevelopment());
 
                 // Likewise, if no logger was specified explicitly, we should use the one from DI.
                 // If it doesn't provide one, CreateNodeInstance will set up a default.
@@ -69,11 +72,11 @@ namespace Microsoft.AspNetCore.NodeServices
                 {
                     case NodeHostingModel.Http:
                         return new HttpNodeInstance(options.ProjectPath, options.WatchFileExtensions, logger, 
-                            options.LaunchWithDebugging, options.DebuggingPort, /* port */ 0);
+                            options.EnvironmentVariables, options.LaunchWithDebugging, options.DebuggingPort, /* port */ 0);
                     case NodeHostingModel.Socket:
                         var pipeName = "pni-" + Guid.NewGuid().ToString("D"); // Arbitrary non-clashing string
                         return new SocketNodeInstance(options.ProjectPath, options.WatchFileExtensions, pipeName, logger,
-                            options.LaunchWithDebugging, options.DebuggingPort);
+                            options.EnvironmentVariables, options.LaunchWithDebugging, options.DebuggingPort);
                     default:
                         throw new ArgumentException("Unknown hosting model: " + options.HostingModel);
                 }

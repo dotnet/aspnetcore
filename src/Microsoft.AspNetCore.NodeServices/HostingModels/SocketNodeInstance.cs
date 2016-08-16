@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -38,7 +39,8 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private VirtualConnectionClient _virtualConnectionClient;
 
         public SocketNodeInstance(string projectPath, string[] watchFileExtensions, string socketAddress,
-            ILogger nodeInstanceOutputLogger, bool launchWithDebugging, int? debuggingPort)
+            ILogger nodeInstanceOutputLogger, IDictionary<string, string> environmentVars,
+            bool launchWithDebugging, int? debuggingPort)
         : base(
                 EmbeddedResourceReader.Read(
                     typeof(SocketNodeInstance),
@@ -47,6 +49,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                 watchFileExtensions,
                 MakeNewCommandLineOptions(socketAddress),
                 nodeInstanceOutputLogger,
+                environmentVars,
                 launchWithDebugging,
                 debuggingPort)
         {

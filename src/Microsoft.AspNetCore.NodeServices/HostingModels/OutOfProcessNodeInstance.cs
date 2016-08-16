@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -46,6 +47,7 @@ If you haven't yet installed node-inspector, you can do so as follows:
             string[] watchFileExtensions,
             string commandLineArguments,
             ILogger nodeOutputLogger,
+            IDictionary<string, string> environmentVars,
             bool launchWithDebugging,
             int? debuggingPort)
         {
@@ -58,7 +60,7 @@ If you haven't yet installed node-inspector, you can do so as follows:
             _entryPointScript = new StringAsTempFile(entryPointScript);
 
             var startInfo = PrepareNodeProcessStartInfo(_entryPointScript.FileName, projectPath, commandLineArguments,
-                launchWithDebugging, debuggingPort);
+                environmentVars, launchWithDebugging, debuggingPort);
             _nodeProcess = LaunchNodeProcess(startInfo);
             _watchFileExtensions = watchFileExtensions;
             _fileSystemWatcher = BeginFileWatcher(projectPath);
@@ -99,7 +101,7 @@ If you haven't yet installed node-inspector, you can do so as follows:
         // This method is virtual, as it provides a way to override the NODE_PATH or the path to node.exe
         protected virtual ProcessStartInfo PrepareNodeProcessStartInfo(
             string entryPointFilename, string projectPath, string commandLineArguments,
-            bool launchWithDebugging, int? debuggingPort)
+            IDictionary<string, string> environmentVars, bool launchWithDebugging, int? debuggingPort)
         {
             string debuggingArgs;
             if (launchWithDebugging)
@@ -122,6 +124,19 @@ If you haven't yet installed node-inspector, you can do so as follows:
                 WorkingDirectory = projectPath
             };
 
+            // Append environment vars
+            if (environmentVars != null)
+            {
+                foreach (var envVarKey in environmentVars.Keys)
+                {
+                    var envVarValue = environmentVars[envVarKey];
+                    if (envVarValue != null)
+                    {
+                        SetEnvironmentVariable(startInfo, envVarKey, envVarValue);
+                    }
+                }
+            }
+
             // Append projectPath to NODE_PATH so it can locate node_modules
             var existingNodePath = Environment.GetEnvironmentVariable("NODE_PATH") ?? string.Empty;
             if (existingNodePath != string.Empty)
@@ -130,11 +145,7 @@ If you haven't yet installed node-inspector, you can do so as follows:
             }
 
             var nodePathValue = existingNodePath + Path.Combine(projectPath, "node_modules");
-#if NET451
-            startInfo.EnvironmentVariables["NODE_PATH"] = nodePathValue;
-#else
-            startInfo.Environment["NODE_PATH"] = nodePathValue;
-#endif
+            SetEnvironmentVariable(startInfo, "NODE_PATH", nodePathValue);
 
             return startInfo;
         }
@@ -177,6 +188,15 @@ If you haven't yet installed node-inspector, you can do so as follows:
                 _fileSystemWatcher.Dispose();
                 _fileSystemWatcher = null;
             }
+        }
+
+        private static void SetEnvironmentVariable(ProcessStartInfo startInfo, string name, string value)
+        {
+#if NET451
+            startInfo.EnvironmentVariables[name] = value;
+#else
+            startInfo.Environment[name] = value;
+#endif
         }
 
         private static Process LaunchNodeProcess(ProcessStartInfo startInfo)
