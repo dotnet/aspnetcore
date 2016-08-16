@@ -1,0 +1,29 @@
+﻿{
+  "buildOptions": {
+    "define": [
+      "GENERATE_BASELINES"
+    ],
+    "embed": "Resources/*"
+  },
+  "dependencies": {
+    "dotnet-test-xunit": "2.2.0-*",
+    "Microsoft.AspNetCore.Server.IntegrationTesting": "0.2.0-*",
+    "Microsoft.Extensions.Logging": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.1.0-*",
+    "Microsoft.Extensions.PlatformAbstractions": "1.1.0-*",
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-preview2-003121",
+    "xunit": "2.2.0-*"
+  },
+
+  "frameworks": {
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0"
+        }
+      }
+    }
+  },
+  "testRunner": "xunit"
+}

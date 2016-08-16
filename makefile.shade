@@ -1,0 +1,9 @@
+use namespace="System.IO"
+
+-BuildQuality = "preview3";
+
+use-standard-lifecycle
+k-standard-goals
+
+#repo-initialize target='initialize'
+    dotnet command='restore src test ${E("KOREBUILD_DOTNET_RESTORE_OPTIONS")}' workingDir='${Directory.GetCurrentDirectory()}' if='!NoRestore'

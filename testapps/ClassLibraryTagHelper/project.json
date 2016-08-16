@@ -1,0 +1,9 @@
+﻿{
+  "dependencies": {
+    "Microsoft.AspNetCore.Razor.Runtime": "1.1.0-*"
+  },
+  "frameworks": {
+    "netstandard1.6": {},
+    "net451": {}
+  }
+}

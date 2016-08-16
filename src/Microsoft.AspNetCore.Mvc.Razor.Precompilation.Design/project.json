@@ -1,0 +1,41 @@
+﻿{
+  "version": "1.0.0-*",
+  "description": "Razor precompilation",
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/AspNet/Mvc"
+    },
+    "tags": [
+      "cshtml",
+      "razor",
+      "precompilation",
+      "aspnetcore"
+    ]
+  },
+  "buildOptions": {
+    "keyFile": "../../tools/Key.snk",
+    "warningsAsErrors": true,
+    "emitEntryPoint": true,
+    "nowarn": [
+      "CS1591"
+    ],
+    "xmlDoc": true
+  },
+  "dependencies": {
+    "Microsoft.AspNetCore.Hosting": "1.1.0-*",
+    "Microsoft.AspNetCore.Mvc.Razor": "1.1.0-*",
+    "Microsoft.Extensions.CommandLineUtils": "1.1.0-*"
+  },
+  "frameworks": {
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0-*"
+        }
+      }
+    },
+    "net451": {}
+  }
+}

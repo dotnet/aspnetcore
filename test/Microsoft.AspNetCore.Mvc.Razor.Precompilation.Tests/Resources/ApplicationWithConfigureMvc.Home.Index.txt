@@ -1,0 +1,2 @@
+AspNetCore.Views_Home_Index_cshtml, ApplicationWithConfigureMvc.PrecompiledViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+<br />Hello world!
