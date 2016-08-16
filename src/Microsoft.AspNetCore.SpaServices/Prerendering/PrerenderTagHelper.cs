@@ -2,13 +2,11 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.NodeServices;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.Extensions.PlatformAbstractions;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SpaServices.Prerendering
@@ -60,7 +58,19 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
 
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
+            // We want to pass the original, unencoded incoming URL data through to Node, so that
+            // server-side code has the same view of the URL as client-side code (on the client,
+            // location.pathname returns an unencoded string).
+            // The following logic handles special characters in URL paths in the same way that
+            // Node and client-side JS does. For example, the path "/a=b%20c" gets passed through
+            // unchanged (whereas other .NET APIs do change it - Path.Value will return it as
+            // "/a=b c" and Path.ToString() will return it as "/a%3db%20c")
+            var requestFeature = ViewContext.HttpContext.Features.Get<IHttpRequestFeature>();
+            var unencodedPathAndQuery = requestFeature.RawTarget;
+
             var request = ViewContext.HttpContext.Request;
+            var unencodedAbsoluteUrl = $"{request.Scheme}://{request.Host}{unencodedPathAndQuery}";
+
             var result = await Prerenderer.RenderToString(
                 _applicationBasePath,
                 _nodeServices,
@@ -69,8 +79,8 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
                     ExportName = ExportName,
                     WebpackConfig = WebpackConfigPath
                 },
-                request.GetEncodedUrl(),
-                request.Path + request.QueryString.Value,
+                unencodedAbsoluteUrl,
+                unencodedPathAndQuery,
                 CustomDataParameter);
             output.Content.SetHtmlContent(result.Html);
 
