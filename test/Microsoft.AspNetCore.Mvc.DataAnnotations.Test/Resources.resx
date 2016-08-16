@@ -126,4 +126,7 @@
   <data name="DisplayAttribute_Name" xml:space="preserve">
     <value>name from resources</value>
   </data>
+  <data name="DisplayAttribute_Prompt" xml:space="preserve">
+    <value>prompt from resources</value>
+  </data>
 </root>

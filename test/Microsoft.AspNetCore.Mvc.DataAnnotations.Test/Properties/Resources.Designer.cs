@@ -58,6 +58,22 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Test
             return GetString("DisplayAttribute_Name");
         }
 
+        /// <summary>
+        /// prompt from resources
+        /// </summary>
+        internal static string DisplayAttribute_Prompt
+        {
+            get { return GetString("DisplayAttribute_Prompt"); }
+        }
+
+        /// <summary>
+        /// prompt from resources
+        /// </summary>
+        internal static string FormatDisplayAttribute_Prompt()
+        {
+            return GetString("DisplayAttribute_Prompt");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

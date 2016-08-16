@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.Extensions.Localization;
 
 namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 {
@@ -20,6 +21,13 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         IDisplayMetadataProvider,
         IValidationMetadataProvider
     {
+        private readonly IStringLocalizerFactory _stringLocalizerFactory;
+
+        public DataAnnotationsMetadataProvider(IStringLocalizerFactory stringLocalizerFactory)
+        {
+            _stringLocalizerFactory = stringLocalizerFactory;
+        }
+
         /// <inheritdoc />
         public void CreateBindingMetadata(BindingMetadataProviderContext context)
         {
@@ -80,11 +88,23 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 displayMetadata.DataTypeName = DataType.Html.ToString();
             }
 
+
+            var containerType = context.Key.ContainerType ?? context.Key.ModelType;
+            var localizer = _stringLocalizerFactory?.Create(containerType);
+
             // Description
             if (displayAttribute != null)
             {
-                displayMetadata.Description = () => displayAttribute.GetDescription();
-                displayMetadata.Placeholder = () => displayAttribute.GetPrompt();
+                if (localizer != null &&
+                    !string.IsNullOrEmpty(displayAttribute.Description) &&
+                    displayAttribute.ResourceType == null)
+                {
+                    displayMetadata.Description = () => localizer[displayAttribute.Description];
+                }
+                else
+                {
+                    displayMetadata.Description = () => displayAttribute.GetDescription();
+                }
             }
 
             // DisplayFormatString
@@ -96,7 +116,16 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             // DisplayName
             if (displayAttribute != null)
             {
-                displayMetadata.DisplayName = () => displayAttribute.GetName();
+                if (localizer != null &&
+                    !string.IsNullOrEmpty(displayAttribute.Name) &&
+                    displayAttribute.ResourceType == null)
+                {
+                    displayMetadata.DisplayName = () => localizer[displayAttribute.Name];
+                }
+                else
+                {
+                    displayMetadata.DisplayName = () => displayAttribute.GetName();
+                }
             }
 
             // EditFormatString
@@ -187,6 +216,21 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             if (displayAttribute?.GetOrder() != null)
             {
                 displayMetadata.Order = displayAttribute.GetOrder().Value;
+            }
+
+            // Placeholder
+            if (displayAttribute != null)
+            {
+                if (localizer != null &&
+                    !string.IsNullOrEmpty(displayAttribute.Prompt) &&
+                    displayAttribute.ResourceType == null)
+                {
+                    displayMetadata.Placeholder = () => localizer[displayAttribute.Prompt];
+                }
+                else
+                {
+                    displayMetadata.Placeholder = () => displayAttribute.GetPrompt();
+                }
             }
 
             // ShowForDisplay

@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         public static string DisplayAttribute_Name { get; } = Resources.DisplayAttribute_Name;
 
+        public static string DisplayAttribute_Prompt { get; } = Resources.DisplayAttribute_Prompt;
+
         public static string DisplayAttribute_CultureSensitiveName =>
             Resources.DisplayAttribute_Name + CultureInfo.CurrentUICulture;
 

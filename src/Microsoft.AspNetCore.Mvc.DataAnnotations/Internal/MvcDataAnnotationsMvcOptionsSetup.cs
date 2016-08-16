@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var stringLocalizerFactory = serviceProvider.GetService<IStringLocalizerFactory>();
             var validationAttributeAdapterProvider = serviceProvider.GetRequiredService<IValidationAttributeAdapterProvider>();
 
-            options.ModelMetadataDetailsProviders.Add(new DataAnnotationsMetadataProvider());
+            options.ModelMetadataDetailsProviders.Add(new DataAnnotationsMetadataProvider(stringLocalizerFactory));
 
             options.ModelValidatorProviders.Add(new DataAnnotationsModelValidatorProvider(
                 validationAttributeAdapterProvider,
