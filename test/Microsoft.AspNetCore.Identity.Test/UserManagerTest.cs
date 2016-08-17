@@ -466,6 +466,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             store.Setup(s => s.GetPasswordHashAsync(user, CancellationToken.None))
                 .ReturnsAsync(hashed)
                 .Verifiable();
+            store.Setup(s => s.SetPasswordHashAsync(user, It.IsAny<string>(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
             store.Setup(x => x.UpdateAsync(It.IsAny<TestUser>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(IdentityResult.Success));
 
             hasher.Setup(s => s.VerifyHashedPassword(user, hashed, pwd)).Returns(PasswordVerificationResult.SuccessRehashNeeded).Verifiable();
