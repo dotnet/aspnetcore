@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect.Infrastructre;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -32,7 +33,6 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         const string ChallengeWithOutContext = "/challengeWithOutContext";
         const string ChallengeWithProperties = "/challengeWithProperties";
         const string DefaultHost = @"https://example.com";
-        const string DefaultAuthority = @"https://example.com/common";
         const string ExpectedAuthorizeRequest = @"https://example.com/common/oauth2/signin";
         const string ExpectedLogoutRequest = @"https://example.com/common/oauth2/logout";
         const string Logout = "/logout";
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         {
             var server = CreateServer(new OpenIdConnectOptions
             {
-                Authority = DefaultAuthority,
+                Authority = TestDefaultValues.DefaultAuthority,
                 ClientId = "Test Id",
                 Configuration = TestUtilities.DefaultOpenIdConnectConfiguration,
                 AuthenticationMethod = OpenIdConnectRedirectBehavior.FormPost
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         public async Task ChallengeWillSetDefaults()
         {
             var stateDataFormat = new AuthenticationPropertiesFormaterKeyValue();
-            var queryValues = ExpectedQueryValues.Defaults(DefaultAuthority);
+            var queryValues = ExpectedQueryValues.Defaults(TestDefaultValues.DefaultAuthority);
             queryValues.State = OpenIdConnectDefaults.AuthenticationPropertiesKey + "=" + stateDataFormat.Protect(new AuthenticationProperties());
             var server = CreateServer(GetOptions(DefaultParameters(), queryValues));
 
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         {
             var server = CreateServer(new OpenIdConnectOptions
             {
-                Authority = DefaultAuthority,
+                Authority = TestDefaultValues.DefaultAuthority,
                 ClientId = "Test Id",
                 Configuration = TestUtilities.DefaultOpenIdConnectConfiguration
             });
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         [Fact]
         public async Task ChallengeWillUseOptionsProperties()
         {
-            var queryValues = new ExpectedQueryValues(DefaultAuthority);
+            var queryValues = new ExpectedQueryValues(TestDefaultValues.DefaultAuthority);
             var server = CreateServer(GetOptions(DefaultParameters(), queryValues));
 
             var transaction = await SendAsync(server, DefaultHost + Challenge);
@@ -111,14 +111,14 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
                 AuthorizationEndpoint = ExpectedAuthorizeRequest,
             };
 
-            var queryValues = new ExpectedQueryValues(DefaultAuthority, configuration)
+            var queryValues = new ExpectedQueryValues(TestDefaultValues.DefaultAuthority, configuration)
             {
                 RequestType = OpenIdConnectRequestType.Authentication
             };
             var server = CreateServer(GetProtocolMessageOptions());
             var transaction = await SendAsync(server, DefaultHost + Challenge);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-            queryValues.CheckValues(transaction.Response.Headers.Location.AbsoluteUri, new string[] {});
+            queryValues.CheckValues(transaction.Response.Headers.Location.AbsoluteUri, new string[] { });
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
                 EndSessionEndpoint = ExpectedLogoutRequest
             };
 
-            var queryValues = new ExpectedQueryValues(DefaultAuthority, configuration)
+            var queryValues = new ExpectedQueryValues(TestDefaultValues.DefaultAuthority, configuration)
             {
                 RequestType = OpenIdConnectRequestType.Logout
             };
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         [Theory, MemberData("StateDataSet")]
         public async Task ChallengeSettingState(string userState, string challenge)
         {
-            var queryValues = new ExpectedQueryValues(DefaultAuthority);
+            var queryValues = new ExpectedQueryValues(TestDefaultValues.DefaultAuthority);
             var stateDataFormat = new AuthenticationPropertiesFormaterKeyValue();
             var properties = new AuthenticationProperties();
             if (challenge == ChallengeWithProperties)
@@ -255,8 +255,8 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         [Fact]
         public async Task ChallengeWillUseEvents()
         {
-            var queryValues = new ExpectedQueryValues(DefaultAuthority);
-            var queryValuesSetInEvent = new ExpectedQueryValues(DefaultAuthority);
+            var queryValues = new ExpectedQueryValues(TestDefaultValues.DefaultAuthority);
+            var queryValuesSetInEvent = new ExpectedQueryValues(TestDefaultValues.DefaultAuthority);
             var options = GetOptions(DefaultParameters(), queryValues);
             options.Events = new OpenIdConnectEvents()
             {
@@ -285,10 +285,12 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
                     options.ClientId = queryValues.ClientId;
                 else if (param.Equals(OpenIdConnectParameterNames.Resource))
                     options.Resource = queryValues.Resource;
-                else if (param.Equals(OpenIdConnectParameterNames.Scope)) {
+                else if (param.Equals(OpenIdConnectParameterNames.Scope))
+                {
                     options.Scope.Clear();
 
-                    foreach (var scope in queryValues.Scope.Split(' ')) {
+                    foreach (var scope in queryValues.Scope.Split(' '))
+                    {
                         options.Scope.Add(scope);
                     }
                 }
@@ -333,7 +335,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             var configuration = TestUtilities.DefaultOpenIdConnectConfiguration;
             var server = CreateServer(new OpenIdConnectOptions
             {
-                Authority = DefaultAuthority,
+                Authority = TestDefaultValues.DefaultAuthority,
                 ClientId = "Test Id",
                 Configuration = configuration
             });
@@ -349,7 +351,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             var configuration = TestUtilities.DefaultOpenIdConnectConfiguration;
             var server = CreateServer(new OpenIdConnectOptions
             {
-                Authority = DefaultAuthority,
+                Authority = TestDefaultValues.DefaultAuthority,
                 ClientId = "Test Id",
                 Configuration = configuration,
                 PostLogoutRedirectUri = "https://example.com/logout"
@@ -366,7 +368,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             var configuration = TestUtilities.DefaultOpenIdConnectConfiguration;
             var server = CreateServer(new OpenIdConnectOptions
             {
-                Authority = DefaultAuthority,
+                Authority = TestDefaultValues.DefaultAuthority,
                 ClientId = "Test Id",
                 Configuration = configuration,
                 PostLogoutRedirectUri = "https://example.com/logout"
@@ -553,65 +555,5 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             return nonceTime;
         }
 
-        [Fact]
-        public void ThrowsWithNoClientId()
-        {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions
-                    {
-                        SignInScheme = "TestScheme",
-                        Authority = DefaultAuthority,
-                        Configuration = TestUtilities.DefaultOpenIdConnectConfiguration,
-                        AuthenticationMethod = OpenIdConnectRedirectBehavior.FormPost
-                    });
-                }).ConfigureServices(services =>
-                {
-                    services.AddAuthentication();
-                });
-
-            try
-            {
-                var server = new TestServer(builder);
-            }
-            catch (ArgumentException e)
-            {
-                Assert.Equal("ClientId", e.ParamName);
-                return;
-            }
-
-            Assert.True(false);
-        }
-
-        [Fact]
-        public void ThrowsWithNoConfigurationValues()
-        {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions
-                    {
-                        SignInScheme = "TestScheme",
-                        ClientId = "Test Id",
-                        AuthenticationMethod = OpenIdConnectRedirectBehavior.FormPost
-                    });
-                }).ConfigureServices(services =>
-                {
-                    services.AddAuthentication();
-                });
-
-            try
-            {
-                var server = new TestServer(builder);
-            }
-            catch (InvalidOperationException e)
-            {
-                Assert.Equal("Provide Authority, MetadataAddress, Configuration, or ConfigurationManager to OpenIdConnectOptions", e.Message);
-                return;
-            }
-
-            Assert.True(false);
-        }
     }
 }
