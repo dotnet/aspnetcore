@@ -20,7 +20,7 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Antiforgery": "1.0.0",
+    "Microsoft.AspNetCore.Antiforgery": "1.0.1",
     "Microsoft.AspNetCore.Diagnostics.Abstractions": "1.0.0",
     "Microsoft.AspNetCore.Html.Abstractions": "1.0.0",
     "Microsoft.AspNetCore.Mvc.Core": "1.0.1",
