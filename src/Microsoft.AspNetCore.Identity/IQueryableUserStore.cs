@@ -6,7 +6,7 @@ using System.Linq;
 namespace Microsoft.AspNetCore.Identity
 {
     /// <summary>
-    /// Provides an abstraction for querying roles in a User store.
+    /// Provides an abstraction for querying users in a User store.
     /// </summary>
     /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
     public interface IQueryableUserStore<TUser> : IUserStore<TUser> where TUser : class
