@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -79,14 +78,64 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 .UseSetting("TOKEN", "TestToken")
                 .UseSetting("PORT", "12345")
                 .UseSetting("APPL_PATH", "/")
-                .UseIISIntegration();
+                .UseIISIntegration()
+                .Configure(app =>
+                {
+                    app.Run(context => Task.FromResult(0));
+                });
 
             Assert.Null(builder.GetSetting(WebHostDefaults.ServerUrlsKey));
 
             // Adds a server and calls Build()
             var server = new TestServer(builder);
 
-            Assert.Equal("http://localhost:12345/", builder.GetSetting(WebHostDefaults.ServerUrlsKey));
+            Assert.Equal("http://localhost:12345", builder.GetSetting(WebHostDefaults.ServerUrlsKey));
+        }
+
+        [Fact]
+        public void PathBaseHiddenFromServer()
+        {
+            var builder = new WebHostBuilder()
+                .UseSetting("TOKEN", "TestToken")
+                .UseSetting("PORT", "12345")
+                .UseSetting("APPL_PATH", "/pathBase")
+                .UseIISIntegration()
+                .Configure(app =>
+                {
+                    app.Run(context => Task.FromResult(0));
+                });
+            new TestServer(builder);
+
+            Assert.Equal("http://localhost:12345", builder.GetSetting(WebHostDefaults.ServerUrlsKey));
+        }
+
+        [Fact]
+        public async Task AddsUsePathBaseMiddlewareWhenPathBaseSpecified()
+        {
+            var requestPathBase = string.Empty;
+            var requestPath = string.Empty;
+            var builder = new WebHostBuilder()
+                .UseSetting("TOKEN", "TestToken")
+                .UseSetting("PORT", "12345")
+                .UseSetting("APPL_PATH", "/pathbase")
+                .UseIISIntegration()
+                .Configure(app =>
+                {
+                    app.Run(context =>
+                    {
+                        requestPathBase = context.Request.PathBase.Value;
+                        requestPath = context.Request.Path.Value;
+                        return Task.FromResult(0);
+                    });
+                });
+            var server = new TestServer(builder);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/PathBase/Path");
+            request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
+            var response = await server.CreateClient().SendAsync(request);
+
+            Assert.Equal("/PathBase", requestPathBase);
+            Assert.Equal("/Path", requestPath);
         }
 
         [Fact]
@@ -118,7 +167,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             Assert.True(assertsExecuted);
         }
-
 
         [Fact]
         public async Task DoesNotAddAuthenticationHandlerIfWindowsAuthDisabled()

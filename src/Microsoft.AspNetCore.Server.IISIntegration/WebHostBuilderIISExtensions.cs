@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,14 +36,14 @@ namespace Microsoft.AspNetCore.Hosting
 
             if (!string.IsNullOrEmpty(port) && !string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(pairingToken))
             {
-                var address = "http://localhost:" + port + path;
+                var address = "http://localhost:" + port;
                 hostBuilder.CaptureStartupErrors(true);
 
                 hostBuilder.ConfigureServices(services =>
                 {
                     // Delay register the url so users don't accidently overwrite it.
                     hostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, address);
-                    services.AddSingleton<IStartupFilter>(new IISSetupFilter(pairingToken));
+                    services.AddSingleton<IStartupFilter>(new IISSetupFilter(pairingToken, new PathString(path)));
                     services.Configure<ForwardedHeadersOptions>(options =>
                     {
                         options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
