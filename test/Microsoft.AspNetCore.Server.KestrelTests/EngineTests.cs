@@ -120,7 +120,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             engine.Dispose();
         }
 
-
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
         public async Task Http10RequestReceivesHttp11Response(TestServiceContext testContext)
@@ -142,7 +141,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             }
         }
-
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
@@ -1307,6 +1305,44 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                     Assert.Equal(1, callOrder.Pop());
                     Assert.Equal(2, callOrder.Pop());
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task UpgradeRequestIsNotKeptAliveOrChunked(TestServiceContext testContext)
+        {
+            using (var server = new TestServer(async context =>
+            {
+                var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
+                var duplexStream = await upgradeFeature.UpgradeAsync();
+
+                while (true)
+                {
+                    var buffer = new byte[8192];
+                    var count = await duplexStream.ReadAsync(buffer, 0, buffer.Length);
+                    if (count == 0)
+                    {
+                        break;
+                    }
+                    await duplexStream.WriteAsync(buffer, 0, count);
+                }
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "Connection: Upgrade",
+                        "",
+                        "Hello World");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 101 Switching Protocols",
+                        "Connection: Upgrade",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "",
+                        "Hello World");
                 }
             }
         }

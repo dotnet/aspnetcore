@@ -723,14 +723,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             var end = SocketOutput.ProducingStart();
             if (_keepAlive && hasConnection)
             {
-                foreach (var connectionValue in responseHeaders.HeaderConnection)
-                {
-                    if (connectionValue.IndexOf("close", StringComparison.OrdinalIgnoreCase) != -1)
-                    {
-                        _keepAlive = false;
-                        break;
-                    }
-                }
+                var connectionValue = responseHeaders.HeaderConnection.ToString();
+                _keepAlive = connectionValue.Equals("keep-alive", StringComparison.OrdinalIgnoreCase);
             }
 
             if (!responseHeaders.HasTransferEncoding && !responseHeaders.HasContentLength)
@@ -746,7 +740,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         responseHeaders.SetRawContentLength("0", _bytesContentLengthZero);
                     }
                 }
-                else
+                else if(_keepAlive)
                 {
                     // Note for future reference: never change this to set _autoChunk to true on HTTP/1.0
                     // connections, even if we were to infer the client supports it because an HTTP/1.0 request
