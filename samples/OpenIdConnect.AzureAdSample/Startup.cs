@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
@@ -103,46 +105,89 @@ namespace OpenIdConnect.AzureAdSample
                 if (context.Request.Path.Equals("/signout"))
                 {
                     await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                    context.Response.ContentType = "text/html";
-                    await context.Response.WriteAsync($"<html><body>Signing out {context.User.Identity.Name}<br>{Environment.NewLine}");
-                    await context.Response.WriteAsync("<a href=\"/\">Sign In</a>");
-                    await context.Response.WriteAsync($"</body></html>");
-                    return;
+                    await WriteHtmlAsync(context.Response,
+                        response => response.WriteAsync($"<h1>Signed out locally: {context.User.Identity.Name}</h1><a class=\"btn btn-primary\" href=\"/\">Sign In</a>"));
                 }
-
-                if (!context.User.Identities.Any(identity => identity.IsAuthenticated))
+                else if (context.Request.Path.Equals("/signout-remote"))
                 {
-                    await context.Authentication.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/" });
-                    return;
+                    await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    await context.Authentication.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties
+                    {
+                        RedirectUri = "/remote-signedout"
+                    });
                 }
-
-                context.Response.ContentType = "text/html";
-                await context.Response.WriteAsync($"<html><body>Hello Authenticated User {context.User.Identity.Name}<br>{Environment.NewLine}");
-                await context.Response.WriteAsync("Claims:<br>" + Environment.NewLine);
-                foreach (var claim in context.User.Claims)
+                else if (context.Request.Path.Equals("/remote-signedout"))
                 {
-                    await context.Response.WriteAsync($"{claim.Type}: {claim.Value}<br>{Environment.NewLine}");
+                    await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    await WriteHtmlAsync(context.Response,
+                        response => response.WriteAsync($"<h1>Signed out remotely: {context.User.Identity.Name}</h1><a class=\"btn btn-primary\" href=\"/\">Sign In</a>"));
                 }
-
-                await context.Response.WriteAsync("Tokens:<br>" + Environment.NewLine);
-                try
+                else
                 {
-                    // Use ADAL to get the right token
-                    var authContext = new AuthenticationContext(authority, AuthPropertiesTokenCache.ForApiCalls(context, CookieAuthenticationDefaults.AuthenticationScheme));
-                    var credential = new ClientCredential(clientId, clientSecret);
-                    string userObjectID = context.User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier").Value;
-                    var result = await authContext.AcquireTokenSilentAsync(resource, credential, new UserIdentifier(userObjectID, UserIdentifierType.UniqueId));
+                    if (!context.User.Identities.Any(identity => identity.IsAuthenticated))
+                    {
+                        await context.Authentication.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/" });
+                        return;
+                    }
 
-                    await context.Response.WriteAsync($"access_token: {result.AccessToken}<br>{Environment.NewLine}");
-                }
-                catch (Exception ex)
-                {
-                    await context.Response.WriteAsync($"AquireToken error: {ex.Message}<br>{Environment.NewLine}");
-                }
+                    await WriteHtmlAsync(context.Response, async response =>
+                    {
+                        await response.WriteAsync($"<h1>Hello Authenticated User {context.User.Identity.Name}</h1>");
+                        await response.WriteAsync("<a class=\"btn btn-default\" href=\"/signout\">Sign Out Locally</a>");
+                        await response.WriteAsync("<a class=\"btn btn-default\" href=\"/signout-remote\">Sign Out Remotely</a>");
 
-                await context.Response.WriteAsync("<a href=\"/signout\">Sign Out</a>");
-                await context.Response.WriteAsync($"</body></html>");
+                        await response.WriteAsync("<h2>Claims:</h2>");
+                        await WriteTableHeader(response, new string[] { "Claim Type", "Value" }, context.User.Claims.Select(c => new string[] { c.Type, c.Value }));
+
+                        await response.WriteAsync("<h2>Tokens:</h2>");
+                        try
+                        {
+                            // Use ADAL to get the right token
+                            var authContext = new AuthenticationContext(authority, AuthPropertiesTokenCache.ForApiCalls(context, CookieAuthenticationDefaults.AuthenticationScheme));
+                            var credential = new ClientCredential(clientId, clientSecret);
+                            string userObjectID = context.User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier").Value;
+                            var result = await authContext.AcquireTokenSilentAsync(resource, credential, new UserIdentifier(userObjectID, UserIdentifierType.UniqueId));
+
+                            await response.WriteAsync($"<h3>access_token</h3><code>{result.AccessToken}</code><br>");
+                        }
+                        catch (Exception ex)
+                        {
+                            await response.WriteAsync($"AquireToken error: {ex.Message}<br>{Environment.NewLine}");
+                        }
+                    });
+                }
             });
+        }
+
+        private static async Task WriteHtmlAsync(HttpResponse response, Func<HttpResponse, Task> writeContent)
+        {
+            var bootstrap = "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\" integrity=\"sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u\" crossorigin=\"anonymous\">";
+
+            response.ContentType = "text/html";
+            await response.WriteAsync($"<html><head>{bootstrap}</head><body><div class=\"container\">");
+            await writeContent(response);
+            await response.WriteAsync("</div></body></html>");
+        }
+
+        private static async Task WriteTableHeader(HttpResponse response, IEnumerable<string> columns, IEnumerable<IEnumerable<string>> data)
+        {
+            await response.WriteAsync("<table class=\"table table-condensed\">");
+            await response.WriteAsync("<tr>");
+            foreach (var column in columns)
+            {
+                await response.WriteAsync($"<th>{column}</th>");
+            }
+            await response.WriteAsync("</tr>");
+            foreach (var row in data)
+            {
+                await response.WriteAsync("<tr>");
+                foreach (var column in row)
+                {
+                    await response.WriteAsync($"<td>{column}</td>");
+                }
+                await response.WriteAsync("</tr>");
+            }
+            await response.WriteAsync("</table>");
         }
     }
 }
