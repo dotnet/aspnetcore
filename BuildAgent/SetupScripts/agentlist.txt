@@ -14,10 +14,21 @@ ASPNETCI-A14
 aspnetci-a17
 ASPNETCI-A18
 PROJECTK-TC-AG1
-PROJECTK-TC-AG2
+# PROJECTK-TC-AG2 - This agent uses a 'code signing' account and must not be changed
 # PROJECTK-TC-AG3 - This agent uses a 'code signing' account and must not be changed
 PROJECTK-TC-AG4
 PROJECTK-TC-AG5
 aspnetci-a-100
 aspnetci-a-101
 aspnetci-a-102
+aspnetci-a-103
+aspnetci-a-106
+aspnetci-a-107
+aspnetci-a-108
+aspnetci-a-109
+aspnetci-a-110
+aspnetci-a-112
+aspnetci-a-113
+ASPNETCI-A-114
+ASPNETCI-A-116
+aspnetci-a-ef7
