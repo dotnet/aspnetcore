@@ -262,7 +262,12 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>A <see cref="ViewViewComponentResult"/>.</returns>
         public ViewViewComponentResult View<TModel>(string viewName, TModel model)
         {
-            var viewData = new ViewDataDictionary<TModel>(ViewData, model);
+            if (model != null)
+            {
+                ViewData.Model = model;
+            }
+
+            var viewData = new ViewDataDictionary<TModel>(ViewData);
             return new ViewViewComponentResult
             {
                 ViewEngine = ViewEngine,
