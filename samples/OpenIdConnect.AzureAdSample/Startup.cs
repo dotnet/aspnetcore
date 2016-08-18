@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -106,7 +107,7 @@ namespace OpenIdConnect.AzureAdSample
                 {
                     await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     await WriteHtmlAsync(context.Response,
-                        response => response.WriteAsync($"<h1>Signed out locally: {context.User.Identity.Name}</h1><a class=\"btn btn-primary\" href=\"/\">Sign In</a>"));
+                        response => response.WriteAsync($"<h1>Signed out locally: {HtmlEncode(context.User.Identity.Name)}</h1><a class=\"btn btn-primary\" href=\"/\">Sign In</a>"));
                 }
                 else if (context.Request.Path.Equals("/signout-remote"))
                 {
@@ -120,7 +121,7 @@ namespace OpenIdConnect.AzureAdSample
                 {
                     await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     await WriteHtmlAsync(context.Response,
-                        response => response.WriteAsync($"<h1>Signed out remotely: {context.User.Identity.Name}</h1><a class=\"btn btn-primary\" href=\"/\">Sign In</a>"));
+                        response => response.WriteAsync($"<h1>Signed out remotely: {HtmlEncode(context.User.Identity.Name)}</h1><a class=\"btn btn-primary\" href=\"/\">Sign In</a>"));
                 }
                 else
                 {
@@ -132,7 +133,7 @@ namespace OpenIdConnect.AzureAdSample
 
                     await WriteHtmlAsync(context.Response, async response =>
                     {
-                        await response.WriteAsync($"<h1>Hello Authenticated User {context.User.Identity.Name}</h1>");
+                        await response.WriteAsync($"<h1>Hello Authenticated User {HtmlEncode(context.User.Identity.Name)}</h1>");
                         await response.WriteAsync("<a class=\"btn btn-default\" href=\"/signout\">Sign Out Locally</a>");
                         await response.WriteAsync("<a class=\"btn btn-default\" href=\"/signout-remote\">Sign Out Remotely</a>");
 
@@ -152,7 +153,7 @@ namespace OpenIdConnect.AzureAdSample
                         }
                         catch (Exception ex)
                         {
-                            await response.WriteAsync($"AquireToken error: {ex.Message}<br>{Environment.NewLine}");
+                            await response.WriteAsync($"AquireToken error: {ex.Message}");
                         }
                     });
                 }
@@ -189,6 +190,9 @@ namespace OpenIdConnect.AzureAdSample
             }
             await response.WriteAsync("</table>");
         }
+
+        private static string HtmlEncode(string content) =>
+            string.IsNullOrEmpty(content) ? string.Empty : HtmlEncoder.Default.Encode(content);
     }
 }
 
