@@ -31,8 +31,8 @@ namespace MusicStore.Standalone
                     // modify the applicationHost.config to enable NTLM.
                     builder.UseWebListener(options =>
                     {
-                        options.Listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.NTLM;
-                        options.Listener.AuthenticationManager.AllowAnonymous = false;
+                        options.ListenerSettings.Authentication.Schemes = AuthenticationSchemes.NTLM;
+                        options.ListenerSettings.Authentication.AllowAnonymous = false;
                     });
                 }
                 else
