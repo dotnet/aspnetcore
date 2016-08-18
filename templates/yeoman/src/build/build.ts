@@ -5,27 +5,18 @@ import * as path from 'path';
 import * as _ from 'lodash';
 import * as mkdirp from 'mkdirp';
 import * as rimraf from 'rimraf';
+import * as childProcess from 'child_process';
 
-const textFileExtensions = ['.gitignore', 'template_gitignore', '.config', '.cs', '.cshtml', 'Dockerfile', '.html', '.js', '.json', '.jsx', '.md', '.ts', '.tsx', '.xproj'];
+const isWindows = /^win/.test(process.platform);
+const textFileExtensions = ['.gitignore', 'template_gitignore', '.config', '.cs', '.cshtml', 'Dockerfile', '.html', '.js', '.json', '.jsx', '.md', '.nuspec', '.ts', '.tsx', '.xproj'];
+const yeomanGeneratorSource = './src/generator';
 
-const templates = {
-    'angular-2': '../../templates/Angular2Spa/',
-    'knockout': '../../templates/KnockoutSpa/',
-    'react-redux': '../../templates/ReactReduxSpa/',
-    'react': '../../templates/ReactSpa/'
+const templates: { [key: string]: { dir: string, dotNetNewId: string, displayName: string } } = {
+    'angular-2': { dir: '../../templates/Angular2Spa/', dotNetNewId: 'Angular', displayName: 'Angular 2' },
+    'knockout': { dir: '../../templates/KnockoutSpa/', dotNetNewId: 'Knockout', displayName: 'Knockout.js' },
+    'react-redux': { dir: '../../templates/ReactReduxSpa/', dotNetNewId: 'ReactRedux', displayName: 'React.js and Redux' },
+    'react': { dir: '../../templates/ReactSpa/', dotNetNewId: 'React', displayName: 'React.js' }
 };
-
-const contentReplacements: { from: RegExp, to: string }[] = [
-    { from: /\bWebApplicationBasic\b/g, to: '<%= namePascalCase %>' },
-    { from: /<ProjectGuid>[0-9a-f\-]{36}<\/ProjectGuid>/g, to: '<ProjectGuid><%= projectGuid %></ProjectGuid>' },
-    { from: /<RootNamespace>.*?<\/RootNamespace>/g, to: '<RootNamespace><%= namePascalCase %></RootNamespace>'},
-    { from: /\s*<BaseIntermediateOutputPath.*?<\/BaseIntermediateOutputPath>/g, to: '' },
-    { from: /\s*<OutputPath.*?<\/OutputPath>/g, to: '' },
-];
-
-const filenameReplacements: { from: RegExp, to: string }[] = [
-    { from: /.*\.xproj$/, to: 'tokenreplace-namePascalCase.xproj' }
-];
 
 function isTextFile(filename: string): boolean {
     return textFileExtensions.indexOf(path.extname(filename).toLowerCase()) >= 0;
@@ -49,7 +40,7 @@ function listFilesExcludingGitignored(root: string): string[] {
         .filter(fn => gitignoreEvaluator.accepts(fn));
 }
 
-function writeTemplate(sourceRoot: string, destRoot: string) {
+function writeTemplate(sourceRoot: string, destRoot: string, contentReplacements: { from: RegExp, to: string }[], filenameReplacements: { from: RegExp, to: string }[]) {
     listFilesExcludingGitignored(sourceRoot).forEach(fn => {
         let sourceContent = fs.readFileSync(path.join(sourceRoot, fn));
 
@@ -80,20 +71,90 @@ function copyRecursive(sourceRoot: string, destRoot: string, matchGlob: string) 
         });
 }
 
-const outputRoot = './generator-aspnetcore-spa';
-const outputTemplatesRoot = path.join(outputRoot, 'app/templates');
-rimraf.sync(outputTemplatesRoot);
+function buildYeomanNpmPackage() {
+    const outputRoot = './dist/generator-aspnetcore-spa';
+    const outputTemplatesRoot = path.join(outputRoot, 'app/templates');
+    rimraf.sync(outputTemplatesRoot);
 
-// Copy template files
-_.forEach(templates, (templateRootDir, templateName) => {
-    const outputDir = path.join(outputTemplatesRoot, templateName);
-    writeTemplate(templateRootDir, outputDir);
-});
+    // Copy template files
+    const filenameReplacements = [
+        { from: /.*\.xproj$/, to: 'tokenreplace-namePascalCase.xproj' }
+    ];
+    const contentReplacements = [
+        { from: /\bWebApplicationBasic\b/g, to: '<%= namePascalCase %>' },
+        { from: /<ProjectGuid>[0-9a-f\-]{36}<\/ProjectGuid>/g, to: '<ProjectGuid><%= projectGuid %></ProjectGuid>' },
+        { from: /<RootNamespace>.*?<\/RootNamespace>/g, to: '<RootNamespace><%= namePascalCase %></RootNamespace>'},
+        { from: /\s*<BaseIntermediateOutputPath.*?<\/BaseIntermediateOutputPath>/g, to: '' },
+        { from: /\s*<OutputPath.*?<\/OutputPath>/g, to: '' },
+    ];
+    _.forEach(templates, (templateConfig, templateName) => {
+        const outputDir = path.join(outputTemplatesRoot, templateName);
+        writeTemplate(templateConfig.dir, outputDir, contentReplacements, filenameReplacements);
+    });
 
-// Also copy the generator files (that's the compiled .js files, plus all other non-.ts files)
-const tempRoot = './tmp';
-copyRecursive(path.join(tempRoot, 'generator'), outputRoot, '**/*.js');
-copyRecursive('./src/generator', outputRoot, '**/!(*.ts)');
+    // Also copy the generator files (that's the compiled .js files, plus all other non-.ts files)
+    const tempRoot = './tmp';
+    copyRecursive(path.join(tempRoot, 'generator'), outputRoot, '**/*.js');
+    copyRecursive(yeomanGeneratorSource, outputRoot, '**/!(*.ts)');
 
-// Clean up
-rimraf.sync(tempRoot);
+    // Clean up
+    rimraf.sync(tempRoot);
+}
+
+function buildDotNetNewNuGetPackage() {
+    const outputRoot = './dist/dotnetnew';
+    rimraf.sync(outputRoot);
+
+    // Copy template files
+    const sourceProjectName = 'WebApplicationBasic';
+    const projectGuid = '00000000-0000-0000-0000-000000000000';
+    const filenameReplacements = [
+        { from: /.*\.xproj$/, to: `${sourceProjectName}.xproj` },
+        { from: /\btemplate_gitignore$/, to: '.gitignore' }
+    ];
+    const contentReplacements = [
+        { from: /<ProjectGuid>[0-9a-f\-]{36}<\/ProjectGuid>/g, to: `<ProjectGuid>${projectGuid}</ProjectGuid>` },
+        { from: /<RootNamespace>.*?<\/RootNamespace>/g, to: `<RootNamespace>${sourceProjectName}</RootNamespace>`},
+        { from: /\s*<BaseIntermediateOutputPath.*?<\/BaseIntermediateOutputPath>/g, to: '' },
+        { from: /\s*<OutputPath.*?<\/OutputPath>/g, to: '' },
+    ];
+    _.forEach(templates, (templateConfig, templateName) => {
+        const templateOutputDir = path.join(outputRoot, 'templates', templateName);
+        const templateOutputProjectDir = path.join(templateOutputDir, sourceProjectName);
+        writeTemplate(templateConfig.dir, templateOutputProjectDir, contentReplacements, filenameReplacements);
+
+        // Add a .netnew.json file
+        fs.writeFileSync(path.join(templateOutputDir, '.netnew.json'), JSON.stringify({
+            author: 'Microsoft',
+            classifications: [ 'Standard>>Quick Starts' ],
+            name: `ASP.NET Core SPA with ${templateConfig.displayName}`,
+            groupIdentity: `Microsoft.AspNetCore.Spa.${templateConfig.dotNetNewId}`,
+            identity: `Microsoft.AspNetCore.Spa.${templateConfig.dotNetNewId}`,
+            shortName: `aspnetcorespa-${templateConfig.dotNetNewId.toLowerCase()}`,
+            tags: { language: 'C#' },
+            guids: [ projectGuid ],
+            sourceName: sourceProjectName
+        }, null, 2));
+    });
+
+    // Invoke NuGet to create the final package
+    const yeomanPackageVersion = JSON.parse(fs.readFileSync(path.join(yeomanGeneratorSource, 'package.json'), 'utf8')).version;
+    writeTemplate('./src/dotnetnew', outputRoot, [
+        { from: /\{version\}/g, to: yeomanPackageVersion },
+    ], []);
+    const nugetExe = path.join(process.cwd(), './bin/NuGet.exe');
+    const nugetStartInfo = { cwd: outputRoot, stdio: 'inherit' };
+    if (isWindows) {
+        // Invoke NuGet.exe directly
+        childProcess.spawnSync(nugetExe, ['pack'], nugetStartInfo);
+    } else {
+        // Invoke via Mono (relying on that being available)
+        childProcess.spawnSync('mono', [nugetExe, 'pack'], nugetStartInfo);
+    }
+
+    // Clean up
+    rimraf.sync('./tmp');
+}
+
+buildYeomanNpmPackage();
+buildDotNetNewNuGetPackage();

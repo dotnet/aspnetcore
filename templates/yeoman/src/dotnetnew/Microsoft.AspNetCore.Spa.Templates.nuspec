@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>Microsoft.AspNetCore.Spa.Templates</id>
+        <version>{version}</version>
+        <title>Class Library and Console Application Templates for .NET Core</title>
+        <authors>Microsoft</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>My package description.</description>
+        <dependencies>
+            <group targetFramework=".NETCoreApp,Version=v1.0">
+                <dependency id="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" version="1.0.0" />
+            </group>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="templates/**" />
+    </files>
+</package>

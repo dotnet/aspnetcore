@@ -7,6 +7,6 @@
   },
   "exclude": [
       "node_modules",
-      "generator-aspnetcore-spa"
+      "dist"
   ]
 }
