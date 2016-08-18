@@ -21,7 +21,7 @@ namespace ServerComparison.TestSites
                 .UseIISIntegration()
                 .UseStartup("ServerComparison.TestSites");
 
-            // Switch beteween Kestrel and WebListener for different tests. Default to Kestrel for normal app execution.
+            // Switch between Kestrel and WebListener for different tests. Default to Kestrel for normal app execution.
             if (string.Equals(builder.GetSetting("server"), "Microsoft.AspNetCore.Server.WebListener", System.StringComparison.Ordinal))
             {
                 if (string.Equals(builder.GetSetting("environment") ??
@@ -33,8 +33,8 @@ namespace ServerComparison.TestSites
                     // modify the applicationHost.config to enable NTLM.
                     builder.UseWebListener(options =>
                     {
-                        options.Listener.AuthenticationManager.AllowAnonymous = true;
-                        options.Listener.AuthenticationManager.AuthenticationSchemes =
+                        options.ListenerSettings.Authentication.AllowAnonymous = true;
+                        options.ListenerSettings.Authentication.Schemes =
                             AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM;
                     });
                 }
