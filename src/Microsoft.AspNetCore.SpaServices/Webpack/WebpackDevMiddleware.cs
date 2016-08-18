@@ -81,12 +81,12 @@ namespace Microsoft.AspNetCore.Builder
             // sees, not "localhost", so that it works even when you're not running on localhost (e.g., Docker).
             appBuilder.Map(WebpackHotMiddlewareEndpoint, builder =>
             {
-                builder.Use(next => async ctx =>
+                builder.Use(next => ctx =>
                 {
                     var hostname = ctx.Request.Host.Host;
                     ctx.Response.Redirect(
                         $"{WebpackDevMiddlewareScheme}://{hostname}:{devServerInfo.Port.ToString()}{WebpackHotMiddlewareEndpoint}");
-                    await Task.Yield();
+                    return Task.FromResult(0);
                 });
             });
         }
