@@ -1,5 +1,5 @@
 import * as ko from 'knockout';
-var crossroads = require('crossroads');
+import crossroads = require('crossroads');
 
 // This module configures crossroads.js, a routing library. If you prefer, you
 // can use any other routing library (or none at all) as Knockout is designed to
