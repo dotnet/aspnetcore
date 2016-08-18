@@ -21,32 +21,38 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData(-1337)]
         public void StartWithNonPositiveThreadCountThrows(int threadCount)
         {
-            var server = CreateServer(new KestrelServerOptions() { ThreadCount = threadCount });
+            var testLogger = new TestApplicationErrorLogger();
+            var server = CreateServer(new KestrelServerOptions() { ThreadCount = threadCount }, testLogger);
 
             var exception = Assert.Throws<ArgumentOutOfRangeException>(() => StartDummyApplication(server));
 
             Assert.Equal("threadCount", exception.ParamName);
+            Assert.Equal(1, testLogger.CriticalErrorsLogged);
         }
 
         [Fact]
         public void StartWithInvalidAddressThrows()
         {
-            var server = CreateServer(new KestrelServerOptions());
+            var testLogger = new TestApplicationErrorLogger();
+            var server = CreateServer(new KestrelServerOptions(), testLogger);
             server.Features.Get<IServerAddressesFeature>().Addresses.Add("http:/asdf");
 
             var exception = Assert.Throws<FormatException>(() => StartDummyApplication(server));
 
             Assert.Contains("Invalid URL", exception.Message);
+            Assert.Equal(1, testLogger.CriticalErrorsLogged);
         }
 
         [Fact]
         public void StartWithEmptyAddressesThrows()
         {
-            var server = CreateServer(new KestrelServerOptions());
+            var testLogger = new TestApplicationErrorLogger();
+            var server = CreateServer(new KestrelServerOptions(), testLogger);
 
             var exception = Assert.Throws<InvalidOperationException>(() => StartDummyApplication(server));
 
             Assert.Equal("No recognized listening addresses were configured.", exception.Message);
+            Assert.Equal(1, testLogger.CriticalErrorsLogged);
         }
 
         [Theory]
@@ -54,30 +60,56 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData(int.MaxValue - 1, int.MaxValue)]
         public void StartWithMaxRequestBufferSizeLessThanMaxRequestLineSizeThrows(long maxRequestBufferSize, int maxRequestLineSize)
         {
+            var testLogger = new TestApplicationErrorLogger();
             var options = new KestrelServerOptions();
             options.Limits.MaxRequestBufferSize = maxRequestBufferSize;
             options.Limits.MaxRequestLineSize = maxRequestLineSize;
 
-            var server = CreateServer(options);
+            var server = CreateServer(options, testLogger);
 
             var exception = Assert.Throws<InvalidOperationException>(() => StartDummyApplication(server));
 
             Assert.Equal(
                 $"Maximum request buffer size ({maxRequestBufferSize}) must be greater than or equal to maximum request line size ({maxRequestLineSize}).",
                 exception.Message);
+            Assert.Equal(1, testLogger.CriticalErrorsLogged);
         }
 
-        private static KestrelServer CreateServer(KestrelServerOptions options)
+        private static KestrelServer CreateServer(KestrelServerOptions options, ILogger testLogger)
         {
             var lifetime = new LifetimeNotImplemented();
-            var logger = new LoggerFactory();
 
-            return new KestrelServer(Options.Create(options), lifetime, logger);
+            return new KestrelServer(Options.Create(options), lifetime, new TestLoggerFactory(testLogger));
         }
 
         private static void StartDummyApplication(IServer server)
         {
             server.Start(new DummyApplication(context => TaskUtilities.CompletedTask));
+        }
+
+        private class TestLoggerFactory : ILoggerFactory
+        {
+            private readonly ILogger _testLogger;
+
+            public TestLoggerFactory(ILogger testLogger)
+            {
+                _testLogger = testLogger;
+            }
+
+            public ILogger CreateLogger(string categoryName)
+            {
+                return _testLogger;
+            }
+
+            public void AddProvider(ILoggerProvider provider)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Dispose()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

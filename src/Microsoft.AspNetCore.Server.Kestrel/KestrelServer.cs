@@ -56,17 +56,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         public void Start<TContext>(IHttpApplication<TContext> application)
         {
-            ValidateOptions();
-
-            if (_disposables != null)
-            {
-                // The server has already started and/or has not been cleaned up yet
-                throw new InvalidOperationException("Server has already started.");
-            }
-            _disposables = new Stack<IDisposable>();
-
             try
             {
+                ValidateOptions();
+
+                if (_disposables != null)
+                {
+                    // The server has already started and/or has not been cleaned up yet
+                    throw new InvalidOperationException("Server has already started.");
+                }
+                _disposables = new Stack<IDisposable>();
+
                 var dateHeaderValueManager = new DateHeaderValueManager();
                 var trace = new KestrelTrace(_logger);
                 var engine = new KestrelEngine(new ServiceContext
@@ -180,8 +180,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     throw new InvalidOperationException("No recognized listening addresses were configured.");
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogCritical(0, ex, "Unable to start Kestrel.");
                 Dispose();
                 throw;
             }

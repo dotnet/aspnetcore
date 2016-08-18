@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         public int TotalErrorsLogged { get; set; }
 
+        public int CriticalErrorsLogged { get; set; }
+
         public int ApplicationErrorsLogged { get; set; }
 
         public IDisposable BeginScope<TState>(TState state)
@@ -41,6 +43,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             if (logLevel == LogLevel.Error)
             {
                 TotalErrorsLogged++;
+            }
+
+            if (logLevel == LogLevel.Critical)
+            {
+                CriticalErrorsLogged++;
             }
         }
     }
