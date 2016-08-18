@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
@@ -42,24 +43,21 @@ namespace Microsoft.Net.Http.Server
         private static readonly int AuthInfoSize =
             Marshal.SizeOf<HttpApi.HTTP_SERVER_AUTHENTICATION_INFO>();
 
-        private WebListener _server;
+        private UrlGroup _urlGroup;
         private AuthenticationSchemes _authSchemes;
         private bool _allowAnonymous = true;
 
-        internal AuthenticationManager(WebListener listener)
+        internal AuthenticationManager()
         {
-            _server = listener;
         }
 
-        #region Properties
-
-        public AuthenticationSchemes AuthenticationSchemes
+        public AuthenticationSchemes Schemes
         {
             get { return _authSchemes; }
             set
             {
                 _authSchemes = value;
-                SetServerSecurity();
+                SetUrlGroupSecurity();
             }
         }
 
@@ -69,10 +67,21 @@ namespace Microsoft.Net.Http.Server
             set { _allowAnonymous = value; }
         }
 
-        #endregion Properties
-
-        private unsafe void SetServerSecurity()
+        internal void SetUrlGroupSecurity(UrlGroup urlGroup)
         {
+            Debug.Assert(_urlGroup == null, "SetUrlGroupSecurity called more than once.");
+            _urlGroup = urlGroup;
+            SetUrlGroupSecurity();
+        }
+
+        private unsafe void SetUrlGroupSecurity()
+        {
+            if (_urlGroup == null)
+            {
+                // Not started yet.
+                return;
+            }
+
             HttpApi.HTTP_SERVER_AUTHENTICATION_INFO authInfo =
                 new HttpApi.HTTP_SERVER_AUTHENTICATION_INFO();
 
@@ -91,7 +100,7 @@ namespace Microsoft.Net.Http.Server
 
                 IntPtr infoptr = new IntPtr(&authInfo);
 
-                _server.UrlGroup.SetProperty(
+                _urlGroup.SetProperty(
                     HttpApi.HTTP_SERVER_PROPERTY.HttpServerAuthenticationProperty,
                     infoptr, (uint)AuthInfoSize);
             }

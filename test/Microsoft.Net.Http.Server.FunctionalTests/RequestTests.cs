@@ -136,7 +136,7 @@ namespace Microsoft.Net.Http.Server
                 var uriBuilder = new UriBuilder(root);
                 foreach (string path in new[] { "/", "/11", "/2/3", "/2", "/11/2" })
                 {
-                    server.UrlPrefixes.Add(UrlPrefix.Create(uriBuilder.Scheme, uriBuilder.Host, uriBuilder.Port, path));
+                    server.Settings.UrlPrefixes.Add(UrlPrefix.Create(uriBuilder.Scheme, uriBuilder.Host, uriBuilder.Port, path));
                 }
                 server.Start();
 

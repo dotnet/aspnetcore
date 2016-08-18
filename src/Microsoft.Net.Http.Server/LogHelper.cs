@@ -29,16 +29,6 @@ namespace Microsoft.Net.Http.Server
 {
     internal static class LogHelper
     {
-        internal static ILogger CreateLogger(ILoggerFactory factory, Type type)
-        {
-            if (factory == null)
-            {
-                return new NullLogger();
-            }
-
-            return factory.CreateLogger(type.FullName);
-        }
-
         internal static void LogInfo(ILogger logger, string data)
         {
             if (logger == null)
@@ -84,30 +74,6 @@ namespace Microsoft.Net.Http.Server
             else
             {
                 logger.LogError(location + "; " + message);
-            }
-        }
-
-        private class NullLogger : ILogger
-        {
-            public IDisposable BeginScope<TState>(TState state)
-            {
-                return new NullDispose();
-            }
-
-            public bool IsEnabled(LogLevel logLevel)
-            {
-                return false;
-            }
-
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-            {
-            }
-
-            private class NullDispose : IDisposable
-            {
-                public void Dispose()
-                {
-                }
             }
         }
     }

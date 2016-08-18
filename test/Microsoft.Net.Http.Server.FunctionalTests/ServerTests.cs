@@ -171,7 +171,7 @@ namespace Microsoft.Net.Http.Server
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                server.SetRequestQueueLimit(1001);
+                server.Settings.RequestQueueLimit = 1001;
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync();
@@ -199,7 +199,7 @@ namespace Microsoft.Net.Http.Server
                 Assert.Equal(string.Empty, response);
 
                 address += "pathbase/";
-                server.UrlPrefixes.Add(address);
+                server.Settings.UrlPrefixes.Add(address);
 
                 responseTask = SendRequestAsync(address);
 
@@ -220,7 +220,7 @@ namespace Microsoft.Net.Http.Server
             using (var server = Utilities.CreateHttpServer(out address))
             {
                 address += "pathbase/";
-                server.UrlPrefixes.Add(address);
+                server.Settings.UrlPrefixes.Add(address);
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync();
@@ -231,7 +231,7 @@ namespace Microsoft.Net.Http.Server
                 var response = await responseTask;
                 Assert.Equal(string.Empty, response);
 
-                Assert.True(server.UrlPrefixes.Remove(address));
+                Assert.True(server.Settings.UrlPrefixes.Remove(address));
 
                 responseTask = SendRequestAsync(address);
 

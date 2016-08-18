@@ -64,7 +64,7 @@ namespace Microsoft.Net.Http.Server
             _expectedBodyLength = 0;
             _nativeStream = null;
             _cacheTtl = null;
-            _authChallenges = RequestContext.Server.AuthenticationManager.AuthenticationSchemes;
+            _authChallenges = RequestContext.Server.Settings.Authentication.Schemes;
         }
 
         private enum ResponseState
@@ -412,7 +412,7 @@ namespace Microsoft.Net.Http.Server
             // 401
             if (StatusCode == (ushort)HttpStatusCode.Unauthorized)
             {
-                RequestContext.Server.AuthenticationManager.SetAuthenticationChallenge(RequestContext);
+                RequestContext.Server.Settings.Authentication.SetAuthenticationChallenge(RequestContext);
             }
 
             var flags = HttpApi.HTTP_FLAGS.NONE;

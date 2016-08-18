@@ -16,6 +16,7 @@
 // permissions and limitations under the License.
 
 using System;
+using Microsoft.Net.Http.Server;
 
 namespace Microsoft.AspNetCore.Server.WebListener
 {
@@ -23,10 +24,21 @@ namespace Microsoft.AspNetCore.Server.WebListener
     {
         internal static readonly int DefaultMaxAccepts = 5 * Environment.ProcessorCount;
 
-        public Microsoft.Net.Http.Server.WebListener Listener { get; set; } = new Microsoft.Net.Http.Server.WebListener();
+        /// <summary>
+        /// Settings for the underlying WebListener instance.
+        /// </summary>
+        public WebListenerSettings ListenerSettings { get; } = new WebListenerSettings();
 
+        /// <summary>
+        /// The maximum number of concurrent calls to WebListener.AcceptAsync().
+        /// </summary>
         public int MaxAccepts { get; set; } = DefaultMaxAccepts;
 
+        /// <summary>
+        /// Attempts kernel mode caching for responses with eligible headers. The response may not include
+        /// Set-Cookie, Vary, or Pragma headers. It must include a Cache-Control header with Public and
+        /// either a Shared-Max-Age or Max-Age value, or an Expires header.
+        /// </summary>
         public bool EnableResponseCaching { get; set; } = true;
     }
 }

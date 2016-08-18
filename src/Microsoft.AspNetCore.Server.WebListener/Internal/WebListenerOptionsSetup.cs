@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc.
+﻿// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.Internal
 
         public void Configure(WebListenerOptions options)
         {
-            options.Listener = new Microsoft.Net.Http.Server.WebListener(_loggerFactory);
+            options.ListenerSettings.Logger = _loggerFactory.CreateLogger<Microsoft.Net.Http.Server.WebListener>();
         }
     }
 }

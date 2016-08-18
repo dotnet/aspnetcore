@@ -16,11 +16,8 @@
 // permissions and limitations under the License.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Net.Http.Server
@@ -32,6 +29,7 @@ namespace Microsoft.Net.Http.Server
 
         private readonly UrlGroup _urlGroup;
         private readonly ILogger _logger;
+        private bool _disposed;
 
         internal RequestQueue(UrlGroup urlGroup, ILogger logger)
         {
@@ -66,6 +64,7 @@ namespace Microsoft.Net.Http.Server
 
         internal unsafe void AttachToUrlGroup()
         {
+            CheckDisposed();
             // Set the association between request queue and url group. After this, requests for registered urls will 
             // get delivered to this request queue.
 
@@ -81,6 +80,7 @@ namespace Microsoft.Net.Http.Server
 
         internal unsafe void DetachFromUrlGroup()
         {
+            CheckDisposed();
             // Break the association between request queue and url group. After this, requests for registered urls 
             // will get 503s.
             // Note that this method may be called multiple times (Stop() and then Abort()). This
@@ -100,6 +100,8 @@ namespace Microsoft.Net.Http.Server
         // The listener must be active for this to work.
         internal unsafe void SetLengthLimit(long length)
         {
+            CheckDisposed();
+
             var result = HttpApi.HttpSetRequestQueueProperty(Handle,
                 HttpApi.HTTP_SERVER_PROPERTY.HttpServerQueueLengthProperty,
                 new IntPtr((void*)&length), (uint)Marshal.SizeOf<long>(), 0, IntPtr.Zero);
@@ -112,8 +114,22 @@ namespace Microsoft.Net.Http.Server
 
         public void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
             BoundHandle.Dispose();
             Handle.Dispose();
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(this.GetType().FullName);
+            }
         }
     }
 }

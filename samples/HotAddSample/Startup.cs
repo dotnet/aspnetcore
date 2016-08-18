@@ -16,7 +16,7 @@ namespace HotAddSample
         {
             loggerfactory.AddConsole(LogLevel.Information);
 
-            var addresses = app.ServerFeatures.Get<WebListener>().UrlPrefixes;
+            var addresses = app.ServerFeatures.Get<WebListener>().Settings.UrlPrefixes;
             addresses.Add("http://localhost:12346/pathBase/");
 
             app.Use(async (context, next) =>

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -12,13 +11,12 @@ namespace Microsoft.Net.Http.Server
     /// </summary>
     public class UrlPrefixCollection : ICollection<UrlPrefix>
     {
-        private readonly WebListener _webListener;
         private readonly IDictionary<int, UrlPrefix> _prefixes = new Dictionary<int, UrlPrefix>(1);
+        private UrlGroup _urlGroup;
         private int _nextId = 1;
 
-        internal UrlPrefixCollection(WebListener webListener)
+        internal UrlPrefixCollection()
         {
-            _webListener = webListener;
         }
 
         public int Count
@@ -47,9 +45,9 @@ namespace Microsoft.Net.Http.Server
             lock (_prefixes)
             {
                 var id = _nextId++;
-                if (_webListener.IsListening)
+                if (_urlGroup != null)
                 {
-                    _webListener.UrlGroup.RegisterPrefix(item.FullPrefix, id);
+                    _urlGroup.RegisterPrefix(item.FullPrefix, id);
                 }
                 _prefixes.Add(id, item);
             }
@@ -67,7 +65,7 @@ namespace Microsoft.Net.Http.Server
         {
             lock (_prefixes)
             {
-                if (_webListener.IsListening)
+                if (_urlGroup != null)
                 {
                     UnregisterAllPrefixes();
                 }
@@ -106,9 +104,9 @@ namespace Microsoft.Net.Http.Server
                     if (pair.Value.Equals(item))
                     {
                         id = pair.Key;
-                        if (_webListener.IsListening)
+                        if (_urlGroup != null)
                         {
-                            _webListener.UrlGroup.UnregisterPrefix(pair.Value.FullPrefix);
+                            _urlGroup.UnregisterPrefix(pair.Value.FullPrefix);
                         }
                     }
                 }
@@ -134,15 +132,16 @@ namespace Microsoft.Net.Http.Server
             return GetEnumerator();
         }
 
-        internal void RegisterAllPrefixes()
+        internal void RegisterAllPrefixes(UrlGroup urlGroup)
         {
             lock (_prefixes)
             {
+                _urlGroup = urlGroup;
                 // go through the uri list and register for each one of them
                 foreach (var pair in _prefixes)
                 {
                     // We'll get this index back on each request and use it to look up the prefix to calculate PathBase.
-                    _webListener.UrlGroup.RegisterPrefix(pair.Value.FullPrefix, pair.Key);
+                    _urlGroup.RegisterPrefix(pair.Value.FullPrefix, pair.Key);
                 }
             }
         }
@@ -155,7 +154,7 @@ namespace Microsoft.Net.Http.Server
                 foreach (var prefix in _prefixes.Values)
                 {
                     // ignore possible failures
-                    _webListener.UrlGroup.UnregisterPrefix(prefix.FullPrefix);
+                    _urlGroup.UnregisterPrefix(prefix.FullPrefix);
                 }
             }
         }

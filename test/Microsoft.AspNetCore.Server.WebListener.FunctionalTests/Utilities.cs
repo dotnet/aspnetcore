@@ -67,8 +67,8 @@ namespace Microsoft.AspNetCore.Server.WebListener
 
                     var server = new MessagePump(Options.Create(new WebListenerOptions()), new LoggerFactory());
                     server.Features.Get<IServerAddressesFeature>().Addresses.Add(baseAddress);
-                    server.Listener.AuthenticationManager.AuthenticationSchemes = authType;
-                    server.Listener.AuthenticationManager.AllowAnonymous = allowAnonymous;
+                    server.Listener.Settings.Authentication.Schemes = authType;
+                    server.Listener.Settings.Authentication.AllowAnonymous = allowAnonymous;
                     try
                     {
                         server.Start(new DummyApplication(app));

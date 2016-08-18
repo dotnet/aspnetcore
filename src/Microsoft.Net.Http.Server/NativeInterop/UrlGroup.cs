@@ -50,7 +50,8 @@ namespace Microsoft.Net.Http.Server
         internal void SetProperty(HttpApi.HTTP_SERVER_PROPERTY property, IntPtr info, uint infosize, bool throwOnError = true)
         {            
             Debug.Assert(info != IntPtr.Zero, "SetUrlGroupProperty called with invalid pointer");
-            
+            CheckDisposed();
+
             var statusCode = HttpApi.HttpSetUrlGroupProperty(Id, property, info, infosize);
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
@@ -67,6 +68,7 @@ namespace Microsoft.Net.Http.Server
         internal void RegisterPrefix(string uriPrefix, int contextId)
         {
             LogHelper.LogInfo(_logger, "Listening on prefix: " + uriPrefix);
+            CheckDisposed();
 
             var statusCode = HttpApi.HttpAddUrlToUrlGroup(Id, uriPrefix, (ulong)contextId, 0);
 
@@ -86,6 +88,7 @@ namespace Microsoft.Net.Http.Server
         internal bool UnregisterPrefix(string uriPrefix)
         {
             LogHelper.LogInfo(_logger, "Stop listening on prefix: " + uriPrefix);
+            CheckDisposed();
 
             var statusCode = HttpApi.HttpRemoveUrlFromUrlGroup(Id, uriPrefix, 0);
 
@@ -114,6 +117,14 @@ namespace Microsoft.Net.Http.Server
                 LogHelper.LogError(_logger, "CleanupV2Config", "Result: " + statusCode);
             }
             Id = 0;
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(this.GetType().FullName);
+            }
         }
     }
 }

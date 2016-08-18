@@ -37,14 +37,12 @@ namespace Microsoft.Net.Http.Server
         private static readonly int TimeoutLimitSize =
             Marshal.SizeOf<HttpApi.HTTP_TIMEOUT_LIMIT_INFO>();
 
-        private WebListener _server;
+        private UrlGroup _urlGroup;
         private int[] _timeouts;
         private uint _minSendBytesPerSecond;
 
-        internal TimeoutManager(WebListener listener)
+        internal TimeoutManager()
         {
-            _server = listener;
-
             // We have to maintain local state since we allow applications to set individual timeouts. Native Http
             // API for setting timeouts expects all timeout values in every call so we have remember timeout values 
             // to fill in the blanks. Except MinSendBytesPerSecond, local state for remaining five timeouts is 
@@ -180,7 +178,7 @@ namespace Microsoft.Net.Http.Server
                     throw new ArgumentOutOfRangeException("value");
                 }
 
-                SetServerTimeouts(_timeouts, (uint)value);
+                SetUrlGroupTimeouts(_timeouts, (uint)value);
                 _minSendBytesPerSecond = (uint)value;
             }
         }
@@ -211,12 +209,24 @@ namespace Microsoft.Net.Http.Server
             // call succeeds, update local state.
             var newTimeouts = (int[])_timeouts.Clone();
             newTimeouts[(int)type] = (int)timeoutValue;
-            SetServerTimeouts(newTimeouts, _minSendBytesPerSecond);
+            SetUrlGroupTimeouts(newTimeouts, _minSendBytesPerSecond);
             _timeouts[(int)type] = (int)timeoutValue;
         }
 
-        private unsafe void SetServerTimeouts(int[] timeouts, uint minSendBytesPerSecond)
+        internal void SetUrlGroupTimeouts(UrlGroup urlGroup)
         {
+            _urlGroup = urlGroup;
+            SetUrlGroupTimeouts(_timeouts, _minSendBytesPerSecond);
+        }
+
+        private unsafe void SetUrlGroupTimeouts(int[] timeouts, uint minSendBytesPerSecond)
+        {
+            if (_urlGroup == null)
+            {
+                // Not started yet
+                return;
+            }
+
             var timeoutinfo = new HttpApi.HTTP_TIMEOUT_LIMIT_INFO();
 
             timeoutinfo.Flags = HttpApi.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
@@ -234,7 +244,7 @@ namespace Microsoft.Net.Http.Server
 
             var infoptr = new IntPtr(&timeoutinfo);
 
-            _server.UrlGroup.SetProperty(
+            _urlGroup.SetProperty(
                 HttpApi.HTTP_SERVER_PROPERTY.HttpServerTimeoutsProperty,
                 infoptr, (uint)TimeoutLimitSize);
         }

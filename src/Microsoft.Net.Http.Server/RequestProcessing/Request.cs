@@ -85,7 +85,7 @@ namespace Microsoft.Net.Http.Server
                 QueryString = Marshal.PtrToStringUni((IntPtr)cookedUrl.pQueryString, cookedUrl.QueryStringLength / 2);
             }
 
-            var prefix = requestContext.Server.UrlPrefixes.GetPrefix((int)memoryBlob.RequestBlob->UrlContext);
+            var prefix = requestContext.Server.Settings.UrlPrefixes.GetPrefix((int)memoryBlob.RequestBlob->UrlContext);
             var originalPath = RequestUriBuilder.GetRequestPath(RawUrl, cookedUrlPath, RequestContext.Logger);
 
             // These paths are both unescaped already.

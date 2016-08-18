@@ -256,8 +256,8 @@ namespace Microsoft.AspNetCore.Server.WebListener
             using (Utilities.CreateHttpServer(out address, httpContext => Task.FromResult(0))) { }
 
             var server = new MessagePump(Options.Create(new WebListenerOptions()), new LoggerFactory());
-            server.Listener.UrlPrefixes.Add(UrlPrefix.Create(address));
-            server.Listener.SetRequestQueueLimit(1001);
+            server.Listener.Settings.UrlPrefixes.Add(UrlPrefix.Create(address));
+            server.Listener.Settings.RequestQueueLimit = 1001;
 
             using (server)
             {

@@ -171,7 +171,7 @@ namespace Microsoft.Net.Http.Server
                                 IntPtr.Zero);
                     }
 
-                    if (_requestContext.Server.IgnoreWriteExceptions)
+                    if (_requestContext.Server.Settings.IgnoreWriteExceptions)
                     {
                         statusCode = UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
                     }
@@ -338,7 +338,7 @@ namespace Microsoft.Net.Http.Server
             if (statusCode != ErrorCodes.ERROR_SUCCESS && statusCode != ErrorCodes.ERROR_IO_PENDING)
             {
                 asyncResult.Dispose();
-                if (_requestContext.Server.IgnoreWriteExceptions && started)
+                if (_requestContext.Server.Settings.IgnoreWriteExceptions && started)
                 {
                     asyncResult.Complete();
                 }
@@ -602,7 +602,7 @@ namespace Microsoft.Net.Http.Server
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
             {
                 asyncResult.Dispose();
-                if (_requestContext.Server.IgnoreWriteExceptions && started)
+                if (_requestContext.Server.Settings.IgnoreWriteExceptions && started)
                 {
                     asyncResult.Complete();
                 }

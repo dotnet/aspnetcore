@@ -57,15 +57,16 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _listener = options.Value?.Listener ?? new Microsoft.Net.Http.Server.WebListener(loggerFactory);
+            var optionsInstance = options.Value;
+            _listener = new Microsoft.Net.Http.Server.WebListener(optionsInstance.ListenerSettings);
             _logger = LogHelper.CreateLogger(loggerFactory, typeof(MessagePump));
             Features = new FeatureCollection();
             _serverAddresses = new ServerAddressesFeature();
             Features.Set<IServerAddressesFeature>(_serverAddresses);
 
             _processRequest = new Action<object>(ProcessRequestAsync);
-            _maxAccepts = options.Value?.MaxAccepts ?? WebListenerOptions.DefaultMaxAccepts;
-            EnableResponseCaching = options.Value?.EnableResponseCaching ?? true;
+            _maxAccepts = optionsInstance.MaxAccepts;
+            EnableResponseCaching = optionsInstance.EnableResponseCaching;
             _shutdownSignal = new ManualResetEvent(false);
         }
 
@@ -94,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
 
             _application = new ApplicationWrapper<TContext>(application);
 
-            if (_listener.UrlPrefixes.Count == 0)
+            if (_listener.Settings.UrlPrefixes.Count == 0)
             {
                 throw new InvalidOperationException("No address prefixes were defined.");
             }
@@ -224,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         {
             foreach (var value in addresses)
             {
-                listener.UrlPrefixes.Add(UrlPrefix.Create(value));
+                listener.Settings.UrlPrefixes.Add(UrlPrefix.Create(value));
             }
         }
 

@@ -16,9 +16,11 @@ namespace HelloWorld
         
         public static async Task Run(string[] args)
         {
-            using (WebListener listener = new WebListener())
+            var settings = new WebListenerSettings();
+            settings.UrlPrefixes.Add("http://localhost:8080");
+
+            using (WebListener listener = new WebListener(settings))
             {
-                listener.UrlPrefixes.Add("http://localhost:8080");
                 listener.Start();
 
                 Console.WriteLine("Running...");

@@ -17,8 +17,8 @@ namespace Microsoft.Net.Http.Server
         internal static WebListener CreateHttpAuthServer(AuthenticationSchemes authScheme, bool allowAnonymos, out string baseAddress)
         {
             var listener = CreateHttpServer(out baseAddress);
-            listener.AuthenticationManager.AuthenticationSchemes = authScheme;
-            listener.AuthenticationManager.AllowAnonymous = allowAnonymos;
+            listener.Settings.Authentication.Schemes = authScheme;
+            listener.Settings.Authentication.AllowAnonymous = allowAnonymos;
             return listener;
         }
 
@@ -45,7 +45,7 @@ namespace Microsoft.Net.Http.Server
                     root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
                     baseAddress = prefix.ToString();
                     var listener = new WebListener();
-                    listener.UrlPrefixes.Add(prefix);
+                    listener.Settings.UrlPrefixes.Add(prefix);
                     try
                     {
                         listener.Start();
@@ -61,7 +61,6 @@ namespace Microsoft.Net.Http.Server
             throw new Exception("Failed to locate a free port.");
         }
 
-
         internal static WebListener CreateHttpsServer()
         {
             return CreateServer("https", "localhost", 9090, string.Empty);
@@ -70,7 +69,7 @@ namespace Microsoft.Net.Http.Server
         internal static WebListener CreateServer(string scheme, string host, int port, string path)
         {
             WebListener listener = new WebListener();
-            listener.UrlPrefixes.Add(UrlPrefix.Create(scheme, host, port, path));
+            listener.Settings.UrlPrefixes.Add(UrlPrefix.Create(scheme, host, port, path));
             listener.Start();
             return listener;
         }

@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -36,8 +35,6 @@ namespace Microsoft.Net.Http.Server
     /// </summary>
     public sealed class WebListener : IDisposable
     {
-        private const long DefaultRequestQueueLength = 1000;  // Http.sys default.
-
         // Win8# 559317 fixed a bug in Http.sys's HttpReceiveClientCertificate method.
         // Without this fix IOCP callbacks were not being called although ERROR_IO_PENDING was
         // returned from HttpReceiveClientCertificate when using the 
@@ -53,48 +50,38 @@ namespace Microsoft.Net.Http.Server
         // 0.5 seconds per request.  Respond with a 400 Bad Request.
         private const int UnknownHeaderLimit = 1000;
 
-        private ILogger _logger;
-
         private volatile State _state; // m_State is set only within lock blocks, but often read outside locks.
 
-        private bool _ignoreWriteExceptions;
         private ServerSession _serverSession;
         private UrlGroup _urlGroup;
         private RequestQueue _requestQueue;
-        private TimeoutManager _timeoutManager;
-        private AuthenticationManager _authManager;
         private DisconnectListener _disconnectListener;
 
         private object _internalLock;
 
-        private UrlPrefixCollection _urlPrefixes;
-
-        // The native request queue
-        private long? _requestQueueLength;
-
         public WebListener()
-            : this(null)
+            : this(new WebListenerSettings())
         {
         }
 
-        public WebListener(ILoggerFactory factory)
+        public WebListener(WebListenerSettings settings)
         {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             if (!HttpApi.Supported)
             {
                 throw new PlatformNotSupportedException();
             }
 
-            _logger = LogHelper.CreateLogger(factory, typeof(WebListener));
+            Debug.Assert(HttpApi.ApiVersion == HttpApi.HTTP_API_VERSION.Version20, "Invalid Http api version");
 
-            Debug.Assert(HttpApi.ApiVersion ==
-                HttpApi.HTTP_API_VERSION.Version20, "Invalid Http api version");
+            Settings = settings;
 
             _state = State.Stopped;
             _internalLock = new object();
-
-            _urlPrefixes = new UrlPrefixCollection(this);
-            _timeoutManager = new TimeoutManager(this);
-            _authManager = new AuthenticationManager(this);
 
             // V2 initialization sequence:
             // 1. Create server session
@@ -107,11 +94,11 @@ namespace Microsoft.Net.Http.Server
             {
                 _serverSession = new ServerSession();
 
-                _urlGroup = new UrlGroup(_serverSession, _logger);
+                _urlGroup = new UrlGroup(_serverSession, Logger);
 
-                _requestQueue = new RequestQueue(_urlGroup, _logger);
+                _requestQueue = new RequestQueue(_urlGroup, Logger);
 
-                _disconnectListener = new DisconnectListener(_requestQueue, _logger);
+                _disconnectListener = new DisconnectListener(_requestQueue, Logger);
             }
             catch (Exception exception)
             {
@@ -119,7 +106,7 @@ namespace Microsoft.Net.Http.Server
                 _requestQueue?.Dispose();
                 _urlGroup?.Dispose();
                 _serverSession?.Dispose();
-                LogHelper.LogException(_logger, ".Ctor", exception);
+                LogHelper.LogException(Logger, ".Ctor", exception);
                 throw;
             }
         }
@@ -133,7 +120,7 @@ namespace Microsoft.Net.Http.Server
 
         internal ILogger Logger
         {
-            get { return _logger; }
+            get { return Settings.Logger; }
         }
 
         internal UrlGroup UrlGroup
@@ -151,64 +138,11 @@ namespace Microsoft.Net.Http.Server
             get { return _disconnectListener; }
         }
 
-        // TODO: https://github.com/aspnet/WebListener/issues/173
-        internal bool IgnoreWriteExceptions
-        {
-            get { return _ignoreWriteExceptions; }
-            set
-            {
-                CheckDisposed();
-                _ignoreWriteExceptions = value;
-            }
-        }
-
-        public UrlPrefixCollection UrlPrefixes
-        {
-            get { return _urlPrefixes; }
-        }
-
-        /// <summary>
-        /// Exposes the Http.Sys timeout configurations.  These may also be configured in the registry.
-        /// </summary>
-        public TimeoutManager TimeoutManager
-        {
-            get { return _timeoutManager; }
-        }
-
-        /// <summary>
-        /// Http.Sys authentication settings.
-        /// </summary>
-        public AuthenticationManager AuthenticationManager
-        {
-            get { return _authManager; }
-        }
+        public WebListenerSettings Settings { get; }
 
         public bool IsListening
         {
             get { return _state == State.Started; }
-        }
-
-        /// <summary>
-        /// Sets the maximum number of requests that will be queued up in Http.Sys.
-        /// </summary>
-        /// <param name="limit"></param>
-        public void SetRequestQueueLimit(long limit)
-        {
-            CheckDisposed();
-            if (limit <= 0)
-            {
-                throw new ArgumentOutOfRangeException("limit", limit, string.Empty);
-            }
-
-            // Don't try to change it if the new limit is the same
-            if ((!_requestQueueLength.HasValue && limit == DefaultRequestQueueLength)
-                || (_requestQueueLength.HasValue && limit == _requestQueueLength.Value))
-            {
-                return;
-            }
-
-            _requestQueueLength = limit;
-            _requestQueue.SetLengthLimit(_requestQueueLength.Value);
         }
 
         /// <summary>
@@ -218,7 +152,7 @@ namespace Microsoft.Net.Http.Server
         {
             CheckDisposed();
 
-            LogHelper.LogInfo(_logger, "Start");
+            LogHelper.LogInfo(Logger, "Start");
 
             // Make sure there are no race conditions between Start/Stop/Abort/Close/Dispose.
             // Start needs to setup all resources. Abort/Stop must not interfere while Start is
@@ -233,12 +167,16 @@ namespace Microsoft.Net.Http.Server
                         return;
                     }
 
+                    Settings.Authentication.SetUrlGroupSecurity(UrlGroup);
+                    Settings.Timeouts.SetUrlGroupTimeouts(UrlGroup);
+                    Settings.SetRequestQueueLimit(RequestQueue);
+
                     _requestQueue.AttachToUrlGroup();
 
                     // All resources are set up correctly. Now add all prefixes.
                     try
                     {
-                        _urlPrefixes.RegisterAllPrefixes();
+                        Settings.UrlPrefixes.RegisterAllPrefixes(UrlGroup);
                     }
                     catch (WebListenerException)
                     {
@@ -254,7 +192,7 @@ namespace Microsoft.Net.Http.Server
                     // Make sure the HttpListener instance can't be used if Start() failed.
                     _state = State.Disposed;
                     DisposeInternal();
-                    LogHelper.LogException(_logger, "Start", exception);
+                    LogHelper.LogException(Logger, "Start", exception);
                     throw;
                 }
             }
@@ -272,7 +210,7 @@ namespace Microsoft.Net.Http.Server
                         return;
                     }
 
-                    _urlPrefixes.UnregisterAllPrefixes();
+                    Settings.UrlPrefixes.UnregisterAllPrefixes();
 
                     _state = State.Stopped;
 
@@ -281,7 +219,7 @@ namespace Microsoft.Net.Http.Server
             }
             catch (Exception exception)
             {
-                LogHelper.LogException(_logger, "Stop", exception);
+                LogHelper.LogException(Logger, "Stop", exception);
                 throw;
             }
         }
@@ -309,14 +247,14 @@ namespace Microsoft.Net.Http.Server
                     {
                         return;
                     }
-                    LogHelper.LogInfo(_logger, "Dispose");
+                    LogHelper.LogInfo(Logger, "Dispose");
 
                     Stop();
                     DisposeInternal();
                 }
                 catch (Exception exception)
                 {
-                    LogHelper.LogException(_logger, "Dispose", exception);
+                    LogHelper.LogException(Logger, "Dispose", exception);
                     throw;
                 }
                 finally
@@ -371,7 +309,7 @@ namespace Microsoft.Net.Http.Server
             }
             catch (Exception exception)
             {
-                LogHelper.LogException(_logger, "GetContextAsync", exception);
+                LogHelper.LogException(Logger, "GetContextAsync", exception);
                 throw;
             }
 
@@ -392,10 +330,10 @@ namespace Microsoft.Net.Http.Server
         internal unsafe bool ValidateAuth(NativeRequestContext requestMemory)
         {
             var requestV2 = (HttpApi.HTTP_REQUEST_V2*)requestMemory.RequestBlob;
-            if (!AuthenticationManager.AllowAnonymous && !AuthenticationManager.CheckAuthenticated(requestV2->pRequestInfo))
+            if (!Settings.Authentication.AllowAnonymous && !AuthenticationManager.CheckAuthenticated(requestV2->pRequestInfo))
             {
                 SendError(requestMemory.RequestBlob->RequestId, HttpStatusCode.Unauthorized,
-                    AuthenticationManager.GenerateChallenges(AuthenticationManager.AuthenticationSchemes));
+                    AuthenticationManager.GenerateChallenges(Settings.Authentication.Schemes));
                 return false;
             }
             return true;
@@ -509,7 +447,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal void CheckDisposed()
+        private void CheckDisposed()
         {
             if (_state == State.Disposed)
             {
