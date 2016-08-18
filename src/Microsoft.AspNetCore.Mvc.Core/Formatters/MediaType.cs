@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // We check if the parsed media type has value at this stage when we have iterated
             // over all the parameters and we know if the parsing was sucessful.
-            if (!parser.ParsingFailed)
+            if (!parser.ParsingFailed && parser.CurrentOffset >= start)
             {
                 return new MediaTypeSegmentWithQuality(
                     new StringSegment(mediaType, start, parser.CurrentOffset - start),

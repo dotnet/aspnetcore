@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Primitives;
 using Xunit;
@@ -46,6 +47,21 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Internal
             {
                 Assert.Same(header, mediaType.MediaType.Buffer);
             }
+        }
+
+        [Fact]
+        public void ParseAcceptHeader_ParsesSimpleHeaderWithMultipleValues_InvalidFormat()
+        {
+            // Arrange
+            var header = "application/json, application/xml,;q=0.8";
+            var expectedException = "\"Invalid values ';q=0.8'.\"";
+
+            // Act
+            var ex = Assert.Throws<FormatException>(
+                () => { AcceptHeaderParser.ParseAcceptHeader(new List<string> { header }); });
+
+            // Assert
+            Assert.Equal(expectedException, ex.Message);
         }
 
         [Fact]
