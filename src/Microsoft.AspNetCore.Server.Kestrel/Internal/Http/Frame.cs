@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private CancellationTokenSource _abortedCts;
         private CancellationToken? _manuallySetRequestAbortToken;
 
-        protected RequestProcessingStatus _requestProcessingStatus;
+        private RequestProcessingStatus _requestProcessingStatus;
         protected bool _keepAlive;
         private bool _autoChunk;
         protected Exception _applicationException;
@@ -67,6 +67,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private int _remainingRequestHeadersBytesAllowed;
         private int _requestHeadersParsed;
+
+        private int _secondsSinceLastRequest;
 
         public Frame(ConnectionContext context)
             : base(context)
@@ -213,10 +215,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
         }
 
-        public bool HasResponseStarted
-        {
-            get { return _requestProcessingStatus == RequestProcessingStatus.ResponseStarted; }
-        }
+        public bool HasResponseStarted => _requestProcessingStatus == RequestProcessingStatus.ResponseStarted;
 
         protected FrameRequestHeaders FrameRequestHeaders { get; private set; }
 
@@ -1267,6 +1266,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             Log.ApplicationError(ConnectionId, ex);
         }
 
+        public void Tick()
+        {
+            // we're in between requests and not about to start processing a new one
+            if (_requestProcessingStatus == RequestProcessingStatus.RequestPending && !SocketInput.IsCompleted)
+            {
+                if (_secondsSinceLastRequest > ServerOptions.Limits.KeepAliveTimeout.TotalSeconds)
+                {
+                    ConnectionControl.Stop();
+                }
+
+                _secondsSinceLastRequest++;
+            }
+        }
+
+        public void RequestFinished()
+        {
+            _secondsSinceLastRequest = 0;
+        }
+
         protected enum RequestLineStatus
         {
             Empty,
@@ -1277,7 +1295,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             Done
         }
 
-        protected enum RequestProcessingStatus
+        private enum RequestProcessingStatus
         {
             RequestPending,
             RequestStarted,

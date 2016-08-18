@@ -53,6 +53,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             _uv_tcp_getpeername = NativeMethods.uv_tcp_getpeername;
             _uv_tcp_getsockname = NativeMethods.uv_tcp_getsockname;
             _uv_walk = NativeMethods.uv_walk;
+            _uv_timer_init = NativeMethods.uv_timer_init;
+            _uv_timer_start = NativeMethods.uv_timer_start;
+            _uv_timer_stop = NativeMethods.uv_timer_stop;
         }
 
         // Second ctor that doesn't set any fields only to be used by MockLibuv
@@ -407,6 +410,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             _uv_walk(loop, walk_cb, arg);
         }
 
+        protected Func<UvLoopHandle, UvTimerHandle, int> _uv_timer_init;
+        unsafe public void timer_init(UvLoopHandle loop, UvTimerHandle handle)
+        {
+            loop.Validate();
+            handle.Validate();
+            ThrowIfErrored(_uv_timer_init(loop, handle));
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void uv_timer_cb(IntPtr handle);
+        protected Func<UvTimerHandle, uv_timer_cb, long, long, int> _uv_timer_start;
+        unsafe public void timer_start(UvTimerHandle handle, uv_timer_cb cb, long timeout, long repeat)
+        {
+            handle.Validate();
+            ThrowIfErrored(_uv_timer_start(handle, cb, timeout, repeat));
+        }
+
+        protected Func<UvTimerHandle, int> _uv_timer_stop;
+        unsafe public void timer_stop(UvTimerHandle handle)
+        {
+            handle.Validate();
+            ThrowIfErrored(_uv_timer_stop(handle));
+        }
+
         public delegate int uv_tcp_getsockname_func(UvTcpHandle handle, out SockAddr addr, ref int namelen);
         protected uv_tcp_getsockname_func _uv_tcp_getsockname;
         public void tcp_getsockname(UvTcpHandle handle, out SockAddr addr, ref int namelen)
@@ -603,6 +630,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
 
             [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
             public static extern int uv_walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            unsafe public static extern int uv_timer_init(UvLoopHandle loop, UvTimerHandle handle);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            unsafe public static extern int uv_timer_start(UvTimerHandle handle, uv_timer_cb cb, long timeout, long repeat);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            unsafe public static extern int uv_timer_stop(UvTimerHandle handle);
 
             [DllImport("WS2_32.dll", CallingConvention = CallingConvention.Winapi)]
             unsafe public static extern int WSAIoctl(

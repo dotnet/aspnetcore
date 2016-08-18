@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
-        public void MaxRequestHeadersDefault()
+        public void MaxRequestHeaderCountDefault()
         {
             Assert.Equal(100, (new KestrelServerLimits()).MaxRequestHeaderCount);
         }
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData(int.MinValue)]
         [InlineData(-1)]
         [InlineData(0)]
-        public void MaxRequestHeadersInvalid(int value)
+        public void MaxRequestHeaderCountInvalid(int value)
         {
             Assert.Throws<ArgumentOutOfRangeException>(() =>
             {
@@ -142,11 +142,30 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Theory]
         [InlineData(1)]
         [InlineData(int.MaxValue)]
-        public void MaxRequestHeadersValid(int value)
+        public void MaxRequestHeaderCountValid(int value)
         {
             var o = new KestrelServerLimits();
             o.MaxRequestHeaderCount = value;
             Assert.Equal(value, o.MaxRequestHeaderCount);
+        }
+
+        [Fact]
+        public void KeepAliveTimeoutDefault()
+        {
+            Assert.Equal(TimeSpan.FromMinutes(2), new KestrelServerLimits().KeepAliveTimeout);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(0.5)]
+        [InlineData(2.1)]
+        [InlineData(2.5)]
+        [InlineData(2.9)]
+        public void KeepAliveTimeoutIsRoundedToTheNextSecond(double seconds)
+        {
+            var o = new KestrelServerLimits();
+            o.KeepAliveTimeout = TimeSpan.FromSeconds(seconds);
+            Assert.Equal(Math.Ceiling(seconds), o.KeepAliveTimeout.TotalSeconds);
         }
     }
 }

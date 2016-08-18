@@ -126,6 +126,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
             {
                 throw new Exception($"Why is this getting called?{Environment.NewLine}{_stackTrace}");
             };
+
+            _uv_timer_init = (loop, handle) => 0;
+            _uv_timer_start = (handle, callback, timeout, repeat) => 0;
+            _uv_timer_stop = handle => 0;
         }
 
         public Func<UvStreamHandle, int, Action<int>, int> OnWrite { get; set; }

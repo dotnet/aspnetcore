@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -156,6 +155,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             _socketClosedTcs.TrySetResult(null);
         }
 
+        // Called on Libuv thread
+        public void Tick()
+        {
+            _frame.Tick();
+        }
+
         private void ApplyConnectionFilter()
         {
             if (_filterContext.Connection != _libuvStream)
@@ -275,6 +280,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     ((SocketOutput)SocketOutput).End(endType);
                     break;
             }
+        }
+
+        void IConnectionControl.Stop()
+        {
+            StopAsync();
         }
 
         private static unsafe string GenerateConnectionId(long id)

@@ -172,6 +172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 var limit = buffer.Array == null ? inputLengthLimit : Math.Min(buffer.Count, inputLengthLimit);
                 if (limit == 0)
                 {
+                    _context.RequestFinished();
                     return new ValueTask<int>(0);
                 }
 
@@ -182,10 +183,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     // .GetAwaiter().GetResult() done by ValueTask if needed
                     var actual = task.Result;
                     _inputLength -= actual;
+
                     if (actual == 0)
                     {
                         _context.RejectRequest(RequestRejectionReason.UnexpectedEndOfRequestContent);
                     }
+
+                    if (_inputLength == 0)
+                    {
+                        _context.RequestFinished();
+                    }
+
                     return new ValueTask<int>(actual);
                 }
                 else
@@ -198,9 +206,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 var actual = await task;
                 _inputLength -= actual;
+
                 if (actual == 0)
                 {
                     _context.RejectRequest(RequestRejectionReason.UnexpectedEndOfRequestContent);
+                }
+
+                if (_inputLength == 0)
+                {
+                    _context.RequestFinished();
                 }
 
                 return actual;
@@ -353,6 +367,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                     _mode = Mode.Complete;
                 }
+
+                _context.RequestFinished();
 
                 return 0;
             }

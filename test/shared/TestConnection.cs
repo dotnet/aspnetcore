@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Testing
             _stream = new NetworkStream(_socket, false);
             _reader = new StreamReader(_stream, Encoding.ASCII);
         }
+
         public void Dispose()
         {
             _stream.Dispose();
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.Testing
                 var task = _reader.ReadAsync(actual, offset, actual.Length - offset);
                 if (!Debugger.IsAttached)
                 {
-                    Assert.True(await Task.WhenAny(task, Task.Delay(10000)) == task, "TestConnection.Receive timed out.");
+                    Assert.True(await Task.WhenAny(task, Task.Delay(TimeSpan.FromMinutes(1))) == task, "TestConnection.Receive timed out.");
                 }
                 var count = await task;
                 if (count == 0)
