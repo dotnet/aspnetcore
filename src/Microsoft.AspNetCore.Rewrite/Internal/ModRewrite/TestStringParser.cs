@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Rewrite.Internal;
 using Microsoft.AspNetCore.Rewrite.Internal.PatternSegments;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
@@ -32,7 +31,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
         /// $1</param>
         /// <returns>A new <see cref="Pattern"/>, containing a list of <see cref="PatternSegment"/></returns>
         /// http://httpd.apache.org/docs/current/mod/mod_rewrite.html
-        public static Pattern Parse(string testString)
+        public Pattern Parse(string testString)
         {
             if (testString == null)
             {

@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         public void ThrowFormatExceptionWithCorrectMessage(string input, string expected)
         {
             // Arrange, Act, Assert
-            var ex = Assert.Throws<FormatException>(() => UrlRewriteFileParser.Parse(new StringReader(input)));
+            var ex = Assert.Throws<FormatException>(() => new FileParser().Parse(new StringReader(input)));
             Assert.Equal(ex.Message, expected);
         }
     }

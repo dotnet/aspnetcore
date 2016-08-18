@@ -12,19 +12,19 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public void RuleRegexParser_ShouldThrowOnNull()
         {
-            Assert.Throws<FormatException>(() => RuleRegexParser.ParseRuleRegex(null));
+            Assert.Throws<FormatException>(() => new RuleRegexParser().ParseRuleRegex(null));
         }
 
         [Fact]
         public void RuleRegexParser_ShouldThrowOnEmpty()
         {
-            Assert.Throws<FormatException>(() => RuleRegexParser.ParseRuleRegex(string.Empty));
+            Assert.Throws<FormatException>(() => new RuleRegexParser().ParseRuleRegex(string.Empty));
         }
 
         [Fact]
         public void RuleRegexParser_RegularRegexExpression()
         {
-            var results = RuleRegexParser.ParseRuleRegex("(.*)");
+            var results = new RuleRegexParser().ParseRuleRegex("(.*)");
             Assert.False(results.Invert);
             Assert.Equal(results.Operand, "(.*)");
         }

@@ -5,9 +5,9 @@ using System;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
 {
-    public static class RuleRegexParser
+    public class RuleRegexParser
     {
-        public static ParsedModRewriteInput ParseRuleRegex(string regex)
+        public ParsedModRewriteInput ParseRuleRegex(string regex)
         {
             if (regex == null || regex == string.Empty)
             {

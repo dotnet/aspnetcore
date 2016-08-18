@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Rewrite
             var path = Path.Combine(hostingEnv.ContentRootPath, filePath);
             using (var stream = File.OpenRead(path))
             {
-                options.Rules.AddRange(UrlRewriteFileParser.Parse(new StreamReader(stream)));
+                options.Rules.AddRange(new FileParser().Parse(new StreamReader(stream)));
             };
             return options;
         }
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Rewrite
 
             using (stream)
             {
-                options.Rules.AddRange(UrlRewriteFileParser.Parse(stream));
+                options.Rules.AddRange(new FileParser().Parse(stream));
             };
             return options;
         }

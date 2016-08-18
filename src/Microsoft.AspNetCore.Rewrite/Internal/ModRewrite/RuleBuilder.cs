@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Rewrite.Internal;
 using Microsoft.AspNetCore.Rewrite.Internal.PreActions;
 using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
 using Microsoft.AspNetCore.Rewrite.Internal.UrlMatches;
@@ -32,13 +31,18 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
         public void AddRule(string rule)
         {
             // TODO 
-            var tokens = Tokenizer.Tokenize(rule);
-            var regex = RuleRegexParser.ParseRuleRegex(tokens[1]);
-            var pattern = TestStringParser.Parse(tokens[2]);
-            var flags = new Flags();
+            var tokens = new Tokenizer().Tokenize(rule);
+            var regex = new RuleRegexParser().ParseRuleRegex(tokens[1]);
+            var pattern = new TestStringParser().Parse(tokens[2]);
+
+            Flags flags;
             if (tokens.Count == 4)
             {
-                flags = FlagParser.Parse(tokens[3]);
+                flags = new FlagParser().Parse(tokens[3]);
+            }
+            else
+            {
+                flags = new Flags();
             }
             AddMatch(regex, flags);
             AddAction(pattern, flags);

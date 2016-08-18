@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Rewrite
         public static RewriteOptions RewriteRule(this RewriteOptions options, string regex, string onMatch, bool stopProcessing)
         {
             var builder = new UrlRewriteRuleBuilder();
-            var pattern = InputParser.ParseInputString(onMatch);
+            var pattern = new InputParser().ParseInputString(onMatch);
 
             builder.AddUrlMatch(regex);
             builder.AddUrlAction(pattern, actionType: ActionType.Rewrite, stopProcessing: stopProcessing);
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Rewrite
         public static RewriteOptions RedirectRule(this RewriteOptions options, string regex, string onMatch, int statusCode, bool stopProcessing)
         {
             var builder = new UrlRewriteRuleBuilder();
-            var pattern = InputParser.ParseInputString(onMatch);
+            var pattern = new InputParser().ParseInputString(onMatch);
 
             builder.AddUrlMatch(regex);
             builder.AddUrlAction(pattern, actionType: ActionType.Redirect, stopProcessing: stopProcessing);

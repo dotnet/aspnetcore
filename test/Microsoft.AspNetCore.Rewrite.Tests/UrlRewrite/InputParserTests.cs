@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         public void InputParser_ParseLiteralString()
         {
             var testString = "hello/hey/what";
-            var result = InputParser.ParseInputString(testString);
+            var result = new InputParser().ParseInputString(testString);
             Assert.Equal(result.PatternSegments.Count, 1);
         }
         
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [InlineData("foo/", 1)]
         public void InputParser_ParseStringWithBackReference(string testString, int expected)
         {
-            var result = InputParser.ParseInputString(testString);
+            var result = new InputParser().ParseInputString(testString);
             Assert.Equal(result.PatternSegments.Count, expected);
         }
 
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [InlineData("hey/{R:1}/{C:1}", "hey/foo/foo")]
         public void EvaluateBackReferenceRule(string testString, string expected)
         {
-            var middle = InputParser.ParseInputString(testString);
+            var middle = new InputParser().ParseInputString(testString);
             var result = middle.Evaluate(CreateTestRewriteContext(), CreateTestRuleMatch(), CreateTestCondMatch());
             Assert.Equal(result, expected);
         }
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [InlineData("hey/ToLower:/what", "hey/ToLower:/what")]
         public void EvaluatToLowerRule(string testString, string expected)
         {
-            var middle = InputParser.ParseInputString(testString);
+            var middle = new InputParser().ParseInputString(testString);
             var result = middle.Evaluate(CreateTestRewriteContext(), CreateTestRuleMatch(), CreateTestCondMatch());
             Assert.Equal(result, expected);
         }
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [InlineData("hey/{UrlEncode:<hey>}", "hey/%3Chey%3E")]
         public void EvaluatUriEncodeRule(string testString, string expected)
         {
-            var middle = InputParser.ParseInputString(testString);
+            var middle = new InputParser().ParseInputString(testString);
             var result = middle.Evaluate(CreateTestRewriteContext(), CreateTestRuleMatch(), CreateTestCondMatch());
             Assert.Equal(result, expected);
         }
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [InlineData("{HTTPS")]
         public void FormatExceptionsOnBadSyntax(string testString)
         {
-            Assert.Throws<FormatException>(() => InputParser.ParseInputString(testString));
+            Assert.Throws<FormatException>(() => new InputParser().ParseInputString(testString));
         }
 
         private RewriteContext CreateTestRewriteContext()

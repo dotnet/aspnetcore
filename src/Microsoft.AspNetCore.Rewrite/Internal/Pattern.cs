@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
 
         public string Evaluate(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
-            // TODO consider thread static for string builder - DAVID PERF
             foreach (var pattern in PatternSegments)
             {
                 context.Builder.Append(pattern.Evaluate(context, ruleMatch, condMatch));

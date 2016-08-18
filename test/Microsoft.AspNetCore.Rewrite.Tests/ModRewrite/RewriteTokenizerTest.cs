@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         public void Tokenize_RewriteCondtion()
         {
             var testString = "RewriteCond %{HTTPS} !-f";
-            var tokens = Tokenizer.Tokenize(testString);
+            var tokens = new Tokenizer().Tokenize(testString);
 
             var expected = new List<string>();
             expected.Add("RewriteCond");
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         {
             // TODO need consultation on escape characters.
             var testString = @"RewriteCond %{HTTPS}\ what !-f";
-            var tokens = Tokenizer.Tokenize(testString);
+            var tokens = new Tokenizer().Tokenize(testString);
 
             var expected = new List<string>();
             expected.Add("RewriteCond");

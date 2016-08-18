@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 pattern: "article.aspx?id={R:1}&amp;title={R:2}"));
 
             // act
-            var res = UrlRewriteFileParser.Parse(new StringReader(xml));
+            var res = new FileParser().Parse(new StringReader(xml));
 
             // assert
             AssertUrlRewriteRuleEquality(res, expected);
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var condList = new List<Condition>();
             condList.Add(new Condition
             {
-                Input = InputParser.ParseInputString("{HTTPS}"),
+                Input = new InputParser().ParseInputString("{HTTPS}"),
                 Match = new RegexMatch(new Regex("^OFF$"), false)
             });
 
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 pattern: "article.aspx?id={R:1}&amp;title={R:2}"));
 
             // act
-            var res = UrlRewriteFileParser.Parse(new StringReader(xml));
+            var res = new FileParser().Parse(new StringReader(xml));
 
             // assert
             AssertUrlRewriteRuleEquality(res, expected);
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var condList = new List<Condition>();
             condList.Add(new Condition
             {
-                Input = InputParser.ParseInputString("{HTTPS}"),
+                Input = new InputParser().ParseInputString("{HTTPS}"),
                 Match = new RegexMatch(new Regex("^OFF$"), false)
             });
 
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 pattern: "article.aspx?id={R:1}&amp;title={R:2}"));
 
             // act
-            var res = UrlRewriteFileParser.Parse(new StringReader(xml));
+            var res = new FileParser().Parse(new StringReader(xml));
 
             // assert
             AssertUrlRewriteRuleEquality(res, expected);
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             return new UrlRewriteRule
             {
-                Action = new RewriteAction(RuleTerminiation.Continue, InputParser.ParseInputString(Url), clearQuery: false),
+                Action = new RewriteAction(RuleTerminiation.Continue, new InputParser().ParseInputString(Url), clearQuery: false),
                 Name = name,
                 Enabled = enabled,
                 InitialMatch = new RegexMatch(new Regex("^OFF$"), false)
@@ -190,6 +190,9 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                         Assert.Equal(c1.Input.PatternSegments.Count, c2.Input.PatternSegments.Count);
                     }
                 }
+
+                Assert.Equal(r1.Action.GetType(), r2.Action.GetType());
+                Assert.Equal(r1.InitialMatch.GetType(), r2.InitialMatch.GetType());
             }
         }
     }

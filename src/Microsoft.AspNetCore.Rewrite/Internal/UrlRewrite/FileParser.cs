@@ -7,15 +7,16 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Rewrite.Internal;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
 {
-    public static class UrlRewriteFileParser
+    public class FileParser
     {
         private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(1);
 
-        public static List<UrlRewriteRule> Parse(TextReader reader)
+        private InputParser _inputParser = new InputParser();
+
+        public List<UrlRewriteRule> Parse(TextReader reader)
         {
             var xmlDoc = XDocument.Load(reader, LoadOptions.SetLineInfo);
             var xmlRoot = xmlDoc.Descendants(RewriteTags.Rewrite).FirstOrDefault();
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             return null;
         }
 
-        private static void ParseRules(XElement rules, List<UrlRewriteRule> result)
+        private void ParseRules(XElement rules, List<UrlRewriteRule> result)
         {
             if (rules == null)
             {
@@ -51,7 +52,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             }
         }
 
-        private static void ParseRuleAttributes(XElement rule, UrlRewriteRuleBuilder builder)
+        private void ParseRuleAttributes(XElement rule, UrlRewriteRuleBuilder builder)
         {
             builder.Name = rule.Attribute(RewriteTags.Name)?.Value;
 
@@ -90,7 +91,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             ParseUrlAction(action, builder, stopProcessing);
         }
 
-        private static void ParseMatch(XElement match, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
+        private void ParseMatch(XElement match, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
         {
             var parsedInputString = match.Attribute(RewriteTags.Url)?.Value;
             if (parsedInputString == null)
@@ -112,7 +113,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             builder.AddUrlMatch(parsedInputString, ignoreCase, negate, patternSyntax);
         }
 
-        private static void ParseConditions(XElement conditions, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
+        private void ParseConditions(XElement conditions, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
         {
             if (conditions == null)
             {
@@ -139,7 +140,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             }
         }
 
-        private static void ParseCondition(XElement condition, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
+        private void ParseCondition(XElement condition, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
         {
             bool ignoreCase;
             if (!bool.TryParse(condition.Attribute(RewriteTags.IgnoreCase)?.Value, out ignoreCase))
@@ -170,7 +171,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             Pattern input = null;
             try
             {
-                input = InputParser.ParseInputString(parsedInputString);
+                input = _inputParser.ParseInputString(parsedInputString);
                 builder.AddUrlCondition(input, parsedPatternString, patternSyntax, matchType, ignoreCase, negate);
 
             }
@@ -180,7 +181,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             }
         }
 
-        private static void ParseUrlAction(XElement urlAction, UrlRewriteRuleBuilder builder, bool stopProcessing)
+        private void ParseUrlAction(XElement urlAction, UrlRewriteRuleBuilder builder, bool stopProcessing)
         {
             ActionType actionType;
             if (!Enum.TryParse(urlAction.Attribute(RewriteTags.Type)?.Value, out actionType))
@@ -202,7 +203,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
 
             try
             {
-                var input = InputParser.ParseInputString(urlAction.Attribute(RewriteTags.Url)?.Value);
+                var input = _inputParser.ParseInputString(urlAction.Attribute(RewriteTags.Url)?.Value);
                 builder.AddUrlAction(input, actionType, appendQuery, stopProcessing, (int)redirectType);
             }
             catch (FormatException formatException)
@@ -211,14 +212,14 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             }
         }
 
-        private static void ThrowUrlFormatException(XElement element, string message)
+        private void ThrowUrlFormatException(XElement element, string message)
         {
             var line = ((IXmlLineInfo)element).LineNumber;
             var col = ((IXmlLineInfo)element).LinePosition;
             throw new FormatException(Resources.FormatError_UrlRewriteParseError(message, line, col));
         }
 
-        private static void ThrowUrlFormatException(XElement element, string message, Exception ex)
+        private void ThrowUrlFormatException(XElement element, string message, Exception ex)
         {
             var line = ((IXmlLineInfo)element).LineNumber;
             var col = ((IXmlLineInfo)element).LinePosition;

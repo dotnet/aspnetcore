@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public void FlagParser_CheckSingleTerm()
         {
-            var results = FlagParser.Parse("[NC]");
+            var results = new FlagParser().Parse("[NC]");
             var dict = new Dictionary<FlagType, string>();
             dict.Add(FlagType.NoCase, string.Empty);
             var expected = new Flags(dict);
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public void FlagParser_CheckManyTerms()
         {
-            var results = FlagParser.Parse("[NC,F,L]");
+            var results = new FlagParser().Parse("[NC,F,L]");
             var dict = new Dictionary<FlagType, string>();
             dict.Add(FlagType.NoCase, string.Empty);
             dict.Add(FlagType.Forbidden, string.Empty);
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public void FlagParser_CheckManyTermsWithEquals()
         {
-            var results = FlagParser.Parse("[NC,F,R=301]");
+            var results = new FlagParser().Parse("[NC,F,R=301]");
             var dict = new Dictionary<FlagType, string>();
             dict.Add(FlagType.NoCase, string.Empty);
             dict.Add(FlagType.Forbidden, string.Empty);

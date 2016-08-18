@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [InlineData("=hey", OperationType.Equal, "hey", ConditionType.StringComp)]
         public void ConditionParser_CheckStringComp(string condition, OperationType operation, string variable, ConditionType conditionType)
         {
-            var results = ConditionPatternParser.ParseActionCondition(condition);
+            var results = new ConditionPatternParser().ParseActionCondition(condition);
 
             var expected = new ParsedModRewriteInput { OperationType = operation, ConditionType = conditionType, Operand = variable, Invert = false };
             Assert.True(CompareConditions(results, expected));
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         public void ConditionParser_CheckRegexEqual()
         {
             var condition = @"(.*)";
-            var results = ConditionPatternParser.ParseActionCondition(condition);
+            var results = new ConditionPatternParser().ParseActionCondition(condition);
 
             var expected = new ParsedModRewriteInput { ConditionType = ConditionType.Regex, Operand = "(.*)",  Invert = false };
             Assert.True(CompareConditions(results, expected));
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [InlineData("-x", OperationType.Executable, ConditionType.PropertyTest)]
         public void ConditionParser_CheckFileOperations(string condition, OperationType operation, ConditionType cond)
         {
-            var results = ConditionPatternParser.ParseActionCondition(condition);
+            var results = new ConditionPatternParser().ParseActionCondition(condition);
 
             var expected = new ParsedModRewriteInput { ConditionType = cond, OperationType = operation , Invert = false };
             Assert.True(CompareConditions(results, expected));
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [InlineData("!-x", OperationType.Executable, ConditionType.PropertyTest)]
         public void ConditionParser_CheckFileOperationsInverted(string condition, OperationType operation, ConditionType cond)
         {
-            var results = ConditionPatternParser.ParseActionCondition(condition);
+            var results = new ConditionPatternParser().ParseActionCondition(condition);
 
             var expected = new ParsedModRewriteInput { ConditionType = cond, OperationType = operation, Invert = true };
             Assert.True(CompareConditions(results, expected));
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [InlineData("-ne1", OperationType.NotEqual, "1", ConditionType.IntComp)]
         public void ConditionParser_CheckIntComp(string condition, OperationType operation, string variable, ConditionType cond)
         {
-            var results = ConditionPatternParser.ParseActionCondition(condition);
+            var results = new ConditionPatternParser().ParseActionCondition(condition);
 
             var expected = new ParsedModRewriteInput { ConditionType = cond, OperationType = operation, Invert = false, Operand = variable };
             Assert.True(CompareConditions(results, expected));

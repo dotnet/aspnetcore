@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
         /// </summary>
         /// <param name="testString"></param>
         /// <returns>A new <see cref="Pattern"/>, containing a list of <see cref="PatternSegment"/></returns>
-        public static Pattern ParseInputString(string testString)
+        public Pattern ParseInputString(string testString)
         {
             if (testString == null)
             {

@@ -15,6 +15,14 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             var rules = new List<Rule>();
             var builder = new RuleBuilder();
             var lineNum = 0;
+
+            // parsers
+            var testStringParser = new TestStringParser();
+            var conditionParser = new ConditionPatternParser();
+            var regexParser = new RuleRegexParser();
+            var flagsParser = new FlagParser();
+            var tokenizer = new Tokenizer();
+
             while ((line = input.ReadLine()) != null)
             {
                 lineNum++;
@@ -26,7 +34,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                 {
                     continue;
                 }
-                var tokens = Tokenizer.Tokenize(line);
+                var tokens = tokenizer.Tokenize(line);
                 if (tokens.Count > 4)
                 {
                     // This means the line didn't have an appropriate format, throw format exception
@@ -40,13 +48,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                     case "RewriteCond":
                         try
                         {
-                            var pattern = TestStringParser.Parse(tokens[1]);
-                            var condActionParsed = ConditionPatternParser.ParseActionCondition(tokens[2]);
+                            var pattern = testStringParser.Parse(tokens[1]);
+                            var condActionParsed = conditionParser.ParseActionCondition(tokens[2]);
 
                             var flags = new Flags();
                             if (tokens.Count == 4)
                             {
-                                flags = FlagParser.Parse(tokens[3]);
+                                flags = flagsParser.Parse(tokens[3]);
                             }
 
                             builder.AddConditionFromParts(pattern, condActionParsed, flags);
@@ -59,14 +67,17 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                     case "RewriteRule":
                         try
                         {
-                            var regex = RuleRegexParser.ParseRuleRegex(tokens[1]);
-                            var pattern = TestStringParser.Parse(tokens[2]);
+                            var regex = regexParser.ParseRuleRegex(tokens[1]);
+                            var pattern = testStringParser.Parse(tokens[2]);
 
-                            // TODO see if we can have flags be null.
-                            var flags = new Flags();
+                            Flags flags;
                             if (tokens.Count == 4)
                             {
-                                flags = FlagParser.Parse(tokens[3]);
+                                flags = flagsParser.Parse(tokens[3]);
+                            }
+                            else
+                            {
+                                flags = new Flags();
                             }
 
                             builder.AddMatch(regex, flags);

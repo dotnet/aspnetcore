@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Rewrite.Internal;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
 {
@@ -10,7 +9,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
     /// Parses the "CondPattern" portion of the RewriteCond. 
     /// RewriteCond TestString CondPattern
     /// </summary>
-    public static class ConditionPatternParser
+    public class ConditionPatternParser
     {
         private const char Not = '!';
         private const char Dash = '-';
@@ -26,7 +25,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
         /// </summary>
         /// <param name="condition">The CondPattern portion of a mod_rewrite RewriteCond.</param>
         /// <returns>A new parsed condition.</returns>
-        public static ParsedModRewriteInput ParseActionCondition(string condition)
+        public ParsedModRewriteInput ParseActionCondition(string condition)
         {
             if (condition ==  null)
             {
@@ -39,7 +38,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                 throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(condition, context.Index));
             }
 
-            // If we hit a !, make sure the condition is inverted when resolving the string
+            // If we hit a !, invert the condition
             if (context.Current == Not)
             {
                 results.Invert = true;
@@ -139,7 +138,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
         /// <param name="context"></param>
         /// <param name="invert"></param>
         /// <returns></returns>
-        public static ParsedModRewriteInput ParseProperty(ParserContext context, bool invert)
+        private static ParsedModRewriteInput ParseProperty(ParserContext context, bool invert)
         {
             if (!context.Next())
             {

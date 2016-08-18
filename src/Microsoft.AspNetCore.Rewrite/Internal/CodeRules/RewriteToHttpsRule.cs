@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
 
         public bool stopProcessing { get; set; }
         public int? SSLPort { get; set; }
+
         public override RuleResult ApplyRule(RewriteContext context)
         {
             if (!context.HttpContext.Request.IsHttps)
