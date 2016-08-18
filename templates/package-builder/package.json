@@ -1,7 +1,7 @@
 {
   "name": "generator-aspnetcore-spa-generator",
   "version": "1.0.0",
-  "description": "Creates the Yeoman generator for ASP.NET Core SPA templates",
+  "description": "Creates the Yeoman generator and 'dotnet new' package for ASP.NET Core SPA templates",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

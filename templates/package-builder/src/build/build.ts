@@ -9,7 +9,7 @@ import * as childProcess from 'child_process';
 
 const isWindows = /^win/.test(process.platform);
 const textFileExtensions = ['.gitignore', 'template_gitignore', '.config', '.cs', '.cshtml', 'Dockerfile', '.html', '.js', '.json', '.jsx', '.md', '.nuspec', '.ts', '.tsx', '.xproj'];
-const yeomanGeneratorSource = './src/generator';
+const yeomanGeneratorSource = './src/yeoman';
 
 const templates: { [key: string]: { dir: string, dotNetNewId: string, displayName: string } } = {
     'angular-2': { dir: '../../templates/Angular2Spa/', dotNetNewId: 'Angular', displayName: 'Angular 2' },
@@ -94,7 +94,7 @@ function buildYeomanNpmPackage() {
 
     // Also copy the generator files (that's the compiled .js files, plus all other non-.ts files)
     const tempRoot = './tmp';
-    copyRecursive(path.join(tempRoot, 'generator'), outputRoot, '**/*.js');
+    copyRecursive(path.join(tempRoot, 'yeoman'), outputRoot, '**/*.js');
     copyRecursive(yeomanGeneratorSource, outputRoot, '**/!(*.ts)');
 
     // Clean up
