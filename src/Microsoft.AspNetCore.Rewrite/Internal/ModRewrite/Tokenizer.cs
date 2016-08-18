@@ -29,27 +29,19 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                 return null;
             }
             var context = new ParserContext(rule);
-            if (!context.Next())
-            {
-                return null;
-            }
-
+            context.Next();
+            
             var tokens = new List<string>();
             context.Mark();
             while (true)
             {
-                if (!context.Next())
-                {
-                    // End of string. Capture.
-                    break;
-                }
-                else if (context.Current == Escape)
+                if (context.Current == Escape)
                 {
                     // Need to progress such that the next character is not evaluated.
                     if (!context.Next())
                     {
                         // Means that a character was not escaped appropriately Ex: "foo\"
-                        throw new FormatException("Invalid escaper character in string " + rule);
+                        throw new FormatException($"Invalid escaper character in string: {rule}");
                     }
                 }
                 else if (context.Current == Space || context.Current == Tab)
@@ -68,7 +60,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                             }
                         }
                         context.Mark();
+                        context.Back();
                     }
+                }
+                if (!context.Next())
+                {
+                    // End of string. Capture.
+                    break;
                 }
             }
             var done = context.Capture();
@@ -76,6 +74,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             {
                 tokens.Add(done);
             }
+            
             return tokens;
         }
     }

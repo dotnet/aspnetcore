@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                 FlagType flag;
                 if (!_ruleFlagLookup.TryGetValue(hasPayload[0], out flag))
                 {
-                    throw new FormatException($"Unrecognized flag: {hasPayload[0]}");
+                    throw new FormatException($"Unrecognized flag: '{hasPayload[0]}'");
                 }
 
                 if (hasPayload.Length == 2)

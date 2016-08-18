@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             else
             {
                 // illegal escape of a character
-                throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(context.Template, context.Index));
+                throw new FormatException(Resources.FormatError_InputParserInvalidInteger(context.Template, context.Index));
             }
         }
 

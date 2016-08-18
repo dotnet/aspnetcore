@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
     public class FormatExceptionTests
     {
         [Theory]
-        [InlineData(@"RewriteCond 1 2\", @"Invalid escaper character in string RewriteCond 1 2\")]
+        [InlineData(@"RewriteCond 1 2\", @"Invalid escaper character in string: RewriteCond 1 2\")]
         [InlineData("BadExpression 1 2 3 4", "Could not parse the mod_rewrite file. Message: 'Too many tokens on line'.  Line number '1'.")]
         [InlineData("RewriteCond % 2", "Could not parse the mod_rewrite file.  Line number '1'.")]
         [InlineData("RewriteCond %{ 2", "Could not parse the mod_rewrite file.  Line number '1'.")]

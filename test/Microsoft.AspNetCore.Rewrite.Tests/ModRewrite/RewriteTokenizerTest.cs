@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Rewrite.Internal.ModRewrite;
 using Xunit;
@@ -31,9 +32,45 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 
             var expected = new List<string>();
             expected.Add("RewriteCond");
-            expected.Add(@"%{HTTPS}\ what"); // TODO maybe just have the space here? talking point
+            expected.Add(@"%{HTTPS}\ what");
             expected.Add("!-f");
-            Assert.Equal(tokens,expected);
+            Assert.Equal(tokens, expected);
+        }
+
+        [Fact]
+        public void Tokenize_CheckWhiteSpaceDirectlyFollowedByEscapeCharacter_CorrectSplit()
+        {
+            var testString = @"RewriteCond %{HTTPS} \ what !-f";
+            var tokens = new Tokenizer().Tokenize(testString);
+
+            var expected = new List<string>();
+            expected.Add(@"RewriteCond");
+            expected.Add(@"%{HTTPS}");
+            expected.Add(@"\ what");
+            expected.Add(@"!-f");
+            Assert.Equal(tokens, expected);
+        }
+
+        [Fact]
+        public void Tokenize_CheckWhiteSpaceAtEndOfString_CorrectSplit()
+        {
+            var testString = @"RewriteCond %{HTTPS} \ what !-f    ";
+            var tokens = new Tokenizer().Tokenize(testString);
+
+            var expected = new List<string>();
+            expected.Add(@"RewriteCond");
+            expected.Add(@"%{HTTPS}");
+            expected.Add(@"\ what");
+            expected.Add(@"!-f");
+            Assert.Equal(expected, tokens);
+        }
+
+        [Fact]
+        public void Tokenize_AssertFormatExceptionWhenEscapeCharacterIsAtEndOfString()
+        {
+
+            var ex = Assert.Throws<FormatException>(() => new Tokenizer().Tokenize("\\"));
+            Assert.Equal(@"Invalid escaper character in string: \", ex.Message);
         }
     }
 }
