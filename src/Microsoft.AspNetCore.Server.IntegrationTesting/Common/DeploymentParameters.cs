@@ -91,7 +91,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// Environment variables to be set before starting the host.
         /// Not applicable for IIS Scenarios.
         /// </summary>
-        public List<KeyValuePair<string, string>> EnvironmentVariables { get; private set; } = new List<KeyValuePair<string, string>>();
+        public List<KeyValuePair<string, string>> EnvironmentVariables { get; } = new List<KeyValuePair<string, string>>();
+
+        /// <summary>
+        /// Environment variables used when invoking dotnet publish.
+        /// </summary>
+        public List<KeyValuePair<string, string>> PublishEnvironmentVariables { get; } = new List<KeyValuePair<string, string>>();
 
         /// <summary>
         /// For any application level cleanup to be invoked after performing host cleanup.

@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 WorkingDirectory = workingDirectory
             };
 
-            AddEnvironmentVariablesToProcess(startInfo);
+            AddEnvironmentVariablesToProcess(startInfo, DeploymentParameters.EnvironmentVariables);
 
             _hostProcess = new Process() { StartInfo = startInfo };
             _hostProcess.ErrorDataReceived += (sender, dataArgs) => { Logger.LogError(dataArgs.Data ?? string.Empty); };

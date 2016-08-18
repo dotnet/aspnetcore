@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -64,6 +65,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 RedirectStandardOutput = true
             };
 
+            AddEnvironmentVariablesToProcess(startInfo, DeploymentParameters.PublishEnvironmentVariables);
+
             var hostProcess = new Process() { StartInfo = startInfo };
             hostProcess.ErrorDataReceived += (sender, dataArgs) => { Logger.LogWarning(dataArgs.Data ?? string.Empty); };
             hostProcess.OutputDataReceived += (sender, dataArgs) => { Logger.LogTrace(dataArgs.Data ?? string.Empty); };
@@ -123,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
         }
 
-        protected void AddEnvironmentVariablesToProcess(ProcessStartInfo startInfo)
+        protected void AddEnvironmentVariablesToProcess(ProcessStartInfo startInfo, List<KeyValuePair<string, string>> environmentVariables)
         {
             var environment =
 #if NET451
@@ -134,7 +137,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
             SetEnvironmentVariable(environment, "ASPNETCORE_ENVIRONMENT", DeploymentParameters.EnvironmentName);
 
-            foreach (var environmentVariable in DeploymentParameters.EnvironmentVariables)
+            foreach (var environmentVariable in environmentVariables)
             {
                 SetEnvironmentVariable(environment, environmentVariable.Key, environmentVariable.Value);
             }
