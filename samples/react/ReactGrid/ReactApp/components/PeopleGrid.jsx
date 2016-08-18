@@ -5,7 +5,9 @@ import { fakeData } from '../data/fakeData.js';
 import { columnMeta } from '../data/columnMeta.jsx';
 const resultsPerPage = 10;
 
-const fakeDataWithAction = fakeData.map(data => Object.assign(data, {actions: ''}));
+// Griddle requires each row to have a property matching each column, even if you're not displaying
+// any data from the row in that column
+fakeData.forEach(row => { row.actions = ''; });
 
 export class PeopleGrid extends React.Component {
     render() {
@@ -14,7 +16,7 @@ export class PeopleGrid extends React.Component {
             <div>
                 <h1>People</h1>
                 <div id="table-area">
-                    <Griddle results={fakeDataWithAction}
+                    <Griddle results={fakeData}
                         columns={columnMeta.map(x => x.columnName)}
                         columnMetadata={columnMeta}
                         resultsPerPage={resultsPerPage}
