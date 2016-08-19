@@ -91,10 +91,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
             var args = new[]
             {
                 Path.Combine(applicationDirectory, "project.json"),
-                "-s",
-                packagesDirectory,
-                "-s",
-                ApplicationPaths.ArtifactPackagesDirectory,
                 "--packages",
                 TempRestoreDirectory,
             };
