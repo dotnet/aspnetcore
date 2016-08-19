@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
@@ -18,9 +20,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
 
         public ApplicationTestFixture Fixture { get; }
 
+        public static IEnumerable<object[]> SupportedFlavorsTheoryData
+        {
+            get
+            {
+                return RuntimeFlavors.SupportedFlavors.Select(f => new object[] { f });
+            }
+        }
+
         [Theory]
-        [InlineData(RuntimeFlavor.Clr)]
-        [InlineData(RuntimeFlavor.CoreClr)]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
         public async Task Precompilation_WorksForSimpleApps(RuntimeFlavor flavor)
         {
             // Arrange
@@ -33,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
                 };
 
                 // Act
-                var response = await httpClient.GetStringAsync("");
+                var response = await httpClient.GetStringWithRetryAsync("", Fixture.Logger);
 
                 // Assert
                 TestEmbeddedResource.AssertContent("SimpleAppTest.Home.Index.txt", response);

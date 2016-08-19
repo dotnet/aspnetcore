@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
@@ -30,8 +31,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
 
         public string TempRestoreDirectory { get; } = CreateTempRestoreDirectory();
 
+        public ILogger Logger { get; private set; }
+
         public IApplicationDeployer CreateDeployment(RuntimeFlavor flavor)
         {
+            Logger = new LoggerFactory()
+                .AddConsole()
+                .CreateLogger($"{ApplicationName}:{flavor}");
+
             if (!_isRestored)
             {
                 Restore();
@@ -61,11 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
                 },
             };
 
-            var logger = new LoggerFactory()
-                .AddConsole()
-                .CreateLogger($"{ApplicationName}:{flavor}");
-
-            return ApplicationDeployerFactory.Create(deploymentParameters, logger);
+            return ApplicationDeployerFactory.Create(deploymentParameters, Logger);
         }
 
         protected virtual void Restore()

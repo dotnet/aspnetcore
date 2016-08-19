@@ -10,7 +10,8 @@ namespace ApplicationWithConfigureStartup
         {
             if (node.Token.IsKind(SyntaxKind.StringLiteralToken))
             {
-                return node.WithToken(SyntaxFactory.Literal(node.Token.ValueText.Replace("\r\n", "\r\n<br />")));
+                return node.WithToken(SyntaxFactory.Literal(
+                    node.Token.ValueText.Replace(Environment.NewLine, Environment.NewLine + "<br />")));
             }
 
             return node;

@@ -25,12 +25,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
         {
             get
             {
-                var runtimeFlavors = new[]
-                {
-                    RuntimeFlavor.Clr,
-                    RuntimeFlavor.CoreClr,
-                };
-
                 var urls = new[]
                 {
                     "ClassLibraryTagHelper",
@@ -38,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
                     "NuGetPackageTagHelper",
                 };
 
-                return Enumerable.Zip(urls, runtimeFlavors, (a, b) => new object[] { a, b });
+                return Enumerable.Zip(urls, RuntimeFlavors.SupportedFlavors, (a, b) => new object[] { a, b });
             }
         }
 
@@ -56,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
                 };
 
                 // Act
-                var response = await httpClient.GetStringAsync($"Home/{url}");
+                var response = await httpClient.GetStringWithRetryAsync($"Home/{url}", Fixture.Logger);
 
                 // Assert
                 TestEmbeddedResource.AssertContent($"ApplicationWithTagHelpers.Home.{url}.txt", response);

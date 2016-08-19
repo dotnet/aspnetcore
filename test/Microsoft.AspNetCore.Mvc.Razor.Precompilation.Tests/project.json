@@ -1,7 +1,7 @@
 ﻿{
   "buildOptions": {
     "define": [
-      "GENERATE_BASELINES"
+      "__remove_this_to__GENERATE_BASELINES"
     ],
     "embed": "Resources/*"
   },

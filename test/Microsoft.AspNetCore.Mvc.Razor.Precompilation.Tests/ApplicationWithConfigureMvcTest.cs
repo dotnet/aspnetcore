@@ -21,29 +21,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Tests
 
         public ApplicationTestFixture Fixture { get; }
 
-        public static IEnumerable<object[]> ApplicationWithTagHelpersData
+        public static IEnumerable<object[]> SupportedFlavorsTheoryData
         {
             get
             {
-                var runtimeFlavors = new[]
-                {
-                    RuntimeFlavor.Clr,
-                    RuntimeFlavor.CoreClr,
-                };
-
-                var urls = new[]
-                {
-                    "Index",
-                    "ViewWithPreprocessor",
-                };
-
-                return Enumerable.Zip(urls, runtimeFlavors, (a, b) => new object[] { a, b });
+                return RuntimeFlavors.SupportedFlavors.Select(f => new object[] { f });
             }
         }
 
         [Theory]
-        [InlineData(RuntimeFlavor.Clr)]
-        [InlineData(RuntimeFlavor.CoreClr)]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
         public async Task Precompilation_RunsConfiguredCompilationCallbacks(RuntimeFlavor flavor)
         {
             // Arrange
@@ -56,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Tests
                 };
 
                 // Act
-                var response = await httpClient.GetStringAsync("");
+                var response = await httpClient.GetStringWithRetryAsync("", Fixture.Logger);
 
                 // Assert
                 TestEmbeddedResource.AssertContent("ApplicationWithConfigureMvc.Home.Index.txt", response);
@@ -64,8 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Tests
         }
 
         [Theory]
-        [InlineData(RuntimeFlavor.Clr)]
-        [InlineData(RuntimeFlavor.CoreClr)]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
         public async Task Precompilation_UsesConfiguredParseOptions(RuntimeFlavor flavor)
         {
             // Arrange
@@ -78,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Tests
                 };
 
                 // Act
-                var response = await httpClient.GetStringAsync("Home/ViewWithPreprocessor");
+                var response = await httpClient.GetStringWithRetryAsync("Home/ViewWithPreprocessor", Fixture.Logger);
 
                 // Assert
                 TestEmbeddedResource.AssertContent(
