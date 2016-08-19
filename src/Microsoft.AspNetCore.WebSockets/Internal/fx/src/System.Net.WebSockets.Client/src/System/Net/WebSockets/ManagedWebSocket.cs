@@ -1,5 +1,3 @@
-#pragma warning disable 1572
-#pragma warning disable 1573
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
@@ -32,7 +30,6 @@ namespace System.Net.WebSockets
         /// <param name="stream">The connected Stream.</param>
         /// <param name="isServer">true if this is the server-side of the connection; false if this is the client-side of the connection.</param>
         /// <param name="subprotocol">The agreed upon subprotocol for the connection.</param>
-        /// <param name="state">The current state of the websocket connection.</param>
         /// <param name="keepAliveIntervalSeconds">The interval to use for keep-alive pings.</param>
         /// <param name="receiveBufferSize">The buffer size to use for received data.</param>
         /// <returns>The created <see cref="ManagedWebSocket"/> instance.</returns>
@@ -879,7 +876,7 @@ namespace System.Net.WebSockets
         }
 
         /// <summary>Parses a message header from the buffer.  This assumes the header is in the buffer.</summary>
-        /// <param name="header">The read header.</param>
+        /// <param name="resultHeader">The read header.</param>
         /// <returns>true if a header was read; false if the header was invalid.</returns>
         private bool TryParseMessageHeaderFromReceiveBuffer(out MessageHeader resultHeader)
         {
@@ -1037,7 +1034,7 @@ namespace System.Net.WebSockets
 
         /// <summary>Sends a close message to the server.</summary>
         /// <param name="closeStatus">The close status to send.</param>
-        /// <param name="statusDescription">The close status description to send.</param>
+        /// <param name="closeStatusDescription">The close status description to send.</param>
         /// <param name="cancellationToken">The CancellationToken to use to cancel the websocket.</param>
         private async Task SendCloseFrameAsync(WebSocketCloseStatus closeStatus, string closeStatusDescription, CancellationToken cancellationToken)
         {
@@ -1153,9 +1150,9 @@ namespace System.Net.WebSockets
         /// <param name="toMask">The buffer to which the mask should be applied.</param>
         /// <param name="toMaskOffset">The offset into <paramref name="toMask"/> at which the mask should start to be applied.</param>
         /// <param name="mask">The four-byte mask, stored as an Int32.</param>
-        /// <param name="maskOffsetIndex">The index into the mas</param>
+        /// <param name="maskIndex">The index into the mask.</param>
         /// <param name="count">The number of bytes to mask.</param>
-        /// <returns></returns>
+        /// <returns>The next index into the mask to be used for future applications of the mask.</returns>
         private static unsafe int ApplyMask(byte[] toMask, int toMaskOffset, int mask, int maskIndex, long count)
         {
             Debug.Assert(toMaskOffset <= toMask.Length - count, $"Unexpected inputs: {toMaskOffset}, {toMask.Length}, {count}");

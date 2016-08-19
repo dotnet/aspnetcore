@@ -34,15 +34,7 @@ $FilesToCopy | foreach {
         }
         Write-Host "Copying $_"
 
-        # The trailing blank line is important!
-        $Pragmas = @"
-#pragma warning disable 1572
-#pragma warning disable 1573
-
-"@;
-
         $SourceCode = [IO.File]::ReadAllText($Source)
-        $SourceCode = $Pragmas + $SourceCode
         $SourceCode = $SourceCode.Replace("Task.FromException", "CompatHelpers.FromException")
         $SourceCode = $SourceCode.Replace("Task.CompletedTask", "CompatHelpers.CompletedTask")
         $SourceCode = $SourceCode.Replace("Array.Empty", "CompatHelpers.Empty")
