@@ -265,7 +265,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var hostingEnvironment = new Mock<IHostingEnvironment>();
             hostingEnvironment.SetupGet(e => e.EnvironmentName)
                 .Returns("Development");
+#pragma warning disable 0618
             var viewEngineSetup = new RazorViewEngineOptionsSetup(hostingEnvironment.Object);
+#pragma warning restore 0618
 
             // Act
             viewEngineSetup.Configure(options);

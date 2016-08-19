@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
@@ -15,52 +16,62 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
     /// <summary>
     /// Sets up JSON formatter options for <see cref="MvcOptions"/>.
     /// </summary>
-    public class MvcJsonMvcOptionsSetup : ConfigureOptions<MvcOptions>
+    public class MvcJsonMvcOptionsSetup : IConfigureOptions<MvcOptions>
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="MvcJsonMvcOptionsSetup"/>.
-        /// </summary>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <param name="jsonOptions"></param>
-        /// <param name="charPool"></param>
-        /// <param name="objectPoolProvider"></param>
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly JsonSerializerSettings _jsonSerializerSettings;
+        private readonly ArrayPool<char> _charPool;
+        private readonly ObjectPoolProvider _objectPoolProvider;
+
         public MvcJsonMvcOptionsSetup(
             ILoggerFactory loggerFactory,
             IOptions<MvcJsonOptions> jsonOptions,
             ArrayPool<char> charPool,
             ObjectPoolProvider objectPoolProvider)
-            : base((options) => ConfigureMvc(
-                options,
-                jsonOptions.Value.SerializerSettings,
-                loggerFactory,
-                charPool,
-                objectPoolProvider))
         {
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            if (jsonOptions == null)
+            {
+                throw new ArgumentNullException(nameof(jsonOptions));
+            }
+
+            if (charPool == null)
+            {
+                throw new ArgumentNullException(nameof(charPool));
+            }
+
+            if (objectPoolProvider == null)
+            {
+                throw new ArgumentNullException(nameof(objectPoolProvider));
+            }
+
+            _loggerFactory = loggerFactory;
+            _jsonSerializerSettings = jsonOptions.Value.SerializerSettings;
+            _charPool = charPool;
+            _objectPoolProvider = objectPoolProvider;
         }
 
-        public static void ConfigureMvc(
-            MvcOptions options,
-            JsonSerializerSettings serializerSettings,
-            ILoggerFactory loggerFactory,
-            ArrayPool<char> charPool,
-            ObjectPoolProvider objectPoolProvider)
+        public void Configure(MvcOptions options)
         {
+            options.OutputFormatters.Add(new JsonOutputFormatter(_jsonSerializerSettings, _charPool));
 
-            options.OutputFormatters.Add(new JsonOutputFormatter(serializerSettings, charPool));
-
-            var jsonInputLogger = loggerFactory.CreateLogger<JsonInputFormatter>();
+            var jsonInputLogger = _loggerFactory.CreateLogger<JsonInputFormatter>();
             options.InputFormatters.Add(new JsonInputFormatter(
                 jsonInputLogger,
-                serializerSettings,
-                charPool,
-                objectPoolProvider));
+                _jsonSerializerSettings,
+                _charPool,
+                _objectPoolProvider));
 
-            var jsonInputPatchLogger = loggerFactory.CreateLogger<JsonPatchInputFormatter>();
+            var jsonInputPatchLogger = _loggerFactory.CreateLogger<JsonPatchInputFormatter>();
             options.InputFormatters.Add(new JsonPatchInputFormatter(
                 jsonInputPatchLogger,
-                serializerSettings,
-                charPool,
-                objectPoolProvider));
+                _jsonSerializerSettings,
+                _charPool,
+                _objectPoolProvider));
 
             options.FormatterMappings.SetMediaTypeMappingForFormat("json", MediaTypeHeaderValue.Parse("application/json"));
 

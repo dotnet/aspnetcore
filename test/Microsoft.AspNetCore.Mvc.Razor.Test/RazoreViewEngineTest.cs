@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1564,7 +1564,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
             IEnumerable<string> viewLocationFormats = null,
             IEnumerable<string> areaViewLocationFormats = null)
         {
+#pragma warning disable 0618
             var optionsSetup = new RazorViewEngineOptionsSetup(Mock.Of<IHostingEnvironment>());
+#pragma warning restore 0618
 
             var options = new RazorViewEngineOptions();
             optionsSetup.Configure(options);

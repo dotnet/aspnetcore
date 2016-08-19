@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 
@@ -13,31 +12,52 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
     /// <summary>
     /// Sets up default options for <see cref="MvcViewOptions"/>.
     /// </summary>
-    public class MvcViewOptionsSetup : ConfigureOptions<MvcViewOptions>
+    public class MvcViewOptionsSetup : IConfigureOptions<MvcViewOptions>
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="MvcViewOptionsSetup"/>.
-        /// </summary>
-        public MvcViewOptionsSetup(IServiceProvider serviceProvider)
-            : base(options => ConfigureMvc(options, serviceProvider))
+        private readonly IOptions<MvcDataAnnotationsLocalizationOptions> _dataAnnotationsLocalizationOptions;
+        private readonly IValidationAttributeAdapterProvider _validationAttributeAdapterProvider;
+        private readonly IStringLocalizerFactory _stringLocalizerFactory;
+
+        public MvcViewOptionsSetup(
+            IOptions<MvcDataAnnotationsLocalizationOptions> dataAnnotationLocalizationOptions,
+            IValidationAttributeAdapterProvider validationAttributeAdapterProvider)
         {
+            if (dataAnnotationLocalizationOptions == null)
+            {
+                throw new ArgumentNullException(nameof(dataAnnotationLocalizationOptions));
+            }
+
+            if (validationAttributeAdapterProvider == null)
+            {
+                throw new ArgumentNullException(nameof(validationAttributeAdapterProvider));
+            }
+
+            _dataAnnotationsLocalizationOptions = dataAnnotationLocalizationOptions;
+            _validationAttributeAdapterProvider = validationAttributeAdapterProvider;
         }
 
-        public static void ConfigureMvc(
-            MvcViewOptions options,
-            IServiceProvider serviceProvider)
+        public MvcViewOptionsSetup(
+            IOptions<MvcDataAnnotationsLocalizationOptions> dataAnnotationOptions,
+            IValidationAttributeAdapterProvider validationAttributeAdapterProvider,
+            IStringLocalizerFactory stringLocalizerFactory)
+            : this(dataAnnotationOptions, validationAttributeAdapterProvider)
         {
-            var dataAnnotationsLocalizationOptions =
-                serviceProvider.GetRequiredService<IOptions<MvcDataAnnotationsLocalizationOptions>>();
-            var stringLocalizerFactory = serviceProvider.GetService<IStringLocalizerFactory>();
-            var validationAttributeAdapterProvider = serviceProvider.GetRequiredService<IValidationAttributeAdapterProvider>();
+            if (stringLocalizerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(stringLocalizerFactory));
+            }
 
+            _stringLocalizerFactory = stringLocalizerFactory;
+        }
+
+        public void Configure(MvcViewOptions options)
+        {
             // Set up client validators
             options.ClientModelValidatorProviders.Add(new DefaultClientModelValidatorProvider());
             options.ClientModelValidatorProviders.Add(new DataAnnotationsClientModelValidatorProvider(
-                validationAttributeAdapterProvider,
-                dataAnnotationsLocalizationOptions,
-                stringLocalizerFactory));
+                _validationAttributeAdapterProvider,
+                _dataAnnotationsLocalizationOptions,
+                _stringLocalizerFactory));
             options.ClientModelValidatorProviders.Add(new NumericClientModelValidatorProvider());
         }
     }

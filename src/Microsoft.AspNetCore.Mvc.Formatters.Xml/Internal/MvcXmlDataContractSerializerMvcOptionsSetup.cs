@@ -8,24 +8,16 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
 {
     /// <summary>
-    /// A <see cref="ConfigureOptions{TOptions}"/> implementation which will add the
+    /// A <see cref="IConfigureOptions{TOptions}"/> implementation which will add the
     /// data contract serializer formatters to <see cref="MvcOptions"/>.
     /// </summary>
-    public class MvcXmlDataContractSerializerMvcOptionsSetup : ConfigureOptions<MvcOptions>
+    public class MvcXmlDataContractSerializerMvcOptionsSetup : IConfigureOptions<MvcOptions>
     {
-        /// <summary>
-        /// Creates a new instance of <see cref="MvcXmlDataContractSerializerMvcOptionsSetup"/>.
-        /// </summary>
-        public MvcXmlDataContractSerializerMvcOptionsSetup()
-            : base(ConfigureMvc)
-        {
-        }
-
         /// <summary>
         /// Adds the data contract serializer formatters to <see cref="MvcOptions"/>.
         /// </summary>
         /// <param name="options">The <see cref="MvcOptions"/>.</param>
-        public static void ConfigureMvc(MvcOptions options)
+        public void Configure(MvcOptions options)
         {
             options.ModelMetadataDetailsProviders.Add(new DataMemberRequiredBindingMetadataProvider());
 

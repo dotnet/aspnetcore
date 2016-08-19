@@ -9,14 +9,10 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
     /// <summary>
     /// Sets up default options for <see cref="MvcDataAnnotationsLocalizationOptions"/>.
     /// </summary>
-    public class MvcDataAnnotationsLocalizationOptionsSetup : ConfigureOptions<MvcDataAnnotationsLocalizationOptions>
+    public class MvcDataAnnotationsLocalizationOptionsSetup : IConfigureOptions<MvcDataAnnotationsLocalizationOptions>
     {
-        public MvcDataAnnotationsLocalizationOptionsSetup()
-            : base(ConfigureMvc)
-        {
-        }
-
-        public static void ConfigureMvc(MvcDataAnnotationsLocalizationOptions options)
+        /// <inheritdoc />
+        public void Configure(MvcDataAnnotationsLocalizationOptions options)
         {
             if (options == null)
             {

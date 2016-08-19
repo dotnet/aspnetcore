@@ -8,14 +8,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
     /// <summary>
     /// Sets up default options for <see cref="MvcOptions"/>.
     /// </summary>
-    public class TempDataMvcOptionsSetup : ConfigureOptions<MvcOptions>
+    public class TempDataMvcOptionsSetup : IConfigureOptions<MvcOptions>
     {
-        public TempDataMvcOptionsSetup()
-            : base(ConfigureMvc)
-        {
-        }
-
-        public static void ConfigureMvc(MvcOptions options)
+        public void Configure(MvcOptions options)
         {
             options.Filters.Add(new SaveTempDataAttribute());
         }

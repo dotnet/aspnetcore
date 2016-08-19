@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 
@@ -11,28 +10,52 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
     /// <summary>
     /// Sets up default options for <see cref="MvcOptions"/>.
     /// </summary>
-    public class MvcDataAnnotationsMvcOptionsSetup : ConfigureOptions<MvcOptions>
+    public class MvcDataAnnotationsMvcOptionsSetup : IConfigureOptions<MvcOptions>
     {
-        public MvcDataAnnotationsMvcOptionsSetup(IServiceProvider serviceProvider)
-            : base(options => ConfigureMvc(options, serviceProvider))
+        private readonly IStringLocalizerFactory _stringLocalizerFactory;
+        private readonly IValidationAttributeAdapterProvider _validationAttributeAdapterProvider;
+        private readonly IOptions<MvcDataAnnotationsLocalizationOptions> _dataAnnotationLocalizationOptions;
+
+        public MvcDataAnnotationsMvcOptionsSetup(
+            IValidationAttributeAdapterProvider validationAttributeAdapterProvider,
+            IOptions<MvcDataAnnotationsLocalizationOptions> dataAnnotationLocalizationOptions)
         {
+            if (validationAttributeAdapterProvider == null)
+            {
+                throw new ArgumentNullException(nameof(validationAttributeAdapterProvider));
+            }
+
+            if (dataAnnotationLocalizationOptions == null)
+            {
+                throw new ArgumentNullException(nameof(dataAnnotationLocalizationOptions));
+            }
+
+            _validationAttributeAdapterProvider = validationAttributeAdapterProvider;
+            _dataAnnotationLocalizationOptions = dataAnnotationLocalizationOptions;
         }
 
-        public static void ConfigureMvc(MvcOptions options, IServiceProvider serviceProvider)
+        public MvcDataAnnotationsMvcOptionsSetup(
+            IValidationAttributeAdapterProvider validationAttributeAdapterProvider,
+            IOptions<MvcDataAnnotationsLocalizationOptions> dataAnnotationLocalizationOptions,
+            IStringLocalizerFactory stringLocalizerFactory)
+            : this(validationAttributeAdapterProvider, dataAnnotationLocalizationOptions)
         {
-            var dataAnnotationLocalizationOptions =
-                serviceProvider.GetRequiredService<IOptions<MvcDataAnnotationsLocalizationOptions>>();
+            _stringLocalizerFactory = stringLocalizerFactory;
+        }
 
-            // This service will be registered only if AddDataAnnotationsLocalization() is added to service collection.
-            var stringLocalizerFactory = serviceProvider.GetService<IStringLocalizerFactory>();
-            var validationAttributeAdapterProvider = serviceProvider.GetRequiredService<IValidationAttributeAdapterProvider>();
+        public void Configure(MvcOptions options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
 
-            options.ModelMetadataDetailsProviders.Add(new DataAnnotationsMetadataProvider(stringLocalizerFactory));
+            options.ModelMetadataDetailsProviders.Add(new DataAnnotationsMetadataProvider(_stringLocalizerFactory));
 
             options.ModelValidatorProviders.Add(new DataAnnotationsModelValidatorProvider(
-                validationAttributeAdapterProvider,
-                dataAnnotationLocalizationOptions,
-                stringLocalizerFactory));
+                _validationAttributeAdapterProvider,
+                _dataAnnotationLocalizationOptions,
+                _stringLocalizerFactory));
         }
     }
 }
