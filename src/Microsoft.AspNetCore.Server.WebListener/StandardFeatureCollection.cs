@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             { typeof(IHttpResponseFeature), _identityFunc },
             { typeof(IHttpSendFileFeature), _identityFunc },
             { typeof(ITlsConnectionFeature), ctx => ctx.GetTlsConnectionFeature() },
-            { typeof(ITlsTokenBindingFeature), ctx => ctx.GetTlsTokenBindingFeature() },
+            // { typeof(ITlsTokenBindingFeature), ctx => ctx.GetTlsTokenBindingFeature() }, TODO: https://github.com/aspnet/WebListener/issues/231
             { typeof(IHttpBufferingFeature), _identityFunc },
             { typeof(IHttpRequestLifetimeFeature), _identityFunc },
             { typeof(IHttpUpgradeFeature), _identityFunc },

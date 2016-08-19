@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         IHttpResponseFeature,
         IHttpSendFileFeature,
         ITlsConnectionFeature,
-        ITlsTokenBindingFeature,
+        // ITlsTokenBindingFeature, TODO: https://github.com/aspnet/WebListener/issues/231
         IHttpBufferingFeature,
         IHttpRequestLifetimeFeature,
         IHttpWebSocketFeature,
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         {
             return Request.IsHttps ? this : null;
         }
-
+        /* TODO: https://github.com/aspnet/WebListener/issues/231
         byte[] ITlsTokenBindingFeature.GetProvidedTokenBindingId()
         {
             return Request.GetProvidedTokenBindingId();
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         {
             return Request.IsHttps ? this : null;
         }
-
+        */
         void IHttpBufferingFeature.DisableRequestBuffering()
         {
             // There is no request buffering.

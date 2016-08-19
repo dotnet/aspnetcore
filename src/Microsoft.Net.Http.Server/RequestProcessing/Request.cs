@@ -38,8 +38,9 @@ namespace Microsoft.Net.Http.Server
         private NativeRequestContext _nativeRequestContext;
 
         private X509Certificate2 _clientCert;
-        private byte[] _providedTokenBindingId;
-        private byte[] _referredTokenBindingId;
+        // TODO: https://github.com/aspnet/WebListener/issues/231
+        // private byte[] _providedTokenBindingId;
+        // private byte[] _referredTokenBindingId;
 
         private BoundaryType _contentBoundaryType;
         private long? _contentLength;
@@ -125,7 +126,7 @@ namespace Microsoft.Net.Http.Server
             var requestV2 = (HttpApi.HTTP_REQUEST_V2*)memoryBlob.RequestBlob;
             User = AuthenticationManager.GetUser(requestV2->pRequestInfo, requestV2->RequestInfoCount);
 
-            GetTlsTokenBindingInfo();
+            // GetTlsTokenBindingInfo(); TODO: https://github.com/aspnet/WebListener/issues/231
 
             // Finished directly accessing the HTTP_REQUEST structure.
             _nativeRequestContext.ReleasePins();
@@ -328,17 +329,17 @@ namespace Microsoft.Net.Http.Server
             }
             return _clientCert;
         }
-
-        public byte[] GetProvidedTokenBindingId()
+        /* TODO: https://github.com/aspnet/WebListener/issues/231
+        private byte[] GetProvidedTokenBindingId()
         {
             return _providedTokenBindingId;
         }
 
-        public byte[] GetReferredTokenBindingId()
+        private byte[] GetReferredTokenBindingId()
         {
             return _referredTokenBindingId;
         }
-
+        */
         // Only call from the constructor so we can directly access the native request blob.
         // This requires Windows 10 and the following reg key:
         // Set Key: HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\HTTP\Parameters to Value: EnableSslTokenBinding = 1 [DWORD]
@@ -347,6 +348,8 @@ namespace Microsoft.Net.Http.Server
         // Value: "iexplore.exe"=dword:0x00000001
         // Key: HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_TOKEN_BINDING
         // Value: "iexplore.exe"=dword:00000001
+        // TODO: https://github.com/aspnet/WebListener/issues/231
+        /*
         private unsafe void GetTlsTokenBindingInfo()
         {
             var nativeRequest = (HttpApi.HTTP_REQUEST_V2*)_nativeRequestContext.RequestBlob;
@@ -360,7 +363,7 @@ namespace Microsoft.Net.Http.Server
                 }
             }
         }
-
+        */
         // should only be called from RequestContext
         internal void Dispose()
         {

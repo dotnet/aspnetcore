@@ -25,6 +25,7 @@ namespace Microsoft.Net.Http.Server
     /// <summary>
     /// Contains helpers for dealing with TLS token binding.
     /// </summary>
+    // TODO: https://github.com/aspnet/WebListener/issues/231
     internal unsafe static class TokenBindingUtil
     {
         private static byte[] ExtractIdentifierBlob(TOKENBINDING_RESULT_DATA* pTokenBindingResultData)
