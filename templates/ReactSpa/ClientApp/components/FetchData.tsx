@@ -1,4 +1,5 @@
 import * as React from 'react';
+import 'isomorphic-fetch';
 
 interface FetchDataExampleState {
     forecasts: WeatherForecast[];

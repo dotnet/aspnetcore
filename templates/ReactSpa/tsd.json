@@ -17,8 +17,8 @@
     "react-router/history.d.ts": {
       "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
     },
-    "whatwg-fetch/whatwg-fetch.d.ts": {
-      "commit": "dade4414712ce84e3c63393f1aae407e9e7e6af7"
+    "isomorphic-fetch/isomorphic-fetch.d.ts": {
+      "commit": "57ec5fbb76060329c10959d449eb1d4e70b15a65"
     }
   }
 }
