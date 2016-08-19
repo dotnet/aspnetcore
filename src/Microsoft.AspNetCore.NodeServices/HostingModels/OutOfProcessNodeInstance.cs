@@ -114,9 +114,10 @@ If you haven't yet installed node-inspector, you can do so as follows:
                 debuggingArgs = string.Empty;    
             }
 
+            var thisProcessPid = Process.GetCurrentProcess().Id;
             var startInfo = new ProcessStartInfo("node")
             {
-                Arguments = debuggingArgs + "\"" + entryPointFilename + "\" " + (commandLineArguments ?? string.Empty),
+                Arguments = $"{debuggingArgs}\"{entryPointFilename}\" --parentPid {thisProcessPid} {commandLineArguments ?? string.Empty}",
                 UseShellExecute = false,
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,

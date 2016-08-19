@@ -44,7 +44,7 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(6);
+	module.exports = __webpack_require__(7);
 
 
 /***/ },
@@ -124,17 +124,85 @@
 
 /***/ },
 /* 6 */
+/***/ function(module, exports) {
+
+	/*
+	In general, we want the Node child processes to be terminated as soon as the parent .NET processes exit,
+	because we have no further use for them. If the .NET process shuts down gracefully, it will run its
+	finalizers, one of which (in OutOfProcessNodeInstance.cs) will kill its associated Node process immediately.
+
+	But if the .NET process is terminated forcefully (e.g., on Linux/OSX with 'kill -9'), then it won't have
+	any opportunity to shut down its child processes, and by default they will keep running. In this case, it's
+	up to the child process to detect this has happened and terminate itself.
+
+	There are many possible approaches to detecting when a parent process has exited, most of which behave
+	differently between Windows and Linux/OS X:
+
+	 - On Windows, the parent process can mark its child as being a 'job' that should auto-terminate when
+	   the parent does (http://stackoverflow.com/a/4657392). Not cross-platform.
+	 - The child Node process can get a callback when the parent disconnects (process.on('disconnect', ...)).
+	   But despite http://stackoverflow.com/a/16487966, no callback fires in any case I've tested (Windows / OS X).
+	 - The child Node process can get a callback when its stdin/stdout are disconnected, as described at
+	   http://stackoverflow.com/a/15693934. This works well on OS X, but calling stdout.resume() on Windows
+	   causes the process to terminate prematurely.
+	 - I don't know why, but on Windows, it's enough to invoke process.stdin.resume(). For some reason this causes
+	   the child Node process to exit as soon as the parent one does, but I don't see this documented anywhere.
+	 - You can poll to see if the parent process, or your stdin/stdout connection to it, is gone
+	   - You can directly pass a parent process PID to the child, and then have the child poll to see if it's
+	     still running (e.g., using process.kill(pid, 0), which doesn't kill it but just tests whether it exists,
+	     as per https://nodejs.org/api/process.html#process_process_kill_pid_signal)
+	   - Or, on each poll, you can try writing to process.stdout. If the parent has died, then this will throw.
+	     However I don't see this documented anywhere. It would be nice if you could just poll for whether or not
+	     process.stdout is still connected (without actually writing to it) but I haven't found any property whose
+	     value changes until you actually try to write to it.
+
+	Of these, the only cross-platform approach that is actually documented as a valid strategy is simply polling
+	to check whether the parent PID is still running. So that's what we do here.
+	*/
+	"use strict";
+	var pollIntervalMs = 1000;
+	function exitWhenParentExits(parentPid) {
+	    setInterval(function () {
+	        if (!processExists(parentPid)) {
+	            // Can't log anything at this point, because out stdout was connected to the parent,
+	            // but the parent is gone.
+	            process.exit();
+	        }
+	    }, pollIntervalMs);
+	}
+	exports.exitWhenParentExits = exitWhenParentExits;
+	function processExists(pid) {
+	    try {
+	        // Sending signal 0 - on all platforms - tests whether the process exists. As long as it doesn't
+	        // throw, that means it does exist.
+	        process.kill(pid, 0);
+	        return true;
+	    }
+	    catch (ex) {
+	        // If the reason for the error is that we don't have permission to ask about this process,
+	        // report that as a separate problem.
+	        if (ex.code === 'EPERM') {
+	            throw new Error("Attempted to check whether process " + pid + " was running, but got a permissions error.");
+	        }
+	        return false;
+	    }
+	}
+
+
+/***/ },
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	// Limit dependencies to core Node modules. This means the code in this file has to be very low-level and unattractive,
 	// but simplifies things for the consumer of this module.
 	__webpack_require__(2);
-	var net = __webpack_require__(7);
+	var net = __webpack_require__(8);
 	var path = __webpack_require__(4);
-	var readline = __webpack_require__(8);
+	var readline = __webpack_require__(9);
 	var ArgsUtil_1 = __webpack_require__(5);
-	var virtualConnectionServer = __webpack_require__(9);
+	var ExitWhenParentExits_1 = __webpack_require__(6);
+	var virtualConnectionServer = __webpack_require__(10);
 	// Webpack doesn't support dynamic requires for files not present at compile time, so grab a direct
 	// reference to Node's runtime 'require' function.
 	var dynamicRequire = eval('require');
@@ -189,27 +257,28 @@
 	var parsedArgs = ArgsUtil_1.parseArgs(process.argv);
 	var listenAddress = (useWindowsNamedPipes ? '\\\\.\\pipe\\' : '/tmp/') + parsedArgs.listenAddress;
 	server.listen(listenAddress);
+	ExitWhenParentExits_1.exitWhenParentExits(parseInt(parsedArgs.parentPid));
 
-
-/***/ },
-/* 7 */
-/***/ function(module, exports) {
-
-	module.exports = require("net");
 
 /***/ },
 /* 8 */
 /***/ function(module, exports) {
 
-	module.exports = require("readline");
+	module.exports = require("net");
 
 /***/ },
 /* 9 */
+/***/ function(module, exports) {
+
+	module.exports = require("readline");
+
+/***/ },
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var events_1 = __webpack_require__(10);
-	var VirtualConnection_1 = __webpack_require__(11);
+	var events_1 = __webpack_require__(11);
+	var VirtualConnection_1 = __webpack_require__(12);
 	// Keep this in sync with the equivalent constant in the .NET code. Both sides split up their transmissions into frames with this max length,
 	// and both will reject longer frames.
 	var MaxFrameBodyLength = 16 * 1024;
@@ -390,13 +459,13 @@
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports) {
 
 	module.exports = require("events");
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -405,7 +474,7 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var stream_1 = __webpack_require__(12);
+	var stream_1 = __webpack_require__(13);
 	/**
 	 * Represents a virtual connection. Multiple virtual connections may be multiplexed over a single physical socket connection.
 	 */
@@ -446,7 +515,7 @@
 
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports) {
 
 	module.exports = require("stream");

@@ -6,6 +6,7 @@ import * as path from 'path';
 import * as readline from 'readline';
 import { Duplex } from 'stream';
 import { parseArgs } from './Util/ArgsUtil';
+import { exitWhenParentExits } from './Util/ExitWhenParentExits';
 import * as virtualConnectionServer from './VirtualConnections/VirtualConnectionServer';
 
 // Webpack doesn't support dynamic requires for files not present at compile time, so grab a direct
@@ -68,6 +69,8 @@ const useWindowsNamedPipes = /^win/.test(process.platform);
 const parsedArgs = parseArgs(process.argv);
 const listenAddress = (useWindowsNamedPipes ? '\\\\.\\pipe\\' : '/tmp/') + parsedArgs.listenAddress;
 server.listen(listenAddress);
+
+exitWhenParentExits(parseInt(parsedArgs.parentPid));
 
 interface RpcInvocation {
     moduleName: string;

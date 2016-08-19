@@ -4,6 +4,7 @@ import './Util/OverrideStdOutputs';
 import * as http from 'http';
 import * as path from 'path';
 import { parseArgs } from './Util/ArgsUtil';
+import { exitWhenParentExits } from './Util/ExitWhenParentExits';
 
 // Webpack doesn't support dynamic requires for files not present at compile time, so grab a direct
 // reference to Node's runtime 'require' function.
@@ -72,6 +73,8 @@ server.listen(requestedPortOrZero, 'localhost', function () {
     // Signal to the NodeServices base class that we're ready to accept invocations
     console.log('[Microsoft.AspNetCore.NodeServices:Listening]');
 });
+
+exitWhenParentExits(parseInt(parsedArgs.parentPid));
 
 function readRequestBodyAsJson(request, callback) {
     let requestBodyAsString = '';
