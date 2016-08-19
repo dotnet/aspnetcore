@@ -48,9 +48,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                 }
                 else if (context.Current == CloseBrace)
                 {
-                    // TODO we should be throwing a syntax error if we have uneven close braces
-                    // Can fix by keeping track of the number of '{' and '}' with an int, where {
-                    // increments and } decrements. Throw if < 0.
                     return new Pattern(results);
                 }
                 else
@@ -71,7 +68,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             // 2. {R:1}  - Rule parameter
             // 3. {C:1}  - Condition Parameter
             // 4. {function:xxx} - String function 
-            // TODO consider perf here. This is on startup and will only happen one time
             // (unless we support Reload)
             string parameter;
             while (context.Next())

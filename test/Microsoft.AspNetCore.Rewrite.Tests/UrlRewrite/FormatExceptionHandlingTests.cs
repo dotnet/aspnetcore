@@ -33,26 +33,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 @"<rewrite>
     <rules>
         <rule name=""Rewrite to article.aspx"">
-            <match url = ""(.*)"" />
-            <action type=""AbortRequest"" url ="""" />
-        </rule>
-    </rules>
-</rewrite>", 
-            "Could not parse the UrlRewrite file. Message: 'Abort Requests are not supported'. Line number '5': '14'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Rewrite to article.aspx"">
-            <match url = ""(.*)"" />
-            <action type=""CustomResponse"" url ="""" />
-        </rule>
-    </rules>
-</rewrite>", 
-            "Could not parse the UrlRewrite file. Message: 'Custom Responses are not supported'. Line number '5': '14'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Rewrite to article.aspx"">
             <match />
             <action type=""Rewrite"" url=""foo"" />
         </rule>

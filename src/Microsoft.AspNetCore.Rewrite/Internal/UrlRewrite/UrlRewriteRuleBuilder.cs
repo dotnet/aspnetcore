@@ -24,7 +24,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
 
         public UrlRewriteRule Build()
         {
-            // TODO some of these are required fields, throw if null?
+            if (_initialMatch == null || _action == null)
+            {
+                throw new InvalidOperationException("Cannot create UrlRewriteRule without action and match");
+            }
             var rule = new UrlRewriteRule();
             rule.Action = _action;
             rule.Conditions = _conditions;
@@ -61,10 +64,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                     }
                     break;
                 case ActionType.AbortRequest:
-                    throw new FormatException("Abort Requests are not supported");
+                    throw new NotImplementedException("Abort Requests are not supported");
                 case ActionType.CustomResponse:
                     // TODO
-                    throw new FormatException("Custom Responses are not supported");
+                    throw new NotImplementedException("Custom Responses are not supported");
             }
         }
 
@@ -94,7 +97,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             }
         }
 
-        // TODO make this take two overloads and handle regex vs non regex case.
         public void AddUrlCondition(Pattern input, string pattern, PatternSyntax patternSyntax, MatchType matchType, bool ignoreCase, bool negate)
         {
             // If there are no conditions specified, 
@@ -140,7 +142,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                                     break;
                                 }
                             default:
-                                // TODO new exception handling
                                 throw new FormatException("Unrecognized matchType");
                         }
                         break;

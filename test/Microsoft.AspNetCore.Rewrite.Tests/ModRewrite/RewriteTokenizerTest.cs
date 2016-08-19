@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public void Tokenize_CheckEscapedSpaceIgnored()
         {
-            // TODO need consultation on escape characters.
             var testString = @"RewriteCond %{HTTPS}\ what !-f";
             var tokens = new Tokenizer().Tokenize(testString);
 

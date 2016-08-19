@@ -62,6 +62,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                 return null;
             }
         }
+
         public string Error()
         {
             return string.Format("Syntax Error at index: ", Index, " with character: ", Current); 

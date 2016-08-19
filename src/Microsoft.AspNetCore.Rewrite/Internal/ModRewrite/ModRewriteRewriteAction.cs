@@ -64,7 +64,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             }
             else
             {
-                // TODO fix with redirect action logic
                 var split = pattern.IndexOf('?');
                 if (split >= 0)
                 {
@@ -77,7 +76,18 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                     {
                         context.HttpContext.Request.Path = PathString.FromUriComponent(ForwardSlash + path);
                     }
-                    context.HttpContext.Request.QueryString = context.HttpContext.Request.QueryString.Add(new QueryString(pattern.Substring(split)));
+
+                    if (QueryStringAppend)
+                    {
+                        context.HttpContext.Request.QueryString = context.HttpContext.Request.QueryString.Add(
+                            QueryString.FromUriComponent(
+                                pattern.Substring(split)));
+                    }
+                    else
+                    {
+                        context.HttpContext.Request.QueryString = QueryString.FromUriComponent(
+                            pattern.Substring(split));
+                    }
                 }
                 else
                 {
@@ -88,6 +98,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                     else
                     {
                         context.HttpContext.Request.Path = PathString.FromUriComponent(ForwardSlash + pattern);
+                    }
+
+                    if (QueryStringDelete)
+                    {
+                        context.HttpContext.Request.QueryString = QueryString.Empty;
                     }
                 }
             }

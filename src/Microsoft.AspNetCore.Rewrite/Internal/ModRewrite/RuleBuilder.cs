@@ -23,14 +23,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
         {
             if (_action == null || _match == null)
             {
-                // TODO throw an exception here, find apporpriate exception
+                throw new InvalidOperationException("Cannot create ModRewriteRule without action and match");
             }
             return new ModRewriteRule(_match, _conditions, _action, _preActions);
         }
 
         public void AddRule(string rule)
         {
-            // TODO 
             var tokens = new Tokenizer().Tokenize(rule);
             var regex = new RuleRegexParser().ParseRuleRegex(tokens[1]);
             var pattern = new TestStringParser().Parse(tokens[2]);
@@ -65,7 +64,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
 
             if (input.ConditionType == ConditionType.Regex)
             {
-                // TODO make nullable?
                 if (flags.HasFlag(FlagType.NoCase))
                 {
                     condition.Match = new RegexMatch(new Regex(input.Operand, RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexTimeout), input.Invert);
@@ -147,7 +145,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                     case OperationType.Executable:
                         throw new NotImplementedException("Executable Property search is not implemented");
                     default:
-                        // TODO change exception
                         throw new ArgumentException("Invalid operation for property comparison.");
                 }
             }

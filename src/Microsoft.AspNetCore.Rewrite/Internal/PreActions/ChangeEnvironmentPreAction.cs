@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PreActions
         public override void ApplyAction(HttpContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
             // Do stuff to modify the env
+            throw new NotImplementedException();
         }
     }
 }

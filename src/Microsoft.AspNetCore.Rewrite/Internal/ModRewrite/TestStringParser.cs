@@ -64,12 +64,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                         context.Next();
                         var ruleVariable = context.Capture();
                         context.Back();
-                        int parsedIndex;
-                        if (!int.TryParse(ruleVariable, out parsedIndex))
-                        {
-                            // TODO this should always pass, remove try parse?
-                            throw new FormatException(Resources.FormatError_InputParserInvalidInteger(ruleVariable, context.Index));
-                        }
+                        var parsedIndex = int.Parse(ruleVariable);
+                        
                         results.Add(new RuleMatchSegment(parsedIndex));
                     }
                     else
@@ -117,7 +113,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                     else if (context.Current == Colon)
                     {
                         // Have a segmented look up Ex: HTTP:xxxx 
-                        // TODO 
+                        // Most of these we can't handle
                         throw new NotImplementedException("Segmented Lookups no implemented");
                     }
                 }
@@ -133,14 +129,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                 context.Mark();
                 context.Next();
                 var rawConditionParameter = context.Capture();
+
                 // Once we leave this method, the while loop will call next again. Because
                 // capture is exclusive, we need to go one past the end index, capture, and then go back.
                 context.Back();
-                int parsedIndex;
-                if (!int.TryParse(rawConditionParameter, out parsedIndex))
-                {
-                    throw new FormatException(Resources.FormatError_InputParserInvalidInteger(rawConditionParameter, context.Index));
-                }
+                var parsedIndex = int.Parse(rawConditionParameter);
                 results.Add(new ConditionMatchSegment(parsedIndex));
             }
             else

@@ -7,7 +7,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
 {
     public class RewriteToHttpsRule : Rule
     {
-
         public bool stopProcessing { get; set; }
         public int? SSLPort { get; set; }
 

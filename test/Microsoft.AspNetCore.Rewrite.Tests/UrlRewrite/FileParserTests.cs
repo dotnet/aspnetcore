@@ -171,7 +171,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 Assert.Equal(r1.Name, r2.Name);
                 Assert.Equal(r1.Enabled, r2.Enabled);
 
-                // TODO conditions, url pattern, initial match regex
                 if (r1.Conditions == null)
                 {
                     Assert.Equal(r2.Conditions.ConditionList.Count, 0);

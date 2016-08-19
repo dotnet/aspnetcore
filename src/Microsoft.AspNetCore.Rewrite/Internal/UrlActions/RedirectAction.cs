@@ -27,7 +27,9 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
             var split = pattern.IndexOf('?');
             if (split >= 0)
             {
-                var query =  context.HttpContext.Request.QueryString.Add(new QueryString(pattern.Substring(split)));
+                var query =  context.HttpContext.Request.QueryString.Add(
+                    QueryString.FromUriComponent(
+                        pattern.Substring(split)));
                 // not using the HttpContext.Response.redirect here because status codes may be 301, 302, 307, 308 
                 context.HttpContext.Response.Headers[HeaderNames.Location] = pattern.Substring(0, split) + query;
             }

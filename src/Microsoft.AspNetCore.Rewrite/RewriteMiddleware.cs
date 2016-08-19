@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Rewrite
     /// </summary>
     public class RewriteMiddleware
     {
+        private static readonly Task CompletedTask = Task.FromResult(0);
+
         private readonly RequestDelegate _next;
         private readonly RewriteOptions _options;
         private readonly IFileProvider _fileProvider;
@@ -64,8 +66,7 @@ namespace Microsoft.AspNetCore.Rewrite
                         // Explicitly show that we continue executing rules
                         break;
                     case RuleTerminiation.ResponseComplete:
-                        // TODO cache task for perf
-                        return Task.FromResult(0);
+                        return CompletedTask;
                     case RuleTerminiation.StopRules:
                         return _next(context);
                 }

@@ -37,8 +37,8 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             var context = new DefaultHttpContext();
             context.Request.Host = new HostString("example.com");
-            context.Request.Path = new PathString("/foo");
-            context.Request.QueryString = new QueryString("?bar=1");
+            context.Request.Path = PathString.FromUriComponent("/foo");
+            context.Request.QueryString = QueryString.FromUriComponent("?bar=1");
             context.Request.ContentLength = 10;
             context.Request.ContentType = "json";
             context.Request.Headers[HeaderNames.Accept] = "accept";

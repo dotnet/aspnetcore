@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             var pattern = Url.Evaluate(context, ruleMatch, condMatch);
             if (EscapeBackReferences)
             {
-                // TODO right way to escape backreferences?
+                // because escapebackreferences will be encapsulated by the pattern, just escape the pattern
                 pattern = Uri.EscapeDataString(pattern);
             }
             context.HttpContext.Response.StatusCode = StatusCode;
@@ -47,11 +47,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                 QueryString query;
                 if (QueryStringAppend)
                 {
-                    query = context.HttpContext.Request.QueryString.Add(new QueryString(pattern.Substring(split)));
+                    query = context.HttpContext.Request.QueryString.Add(
+                        QueryString.FromUriComponent(
+                            pattern.Substring(split)));
                 }
                 else
                 {
-                    query = new QueryString(pattern.Substring(split));
+                    query = QueryString.FromUriComponent(pattern.Substring(split));
                 }
 
                 // not using the response.redirect here because status codes may be 301, 302, 307, 308 

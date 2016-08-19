@@ -73,7 +73,6 @@ namespace Microsoft.AspNetCore.Rewrite
             return RedirectToHttps(options, statusCode, null);
         }
 
-        // TODO Don't do this, it doesn't work in all cases. Will refactor tonight/ tomorrow.
         public static RewriteOptions RedirectToHttps(this RewriteOptions options, int statusCode, int? sslPort)
         {
             options.Rules.Add(new RedirectToHttpsRule { StatusCode = statusCode, SSLPort = sslPort });

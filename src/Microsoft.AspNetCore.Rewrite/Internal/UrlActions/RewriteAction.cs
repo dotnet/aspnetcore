@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
 
             if (ClearQuery)
             {
-                context.HttpContext.Request.QueryString = new QueryString();
+                context.HttpContext.Request.QueryString = QueryString.Empty;
             }
             // TODO PERF, substrings, object creation, etc.
             if (pattern.IndexOf("://") >= 0)
@@ -56,7 +56,9 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
                     {
                         context.HttpContext.Request.Path = PathString.FromUriComponent(ForwardSlash + path);
                     }
-                    context.HttpContext.Request.QueryString = context.HttpContext.Request.QueryString.Add(new QueryString(pattern.Substring(split)));
+                    context.HttpContext.Request.QueryString = context.HttpContext.Request.QueryString.Add(
+                        QueryString.FromUriComponent(
+                            pattern.Substring(split)));
                 }
                 else
                 {

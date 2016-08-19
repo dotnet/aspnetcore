@@ -19,8 +19,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var result = new InputParser().ParseInputString(testString);
             Assert.Equal(result.PatternSegments.Count, 1);
         }
-        
-        // TODO update tests to check type
+
         [Theory]
         [InlineData("foo/bar/{R:1}/what", 3)]
         [InlineData("foo/{R:1}", 2)]
@@ -93,7 +92,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
 
             var context = new DefaultHttpContext();
-            // TODO add fields if necessary
             return new RewriteContext { HttpContext = context, FileProvider = null };
         }
 
