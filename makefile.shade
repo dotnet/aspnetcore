@@ -309,7 +309,7 @@ var buildTarget = "compile"
             }
         }
 
-        Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ASPNETVNEXT", Path.Combine(coherencePath, "packages-expanded"));
+        Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_AspNetCore", Path.Combine(coherencePath, "packages-expanded"));
     }
 
 #change-default-build-target-to-verify
