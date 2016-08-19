@@ -1,4 +1,5 @@
 import * as ko from 'knockout';
+import * as fetch from 'isomorphic-fetch';
 
 interface WeatherForecast {
     dateFormatted: string;
