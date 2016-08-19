@@ -745,6 +745,7 @@ functions
                 "BasicMiddleware",
                 "Proxy",
                 "Mvc",
+                "MvcPrecompilation",
                 "Identity",
                 "Scaffolding",
                 "SignalR-Server",
