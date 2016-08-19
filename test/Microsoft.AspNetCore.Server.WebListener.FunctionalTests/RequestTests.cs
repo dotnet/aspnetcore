@@ -17,6 +17,7 @@
 
 using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
     public class RequestTests
     {
         [Fact]
-        public async Task Request_SimpleGet_Success()
+        public async Task Request_SimpleGet_ExpectedFieldsSet()
         {
             string root;
             using (Utilities.CreateHttpServerReturnRoot("/basepath", out root, httpContext =>
@@ -54,19 +55,144 @@ namespace Microsoft.AspNetCore.Server.WebListener
                     Assert.Equal("/basepath/SomePath?SomeQuery", requestInfo.RawTarget);
                     Assert.Equal("HTTP/1.1", requestInfo.Protocol);
 
-                    // Server Keys
-                    // TODO: Assert.NotNull(httpContext.Get<IDictionary<string, object>>("server.Capabilities"));
-
                     var connectionInfo = httpContext.Features.Get<IHttpConnectionFeature>();
                     Assert.Equal("::1", connectionInfo.RemoteIpAddress.ToString());
                     Assert.NotEqual(0, connectionInfo.RemotePort);
                     Assert.Equal("::1", connectionInfo.LocalIpAddress.ToString());
                     Assert.NotEqual(0, connectionInfo.LocalPort);
+                    Assert.NotNull(connectionInfo.ConnectionId);
 
                     // Trace identifier
                     var requestIdentifierFeature = httpContext.Features.Get<IHttpRequestIdentifierFeature>();
                     Assert.NotNull(requestIdentifierFeature);
                     Assert.NotNull(requestIdentifierFeature.TraceIdentifier);
+
+                    // Note: Response keys are validated in the ResponseTests
+                }
+                catch (Exception ex)
+                {
+                    byte[] body = Encoding.ASCII.GetBytes(ex.ToString());
+                    httpContext.Response.Body.Write(body, 0, body.Length);
+                }
+                return Task.FromResult(0);
+            }))
+            {
+                string response = await SendRequestAsync(root + "/basepath/SomePath?SomeQuery");
+                Assert.Equal(string.Empty, response);
+            }
+        }
+
+        [Fact]
+        public async Task Request_FieldsCanBeSet_Set()
+        {
+            string root;
+            using (Utilities.CreateHttpServerReturnRoot("/basepath", out root, httpContext =>
+            {
+                try
+                {
+                    var requestInfo = httpContext.Features.Get<IHttpRequestFeature>();
+
+                    // Request Keys
+                    requestInfo.Method = "TEST";
+                    Assert.Equal("TEST", requestInfo.Method);
+                    requestInfo.Body = new MemoryStream();
+                    Assert.IsType<MemoryStream>(requestInfo.Body);
+                    var customHeaders = new HeaderDictionary(new HeaderCollection());
+                    requestInfo.Headers = customHeaders;
+                    Assert.Same(customHeaders, requestInfo.Headers);
+                    requestInfo.Scheme = "abcd";
+                    Assert.Equal("abcd", requestInfo.Scheme);
+                    requestInfo.PathBase = "/customized/Base";
+                    Assert.Equal("/customized/Base", requestInfo.PathBase);
+                    requestInfo.Path = "/customized/Path";
+                    Assert.Equal("/customized/Path", requestInfo.Path);
+                    requestInfo.QueryString = "?customizedQuery";
+                    Assert.Equal("?customizedQuery", requestInfo.QueryString);
+                    requestInfo.RawTarget = "/customized/raw?Target";
+                    Assert.Equal("/customized/raw?Target", requestInfo.RawTarget);
+                    requestInfo.Protocol = "Custom/2.0";
+                    Assert.Equal("Custom/2.0", requestInfo.Protocol);
+
+                    var connectionInfo = httpContext.Features.Get<IHttpConnectionFeature>();
+                    connectionInfo.RemoteIpAddress = IPAddress.Broadcast;
+                    Assert.Equal(IPAddress.Broadcast, connectionInfo.RemoteIpAddress);
+                    connectionInfo.RemotePort = 12345;
+                    Assert.Equal(12345, connectionInfo.RemotePort);
+                    connectionInfo.LocalIpAddress = IPAddress.Any;
+                    Assert.Equal(IPAddress.Any, connectionInfo.LocalIpAddress);
+                    connectionInfo.LocalPort = 54321;
+                    Assert.Equal(54321, connectionInfo.LocalPort);
+                    connectionInfo.ConnectionId = "CustomId";
+                    Assert.Equal("CustomId", connectionInfo.ConnectionId);
+
+                    // Trace identifier
+                    var requestIdentifierFeature = httpContext.Features.Get<IHttpRequestIdentifierFeature>();
+                    Assert.NotNull(requestIdentifierFeature);
+                    requestIdentifierFeature.TraceIdentifier = "customTrace";
+                    Assert.Equal("customTrace", requestIdentifierFeature.TraceIdentifier);
+
+                    // Note: Response keys are validated in the ResponseTests
+                }
+                catch (Exception ex)
+                {
+                    byte[] body = Encoding.ASCII.GetBytes(ex.ToString());
+                    httpContext.Response.Body.Write(body, 0, body.Length);
+                }
+                return Task.FromResult(0);
+            }))
+            {
+                string response = await SendRequestAsync(root + "/basepath/SomePath?SomeQuery");
+                Assert.Equal(string.Empty, response);
+            }
+        }
+
+        [Fact]
+        public async Task Request_FieldsCanBeSetToNull_Set()
+        {
+            string root;
+            using (Utilities.CreateHttpServerReturnRoot("/basepath", out root, httpContext =>
+            {
+                try
+                {
+                    var requestInfo = httpContext.Features.Get<IHttpRequestFeature>();
+
+                    // Request Keys
+                    requestInfo.Method = null;
+                    Assert.Null(requestInfo.Method);
+                    requestInfo.Body = null;
+                    Assert.Null(requestInfo.Body);
+                    requestInfo.Headers = null;
+                    Assert.Null(requestInfo.Headers);
+                    requestInfo.Scheme = null;
+                    Assert.Null(requestInfo.Scheme);
+                    requestInfo.PathBase = null;
+                    Assert.Null(requestInfo.PathBase);
+                    requestInfo.Path = null;
+                    Assert.Null(requestInfo.Path);
+                    requestInfo.QueryString = null;
+                    Assert.Null(requestInfo.QueryString);
+                    requestInfo.RawTarget = null;
+                    Assert.Null(requestInfo.RawTarget);
+                    requestInfo.Protocol = null;
+                    Assert.Null(requestInfo.Protocol);
+
+                    var connectionInfo = httpContext.Features.Get<IHttpConnectionFeature>();
+                    connectionInfo.RemoteIpAddress = null;
+                    Assert.Null(connectionInfo.RemoteIpAddress);
+                    connectionInfo.RemotePort = -1;
+                    Assert.Equal(-1, connectionInfo.RemotePort);
+                    connectionInfo.LocalIpAddress = null;
+                    Assert.Null(connectionInfo.LocalIpAddress);
+                    connectionInfo.LocalPort = -1;
+                    Assert.Equal(-1, connectionInfo.LocalPort);
+                    connectionInfo.ConnectionId = null;
+                    Assert.Null(connectionInfo.ConnectionId);
+
+                    // Trace identifier
+                    var requestIdentifierFeature = httpContext.Features.Get<IHttpRequestIdentifierFeature>();
+                    Assert.NotNull(requestIdentifierFeature);
+                    requestIdentifierFeature.TraceIdentifier = null;
+                    Assert.Null(requestIdentifierFeature.TraceIdentifier);
 
                     // Note: Response keys are validated in the ResponseTests
                 }
