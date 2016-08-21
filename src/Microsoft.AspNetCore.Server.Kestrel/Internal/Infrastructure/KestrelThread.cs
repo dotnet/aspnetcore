@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
             try
             {
-                var ran1 = _loop.Run();
+                _loop.Run();
                 if (_stopImmediate)
                 {
                     // thread-abort form of exit, resources will be leaked
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                 _post.Dispose();
 
                 // Ensure the Dispose operations complete in the event loop.
-                var ran2 = _loop.Run();
+                _loop.Run();
 
                 _loop.Dispose();
             }

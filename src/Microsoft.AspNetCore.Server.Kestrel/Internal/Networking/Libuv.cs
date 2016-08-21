@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
@@ -61,50 +62,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
 
         public readonly bool IsWindows;
 
-        public int Check(int statusCode)
-        {
-            Exception error;
-            var result = Check(statusCode, out error);
-            if (error != null)
-            {
-                throw error;
-            }
-            return statusCode;
-        }
-
-        public int Check(int statusCode, out Exception error)
+        public void ThrowIfErrored(int statusCode)
         {
             if (statusCode < 0)
             {
-                var errorName = err_name(statusCode);
-                var errorDescription = strerror(statusCode);
-                error = new UvException("Error " + statusCode + " " + errorName + " " + errorDescription, statusCode);
+                ThrowError(statusCode);
             }
-            else
-            {
-                error = null;
-            }
-            return statusCode;
+        }
+
+        private void ThrowError(int statusCode)
+        {
+            throw GetError(statusCode);
+        }
+
+        public void Check(int statusCode, out Exception error)
+        {
+            error = statusCode < 0 ? GetError(statusCode) : null;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private UvException GetError(int statusCode)
+        {
+            var errorName = err_name(statusCode);
+            var errorDescription = strerror(statusCode);
+            return new UvException("Error " + statusCode + " " + errorName + " " + errorDescription, statusCode);
         }
 
         protected Func<UvLoopHandle, int> _uv_loop_init;
         public void loop_init(UvLoopHandle handle)
         {
-            Check(_uv_loop_init(handle));
+            ThrowIfErrored(_uv_loop_init(handle));
         }
 
         protected Func<IntPtr, int> _uv_loop_close;
         public void loop_close(UvLoopHandle handle)
         {
             handle.Validate(closed: true);
-            Check(_uv_loop_close(handle.InternalGetHandle()));
+            ThrowIfErrored(_uv_loop_close(handle.InternalGetHandle()));
         }
 
         protected Func<UvLoopHandle, int, int> _uv_run;
-        public int run(UvLoopHandle handle, int mode)
+        public void run(UvLoopHandle handle, int mode)
         {
             handle.Validate();
-            return Check(_uv_run(handle, mode));
+            ThrowIfErrored(_uv_run(handle, mode));
         }
 
         protected Action<UvLoopHandle> _uv_stop;
@@ -131,10 +132,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         protected delegate int uv_fileno_func(UvHandle handle, ref IntPtr socket);
         protected uv_fileno_func _uv_fileno;
-        public int uv_fileno(UvHandle handle, ref IntPtr socket)
+        public void uv_fileno(UvHandle handle, ref IntPtr socket)
         {
             handle.Validate();
-            return Check(_uv_fileno(handle, ref socket));
+            ThrowIfErrored(_uv_fileno(handle, ref socket));
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -158,19 +159,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         {
             loop.Validate();
             handle.Validate();
-            Check(_uv_async_init(loop, handle, cb));
+            ThrowIfErrored(_uv_async_init(loop, handle, cb));
         }
 
         protected Func<UvAsyncHandle, int> _uv_async_send;
         public void async_send(UvAsyncHandle handle)
         {
-            Check(_uv_async_send(handle));
+            ThrowIfErrored(_uv_async_send(handle));
         }
 
         protected Func<IntPtr, int> _uv_unsafe_async_send;
         public void unsafe_async_send(IntPtr handle)
         {
-            Check(_uv_unsafe_async_send(handle));
+            ThrowIfErrored(_uv_unsafe_async_send(handle));
         }
 
         protected Func<UvLoopHandle, UvTcpHandle, int> _uv_tcp_init;
@@ -178,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         {
             loop.Validate();
             handle.Validate();
-            Check(_uv_tcp_init(loop, handle));
+            ThrowIfErrored(_uv_tcp_init(loop, handle));
         }
 
         protected delegate int uv_tcp_bind_func(UvTcpHandle handle, ref SockAddr addr, int flags);
@@ -186,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         public void tcp_bind(UvTcpHandle handle, ref SockAddr addr, int flags)
         {
             handle.Validate();
-            Check(_uv_tcp_bind(handle, ref addr, flags));
+            ThrowIfErrored(_uv_tcp_bind(handle, ref addr, flags));
             if (PlatformApis.IsWindows)
             {
                 tcp_bind_windows_extras(handle);
@@ -200,7 +201,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             const int SOCKET_ERROR = -1;
 
             var socket = IntPtr.Zero;
-            Check(_uv_fileno(handle, ref socket));
+            ThrowIfErrored(_uv_fileno(handle, ref socket));
 
             // Enable loopback fast-path for lower latency for localhost comms, like HttpPlatformHandler fronting
             // http://blogs.technet.com/b/wincat/archive/2012/12/05/fast-tcp-loopback-performance-and-low-latency-with-windows-server-2012-tcp-loopback-fast-path.aspx
@@ -218,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
                 }
                 else
                 {
-                    Check(errorId);
+                    ThrowIfErrored(errorId);
                 }
             }
         }
@@ -227,14 +228,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         public void tcp_open(UvTcpHandle handle, IntPtr hSocket)
         {
             handle.Validate();
-            Check(_uv_tcp_open(handle, hSocket));
+            ThrowIfErrored(_uv_tcp_open(handle, hSocket));
         }
 
         protected Func<UvTcpHandle, int, int> _uv_tcp_nodelay;
         public void tcp_nodelay(UvTcpHandle handle, bool enable)
         {
             handle.Validate();
-            Check(_uv_tcp_nodelay(handle, enable ? 1 : 0));
+            ThrowIfErrored(_uv_tcp_nodelay(handle, enable ? 1 : 0));
         }
 
         protected Func<UvLoopHandle, UvPipeHandle, int, int> _uv_pipe_init;
@@ -242,14 +243,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         {
             loop.Validate();
             handle.Validate();
-            Check(_uv_pipe_init(loop, handle, ipc ? -1 : 0));
+            ThrowIfErrored(_uv_pipe_init(loop, handle, ipc ? -1 : 0));
         }
 
         protected Func<UvPipeHandle, string, int> _uv_pipe_bind;
         public void pipe_bind(UvPipeHandle handle, string name)
         {
             handle.Validate();
-            Check(_uv_pipe_bind(handle, name));
+            ThrowIfErrored(_uv_pipe_bind(handle, name));
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -258,7 +259,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         public void listen(UvStreamHandle handle, int backlog, uv_connection_cb cb)
         {
             handle.Validate();
-            Check(_uv_listen(handle, backlog, cb));
+            ThrowIfErrored(_uv_listen(handle, backlog, cb));
         }
 
         protected Func<UvStreamHandle, UvStreamHandle, int> _uv_accept;
@@ -266,7 +267,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         {
             server.Validate();
             client.Validate();
-            Check(_uv_accept(server, client));
+            ThrowIfErrored(_uv_accept(server, client));
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -294,21 +295,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         public void read_start(UvStreamHandle handle, uv_alloc_cb alloc_cb, uv_read_cb read_cb)
         {
             handle.Validate();
-            Check(_uv_read_start(handle, alloc_cb, read_cb));
+            ThrowIfErrored(_uv_read_start(handle, alloc_cb, read_cb));
         }
 
         protected Func<UvStreamHandle, int> _uv_read_stop;
         public void read_stop(UvStreamHandle handle)
         {
             handle.Validate();
-            Check(_uv_read_stop(handle));
+            ThrowIfErrored(_uv_read_stop(handle));
         }
 
         protected Func<UvStreamHandle, uv_buf_t[], int, int> _uv_try_write;
-        public int try_write(UvStreamHandle handle, uv_buf_t[] bufs, int nbufs)
+        public void try_write(UvStreamHandle handle, uv_buf_t[] bufs, int nbufs)
         {
             handle.Validate();
-            return Check(_uv_try_write(handle, bufs, nbufs));
+            ThrowIfErrored(_uv_try_write(handle, bufs, nbufs));
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -320,7 +321,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         {
             req.Validate();
             handle.Validate();
-            Check(_uv_write(req, handle, bufs, nbufs, cb));
+            ThrowIfErrored(_uv_write(req, handle, bufs, nbufs, cb));
         }
 
         unsafe protected delegate int uv_write2_func(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, UvStreamHandle sendHandle, uv_write_cb cb);
@@ -329,7 +330,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         {
             req.Validate();
             handle.Validate();
-            Check(_uv_write2(req, handle, bufs, nbufs, sendHandle, cb));
+            ThrowIfErrored(_uv_write2(req, handle, bufs, nbufs, sendHandle, cb));
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -339,7 +340,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         {
             req.Validate();
             handle.Validate();
-            Check(_uv_shutdown(req, handle, cb));
+            ThrowIfErrored(_uv_shutdown(req, handle, cb));
         }
 
         protected Func<int, IntPtr> _uv_err_name;
@@ -376,16 +377,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
 
         protected delegate int uv_ip4_addr_func(string ip, int port, out SockAddr addr);
         protected uv_ip4_addr_func _uv_ip4_addr;
-        public int ip4_addr(string ip, int port, out SockAddr addr, out Exception error)
+        public void ip4_addr(string ip, int port, out SockAddr addr, out Exception error)
         {
-            return Check(_uv_ip4_addr(ip, port, out addr), out error);
+            Check(_uv_ip4_addr(ip, port, out addr), out error);
         }
 
         protected delegate int uv_ip6_addr_func(string ip, int port, out SockAddr addr);
         protected uv_ip6_addr_func _uv_ip6_addr;
-        public int ip6_addr(string ip, int port, out SockAddr addr, out Exception error)
+        public void ip6_addr(string ip, int port, out SockAddr addr, out Exception error)
         {
-            return Check(_uv_ip6_addr(ip, port, out addr), out error);
+            Check(_uv_ip6_addr(ip, port, out addr), out error);
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -402,7 +403,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         public void tcp_getsockname(UvTcpHandle handle, out SockAddr addr, ref int namelen)
         {
             handle.Validate();
-            Check(_uv_tcp_getsockname(handle, out addr, ref namelen));
+            ThrowIfErrored(_uv_tcp_getsockname(handle, out addr, ref namelen));
         }
 
         public delegate int uv_tcp_getpeername_func(UvTcpHandle handle, out SockAddr addr, ref int namelen);
@@ -410,7 +411,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         public void tcp_getpeername(UvTcpHandle handle, out SockAddr addr, ref int namelen)
         {
             handle.Validate();
-            Check(_uv_tcp_getpeername(handle, out addr, ref namelen));
+            ThrowIfErrored(_uv_tcp_getpeername(handle, out addr, ref namelen));
         }
 
         public uv_buf_t buf_init(IntPtr memory, int len)
