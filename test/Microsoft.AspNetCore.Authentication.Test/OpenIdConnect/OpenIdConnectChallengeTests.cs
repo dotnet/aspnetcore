@@ -1,0 +1,322 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Xunit;
+
+namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
+{
+    public class OpenIdConnectChallengeTests
+    {
+        [Fact]
+        public async Task ChallengeIsIssuedCorrectly()
+        {
+            var settings = new TestSettings(
+                opt => opt.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet);
+
+            var server = settings.CreateTestServer();
+            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.NotNull(res.Headers.Location);
+
+            settings.ValidateChallengeRedirect(
+                res.Headers.Location,
+                OpenIdConnectParameterNames.ClientId,
+                OpenIdConnectParameterNames.ResponseType,
+                OpenIdConnectParameterNames.ResponseMode,
+                OpenIdConnectParameterNames.Scope,
+                OpenIdConnectParameterNames.RedirectUri);
+        }
+
+        /*
+        Example of a form post
+        <body>
+            <form name=\ "form\" method=\ "post\" action=\ "https://login.microsoftonline.com/common/oauth2/authorize\">
+                <input type=\ "hidden\" name=\ "client_id\" value=\ "51e38103-238f-410f-a5d5-61991b203e50\" />
+                <input type=\ "hidden\" name=\ "redirect_uri\" value=\ "https://example.com/signin-oidc\" />
+                <input type=\ "hidden\" name=\ "response_type\" value=\ "id_token\" />
+                <input type=\ "hidden\" name=\ "scope\" value=\ "openid profile\" />
+                <input type=\ "hidden\" name=\ "response_mode\" value=\ "form_post\" />
+                <input type=\ "hidden\" name=\ "nonce\" value=\ "636072461997914230.NTAwOGE1MjQtM2VhYS00ZDU0LWFkYzYtNmZiYWE2MDRkODg3OTlkMDFmOWUtOTMzNC00ZmI2LTg1Y2YtOWM4OTlhNjY0Yjli\" />
+                <input type=\ "hidden\" name=\ "state\" value=\
+                    "CfDJ8Jh1NKaF0T5AnK4qsqzzIs89srKe4iEaBWd29MNph4Ki887QKgkD24wjhZ0ciH-ar6A_jUmRI2O5haXN2-YXbC0ZRuRAvNsx5LqbPTdh4MJBIwXWkG_rM0T0tI3h5Y2pDttWSaku6a_nzFLUYBrKfsE7sDLVoTDrzzOcHrRQhdztqOOeNUuu2wQXaKwlOtNI21ShtN9EVxvSGFOxUUOwVih4nFdF40fBcbsuPpcpCPkLARQaFRJSYsNKiP7pcFMnRwzZhnISHlyGKkzwJ1DIx7nsmdiQFBGljimw5GnYAs-5ru9L3w8NnPjkl96OyQ8MJOcayMDmOY26avs2sYP_Zw0\" />
+                <noscript>Click here to finish the process: <input type=\"submit\" /></noscript>
+            </form>
+            <script>
+                document.form.submit();
+            </script>
+        </body>
+        */
+        [Fact]
+        public async Task ChallengeIssueedCorrectlyForFormPost()
+        {
+            var settings = new TestSettings(
+                opt => opt.AuthenticationMethod = OpenIdConnectRedirectBehavior.FormPost);
+
+            var server = settings.CreateTestServer();
+            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+            Assert.Equal("text/html", transaction.Response.Content.Headers.ContentType.MediaType);
+
+            var body = await res.Content.ReadAsStringAsync();
+            settings.ValidateChallengeFormPost(
+                body,
+                OpenIdConnectParameterNames.ClientId,
+                OpenIdConnectParameterNames.ResponseType,
+                OpenIdConnectParameterNames.ResponseMode,
+                OpenIdConnectParameterNames.Scope,
+                OpenIdConnectParameterNames.RedirectUri);
+        }
+
+        [Theory]
+        [InlineData("sample_user_state")]
+        [InlineData(null)]
+        public async Task ChallengeCanSetUserStateThroughProperties(string userState)
+        {
+            var settings = new TestSettings();
+
+            var properties = new AuthenticationProperties();
+            properties.Items.Add(OpenIdConnectDefaults.UserstatePropertiesKey, userState);
+
+            var server = TestServerBuilder.CreateServer(settings.Options, handler: null, properties: properties);
+            var transaction = await TestTransaction.SendAsync(server, TestDefaultValues.TestHost + TestServerBuilder.ChallengeWithProperties);
+
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.NotNull(res.Headers.Location);
+
+            var values = settings.ValidateChallengeRedirect(res.Headers.Location);
+            var actualState = values[OpenIdConnectParameterNames.State];
+            var actualProperties = settings.Options.StateDataFormat.Unprotect(actualState);
+
+            Assert.Equal(userState ?? string.Empty, actualProperties.Items[OpenIdConnectDefaults.UserstatePropertiesKey]);
+        }
+
+        [Theory]
+        [InlineData("sample_user_state")]
+        [InlineData(null)]
+        public async Task OnRedirectToIdentityProviderEventCanSetState(string userState)
+        {
+            var settings = new TestSettings(opt =>
+            {
+                opt.Events = new OpenIdConnectEvents()
+                {
+                    OnRedirectToIdentityProvider = context =>
+                    {
+                        context.ProtocolMessage.State = userState;
+                        return Task.FromResult(0);
+                    }
+                };
+            });
+
+            var server = settings.CreateTestServer();
+            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.NotNull(res.Headers.Location);
+
+            var values = settings.ValidateChallengeRedirect(res.Headers.Location);
+            var actualState = values[OpenIdConnectParameterNames.State];
+            var actualProperties = settings.Options.StateDataFormat.Unprotect(actualState);
+
+            if (userState != null)
+            {
+                Assert.Equal(userState, actualProperties.Items[OpenIdConnectDefaults.UserstatePropertiesKey]);
+            }
+            else
+            {
+                Assert.False(actualProperties.Items.ContainsKey(OpenIdConnectDefaults.UserstatePropertiesKey));
+            }
+        }
+
+        [Fact]
+        public async Task OnRedirectToIdentityProviderEventIsHit()
+        {
+            var eventIsHit = false;
+            var settings = new TestSettings(
+                opts =>
+                {
+                    opts.Events = new OpenIdConnectEvents()
+                    {
+                        OnRedirectToIdentityProvider = context =>
+                        {
+                            eventIsHit = true;
+                            return Task.FromResult(0);
+                        }
+                    };
+                }
+            );
+
+            var server = settings.CreateTestServer();
+            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+
+            Assert.True(eventIsHit);
+
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.NotNull(res.Headers.Location);
+
+            settings.ValidateChallengeRedirect(
+                res.Headers.Location,
+                OpenIdConnectParameterNames.ClientId,
+                OpenIdConnectParameterNames.ResponseType,
+                OpenIdConnectParameterNames.ResponseMode,
+                OpenIdConnectParameterNames.Scope,
+                OpenIdConnectParameterNames.RedirectUri);
+        }
+
+
+        [Fact]
+        public async Task OnRedirectToIdentityProviderEventCanReplaceValues()
+        {
+            var newClientId = Guid.NewGuid().ToString();
+
+            var settings = new TestSettings(
+                opts =>
+                {
+                    opts.Events = new OpenIdConnectEvents()
+                    {
+                        OnRedirectToIdentityProvider = context =>
+                        {
+                            context.ProtocolMessage.ClientId = newClientId;
+
+                            return Task.FromResult(0);
+                        }
+                    };
+                }
+            );
+
+            var server = settings.CreateTestServer();
+            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.NotNull(res.Headers.Location);
+
+            settings.ValidateChallengeRedirect(
+                res.Headers.Location,
+                OpenIdConnectParameterNames.ResponseType,
+                OpenIdConnectParameterNames.ResponseMode,
+                OpenIdConnectParameterNames.Scope,
+                OpenIdConnectParameterNames.RedirectUri);
+
+            var actual = res.Headers.Location.Query.Trim('?').Split('&').Single(seg => seg.StartsWith($"{OpenIdConnectParameterNames.ClientId}="));
+            Assert.Equal($"{OpenIdConnectParameterNames.ClientId}={newClientId}", actual);
+        }
+
+        [Fact]
+        public async Task OnRedirectToIdentityProviderEventCanReplaceMessage()
+        {
+            var newMessage = new MockOpenIdConnectMessage
+            {
+                TestAuthorizeEndpoint = $"http://example.com/{Guid.NewGuid()}/oauth2/signin"
+            };
+
+            var settings = new TestSettings(
+                opts =>
+                {
+                    opts.Events = new OpenIdConnectEvents()
+                    {
+                        OnRedirectToIdentityProvider = context =>
+                        {
+                            context.ProtocolMessage = newMessage;
+
+                            return Task.FromResult(0);
+                        }
+                    };
+                }
+            );
+
+            var server = settings.CreateTestServer();
+            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.NotNull(res.Headers.Location);
+
+            // The CreateAuthenticationRequestUrl method is overridden MockOpenIdConnectMessage where
+            // query string is not generated and the authorization endpoint is replaced.
+            Assert.Equal(newMessage.TestAuthorizeEndpoint, res.Headers.Location.AbsoluteUri);
+        }
+        [Fact]
+        public async Task OnRedirectToIdentityProviderEventHandlesResponse()
+        {
+            var settings = new TestSettings(
+                opts =>
+                {
+                    opts.Events = new OpenIdConnectEvents()
+                    {
+                        OnRedirectToIdentityProvider = context =>
+                        {
+                            context.HandleResponse();
+                            return Task.FromResult(0);
+                        }
+                    };
+                }
+            );
+
+            var server = settings.CreateTestServer();
+            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+            Assert.Null(res.Headers.Location);
+        }
+
+        // This test can be further refined. When one auth middleware skips, the authentication responsibility
+        // will be flowed to the next one. A dummy auth middleware can be added to ensure the correct logic.
+        [Fact]
+        public async Task OnRedirectToIdentityProviderEventSkipResponse()
+        {
+            var settings = new TestSettings(
+                opts =>
+                {
+                    opts.Events = new OpenIdConnectEvents()
+                    {
+                        OnRedirectToIdentityProvider = context =>
+                        {
+                            context.SkipToNextMiddleware();
+                            return Task.FromResult(0);
+                        }
+                    };
+                }
+            );
+
+            var server = settings.CreateTestServer();
+            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+            Assert.Null(res.Headers.Location);
+        }
+
+        [Fact]
+        public async Task ChallengeSetsNonceAndStateCookies()
+        {
+            var settings = new TestSettings();
+            var server = settings.CreateTestServer();
+            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+
+            var firstCookie = transaction.SetCookie.First();
+            Assert.Contains(OpenIdConnectDefaults.CookieNoncePrefix, firstCookie);
+            Assert.Contains("expires", firstCookie);
+
+            var secondCookie = transaction.SetCookie.Skip(1).First();
+            Assert.StartsWith(".AspNetCore.Correlation.OpenIdConnect.", secondCookie);
+            Assert.Contains("expires", secondCookie);
+        }
+
+        private static string ChallengeEndpoint => TestDefaultValues.TestHost + TestServerBuilder.Challenge;
+    }
+}
