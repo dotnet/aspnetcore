@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
             var hostProcess = new Process() { StartInfo = startInfo };
             hostProcess.ErrorDataReceived += (sender, dataArgs) => { Logger.LogWarning(dataArgs.Data ?? string.Empty); };
-            hostProcess.OutputDataReceived += (sender, dataArgs) => { Logger.LogTrace(dataArgs.Data ?? string.Empty); };
+            hostProcess.OutputDataReceived += (sender, dataArgs) => { Logger.LogInformation(dataArgs.Data ?? string.Empty); };
             hostProcess.Start();
             hostProcess.BeginErrorReadLine();
             hostProcess.BeginOutputReadLine();
