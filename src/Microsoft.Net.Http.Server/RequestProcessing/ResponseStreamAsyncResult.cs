@@ -41,18 +41,26 @@ namespace Microsoft.Net.Http.Server
         private ResponseStream _responseStream;
         private TaskCompletionSource<object> _tcs;
         private uint _bytesSent;
+        private CancellationToken _cancellationToken;
         private CancellationTokenRegistration _cancellationRegistration;
 
-        internal ResponseStreamAsyncResult(ResponseStream responseStream, CancellationTokenRegistration cancellationRegistration)
+        internal ResponseStreamAsyncResult(ResponseStream responseStream, CancellationToken cancellationToken)
         {
             _responseStream = responseStream;
             _tcs = new TaskCompletionSource<object>();
+
+            var cancellationRegistration = default(CancellationTokenRegistration);
+            if (cancellationToken.CanBeCanceled)
+            {
+                cancellationRegistration = _responseStream.RequestContext.RegisterForCancellation(cancellationToken);
+            }
+            _cancellationToken = cancellationToken;
             _cancellationRegistration = cancellationRegistration;
         }
 
         internal ResponseStreamAsyncResult(ResponseStream responseStream, ArraySegment<byte> data, bool chunked,
-            CancellationTokenRegistration cancellationRegistration)
-            : this(responseStream, cancellationRegistration)
+            CancellationToken cancellationToken)
+            : this(responseStream, cancellationToken)
         {
             var boundHandle = _responseStream.RequestContext.Server.RequestQueue.BoundHandle;
             object[] objectsToPin;
@@ -107,8 +115,8 @@ namespace Microsoft.Net.Http.Server
         }
 
         internal ResponseStreamAsyncResult(ResponseStream responseStream, string fileName, long offset,
-            long? count, bool chunked, CancellationTokenRegistration cancellationRegistration)
-            : this(responseStream, cancellationRegistration)
+            long? count, bool chunked, CancellationToken cancellationToken)
+            : this(responseStream, cancellationToken)
         {
             var boundHandle = responseStream.RequestContext.Server.RequestQueue.BoundHandle;
 
@@ -260,11 +268,27 @@ namespace Microsoft.Net.Http.Server
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Redirecting to callback")]
         private static void IOCompleted(ResponseStreamAsyncResult asyncResult, uint errorCode, uint numBytes)
         {
+            var logger = asyncResult._responseStream.RequestContext.Logger;
             try
             {
                 if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
                 {
-                    asyncResult.Fail(new IOException(string.Empty, new WebListenerException((int)errorCode)));
+                    if (asyncResult._cancellationToken.IsCancellationRequested)
+                    {
+                        LogHelper.LogDebug(logger, "FlushAsync.IOCompleted", $"Write cancelled with error code: {errorCode}");
+                        asyncResult.Cancel(asyncResult._responseStream.ThrowWriteExceptions);
+                    }
+                    else if (asyncResult._responseStream.ThrowWriteExceptions)
+                    {
+                        var exception = new IOException(string.Empty, new WebListenerException((int)errorCode));
+                        LogHelper.LogException(logger, "FlushAsync.IOCompleted", exception);
+                        asyncResult.Fail(exception);
+                    }
+                    else
+                    {
+                        LogHelper.LogDebug(logger, "FlushAsync.IOCompleted", $"Ignored write exception: {errorCode}");
+                        asyncResult.FailSilently();
+                    }
                 }
                 else
                 {
@@ -285,6 +309,7 @@ namespace Microsoft.Net.Http.Server
             }
             catch (Exception e)
             {
+                LogHelper.LogException(logger, "FlushAsync.IOCompleted", e);
                 asyncResult.Fail(e);
             }
         }
@@ -297,15 +322,30 @@ namespace Microsoft.Net.Http.Server
 
         internal void Complete()
         {
-            _tcs.TrySetResult(null);
             Dispose();
+            _tcs.TrySetResult(null);
+        }
+
+        internal void FailSilently()
+        {
+            Dispose();
+            // Abort the request but do not close the stream, let future writes complete silently
+            _responseStream.Abort(dispose: false);
+            _tcs.TrySetResult(null);
+        }
+
+        internal void Cancel(bool dispose)
+        {
+            Dispose();
+            _responseStream.Abort(dispose);
+            _tcs.TrySetCanceled();
         }
 
         internal void Fail(Exception ex)
         {
-            _tcs.TrySetException(ex);
             Dispose();
             _responseStream.Abort();
+            _tcs.TrySetException(ex);
         }
 
         public object AsyncState

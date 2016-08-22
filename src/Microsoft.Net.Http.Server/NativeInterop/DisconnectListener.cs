@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 
@@ -75,6 +76,7 @@ namespace Microsoft.Net.Http.Server
 
             // Create a nativeOverlapped callback so we can register for disconnect callback
             var cts = new CancellationTokenSource();
+            var returnToken = cts.Token;
 
             SafeNativeOverlapped nativeOverlapped = null;
             var boundHandle = _requestQueue.BoundHandle;
@@ -97,8 +99,6 @@ namespace Microsoft.Net.Http.Server
                     {
                         LogHelper.LogException(_logger, "CreateDisconnectToken Callback", exception);
                     }
-
-                    cts.Dispose();
                 },
                 null, null));
 
@@ -117,19 +117,24 @@ namespace Microsoft.Net.Http.Server
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING &&
                 statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
-                // We got an unknown result so return a None
-                // TODO: return a canceled token?
-                return CancellationToken.None;
+                // We got an unknown result, assume the connection has been closed.
+                nativeOverlapped.Dispose();
+                ConnectionCancellation ignored;
+                _connectionCancellationTokens.TryRemove(connectionId, out ignored);
+                LogHelper.LogDebug(_logger, "HttpWaitForDisconnectEx", new Win32Exception((int)statusCode));
+                cts.Cancel();
             }
 
             if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && WebListener.SkipIOCPCallbackOnSuccess)
             {
-                // IO operation completed synchronously - callback won't be called to signal completion.
-                // TODO: return a canceled token?
-                return CancellationToken.None;
+                // IO operation completed synchronously - callback won't be called to signal completion
+                nativeOverlapped.Dispose();
+                ConnectionCancellation ignored;
+                _connectionCancellationTokens.TryRemove(connectionId, out ignored);
+                cts.Cancel();
             }
 
-            return cts.Token;
+            return returnToken;
         }
 
         private class ConnectionCancellation

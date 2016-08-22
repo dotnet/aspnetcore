@@ -69,13 +69,11 @@ namespace Microsoft.Net.Http.Server
         /// </summary>
         public TimeoutManager Timeouts { get; } = new TimeoutManager();
 
-
-        // TODO: https://github.com/aspnet/WebListener/issues/173
         /// <summary>
         /// Gets or Sets if response body writes that fail due to client disconnects should throw exceptions or
-        /// complete normally. The default is true.
+        /// complete normally. The default is false.
         /// </summary>
-        internal bool IgnoreWriteExceptions { get; set; } = true;
+        public bool ThrowWriteExceptions { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum number of requests that will be queued up in Http.Sys.

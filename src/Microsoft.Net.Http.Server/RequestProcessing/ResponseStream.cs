@@ -38,7 +38,8 @@ namespace Microsoft.Net.Http.Server
     {
         private RequestContext _requestContext;
         private long _leftToWrite = long.MinValue;
-        private bool _closed;
+        private bool _skipWrites;
+        private bool _disposed;
         private bool _inOpaqueMode;
 
         // The last write needs special handling to cancel.
@@ -59,6 +60,8 @@ namespace Microsoft.Net.Http.Server
         private ulong RequestId => RequestContext.Request.RequestId;
 
         private ILogger Logger => RequestContext.Server.Logger;
+
+        internal bool ThrowWriteExceptions => RequestContext.Server.Settings.ThrowWriteExceptions;
 
         public override bool CanSeek
         {
@@ -107,7 +110,7 @@ namespace Microsoft.Net.Http.Server
         // Send headers
         public override void Flush()
         {
-            if (_closed)
+            if (_disposed)
             {
                 return;
             }
@@ -118,6 +121,11 @@ namespace Microsoft.Net.Http.Server
         private unsafe void FlushInternal(bool endOfRequest, ArraySegment<byte> data = new ArraySegment<byte>())
         {
             Debug.Assert(!(endOfRequest && data.Count > 0), "Data is not supported at the end of the request.");
+
+            if (_skipWrites)
+            {
+                return;
+            }
 
             var started = _requestContext.Response.HasStarted;
             if (data.Count == 0 && started && !endOfRequest)
@@ -170,11 +178,6 @@ namespace Microsoft.Net.Http.Server
                                 SafeNativeOverlapped.Zero,
                                 IntPtr.Zero);
                     }
-
-                    if (_requestContext.Server.Settings.IgnoreWriteExceptions)
-                    {
-                        statusCode = UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
-                    }
                 }
             }
             finally
@@ -186,10 +189,19 @@ namespace Microsoft.Net.Http.Server
                 // Don't throw for disconnects, we were already finished with the response.
                 && (!endOfRequest || (statusCode != ErrorCodes.ERROR_CONNECTION_INVALID && statusCode != ErrorCodes.ERROR_INVALID_PARAMETER)))
             {
-                Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
-                LogHelper.LogException(Logger, "Flush", exception);
-                Abort();
-                throw exception;
+                if (ThrowWriteExceptions)
+                {
+                    var exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
+                    LogHelper.LogException(Logger, "Flush", exception);
+                    Abort();
+                    throw exception;
+                }
+                else
+                {
+                    // Abort the request but do not close the stream, let future writes complete silently
+                    LogHelper.LogDebug(Logger, "Flush", $"Ignored write exception: {statusCode}");
+                    Abort(dispose: false);
+                }
             }
         }
 
@@ -271,7 +283,7 @@ namespace Microsoft.Net.Http.Server
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            if (_closed)
+            if (_disposed)
             {
                 return Helpers.CompletedTask();
             }
@@ -281,6 +293,11 @@ namespace Microsoft.Net.Http.Server
         // Simpler than Flush because it will never be called at the end of the request from Dispose.
         private unsafe Task FlushInternalAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
+            if (_skipWrites)
+            {
+                return Helpers.CompletedTask();
+            }
+
             var started = _requestContext.Response.HasStarted;
             if (data.Count == 0 && started)
             {
@@ -288,10 +305,10 @@ namespace Microsoft.Net.Http.Server
                 return Helpers.CompletedTask();
             }
 
-            var cancellationRegistration = default(CancellationTokenRegistration);
-            if (cancellationToken.CanBeCanceled)
+            if (cancellationToken.IsCancellationRequested)
             {
-                cancellationRegistration = RequestContext.RegisterForCancellation(cancellationToken);
+                Abort(ThrowWriteExceptions);
+                return Helpers.CanceledTask<int>();
             }
 
             var flags = ComputeLeftToWrite();
@@ -303,7 +320,7 @@ namespace Microsoft.Net.Http.Server
             UpdateWritenCount((uint)data.Count);
             uint statusCode = 0;
             var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
-            var asyncResult = new ResponseStreamAsyncResult(this, data, chunked, cancellationRegistration);
+            var asyncResult = new ResponseStreamAsyncResult(this, data, chunked, cancellationToken);
             uint bytesSent = 0;
             try
             {
@@ -337,17 +354,24 @@ namespace Microsoft.Net.Http.Server
 
             if (statusCode != ErrorCodes.ERROR_SUCCESS && statusCode != ErrorCodes.ERROR_IO_PENDING)
             {
-                asyncResult.Dispose();
-                if (_requestContext.Server.Settings.IgnoreWriteExceptions && started)
+                if (cancellationToken.IsCancellationRequested)
                 {
-                    asyncResult.Complete();
+                    LogHelper.LogDebug(Logger, "FlushAsync", $"Write cancelled with error code: {statusCode}");
+                    asyncResult.Cancel(ThrowWriteExceptions);
                 }
-                else
+                else if (ThrowWriteExceptions)
                 {
+                    asyncResult.Dispose();
                     Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
                     LogHelper.LogException(Logger, "FlushAsync", exception);
                     Abort();
                     throw exception;
+                }
+                else
+                {
+                    // Abort the request but do not close the stream, let future writes complete silently
+                    LogHelper.LogDebug(Logger, "FlushAsync", $"Ignored write exception: {statusCode}");
+                    asyncResult.FailSilently();
                 }
             }
 
@@ -397,9 +421,16 @@ namespace Microsoft.Net.Http.Server
 
         #endregion
 
-        internal void Abort()
+        internal void Abort(bool dispose = true)
         {
-            _closed = true;
+            if (dispose)
+            {
+                _disposed = true;
+            }
+            else
+            {
+                _skipWrites = true;
+            }
             _requestContext.Abort();
         }
 
@@ -476,14 +507,10 @@ namespace Microsoft.Net.Http.Server
             ((Task)asyncResult).GetAwaiter().GetResult();
         }
 
-        public override unsafe Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             // Validates for null and bounds. Allows count == 0.
             var data = new ArraySegment<byte>(buffer, offset, count);
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return Helpers.CanceledTask<int>();
-            }
             CheckDisposed();
             // TODO: Verbose log parameters
 
@@ -523,33 +550,34 @@ namespace Microsoft.Net.Http.Server
 
         internal unsafe Task SendFileAsyncCore(string fileName, long offset, long? count, CancellationToken cancellationToken)
         {
+            if (_skipWrites)
+            {
+                return Helpers.CompletedTask();
+            }
+
             var flags = ComputeLeftToWrite();
             if (count == 0 && _leftToWrite != 0)
             {
                 return Helpers.CompletedTask();
             }
+
             if (_leftToWrite >= 0 && count > _leftToWrite)
             {
                 throw new InvalidOperationException(Resources.Exception_TooMuchWritten);
             }
-            // TODO: Verbose log
 
             if (cancellationToken.IsCancellationRequested)
             {
+                Abort(ThrowWriteExceptions);
                 return Helpers.CanceledTask<int>();
             }
-
-            var cancellationRegistration = default(CancellationTokenRegistration);
-            if (cancellationToken.CanBeCanceled)
-            {
-                cancellationRegistration = RequestContext.RegisterForCancellation(cancellationToken);
-            }
+            // TODO: Verbose log
 
             uint statusCode;
             uint bytesSent = 0;
             var started = _requestContext.Response.HasStarted;
             var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
-            ResponseStreamAsyncResult asyncResult = new ResponseStreamAsyncResult(this, fileName, offset, count, chunked, cancellationRegistration);
+            var asyncResult = new ResponseStreamAsyncResult(this, fileName, offset, count, chunked, cancellationToken);
 
             long bytesWritten;
             if (chunked)
@@ -601,17 +629,24 @@ namespace Microsoft.Net.Http.Server
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
             {
-                asyncResult.Dispose();
-                if (_requestContext.Server.Settings.IgnoreWriteExceptions && started)
+                if (cancellationToken.IsCancellationRequested)
                 {
-                    asyncResult.Complete();
+                    LogHelper.LogDebug(Logger, "SendFileAsync", $"Write cancelled with error code: {statusCode}");
+                    asyncResult.Cancel(ThrowWriteExceptions);
                 }
-                else
+                else if (ThrowWriteExceptions)
                 {
-                    Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
+                    asyncResult.Dispose();
+                    var exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
                     LogHelper.LogException(Logger, "SendFileAsync", exception);
                     Abort();
                     throw exception;
+                }
+                else
+                {
+                    // Abort the request but do not close the stream, let future writes complete silently
+                    LogHelper.LogDebug(Logger, "SendFileAsync", $"Ignored write exception: {statusCode}");
+                    asyncResult.FailSilently();
                 }
             }
 
@@ -642,7 +677,7 @@ namespace Microsoft.Net.Http.Server
                 if (_leftToWrite == 0)
                 {
                     // in this case we already passed 0 as the flag, so we don't need to call HttpSendResponseEntityBody() when we Close()
-                    _closed = true;
+                    _disposed = true;
                 }
             }
         }
@@ -653,11 +688,11 @@ namespace Microsoft.Net.Http.Server
             {
                 if (disposing)
                 {
-                    if (_closed)
+                    if (_disposed)
                     {
                         return;
                     }
-                    _closed = true;
+                    _disposed = true;
                     FlushInternal(endOfRequest: true);
                 }
             }
@@ -688,7 +723,7 @@ namespace Microsoft.Net.Http.Server
 
         private void CheckDisposed()
         {
-            if (_closed)
+            if (_disposed)
             {
                 throw new ObjectDisposedException(GetType().FullName);
             }

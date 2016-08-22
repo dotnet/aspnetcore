@@ -53,6 +53,18 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
+        internal static void LogDebug(ILogger logger, string location, Exception exception)
+        {
+            if (logger == null)
+            {
+                Debug.WriteLine(exception);
+            }
+            else
+            {
+                logger.LogDebug(0, exception, location);
+            }
+        }
+
         internal static void LogException(ILogger logger, string location, Exception exception)
         {
             if (logger == null)
@@ -61,7 +73,7 @@ namespace Microsoft.Net.Http.Server
             }
             else
             {
-                logger.LogError(location, exception);
+                logger.LogError(0, exception, location);
             }
         }
 
