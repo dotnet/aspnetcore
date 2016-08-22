@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
 {
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             }
             var context = new ParserContext(rule);
             context.Next();
-            
+
             var tokens = new List<string>();
             context.Mark();
             while (true)
@@ -42,6 +43,21 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                     {
                         // Means that a character was not escaped appropriately Ex: "foo\"
                         throw new FormatException($"Invalid escaper character in string: {rule}");
+                    }
+                }
+                else if (context.Current == '"')
+                {
+                    // Ignore all characters until the next quote is hit
+                    if (!context.Next())
+                    {
+                        throw new FormatException($"Mismatched number of quotes: {rule}");
+                    }
+                    while (context.Current != '"')
+                    {
+                        if (!context.Next())
+                        {
+                            throw new FormatException($"Mismatched number of quotes: {rule}");
+                        }
                     }
                 }
                 else if (context.Current == Space || context.Current == Tab)
@@ -56,6 +72,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                             if (!context.Next())
                             {
                                 // At end of string, we can return at this point.
+                                RemoveQuotesAndEscapeCharacters(tokens);
                                 return tokens;
                             }
                         }
@@ -74,8 +91,22 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             {
                 tokens.Add(done);
             }
-            
+
+            RemoveQuotesAndEscapeCharacters(tokens);
             return tokens;
+        }
+
+        // Need to remove leading and trailing slashes if they exist.
+        // This is on start-up, so more forgivening towards substrings/ new strings
+        // If this is a perf/memory problem, discuss later.
+        private void RemoveQuotesAndEscapeCharacters(List<string> tokens)
+        {
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                var token = tokens[i];
+                var trimmed = token.Trim('\"');
+                tokens[i] = Regex.Unescape(trimmed);
+            }
         }
     }
 }

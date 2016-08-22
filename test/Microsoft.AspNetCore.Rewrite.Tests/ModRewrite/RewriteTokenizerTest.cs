@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 
             var expected = new List<string>();
             expected.Add("RewriteCond");
-            expected.Add(@"%{HTTPS}\ what");
+            expected.Add(@"%{HTTPS} what");
             expected.Add("!-f");
             Assert.Equal(tokens, expected);
         }
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             var expected = new List<string>();
             expected.Add(@"RewriteCond");
             expected.Add(@"%{HTTPS}");
-            expected.Add(@"\ what");
+            expected.Add(@" what");
             expected.Add(@"!-f");
             Assert.Equal(tokens, expected);
         }
@@ -59,7 +59,21 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             var expected = new List<string>();
             expected.Add(@"RewriteCond");
             expected.Add(@"%{HTTPS}");
-            expected.Add(@"\ what");
+            expected.Add(@" what");
+            expected.Add(@"!-f");
+            Assert.Equal(expected, tokens);
+        }
+
+        [Fact]
+        public void Tokenize_CheckQuotesAreProperlyRemovedFromString()
+        {
+            var testString = "RewriteCond \"%{HTTPS}\" \"\\ what\" \"!-f\"    ";
+            var tokens = new Tokenizer().Tokenize(testString);
+
+            var expected = new List<string>();
+            expected.Add(@"RewriteCond");
+            expected.Add(@"%{HTTPS}");
+            expected.Add(@" what");
             expected.Add(@"!-f");
             Assert.Equal(expected, tokens);
         }
@@ -67,9 +81,15 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public void Tokenize_AssertFormatExceptionWhenEscapeCharacterIsAtEndOfString()
         {
-
             var ex = Assert.Throws<FormatException>(() => new Tokenizer().Tokenize("\\"));
             Assert.Equal(@"Invalid escaper character in string: \", ex.Message);
+        }
+
+        [Fact]
+        public void Tokenize_AssertFormatExceptionWhenUnevenNumberOfQuotes()
+        {
+            var ex = Assert.Throws<FormatException>(() => new Tokenizer().Tokenize("\""));
+            Assert.Equal("Mismatched number of quotes: \"", ex.Message);
         }
     }
 }
