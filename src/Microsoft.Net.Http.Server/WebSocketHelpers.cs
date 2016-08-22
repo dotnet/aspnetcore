@@ -67,8 +67,7 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                // https://github.com/aspnet/WebListener/issues/215
-                return true; // TODO: ComNetOS.IsWin8orLater;
+                return ComNetOS.IsWin8orLater;
             }
         }
 

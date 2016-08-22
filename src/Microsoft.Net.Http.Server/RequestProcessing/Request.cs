@@ -284,8 +284,7 @@ namespace Microsoft.Net.Http.Server
         public string Scheme => IsHttps ? Constants.HttpsScheme : Constants.HttpScheme;
 
         // HTTP.Sys allows you to upgrade anything to opaque unless content-length > 0 or chunked are specified.
-        // TODO: >= Win8 check https://github.com/aspnet/WebListener/issues/215
-        internal bool IsUpgradable => !HasEntityBody;
+        internal bool IsUpgradable => !HasEntityBody && ComNetOS.IsWin8orLater;
 
         public string ContentType => Headers[HttpKnownHeaderNames.ContentType];
 
