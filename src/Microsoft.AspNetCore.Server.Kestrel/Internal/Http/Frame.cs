@@ -242,10 +242,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             if (_frameStreams == null)
             {
                 _frameStreams = new Streams(this);
-                RequestBody = _frameStreams.RequestBody;
-                ResponseBody = _frameStreams.ResponseBody;
-                DuplexStream = _frameStreams.DuplexStream;
             }
+
+            RequestBody = _frameStreams.RequestBody;
+            ResponseBody = _frameStreams.ResponseBody;
+            DuplexStream = _frameStreams.DuplexStream;
 
             _frameStreams.RequestBody.StartAcceptingReads(messageBody);
             _frameStreams.ResponseBody.StartAcceptingWrites();

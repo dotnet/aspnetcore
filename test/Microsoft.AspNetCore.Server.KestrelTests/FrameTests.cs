@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
@@ -453,9 +454,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var frame = new Frame<object>(application: null, context: connectionContext);
             frame.InitializeHeaders();
 
-            // Act
             var originalRequestHeaders = frame.RequestHeaders;
             frame.RequestHeaders = new FrameRequestHeaders();
+
+            // Act
             frame.InitializeHeaders();
 
             // Assert
@@ -476,13 +478,47 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var frame = new Frame<object>(application: null, context: connectionContext);
             frame.InitializeHeaders();
 
-            // Act
             var originalResponseHeaders = frame.ResponseHeaders;
             frame.ResponseHeaders = new FrameResponseHeaders();
+
+            // Act
             frame.InitializeHeaders();
 
             // Assert
             Assert.Same(originalResponseHeaders, frame.ResponseHeaders);
+        }
+
+        [Fact]
+        public void InitializeStreamsResetsStreams()
+        {
+            // Arrange
+            var connectionContext = new ConnectionContext()
+            {
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                ServerOptions = new KestrelServerOptions(),
+                SocketOutput = new MockSocketOuptut()
+            };
+            var frame = new Frame<object>(application: null, context: connectionContext);
+            frame.InitializeHeaders();
+
+            var messageBody = MessageBody.For("HTTP/1.1", (FrameRequestHeaders)frame.RequestHeaders, frame);
+            frame.InitializeStreams(messageBody);
+
+            var originalRequestBody = frame.RequestBody;
+            var originalResponseBody = frame.ResponseBody;
+            var originalDuplexStream = frame.DuplexStream;
+            frame.RequestBody = new MemoryStream();
+            frame.ResponseBody = new MemoryStream();
+            frame.DuplexStream = new MemoryStream();
+
+            // Act
+            frame.InitializeStreams(messageBody);
+
+            // Assert
+            Assert.Same(originalRequestBody, frame.RequestBody);
+            Assert.Same(originalResponseBody, frame.ResponseBody);
+            Assert.Same(originalDuplexStream, frame.DuplexStream);
         }
     }
 }
