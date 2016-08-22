@@ -971,6 +971,68 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.Equal(expected, url);
         }
 
+        [Fact]
+        public void GetUrlHelper_ReturnsSameInstance_IfAlreadyPresent()
+        {
+            // Arrange
+            var expectedUrlHelper = CreateUrlHelper();
+            var httpContext = new Mock<HttpContext>();
+            var mockItems = new Dictionary<object, object>
+            {
+                { typeof(IUrlHelper), expectedUrlHelper }
+            };
+            httpContext.Setup(h => h.Items).Returns(mockItems);
+
+            var actionContext = CreateActionContext(httpContext.Object, Mock.Of<IRouter>());
+            var urlHelperFactory = new UrlHelperFactory();
+
+            // Act
+            var urlHelper = urlHelperFactory.GetUrlHelper(actionContext);
+
+            // Assert
+            Assert.Same(expectedUrlHelper, urlHelper);
+        }
+
+        [Fact]
+        public void GetUrlHelper_CreatesNewInstance_IfNotAlreadyPresent()
+        {
+            // Arrange
+            var httpContext = new Mock<HttpContext>();
+            httpContext.Setup(h => h.Items).Returns(new Dictionary<object, object>());
+
+            var actionContext = CreateActionContext(httpContext.Object, Mock.Of<IRouter>());
+            var urlHelperFactory = new UrlHelperFactory();
+
+            // Act
+            var urlHelper = urlHelperFactory.GetUrlHelper(actionContext);
+
+            // Assert
+            Assert.NotNull(urlHelper);
+            Assert.Same(urlHelper, actionContext.HttpContext.Items[typeof(IUrlHelper)] as IUrlHelper);
+        }
+
+        [Fact]
+        public void GetUrlHelper_CreatesNewInstance_IfExpectedTypeIsNotPresent()
+        {
+            // Arrange
+            var httpContext = new Mock<HttpContext>();
+            var mockItems = new Dictionary<object, object>
+            {
+                { typeof(IUrlHelper), null }
+            };
+            httpContext.Setup(h => h.Items).Returns(mockItems);
+
+            var actionContext = CreateActionContext(httpContext.Object, Mock.Of<IRouter>());
+            var urlHelperFactory = new UrlHelperFactory();
+
+            // Act
+            var urlHelper = urlHelperFactory.GetUrlHelper(actionContext);
+
+            // Assert
+            Assert.NotNull(urlHelper);
+            Assert.Same(urlHelper, actionContext.HttpContext.Items[typeof(IUrlHelper)] as IUrlHelper);
+        }
+
         private static HttpContext CreateHttpContext(
             IServiceProvider services,
             string appRoot)
