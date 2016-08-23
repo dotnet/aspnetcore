@@ -157,7 +157,7 @@ namespace OpenIdConnect.AzureAdSample
                             string userObjectID = context.User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier").Value;
                             var result = await authContext.AcquireTokenSilentAsync(resource, credential, new UserIdentifier(userObjectID, UserIdentifierType.UniqueId));
 
-                            await response.WriteAsync($"<h3>access_token</h3><code>{result.AccessToken}</code><br>");
+                            await response.WriteAsync($"<h3>access_token</h3><code>{HtmlEncode(result.AccessToken)}</code><br>");
                         }
                         catch (Exception ex)
                         {
@@ -184,7 +184,7 @@ namespace OpenIdConnect.AzureAdSample
             await response.WriteAsync("<tr>");
             foreach (var column in columns)
             {
-                await response.WriteAsync($"<th>{column}</th>");
+                await response.WriteAsync($"<th>{HtmlEncode(column)}</th>");
             }
             await response.WriteAsync("</tr>");
             foreach (var row in data)
@@ -192,7 +192,7 @@ namespace OpenIdConnect.AzureAdSample
                 await response.WriteAsync("<tr>");
                 foreach (var column in row)
                 {
-                    await response.WriteAsync($"<td>{column}</td>");
+                    await response.WriteAsync($"<td>{HtmlEncode(column)}</td>");
                 }
                 await response.WriteAsync("</tr>");
             }
