@@ -28,31 +28,29 @@ namespace Microsoft.AspNetCore.ResponseCaching
         private CachedResponse _cachedResponse;
         private TimeSpan _cachedResponseValidFor;
         internal DateTimeOffset _responseTime;
-
-        public ResponseCachingContext(HttpContext httpContext, IResponseCache cache)
-            : this(httpContext, cache, new SystemClock())
+        
+        public ResponseCachingContext(
+            HttpContext httpContext,
+            IResponseCache cache,
+            IResponseCachingCacheabilityValidator cacheabilityValidator,
+            IResponseCachingCacheKeySuffixProvider cacheKeySuffixProvider)
+            : this(httpContext, cache, new SystemClock(), cacheabilityValidator, cacheKeySuffixProvider)
         {
         }
 
         // Internal for testing
-        internal ResponseCachingContext(HttpContext httpContext, IResponseCache cache, ISystemClock clock)
+        internal ResponseCachingContext(
+            HttpContext httpContext, 
+            IResponseCache cache,
+            ISystemClock clock,
+            IResponseCachingCacheabilityValidator cacheabilityValidator,
+            IResponseCachingCacheKeySuffixProvider cacheKeySuffixProvider)
         {
-            if (cache == null)
-            {
-                throw new ArgumentNullException(nameof(cache));
-            }
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-            if (clock == null)
-            {
-                throw new ArgumentNullException(nameof(clock));
-            }
-
             HttpContext = httpContext;
             Cache = cache;
             Clock = clock;
+            CacheabilityValidator = cacheabilityValidator;
+            CacheKeySuffixProvider = cacheKeySuffixProvider;
         }
 
         internal bool CacheResponse
@@ -72,11 +70,15 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         internal bool ResponseStarted { get; set; }
 
-        private ISystemClock Clock { get; }
-
         private HttpContext HttpContext { get; }
 
         private IResponseCache Cache { get; }
+
+        private ISystemClock Clock { get; }
+
+        private IResponseCachingCacheabilityValidator CacheabilityValidator { get; }
+
+        private IResponseCachingCacheKeySuffixProvider CacheKeySuffixProvider { get; }
 
         private Stream OriginalResponseStream { get; set; }
 
@@ -145,46 +147,56 @@ namespace Microsoft.AspNetCore.ResponseCaching
             var builder = new StringBuilder()
                 .Append(request.Method.ToUpperInvariant())
                 .Append(";")
-                .Append(request.Path.Value.ToUpperInvariant())
-                .Append(CreateVaryByCacheKey(varyBy));
+                .Append(request.Path.Value.ToUpperInvariant());
 
-            return builder.ToString();
-        }
-
-        private string CreateVaryByCacheKey(CachedVaryBy varyBy)
-        {
-            // TODO: resolve key format and delimiters
-            if (varyBy == null || varyBy.Headers.Count == 0)
+            if (varyBy?.Headers.Count > 0)
             {
-                return string.Empty;
-            }
-
-            var builder = new StringBuilder(";");
-
-            foreach (var header in varyBy.Headers)
-            {
-                // TODO: Normalization of order, case?
-                var value = HttpContext.Request.Headers[header].ToString();
-
-                // TODO: How to handle null/empty string?
-                if (string.IsNullOrEmpty(value))
+                // TODO: resolve key format and delimiters
+                foreach (var header in varyBy.Headers)
                 {
-                    value = "null";
+                    // TODO: Normalization of order, case?
+                    var value = HttpContext.Request.Headers[header];
+
+                    // TODO: How to handle null/empty string?
+                    if (StringValues.IsNullOrEmpty(value))
+                    {
+                        value = "null";
+                    }
+
+                    builder.Append(";")
+                        .Append(header)
+                        .Append("=")
+                        .Append(value);
                 }
-
-                builder.Append(header)
-                    .Append("=")
-                    .Append(value)
-                    .Append(";");
             }
+            // TODO: Parse querystring params
 
-            // Parse querystring params
+            // Append custom cache key segment
+            var customKey = CacheKeySuffixProvider.CreateCustomKeySuffix(HttpContext);
+            if (!string.IsNullOrEmpty(customKey))
+            {
+                builder.Append(";")
+                    .Append(customKey);
+            }
 
             return builder.ToString();
         }
 
         internal bool RequestIsCacheable()
         {
+            // Use optional override if specified by user
+            switch(CacheabilityValidator.RequestIsCacheableOverride(HttpContext))
+            {
+                case OverrideResult.UseDefaultLogic:
+                    break;
+                case OverrideResult.DoNotCache:
+                    return false;
+                case OverrideResult.Cache:
+                    return true;
+                default:
+                    throw new NotSupportedException($"Unrecognized result from {nameof(CacheabilityValidator.RequestIsCacheableOverride)}.");
+            }
+
             // Verify the method
             // TODO: RFC lists POST as a cacheable method when explicit freshness information is provided, but this is not widely implemented. Will revisit.
             var request = HttpContext.Request;
@@ -236,6 +248,19 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         internal bool ResponseIsCacheable()
         {
+            // Use optional override if specified by user
+            switch (CacheabilityValidator.ResponseIsCacheableOverride(HttpContext))
+            {
+                case OverrideResult.UseDefaultLogic:
+                    break;
+                case OverrideResult.DoNotCache:
+                    return false;
+                case OverrideResult.Cache:
+                    return true;
+                default:
+                    throw new NotSupportedException($"Unrecognized result from {nameof(CacheabilityValidator.ResponseIsCacheableOverride)}.");
+            }
+
             // Only cache pages explicitly marked with public
             // TODO: Consider caching responses that are not marked as public but otherwise cacheable?
             if (!ResponseCacheControl.Public)

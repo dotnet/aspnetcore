@@ -18,6 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
             
             services.AddMemoryCache();
+            services.AddResponseCachingServices();
             services.TryAdd(ServiceDescriptor.Singleton<IResponseCache, MemoryResponseCache>());
 
             return services;
@@ -31,7 +32,16 @@ namespace Microsoft.Extensions.DependencyInjection
             }
             
             services.AddDistributedMemoryCache();
+            services.AddResponseCachingServices();
             services.TryAdd(ServiceDescriptor.Singleton<IResponseCache, DistributedResponseCache>());
+
+            return services;
+        }
+
+        private static IServiceCollection AddResponseCachingServices(this IServiceCollection services)
+        {
+            services.TryAdd(ServiceDescriptor.Singleton<IResponseCachingCacheKeySuffixProvider, NoopCacheKeySuffixProvider>());
+            services.TryAdd(ServiceDescriptor.Singleton<IResponseCachingCacheabilityValidator, NoopCacheabilityValidator>());
 
             return services;
         }

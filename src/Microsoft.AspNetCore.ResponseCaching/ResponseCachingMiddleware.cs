@@ -4,11 +4,9 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
-    // http://tools.ietf.org/html/rfc7234
     public class ResponseCachingMiddleware
     {
         private static readonly Func<object, Task> OnStartingCallback = state =>
@@ -19,26 +17,45 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         private readonly RequestDelegate _next;
         private readonly IResponseCache _cache;
+        IResponseCachingCacheabilityValidator _cacheabilityValidator;
+        IResponseCachingCacheKeySuffixProvider _cacheKeySuffixProvider;
 
-        public ResponseCachingMiddleware(RequestDelegate next, IResponseCache cache)
+        public ResponseCachingMiddleware(
+            RequestDelegate next, 
+            IResponseCache cache, 
+            IResponseCachingCacheabilityValidator cacheabilityValidator,
+            IResponseCachingCacheKeySuffixProvider cacheKeySuffixProvider)
         {
             if (cache == null)
             {
                 throw new ArgumentNullException(nameof(cache));
             }
-
             if (next == null)
             {
                 throw new ArgumentNullException(nameof(next));
             }
+            if (cacheabilityValidator == null)
+            {
+                throw new ArgumentNullException(nameof(cacheabilityValidator));
+            }
+            if (cacheKeySuffixProvider == null)
+            {
+                throw new ArgumentNullException(nameof(cacheKeySuffixProvider));
+            }
 
             _next = next;
             _cache = cache;
+            _cacheabilityValidator = cacheabilityValidator;
+            _cacheKeySuffixProvider = cacheKeySuffixProvider;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            var cachingContext = new ResponseCachingContext(context, _cache);
+            var cachingContext = new ResponseCachingContext(
+                context,
+                _cache,
+                _cacheabilityValidator,
+                _cacheKeySuffixProvider);
 
             // Should we attempt any caching logic?
             if (cachingContext.RequestIsCacheable())
