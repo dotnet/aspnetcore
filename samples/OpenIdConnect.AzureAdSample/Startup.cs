@@ -107,7 +107,11 @@ namespace OpenIdConnect.AzureAdSample
                 {
                     await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     await WriteHtmlAsync(context.Response,
-                        response => response.WriteAsync($"<h1>Signed out locally: {HtmlEncode(context.User.Identity.Name)}</h1><a class=\"btn btn-primary\" href=\"/\">Sign In</a>"));
+                        async response =>
+                        {
+                            await response.WriteAsync($"<h1>Signed out locally: {HtmlEncode(context.User.Identity.Name)}</h1>");
+                            await response.WriteAsync("<a class=\"btn btn-primary\" href=\"/\">Sign In</a>");
+                        });
                 }
                 else if (context.Request.Path.Equals("/signout-remote"))
                 {
@@ -121,7 +125,11 @@ namespace OpenIdConnect.AzureAdSample
                 {
                     await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     await WriteHtmlAsync(context.Response,
-                        response => response.WriteAsync($"<h1>Signed out remotely: {HtmlEncode(context.User.Identity.Name)}</h1><a class=\"btn btn-primary\" href=\"/\">Sign In</a>"));
+                        async response =>
+                        {
+                            await response.WriteAsync($"<h1>Signed out remotely: {HtmlEncode(context.User.Identity.Name)}</h1>");
+                            await response.WriteAsync("<a class=\"btn btn-primary\" href=\"/\">Sign In</a>");
+                        });
                 }
                 else
                 {
