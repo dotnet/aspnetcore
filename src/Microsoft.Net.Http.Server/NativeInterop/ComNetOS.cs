@@ -36,7 +36,6 @@ namespace Microsoft.Net.Http.Server
             var win8Version = new Version(6, 2);
 
 #if NETSTANDARD1_3
-            // TODO: SkipIOCPCallbackOnSuccess doesn't work on Win7. Need a way to detect Win7 vs 8+.
             IsWin8orLater = (new Version(RuntimeEnvironment.OperatingSystemVersion) >= win8Version);
 #else
             IsWin8orLater = (Environment.OSVersion.Version >= win8Version);
