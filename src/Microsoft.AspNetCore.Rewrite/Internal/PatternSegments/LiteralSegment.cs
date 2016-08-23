@@ -5,16 +5,16 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
 {
     public class LiteralSegment : PatternSegment
     {
-        public string Literal { get; set; }
+        private readonly string _literal;
 
         public LiteralSegment(string literal)
         {
-            Literal = literal;
+            _literal = literal;
         }
 
         public override string Evaluate(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
-            return Literal;
+            return _literal;
         }
     }
 }

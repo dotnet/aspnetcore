@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             // Invalid syntax to have any spaces.
             var tokens = flagString.Substring(1, flagString.Length - 2).Split(',');
             var flags = new Flags();
-            foreach (string token in tokens)
+            foreach (var token in tokens)
             {
                 var hasPayload = token.Split('=');
 

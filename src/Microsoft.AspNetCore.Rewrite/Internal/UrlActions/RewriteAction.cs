@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
             // TODO PERF, substrings, object creation, etc.
             if (pattern.IndexOf("://") >= 0)
             {
-                string scheme = null;
+                string scheme;
                 HostString host;
                 PathString path;
                 QueryString query;

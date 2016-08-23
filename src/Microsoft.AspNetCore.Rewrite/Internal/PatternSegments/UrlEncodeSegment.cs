@@ -8,18 +8,18 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
 {
     public class UrlEncodeSegment : PatternSegment
     {
-        public Pattern Pattern { get; set; }
+        private readonly Pattern _pattern;
         
         public UrlEncodeSegment(Pattern pattern)
         {
-            Pattern = pattern;
+            _pattern = pattern;
         }
 
         public override string Evaluate(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
             var tempBuilder = context.Builder;
             context.Builder = new StringBuilder(64);
-            var pattern = Pattern.Evaluate(context, ruleMatch, condMatch);
+            var pattern = _pattern.Evaluate(context, ruleMatch, condMatch);
             context.Builder = tempBuilder;
             return UrlEncoder.Default.Encode(pattern);
         }

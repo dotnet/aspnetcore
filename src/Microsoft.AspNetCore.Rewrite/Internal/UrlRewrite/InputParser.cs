@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             return index;
         }
 
-        private static bool ParseLiteral(ParserContext context, List<PatternSegment> results)
+        private static void ParseLiteral(ParserContext context, List<PatternSegment> results)
         {
             context.Mark();
             string literal;
@@ -186,7 +186,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             }
 
             results.Add(new LiteralSegment(literal));
-            return true;
         }
     }
 }

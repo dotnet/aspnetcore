@@ -12,9 +12,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
 {
     public class FileParser
     {
-        private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(1);
-
-        private InputParser _inputParser = new InputParser();
+        private readonly InputParser _inputParser = new InputParser();
 
         public List<UrlRewriteRule> Parse(TextReader reader)
         {
@@ -168,12 +166,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
 
             var parsedPatternString = condition.Attribute(RewriteTags.Pattern)?.Value;
 
-            Pattern input = null;
             try
             {
-                input = _inputParser.ParseInputString(parsedInputString);
+                var input = _inputParser.ParseInputString(parsedInputString);
                 builder.AddUrlCondition(input, parsedPatternString, patternSyntax, matchType, ignoreCase, negate);
-
             }
             catch (FormatException formatException)
             {
@@ -212,14 +208,14 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             }
         }
 
-        private void ThrowUrlFormatException(XElement element, string message)
+        private static void ThrowUrlFormatException(XElement element, string message)
         {
             var line = ((IXmlLineInfo)element).LineNumber;
             var col = ((IXmlLineInfo)element).LinePosition;
             throw new FormatException(Resources.FormatError_UrlRewriteParseError(message, line, col));
         }
 
-        private void ThrowUrlFormatException(XElement element, string message, Exception ex)
+        private static void ThrowUrlFormatException(XElement element, string message, Exception ex)
         {
             var line = ((IXmlLineInfo)element).LineNumber;
             var col = ((IXmlLineInfo)element).LinePosition;

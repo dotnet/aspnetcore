@@ -172,19 +172,16 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                 case 'g':
                     if (!context.Next())
                     {
-                        throw new FormatException(context.Error());
+                        throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(context.Template, context.Index));
                     }
-                    if (context.Current == 't')
+                    switch (context.Current)
                     {
-                        return new ParsedModRewriteInput(invert, ConditionType.IntComp, OperationType.Greater, operand: null);
-                    }
-                    else if (context.Current == 'e')
-                    {
-                        return new ParsedModRewriteInput(invert, ConditionType.IntComp, OperationType.GreaterEqual, operand: null);
-                    }
-                    else
-                    {
-                        throw new FormatException(context.Error());
+                        case 't':
+                            return new ParsedModRewriteInput(invert, ConditionType.IntComp, OperationType.Greater, operand: null);
+                        case 'e':
+                            return new ParsedModRewriteInput(invert, ConditionType.IntComp, OperationType.GreaterEqual, operand: null);
+                        default:
+                            throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(context.Template, context.Index));
                     }
                 case 'l':
                     // name conflict with -l and -lt/-le, so the assumption is if there is no 
@@ -193,17 +190,14 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                     {
                         return new ParsedModRewriteInput(invert, ConditionType.PropertyTest, OperationType.SymbolicLink, operand: null);
                     }
-                    if (context.Current == 't')
+                    switch (context.Current)
                     {
-                        return new ParsedModRewriteInput(invert, ConditionType.IntComp, OperationType.Less, operand: null);
-                    }
-                    else if (context.Current == 'e')
-                    {
-                        return new ParsedModRewriteInput(invert, ConditionType.IntComp, OperationType.LessEqual, operand: null);
-                    }
-                    else
-                    {
-                        throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(context.Template, context.Index));
+                        case 't':
+                            return new ParsedModRewriteInput(invert, ConditionType.IntComp, OperationType.Less, operand: null);
+                        case 'e':
+                            return new ParsedModRewriteInput(invert, ConditionType.IntComp, OperationType.LessEqual, operand: null);
+                        default:
+                            throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(context.Template, context.Index));
                     }
                 case 'n':
                     if (!context.Next() || context.Current != 'e')

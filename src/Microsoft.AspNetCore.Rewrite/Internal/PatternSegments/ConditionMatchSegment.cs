@@ -5,16 +5,16 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
 {
     public class ConditionMatchSegment : PatternSegment
     {
-        public int Index { get; set; }
+        private readonly int _index;
 
         public ConditionMatchSegment(int index)
         {
-            Index = index;
+            _index = index;
         }
 
         public override string Evaluate(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
-            return condMatch?.BackReference[Index]?.Value;
+            return condMatch?.BackReference[_index].Value;
         }
     }
 }

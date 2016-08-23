@@ -69,6 +69,8 @@ namespace Microsoft.AspNetCore.Rewrite
                         return CompletedTask;
                     case RuleTerminiation.StopRules:
                         return _next(context);
+                    default:
+                        throw new ArgumentOutOfRangeException($"Invalid rule termination {result}");
                 }
             }
             return _next(context);

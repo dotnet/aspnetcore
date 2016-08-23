@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
     {
         public List<Rule> Parse(TextReader input)
         {
-            string line = null;
+            string line;
             var rules = new List<Rule>();
             var builder = new RuleBuilder();
             var lineNum = 0;

@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
     {
         private const char Percent = '%';
         private const char Dollar = '$';
-        private const char Space = ' ';
         private const char Colon = ':';
         private const char OpenBrace = '{';
         private const char CloseBrace = '}';
@@ -41,43 +40,41 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             var results = new List<PatternSegment>();
             while (context.Next())
             {
-                if (context.Current == Percent)
+                switch (context.Current)
                 {
-                    // This is a server parameter, parse for a condition variable
-                    if (!context.Next())
-                    {
-                        throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(testString, context.Index));
-                    }
-                    ParseConditionParameter(context, results);
-                }
-                else if (context.Current == Dollar)
-                {
-                    // This is a parameter from the rule, verify that it is a number from 0 to 9 directly after it
-                    // and create a new Pattern Segment.
-                    if (!context.Next())
-                    {
-                        throw new FormatException(Resources.FormatError_InputParserNoBackreference(context.Index));
-                    }
-                    context.Mark();
-                    if (context.Current >= '0' && context.Current <= '9')
-                    {
-                        context.Next();
-                        var ruleVariable = context.Capture();
-                        context.Back();
-                        var parsedIndex = int.Parse(ruleVariable);
+                    case Percent:
+                        // This is a server parameter, parse for a condition variable
+                        if (!context.Next())
+                        {
+                            throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(testString, context.Index));
+                        }
+                        ParseConditionParameter(context, results);
+                        break;
+                    case Dollar:
+                        // This is a parameter from the rule, verify that it is a number from 0 to 9 directly after it
+                        // and create a new Pattern Segment.
+                        if (!context.Next())
+                        {
+                            throw new FormatException(Resources.FormatError_InputParserNoBackreference(context.Index));
+                        }
+                        context.Mark();
+                        if (context.Current >= '0' && context.Current <= '9')
+                        {
+                            context.Next();
+                            var ruleVariable = context.Capture();
+                            context.Back();
+                            var parsedIndex = int.Parse(ruleVariable);
                         
-                        results.Add(new RuleMatchSegment(parsedIndex));
-                    }
-                    else
-                    {
-                        throw new FormatException(Resources.FormatError_InputParserInvalidInteger(testString, context.Index));
-                    }
-                }
-                else
-                {
-                    // Parse for literals, which will return on either the end of the test string 
-                    // or when it hits a special character
-                    ParseLiteral(context, results);
+                            results.Add(new RuleMatchSegment(parsedIndex));
+                        }
+                        else
+                        {
+                            throw new FormatException(Resources.FormatError_InputParserInvalidInteger(testString, context.Index));
+                        }
+                        break;
+                    default:
+                        ParseLiteral(context, results);
+                        break;
                 }
             }
             return new Pattern(results);

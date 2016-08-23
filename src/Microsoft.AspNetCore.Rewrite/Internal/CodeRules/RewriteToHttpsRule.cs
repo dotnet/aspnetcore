@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
 {
     public class RewriteToHttpsRule : Rule
     {
-        public bool stopProcessing { get; set; }
+        public bool StopProcessing { get; set; }
         public int? SSLPort { get; set; }
 
         public override RuleResult ApplyRule(RewriteContext context)
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
 
                 context.HttpContext.Request.Scheme = "https";
                 context.HttpContext.Request.Host = host;
-                return stopProcessing ? RuleResult.StopRules: RuleResult.Continue;
+                return StopProcessing ? RuleResult.StopRules: RuleResult.Continue;
             }
             return RuleResult.Continue;
         }

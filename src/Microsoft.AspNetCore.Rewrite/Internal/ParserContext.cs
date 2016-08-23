@@ -18,10 +18,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
             Index = -1;
         }
 
-        public char Current
-        {
-            get { return (Index < Template.Length && Index >= 0) ? Template[Index] : (char)0; }
-        }
+        public char Current => (Index < Template.Length && Index >= 0) ? Template[Index] : (char)0;
 
         public bool Back()
         {
@@ -61,11 +58,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
             {
                 return null;
             }
-        }
-
-        public string Error()
-        {
-            return string.Format("Syntax Error at index: ", Index, " with character: ", Current); 
         }
     }
 }

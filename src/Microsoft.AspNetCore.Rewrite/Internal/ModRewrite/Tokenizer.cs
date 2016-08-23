@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
         private const char Space = ' ';
         private const char Escape = '\\';
         private const char Tab = '\t';
+        private const char Quote = '"';
 
         /// <summary>
         /// Splits a string on whitespace, ignoring spaces, creating into a list of strings.
@@ -36,49 +37,51 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             context.Mark();
             while (true)
             {
-                if (context.Current == Escape)
+                switch (context.Current)
                 {
-                    // Need to progress such that the next character is not evaluated.
-                    if (!context.Next())
-                    {
-                        // Means that a character was not escaped appropriately Ex: "foo\"
-                        throw new FormatException($"Invalid escaper character in string: {rule}");
-                    }
-                }
-                else if (context.Current == '"')
-                {
-                    // Ignore all characters until the next quote is hit
-                    if (!context.Next())
-                    {
-                        throw new FormatException($"Mismatched number of quotes: {rule}");
-                    }
-                    while (context.Current != '"')
-                    {
+                    case Escape:
+                        // Need to progress such that the next character is not evaluated.
+                        if (!context.Next())
+                        {
+                            // Means that a character was not escaped appropriately Ex: "foo\"
+                            throw new FormatException($"Invalid escaper character in string: {rule}");
+                        }
+                        break;
+                    case Quote:
+                        // Ignore all characters until the next quote is hit
                         if (!context.Next())
                         {
                             throw new FormatException($"Mismatched number of quotes: {rule}");
                         }
-                    }
-                }
-                else if (context.Current == Space || context.Current == Tab)
-                {
-                    // time to capture!
-                    var token = context.Capture();
-                    if (!string.IsNullOrEmpty(token))
-                    {
-                        tokens.Add(token);
-                        while (context.Current == Space || context.Current == Tab)
+
+                        while (context.Current != Quote)
                         {
                             if (!context.Next())
                             {
-                                // At end of string, we can return at this point.
-                                RemoveQuotesAndEscapeCharacters(tokens);
-                                return tokens;
+                                throw new FormatException($"Mismatched number of quotes: {rule}");
                             }
                         }
-                        context.Mark();
-                        context.Back();
-                    }
+                        break;
+                    case Space:
+                    case Tab:
+                        // time to capture!
+                        var token = context.Capture();
+                        if (!string.IsNullOrEmpty(token))
+                        {
+                            tokens.Add(token);
+                            do
+                            {
+                                if (!context.Next())
+                                {
+                                    // At end of string, we can return at this point.
+                                    RemoveQuotesAndEscapeCharacters(tokens);
+                                    return tokens;
+                                }
+                            } while (context.Current == Space || context.Current == Tab);
+                            context.Mark();
+                            context.Back();
+                        }
+                        break;
                 }
                 if (!context.Next())
                 {
@@ -99,9 +102,9 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
         // Need to remove leading and trailing slashes if they exist.
         // This is on start-up, so more forgivening towards substrings/ new strings
         // If this is a perf/memory problem, discuss later.
-        private void RemoveQuotesAndEscapeCharacters(List<string> tokens)
+        private static void RemoveQuotesAndEscapeCharacters(IList<string> tokens)
         {
-            for (int i = 0; i < tokens.Count; i++)
+            for (var i = 0; i < tokens.Count; i++)
             {
                 var token = tokens[i];
                 var trimmed = token.Trim('\"');

@@ -7,11 +7,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
 {
     public class ToLowerSegment : PatternSegment
     {
-        public Pattern Pattern { get; set; }
+        private readonly Pattern _pattern;
 
         public ToLowerSegment(Pattern pattern)
         {
-            Pattern = pattern;
+            _pattern = pattern;
         }
 
         public override string Evaluate(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
             // lowercase segments.
             var tempBuilder = context.Builder;
             context.Builder = new StringBuilder(64);
-            var pattern = Pattern.Evaluate(context, ruleMatch, condMatch);
+            var pattern = _pattern.Evaluate(context, ruleMatch, condMatch);
             context.Builder = tempBuilder;
             return pattern.ToLowerInvariant();
         }

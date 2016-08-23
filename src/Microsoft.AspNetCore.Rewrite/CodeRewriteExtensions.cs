@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Rewrite
 
         public static RewriteOptions RewriteToHttps(this RewriteOptions options, int? sslPort, bool stopProcessing)
         {
-            options.Rules.Add(new RewriteToHttpsRule {SSLPort = sslPort, stopProcessing = stopProcessing });
+            options.Rules.Add(new RewriteToHttpsRule {SSLPort = sslPort, StopProcessing = stopProcessing });
             return options;
         }
 

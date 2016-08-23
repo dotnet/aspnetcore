@@ -5,16 +5,16 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
 {
     public class HeaderSegment : PatternSegment
     {
-        public string Header { get; set; }
+        private readonly string _header;
         
         public HeaderSegment(string header)
         {
-            Header = header;
+            _header = header;
         }
 
         public override string Evaluate(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
-            return context.HttpContext.Request.Headers[Header];
+            return context.HttpContext.Request.Headers[_header];
         }
     }
 }

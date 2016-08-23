@@ -8,12 +8,12 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlMatches
 {
     public class IntegerMatch : UrlMatch
     {
-        public int Value { get; }
-        public IntegerOperationType Operation { get; }
+        private readonly int _value;
+        private readonly IntegerOperationType _operation;
         public IntegerMatch(int value, IntegerOperationType operation)
         {
-            Value = value;
-            Operation = operation;
+            _value = value;
+            _operation = operation;
         }
 
         public IntegerMatch(string value, IntegerOperationType operation)
@@ -23,8 +23,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlMatches
             {
                 throw new FormatException("Syntax error for integers in comparison.");
             }
-            Value = compValue;
-            Operation = operation;
+            _value = compValue;
+            _operation = operation;
         }
 
         public override MatchResults Evaluate(string input, RewriteContext context)
@@ -35,20 +35,20 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlMatches
                 return MatchResults.EmptyFailure;
             }
 
-            switch (Operation)
+            switch (_operation)
             {
                 case IntegerOperationType.Equal:
-                    return compValue == Value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                    return compValue == _value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 case IntegerOperationType.Greater:
-                    return compValue > Value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                    return compValue > _value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 case IntegerOperationType.GreaterEqual:
-                    return compValue >= Value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                    return compValue >= _value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 case IntegerOperationType.Less:
-                    return compValue < Value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                    return compValue < _value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 case IntegerOperationType.LessEqual:
-                    return compValue <= Value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                    return compValue <= _value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 case IntegerOperationType.NotEqual:
-                    return compValue != Value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                    return compValue != _value ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 default:
                     return null;
             }

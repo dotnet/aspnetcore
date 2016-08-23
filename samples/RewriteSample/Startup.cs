@@ -37,7 +37,7 @@ namespace RewriteSample
                     return RuleResult.Continue;
                 }));
 
-            app.Run(context => context.Response.WriteAsync(context.Request.Path));
+            app.Run(context => context.Response.WriteAsync($"Rewritten Url: {context.Request.Path + context.Request.QueryString}"));
         }
 
         public static void Main(string[] args)

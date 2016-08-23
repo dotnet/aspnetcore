@@ -62,91 +62,90 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             condition.OrNext = flags.HasFlag(FlagType.Or);
             condition.Input = pattern;
 
-            if (input.ConditionType == ConditionType.Regex)
+            switch (input.ConditionType)
             {
-                if (flags.HasFlag(FlagType.NoCase))
-                {
-                    condition.Match = new RegexMatch(new Regex(input.Operand, RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexTimeout), input.Invert);
-                }
-                else
-                {
-                    condition.Match = new RegexMatch(new Regex(input.Operand, RegexOptions.Compiled, RegexTimeout), input.Invert);
-                }
-            }
-            else if (input.ConditionType == ConditionType.IntComp)
-            {
-                switch (input.OperationType)
-                {
-                    case OperationType.Equal:
-                        condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.Equal);
-                        break;
-                    case OperationType.Greater:
-                        condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.Greater);
-                        break;
-                    case OperationType.GreaterEqual:
-                        condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.GreaterEqual);
-                        break;
-                    case OperationType.Less:
-                        condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.Less);
-                        break;
-                    case OperationType.LessEqual:
-                        condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.LessEqual);
-                        break;
-                    case OperationType.NotEqual:
-                        condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.NotEqual);
-                        break;
-                    default:
-                        throw new ArgumentException("Invalid operation for integer comparison.");
-                }
-            }
-            else if (input.ConditionType == ConditionType.StringComp)
-            {
-                switch (input.OperationType)
-                {
-                    case OperationType.Equal:
-                        condition.Match = new StringMatch(input.Operand, StringOperationType.Equal);
-                        break;
-                    case OperationType.Greater:
-                        condition.Match = new StringMatch(input.Operand, StringOperationType.Greater);
-                        break;
-                    case OperationType.GreaterEqual:
-                        condition.Match = new StringMatch(input.Operand, StringOperationType.GreaterEqual);
-                        break;
-                    case OperationType.Less:
-                        condition.Match = new StringMatch(input.Operand, StringOperationType.Less);
-                        break;
-                    case OperationType.LessEqual:
-                        condition.Match = new StringMatch(input.Operand, StringOperationType.LessEqual);
-                        break;
-                    default:
-                        throw new ArgumentException("Invalid operation for string comparison.");
-                }
-            }
-            else
-            {
-                switch (input.OperationType)
-                {
-                    case OperationType.Directory:
-                        condition.Match = new IsDirectoryMatch(input.Invert);
-                        break;
-                    case OperationType.RegularFile:
-                        condition.Match = new IsFileMatch(input.Invert);
-                        break;
-                    case OperationType.ExistingFile:
-                        condition.Match = new IsFileMatch(input.Invert);
-                        break;
-                    case OperationType.SymbolicLink:
-                        throw new NotImplementedException("Symbolic links are not implemented");
-                    case OperationType.Size:
-                        condition.Match = new FileSizeMatch(input.Invert);
-                        break;
-                    case OperationType.ExistingUrl:
-                        throw new NotImplementedException("Existing Url lookups not implemented");
-                    case OperationType.Executable:
-                        throw new NotImplementedException("Executable Property search is not implemented");
-                    default:
-                        throw new ArgumentException("Invalid operation for property comparison.");
-                }
+                case ConditionType.Regex:
+                    if (flags.HasFlag(FlagType.NoCase))
+                    {
+                        condition.Match = new RegexMatch(new Regex(input.Operand, RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexTimeout), input.Invert);
+                    }
+                    else
+                    {
+                        condition.Match = new RegexMatch(new Regex(input.Operand, RegexOptions.CultureInvariant | RegexOptions.Compiled, RegexTimeout), input.Invert);
+                    }
+                    break;
+                case ConditionType.IntComp:
+                    switch (input.OperationType)
+                    {
+                        case OperationType.Equal:
+                            condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.Equal);
+                            break;
+                        case OperationType.Greater:
+                            condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.Greater);
+                            break;
+                        case OperationType.GreaterEqual:
+                            condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.GreaterEqual);
+                            break;
+                        case OperationType.Less:
+                            condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.Less);
+                            break;
+                        case OperationType.LessEqual:
+                            condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.LessEqual);
+                            break;
+                        case OperationType.NotEqual:
+                            condition.Match = new IntegerMatch(input.Operand, IntegerOperationType.NotEqual);
+                            break;
+                        default:
+                            throw new ArgumentException("Invalid operation for integer comparison.");
+                    }
+                    break;
+                case ConditionType.StringComp:
+                    switch (input.OperationType)
+                    {
+                        case OperationType.Equal:
+                            condition.Match = new StringMatch(input.Operand, StringOperationType.Equal, input.Invert);
+                            break;
+                        case OperationType.Greater:
+                            condition.Match = new StringMatch(input.Operand, StringOperationType.Greater, input.Invert);
+                            break;
+                        case OperationType.GreaterEqual:
+                            condition.Match = new StringMatch(input.Operand, StringOperationType.GreaterEqual, input.Invert);
+                            break;
+                        case OperationType.Less:
+                            condition.Match = new StringMatch(input.Operand, StringOperationType.Less, input.Invert);
+                            break;
+                        case OperationType.LessEqual:
+                            condition.Match = new StringMatch(input.Operand, StringOperationType.LessEqual, input.Invert);
+                            break;
+                        default:
+                            throw new ArgumentException("Invalid operation for string comparison.");
+                    }
+                    break;
+                default:
+                    switch (input.OperationType)
+                    {
+                        case OperationType.Directory:
+                            condition.Match = new IsDirectoryMatch(input.Invert);
+                            break;
+                        case OperationType.RegularFile:
+                            condition.Match = new IsFileMatch(input.Invert);
+                            break;
+                        case OperationType.ExistingFile:
+                            condition.Match = new IsFileMatch(input.Invert);
+                            break;
+                        case OperationType.SymbolicLink:
+                            throw new NotImplementedException("Symbolic links are not implemented");
+                        case OperationType.Size:
+                            condition.Match = new FileSizeMatch(input.Invert);
+                            break;
+                        case OperationType.ExistingUrl:
+                            throw new NotImplementedException("Existing Url lookups not implemented");
+                        case OperationType.Executable:
+                            throw new NotImplementedException("Executable Property search is not implemented");
+                        default:
+                            throw new ArgumentException("Invalid operation for property comparison.");
+                    }
+                    break;
             }
             _conditions.ConditionList.Add(condition);
         }
@@ -157,11 +156,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
         {
             if (flags.HasFlag(FlagType.NoCase))
             {
-                _match = new RegexMatch(new Regex(input.Operand, RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexTimeout), input.Invert);
+                _match = new RegexMatch(new Regex(input.Operand, RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexTimeout), input.Invert);
             }
             else
             {
-                _match = new RegexMatch(new Regex(input.Operand, RegexOptions.Compiled, RegexTimeout), input.Invert);
+                _match = new RegexMatch(new Regex(input.Operand, RegexOptions.CultureInvariant | RegexOptions.Compiled, RegexTimeout), input.Invert);
             }
         }
 

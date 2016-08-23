@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlMatches
 {
     public class IsDirectoryMatch : UrlMatch
     {
-        public IsDirectoryMatch( bool negate)
+        public IsDirectoryMatch(bool negate)
         { 
             Negate = negate;
         }

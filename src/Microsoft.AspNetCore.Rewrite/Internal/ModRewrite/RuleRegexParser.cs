@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
     {
         public ParsedModRewriteInput ParseRuleRegex(string regex)
         {
-            if (regex == null || regex == string.Empty)
+            if (string.IsNullOrEmpty(regex))
             {
                 throw new FormatException("Regex expression is null");
             }

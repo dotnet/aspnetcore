@@ -5,19 +5,19 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlMatches
 {
     public class ExactMatch : UrlMatch
     {
-        public bool IgnoreCase { get; }
-        public string StringMatch { get; }
+        private readonly bool _ignoreCase;
+        private readonly string _stringMatch;
 
         public ExactMatch(bool ignoreCase, string input, bool negate)
         {
-            IgnoreCase = ignoreCase;
-            StringMatch = input;
+            _ignoreCase = ignoreCase;
+            _stringMatch = input;
             Negate = negate;
         }
 
         public override MatchResults Evaluate(string pattern, RewriteContext context)
         {
-            var pathMatch = string.Compare(pattern, StringMatch, IgnoreCase);
+            var pathMatch = string.Compare(pattern, _stringMatch, _ignoreCase);
             return new MatchResults { Success = ((pathMatch == 0) != Negate) };
         }
     }

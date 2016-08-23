@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             switch (actionType)
             {
                 case ActionType.None:
-                    _action =  new VoidAction();
+                    _action =  new VoidAction(stopProcessing ? RuleResult.StopRules : RuleResult.Continue);
                     break;
                 case ActionType.Rewrite:
                     if (appendQueryString)
@@ -79,12 +79,12 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                     {
                         if (ignoreCase)
                         {
-                            var regex = new Regex(input, RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexTimeout);
+                            var regex = new Regex(input, RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexTimeout);
                             _initialMatch = new RegexMatch(regex, negate);
                         }
                         else
                         {
-                            var regex = new Regex(input, RegexOptions.Compiled, RegexTimeout);
+                            var regex = new Regex(input, RegexOptions.CultureInvariant | RegexOptions.Compiled, RegexTimeout);
                             _initialMatch =  new RegexMatch(regex, negate);
                         }
                         break;
@@ -121,11 +121,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                                     Regex regex = null;
                                     if (ignoreCase)
                                     {
-                                        regex = new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexTimeout);
+                                        regex = new Regex(pattern, RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexTimeout);
                                     }
                                     else
                                     {
-                                        regex = new Regex(pattern, RegexOptions.Compiled, RegexTimeout);
+                                        regex = new Regex(pattern, RegexOptions.CultureInvariant | RegexOptions.Compiled, RegexTimeout);
                                     }
 
                                     _conditions.ConditionList.Add(new Condition { Input = input, Match = new RegexMatch(regex, negate), OrNext = _matchAny});

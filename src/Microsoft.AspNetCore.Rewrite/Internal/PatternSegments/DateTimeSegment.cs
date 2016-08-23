@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
 {
     public class DateTimeSegment : PatternSegment
     {
-        private DateTimePortion _portion;
+        private readonly DateTimePortion _portion;
 
         public DateTimeSegment(string segment)
         {

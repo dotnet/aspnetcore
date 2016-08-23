@@ -5,29 +5,31 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlMatches
 {
     public class StringMatch : UrlMatch
     {
-        public string Value { get; set; }
-        public StringOperationType Operation { get; set; }
-        public bool IgnoreCase { get; set; }
-        public StringMatch(string value, StringOperationType operation)
+        private readonly string _value;
+        private readonly StringOperationType _operation;
+        private readonly bool _ignoreCase;
+
+        public StringMatch(string value, StringOperationType operation, bool ignoreCase)
         {
-            Value = value;
-            Operation = operation;
+            _value = value;
+            _operation = operation;
+            _ignoreCase = ignoreCase;
         }
 
         public override MatchResults Evaluate(string input, RewriteContext context)
         {
-            switch (Operation)
+            switch (_operation)
             {
                 case StringOperationType.Equal:
-                    return string.Compare(input, Value, IgnoreCase) == 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                    return string.Compare(input, _value, _ignoreCase) == 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 case StringOperationType.Greater:
-                    return string.Compare(input, Value, IgnoreCase) > 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                    return string.Compare(input, _value, _ignoreCase) > 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 case StringOperationType.GreaterEqual:
-                    return string.Compare(input, Value, IgnoreCase) >= 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                    return string.Compare(input, _value, _ignoreCase) >= 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 case StringOperationType.Less:
-                    return string.Compare(input, Value, IgnoreCase) < 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                    return string.Compare(input, _value, _ignoreCase) < 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 case StringOperationType.LessEqual:
-                    return string.Compare(input, Value, IgnoreCase) <= 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
+                    return string.Compare(input, _value, _ignoreCase) <= 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
                 default:
                     return null;
             }
