@@ -69,16 +69,24 @@ namespace Microsoft.Net.Http.Server
                 // We need to be able to dispose of the registrations each request to prevent leaks.
                 if (!_disconnectToken.HasValue)
                 {
-                    var connectionDisconnectToken = Server.DisconnectListener.GetTokenForConnection(Request.UConnectionId);
-
-                    if (connectionDisconnectToken.CanBeCanceled)
+                    if (_disposed || Response.BodyIsFinished)
                     {
-                        _requestAbortSource = CancellationTokenSource.CreateLinkedTokenSource(connectionDisconnectToken);
-                        _disconnectToken = _requestAbortSource.Token;
+                        // We cannot register for disconnect notifications after the response has finished sending.
+                        _disconnectToken = CancellationToken.None;
                     }
                     else
                     {
-                        _disconnectToken = CancellationToken.None;
+                        var connectionDisconnectToken = Server.DisconnectListener.GetTokenForConnection(Request.UConnectionId);
+
+                        if (connectionDisconnectToken.CanBeCanceled)
+                        {
+                            _requestAbortSource = CancellationTokenSource.CreateLinkedTokenSource(connectionDisconnectToken);
+                            _disconnectToken = _requestAbortSource.Token;
+                        }
+                        else
+                        {
+                            _disconnectToken = CancellationToken.None;
+                        }
                     }
                 }
                 return _disconnectToken.Value;

@@ -105,6 +105,68 @@ namespace Microsoft.Net.Http.Server
         }
 
         [Fact]
+        public async Task Server_TokenRegisteredAfterClientDisconnects_CallCanceled()
+        {
+            var interval = TimeSpan.FromSeconds(1);
+            var canceled = new ManualResetEvent(false);
+
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                using (var client = new HttpClient())
+                {
+                    var responseTask = client.GetAsync(address);
+
+                    var context = await server.AcceptAsync();
+
+                    client.CancelPendingRequests();
+                    await Assert.ThrowsAsync<TaskCanceledException>(() => responseTask);
+
+                    var ct = context.DisconnectToken;
+                    Assert.True(ct.CanBeCanceled, "CanBeCanceled");
+                    ct.Register(() => canceled.Set());
+                    Assert.True(ct.WaitHandle.WaitOne(interval));
+                    Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
+
+                    Assert.True(canceled.WaitOne(interval), "canceled");
+
+                    context.Dispose();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task Server_TokenRegisteredAfterResponseSent_Success()
+        {
+            var interval = TimeSpan.FromSeconds(1);
+            var canceled = new ManualResetEvent(false);
+
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                using (var client = new HttpClient())
+                {
+                    var responseTask = client.GetAsync(address);
+
+                    var context = await server.AcceptAsync();
+                    context.Dispose();
+
+                    var response = await responseTask;
+                    response.EnsureSuccessStatusCode();
+                    Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
+
+                    var ct = context.DisconnectToken;
+                    Assert.False(ct.CanBeCanceled, "CanBeCanceled");
+                    ct.Register(() => canceled.Set());
+                    Assert.False(ct.WaitHandle.WaitOne(interval));
+                    Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
+
+                    Assert.False(canceled.WaitOne(interval), "canceled");
+                }
+            }
+        }
+
+        [Fact]
         public async Task Server_Abort_CallCanceled()
         {
             var interval = TimeSpan.FromSeconds(1);

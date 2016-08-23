@@ -115,6 +115,8 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
+        internal bool BodyIsFinished => _nativeStream?.IsDisposed ?? _responseState >= ResponseState.Closed;
+
         /// <summary>
         /// The authentication challenges that will be added to the response if the status code is 401.
         /// This must be a subset of the AuthenticationSchemes enabled on the server.

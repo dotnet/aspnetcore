@@ -63,6 +63,8 @@ namespace Microsoft.Net.Http.Server
 
         internal bool ThrowWriteExceptions => RequestContext.Server.Settings.ThrowWriteExceptions;
 
+        internal bool IsDisposed => _disposed;
+
         public override bool CanSeek
         {
             get
