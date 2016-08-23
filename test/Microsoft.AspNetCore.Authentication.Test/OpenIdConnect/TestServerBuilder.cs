@@ -12,16 +12,51 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
 {
     internal class TestServerBuilder
     {
+        public static readonly string DefaultAuthority = @"https://login.microsoftonline.com/common";
+        public static readonly string TestHost = @"https://example.com";
         public static readonly string Challenge = "/challenge";
         public static readonly string ChallengeWithOutContext = "/challengeWithOutContext";
         public static readonly string ChallengeWithProperties = "/challengeWithProperties";
         public static readonly string Signin = "/signin";
         public static readonly string Signout = "/signout";
+
+        public static OpenIdConnectOptions CreateOpenIdConnectOptions() =>
+            new OpenIdConnectOptions
+            {
+                Authority = DefaultAuthority,
+                ClientId = Guid.NewGuid().ToString(),
+                Configuration = CreateDefaultOpenIdConnectConfiguration()
+            };
+
+        public static OpenIdConnectOptions CreateOpenIdConnectOptions(Action<OpenIdConnectOptions> update)
+        {
+            var options = CreateOpenIdConnectOptions();
+
+            if (update != null)
+            {
+                update(options);
+            }
+
+            return options;
+        }
+
+        public static OpenIdConnectConfiguration CreateDefaultOpenIdConnectConfiguration() =>
+            new OpenIdConnectConfiguration()
+            {
+                AuthorizationEndpoint = DefaultAuthority + "/oauth2/authorize",
+                EndSessionEndpoint = DefaultAuthority + "/oauth2/endsessionendpoint",
+                TokenEndpoint = DefaultAuthority + "/oauth2/token"
+            };
+
+        public static IConfigurationManager<OpenIdConnectConfiguration> CreateDefaultOpenIdConnectConfigurationManager() =>
+            new StaticConfigurationManager<OpenIdConnectConfiguration>(CreateDefaultOpenIdConnectConfiguration());
 
         public static TestServer CreateServer(OpenIdConnectOptions options)
         {

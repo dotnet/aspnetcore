@@ -48,10 +48,10 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         [Fact]
         public async Task SignOutWithDefaultRedirectUri()
         {
-            var configuration = TestDefaultValues.CreateDefaultOpenIdConnectConfiguration();
+            var configuration = TestServerBuilder.CreateDefaultOpenIdConnectConfiguration();
             var server = TestServerBuilder.CreateServer(new OpenIdConnectOptions
             {
-                Authority = TestDefaultValues.DefaultAuthority,
+                Authority = TestServerBuilder.DefaultAuthority,
                 ClientId = "Test Id",
                 Configuration = configuration
             });
@@ -64,10 +64,10 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         [Fact]
         public async Task SignOutWithCustomRedirectUri()
         {
-            var configuration = TestDefaultValues.CreateDefaultOpenIdConnectConfiguration();
+            var configuration = TestServerBuilder.CreateDefaultOpenIdConnectConfiguration();
             var server = TestServerBuilder.CreateServer(new OpenIdConnectOptions
             {
-                Authority = TestDefaultValues.DefaultAuthority,
+                Authority = TestServerBuilder.DefaultAuthority,
                 ClientId = "Test Id",
                 Configuration = configuration,
                 PostLogoutRedirectUri = "https://example.com/logout"
@@ -81,10 +81,10 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         [Fact]
         public async Task SignOutWith_Specific_RedirectUri_From_Authentication_Properites()
         {
-            var configuration = TestDefaultValues.CreateDefaultOpenIdConnectConfiguration();
+            var configuration = TestServerBuilder.CreateDefaultOpenIdConnectConfiguration();
             var server = TestServerBuilder.CreateServer(new OpenIdConnectOptions
             {
-                Authority = TestDefaultValues.DefaultAuthority,
+                Authority = TestServerBuilder.DefaultAuthority,
                 ClientId = "Test Id",
                 Configuration = configuration,
                 PostLogoutRedirectUri = "https://example.com/logout"

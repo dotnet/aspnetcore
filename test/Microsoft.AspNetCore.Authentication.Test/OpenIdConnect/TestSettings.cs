@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
 
         public TestSettings(Action<OpenIdConnectOptions> configure)
         {
-            _options = TestDefaultValues.CreateOpenIdConnectOptions(configure);
+            _options = TestServerBuilder.CreateOpenIdConnectOptions(configure);
         }
 
         public TestSettings(OpenIdConnectOptions options)
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             ValidateQueryParameter(OpenIdConnectParameterNames.Scope, string.Join(" ", _options.Scope), actualQuery, errors, htmlEncoded);
 
         private void ValidateRedirectUri(IDictionary<string, string> actualQuery, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateQueryParameter(OpenIdConnectParameterNames.RedirectUri, TestDefaultValues.TestHost + _options.CallbackPath, actualQuery, errors, htmlEncoded);
+            ValidateQueryParameter(OpenIdConnectParameterNames.RedirectUri, TestServerBuilder.TestHost + _options.CallbackPath, actualQuery, errors, htmlEncoded);
 
         private void ValidateResource(IDictionary<string, string> actualQuery, ICollection<string> errors, bool htmlEncoded) =>
             ValidateQueryParameter(OpenIdConnectParameterNames.RedirectUri, _options.Resource, actualQuery, errors, htmlEncoded);

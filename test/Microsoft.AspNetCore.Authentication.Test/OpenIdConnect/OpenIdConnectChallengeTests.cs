@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             properties.Items.Add(OpenIdConnectDefaults.UserstatePropertiesKey, userState);
 
             var server = TestServerBuilder.CreateServer(settings.Options, handler: null, properties: properties);
-            var transaction = await TestTransaction.SendAsync(server, TestDefaultValues.TestHost + TestServerBuilder.ChallengeWithProperties);
+            var transaction = await TestTransaction.SendAsync(server, TestServerBuilder.TestHost + TestServerBuilder.ChallengeWithProperties);
 
             var res = transaction.Response;
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
@@ -317,6 +317,6 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             Assert.Contains("expires", secondCookie);
         }
 
-        private static string ChallengeEndpoint => TestDefaultValues.TestHost + TestServerBuilder.Challenge;
+        private static string ChallengeEndpoint => TestServerBuilder.TestHost + TestServerBuilder.Challenge;
     }
 }

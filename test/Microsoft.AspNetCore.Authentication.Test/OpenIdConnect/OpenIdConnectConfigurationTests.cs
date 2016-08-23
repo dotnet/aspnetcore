@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         {
             var options = new OpenIdConnectOptions
             {
-                Authority = TestDefaultValues.DefaultAuthority,
+                Authority = TestServerBuilder.DefaultAuthority,
                 ClientId = Guid.NewGuid().ToString(),
                 SignInScheme = Guid.NewGuid().ToString()
             };
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             TestConfigurationException<ArgumentException>(
                 new OpenIdConnectOptions
                 {
-                    Authority = TestDefaultValues.DefaultAuthority,
+                    Authority = TestServerBuilder.DefaultAuthority,
                     ClientId = Guid.NewGuid().ToString()
                 },
                 ex => Assert.Equal("SignInScheme", ex.ParamName));
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
                 new OpenIdConnectOptions
                 {
                     SignInScheme = "TestScheme",
-                    Authority = TestDefaultValues.DefaultAuthority,
+                    Authority = TestServerBuilder.DefaultAuthority,
                 },
                 ex => Assert.Equal("ClientId", ex.ParamName));
         }
