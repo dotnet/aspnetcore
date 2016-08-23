@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             goto case State.ExceptionBegin;
                         }
                     }
-                    
+
                 case State.ResourceAsyncBegin:
                     {
                         Debug.Assert(state != null);
@@ -392,13 +392,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                                 Canceled = true,
                                 Result = _resourceExecutingContext.Result,
                             };
-                        }
 
-                        _diagnosticSource.AfterOnResourceExecution(_resourceExecutedContext, filter);
+                            _diagnosticSource.AfterOnResourceExecution(_resourceExecutedContext, filter);
 
-                        if (_resourceExecutingContext.Result != null)
-                        {
-                            goto case State.ResourceShortCircuit;
+                            // A filter could complete a Task without setting a result
+                            if (_resourceExecutingContext.Result != null)
+                            {
+                                goto case State.ResourceShortCircuit;
+                            }
                         }
 
                         goto case State.ResourceEnd;
@@ -1222,7 +1223,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     arguments,
                     controller);
                 logger.ActionMethodExecuting(controllerContext, orderedArguments);
-                
+
                 var returnType = executor.MethodReturnType;
                 if (returnType == typeof(void))
                 {
