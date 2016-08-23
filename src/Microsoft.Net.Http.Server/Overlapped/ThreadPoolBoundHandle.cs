@@ -3,7 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 namespace System.Threading
 {
-    public sealed class ThreadPoolBoundHandle : IDisposable
+    internal sealed class ThreadPoolBoundHandle : IDisposable
     {
         private readonly SafeHandle _handle;
         private bool _isDisposed;

@@ -2,7 +2,7 @@
 using System;
 namespace System.Threading
 {
-    public sealed class PreAllocatedOverlapped : IDisposable, IDeferredDisposable
+    internal sealed class PreAllocatedOverlapped : IDisposable, IDeferredDisposable
     {
         internal readonly ThreadPoolBoundHandleOverlapped _overlapped;
         private DeferredDisposableLifetime<PreAllocatedOverlapped> _lifetime;
