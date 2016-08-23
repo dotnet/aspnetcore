@@ -101,9 +101,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Internal
 
 #if DEBUG
             var commandLineArgs = Environment.GetCommandLineArgs();
-            if (commandLineArgs.Length > 0 && commandLineArgs[0] == "--debug")
+            if (commandLineArgs.Length > 1 && commandLineArgs[1] == "--debug")
             {
-                dispatchArgs.Insert(0, commandLineArgs[0]);
+                dispatchArgs.Insert(0, commandLineArgs[1]);
             }
 #endif
 

@@ -5,17 +5,18 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
 {
     public abstract class ApplicationTestFixture : IDisposable
     {
         public const string NuGetPackagesEnvironmentKey = "NUGET_PACKAGES";
+        public const string DotnetSkipFirstTimeExperience = "DOTNET_SKIP_FIRST_TIME_EXPERIENCE";
+        public const string DotnetCLITelemetryOptOut = "DOTNET_CLI_TELEMETRY_OPTOUT";
+
         private readonly string _oldRestoreDirectory;
         private bool _isRestored;
 
@@ -49,6 +50,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
                 NuGetPackagesEnvironmentKey,
                 TempRestoreDirectory);
 
+            var skipFirstTimeCacheCreation = new KeyValuePair<string, string>(
+                DotnetSkipFirstTimeExperience,
+                "true");
+
+            var telemetryOptOut = new KeyValuePair<string, string>(
+                DotnetCLITelemetryOptOut,
+                "1");
+
             var deploymentParameters = new DeploymentParameters(
                 ApplicationPath,
                 ServerType.Kestrel,
@@ -57,14 +66,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
             {
                 PublishApplicationBeforeDeployment = true,
                 TargetFramework = flavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.0",
+                PreservePublishedApplicationForDebugging = true,
                 Configuration = "Release",
                 EnvironmentVariables =
                 {
-                    tempRestoreDirectoryEnvironment
+                    tempRestoreDirectoryEnvironment,
+                    skipFirstTimeCacheCreation,
+                    telemetryOptOut,
                 },
                 PublishEnvironmentVariables =
                 {
-                    tempRestoreDirectoryEnvironment
+                    tempRestoreDirectoryEnvironment,
+                    skipFirstTimeCacheCreation,
+                    telemetryOptOut,
                 },
             };
 
@@ -76,11 +90,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
             RestoreProject(ApplicationPath);
         }
 
-        public void Dispose()
+        public virtual void Dispose()
+        {
+            TryDeleteDirectory(TempRestoreDirectory);
+        }
+
+        protected static void TryDeleteDirectory(string directory)
         {
             try
             {
-                Directory.Delete(TempRestoreDirectory, recursive: true);
+                Directory.Delete(directory, recursive: true);
             }
             catch (IOException)
             {
@@ -88,29 +107,32 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
             }
         }
 
-        protected void RestoreProject(string applicationDirectory)
+        protected void RestoreProject(string applicationDirectory, string[] additionalFeeds = null)
         {
             var packagesDirectory = GetNuGetPackagesDirectory();
-            var args = new[]
+            var args = new List<string>
             {
                 Path.Combine(applicationDirectory, "project.json"),
                 "--packages",
                 TempRestoreDirectory,
             };
 
-            var commandResult = Command
+            if (additionalFeeds != null)
+            {
+                foreach (var feed in additionalFeeds)
+                {
+                    args.Add("-f");
+                    args.Add(feed);
+                }
+            }
+
+            Command
                 .CreateDotNet("restore", args)
+                .EnvironmentVariable(DotnetSkipFirstTimeExperience, "true")
                 .ForwardStdErr(Console.Error)
                 .ForwardStdOut(Console.Out)
-                .Execute();
-
-            Assert.True(commandResult.ExitCode == 0,
-                string.Join(Environment.NewLine,
-                    $"dotnet {commandResult.StartInfo.Arguments} exited with {commandResult.ExitCode}.",
-                    commandResult.StdOut,
-                    commandResult.StdErr));
-
-            Console.WriteLine(commandResult.StdOut);
+                .Execute()
+                .EnsureSuccessful();
         }
 
         private static string CreateTempRestoreDirectory()

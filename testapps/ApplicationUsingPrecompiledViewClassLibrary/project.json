@@ -1,0 +1,36 @@
+﻿{
+  "buildOptions": {
+    "emitEntryPoint": true,
+    "preserveCompilationContext": true
+  },
+  "dependencies": {
+    "ClassLibraryWithPrecompiledViews": {
+      "target": "package",
+      "version": "1.0.0-*"
+    },
+    "Microsoft.AspNetCore.Mvc": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
+    "Microsoft.Extensions.Configuration.CommandLine": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.1.0-*"
+  },
+
+  "frameworks": {
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0",
+          "type": "platform"
+        }
+      }
+    },
+    "net451": {}
+  },
+
+  "publishOptions": {
+    "include": [
+      "wwwroot",
+      "appsettings.json",
+      "web.config"
+    ]
+  }
+}

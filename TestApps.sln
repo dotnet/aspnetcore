@@ -17,6 +17,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ClassLibraryTagHelper", "te
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ApplicationWithConfigureMvc", "testapps\ApplicationWithConfigureMvc\ApplicationWithConfigureMvc.xproj", "{E2EAEB85-91D5-478E-9CE2-964F68DE20D0}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ClassLibraryWithPrecompiledViews", "testapps\ClassLibraryWithPrecompiledViews\ClassLibraryWithPrecompiledViews.xproj", "{4684DE8B-3FBE-421B-8798-56C3D6698B76}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{E2EAEB85-91D5-478E-9CE2-964F68DE20D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2EAEB85-91D5-478E-9CE2-964F68DE20D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2EAEB85-91D5-478E-9CE2-964F68DE20D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4684DE8B-3FBE-421B-8798-56C3D6698B76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4684DE8B-3FBE-421B-8798-56C3D6698B76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4684DE8B-3FBE-421B-8798-56C3D6698B76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4684DE8B-3FBE-421B-8798-56C3D6698B76}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

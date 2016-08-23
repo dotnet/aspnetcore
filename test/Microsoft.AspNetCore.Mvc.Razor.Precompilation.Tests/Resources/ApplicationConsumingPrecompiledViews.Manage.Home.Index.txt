@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        AspNetCore.Areas_Manage_Views_Shared__Layout_cshtml, ClassLibraryWithPrecompiledViews.PrecompiledViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+        
+<h1>Admin home page</h1>
+
+
+        
+    Test section
+
+    </body>
+</html>
