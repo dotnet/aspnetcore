@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
                 opt => opt.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet);
 
             var server = settings.CreateTestServer();
-            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+            var transaction = await server.SendAsync(ChallengeEndpoint);
 
             var res = transaction.Response;
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
                 opt => opt.AuthenticationMethod = OpenIdConnectRedirectBehavior.FormPost);
 
             var server = settings.CreateTestServer();
-            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+            var transaction = await server.SendAsync(ChallengeEndpoint);
 
             var res = transaction.Response;
             Assert.Equal(HttpStatusCode.OK, res.StatusCode);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             properties.Items.Add(OpenIdConnectDefaults.UserstatePropertiesKey, userState);
 
             var server = TestServerBuilder.CreateServer(settings.Options, handler: null, properties: properties);
-            var transaction = await TestTransaction.SendAsync(server, TestServerBuilder.TestHost + TestServerBuilder.ChallengeWithProperties);
+            var transaction = await server.SendAsync(TestServerBuilder.TestHost + TestServerBuilder.ChallengeWithProperties);
 
             var res = transaction.Response;
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             });
 
             var server = settings.CreateTestServer();
-            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+            var transaction = await server.SendAsync(ChallengeEndpoint);
 
             var res = transaction.Response;
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             );
 
             var server = settings.CreateTestServer();
-            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+            var transaction = await server.SendAsync(ChallengeEndpoint);
 
             Assert.True(eventIsHit);
 
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             );
 
             var server = settings.CreateTestServer();
-            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+            var transaction = await server.SendAsync(ChallengeEndpoint);
 
             var res = transaction.Response;
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             );
 
             var server = settings.CreateTestServer();
-            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+            var transaction = await server.SendAsync(ChallengeEndpoint);
 
             var res = transaction.Response;
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             );
 
             var server = settings.CreateTestServer();
-            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+            var transaction = await server.SendAsync(ChallengeEndpoint);
 
             var res = transaction.Response;
             Assert.Equal(HttpStatusCode.OK, res.StatusCode);
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             );
 
             var server = settings.CreateTestServer();
-            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+            var transaction = await server.SendAsync(ChallengeEndpoint);
 
             var res = transaction.Response;
             Assert.Equal(HttpStatusCode.OK, res.StatusCode);
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         {
             var settings = new TestSettings();
             var server = settings.CreateTestServer();
-            var transaction = await TestTransaction.SendAsync(server, ChallengeEndpoint);
+            var transaction = await server.SendAsync(ChallengeEndpoint);
 
             var firstCookie = transaction.SetCookie.First();
             Assert.Contains(OpenIdConnectDefaults.CookieNoncePrefix, firstCookie);

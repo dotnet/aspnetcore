@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
 
             var server = setting.CreateTestServer();
 
-            var transaction = await TestTransaction.SendAsync(server, DefaultHost + TestServerBuilder.Signout);
+            var transaction = await server.SendAsync(DefaultHost + TestServerBuilder.Signout);
             var res = transaction.Response;
 
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
                 Configuration = configuration
             });
 
-            var transaction = await TestTransaction.SendAsync(server, DefaultHost + TestServerBuilder.Signout);
+            var transaction = await server.SendAsync(DefaultHost + TestServerBuilder.Signout);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal(configuration.EndSessionEndpoint, transaction.Response.Headers.Location.AbsoluteUri);
         }
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
                 PostLogoutRedirectUri = "https://example.com/logout"
             });
 
-            var transaction = await TestTransaction.SendAsync(server, DefaultHost + TestServerBuilder.Signout);
+            var transaction = await server.SendAsync(DefaultHost + TestServerBuilder.Signout);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Contains(UrlEncoder.Default.Encode("https://example.com/logout"), transaction.Response.Headers.Location.AbsoluteUri);
         }
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
                 PostLogoutRedirectUri = "https://example.com/logout"
             });
 
-            var transaction = await TestTransaction.SendAsync(server, "https://example.com/signout_with_specific_redirect_uri");
+            var transaction = await server.SendAsync("https://example.com/signout_with_specific_redirect_uri");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Contains(UrlEncoder.Default.Encode("http://www.example.com/specific_redirect_uri"), transaction.Response.Headers.Location.AbsoluteUri);
         }
