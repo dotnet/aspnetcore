@@ -22,8 +22,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         // This is the argument that separates the dotnet arguments for the args being passed to the
         // app being run when running dotnet run
         public static readonly string DotnetArgumentSeparator = "--";
-        private static readonly bool IsWindows =
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         private readonly Stopwatch _stopwatch = new Stopwatch();
 
@@ -204,22 +202,5 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         }
 
         public abstract void Dispose();
-
-        protected static string GetOSPrefix()
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return "win";
-            }
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                return "linux";
-            }
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                return "darwin";
-            }
-            throw new InvalidOperationException("Unrecognized operating system");
-        }
     }
 }
