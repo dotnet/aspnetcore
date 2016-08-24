@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             // TODO: no-cache requests can be retrieved upon validation with origin
             if (!string.IsNullOrEmpty(request.Headers[HeaderNames.CacheControl]))
             {
-                if (RequestCacheControl.NoCache || RequestCacheControl.NoStore)
+                if (RequestCacheControl.NoCache)
                 {
                     return false;
                 }
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
 
             // Check no-store
-            if (ResponseCacheControl.NoStore)
+            if (RequestCacheControl.NoStore || ResponseCacheControl.NoStore)
             {
                 return false;
             }

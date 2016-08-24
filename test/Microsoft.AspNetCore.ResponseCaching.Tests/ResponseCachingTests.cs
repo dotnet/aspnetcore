@@ -347,6 +347,82 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             }
         }
 
+        [Fact]
+        public async void ServesCachedContentIfSubsequentRequestContainsNoStore()
+        {
+            var builder = CreateBuilderWithResponseCaching(
+                async (context) =>
+                {
+                    var uniqueId = Guid.NewGuid().ToString();
+                    var headers = context.Response.GetTypedHeaders();
+                    headers.CacheControl = new CacheControlHeaderValue()
+                    {
+                        Public = true,
+                        MaxAge = TimeSpan.FromSeconds(10)
+                    };
+                    headers.Date = DateTimeOffset.UtcNow;
+                    headers.Headers["X-Value"] = uniqueId;
+                    await context.Response.WriteAsync(uniqueId);
+                });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var initialResponse = await client.GetAsync("");
+                client.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue()
+                {
+                    NoStore = true
+                };
+                var subsequentResponse = await client.GetAsync("");
+
+                initialResponse.EnsureSuccessStatusCode();
+                subsequentResponse.EnsureSuccessStatusCode();
+
+                foreach (var header in initialResponse.Headers)
+                {
+                    Assert.Equal(initialResponse.Headers.GetValues(header.Key), subsequentResponse.Headers.GetValues(header.Key));
+                }
+                Assert.True(subsequentResponse.Headers.Contains(HeaderNames.Age));
+                Assert.Equal(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
+            }
+        }
+
+        [Fact]
+        public async void ServesFreshContentIfInitialRequestContainsNoStore()
+        {
+            var builder = CreateBuilderWithResponseCaching(
+                async (context) =>
+                {
+                    var uniqueId = Guid.NewGuid().ToString();
+                    var headers = context.Response.GetTypedHeaders();
+                    headers.CacheControl = new CacheControlHeaderValue()
+                    {
+                        Public = true,
+                        MaxAge = TimeSpan.FromSeconds(10)
+                    };
+                    headers.Date = DateTimeOffset.UtcNow;
+                    headers.Headers["X-Value"] = uniqueId;
+                    await context.Response.WriteAsync(uniqueId);
+                });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                client.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue()
+                {
+                    NoStore = true
+                };
+                var initialResponse = await client.GetAsync("");
+                var subsequentResponse = await client.GetAsync("");
+
+                initialResponse.EnsureSuccessStatusCode();
+                subsequentResponse.EnsureSuccessStatusCode();
+
+                Assert.False(subsequentResponse.Headers.Contains(HeaderNames.Age));
+                Assert.NotEqual(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
+            }
+        }
+
         private static IWebHostBuilder CreateBuilderWithResponseCaching(RequestDelegate requestDelegate) =>
             CreateBuilderWithResponseCaching(app => { }, requestDelegate);
 

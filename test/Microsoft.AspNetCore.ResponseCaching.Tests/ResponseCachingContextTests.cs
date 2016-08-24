@@ -57,18 +57,32 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             Assert.False(context.RequestIsCacheable());
         }
 
-        [Theory]
-        [InlineData("no-cache")]
-        [InlineData("no-store")]
-        [InlineData("no-cache, no-store")]
-        public void RequestIsCacheable_ExplicitDisablingDirectives_NotAllowed(string directive)
+        [Fact]
+        public void RequestIsCacheable_NoCache_NotAllowed()
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Method = "GET";
-            httpContext.Request.Headers[HeaderNames.CacheControl] = directive;
+            httpContext.Request.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
+            {
+                NoCache = true
+            };
             var context = new ResponseCachingContext(httpContext, new TestResponseCache());
 
             Assert.False(context.RequestIsCacheable());
+        }
+
+        [Fact]
+        public void RequestIsCacheable_NoStore_Allowed()
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Method = "GET";
+            httpContext.Request.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
+            {
+                NoStore = true
+            };
+            var context = new ResponseCachingContext(httpContext, new TestResponseCache());
+
+            Assert.True(context.RequestIsCacheable());
         }
 
         [Fact]
@@ -162,7 +176,24 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void ResponseIsCacheable_NoStore_NotAllowed()
+        public void ResponseIsCacheable_RequestNoStore_NotAllowed()
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
+            {
+                NoStore = true
+            };
+            httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
+            {
+                Public = true
+            };
+            var context = new ResponseCachingContext(httpContext, new TestResponseCache());
+
+            Assert.False(context.ResponseIsCacheable());
+        }
+
+        [Fact]
+        public void ResponseIsCacheable_ResponseNoStore_NotAllowed()
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
