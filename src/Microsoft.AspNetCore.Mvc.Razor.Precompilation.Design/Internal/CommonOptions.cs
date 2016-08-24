@@ -18,9 +18,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Internal
 
         public void Configure(CommandLineApplication app)
         {
-            app.Description = "Precompiles an application.";
-            app.HelpOption("-?|-h|--help");
-
             ProjectArgument = app.Argument(
                 "project",
                 "The path to the project (project folder or project.json) with precompilation.");
