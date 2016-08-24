@@ -29,13 +29,13 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var expected = new List<UrlRewriteRule>();
             expected.Add(CreateTestRule(new List<Condition>(),
-                Url: "^article/([0-9]+)/([_0-9a-z-]+)",
+                url: "^article/([0-9]+)/([_0-9a-z-]+)",
                 name: "Rewrite to article.aspx",
                 actionType: ActionType.Rewrite,
                 pattern: "article.aspx?id={R:1}&amp;title={R:2}"));
 
             // act
-            var res = new FileParser().Parse(new StringReader(xml));
+            var res = new UrlRewriteFileParser().Parse(new StringReader(xml));
 
             // assert
             AssertUrlRewriteRuleEquality(res, expected);
@@ -66,13 +66,13 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var expected = new List<UrlRewriteRule>();
             expected.Add(CreateTestRule(condList,
-                Url: "^article/([0-9]+)/([_0-9a-z-]+)",
+                url: "^article/([0-9]+)/([_0-9a-z-]+)",
                 name: "Rewrite to article.aspx",
                 actionType: ActionType.Rewrite,
                 pattern: "article.aspx?id={R:1}&amp;title={R:2}"));
 
             // act
-            var res = new FileParser().Parse(new StringReader(xml));
+            var res = new UrlRewriteFileParser().Parse(new StringReader(xml));
 
             // assert
             AssertUrlRewriteRuleEquality(res, expected);
@@ -110,18 +110,18 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var expected = new List<UrlRewriteRule>();
             expected.Add(CreateTestRule(condList,
-                Url: "^article/([0-9]+)/([_0-9a-z-]+)",
+                url: "^article/([0-9]+)/([_0-9a-z-]+)",
                 name: "Rewrite to article.aspx",
                 actionType: ActionType.Rewrite,
                 pattern: "article.aspx?id={R:1}&amp;title={R:2}"));
             expected.Add(CreateTestRule(condList,
-                Url: "^article/([0-9]+)/([_0-9a-z-]+)",
+                url: "^article/([0-9]+)/([_0-9a-z-]+)",
                 name: "Rewrite to another article.aspx",
                 actionType: ActionType.Rewrite,
                 pattern: "article.aspx?id={R:1}&amp;title={R:2}"));
 
             // act
-            var res = new FileParser().Parse(new StringReader(xml));
+            var res = new UrlRewriteFileParser().Parse(new StringReader(xml));
 
             // assert
             AssertUrlRewriteRuleEquality(res, expected);
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             bool enabled = true,
             PatternSyntax patternSyntax = PatternSyntax.ECMAScript,
             bool stopProcessing = false,
-            string Url = "",
+            string url = "",
             bool ignoreCase = true,
             bool negate = false,
             ActionType actionType = ActionType.None,
@@ -145,22 +145,12 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             RedirectType redirectType = RedirectType.Permanent
             )
         {
-            return new UrlRewriteRule
-            {
-                Action = new RewriteAction(RuleTerminiation.Continue, new InputParser().ParseInputString(Url), clearQuery: false),
-                Name = name,
-                Enabled = enabled,
-                InitialMatch = new RegexMatch(new Regex("^OFF$"), false)
-                {
-                },
-                Conditions = new Conditions
-                {
-                    ConditionList = conditions
-                }
-            };
+            return new UrlRewriteRule(name, new RegexMatch(new Regex("^OFF$"), false), conditions,
+                new RewriteAction(RuleTermination.Continue, new InputParser().ParseInputString(url), clearQuery: false));
         }
 
-        private void AssertUrlRewriteRuleEquality(List<UrlRewriteRule> actual, List<UrlRewriteRule> expected)
+        // TODO make rules comparable?
+        private void AssertUrlRewriteRuleEquality(IList<UrlRewriteRule> actual, IList<UrlRewriteRule> expected)
         {
             Assert.Equal(actual.Count, expected.Count);
             for (var i = 0; i < actual.Count; i++)
@@ -169,23 +159,22 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 var r2 = expected[i];
 
                 Assert.Equal(r1.Name, r2.Name);
-                Assert.Equal(r1.Enabled, r2.Enabled);
 
                 if (r1.Conditions == null)
                 {
-                    Assert.Equal(r2.Conditions.ConditionList.Count, 0);
+                    Assert.Equal(r2.Conditions.Count, 0);
                 }
                 else if (r2.Conditions == null)
                 {
-                    Assert.Equal(r1.Conditions.ConditionList.Count, 0);
+                    Assert.Equal(r1.Conditions.Count, 0);
                 }
                 else
                 {
-                    Assert.Equal(r1.Conditions.ConditionList.Count, r2.Conditions.ConditionList.Count);
-                    for (var j = 0; j < r1.Conditions.ConditionList.Count; j++)
+                    Assert.Equal(r1.Conditions.Count, r2.Conditions.Count);
+                    for (var j = 0; j < r1.Conditions.Count; j++)
                     {
-                        var c1 = r1.Conditions.ConditionList[j];
-                        var c2 = r2.Conditions.ConditionList[j];
+                        var c1 = r1.Conditions[j];
+                        var c2 = r2.Conditions[j];
                         Assert.Equal(c1.Input.PatternSegments.Count, c2.Input.PatternSegments.Count);
                     }
                 }

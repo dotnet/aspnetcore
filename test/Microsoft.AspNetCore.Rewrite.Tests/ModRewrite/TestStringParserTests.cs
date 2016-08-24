@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Rewrite.Internal.ModRewrite;
 using Microsoft.AspNetCore.Rewrite.Internal.PatternSegments;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Rewrite
+namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 {
     public class TestStringParserTests
     {
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Rewrite
         [InlineData(@"%a", "Cannot parse '%a' to integer at string index: '1'")] // invalid character after %
         [InlineData(@"$a", "Cannot parse '$a' to integer at string index: '1'")] // invalid character after $
         [InlineData(@"%{asdf", "Missing close brace for parameter at string index: '6'")] // no closing } with characters
-        public void ConditionParser_Bad(string testString, string expected)
+        public void ConditionParser_InvalidInput(string testString, string expected)
         {
             var ex = Assert.Throws<FormatException>(() => new TestStringParser().Parse(testString));
             Assert.Equal(ex.Message, expected);

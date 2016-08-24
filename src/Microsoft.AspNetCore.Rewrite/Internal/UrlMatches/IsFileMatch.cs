@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Rewrite.Internal.UrlMatches
 {
     public class IsFileMatch : UrlMatch
-    { 
+    {
         public IsFileMatch(bool negate)
         {
             Negate = negate;
@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlMatches
 
         public override MatchResults Evaluate(string pattern, RewriteContext context)
         {
-            var res = context.FileProvider.GetFileInfo(pattern).Exists;
+            var res = context.StaticFileProvider.GetFileInfo(pattern).Exists;
             return new MatchResults { Success = (res != Negate) };
         }
     }

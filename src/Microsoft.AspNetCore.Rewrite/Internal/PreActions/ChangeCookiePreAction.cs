@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PreActions
         public override void ApplyAction(HttpContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
             // modify the cookies
-           
+
         }
     }
 }

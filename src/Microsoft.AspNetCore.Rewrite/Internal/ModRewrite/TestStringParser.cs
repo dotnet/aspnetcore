@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                             var ruleVariable = context.Capture();
                             context.Back();
                             var parsedIndex = int.Parse(ruleVariable);
-                        
+
                             results.Add(new RuleMatchSegment(parsedIndex));
                         }
                         else
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
         /// <param name="context">The ParserContext</param>
         /// <param name="results">The List of results which the new condition parameter will be added.</param>
         /// <returns>true </returns>
-        private static void ParseConditionParameter(ParserContext context, List<PatternSegment> results)
+        private static void ParseConditionParameter(ParserContext context, IList<PatternSegment> results)
         {
             // Parse { }
             if (context.Current == OpenBrace)
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
         /// <param name="context"></param>
         /// <param name="results"></param>
         /// <returns></returns>
-        private static void ParseLiteral(ParserContext context, List<PatternSegment> results)
+        private static void ParseLiteral(ParserContext context, IList<PatternSegment> results)
         {
             context.Mark();
             string literal;

@@ -5,15 +5,14 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal
 {
-    public class Conditions
+    public static class ConditionHelper
     {
-        public List<Condition> ConditionList { get; set; } = new List<Condition>();
 
-        public MatchResults Evaluate(RewriteContext context, MatchResults ruleMatch)
+        public static MatchResults Evaluate(IEnumerable<Condition> conditions, RewriteContext context, MatchResults ruleMatch)
         {
             MatchResults prevCond = null;
             var orSucceeded = false;
-            foreach (var condition in ConditionList)
+            foreach (var condition in conditions)
             {
                 if (orSucceeded && condition.OrNext)
                 {
@@ -30,7 +29,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                 if (condition.OrNext)
                 {
                     orSucceeded = prevCond.Success;
-                    continue;
                 }
                 else if (!prevCond.Success)
                 {

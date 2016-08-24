@@ -8,24 +8,24 @@ using Microsoft.AspNetCore.Rewrite.Internal.ModRewrite;
 
 namespace Microsoft.AspNetCore.Rewrite
 {
-    public static class ModRewriteExtensions
+    public static class ModRewriteOptionsExtensions
     {
         /// <summary>
         /// Imports rules from a mod_rewrite file and adds the rules to current rules. 
         /// </summary>
-        /// <param name="options">The UrlRewrite options.</param>
-        /// <param name="hostingEnv"></param>
+        /// <param name="options">The Rewrite options.</param>
+        /// <param name="hostingEnvironment">The Hosting Environment</param>
         /// <param name="filePath">The path to the file containing mod_rewrite rules.</param>
-        public static RewriteOptions ImportFromModRewrite(this RewriteOptions options, IHostingEnvironment hostingEnv, string filePath)
+        public static RewriteOptions ImportFromModRewrite(this RewriteOptions options, IHostingEnvironment hostingEnvironment, string filePath)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (hostingEnv == null)
+            if (hostingEnvironment == null)
             {
-                throw new ArgumentNullException(nameof(hostingEnv));
+                throw new ArgumentNullException(nameof(hostingEnvironment));
             }
 
             if (string.IsNullOrEmpty(filePath))
@@ -33,18 +33,17 @@ namespace Microsoft.AspNetCore.Rewrite
                 throw new ArgumentException(nameof(filePath));
             }
 
-            var path = Path.Combine(hostingEnv.ContentRootPath, filePath);
+            var path = Path.Combine(hostingEnvironment.ContentRootPath, filePath);
             using (var stream = File.OpenRead(path))
             {
-                options.Rules.AddRange(new FileParser().Parse(new StreamReader(stream)));
-            };
-            return options;
+                return options.ImportFromModRewrite(new StreamReader(stream));
+            }
         }
 
         /// <summary>
         /// Imports rules from a mod_rewrite file and adds the rules to current rules. 
         /// </summary>
-        /// <param name="options">The UrlRewrite options.</param>
+        /// <param name="options">The Rewrite options.</param>
         /// <param name="reader">Text reader containing a stream of mod_rewrite rules.</param>
         public static RewriteOptions ImportFromModRewrite(this RewriteOptions options, TextReader reader)
         {
@@ -52,37 +51,19 @@ namespace Microsoft.AspNetCore.Rewrite
             {
                 throw new ArgumentNullException(nameof(options));
             }
-            
+
             if (reader == null)
             {
                 throw new ArgumentNullException(nameof(reader));
             }
-            options.Rules.AddRange(new FileParser().Parse(reader));
+            var rules = new FileParser().Parse(reader);
+
+            foreach (var rule in rules)
+            {
+                options.Rules.Add(rule);
+            }
             return options;
         }
 
-        /// <summary>
-        /// Adds a mod_rewrite rule to the current rules.
-        /// </summary>
-        /// <param name="options">The UrlRewrite options.</param>
-        /// <param name="rule">The literal string of a mod_rewrite rule: 
-        /// "RewriteRule Pattern Substitution [Flags]"</param>
-        public static RewriteOptions AddModRewriteRule(this RewriteOptions options, string rule)
-        {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            if (rule == null)
-            {
-                throw new ArgumentNullException(nameof(rule));
-            }
-
-            var builder = new RuleBuilder();
-            builder.AddRule(rule);
-            options.Rules.Add(builder.Build());
-            return options;
-        }
     }
 }

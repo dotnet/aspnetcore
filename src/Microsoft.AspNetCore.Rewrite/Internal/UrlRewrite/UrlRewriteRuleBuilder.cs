@@ -13,12 +13,12 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
     public class UrlRewriteRuleBuilder
     {
         private readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(1);
-       
+
         public string Name { get; set; }
         public bool Enabled { get; set; }
 
         private UrlMatch _initialMatch;
-        private Conditions _conditions;
+        private IList<Condition> _conditions;
         private UrlAction _action;
         private bool _matchAny;
 
@@ -28,40 +28,28 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             {
                 throw new InvalidOperationException("Cannot create UrlRewriteRule without action and match");
             }
-            var rule = new UrlRewriteRule();
-            rule.Action = _action;
-            rule.Conditions = _conditions;
-            rule.InitialMatch = _initialMatch;
-            rule.Name = Name;
-            return rule;
+
+            return new UrlRewriteRule(Name, _initialMatch, _conditions, _action);
         }
-        
-        public void AddUrlAction(Pattern url, ActionType actionType = ActionType.None, bool appendQueryString = true, bool stopProcessing = false, int statusCode = StatusCodes.Status301MovedPermanently)
+
+        public void AddUrlAction(
+            Pattern url,
+            ActionType actionType = ActionType.None,
+            bool appendQueryString = true,
+            bool stopProcessing = false,
+            int statusCode = StatusCodes.Status301MovedPermanently)
         {
             switch (actionType)
             {
                 case ActionType.None:
-                    _action =  new VoidAction(stopProcessing ? RuleResult.StopRules : RuleResult.Continue);
+                    _action = new VoidAction(stopProcessing ? RuleResult.StopRules : RuleResult.Continue);
                     break;
                 case ActionType.Rewrite:
-                    if (appendQueryString)
-                    {
-                        _action = new RewriteAction(stopProcessing ? RuleTerminiation.StopRules : RuleTerminiation.Continue, url, clearQuery: false);
-                    }
-                    else
-                    {
-                        _action = new RewriteAction(stopProcessing ? RuleTerminiation.StopRules : RuleTerminiation.Continue, url, clearQuery: true);
-                    }
+                    _action = new RewriteAction(stopProcessing ? RuleTermination.StopRules : RuleTermination.Continue,
+                        url, clearQuery: !appendQueryString);
                     break;
                 case ActionType.Redirect:
-                    if (appendQueryString)
-                    {
-                        _action = new RedirectAction(statusCode, url);
-                    }
-                    else
-                    {
-                        _action = new RedirectClearQueryAction(statusCode, url);
-                    }
+                    _action = new RedirectAction(statusCode, url, appendQueryString);
                     break;
                 case ActionType.AbortRequest:
                     throw new NotImplementedException("Abort Requests are not supported");
@@ -85,14 +73,14 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                         else
                         {
                             var regex = new Regex(input, RegexOptions.CultureInvariant | RegexOptions.Compiled, RegexTimeout);
-                            _initialMatch =  new RegexMatch(regex, negate);
+                            _initialMatch = new RegexMatch(regex, negate);
                         }
                         break;
                     }
                 case PatternSyntax.WildCard:
                     throw new NotImplementedException("Wildcard syntax is not supported");
                 case PatternSyntax.ExactMatch:
-                    _initialMatch =  new ExactMatch(ignoreCase, input, negate);
+                    _initialMatch = new ExactMatch(ignoreCase, input, negate);
                     break;
             }
         }
@@ -118,27 +106,23 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                                         throw new FormatException("Match does not have an associated pattern attribute in condition");
                                     }
 
-                                    Regex regex = null;
-                                    if (ignoreCase)
-                                    {
-                                        regex = new Regex(pattern, RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexTimeout);
-                                    }
-                                    else
-                                    {
-                                        regex = new Regex(pattern, RegexOptions.CultureInvariant | RegexOptions.Compiled, RegexTimeout);
-                                    }
-
-                                    _conditions.ConditionList.Add(new Condition { Input = input, Match = new RegexMatch(regex, negate), OrNext = _matchAny});
+                                    var regex = new Regex(
+                                        pattern, 
+                                        ignoreCase ? RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase :
+                                            RegexOptions.CultureInvariant | RegexOptions.Compiled,
+                                        RegexTimeout);
+         
+                                    _conditions.Add(new Condition { Input = input, Match = new RegexMatch(regex, negate), OrNext = _matchAny });
                                     break;
                                 }
                             case MatchType.IsDirectory:
                                 {
-                                    _conditions.ConditionList.Add(new Condition { Input = input, Match = new IsDirectoryMatch(negate), OrNext = _matchAny });
+                                    _conditions.Add(new Condition { Input = input, Match = new IsDirectoryMatch(negate), OrNext = _matchAny });
                                     break;
                                 }
                             case MatchType.IsFile:
                                 {
-                                    _conditions.ConditionList.Add(new Condition { Input = input, Match = new IsFileMatch(negate), OrNext = _matchAny });
+                                    _conditions.Add(new Condition { Input = input, Match = new IsFileMatch(negate), OrNext = _matchAny });
                                     break;
                                 }
                             default:
@@ -153,7 +137,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                     {
                         throw new FormatException("Match does not have an associated pattern attribute in condition");
                     }
-                    _conditions.ConditionList.Add(new Condition { Input = input, Match = new ExactMatch(ignoreCase, pattern, negate), OrNext = _matchAny });
+                    _conditions.Add(new Condition { Input = input, Match = new ExactMatch(ignoreCase, pattern, negate), OrNext = _matchAny });
                     break;
                 default:
                     throw new FormatException("Unrecognized pattern syntax");
@@ -162,10 +146,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
 
         public void AddUrlConditions(LogicalGrouping logicalGrouping, bool trackingAllCaptures)
         {
-            var conditions = new Conditions();
-            conditions.ConditionList = new List<Condition>();
+            _conditions = new List<Condition>();
             _matchAny = logicalGrouping == LogicalGrouping.MatchAny;
-            _conditions = conditions;
         }
     }
 }

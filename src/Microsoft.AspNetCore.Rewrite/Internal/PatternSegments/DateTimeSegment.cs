@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
 
         public DateTimeSegment(string segment)
         {
-            switch(segment)
+            switch (segment)
             {
                 case "TIME_YEAR":
                     _portion = DateTimePortion.Year;
@@ -24,28 +24,29 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
                     _portion = DateTimePortion.Day;
                     break;
                 case "TIME_HOUR":
-                    _portion = DateTimePortion.Day;
+                    _portion = DateTimePortion.Hour;
                     break;
                 case "TIME_MIN":
-                    _portion = DateTimePortion.Day;
+                    _portion = DateTimePortion.Minute;
                     break;
                 case "TIME_SEC":
-                    _portion = DateTimePortion.Day;
+                    _portion = DateTimePortion.Second;
                     break;
                 case "TIME_WDAY":
-                    _portion = DateTimePortion.Day;
+                    _portion = DateTimePortion.DayOfWeek;
                     break;
                 case "TIME":
-                    _portion = DateTimePortion.Day;
+                    _portion = DateTimePortion.Time;
                     break;
                 default:
-                    throw new FormatException("Unsupported segment: " + segment);
+                    throw new FormatException($"Unsupported segment: '{segment}'");
             }
         }
 
         public override string Evaluate(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
-            switch (_portion) {
+            switch (_portion)
+            {
                 case DateTimePortion.Year:
                     return DateTimeOffset.UtcNow.Year.ToString(CultureInfo.InvariantCulture);
                 case DateTimePortion.Month:
@@ -67,7 +68,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
             }
         }
 
-        private enum DateTimePortion {
+        private enum DateTimePortion
+        {
             Year,
             Month,
             Day,

@@ -15,10 +15,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
         public bool EscapeBackReferences { get; }
 
         public ModRewriteRedirectAction(
-            int statusCode, 
-            Pattern pattern, 
-            bool queryStringAppend, 
-            bool queryStringDelete, 
+            int statusCode,
+            Pattern pattern,
+            bool queryStringAppend,
+            bool queryStringDelete,
             bool escapeBackReferences)
         {
             StatusCode = statusCode;
@@ -42,19 +42,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             // always add to location header.
             // TODO check for false positives
             var split = pattern.IndexOf('?');
-            if (split >= 0)
+            if (split >= 0 && QueryStringAppend)
             {
-                QueryString query;
-                if (QueryStringAppend)
-                {
-                    query = context.HttpContext.Request.QueryString.Add(
-                        QueryString.FromUriComponent(
-                            pattern.Substring(split)));
-                }
-                else
-                {
-                    query = QueryString.FromUriComponent(pattern.Substring(split));
-                }
+                var query = context.HttpContext.Request.QueryString.Add(
+                    QueryString.FromUriComponent(
+                        pattern.Substring(split)));
 
                 // not using the response.redirect here because status codes may be 301, 302, 307, 308 
                 context.HttpContext.Response.Headers[HeaderNames.Location] = pattern.Substring(0, split) + query;

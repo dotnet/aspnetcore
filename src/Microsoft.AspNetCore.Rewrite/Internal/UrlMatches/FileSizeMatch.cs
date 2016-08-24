@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlMatches
 
         public override MatchResults Evaluate(string input, RewriteContext context)
         {
-            var fileInfo = context.FileProvider.GetFileInfo(input);
+            var fileInfo = context.StaticFileProvider.GetFileInfo(input);
             return fileInfo.Exists && fileInfo.Length > 0 ? MatchResults.EmptySuccess : MatchResults.EmptyFailure;
         }
     }

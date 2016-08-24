@@ -106,7 +106,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                 case "HTTP2":
                     throw new NotImplementedException("Http2 server variable is not supported");
                 case "IS_SUBREQ":
-                    // TODO maybe can do this? context.Request.HttpContext ?
                     throw new NotImplementedException("Is-Subrequest server variable is not supported");
                 case "REQUEST_FILENAME":
                     return new RequestFileNameSegment();

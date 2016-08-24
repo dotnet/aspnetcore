@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
         /// </summary>
         /// <param name="rule">The rule to tokenize.</param>
         /// <returns>A list of tokens.</returns>
-        public List<string> Tokenize(string rule)
+        public IList<string> Tokenize(string rule)
         {
             // TODO make list of strings a reference to the original rule? (run into problems with escaped spaces).
             // TODO handle "s and probably replace \ character with no slash.

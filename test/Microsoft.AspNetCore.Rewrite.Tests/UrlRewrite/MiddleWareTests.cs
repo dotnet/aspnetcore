@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetAsync("article/10/hey");
 
-            Assert.Equal(response.Headers.Location.OriginalString, "article.aspx?id=10&title=hey");
+            Assert.Equal(response.Headers.Location.OriginalString, "/article.aspx?id=10&title=hey");
         }
 
         [Fact]
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetAsync("HElLo");
 
-            Assert.Equal(response.Headers.Location.OriginalString, "hello");
+            Assert.Equal(response.Headers.Location.OriginalString, "/hello");
         }
 
         [Fact]
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetAsync("hey/hello/");
 
-            Assert.Equal(response.Headers.Location.OriginalString, "hey/hello");
+            Assert.Equal(response.Headers.Location.OriginalString, "/hey/hello");
         }
 
         [Fact]
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetAsync("hey/hello");
 
-            Assert.Equal(response.Headers.Location.OriginalString, "hey/hello/");
+            Assert.Equal(response.Headers.Location.OriginalString, "/hey/hello/");
         }
 
         [Fact]

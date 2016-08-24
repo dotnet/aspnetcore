@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
     public class HeaderSegment : PatternSegment
     {
         private readonly string _header;
-        
+
         public HeaderSegment(string header)
         {
             _header = header;

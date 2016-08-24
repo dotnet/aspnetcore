@@ -1,28 +1,34 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Rewrite.Logging;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal
 {
     public class UrlRewriteRule : Rule
     {
-        public string Name { get; set; }
-        public bool Enabled { get; set; } = true;
-        public UrlMatch InitialMatch { get; set; }
-        public Conditions Conditions { get; set; }
-        public UrlAction Action { get; set; }
+        public string Name { get; }
+        public UrlMatch InitialMatch { get; }
+        public IList<Condition> Conditions { get; }
+        public UrlAction Action { get; }
+
+        public UrlRewriteRule(string name,
+            UrlMatch initialMatch,
+            IList<Condition> conditions,
+            UrlAction action)
+        {
+            Name = name;
+            InitialMatch = initialMatch;
+            Conditions = conditions;
+            Action = action;
+        }
 
         public override RuleResult ApplyRule(RewriteContext context)
         {
-            if (!Enabled)
-            {
-                return RuleResult.Continue;
-            }
-
             // Due to the path string always having a leading slash,
             // remove it from the path before regex comparison
-            // TODO may need to check if there is a leading slash and remove conditionally
             var path = context.HttpContext.Request.Path;
             MatchResults initMatchResults;
             if (path == PathString.Empty)
@@ -36,19 +42,22 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
 
             if (!initMatchResults.Success)
             {
+                context.Logger?.UrlRewriteDidNotMatchRule(Name);
                 return RuleResult.Continue;
             }
 
             MatchResults condMatchRes = null;
             if (Conditions != null)
             {
-                condMatchRes = Conditions.Evaluate(context, initMatchResults);
+                condMatchRes = ConditionHelper.Evaluate(Conditions, context, initMatchResults);
                 if (!condMatchRes.Success)
                 {
+                    context.Logger?.UrlRewriteDidNotMatchRule(Name);
                     return RuleResult.Continue;
                 }
             }
 
+            context.Logger?.UrlRewriteMatchedRule(Name);
             // at this point we know the rule passed, evaluate the replacement.
             return Action.ApplyAction(context, initMatchResults, condMatchRes);
         }

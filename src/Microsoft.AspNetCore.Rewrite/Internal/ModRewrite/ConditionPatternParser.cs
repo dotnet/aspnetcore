@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
         /// <returns>A new parsed condition.</returns>
         public ParsedModRewriteInput ParseActionCondition(string condition)
         {
-            if (condition ==  null)
+            if (condition == null)
             {
                 condition = string.Empty;
             }
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             }
 
             // Capture the rest of the string guarantee validity.
-            results.Operand = condition.Substring(context.GetIndex()); 
+            results.Operand = condition.Substring(context.GetIndex());
             if (IsValidActionCondition(results))
             {
                 return results;

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             }
             else
             {
-                return new ParsedModRewriteInput { Invert = false, Operand = regex};
+                return new ParsedModRewriteInput { Invert = false, Operand = regex };
             }
         }
     }

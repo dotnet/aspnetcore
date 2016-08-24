@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
     public class UrlEncodeSegment : PatternSegment
     {
         private readonly Pattern _pattern;
-        
+
         public UrlEncodeSegment(Pattern pattern)
         {
             _pattern = pattern;
@@ -17,10 +17,14 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
 
         public override string Evaluate(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
-            var tempBuilder = context.Builder;
+            var oldBuilder = context.Builder;
+            // PERF 
+            // Because we need to be able to evaluate multiple nested patterns,
+            // we provided a new string builder and evaluate the new pattern,
+            // and restore it after evaluation.
             context.Builder = new StringBuilder(64);
             var pattern = _pattern.Evaluate(context, ruleMatch, condMatch);
-            context.Builder = tempBuilder;
+            context.Builder = oldBuilder;
             return UrlEncoder.Default.Encode(pattern);
         }
     }

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public async Task Invoke_RewritePathWhenMatching()
         {   
-            var options = new RewriteOptions().AddModRewriteRule("RewriteRule /hey/(.*) /$1 ");
+            var options = new RewriteOptions().ImportFromModRewrite(new StringReader("RewriteRule /hey/(.*) /$1 "));
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -34,8 +34,8 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public async Task Invoke_RewritePathTerminatesOnFirstSuccessOfRule()
         {
-            var options = new RewriteOptions().AddModRewriteRule("RewriteRule /hey/(.*) /$1 [L]")
-                            .AddModRewriteRule("RewriteRule /hello /what");
+            var options = new RewriteOptions().ImportFromModRewrite(new StringReader("RewriteRule /hey/(.*) /$1 [L]"))
+                            .ImportFromModRewrite(new StringReader("RewriteRule /hello /what"));
             var builder = new WebHostBuilder()
                  .Configure(app =>
                  {
@@ -52,8 +52,8 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public async Task Invoke_RewritePathDoesNotTerminateOnFirstSuccessOfRule()
         {
-            var options = new RewriteOptions().AddModRewriteRule("RewriteRule /hey/(.*) /$1")
-                                       .AddModRewriteRule("RewriteRule /hello /what");
+            var options = new RewriteOptions().ImportFromModRewrite(new StringReader("RewriteRule /hey/(.*) /$1"))
+                                       .ImportFromModRewrite(new StringReader("RewriteRule /hello /what"));
             var builder = new WebHostBuilder()
                  .Configure(app =>
                  {

@@ -1,15 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Rewrite.Internal;
 using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite;
-using Microsoft.AspNetCore.TestHost;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
@@ -28,11 +23,11 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>  
                 </rules>
                 </rewrite>");
-            var rules = new FileParser().Parse(xml);
+            var rules = new UrlRewriteFileParser().Parse(xml);
             
             Assert.Equal(rules.Count, 1);
             var ruleResults = rules.FirstOrDefault().ApplyRule(new RewriteContext {HttpContext = new DefaultHttpContext()});
-            Assert.Equal(ruleResults.Result, RuleTerminiation.StopRules);
+            Assert.Equal(ruleResults.Result, RuleTermination.StopRules);
         }
 
         [Fact]
@@ -46,11 +41,11 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>  
                 </rules>
                 </rewrite>");
-            var rules = new FileParser().Parse(xml);
+            var rules = new UrlRewriteFileParser().Parse(xml);
 
             Assert.Equal(rules.Count, 1);
             var ruleResults = rules.FirstOrDefault().ApplyRule(new RewriteContext { HttpContext = new DefaultHttpContext() });
-            Assert.Equal(ruleResults.Result, RuleTerminiation.Continue);
+            Assert.Equal(ruleResults.Result, RuleTermination.Continue);
         }
     }
 }

@@ -6,13 +6,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlMatches
     public class IsDirectoryMatch : UrlMatch
     {
         public IsDirectoryMatch(bool negate)
-        { 
+        {
             Negate = negate;
         }
 
         public override MatchResults Evaluate(string pattern, RewriteContext context)
         {
-            var res = context.FileProvider.GetFileInfo(pattern).IsDirectory;
+            var res = context.StaticFileProvider.GetFileInfo(pattern).IsDirectory;
             return new MatchResults { Success = (res != Negate) };
         }
     }

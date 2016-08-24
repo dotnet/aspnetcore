@@ -9,13 +9,13 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Extension methods for the <see cref="RewriteMiddleware"/> 
     /// </summary>
-    public static class RewriteExtensions
+    public static class RewriteBuilderExtensions
     {
         /// <summary>
         /// Checks if a given Url matches rules and conditions, and modifies the HttpContext on match.
         /// </summary>
         /// <param name="app"></param>
-        /// <param name="options">Options for urlrewrite.</param>
+        /// <param name="options">Options for rewrite.</param>
         /// <returns></returns>
         public static IApplicationBuilder UseRewriter(this IApplicationBuilder app, RewriteOptions options)
         {

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         [Fact]
         public async Task CheckRewritePath()
         {
-            var options = new RewriteOptions().RewriteRule("(.*)", "http://example.com/{R:1}");
+            var options = new RewriteOptions().Rewrite("(.*)", "http://example.com/{R:1}");
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         [Fact]
         public async Task CheckRedirectPath()
         {
-            var options = new RewriteOptions().RedirectRule("(.*)","http://example.com/{R:1}", statusCode: 301);
+            var options = new RewriteOptions().Redirect("(.*)","http://example.com/{R:1}", statusCode: 301);
             var builder = new WebHostBuilder()
             .Configure(app =>
             {
@@ -50,25 +50,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             var response = await server.CreateClient().GetAsync("foo");
 
             Assert.Equal(response.Headers.Location.OriginalString, "http://example.com/foo");
-        }
-
-        [Fact]
-        public async Task CheckRewriteToHttps()
-        {
-            var options = new RewriteOptions().RewriteToHttps();
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.UseRewriter(options);
-                    app.UseRewriter(options);
-                    app.Run(context => context.Response.WriteAsync(
-                        context.Request.Scheme));
-                });
-            var server = new TestServer(builder);
-
-            var response = await server.CreateClient().GetStringAsync(new Uri("http://example.com"));
-
-            Assert.Equal(response, "https");
         }
 
         [Fact]

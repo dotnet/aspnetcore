@@ -2,18 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Rewrite.Internal;
+using Microsoft.AspNetCore.Rewrite.Logging;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal
 {
     public class ModRewriteRule : Rule
     {
-        public UrlMatch InitialMatch { get; set; }
-        public Conditions Conditions { get; set; }
-        public UrlAction Action { get; set; }
-        public List<PreAction> PreActions { get; set; }
+        public UrlMatch InitialMatch { get; }
+        public IList<Condition> Conditions { get; }
+        public UrlAction Action { get; }
+        public IList<PreAction> PreActions { get; }
 
-        public ModRewriteRule(UrlMatch initialMatch, Conditions conditions, UrlAction urlAction, List<PreAction> preActions)
+        public ModRewriteRule(UrlMatch initialMatch, IList<Condition> conditions, UrlAction urlAction, IList<PreAction> preActions)
         {
             Conditions = conditions;
             InitialMatch = initialMatch;
@@ -28,21 +28,24 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
 
             if (!initMatchRes.Success)
             {
+                context.Logger?.ModRewriteDidNotMatchRule();
                 return RuleResult.Continue;
             }
 
             MatchResults condMatchRes = null;
             if (Conditions != null)
             {
-                condMatchRes = Conditions.Evaluate(context, initMatchRes);
+                condMatchRes = ConditionHelper.Evaluate(Conditions, context, initMatchRes);
                 if (!condMatchRes.Success)
                 {
+                    context.Logger?.ModRewriteDidNotMatchRule();
                     return RuleResult.Continue;
                 }
             }
 
             // At this point, we know our rule passed, first apply pre conditions,
             // which can modify things like the cookie or env, and then apply the action
+            context.Logger?.ModRewriteMatchedRule();
             foreach (var preAction in PreActions)
             {
                 preAction.ApplyAction(context.HttpContext, initMatchRes, condMatchRes);

@@ -4,16 +4,19 @@
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Rewrite
 {
     /// <summary>
-    /// The UrlRewrite Context contains the HttpContext of the request and the file provider to check conditions.
+    /// The UrlRewrite Context contains the HttpContext of the request, the file provider, and the logger.
+    /// There is also a shared string builder across the application of rules.
     /// </summary>
     public class RewriteContext
     {
         public HttpContext HttpContext { get; set; }
-        public IFileProvider FileProvider { get; set; }
+        public IFileProvider StaticFileProvider { get; set; }
+        public ILogger Logger { get; set; }
         // PERF: share the same string builder per request
         internal StringBuilder Builder { get; set; } = new StringBuilder(64);
     }

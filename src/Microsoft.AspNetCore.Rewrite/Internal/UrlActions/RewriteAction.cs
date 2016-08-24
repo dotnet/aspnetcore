@@ -10,10 +10,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
     public class RewriteAction : UrlAction
     {
         private readonly string ForwardSlash = "/";
-        public RuleTerminiation Result { get; }
+        public RuleTermination Result { get; }
         public bool ClearQuery { get; }
 
-        public RewriteAction(RuleTerminiation result, Pattern pattern, bool clearQuery)
+        public RewriteAction(RuleTermination result, Pattern pattern, bool clearQuery)
         {
             Result = result;
             Url = pattern;
@@ -28,8 +28,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
             {
                 context.HttpContext.Request.QueryString = QueryString.Empty;
             }
-            // TODO PERF, substrings, object creation, etc.
-            if (pattern.IndexOf("://") >= 0)
+
+            if (pattern.IndexOf("://", StringComparison.Ordinal) >= 0)
             {
                 string scheme;
                 HostString host;

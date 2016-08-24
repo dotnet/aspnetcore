@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
 {
     public class FileParser
     {
-        public List<Rule> Parse(TextReader input)
+        public IList<Rule> Parse(TextReader input)
         {
             string line;
             var rules = new List<Rule>();
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                             builder.AddAction(pattern, flags);
                             rules.Add(builder.Build());
                             builder = new RuleBuilder();
-                        } 
+                        }
                         catch (FormatException formatException)
                         {
                             throw new FormatException(Resources.FormatError_ModRewriteGeneralParseError(lineNum), formatException);

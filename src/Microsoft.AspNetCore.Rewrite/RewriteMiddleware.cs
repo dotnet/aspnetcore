@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite.Internal;
+using Microsoft.AspNetCore.Rewrite.Logging;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Rewrite
 {
@@ -20,14 +23,20 @@ namespace Microsoft.AspNetCore.Rewrite
         private readonly RequestDelegate _next;
         private readonly RewriteOptions _options;
         private readonly IFileProvider _fileProvider;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Creates a new instance of <see cref="RewriteMiddleware"/> 
         /// </summary>
         /// <param name="next">The delegate representing the next middleware in the request pipeline.</param>
-        /// <param name="hostingEnv">The Hosting Environment.</param>
+        /// <param name="hostingEnvironment">The Hosting Environment.</param>
+        /// <param name="loggerFactory">The Logger Factory.</param>
         /// <param name="options">The middleware options, containing the rules to apply.</param>
-        public RewriteMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, RewriteOptions options)
+        public RewriteMiddleware(
+            RequestDelegate next, 
+            IHostingEnvironment hostingEnvironment, 
+            ILoggerFactory loggerFactory, 
+            RewriteOptions options)
         {
             if (next == null)
             {
@@ -41,7 +50,8 @@ namespace Microsoft.AspNetCore.Rewrite
 
             _next = next;
             _options = options;
-            _fileProvider = _options.FileProvider ?? hostingEnv.WebRootFileProvider;
+            _fileProvider = _options.StaticFileProvider ?? hostingEnvironment.WebRootFileProvider;
+            _logger = loggerFactory.CreateLogger<RewriteMiddleware>();
         }
 
         /// <summary>
@@ -55,19 +65,27 @@ namespace Microsoft.AspNetCore.Rewrite
             {
                 throw new ArgumentNullException(nameof(context));
             }
-            var urlContext = new RewriteContext { HttpContext = context, FileProvider = _fileProvider };
+            var urlContext = new RewriteContext {
+                HttpContext = context,
+                StaticFileProvider = _fileProvider,
+                Logger = _logger
+            };
+
             foreach (var rule in _options.Rules)
             {
-                // Apply the rule
                 var result = rule.ApplyRule(urlContext);
                 switch (result.Result)
                 {
-                    case RuleTerminiation.Continue:
-                        // Explicitly show that we continue executing rules
+                    case RuleTermination.Continue:
+                        _logger.RewriteMiddlewareRequestContinueResults();
                         break;
-                    case RuleTerminiation.ResponseComplete:
+                    case RuleTermination.ResponseComplete:
+                        _logger.RewriteMiddlewareRequestResponseComplete(
+                            urlContext.HttpContext.Response.Headers[HeaderNames.Location],
+                            urlContext.HttpContext.Response.StatusCode);
                         return CompletedTask;
-                    case RuleTerminiation.StopRules:
+                    case RuleTermination.StopRules:
+                        _logger.RewriteMiddlewareRequestStopRules();
                         return _next(context);
                     default:
                         throw new ArgumentOutOfRangeException($"Invalid rule termination {result}");

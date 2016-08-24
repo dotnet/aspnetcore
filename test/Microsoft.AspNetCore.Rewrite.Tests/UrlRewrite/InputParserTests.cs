@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
 
             var context = new DefaultHttpContext();
-            return new RewriteContext { HttpContext = context, FileProvider = null };
+            return new RewriteContext { HttpContext = context, StaticFileProvider = null };
         }
 
         private MatchResults CreateTestRuleMatch()

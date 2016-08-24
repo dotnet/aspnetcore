@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite;
-using Microsoft.AspNetCore.Rewrite.Internal;
 
 namespace RewriteSample
 {
@@ -26,16 +25,11 @@ namespace RewriteSample
             // (ex StringReplace) that are easy to implement in code, they can do so by calling 
             // AddFunctionalRule(Func);
             // TODO make this startup do something useful.
+
             app.UseRewriter(new RewriteOptions()
+                .Rewrite(@"foo/(\d+)", "foo?id={R:1}") 
                 .ImportFromUrlRewrite(hostingEnv, "UrlRewrite.xml")
-                .ImportFromModRewrite(hostingEnv, "Rewrite.txt")
-                .RedirectToHttps(StatusCodes.Status307TemporaryRedirect)
-                .RewriteRule("/foo/(.*)/bar", "{R:1}/bar")
-                .AddRule(ctx =>
-                {
-                    ctx.HttpContext.Request.Path = "/index";
-                    return RuleResult.Continue;
-                }));
+                .ImportFromModRewrite(hostingEnv, "Rewrite.txt"));
 
             app.Run(context => context.Response.WriteAsync($"Rewritten Url: {context.Request.Path + context.Request.QueryString}"));
         }

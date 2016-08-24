@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
         public bool EscapeBackReferences { get; }
 
         public ModRewriteRewriteAction(
-            RuleResult result, 
-            Pattern pattern, 
+            RuleResult result,
+            Pattern pattern,
             bool queryStringAppend,
             bool queryStringDelete,
             bool escapeBackReferences)

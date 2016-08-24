@@ -1,8 +1,8 @@
 ﻿<rewrite>
   <rules>
-    <rule name="Example" stopProcessing="true">
-      <match url="(.*)" />
-      <action type="Rewrite" url="http://example.com/{R:1}" />
+    <rule name="" stopProcessing="true">
+      <match url="foo/bar" />
+      <action type="Redirect" redirectType="Found" url="foo/" />
     </rule>
   </rules>
 </rewrite>

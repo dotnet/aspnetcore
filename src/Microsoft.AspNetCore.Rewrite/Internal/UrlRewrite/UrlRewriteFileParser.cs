@@ -10,11 +10,11 @@ using System.Xml.Linq;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
 {
-    public class FileParser
+    public class UrlRewriteFileParser
     {
         private readonly InputParser _inputParser = new InputParser();
 
-        public List<UrlRewriteRule> Parse(TextReader reader)
+        public IList<UrlRewriteRule> Parse(TextReader reader)
         {
             var xmlDoc = XDocument.Load(reader, LoadOptions.SetLineInfo);
             var xmlRoot = xmlDoc.Descendants(RewriteTags.Rewrite).FirstOrDefault();
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             return null;
         }
 
-        private void ParseRules(XElement rules, List<UrlRewriteRule> result)
+        private void ParseRules(XElement rules, IList<UrlRewriteRule> result)
         {
             if (rules == null)
             {

@@ -8,24 +8,24 @@ using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite;
 
 namespace Microsoft.AspNetCore.Rewrite
 {
-    public static class UrlRewriteExtensions
+    public static class UrlRewriteOptionsExtensions
     {
         /// <summary>
         /// Imports rules from a mod_rewrite file and adds the rules to current rules. 
         /// </summary>
         /// <param name="options">The UrlRewrite options.</param>
-        /// <param name="hostingEnv"></param>
+        /// <param name="hostingEnvironment"></param>
         /// <param name="filePath">The path to the file containing urlrewrite rules.</param>
-        public static RewriteOptions ImportFromUrlRewrite(this RewriteOptions options, IHostingEnvironment hostingEnv, string filePath)
+        public static RewriteOptions ImportFromUrlRewrite(this RewriteOptions options, IHostingEnvironment hostingEnvironment, string filePath)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (hostingEnv == null)
+            if (hostingEnvironment == null)
             {
-                throw new ArgumentNullException(nameof(hostingEnv));
+                throw new ArgumentNullException(nameof(hostingEnvironment));
             }
 
             if (string.IsNullOrEmpty(filePath))
@@ -33,35 +33,36 @@ namespace Microsoft.AspNetCore.Rewrite
                 throw new ArgumentException(nameof(filePath));
             }
 
-            var path = Path.Combine(hostingEnv.ContentRootPath, filePath);
+            var path = Path.Combine(hostingEnvironment.ContentRootPath, filePath);
             using (var stream = File.OpenRead(path))
             {
-                options.Rules.AddRange(new FileParser().Parse(new StreamReader(stream)));
-            };
-            return options;
+                return ImportFromUrlRewrite(options, new StreamReader(stream));
+            }
         }
 
         /// <summary>
         /// Imports rules from a mod_rewrite file and adds the rules to current rules. 
         /// </summary>
         /// <param name="options">The UrlRewrite options.</param>
-        /// <param name="stream">The text reader stream.</param>
-        public static RewriteOptions ImportFromUrlRewrite(this RewriteOptions options, TextReader stream)
+        /// <param name="reader">The text reader stream.</param>
+        public static RewriteOptions ImportFromUrlRewrite(this RewriteOptions options, TextReader reader)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (stream == null)
+            if (reader == null)
             {
-                throw new ArgumentException(nameof(stream));
+                throw new ArgumentException(nameof(reader));
             }
 
-            using (stream)
+            var rules = new UrlRewriteFileParser().Parse(reader);
+
+            foreach (var rule in rules)
             {
-                options.Rules.AddRange(new FileParser().Parse(stream));
-            };
+                options.Rules.Add(rule);
+            }
             return options;
         }
     }

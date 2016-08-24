@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Rewrite.Internal;
 using Microsoft.AspNetCore.Rewrite.Internal.PatternSegments;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
@@ -60,7 +59,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             return new Pattern(results);
         }
 
-        private static void ParseParameter(ParserContext context, List<PatternSegment> results)
+        private static void ParseParameter(ParserContext context, IList<PatternSegment> results)
         {
             context.Mark();
             // Four main cases:
@@ -82,7 +81,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                 else if (context.Current == Colon)
                 {
                     parameter = context.Capture();
-                    
+
                     // Only 5 strings to expect here. Case sensitive.
                     switch (parameter)
                     {
@@ -165,7 +164,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             return index;
         }
 
-        private static void ParseLiteral(ParserContext context, List<PatternSegment> results)
+        private static void ParseLiteral(ParserContext context, IList<PatternSegment> results)
         {
             context.Mark();
             string literal;

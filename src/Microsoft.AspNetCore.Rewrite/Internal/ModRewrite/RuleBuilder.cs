@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
 {
     public class RuleBuilder
     {
-        private Conditions _conditions;
+        private IList<Condition> _conditions;
         private UrlAction _action;
         private UrlMatch _match;
         private List<PreAction> _preActions;
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
         {
             if (_conditions == null)
             {
-                _conditions = new Conditions();
+                _conditions = new List<Condition>();
             }
 
             var condition = new Condition();
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                     }
                     break;
             }
-            _conditions.ConditionList.Add(condition);
+            _conditions.Add(condition);
         }
 
         public void AddMatch(
