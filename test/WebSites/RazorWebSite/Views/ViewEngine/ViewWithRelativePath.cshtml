@@ -12,4 +12,4 @@
 }
 ViewWithRelativePath-content
 <partial>@await Html.PartialAsync("../Shared/_PartialThatSetsTitle.cshtml")</partial>
-@await Component.InvokeAsync("ComponentWithRelativePath", new { person })
+@await Component.InvokeAsync("ComponentWithRelativePath", person)

@@ -53,12 +53,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
 
         private static ViewComponentDescriptor CreateDescriptor(TypeInfo typeInfo)
         {
+            var methodInfo = FindMethod(typeInfo.AsType());
             var candidate = new ViewComponentDescriptor
             {
                 FullName = ViewComponentConventions.GetComponentFullName(typeInfo),
                 ShortName = ViewComponentConventions.GetComponentName(typeInfo),
                 TypeInfo = typeInfo,
-                MethodInfo = FindMethod(typeInfo.AsType())
+                MethodInfo = methodInfo,
+                Parameters = methodInfo.GetParameters()
             };
 
             return candidate;

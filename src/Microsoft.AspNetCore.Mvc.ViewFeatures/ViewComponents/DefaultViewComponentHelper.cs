@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
@@ -130,19 +132,28 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 componentType.FullName));
         }
 
-        private async Task<IHtmlContent> InvokeCoreAsync(
-            ViewComponentDescriptor descriptor,
-            object arguments)
+        // Internal for testing
+        internal IDictionary<string, object> GetArgumentDictionary(ViewComponentDescriptor descriptor, object arguments)
         {
+            if (descriptor.Parameters.Count == 1 && descriptor.Parameters[0].ParameterType.IsAssignableFrom(arguments.GetType()))
+            {
+                return new Dictionary<string, object>(capacity: 1, comparer: StringComparer.OrdinalIgnoreCase)
+                {
+                    { descriptor.Parameters[0].Name, arguments }
+                };
+            }
+
+            return PropertyHelper.ObjectToDictionary(arguments);
+        }
+
+        private async Task<IHtmlContent> InvokeCoreAsync(ViewComponentDescriptor descriptor, object arguments)
+        {
+            var argumentDictionary = GetArgumentDictionary(descriptor, arguments);
+
             var viewBuffer = new ViewBuffer(_viewBufferScope, descriptor.FullName, ViewBuffer.ViewComponentPageSize);
             using (var writer = new ViewBufferTextWriter(viewBuffer, _viewContext.Writer.Encoding))
             {
-                var context = new ViewComponentContext(
-                    descriptor,
-                    PropertyHelper.ObjectToDictionary(arguments),
-                    _htmlEncoder,
-                    _viewContext,
-                    writer);
+                var context = new ViewComponentContext(descriptor, argumentDictionary, _htmlEncoder, _viewContext, writer);
 
                 var invoker = _invokerFactory.CreateInstance(context);
                 if (invoker == null)

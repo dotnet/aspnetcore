@@ -55,12 +55,14 @@ namespace Microsoft.AspNetCore.Mvc
         public async Task ExecuteAsync_ViewComponentResult_AllowsNullViewDataAndTempData()
         {
             // Arrange
+            var methodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke));
             var descriptor = new ViewComponentDescriptor()
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
-                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
+                MethodInfo = methodInfo,
+                Parameters = methodInfo.GetParameters(),
             };
 
             var actionContext = CreateActionContext(descriptor);
@@ -146,12 +148,14 @@ namespace Microsoft.AspNetCore.Mvc
         public async Task ExecuteResultAsync_ExecutesSyncViewComponent()
         {
             // Arrange
+            var methodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke));
             var descriptor = new ViewComponentDescriptor()
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
-                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
+                MethodInfo = methodInfo,
+                Parameters = methodInfo.GetParameters(),
             };
 
             var actionContext = CreateActionContext(descriptor);
@@ -175,12 +179,14 @@ namespace Microsoft.AspNetCore.Mvc
         public async Task ExecuteResultAsync_UsesDictionaryArguments()
         {
             // Arrange
+            var methodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke));
             var descriptor = new ViewComponentDescriptor()
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
-                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
+                MethodInfo = methodInfo,
+                Parameters = methodInfo.GetParameters(),
             };
 
             var actionContext = CreateActionContext(descriptor);
@@ -204,12 +210,14 @@ namespace Microsoft.AspNetCore.Mvc
         public async Task ExecuteResultAsync_ExecutesAsyncViewComponent()
         {
             // Arrange
+            var methodInfo = typeof(AsyncTextViewComponent).GetMethod(nameof(AsyncTextViewComponent.InvokeAsync));
             var descriptor = new ViewComponentDescriptor()
             {
                 FullName = "Full.Name.AsyncText",
                 ShortName = "AsyncText",
                 TypeInfo = typeof(AsyncTextViewComponent).GetTypeInfo(),
-                MethodInfo = typeof(AsyncTextViewComponent).GetMethod(nameof(AsyncTextViewComponent.InvokeAsync)),
+                MethodInfo = methodInfo,
+                Parameters = methodInfo.GetParameters(),
             };
 
             var actionContext = CreateActionContext(descriptor);
@@ -233,12 +241,14 @@ namespace Microsoft.AspNetCore.Mvc
         public async Task ExecuteResultAsync_ExecutesViewComponent_AndWritesDiagnosticSource()
         {
             // Arrange
+            var methodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke));
             var descriptor = new ViewComponentDescriptor()
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
-                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
+                MethodInfo = methodInfo,
+                Parameters = methodInfo.GetParameters(),
             };
 
             var adapter = new TestDiagnosticListener();
@@ -272,12 +282,14 @@ namespace Microsoft.AspNetCore.Mvc
         public async Task ExecuteResultAsync_ExecutesViewComponent_ByShortName()
         {
             // Arrange
+            var methodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke));
             var descriptor = new ViewComponentDescriptor()
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
-                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
+                MethodInfo = methodInfo,
+                Parameters = methodInfo.GetParameters(),
             };
 
             var actionContext = CreateActionContext(descriptor);
@@ -301,12 +313,14 @@ namespace Microsoft.AspNetCore.Mvc
         public async Task ExecuteResultAsync_ExecutesViewComponent_ByFullName()
         {
             // Arrange
+            var methodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke));
             var descriptor = new ViewComponentDescriptor()
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
-                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
+                MethodInfo = methodInfo,
+                Parameters = methodInfo.GetParameters(),
             };
 
             var actionContext = CreateActionContext(descriptor);
@@ -330,12 +344,14 @@ namespace Microsoft.AspNetCore.Mvc
         public async Task ExecuteResultAsync_ExecutesViewComponent_ByType()
         {
             // Arrange
+            var methodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke));
             var descriptor = new ViewComponentDescriptor()
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
-                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
+                MethodInfo = methodInfo,
+                Parameters = methodInfo.GetParameters(),
             };
 
             var actionContext = CreateActionContext(descriptor);
@@ -359,12 +375,14 @@ namespace Microsoft.AspNetCore.Mvc
         public async Task ExecuteResultAsync_SetsStatusCode()
         {
             // Arrange
+            var methodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke));
             var descriptor = new ViewComponentDescriptor()
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
-                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke))
+                MethodInfo = methodInfo,
+                Parameters = methodInfo.GetParameters(),
             };
 
             var actionContext = CreateActionContext(descriptor);
@@ -417,12 +435,14 @@ namespace Microsoft.AspNetCore.Mvc
             string expectedContentType)
         {
             // Arrange
+            var methodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke));
             var descriptor = new ViewComponentDescriptor()
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
-                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
+                MethodInfo = methodInfo,
+                Parameters = methodInfo.GetParameters(),
             };
 
             var actionContext = CreateActionContext(descriptor);
@@ -455,12 +475,14 @@ namespace Microsoft.AspNetCore.Mvc
         public async Task ViewComponentResult_SetsContentTypeHeader_OverrideResponseContentType()
         {
             // Arrange
+            var methodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke));
             var descriptor = new ViewComponentDescriptor()
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
-                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
+                MethodInfo = methodInfo,
+                Parameters = methodInfo.GetParameters(),
             };
 
             var actionContext = CreateActionContext(descriptor);
@@ -492,12 +514,14 @@ namespace Microsoft.AspNetCore.Mvc
             string expectedContentType)
         {
             // Arrange
+            var methodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke));
             var descriptor = new ViewComponentDescriptor()
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
-                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
+                MethodInfo = methodInfo,
+                Parameters = methodInfo.GetParameters(),
             };
 
             var actionContext = CreateActionContext(descriptor);
