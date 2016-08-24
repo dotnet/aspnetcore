@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
 {
     public class OpenIdConnectChallengeTests
     {
+        private static readonly string ChallengeEndpoint = TestServerBuilder.TestHost + TestServerBuilder.Challenge;
+
         [Fact]
         public async Task ChallengeIsIssuedCorrectly()
         {
@@ -259,7 +261,10 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
                     {
                         OnRedirectToIdentityProvider = context =>
                         {
+                            context.Response.StatusCode = 410;
+                            context.Response.Headers.Add("tea", "Oolong");
                             context.HandleResponse();
+
                             return Task.FromResult(0);
                         }
                     };
@@ -270,7 +275,8 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             var transaction = await server.SendAsync(ChallengeEndpoint);
 
             var res = transaction.Response;
-            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+            Assert.Equal(HttpStatusCode.Gone, res.StatusCode);
+            Assert.Equal("Oolong", res.Headers.GetValues("tea").Single());
             Assert.Null(res.Headers.Location);
         }
 
@@ -316,7 +322,5 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             Assert.StartsWith(".AspNetCore.Correlation.OpenIdConnect.", secondCookie);
             Assert.Contains("expires", secondCookie);
         }
-
-        private static string ChallengeEndpoint => TestServerBuilder.TestHost + TestServerBuilder.Challenge;
     }
 }
