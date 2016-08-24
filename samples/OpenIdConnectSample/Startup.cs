@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
@@ -80,20 +83,22 @@ namespace OpenIdConnectSample
             {
                 if (context.Request.Path.Equals("/signedout"))
                 {
-                    context.Response.ContentType = "text/html";
-                    await context.Response.WriteAsync($"<html><body>You have been signed out.<br>{Environment.NewLine}");
-                    await context.Response.WriteAsync("<a href=\"/\">Sign In</a>");
-                    await context.Response.WriteAsync($"</body></html>");
+                    await WriteHtmlAsync(context.Response, async res =>
+                    {
+                        await res.WriteAsync($"<h1>You have been signed out.</h1>");
+                        await res.WriteAsync("<a class=\"btn btn-link\" href=\"/\">Sign In</a>");
+                    });
                     return;
                 }
 
                 if (context.Request.Path.Equals("/signout"))
                 {
                     await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                    context.Response.ContentType = "text/html";
-                    await context.Response.WriteAsync($"<html><body>Signed out {context.User.Identity.Name}<br>{Environment.NewLine}");
-                    await context.Response.WriteAsync("<a href=\"/\">Sign In</a>");
-                    await context.Response.WriteAsync($"</body></html>");
+                    await WriteHtmlAsync(context.Response, async res =>
+                    {
+                        await context.Response.WriteAsync($"<h1>Signed out {HtmlEncode(context.User.Identity.Name)}</h1>");
+                        await context.Response.WriteAsync("<a class=\"btn btn-link\" href=\"/\">Sign In</a>");
+                    });
                     return;
                 }
 
@@ -111,10 +116,11 @@ namespace OpenIdConnectSample
                 if (context.Request.Path.Equals("/Account/AccessDenied"))
                 {
                     await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                    context.Response.ContentType = "text/html";
-                    await context.Response.WriteAsync($"<html><body>Access Denied for user {context.User.Identity.Name} to resource '{context.Request.Query["ReturnUrl"]}'<br>{Environment.NewLine}");
-                    await context.Response.WriteAsync("<a href=\"/signout\">Sign Out</a>");
-                    await context.Response.WriteAsync($"</body></html>");
+                    await WriteHtmlAsync(context.Response, async res =>
+                    {
+                        await context.Response.WriteAsync($"<h1>Access Denied for user {HtmlEncode(context.User.Identity.Name)} to resource '{HtmlEncode(context.Request.Query["ReturnUrl"])}'</h1>");
+                        await context.Response.WriteAsync("<a class=\"btn btn-link\" href=\"/signout\">Sign Out</a>");
+                    });
                     return;
                 }
 
@@ -147,18 +153,53 @@ namespace OpenIdConnectSample
                     return;
                 }
 
-                context.Response.ContentType = "text/html";
-                await context.Response.WriteAsync($"<html><body>Hello Authenticated User {user.Identity.Name}<br>{Environment.NewLine}");
-                foreach (var claim in user.Claims)
+
+                await WriteHtmlAsync(context.Response, async response =>
                 {
-                    await context.Response.WriteAsync($"{claim.Type}: {claim.Value}<br>{Environment.NewLine}");
-                }
-                await context.Response.WriteAsync("<a href=\"/restricted\">Restricted</a><br>");
-                await context.Response.WriteAsync("<a href=\"/signout\">Sign Out</a><br>");
-                await context.Response.WriteAsync("<a href=\"/signout-remote\">Sign Out Remote</a><br>");
-                await context.Response.WriteAsync($"</body></html>");
+                    await response.WriteAsync($"<h1>Hello Authenticated User {HtmlEncode(user.Identity.Name)}</h1>");
+                    await response.WriteAsync("<a class=\"btn btn-default\" href=\"/restricted\">Restricted</a>");
+                    await response.WriteAsync("<a class=\"btn btn-default\" href=\"/signout\">Sign Out</a>");
+                    await response.WriteAsync("<a class=\"btn btn-default\" href=\"/signout-remote\">Sign Out Remote</a>");
+
+                    await response.WriteAsync("<h2>Claims:</h2>");
+                    await WriteTableHeader(response, new string[] { "Claim Type", "Value" }, context.User.Claims.Select(c => new string[] { c.Type, c.Value }));
+                });
             });
         }
+
+        private static async Task WriteHtmlAsync(HttpResponse response, Func<HttpResponse, Task> writeContent)
+        {
+            var bootstrap = "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\" integrity=\"sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u\" crossorigin=\"anonymous\">";
+
+            response.ContentType = "text/html";
+            await response.WriteAsync($"<html><head>{bootstrap}</head><body><div class=\"container\">");
+            await writeContent(response);
+            await response.WriteAsync("</div></body></html>");
+        }
+
+        private static async Task WriteTableHeader(HttpResponse response, IEnumerable<string> columns, IEnumerable<IEnumerable<string>> data)
+        {
+            await response.WriteAsync("<table class=\"table table-condensed\">");
+            await response.WriteAsync("<tr>");
+            foreach (var column in columns)
+            {
+                await response.WriteAsync($"<th>{HtmlEncode(column)}</th>");
+            }
+            await response.WriteAsync("</tr>");
+            foreach (var row in data)
+            {
+                await response.WriteAsync("<tr>");
+                foreach (var column in row)
+                {
+                    await response.WriteAsync($"<td>{HtmlEncode(column)}</td>");
+                }
+                await response.WriteAsync("</tr>");
+            }
+            await response.WriteAsync("</table>");
+        }
+
+        private static string HtmlEncode(string content) =>
+            string.IsNullOrEmpty(content) ? string.Empty : HtmlEncoder.Default.Encode(content);
     }
 }
 

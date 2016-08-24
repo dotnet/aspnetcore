@@ -13,7 +13,7 @@ namespace OpenIdConnectSample
             var host = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
-                    //Configure SSL
+                    // Configure SSL
                     var serverCertificate = LoadCertificate();
                     options.UseHttps(serverCertificate);
                 })
