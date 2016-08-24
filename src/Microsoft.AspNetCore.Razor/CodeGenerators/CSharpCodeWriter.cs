@@ -319,6 +319,17 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                 .WriteEndMethodInvocation(endLine);
         }
 
+        public CSharpCodeWriter WriteAutoPropertyDeclaration(string accessibility, string typeName, string name)
+        {
+            return Write(accessibility)
+                .Write(" ")
+                .Write(typeName)
+                .Write(" ")
+                .Write(name)
+                .Write(" { get; set; }")
+                .WriteLine();
+        }
+
         public CSharpDisableWarningScope BuildDisableWarningScope(int warning)
         {
             return new CSharpDisableWarningScope(this, warning);

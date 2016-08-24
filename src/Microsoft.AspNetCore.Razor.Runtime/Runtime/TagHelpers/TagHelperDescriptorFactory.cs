@@ -703,6 +703,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         /// Converts from pascal/camel case to lower kebab-case.
         /// </summary>
         /// <example>
+        /// <code>
         /// SomeThing => some-thing
         /// capsONInside => caps-on-inside
         /// CAPSOnOUTSIDE => caps-on-outside
@@ -710,8 +711,9 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         /// One1Two2Three3 => one1-two2-three3
         /// ONE1TWO2THREE3 => one1two2three3
         /// First_Second_ThirdHi => first_second_third-hi
+        /// </code>
         /// </example>
-        private static string ToHtmlCase(string name)
+        public static string ToHtmlCase(string name)
         {
             return HtmlCaseRegex.Replace(name, HtmlCaseRegexReplacement).ToLowerInvariant();
         }

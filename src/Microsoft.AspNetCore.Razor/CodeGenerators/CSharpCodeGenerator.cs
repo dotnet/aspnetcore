@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
         {
         }
 
-        private ChunkTree Tree { get { return Context.ChunkTreeBuilder.Root; } }
+        protected ChunkTree Tree { get { return Context.ChunkTreeBuilder.Root; } }
         public RazorEngineHost Host { get { return Context.Host; } }
 
         /// <summary>
@@ -82,10 +82,21 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                             csharpCodeVisitor.Accept(Tree.Children);
                         }
                     }
+
+                    BuildAfterExecuteContent(writer, Tree.Children);
                 }
             }
 
             return new CodeGeneratorResult(writer.GenerateCode(), writer.LineMappingManager.Mappings);
+        }
+
+        /// <summary>
+        /// Provides an entry point to append code (after execute content) to a generated Razor class.
+        /// </summary>
+        /// <param name="writer">The <see cref="CSharpCodeWriter"/> to receive the additional content.</param>
+        /// <param name="chunks">The list of <see cref="Chunk"/>s for the generated program.</param>
+        protected virtual void BuildAfterExecuteContent(CSharpCodeWriter writer, IList<Chunk> chunks)
+        {
         }
 
         protected virtual CSharpCodeVisitor CreateCSharpCodeVisitor(
