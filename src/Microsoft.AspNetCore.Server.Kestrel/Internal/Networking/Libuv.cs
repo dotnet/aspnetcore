@@ -64,6 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
 
         public void ThrowIfErrored(int statusCode)
         {
+            // Note: method is explicitly small so the success case is easily inlined
             if (statusCode < 0)
             {
                 ThrowError(statusCode);
@@ -72,17 +73,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
 
         private void ThrowError(int statusCode)
         {
+            // Note: only has one throw block so it will marked as "Does not return" by the jit
+            // and not inlined into previous function, while also marking as a function
+            // that does not need cpu register prep to call (see: https://github.com/dotnet/coreclr/pull/6103)
             throw GetError(statusCode);
         }
 
         public void Check(int statusCode, out Exception error)
         {
+            // Note: method is explicitly small so the success case is easily inlined
             error = statusCode < 0 ? GetError(statusCode) : null;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private UvException GetError(int statusCode)
         {
+            // Note: method marked as NoInlining so it doesn't bloat either of the two preceeding functions
+            // Check and ThrowError and alter their jit heuristics.
             var errorName = err_name(statusCode);
             var errorDescription = strerror(statusCode);
             return new UvException("Error " + statusCode + " " + errorName + " " + errorDescription, statusCode);
