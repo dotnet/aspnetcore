@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Razor.Test.Internal;
 using Newtonsoft.Json;
@@ -68,7 +69,8 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                 $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":{{" +
                 $"\"{ nameof(TagHelperDesignTimeDescriptor.Summary) }\":\"usage summary\"," +
                 $"\"{ nameof(TagHelperDesignTimeDescriptor.Remarks) }\":\"usage remarks\"," +
-                $"\"{ nameof(TagHelperDesignTimeDescriptor.OutputElementHint) }\":\"some-tag\"}}}}";
+                $"\"{ nameof(TagHelperDesignTimeDescriptor.OutputElementHint) }\":\"some-tag\"}}," +
+                $"\"{ nameof(TagHelperDescriptor.PropertyBag) }\":{{}}}}";
 
             // Act
             var serializedDescriptor = JsonConvert.SerializeObject(descriptor);
@@ -132,7 +134,8 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                 $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":null," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredParent) }\":null," +
                 $"\"{ nameof(TagHelperDescriptor.TagStructure) }\":1," +
-                $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null}}";
+                $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null," +
+                $"\"{ nameof(TagHelperDescriptor.PropertyBag) }\":{{}}}}";
 
             // Act
             var serializedDescriptor = JsonConvert.SerializeObject(descriptor);
@@ -200,13 +203,51 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                 $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":[\"allowed child one\",\"allowed child two\"]," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredParent) }\":\"parent name\"," +
                 $"\"{ nameof(TagHelperDescriptor.TagStructure) }\":0," +
-                $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null}}";
+                $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null," +
+                $"\"{ nameof(TagHelperDescriptor.PropertyBag) }\":{{}}}}";
 
             // Act
             var serializedDescriptor = JsonConvert.SerializeObject(descriptor);
 
             // Assert
             Assert.Equal(expectedSerializedDescriptor, serializedDescriptor, StringComparer.Ordinal);
+        }
+
+        [Fact]
+        public void TagHelperDescriptor_WithPropertyBagElements_CanBeSerialized()
+        {
+            // Arrange
+            var descriptor = new TagHelperDescriptor
+            {
+                Prefix = "prefix:",
+                TagName = "tag name",
+                TypeName = "type name",
+                AssemblyName = "assembly name"
+            };
+
+            descriptor.PropertyBag.Add("key one", "value one");
+            descriptor.PropertyBag.Add("key two", "value two");
+
+            var expectedSerializedDescriptor =
+                $"{{\"{ nameof(TagHelperDescriptor.Prefix) }\":\"prefix:\"," +
+                $"\"{ nameof(TagHelperDescriptor.TagName) }\":\"tag name\"," +
+                $"\"{ nameof(TagHelperDescriptor.FullTagName) }\":\"prefix:tag name\"," +
+                $"\"{ nameof(TagHelperDescriptor.TypeName) }\":\"type name\"," +
+                $"\"{ nameof(TagHelperDescriptor.AssemblyName) }\":\"assembly name\"," +
+                $"\"{ nameof(TagHelperDescriptor.Attributes) }\":[]," +
+                $"\"{ nameof(TagHelperDescriptor.RequiredAttributes) }\":[]," +
+                $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":null," +
+                $"\"{ nameof(TagHelperDescriptor.RequiredParent) }\":null," +
+                $"\"{ nameof(TagHelperDescriptor.TagStructure) }\":0," +
+                $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null," +
+                $"\"{ nameof(TagHelperDescriptor.PropertyBag) }\":" +
+                    "{\"key one\":\"value one\",\"key two\":\"value two\"}}";
+
+            // Act
+            var serializedDescriptor = JsonConvert.SerializeObject(descriptor);
+
+            // Assert
+            Assert.Equal(expectedSerializedDescriptor, serializedDescriptor);
         }
 
         [Fact]
@@ -283,6 +324,7 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                 expectedDescriptor.DesignTimeDescriptor,
                 descriptor.DesignTimeDescriptor,
                 TagHelperDesignTimeDescriptorComparer.Default);
+            Assert.Empty(descriptor.PropertyBag);
         }
 
         [Fact]
@@ -354,6 +396,7 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
             Assert.Equal(expectedDescriptor.AssemblyName, descriptor.AssemblyName, StringComparer.Ordinal);
             Assert.Equal(expectedDescriptor.Attributes, descriptor.Attributes, TagHelperAttributeDescriptorComparer.Default);
             Assert.Empty(descriptor.RequiredAttributes);
+            Assert.Empty(descriptor.PropertyBag);
         }
 
         [Fact]
@@ -385,7 +428,9 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                 $"\"{ nameof(TagHelperDescriptor.AllowedChildren) }\":null," +
                 $"\"{ nameof(TagHelperDescriptor.RequiredParent) }\":null," +
                 $"\"{nameof(TagHelperDescriptor.TagStructure)}\":1," +
-                $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null}}";
+                $"\"{ nameof(TagHelperDescriptor.DesignTimeDescriptor) }\":null," +
+                $"\"{ nameof(TagHelperDescriptor.PropertyBag) }\":{{}}}}";
+
             var expectedDescriptor = new TagHelperDescriptor
             {
                 Prefix = "prefix:",
@@ -427,6 +472,44 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
             Assert.Equal(expectedDescriptor.AssemblyName, descriptor.AssemblyName, StringComparer.Ordinal);
             Assert.Equal(expectedDescriptor.Attributes, descriptor.Attributes, TagHelperAttributeDescriptorComparer.Default);
             Assert.Empty(descriptor.RequiredAttributes);
+            Assert.Empty(descriptor.PropertyBag);
+        }
+
+        [Fact]
+        public void TagHelperDescriptor_WithPropertyBagElements_CanBeDeserialized()
+        {
+            // Arrange
+            var serializedDescriptor =
+                $"{{\"{nameof(TagHelperDescriptor.Prefix)}\":\"prefix:\"," +
+                $"\"{nameof(TagHelperDescriptor.TagName)}\":\"tag name\"," +
+                $"\"{nameof(TagHelperDescriptor.TypeName)}\":\"type name\"," +
+                $"\"{nameof(TagHelperDescriptor.AssemblyName)}\":\"assembly name\"," +
+                $"\"{ nameof(TagHelperDescriptor.PropertyBag) }\":" +
+                    "{\"key one\":\"value one\",\"key two\":\"value two\"}}";
+            var expectedDescriptor = new TagHelperDescriptor
+            {
+                Prefix = "prefix:",
+                TagName = "tag name",
+                TypeName = "type name",
+                AssemblyName = "assembly name"
+            };
+
+            expectedDescriptor.PropertyBag.Add("key one", "value one");
+            expectedDescriptor.PropertyBag.Add("key two", "value two");
+
+            // Act
+            var descriptor = JsonConvert.DeserializeObject<TagHelperDescriptor>(serializedDescriptor);
+
+            // Assert
+            Assert.NotNull(descriptor);
+            Assert.Equal(expectedDescriptor.Prefix, descriptor.Prefix, StringComparer.Ordinal);
+            Assert.Equal(expectedDescriptor.TagName, descriptor.TagName, StringComparer.Ordinal);
+            Assert.Equal(expectedDescriptor.TypeName, descriptor.TypeName, StringComparer.Ordinal);
+            Assert.Equal(expectedDescriptor.AssemblyName, descriptor.AssemblyName, StringComparer.Ordinal);
+            Assert.Empty(descriptor.Attributes);
+            Assert.Empty(descriptor.RequiredAttributes);
+            Assert.Equal(expectedDescriptor.PropertyBag["key one"], descriptor.PropertyBag["key one"]);
+            Assert.Equal(expectedDescriptor.PropertyBag["key two"], descriptor.PropertyBag["key two"]);
         }
     }
 }

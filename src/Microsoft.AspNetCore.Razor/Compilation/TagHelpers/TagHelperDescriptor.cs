@@ -17,9 +17,11 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
         private string _tagName;
         private string _typeName;
         private string _assemblyName;
+        private IDictionary<string, string> _propertyBag;
         private IEnumerable<TagHelperAttributeDescriptor> _attributes =
             Enumerable.Empty<TagHelperAttributeDescriptor>();
-        private IEnumerable<TagHelperRequiredAttributeDescriptor> _requiredAttributes = Enumerable.Empty<TagHelperRequiredAttributeDescriptor>();
+        private IEnumerable<TagHelperRequiredAttributeDescriptor> _requiredAttributes = 
+            Enumerable.Empty<TagHelperRequiredAttributeDescriptor>();
 
         /// <summary>
         /// Text used as a required prefix when matching HTML start and end tags in the Razor source to available
@@ -200,5 +202,21 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
         /// tag helper.
         /// </summary>
         public TagHelperDesignTimeDescriptor DesignTimeDescriptor { get; set; }
+
+        /// <summary>
+        /// A dictionary containing additional information about the <see cref="TagHelperDescriptor"/>.
+        /// </summary>
+        public IDictionary<string, string> PropertyBag
+        {
+            get
+            {
+                if (_propertyBag == null)
+                {
+                    _propertyBag = new Dictionary<string, string>();
+                }
+
+                return _propertyBag;
+            }
+        }
     }
 }
