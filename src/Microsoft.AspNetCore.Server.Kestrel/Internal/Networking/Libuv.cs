@@ -313,10 +313,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         }
 
         protected Func<UvStreamHandle, uv_buf_t[], int, int> _uv_try_write;
-        public void try_write(UvStreamHandle handle, uv_buf_t[] bufs, int nbufs)
+        public int try_write(UvStreamHandle handle, uv_buf_t[] bufs, int nbufs)
         {
             handle.Validate();
-            ThrowIfErrored(_uv_try_write(handle, bufs, nbufs));
+            var count = _uv_try_write(handle, bufs, nbufs);
+            ThrowIfErrored(count);
+            return count;
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

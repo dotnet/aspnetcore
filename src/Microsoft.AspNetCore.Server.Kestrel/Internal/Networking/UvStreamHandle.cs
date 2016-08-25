@@ -118,9 +118,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             _uv.read_stop(this);
         }
 
-        public void TryWrite(Libuv.uv_buf_t buf)
+        public int TryWrite(Libuv.uv_buf_t buf)
         {
-            _uv.try_write(this, new[] { buf }, 1);
+            return _uv.try_write(this, new[] { buf }, 1);
         }
 
         private static void UvConnectionCb(IntPtr handle, int status)
