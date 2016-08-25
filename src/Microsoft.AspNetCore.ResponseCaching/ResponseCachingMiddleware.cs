@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.ObjectPool;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
@@ -17,22 +20,28 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         private readonly RequestDelegate _next;
         private readonly IResponseCache _cache;
-        IResponseCachingCacheabilityValidator _cacheabilityValidator;
-        IResponseCachingCacheKeySuffixProvider _cacheKeySuffixProvider;
+        private readonly ObjectPool<StringBuilder> _builderPool;
+        private readonly IResponseCachingCacheabilityValidator _cacheabilityValidator;
+        private readonly IResponseCachingCacheKeySuffixProvider _cacheKeySuffixProvider;
 
         public ResponseCachingMiddleware(
             RequestDelegate next, 
-            IResponseCache cache, 
+            IResponseCache cache,
+            ObjectPoolProvider poolProvider,
             IResponseCachingCacheabilityValidator cacheabilityValidator,
             IResponseCachingCacheKeySuffixProvider cacheKeySuffixProvider)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
             if (cache == null)
             {
                 throw new ArgumentNullException(nameof(cache));
             }
-            if (next == null)
+            if (poolProvider == null)
             {
-                throw new ArgumentNullException(nameof(next));
+                throw new ArgumentNullException(nameof(poolProvider));
             }
             if (cacheabilityValidator == null)
             {
@@ -45,6 +54,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
             _next = next;
             _cache = cache;
+            _builderPool = poolProvider.CreateStringBuilderPool();
             _cacheabilityValidator = cacheabilityValidator;
             _cacheKeySuffixProvider = cacheKeySuffixProvider;
         }
@@ -54,6 +64,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             var cachingContext = new ResponseCachingContext(
                 context,
                 _cache,
+                _builderPool,
                 _cacheabilityValidator,
                 _cacheKeySuffixProvider);
 

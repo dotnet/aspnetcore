@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.ResponseCaching.Internal;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -656,6 +658,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 httpContext,
                 new TestResponseCache(),
                 new SystemClock(),
+                new DefaultObjectPool<StringBuilder>(new StringBuilderPooledObjectPolicy()),
                 cacheabilityValidator,
                 cacheKeySuffixProvider);
         }
