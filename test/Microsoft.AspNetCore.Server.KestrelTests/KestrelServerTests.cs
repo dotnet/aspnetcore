@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -73,6 +73,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 $"Maximum request buffer size ({maxRequestBufferSize}) must be greater than or equal to maximum request line size ({maxRequestLineSize}).",
                 exception.Message);
             Assert.Equal(1, testLogger.CriticalErrorsLogged);
+        }
+
+        [Fact]
+        public void LoggerCategoryNameIsKestrelServerNamespace()
+        {
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            new KestrelServer(Options.Create<KestrelServerOptions>(null), new LifetimeNotImplemented(), mockLoggerFactory.Object);
+            mockLoggerFactory.Verify(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel"));
         }
 
         private static KestrelServer CreateServer(KestrelServerOptions options, ILogger testLogger)
