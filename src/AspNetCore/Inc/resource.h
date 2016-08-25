@@ -1,0 +1,18 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See License.txt in the project root for license information.
+
+#pragma once
+
+#define IDS_INVALID_PROPERTY        1000
+#define IDS_SERVER_ERROR            1001
+
+#define ASPNETCORE_EVENT_MSG_BUFFER_SIZE 256
+#define ASPNETCORE_EVENT_PROCESS_START_SUCCESS_MSG           L"Process '%d' started successfully and is listening on port '%d'."
+#define ASPNETCORE_EVENT_RAPID_FAIL_COUNT_EXCEEDED_MSG       L"Maximum rapid fail count per minute of '%d' exceeded."
+#define ASPNETCORE_EVENT_PROCESS_START_INTERNAL_ERROR_MSG    L"Failed to parse processPath and arguments due to internal error, ErrorCode = '0x%x'."
+#define ASPNETCORE_EVENT_PROCESS_START_POSTCREATE_ERROR_MSG  L"Process was created with commandline '%s'but failed to get its status, ErrorCode = '0x%x'."
+#define ASPNETCORE_EVENT_PROCESS_START_ERROR_MSG             L"Failed to start process with commandline '%s', ErrorCode = '0x%x'."
+#define ASPNETCORE_EVENT_PROCESS_START_WRONGPORT_ERROR_MSG   L"Process was created with commandline '%s' but did not listen on the given port '%d'"
+#define ASPNETCORE_EVENT_PROCESS_START_NOTREADY_ERROR_MSG    L"Process was created with commandline '%s' but either crashed or did not reponse within given time or did not listen on the given port '%d', ErrorCode = '0x%x'"
+#define ASPNETCORE_EVENT_INVALID_STDOUT_LOG_FILE_MSG         L"Warning: Could not create stdoutLogFile %s, ErrorCode = %d."
+#define ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE_MSG       L"Failed to gracefully shutdown process '%d'."
