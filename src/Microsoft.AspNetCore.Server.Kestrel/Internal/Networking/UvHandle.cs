@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         {
         }
 
-        unsafe protected void CreateHandle(
+        protected void CreateHandle(
             Libuv uv,
             int threadId,
             int size,

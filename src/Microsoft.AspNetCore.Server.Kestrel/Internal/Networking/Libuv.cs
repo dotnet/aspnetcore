@@ -272,7 +272,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_connect_cb(IntPtr req, int status);
         protected Action<UvConnectRequest, UvPipeHandle, string, uv_connect_cb> _uv_pipe_connect;
-        unsafe public void pipe_connect(UvConnectRequest req, UvPipeHandle handle, string name, uv_connect_cb cb)
+        public void pipe_connect(UvConnectRequest req, UvPipeHandle handle, string name, uv_connect_cb cb)
         {
             req.Validate();
             handle.Validate();
@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         }
 
         protected Func<UvPipeHandle, int> _uv_pipe_pending_count;
-        unsafe public int pipe_pending_count(UvPipeHandle handle)
+        public int pipe_pending_count(UvPipeHandle handle)
         {
             handle.Validate();
             return _uv_pipe_pending_count(handle);
@@ -315,7 +315,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         public delegate void uv_write_cb(IntPtr req, int status);
 
         unsafe protected delegate int uv_write_func(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, uv_write_cb cb);
-        unsafe protected uv_write_func _uv_write;
+        protected uv_write_func _uv_write;
         unsafe public void write(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, uv_write_cb cb)
         {
             req.Validate();
@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         }
 
         unsafe protected delegate int uv_write2_func(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, UvStreamHandle sendHandle, uv_write_cb cb);
-        unsafe protected uv_write2_func _uv_write2;
+        protected uv_write2_func _uv_write2;
         unsafe public void write2(UvRequest req, UvStreamHandle handle, Libuv.uv_buf_t* bufs, int nbufs, UvStreamHandle sendHandle, uv_write_cb cb)
         {
             req.Validate();
@@ -343,14 +343,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         }
 
         protected Func<int, IntPtr> _uv_err_name;
-        public unsafe string err_name(int err)
+        public string err_name(int err)
         {
             IntPtr ptr = _uv_err_name(err);
             return ptr == IntPtr.Zero ? null : Marshal.PtrToStringAnsi(ptr);
         }
 
         protected Func<int, IntPtr> _uv_strerror;
-        public unsafe string strerror(int err)
+        public string strerror(int err)
         {
             IntPtr ptr = _uv_strerror(err);
             return ptr == IntPtr.Zero ? null : Marshal.PtrToStringAnsi(ptr);
@@ -391,7 +391,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_walk_cb(IntPtr handle, IntPtr arg);
         protected Func<UvLoopHandle, uv_walk_cb, IntPtr, int> _uv_walk;
-        unsafe public void walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg)
+        public void walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg)
         {
             loop.Validate();
             _uv_walk(loop, walk_cb, arg);
@@ -592,7 +592,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             public static extern int uv_tcp_getpeername(UvTcpHandle handle, out SockAddr name, ref int namelen);
 
             [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
-            unsafe public static extern int uv_walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg);
+            public static extern int uv_walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg);
 
             [DllImport("WS2_32.dll", CallingConvention = CallingConvention.Winapi)]
             unsafe public static extern int WSAIoctl(

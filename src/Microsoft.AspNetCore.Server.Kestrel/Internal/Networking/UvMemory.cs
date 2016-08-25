@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             DestroyMemory(memory, gcHandlePtr);
         }
 
-        unsafe protected static void DestroyMemory(IntPtr memory, IntPtr gcHandlePtr)
+        protected static void DestroyMemory(IntPtr memory, IntPtr gcHandlePtr)
         {
             if (gcHandlePtr != IntPtr.Zero)
             {
