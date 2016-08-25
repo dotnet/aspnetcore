@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
     public class SocketOutput : ISocketOutput
     {
         private const int _maxPendingWrites = 3;
-        private const int _maxBytesPreCompleted = 65536;
         // Well behaved WriteAsync users should await returned task, so there is no need to allocate more per connection by default
         private const int _initialTaskQueues = 1;
         private const int _maxPooledWriteContexts = 32;
@@ -26,6 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private readonly KestrelThread _thread;
         private readonly UvStreamHandle _socket;
         private readonly Connection _connection;
+        private readonly long? _maxBytesPreCompleted;
         private readonly string _connectionId;
         private readonly IKestrelTrace _log;
         private readonly IThreadPool _threadPool;
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private bool _postingWrite = false;
 
         private bool _cancelled = false;
-        private int _numBytesPreCompleted = 0;
+        private long _numBytesPreCompleted = 0;
         private Exception _lastWriteError;
         private WriteContext _nextWriteContext;
         private readonly Queue<WaitingTask> _tasksPending;
@@ -75,6 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             _tasksPending = new Queue<WaitingTask>(_initialTaskQueues);
             _writeContextPool = new Queue<WriteContext>(_maxPooledWriteContexts);
             _writeReqPool = thread.WriteReqPool;
+            _maxBytesPreCompleted = connection.ServerOptions.Limits.MaxResponseBufferSize;
 
             _head = thread.Memory.Lease();
             _tail = _head;
@@ -146,9 +147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     _nextWriteContext.SocketDisconnect = true;
                 }
 
-                if (_lastWriteError == null &&
-                        _tasksPending.Count == 0 &&
-                        _numBytesPreCompleted + buffer.Count <= _maxBytesPreCompleted)
+                if (!_maxBytesPreCompleted.HasValue || _numBytesPreCompleted + buffer.Count <= _maxBytesPreCompleted.Value)
                 {
                     // Complete the write task immediately if all previous write tasks have been completed,
                     // the buffers haven't grown too large, and the last write to the socket succeeded.
@@ -403,7 +402,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
         }
 
-        private void CompleteNextWrite(ref int bytesLeftToBuffer)
+        private void CompleteNextWrite(ref long bytesLeftToBuffer)
         {
             // Called inside _contextLock
             var waitingTask = _tasksPending.Dequeue();
@@ -441,10 +440,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private void CompleteFinishedWrites(int status)
         {
+            if (!_maxBytesPreCompleted.HasValue)
+            {
+                Debug.Assert(_tasksPending.Count == 0);
+                return;
+            }
+
             // Called inside _contextLock
             // bytesLeftToBuffer can be greater than _maxBytesPreCompleted
             // This allows large writes to complete once they've actually finished.
-            var bytesLeftToBuffer = _maxBytesPreCompleted - _numBytesPreCompleted;
+            var bytesLeftToBuffer = _maxBytesPreCompleted.Value - _numBytesPreCompleted;
             while (_tasksPending.Count > 0 &&
                    (_tasksPending.Peek().BytesToWrite) <= bytesLeftToBuffer)
             {
@@ -454,8 +459,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private void CompleteAllWrites()
         {
+            if (!_maxBytesPreCompleted.HasValue)
+            {
+                Debug.Assert(_tasksPending.Count == 0);
+                return;
+            }
+
             // Called inside _contextLock
-            var bytesLeftToBuffer = _maxBytesPreCompleted - _numBytesPreCompleted;
+            var bytesLeftToBuffer = _maxBytesPreCompleted.Value - _numBytesPreCompleted;
             while (_tasksPending.Count > 0)
             {
                 CompleteNextWrite(ref bytesLeftToBuffer);

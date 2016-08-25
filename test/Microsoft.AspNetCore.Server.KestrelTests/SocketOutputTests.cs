@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
@@ -15,8 +16,43 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class SocketOutputTests
     {
-        [Fact]
-        public async Task CanWrite1MB()
+        public static TheoryData<KestrelServerOptions> MaxResponseBufferSizeData => new TheoryData<KestrelServerOptions>
+        {
+            new KestrelServerOptions(),
+            new KestrelServerOptions
+            {
+                Limits = { MaxResponseBufferSize = 0 }
+            },
+            new KestrelServerOptions
+            {
+                Limits = { MaxResponseBufferSize = 1024 }
+            },
+            new KestrelServerOptions
+            {
+                Limits = { MaxResponseBufferSize = 1024 * 1024 }
+            },
+            new KestrelServerOptions
+            {
+                Limits = { MaxResponseBufferSize = null }
+            },
+        };
+
+        public static TheoryData<KestrelServerOptions> PositiveMaxResponseBufferSizeData => new TheoryData<KestrelServerOptions>
+        {
+            new KestrelServerOptions(),
+            new KestrelServerOptions
+            {
+                Limits = { MaxResponseBufferSize = 1024 }
+            },
+            new KestrelServerOptions
+            {
+                Limits = { MaxResponseBufferSize = 1024 * 1024 }
+            }
+        };
+
+        [Theory]
+        [MemberData(nameof(MaxResponseBufferSizeData))]
+        public async Task CanWrite1MB(KestrelServerOptions options)
         {
             // This test was added because when initially implementing write-behind buffering in
             // SocketOutput, the write callback would never be invoked for writes larger than
@@ -33,10 +69,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
-                var socketOutput = new SocketOutput(kestrelThread, socket, new MockConnection(), "0", trace, ltp);
+                var socketOutput = new SocketOutput(kestrelThread, socket, new MockConnection(options), "0", trace, ltp);
 
-                // I doubt _maxBytesPreCompleted will ever be over a MB. If it is, we should change this test.
-                var bufferSize = 1048576;
+                // At least one run of this test should have a MaxResponseBufferSize < 1 MB.
+                var bufferSize = 1024 * 1024;
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
 
                 // Act
@@ -53,10 +89,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
-        public async Task WritesDontCompleteImmediatelyWhenTooManyBytesAreAlreadyBuffered()
+        public async Task NullMaxResponseBufferSizeAllowsUnlimitedBuffer()
         {
-            // This should match _maxBytesPreCompleted in SocketOutput
-            var maxBytesPreCompleted = 65536;
             var completeQueue = new ConcurrentQueue<Action<int>>();
 
             // Arrange
@@ -78,7 +112,121 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
-                var mockConnection = new MockConnection();
+                var options = new KestrelServerOptions { Limits = { MaxResponseBufferSize = null } };
+                var socketOutput = new SocketOutput(kestrelThread, socket, new MockConnection(options), "0", trace, ltp);
+
+                // Don't want to allocate anything too huge for perf. This is at least larger than the default buffer.
+                var bufferSize = 1024 * 1024;
+                var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
+
+                // Act
+                var writeTask = socketOutput.WriteAsync(buffer, default(CancellationToken));
+
+                // Assert
+                Assert.Equal(TaskStatus.RanToCompletion, writeTask.Status);
+
+                // Cleanup
+                var cleanupTask = socketOutput.WriteAsync(
+                    default(ArraySegment<byte>), default(CancellationToken), socketDisconnect: true);
+
+                // Wait for all writes to complete so the completeQueue isn't modified during enumeration.
+                await mockLibuv.OnPostTask;
+
+                foreach (var triggerCompleted in completeQueue)
+                {
+                    triggerCompleted(0);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ZeroMaxResponseBufferSizeDisablesBuffering()
+        {
+            var completeQueue = new ConcurrentQueue<Action<int>>();
+
+            // Arrange
+            var mockLibuv = new MockLibuv
+            {
+                OnWrite = (socket, buffers, triggerCompleted) =>
+                {
+                    completeQueue.Enqueue(triggerCompleted);
+                    return 0;
+                }
+            };
+
+            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
+            {
+                var kestrelThread = new KestrelThread(kestrelEngine, maxLoops: 1);
+                kestrelEngine.Threads.Add(kestrelThread);
+                await kestrelThread.StartAsync();
+
+                var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
+                var trace = new KestrelTrace(new TestKestrelTrace());
+                var ltp = new SynchronousThreadPool();
+                var options = new KestrelServerOptions { Limits = { MaxResponseBufferSize = 0 } };
+                var socketOutput = new SocketOutput(kestrelThread, socket, new MockConnection(options), "0", trace, ltp);
+
+                var bufferSize = 1;
+                var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
+
+                // Act
+                var writeTask = socketOutput.WriteAsync(buffer, default(CancellationToken));
+
+                // Assert
+                Assert.False(writeTask.IsCompleted);
+
+                // Act
+                await mockLibuv.OnPostTask;
+
+                // Finishing the write should allow the task to complete.
+                Action<int> triggerNextCompleted;
+                Assert.True(completeQueue.TryDequeue(out triggerNextCompleted));
+                triggerNextCompleted(0);
+
+                // Assert
+                Assert.Equal(TaskStatus.RanToCompletion, writeTask.Status);
+
+                // Cleanup
+                var cleanupTask = socketOutput.WriteAsync(
+                    default(ArraySegment<byte>), default(CancellationToken), socketDisconnect: true);
+
+                // Wait for all writes to complete so the completeQueue isn't modified during enumeration.
+                await mockLibuv.OnPostTask;
+
+                foreach (var triggerCompleted in completeQueue)
+                {
+                    triggerCompleted(0);
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(PositiveMaxResponseBufferSizeData))]
+        public async Task WritesDontCompleteImmediatelyWhenTooManyBytesAreAlreadyBuffered(KestrelServerOptions options)
+        {
+            var maxBytesPreCompleted = (int)options.Limits.MaxResponseBufferSize.Value;
+            var completeQueue = new ConcurrentQueue<Action<int>>();
+
+            // Arrange
+            var mockLibuv = new MockLibuv
+            {
+                OnWrite = (socket, buffers, triggerCompleted) =>
+                {
+                    completeQueue.Enqueue(triggerCompleted);
+                    return 0;
+                }
+            };
+
+            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
+            {
+                var kestrelThread = new KestrelThread(kestrelEngine, maxLoops: 1);
+                kestrelEngine.Threads.Add(kestrelThread);
+                await kestrelThread.StartAsync();
+
+                var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
+                var trace = new KestrelTrace(new TestKestrelTrace());
+                var ltp = new SynchronousThreadPool();
+                var mockConnection = new MockConnection(options);
                 var socketOutput = new SocketOutput(kestrelThread, socket, mockConnection, "0", trace, ltp);
 
                 var bufferSize = maxBytesPreCompleted;
@@ -122,11 +270,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        [Fact]
-        public async Task WritesDontCompleteImmediatelyWhenTooManyBytesIncludingNonImmediateAreAlreadyBuffered()
+        [Theory]
+        [MemberData(nameof(PositiveMaxResponseBufferSizeData))]
+        public async Task WritesDontCompleteImmediatelyWhenTooManyBytesIncludingNonImmediateAreAlreadyBuffered(KestrelServerOptions options)
         {
-            // This should match _maxBytesPreCompleted in SocketOutput
-            var maxBytesPreCompleted = 65536;
+            var maxBytesPreCompleted = (int)options.Limits.MaxResponseBufferSize.Value;
             var completeQueue = new ConcurrentQueue<Action<int>>();
             var writeRequested = false;
 
@@ -150,7 +298,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
-                var mockConnection = new MockConnection();
+                var mockConnection = new MockConnection(options);
                 var socketOutput = new SocketOutput(kestrelThread, socket, mockConnection, "0", trace, ltp);
 
                 var bufferSize = maxBytesPreCompleted / 2;
@@ -207,11 +355,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        [Fact]
-        public async Task OnlyWritesRequestingCancellationAreErroredOnCancellation()
+        [Theory]
+        [MemberData(nameof(PositiveMaxResponseBufferSizeData))]
+        public async Task OnlyWritesRequestingCancellationAreErroredOnCancellation(KestrelServerOptions options)
         {
-            // This should match _maxBytesPreCompleted in SocketOutput
-            var maxBytesPreCompleted = 65536;
+            var maxBytesPreCompleted = (int)options.Limits.MaxResponseBufferSize.Value;
             var completeQueue = new ConcurrentQueue<Action<int>>();
 
             // Arrange
@@ -234,7 +382,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
 
-                using (var mockConnection = new MockConnection())
+                using (var mockConnection = new MockConnection(options))
                 {
                     ISocketOutput socketOutput = new SocketOutput(kestrelThread, socket, mockConnection, "0", trace, ltp);
 
@@ -324,11 +472,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        [Fact]
-        public async Task FailedWriteCompletesOrCancelsAllPendingTasks()
+        [Theory]
+        [MemberData(nameof(PositiveMaxResponseBufferSizeData))]
+        public async Task FailedWriteCompletesOrCancelsAllPendingTasks(KestrelServerOptions options)
         {
-            // This should match _maxBytesPreCompleted in SocketOutput
-            var maxBytesPreCompleted = 65536;
+            var maxBytesPreCompleted = (int)options.Limits.MaxResponseBufferSize.Value;
             var completeQueue = new ConcurrentQueue<Action<int>>();
 
             // Arrange
@@ -351,7 +499,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
 
-                using (var mockConnection = new MockConnection())
+                using (var mockConnection = new MockConnection(options))
                 {
                     var abortedSource = mockConnection.RequestAbortedSource;
                     ISocketOutput socketOutput = new SocketOutput(kestrelThread, socket, mockConnection, "0", trace, ltp);
@@ -414,11 +562,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        [Fact]
-        public async Task WritesDontGetCompletedTooQuickly()
+        [Theory]
+        [MemberData(nameof(PositiveMaxResponseBufferSizeData))]
+        public async Task WritesDontGetCompletedTooQuickly(KestrelServerOptions options)
         {
-            // This should match _maxBytesPreCompleted in SocketOutput
-            var maxBytesPreCompleted = 65536;
+            var maxBytesPreCompleted = (int)options.Limits.MaxResponseBufferSize.Value;
             var completeQueue = new ConcurrentQueue<Action<int>>();
             var writeCalled = false;
 
@@ -443,7 +591,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
-                var mockConnection = new MockConnection();
+                var mockConnection = new MockConnection(options);
                 var socketOutput = new SocketOutput(kestrelThread, socket, mockConnection, "0", trace, ltp);
 
                 var bufferSize = maxBytesPreCompleted;
@@ -498,8 +646,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        [Fact]
-        public async Task ProducingStartAndProducingCompleteCanBeUsedDirectly()
+        [Theory]
+        [MemberData(nameof(MaxResponseBufferSizeData))]
+        public async Task ProducingStartAndProducingCompleteCanBeUsedDirectly(KestrelServerOptions options)
         {
             int nBuffers = 0;
 
@@ -522,7 +671,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
-                var socketOutput = new SocketOutput(kestrelThread, socket, new MockConnection(), "0", trace, ltp);
+                var socketOutput = new SocketOutput(kestrelThread, socket, new MockConnection(options), "0", trace, ltp);
 
                 // block 1
                 var start = socketOutput.ProducingStart();
@@ -549,8 +698,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        [Fact]
-        public async Task OnlyAllowsUpToThreeConcurrentWrites()
+        [Theory]
+        [MemberData(nameof(MaxResponseBufferSizeData))]
+        public async Task OnlyAllowsUpToThreeConcurrentWrites(KestrelServerOptions options)
         {
             var writeCalled = false;
             var completeQueue = new ConcurrentQueue<Action<int>>();
@@ -574,7 +724,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
-                var mockConnection = new MockConnection();
+                var mockConnection = new MockConnection(options);
                 var socketOutput = new SocketOutput(kestrelThread, socket, mockConnection, "0", trace, ltp);
 
                 var buffer = new ArraySegment<byte>(new byte[1]);
@@ -619,8 +769,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        [Fact]
-        public async Task WritesAreAggregated()
+        [Theory]
+        [MemberData(nameof(MaxResponseBufferSizeData))]
+        public async Task WritesAreAggregated(KestrelServerOptions options)
         {
             var writeCalled = false;
             var writeCount = 0;
@@ -645,7 +796,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
-                var socketOutput = new SocketOutput(kestrelThread, socket, new MockConnection(), "0", trace, ltp);
+                var socketOutput = new SocketOutput(kestrelThread, socket, new MockConnection(new KestrelServerOptions()), "0", trace, ltp);
 
                 mockLibuv.KestrelThreadBlocker.Reset();
 
@@ -691,7 +842,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
-                var connection = new MockConnection();
+                var connection = new MockConnection(new KestrelServerOptions());
                 var socketOutput = new SocketOutput(kestrelThread, socket, connection, "0", trace, ltp);
 
                 // Close SocketOutput

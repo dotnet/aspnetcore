@@ -10,6 +10,35 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
     public class KestrelServerLimitsTests
     {
         [Fact]
+        public void MaxResponseBufferSizeDefault()
+        {
+            Assert.Equal(64 * 1024, (new KestrelServerLimits()).MaxResponseBufferSize);
+        }
+
+        [Theory]
+        [InlineData((long)-1)]
+        [InlineData(long.MinValue)]
+        public void MaxResponseBufferSizeInvalid(long value)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+            {
+                (new KestrelServerLimits()).MaxResponseBufferSize = value;
+            });
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData((long)0)]
+        [InlineData((long)1)]
+        [InlineData(long.MaxValue)]
+        public void MaxResponseBufferSizeValid(long? value)
+        {
+            var o = new KestrelServerLimits();
+            o.MaxResponseBufferSize = value;
+            Assert.Equal(value, o.MaxResponseBufferSize);
+        }
+
+        [Fact]
         public void MaxRequestBufferSizeDefault()
         {
             Assert.Equal(1024 * 1024, (new KestrelServerLimits()).MaxRequestBufferSize);

@@ -4,25 +4,24 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 {
     public class MockConnection : Connection, IDisposable
     {
-        private TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>();
+        private readonly TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>();
 
-        public MockConnection()
+        public MockConnection(KestrelServerOptions options)
         {
             RequestAbortedSource = new CancellationTokenSource();
+            ServerOptions = options;
         }
 
         public override void Abort(Exception error = null)
         {
-            if (RequestAbortedSource != null)
-            {
-                RequestAbortedSource.Cancel();
-            }
+            RequestAbortedSource?.Cancel();
         }
 
         public override void OnSocketClosed()
@@ -32,13 +31,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 
         public CancellationTokenSource RequestAbortedSource { get; }
 
-        public Task SocketClosed
-        {
-            get
-            {
-                return _socketClosedTcs.Task;
-            }
-        }
+        public Task SocketClosed => _socketClosedTcs.Task;
 
         public void Dispose()
         {
