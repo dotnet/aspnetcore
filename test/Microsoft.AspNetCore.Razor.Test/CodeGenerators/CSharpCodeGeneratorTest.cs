@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                 BaselineWriter.WriteBaseline( baselinePath, result.Code);
             }
 #else
-            Assert.Equal(expectedOutput, result.Code);
+            Assert.Equal(expectedOutput, NormalizeLineEndings(result.Code));
 #endif
         }
 
@@ -103,11 +103,11 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                 };
             }
         }
-        
+
         [Theory]
         [MemberData(nameof(ModifyOutputData))]
         public void BuildAfterExecuteContent_ModifyChunks_ModifyOutput(
-            CSharpCodeGenerator generator, 
+            CSharpCodeGenerator generator,
             CodeGeneratorResult expectedResult,
             string fileName)
         {
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                 BaselineWriter.WriteBaseline( baselinePath, result.Code);
             }
 #else
-            Assert.Equal(result.Code, expectedResult.Code);
+            Assert.Equal(expectedResult.Code, NormalizeLineEndings(result.Code));
 #endif
         }
 
@@ -212,5 +212,8 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
                 return base.Generate();
             }
         }
+
+        private static string NormalizeLineEndings(string content) =>
+            content.Replace("\r", "").Replace("\n", "\r\n");
     }
 }

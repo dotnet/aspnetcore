@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
         private IDictionary<string, string> _propertyBag;
         private IEnumerable<TagHelperAttributeDescriptor> _attributes =
             Enumerable.Empty<TagHelperAttributeDescriptor>();
-        private IEnumerable<TagHelperRequiredAttributeDescriptor> _requiredAttributes = 
+        private IEnumerable<TagHelperRequiredAttributeDescriptor> _requiredAttributes =
             Enumerable.Empty<TagHelperRequiredAttributeDescriptor>();
 
         /// <summary>
