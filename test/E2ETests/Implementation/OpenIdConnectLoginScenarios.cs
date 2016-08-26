@@ -110,9 +110,12 @@ namespace E2ETests
                 "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/oauth2/logout",
                 response.Headers.Location.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));
             queryItems = new QueryCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
-            Assert.Equal<string>(_deploymentResult.ApplicationBaseUri, queryItems["post_logout_redirect_uri"]);
+            Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + "signout-callback-oidc", queryItems["post_logout_redirect_uri"]);
 
-            response = await DoGetAsync(queryItems["post_logout_redirect_uri"]);
+            response = await DoGetAsync(queryItems["post_logout_redirect_uri"] + "?state=" + queryItems["state"]);
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+
+            response = await DoGetAsync(response.Headers.Location);
             responseContent = await response.Content.ReadAsStringAsync();
             Assert.Contains("Log in", responseContent);
         }
