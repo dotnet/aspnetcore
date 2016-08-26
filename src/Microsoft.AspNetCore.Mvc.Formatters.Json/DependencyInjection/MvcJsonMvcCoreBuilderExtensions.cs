@@ -39,10 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             AddJsonFormatterServices(builder.Services);
 
-            if (setupAction != null)
-            {
-                builder.Services.Configure<MvcJsonOptions>((options) => setupAction(options.SerializerSettings));
-            }
+            builder.Services.Configure<MvcJsonOptions>((options) => setupAction(options.SerializerSettings));
 
             return builder;
         }
