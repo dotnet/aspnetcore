@@ -2739,7 +2739,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             Assert.Equal(4, sink.Writes.Count);
             Assert.Equal($"Executing action {displayName}", sink.Writes[0].State?.ToString());
-            Assert.Equal($"Executing action method {displayName} with arguments () - ModelState is Valid", sink.Writes[1].State?.ToString());
+            Assert.Equal($"Executing action method {displayName} with arguments ((null)) - ModelState is Valid", sink.Writes[1].State?.ToString());
             Assert.Equal($"Executed action method {displayName}, returned result Microsoft.AspNetCore.Mvc.ContentResult.", sink.Writes[2].State?.ToString());
             // This message has the execution time embedded, which we don't want to verify.
             Assert.StartsWith($"Executed action {displayName} ", sink.Writes[3].State?.ToString());
