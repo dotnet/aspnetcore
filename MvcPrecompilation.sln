@@ -17,7 +17,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Ra
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0398AFFF-505E-4283-89DA-BBD9D28B53DB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Razor.Precompilation.Tests", "test\Microsoft.AspNetCore.Mvc.Razor.Precompilation.Tests\Microsoft.AspNetCore.Mvc.Razor.Precompilation.Tests.xproj", "{46C9A4B2-8B1C-451B-B670-C194901D66AC}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Razor.Precompilation.FunctionalTests", "test\Microsoft.AspNetCore.Mvc.Razor.Precompilation.FunctionalTests\Microsoft.AspNetCore.Mvc.Razor.Precompilation.FunctionalTests.xproj", "{46C9A4B2-8B1C-451B-B670-C194901D66AC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

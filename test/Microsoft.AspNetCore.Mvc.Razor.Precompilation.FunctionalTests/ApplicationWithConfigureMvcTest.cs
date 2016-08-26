@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Tests
+namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
 {
     public class ApplicationWithConfigureMvcTest
         : IClassFixture<ApplicationWithConfigureMvcTest.ApplicationWithConfigureMvcFixture>
