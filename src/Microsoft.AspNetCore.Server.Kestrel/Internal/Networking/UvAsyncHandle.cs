@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             _uv.async_send(this);
         }
 
-        unsafe private static void AsyncCb(IntPtr handle)
+        private static void AsyncCb(IntPtr handle)
         {
             FromIntPtr<UvAsyncHandle>(handle)._callback.Invoke();
         }

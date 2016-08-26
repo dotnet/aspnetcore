@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
         }
 
-        public unsafe int Seek(ref Vector<byte> byte0Vector)
+        public int Seek(ref Vector<byte> byte0Vector)
         {
             int bytesScanned;
             return Seek(ref byte0Vector, out bytesScanned);
@@ -433,7 +433,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
         }
 
-        public unsafe int Seek(ref Vector<byte> byte0Vector, ref Vector<byte> byte1Vector)
+        public int Seek(ref Vector<byte> byte0Vector, ref Vector<byte> byte1Vector)
         {
             var limit = new MemoryPoolIterator();
             return Seek(ref byte0Vector, ref byte1Vector, ref limit);
@@ -574,7 +574,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
         }
 
-        public unsafe int Seek(ref Vector<byte> byte0Vector, ref Vector<byte> byte1Vector, ref Vector<byte> byte2Vector)
+        public int Seek(ref Vector<byte> byte0Vector, ref Vector<byte> byte1Vector, ref Vector<byte> byte2Vector)
         {
             var limit = new MemoryPoolIterator();
             return Seek(ref byte0Vector, ref byte1Vector, ref byte2Vector, ref limit);
