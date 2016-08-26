@@ -109,7 +109,6 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                CheckDisposed();
                 EnsureResponseStream();
                 return _nativeStream;
             }
@@ -243,6 +242,12 @@ namespace Microsoft.Net.Http.Server
                 CheckResponseStarted();
                 _cacheTtl = value;
             }
+        }
+
+        internal void Abort()
+        {
+            // Update state for HasStarted. Do not attempt a graceful Dispose.
+            _responseState = ResponseState.Closed;
         }
 
         // should only be called from RequestContext
@@ -682,14 +687,6 @@ namespace Microsoft.Net.Http.Server
             if (errorCode != ErrorCodes.ERROR_SUCCESS)
             {
                 throw new WebListenerException((int)errorCode);
-            }
-        }
-
-        private void CheckDisposed()
-        {
-            if (_responseState >= ResponseState.Closed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
             }
         }
 

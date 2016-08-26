@@ -30,14 +30,15 @@ namespace Microsoft.Net.Http.Server
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+                var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync();
                 await Assert.ThrowsAsync<FileNotFoundException>(() => 
                     context.Response.SendFileAsync("Missing.txt", 0, null, CancellationToken.None));
                 context.Dispose();
                 
-                HttpResponseMessage response = await responseTask;
+                var response = await responseTask;
+                response.EnsureSuccessStatusCode();
             }
         }
         
@@ -47,13 +48,13 @@ namespace Microsoft.Net.Http.Server
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+                var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync();
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 context.Dispose();
 
-                HttpResponseMessage response = await responseTask;
+                var response = await responseTask;
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> ignored;
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
@@ -68,13 +69,13 @@ namespace Microsoft.Net.Http.Server
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+                var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync();
                 await context.Response.SendFileAsync(RelativeFilePath, 0, null, CancellationToken.None);
                 context.Dispose();
 
-                HttpResponseMessage response = await responseTask;
+                var response = await responseTask;
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> ignored;
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
@@ -89,13 +90,13 @@ namespace Microsoft.Net.Http.Server
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+                var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync();
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 context.Dispose();
 
-                HttpResponseMessage response = await responseTask;
+                var response = await responseTask;
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> contentLength;
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
@@ -110,14 +111,14 @@ namespace Microsoft.Net.Http.Server
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+                var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync();
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 context.Dispose();
 
-                HttpResponseMessage response = await responseTask;
+                var response = await responseTask;
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> contentLength;
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
@@ -132,13 +133,13 @@ namespace Microsoft.Net.Http.Server
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+                var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync();
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, FileLength / 2, CancellationToken.None);
                 context.Dispose();
 
-                HttpResponseMessage response = await responseTask;
+                var response = await responseTask;
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> contentLength;
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
@@ -153,14 +154,15 @@ namespace Microsoft.Net.Http.Server
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+                var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync();
                 await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
                     () => context.Response.SendFileAsync(AbsoluteFilePath, 1234567, null, CancellationToken.None));
                 context.Dispose();
 
-                HttpResponseMessage response = await responseTask;
+                var response = await responseTask;
+                response.EnsureSuccessStatusCode();
             }
         }
 
@@ -170,14 +172,15 @@ namespace Microsoft.Net.Http.Server
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+                var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync();
                 await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
                     () => context.Response.SendFileAsync(AbsoluteFilePath, 0, 1234567, CancellationToken.None));
                 context.Dispose();
 
-                HttpResponseMessage response = await responseTask;
+                var response = await responseTask;
+                response.EnsureSuccessStatusCode();
             }
         }
 
@@ -187,13 +190,13 @@ namespace Microsoft.Net.Http.Server
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+                var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync();
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
                 context.Dispose();
 
-                HttpResponseMessage response = await responseTask;
+                var response = await responseTask;
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> contentLength;
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
@@ -212,7 +215,7 @@ namespace Microsoft.Net.Http.Server
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+                var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync();
                 await context.Response.SendFileAsync(emptyFilePath, 0, null, CancellationToken.None);
@@ -221,7 +224,7 @@ namespace Microsoft.Net.Http.Server
                 context.Dispose();
                 File.Delete(emptyFilePath);
 
-                HttpResponseMessage response = await responseTask;
+                var response = await responseTask;
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> contentLength;
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
@@ -236,13 +239,13 @@ namespace Microsoft.Net.Http.Server
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+                var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync();
                 context.Response.Headers["Content-lenGth"] = FileLength.ToString();
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
 
-                HttpResponseMessage response = await responseTask;
+                var response = await responseTask;
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> contentLength;
                 Assert.True(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
@@ -258,14 +261,14 @@ namespace Microsoft.Net.Http.Server
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+                var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync();
                 context.Response.Headers["Content-lenGth"] = "10";
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, 10, CancellationToken.None);
                 context.Dispose();
 
-                HttpResponseMessage response = await responseTask;
+                var response = await responseTask;
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> contentLength;
                 Assert.True(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
@@ -281,14 +284,14 @@ namespace Microsoft.Net.Http.Server
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
+                var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync();
                 context.Response.Headers["Content-lenGth"] = "0";
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
                 context.Dispose();
 
-                HttpResponseMessage response = await responseTask;
+                var response = await responseTask;
                 Assert.Equal(200, (int)response.StatusCode);
                 IEnumerable<string> contentLength;
                 Assert.True(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
@@ -313,7 +316,7 @@ namespace Microsoft.Net.Http.Server
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 context.Dispose();
 
-                HttpResponseMessage response = await responseTask;
+                var response = await responseTask;
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.Equal(FileLength * 2, (await response.Content.ReadAsByteArrayAsync()).Length);
             }
@@ -335,7 +338,7 @@ namespace Microsoft.Net.Http.Server
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 context.Dispose();
 
-                HttpResponseMessage response = await responseTask;
+                var response = await responseTask;
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.Equal(FileLength * 2, (await response.Content.ReadAsByteArrayAsync()).Length);
             }

@@ -221,12 +221,14 @@ namespace Microsoft.AspNetCore.Server.WebListener
             using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
                 var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
-                await sendFile.SendFileAsync(AbsoluteFilePath, 1234567, null, CancellationToken.None);
+                await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+                    sendFile.SendFileAsync(AbsoluteFilePath, 1234567, null, CancellationToken.None));
                 completed = true;
             }))
             {
-                await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
-                Assert.False(completed);
+                var response = await SendRequestAsync(address);
+                response.EnsureSuccessStatusCode();
+                Assert.True(completed);
             }
         }
 
@@ -238,12 +240,14 @@ namespace Microsoft.AspNetCore.Server.WebListener
             using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
                 var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
-                await sendFile.SendFileAsync(AbsoluteFilePath, 0, 1234567, CancellationToken.None);
+                await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+                    sendFile.SendFileAsync(AbsoluteFilePath, 0, 1234567, CancellationToken.None));
                 completed = true;
             }))
             {
-                await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
-                Assert.False(completed);
+                var response = await SendRequestAsync(address);
+                response.EnsureSuccessStatusCode();
+                Assert.True(completed);
             }
         }
 

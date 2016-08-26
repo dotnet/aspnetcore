@@ -23,6 +23,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -79,6 +80,17 @@ namespace Microsoft.Net.Http.Server
                 }
             }, CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
             return tcs.Task;
+        }
+
+        internal static ArraySegment<byte> GetChunkHeader(long size)
+        {
+            if (size < int.MaxValue)
+            {
+                return GetChunkHeader((int)size);
+            }
+
+            // Greater than 2gb, perf is no longer our concern
+            return new ArraySegment<byte>(Encoding.ASCII.GetBytes(size.ToString("X") + "\r\n"));
         }
 
         /// <summary>

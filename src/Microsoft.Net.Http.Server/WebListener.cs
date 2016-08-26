@@ -40,7 +40,7 @@ namespace Microsoft.Net.Http.Server
         // returned from HttpReceiveClientCertificate when using the 
         // FileCompletionNotificationModes.SkipCompletionPortOnSuccess flag.
         // This bug was only hit when the buffer passed into HttpReceiveClientCertificate
-        // (1500 bytes initially) is tool small for the certificate.
+        // (1500 bytes initially) is too small for the certificate.
         // Due to this bug in downlevel operating systems the FileCompletionNotificationModes.SkipCompletionPortOnSuccess
         // flag is only used on Win8 and later.
         internal static readonly bool SkipIOCPCallbackOnSuccess = ComNetOS.IsWin8orLater;

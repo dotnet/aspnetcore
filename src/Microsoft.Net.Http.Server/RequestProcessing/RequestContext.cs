@@ -308,11 +308,12 @@ namespace Microsoft.Net.Http.Server
             // TODO: Verbose log
             try
             {
-                if (_requestAbortSource != null)
-                {
-                    _requestAbortSource.Dispose();
-                }
+                _requestAbortSource?.Dispose();
                 Response.Dispose();
+            }
+            catch
+            {
+                Abort();
             }
             finally
             {
@@ -334,14 +335,19 @@ namespace Microsoft.Net.Http.Server
                 {
                     _requestAbortSource.Cancel();
                 }
+                catch (ObjectDisposedException)
+                {
+                }
                 catch (Exception ex)
                 {
-                    LogHelper.LogException(Logger, "Abort", ex);
+                    LogHelper.LogDebug(Logger, "Abort", ex);
                 }
                 _requestAbortSource.Dispose();
             }
             ForceCancelRequest();
             Request.Dispose();
+            // Only Abort, Response.Dispose() tries a graceful flush
+            Response.Abort();
         }
 
         private static void Abort(object state)

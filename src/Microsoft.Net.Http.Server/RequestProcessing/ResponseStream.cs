@@ -132,12 +132,13 @@ namespace Microsoft.Net.Http.Server
             var started = _requestContext.Response.HasStarted;
             if (data.Count == 0 && started && !endOfRequest)
             {
-                // Empty flush
+                // No data to send and we've already sent the headers
                 return;
             }
 
+            // Make sure all validation is performed before this computes the headers
             var flags = ComputeLeftToWrite(endOfRequest);
-            if (!_inOpaqueMode && endOfRequest && _leftToWrite > data.Count)
+            if (!_inOpaqueMode && endOfRequest && _leftToWrite > 0)
             {
                 _requestContext.Abort();
                 // This is logged rather than thrown because it is too late for an exception to be visible in user code.
@@ -303,7 +304,7 @@ namespace Microsoft.Net.Http.Server
             var started = _requestContext.Response.HasStarted;
             if (data.Count == 0 && started)
             {
-                // Empty flush
+                // No data to send and we've already sent the headers
                 return Helpers.CompletedTask();
             }
 
@@ -313,6 +314,7 @@ namespace Microsoft.Net.Http.Server
                 return Helpers.CanceledTask<int>();
             }
 
+            // Make sure all validation is performed before this computes the headers
             var flags = ComputeLeftToWrite();
             if (_leftToWrite != data.Count)
             {
@@ -464,28 +466,29 @@ namespace Microsoft.Net.Http.Server
         public override void Write(byte[] buffer, int offset, int count)
         {
             // Validates for null and bounds. Allows count == 0.
+            // TODO: Verbose log parameters
             var data = new ArraySegment<byte>(buffer, offset, count);
             CheckDisposed();
-            // TODO: Verbose log parameters
 
-            var contentLength = _requestContext.Response.ContentLength;
-            if (contentLength.HasValue && !_requestContext.Response.HasComputedHeaders && contentLength.Value <= data.Count)
-            {
-                if (contentLength.Value < data.Count)
-                {
-                    throw new InvalidOperationException("More bytes written than specified in the Content-Length header.");
-                }
-            }
-            // The last write in a response that has already started, flush immediately
-            else if (_requestContext.Response.HasComputedHeaders && _leftToWrite >= 0 && _leftToWrite <= data.Count)
-            {
-                if (_leftToWrite < data.Count)
-                {
-                    throw new InvalidOperationException("More bytes written than specified in the Content-Length header.");
-                }
-            }
+            CheckWriteCount(count);
 
             FlushInternal(endOfRequest: false, data: data);
+        }
+
+        private void CheckWriteCount(long? count)
+        {
+            var contentLength = _requestContext.Response.ContentLength;
+            // First write with more bytes written than the entire content-length
+            if (!_requestContext.Response.HasComputedHeaders && contentLength < count)
+            {
+                throw new InvalidOperationException("More bytes written than specified in the Content-Length header.");
+            }
+            // A write in a response that has already started where the count exceeds the remainder of the content-length
+            else if (_requestContext.Response.HasComputedHeaders && _requestContext.Response.BoundaryType == BoundaryType.ContentLength
+                && _leftToWrite < count)
+            {
+                throw new InvalidOperationException("More bytes written than specified in the Content-Length header.");
+            }
         }
 
 #if NETSTANDARD1_3
@@ -512,26 +515,11 @@ namespace Microsoft.Net.Http.Server
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             // Validates for null and bounds. Allows count == 0.
+            // TODO: Verbose log parameters
             var data = new ArraySegment<byte>(buffer, offset, count);
             CheckDisposed();
-            // TODO: Verbose log parameters
 
-            var contentLength = _requestContext.Response.ContentLength;
-            if (contentLength.HasValue && !_requestContext.Response.HasComputedHeaders && contentLength.Value <= data.Count)
-            {
-                if (contentLength.Value < data.Count)
-                {
-                    throw new InvalidOperationException("More bytes written than specified in the Content-Length header.");
-                }
-            }
-            // The last write in a response that has already started, flush immediately
-            else if (_requestContext.Response.HasComputedHeaders && _leftToWrite > 0 && _leftToWrite <= data.Count)
-            {
-                if (_leftToWrite < data.Count)
-                {
-                    throw new InvalidOperationException("More bytes written than specified in the Content-Length header.");
-                }
-            }
+            CheckWriteCount(count);
 
             return FlushInternalAsync(data, cancellationToken);
         }
@@ -540,11 +528,14 @@ namespace Microsoft.Net.Http.Server
         {
             // It's too expensive to validate the file attributes before opening the file. Open the file and then check the lengths.
             // This all happens inside of ResponseStreamAsyncResult.
+            // TODO: Verbose log parameters
             if (string.IsNullOrWhiteSpace(fileName))
             {
                 throw new ArgumentNullException("fileName");
             }
             CheckDisposed();
+
+            CheckWriteCount(count);
 
             // We can't mix await and unsafe so separate the unsafe code into another method.
             await SendFileAsyncCore(fileName, offset, count, cancellationToken);
@@ -557,15 +548,11 @@ namespace Microsoft.Net.Http.Server
                 return Helpers.CompletedTask();
             }
 
-            var flags = ComputeLeftToWrite();
-            if (count == 0 && _leftToWrite != 0)
+            var started = _requestContext.Response.HasStarted;
+            if (count == 0 && started)
             {
+                // No data to send and we've already sent the headers
                 return Helpers.CompletedTask();
-            }
-
-            if (_leftToWrite >= 0 && count > _leftToWrite)
-            {
-                throw new InvalidOperationException(Resources.Exception_TooMuchWritten);
             }
 
             if (cancellationToken.IsCancellationRequested)
@@ -573,27 +560,53 @@ namespace Microsoft.Net.Http.Server
                 Abort(ThrowWriteExceptions);
                 return Helpers.CanceledTask<int>();
             }
-            // TODO: Verbose log
 
+            // We are setting buffer size to 1 to prevent FileStream from allocating it's internal buffer
+            // It's too expensive to validate anything before opening the file. Open the file and then check the lengths.
+            var fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize: 1,
+                    options: FileOptions.Asynchronous | FileOptions.SequentialScan); // Extremely expensive.
+
+            try
+            {
+                var length = fileStream.Length; // Expensive, only do it once
+                if (!count.HasValue)
+                {
+                    count = length - offset;
+                }
+                if (offset < 0 || offset > length)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
+                }
+                if (count < 0 || count > length - offset)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(count), count, string.Empty);
+                }
+
+                CheckWriteCount(count);
+            }
+            catch
+            {
+                fileStream.Dispose();
+                throw;
+            }
+
+            // Make sure all validation is performed before this computes the headers
+            var flags = ComputeLeftToWrite();
             uint statusCode;
             uint bytesSent = 0;
-            var started = _requestContext.Response.HasStarted;
             var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
-            var asyncResult = new ResponseStreamAsyncResult(this, fileName, offset, count, chunked, cancellationToken);
+            var asyncResult = new ResponseStreamAsyncResult(this, fileStream, offset, count.Value, chunked, cancellationToken);
 
             long bytesWritten;
             if (chunked)
             {
                 bytesWritten = 0;
             }
-            else if (count.HasValue)
+            else
             {
                 bytesWritten = count.Value;
             }
-            else
-            {
-                bytesWritten = asyncResult.FileLength - offset;
-            }
+
             // Update _leftToWrite now so we can queue up additional calls to SendFileAsync.
             flags |= _leftToWrite == bytesWritten ? HttpApi.HTTP_FLAGS.NONE : HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
             UpdateWritenCount((uint)bytesWritten);

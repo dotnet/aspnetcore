@@ -114,33 +114,15 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal ResponseStreamAsyncResult(ResponseStream responseStream, string fileName, long offset,
-            long? count, bool chunked, CancellationToken cancellationToken)
+        internal ResponseStreamAsyncResult(ResponseStream responseStream, FileStream fileStream, long offset,
+            long count, bool chunked, CancellationToken cancellationToken)
             : this(responseStream, cancellationToken)
         {
             var boundHandle = responseStream.RequestContext.Server.RequestQueue.BoundHandle;
 
-            int bufferSize = 1024 * 64; // TODO: Validate buffer size choice.
-#if NETSTANDARD1_3
-            _fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize /*, useAsync: true*/); // Extremely expensive.
-#else
-            // It's too expensive to validate anything before opening the file. Open the file and then check the lengths.
-            _fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize,
-                    FileOptions.Asynchronous | FileOptions.SequentialScan); // Extremely expensive.
-#endif
-            long length = _fileStream.Length; // Expensive
-            if (offset < 0 || offset > length)
-            {
-                _fileStream.Dispose();
-                throw new ArgumentOutOfRangeException("offset", offset, string.Empty);
-            }
-            if (count.HasValue && (count < 0 || count > length - offset))
-            {
-                _fileStream.Dispose();
-                throw new ArgumentOutOfRangeException("count", count, string.Empty);
-            }
+            _fileStream = fileStream;
 
-            if (count == 0 || (!count.HasValue && _fileStream.Length == 0))
+            if (count == 0)
             {
                 _dataChunks = null;
                 _overlapped = new SafeNativeOverlapped(boundHandle,
@@ -156,14 +138,14 @@ namespace Microsoft.Net.Http.Server
                 var chunkHeaderBuffer = new ArraySegment<byte>();
                 if (chunked)
                 {
-                    chunkHeaderBuffer = Helpers.GetChunkHeader((int)(count ?? _fileStream.Length - offset));
+                    chunkHeaderBuffer = Helpers.GetChunkHeader(count);
                     _dataChunks[0].DataChunkType = HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
                     _dataChunks[0].fromMemory.BufferLength = (uint)chunkHeaderBuffer.Count;
                     objectsToPin[0] = chunkHeaderBuffer.Array;
 
                     _dataChunks[1].DataChunkType = HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromFileHandle;
                     _dataChunks[1].fromFile.offset = (ulong)offset;
-                    _dataChunks[1].fromFile.count = (ulong)(count ?? -1);
+                    _dataChunks[1].fromFile.count = (ulong)count;
                     _dataChunks[1].fromFile.fileHandle = _fileStream.SafeFileHandle.DangerousGetHandle();
                     // Nothing to pin for the file handle.
 
@@ -175,7 +157,7 @@ namespace Microsoft.Net.Http.Server
                 {
                     _dataChunks[0].DataChunkType = HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromFileHandle;
                     _dataChunks[0].fromFile.offset = (ulong)offset;
-                    _dataChunks[0].fromFile.count = (ulong)(count ?? -1);
+                    _dataChunks[0].fromFile.count = (ulong)count;
                     _dataChunks[0].fromFile.fileHandle = _fileStream.SafeFileHandle.DangerousGetHandle();
                 }
 
@@ -246,11 +228,6 @@ namespace Microsoft.Net.Http.Server
                     return (HttpApi.HTTP_DATA_CHUNK*)(Marshal.UnsafeAddrOfPinnedArrayElement(_dataChunks, 0));
                 }
             }
-        }
-
-        internal long FileLength
-        {
-            get { return _fileStream == null ? 0 : _fileStream.Length; }
         }
 
         internal bool EndCalled { get; set; }
