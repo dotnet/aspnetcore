@@ -57,11 +57,17 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         private void RequestRefresh(AuthenticationTicket ticket)
         {
-            _shouldRefresh = true;
-            var currentUtc = Options.SystemClock.UtcNow;
-            _refreshIssuedUtc = currentUtc;
-            var timeSpan = ticket.Properties.ExpiresUtc.Value.Subtract(ticket.Properties.IssuedUtc.Value);
-            _refreshExpiresUtc = currentUtc.Add(timeSpan);
+            var issuedUtc = ticket.Properties.IssuedUtc;
+            var expiresUtc = ticket.Properties.ExpiresUtc;
+
+            if (issuedUtc != null && expiresUtc != null)
+            {
+                _shouldRefresh = true;
+                var currentUtc = Options.SystemClock.UtcNow;
+                _refreshIssuedUtc = currentUtc;
+                var timeSpan = expiresUtc.Value.Subtract(issuedUtc.Value);
+                _refreshExpiresUtc = currentUtc.Add(timeSpan);
+            }
         }
 
         private async Task<AuthenticateResult> ReadCookieTicket()

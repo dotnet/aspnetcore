@@ -1214,6 +1214,51 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
         }
 
+        // Issue: https://github.com/aspnet/Security/issues/949
+        [Fact]
+        public async Task NullExpiresUtcPropertyIsGuarded()
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services => services.AddAuthentication())
+                .Configure(app =>
+                {
+                    app.UseCookieAuthentication(new CookieAuthenticationOptions
+                    {
+                        Events = new CookieAuthenticationEvents
+                        {
+                            OnValidatePrincipal = context =>
+                            {
+                                context.Properties.ExpiresUtc = null;
+                                context.ShouldRenew = true;
+                                return Task.FromResult(0);
+                            }
+                        }
+                    });
+
+                    app.Run(async context =>
+                    {
+                        if (context.Request.Path == "/signin")
+                        {
+                            await context.Authentication.SignInAsync(
+                                CookieAuthenticationDefaults.AuthenticationScheme,
+                                new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))));
+                        }
+                        else
+                        {
+                            await context.Response.WriteAsync("ha+1");
+                        }
+                    });
+                });
+
+            var server = new TestServer(builder);
+
+            var cookie = (await server.SendAsync("http://www.example.com/signin")).SetCookie.FirstOrDefault();
+            Assert.NotNull(cookie);
+
+            var transaction = await server.SendAsync("http://www.example.com/", cookie);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+        }
+
         private class NoOpDataProtector : IDataProtector
         {
             public IDataProtector CreateProtector(string purpose)
