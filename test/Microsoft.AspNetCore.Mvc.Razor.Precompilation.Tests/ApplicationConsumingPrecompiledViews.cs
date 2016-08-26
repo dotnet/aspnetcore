@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.DotNet.Cli.Utils;
@@ -74,9 +75,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
             {
                 RestoreProject(ClassLibraryPath);
                 ExecuteForClassLibrary(Command.CreateDotNet("build", new[] { ClassLibraryPath, "-c", "Release" }));
-                ExecuteForClassLibrary(Command.CreateDotNet(
-                    "razor-precompile",
-                    GetPrecompileArguments("net451")));
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // Don't run precompile tool for net451 on xplat.
+                    ExecuteForClassLibrary(Command.CreateDotNet(
+                        "razor-precompile",
+                        GetPrecompileArguments("net451")));
+                }
 
                 ExecuteForClassLibrary(Command.CreateDotNet(
                     "razor-precompile",
