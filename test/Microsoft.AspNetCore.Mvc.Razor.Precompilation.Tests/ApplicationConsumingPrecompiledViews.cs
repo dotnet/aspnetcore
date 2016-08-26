@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.DotNet.Cli.Utils;
@@ -21,9 +24,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
 
         public ApplicationTestFixture Fixture { get; }
 
+        public static IEnumerable<object[]> SupportedFlavorsTheoryData
+        {
+            get
+            {
+                return RuntimeFlavors.SupportedFlavors.Select(f => new object[] { f });
+            }
+        }
+
         [Theory]
-        [InlineData(RuntimeFlavor.Clr)]
-        [InlineData(RuntimeFlavor.CoreClr)]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
         public async Task ConsumingClassLibrariesWithPrecompiledViewsWork(RuntimeFlavor flavor)
         {
             // Arrange
@@ -65,9 +75,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
             {
                 RestoreProject(ClassLibraryPath);
                 ExecuteForClassLibrary(Command.CreateDotNet("build", new[] { ClassLibraryPath, "-c", "Release" }));
-                ExecuteForClassLibrary(Command.CreateDotNet(
-                    "razor-precompile",
-                    GetPrecompileArguments("net451")));
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // Don't run precompile tool for net451 on xplat.
+                    ExecuteForClassLibrary(Command.CreateDotNet(
+                        "razor-precompile",
+                        GetPrecompileArguments("net451")));
+                }
 
                 ExecuteForClassLibrary(Command.CreateDotNet(
                     "razor-precompile",
