@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
     public class ResponseCachingTests
     {
         [Fact]
-        public async void ServesCachedContentIfAvailable()
+        public async void ServesCachedContent_IfAvailable()
         {
             var builder = CreateBuilderWithResponseCaching(async (context) =>
             {
@@ -40,20 +41,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 var initialResponse = await client.GetAsync("");
                 var subsequentResponse = await client.GetAsync("");
 
-                initialResponse.EnsureSuccessStatusCode();
-                subsequentResponse.EnsureSuccessStatusCode();
-
-                foreach (var header in initialResponse.Headers)
-                {
-                    Assert.Equal(initialResponse.Headers.GetValues(header.Key), subsequentResponse.Headers.GetValues(header.Key));
-                }
-                Assert.True(subsequentResponse.Headers.Contains(HeaderNames.Age));
-                Assert.Equal(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
+                await AssertResponseCachedAsync(initialResponse, subsequentResponse);
             }
         }
 
         [Fact]
-        public async void ServesFreshContentIfNotAvailable()
+        public async void ServesFreshContent_IfNotAvailable()
         {
             var builder = CreateBuilderWithResponseCaching(async (context) =>
             {
@@ -75,16 +68,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 var initialResponse = await client.GetAsync("");
                 var subsequentResponse = await client.GetAsync("/different");
 
-                initialResponse.EnsureSuccessStatusCode();
-                subsequentResponse.EnsureSuccessStatusCode();
-
-                Assert.False(subsequentResponse.Headers.Contains(HeaderNames.Age));
-                Assert.NotEqual(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
+                await AssertResponseNotCachedAsync(initialResponse, subsequentResponse);
             }
         }
 
         [Fact]
-        public async void ServesCachedContentIfVaryByMatches()
+        public async void ServesCachedContent_IfVaryByHeader_Matches()
         {
             var builder = CreateBuilderWithResponseCaching(async (context) =>
             {
@@ -108,20 +97,284 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 var initialResponse = await client.GetAsync("");
                 var subsequentResponse = await client.GetAsync("");
 
-                initialResponse.EnsureSuccessStatusCode();
-                subsequentResponse.EnsureSuccessStatusCode();
-
-                foreach (var header in initialResponse.Headers)
-                {
-                    Assert.Equal(initialResponse.Headers.GetValues(header.Key), subsequentResponse.Headers.GetValues(header.Key));
-                }
-                Assert.True(subsequentResponse.Headers.Contains(HeaderNames.Age));
-                Assert.Equal(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
+                await AssertResponseCachedAsync(initialResponse, subsequentResponse);
             }
         }
 
         [Fact]
-        public async void ServesFreshContentIfRequestRequirementsNotMet()
+        public async void ServesFreshContent_IfVaryByHeader_Mismatches()
+        {
+            var builder = CreateBuilderWithResponseCaching(async (context) =>
+            {
+                var uniqueId = Guid.NewGuid().ToString();
+                var headers = context.Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue()
+                {
+                    Public = true,
+                    MaxAge = TimeSpan.FromSeconds(10)
+                };
+                headers.Date = DateTimeOffset.UtcNow;
+                headers.Headers["X-Value"] = uniqueId;
+                context.Response.Headers[HeaderNames.Vary] = HeaderNames.From;
+                await context.Response.WriteAsync(uniqueId);
+            });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                client.DefaultRequestHeaders.From = "user@example.com";
+                var initialResponse = await client.GetAsync("");
+                client.DefaultRequestHeaders.From = "user2@example.com";
+                var subsequentResponse = await client.GetAsync("");
+
+                await AssertResponseNotCachedAsync(initialResponse, subsequentResponse);
+            }
+        }
+
+        [Fact]
+        public async void ServesCachedContent_IfVaryByParams_Matches()
+        {
+            var builder = CreateBuilderWithResponseCaching(async (context) =>
+            {
+                var uniqueId = Guid.NewGuid().ToString();
+                var headers = context.Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue()
+                {
+                    Public = true,
+                    MaxAge = TimeSpan.FromSeconds(10)
+                };
+                headers.Date = DateTimeOffset.UtcNow;
+                headers.Headers["X-Value"] = uniqueId;
+                context.GetResponseCachingFeature().VaryByParams = "param";
+                await context.Response.WriteAsync(uniqueId);
+            });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var initialResponse = await client.GetAsync("?param=value");
+                var subsequentResponse = await client.GetAsync("?param=value");
+
+                await AssertResponseCachedAsync(initialResponse, subsequentResponse);
+            }
+        }
+
+        [Fact]
+        public async void ServesCachedContent_IfVaryByParamsExplicit_Matches_ParamNameCaseInsensitive()
+        {
+            var builder = CreateBuilderWithResponseCaching(
+            app =>
+            {
+                app.Use(async (context, next) =>
+                {
+                    context.Features.Set<IHttpSendFileFeature>(new DummySendFileFeature());
+                    await next.Invoke();
+                });
+            },
+            async (context) =>
+            {
+                var uniqueId = Guid.NewGuid().ToString();
+                var headers = context.Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue()
+                {
+                    Public = true,
+                    MaxAge = TimeSpan.FromSeconds(10)
+                };
+                headers.Date = DateTimeOffset.UtcNow;
+                headers.Headers["X-Value"] = uniqueId;
+                context.GetResponseCachingFeature().VaryByParams = new[] { "ParamA", "paramb" };
+                await context.Response.WriteAsync(uniqueId);
+            });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var initialResponse = await client.GetAsync("?parama=valuea&paramb=valueb");
+                var subsequentResponse = await client.GetAsync("?ParamA=valuea&ParamB=valueb");
+
+                await AssertResponseCachedAsync(initialResponse, subsequentResponse);
+            }
+        }
+
+        [Fact]
+        public async void ServesCachedContent_IfVaryByParamsStar_Matches_ParamNameCaseInsensitive()
+        {
+            var builder = CreateBuilderWithResponseCaching(
+            app =>
+            {
+                app.Use(async (context, next) =>
+                {
+                    context.Features.Set<IHttpSendFileFeature>(new DummySendFileFeature());
+                    await next.Invoke();
+                });
+            },
+            async (context) =>
+            {
+                var uniqueId = Guid.NewGuid().ToString();
+                var headers = context.Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue()
+                {
+                    Public = true,
+                    MaxAge = TimeSpan.FromSeconds(10)
+                };
+                headers.Date = DateTimeOffset.UtcNow;
+                headers.Headers["X-Value"] = uniqueId;
+                context.GetResponseCachingFeature().VaryByParams = new[] { "*" };
+                await context.Response.WriteAsync(uniqueId);
+            });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var initialResponse = await client.GetAsync("?parama=valuea&paramb=valueb");
+                var subsequentResponse = await client.GetAsync("?ParamA=valuea&ParamB=valueb");
+
+                await AssertResponseCachedAsync(initialResponse, subsequentResponse);
+            }
+        }
+
+        [Fact]
+        public async void ServesCachedContent_IfVaryByParamsExplicit_Matches_OrderInsensitive()
+        {
+            var builder = CreateBuilderWithResponseCaching(async (context) =>
+            {
+                var uniqueId = Guid.NewGuid().ToString();
+                var headers = context.Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue()
+                {
+                    Public = true,
+                    MaxAge = TimeSpan.FromSeconds(10)
+                };
+                headers.Date = DateTimeOffset.UtcNow;
+                headers.Headers["X-Value"] = uniqueId;
+                context.GetResponseCachingFeature().VaryByParams = new[] { "ParamB", "ParamA" };
+                await context.Response.WriteAsync(uniqueId);
+            });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var initialResponse = await client.GetAsync("?ParamA=ValueA&ParamB=ValueB");
+                var subsequentResponse = await client.GetAsync("?ParamB=ValueB&ParamA=ValueA");
+
+                await AssertResponseCachedAsync(initialResponse, subsequentResponse);
+            }
+        }
+
+        [Fact]
+        public async void ServesCachedContent_IfVaryByParamsStar_Matches_OrderInsensitive()
+        {
+            var builder = CreateBuilderWithResponseCaching(async (context) =>
+            {
+                var uniqueId = Guid.NewGuid().ToString();
+                var headers = context.Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue()
+                {
+                    Public = true,
+                    MaxAge = TimeSpan.FromSeconds(10)
+                };
+                headers.Date = DateTimeOffset.UtcNow;
+                headers.Headers["X-Value"] = uniqueId;
+                context.GetResponseCachingFeature().VaryByParams = new[] { "*" };
+                await context.Response.WriteAsync(uniqueId);
+            });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var initialResponse = await client.GetAsync("?ParamA=ValueA&ParamB=ValueB");
+                var subsequentResponse = await client.GetAsync("?ParamB=ValueB&ParamA=ValueA");
+
+                await AssertResponseCachedAsync(initialResponse, subsequentResponse);
+            }
+        }
+
+        [Fact]
+        public async void ServesFreshContent_IfVaryByParams_Mismatches()
+        {
+            var builder = CreateBuilderWithResponseCaching(async (context) =>
+            {
+                var uniqueId = Guid.NewGuid().ToString();
+                var headers = context.Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue()
+                {
+                    Public = true,
+                    MaxAge = TimeSpan.FromSeconds(10)
+                };
+                headers.Date = DateTimeOffset.UtcNow;
+                headers.Headers["X-Value"] = uniqueId;
+                context.GetResponseCachingFeature().VaryByParams = "param";
+                await context.Response.WriteAsync(uniqueId);
+            });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var initialResponse = await client.GetAsync("?param=value");
+                var subsequentResponse = await client.GetAsync("?param=value2");
+
+                await AssertResponseNotCachedAsync(initialResponse, subsequentResponse);
+            }
+        }
+
+        [Fact]
+        public async void ServesFreshContent_IfVaryByParamsExplicit_Mismatch_ParamValueCaseSensitive()
+        {
+            var builder = CreateBuilderWithResponseCaching(async (context) =>
+            {
+                var uniqueId = Guid.NewGuid().ToString();
+                var headers = context.Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue()
+                {
+                    Public = true,
+                    MaxAge = TimeSpan.FromSeconds(10)
+                };
+                headers.Date = DateTimeOffset.UtcNow;
+                headers.Headers["X-Value"] = uniqueId;
+                context.GetResponseCachingFeature().VaryByParams = new[] { "ParamA", "ParamB" };
+                await context.Response.WriteAsync(uniqueId);
+            });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var initialResponse = await client.GetAsync("?parama=valuea&paramb=valueb");
+                var subsequentResponse = await client.GetAsync("?parama=ValueA&paramb=ValueB");
+
+                await AssertResponseNotCachedAsync(initialResponse, subsequentResponse);
+            }
+        }
+
+        [Fact]
+        public async void ServesFreshContent_IfVaryByParamsStar_Mismatch_ParamValueCaseSensitive()
+        {
+            var builder = CreateBuilderWithResponseCaching(async (context) =>
+            {
+                var uniqueId = Guid.NewGuid().ToString();
+                var headers = context.Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue()
+                {
+                    Public = true,
+                    MaxAge = TimeSpan.FromSeconds(10)
+                };
+                headers.Date = DateTimeOffset.UtcNow;
+                headers.Headers["X-Value"] = uniqueId;
+                context.GetResponseCachingFeature().VaryByParams = new[] { "*" };
+                await context.Response.WriteAsync(uniqueId);
+            });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var initialResponse = await client.GetAsync("?parama=valuea&paramb=valueb");
+                var subsequentResponse = await client.GetAsync("?parama=ValueA&paramb=ValueB");
+
+                await AssertResponseNotCachedAsync(initialResponse, subsequentResponse);
+            }
+        }
+
+        [Fact]
+        public async void ServesFreshContent_IfRequestRequirements_NotMet()
         {
             var builder = CreateBuilderWithResponseCaching(async (context) =>
             {
@@ -147,50 +400,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 };
                 var subsequentResponse = await client.GetAsync("");
 
-                initialResponse.EnsureSuccessStatusCode();
-                subsequentResponse.EnsureSuccessStatusCode();
-
-                Assert.False(subsequentResponse.Headers.Contains(HeaderNames.Age));
-                Assert.NotEqual(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
+                await AssertResponseNotCachedAsync(initialResponse, subsequentResponse);
             }
         }
 
         [Fact]
-        public async void ServesFreshContentIfVaryByMismatches()
-        {
-            var builder = CreateBuilderWithResponseCaching(async (context) =>
-            {
-                var uniqueId = Guid.NewGuid().ToString();
-                var headers = context.Response.GetTypedHeaders();
-                headers.CacheControl = new CacheControlHeaderValue()
-                {
-                    Public = true,
-                    MaxAge = TimeSpan.FromSeconds(10)
-                };
-                headers.Date = DateTimeOffset.UtcNow;
-                headers.Headers["X-Value"] = uniqueId;
-                context.Response.Headers[HeaderNames.Vary] = HeaderNames.From;
-                await context.Response.WriteAsync(uniqueId);
-            });
-
-            using (var server = new TestServer(builder))
-            {
-                var client = server.CreateClient();
-                client.DefaultRequestHeaders.From = "user@example.com";
-                var initialResponse = await client.GetAsync("");
-                client.DefaultRequestHeaders.From = "user2@example.com";
-                var subsequentResponse = await client.GetAsync("");
-
-                initialResponse.EnsureSuccessStatusCode();
-                subsequentResponse.EnsureSuccessStatusCode();
-
-                Assert.False(subsequentResponse.Headers.Contains(HeaderNames.Age));
-                Assert.NotEqual(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
-            }
-        }
-
-        [Fact]
-        public async void Serves504IfOnlyIfCachedHeaderIsSpecified()
+        public async void Serves504_IfOnlyIfCachedHeader_IsSpecified()
         {
             var builder = CreateBuilderWithResponseCaching(async (context) =>
             {
@@ -222,7 +437,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContentWithoutSetCookie()
+        public async void ServesCachedContent_WithoutSetCookie()
         {
             var builder = CreateBuilderWithResponseCaching(async (context) =>
             {
@@ -263,7 +478,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContentIfIHttpSendFileFeatureNotUsed()
+        public async void ServesCachedContent_IfIHttpSendFileFeature_NotUsed()
         {
             var builder = CreateBuilderWithResponseCaching(
                 app =>
@@ -294,20 +509,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 var initialResponse = await client.GetAsync("");
                 var subsequentResponse = await client.GetAsync("");
 
-                initialResponse.EnsureSuccessStatusCode();
-                subsequentResponse.EnsureSuccessStatusCode();
-
-                foreach (var header in initialResponse.Headers)
-                {
-                    Assert.Equal(initialResponse.Headers.GetValues(header.Key), subsequentResponse.Headers.GetValues(header.Key));
-                }
-                Assert.True(subsequentResponse.Headers.Contains(HeaderNames.Age));
-                Assert.Equal(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
+                await AssertResponseCachedAsync(initialResponse, subsequentResponse);
             }
         }
 
         [Fact]
-        public async void ServesFreshContentIfIHttpSendFileFeatureUsed()
+        public async void ServesFreshContent_IfIHttpSendFileFeature_Used()
         {
             var builder = CreateBuilderWithResponseCaching(
                 app =>
@@ -339,16 +546,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 var initialResponse = await client.GetAsync("");
                 var subsequentResponse = await client.GetAsync("");
 
-                initialResponse.EnsureSuccessStatusCode();
-                subsequentResponse.EnsureSuccessStatusCode();
-
-                Assert.False(subsequentResponse.Headers.Contains(HeaderNames.Age));
-                Assert.NotEqual(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
+                await AssertResponseNotCachedAsync(initialResponse, subsequentResponse);
             }
         }
 
         [Fact]
-        public async void ServesCachedContentIfSubsequentRequestContainsNoStore()
+        public async void ServesCachedContent_IfSubsequentRequest_ContainsNoStore()
         {
             var builder = CreateBuilderWithResponseCaching(
                 async (context) =>
@@ -375,20 +578,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 };
                 var subsequentResponse = await client.GetAsync("");
 
-                initialResponse.EnsureSuccessStatusCode();
-                subsequentResponse.EnsureSuccessStatusCode();
-
-                foreach (var header in initialResponse.Headers)
-                {
-                    Assert.Equal(initialResponse.Headers.GetValues(header.Key), subsequentResponse.Headers.GetValues(header.Key));
-                }
-                Assert.True(subsequentResponse.Headers.Contains(HeaderNames.Age));
-                Assert.Equal(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
+                await AssertResponseCachedAsync(initialResponse, subsequentResponse);
             }
         }
 
         [Fact]
-        public async void ServesFreshContentIfInitialRequestContainsNoStore()
+        public async void ServesFreshContent_IfInitialRequestContains_NoStore()
         {
             var builder = CreateBuilderWithResponseCaching(
                 async (context) =>
@@ -415,12 +610,30 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 var initialResponse = await client.GetAsync("");
                 var subsequentResponse = await client.GetAsync("");
 
-                initialResponse.EnsureSuccessStatusCode();
-                subsequentResponse.EnsureSuccessStatusCode();
-
-                Assert.False(subsequentResponse.Headers.Contains(HeaderNames.Age));
-                Assert.NotEqual(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
+                await AssertResponseNotCachedAsync(initialResponse, subsequentResponse);
             }
+        }
+
+        private static async Task AssertResponseCachedAsync(HttpResponseMessage initialResponse, HttpResponseMessage subsequentResponse)
+        {
+            initialResponse.EnsureSuccessStatusCode();
+            subsequentResponse.EnsureSuccessStatusCode();
+
+            foreach (var header in initialResponse.Headers)
+            {
+                Assert.Equal(initialResponse.Headers.GetValues(header.Key), subsequentResponse.Headers.GetValues(header.Key));
+            }
+            Assert.True(subsequentResponse.Headers.Contains(HeaderNames.Age));
+            Assert.Equal(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
+        }
+
+        private static async Task AssertResponseNotCachedAsync(HttpResponseMessage initialResponse, HttpResponseMessage subsequentResponse)
+        {
+            initialResponse.EnsureSuccessStatusCode();
+            subsequentResponse.EnsureSuccessStatusCode();
+
+            Assert.False(subsequentResponse.Headers.Contains(HeaderNames.Age));
+            Assert.NotEqual(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
         }
 
         private static IWebHostBuilder CreateBuilderWithResponseCaching(RequestDelegate requestDelegate) =>

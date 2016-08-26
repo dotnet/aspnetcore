@@ -13,19 +13,19 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
     public class DefaultResponseCacheEntrySerializerTests
     {
         [Fact]
-        public void SerializeNullObjectThrows()
+        public void Serialize_NullObject_Throws()
         {
             Assert.Throws<ArgumentNullException>(() => DefaultResponseCacheSerializer.Serialize(null));
         }
 
         [Fact]
-        public void SerializeUnknownObjectThrows()
+        public void Serialize_UnknownObject_Throws()
         {
             Assert.Throws<NotSupportedException>(() => DefaultResponseCacheSerializer.Serialize(new object()));
         }
 
         [Fact]
-        public void RoundTripCachedResponsesSucceeds()
+        public void RoundTrip_CachedResponses_Succeeds()
         {
             var headers = new HeaderDictionary();
             headers["keyA"] = "valueA";
@@ -42,7 +42,15 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void RoundTripCachedVaryBySucceeds()
+        public void RoundTrip_Empty_CachedVaryBy_Succeeds()
+        {
+            var cachedVaryBy = new CachedVaryBy();
+
+            AssertCachedVarybyEqual(cachedVaryBy, (CachedVaryBy)DefaultResponseCacheSerializer.Deserialize(DefaultResponseCacheSerializer.Serialize(cachedVaryBy)));
+        }
+
+        [Fact]
+        public void RoundTrip_HeadersOnly_CachedVaryBy_Succeeds()
         {
             var headers = new[] { "headerA", "headerB" };
             var cachedVaryBy = new CachedVaryBy()
@@ -53,9 +61,34 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             AssertCachedVarybyEqual(cachedVaryBy, (CachedVaryBy)DefaultResponseCacheSerializer.Deserialize(DefaultResponseCacheSerializer.Serialize(cachedVaryBy)));
         }
 
+        [Fact]
+        public void RoundTrip_ParamsOnly_CachedVaryBy_Succeeds()
+        {
+            var param = new[] { "paramA", "paramB" };
+            var cachedVaryBy = new CachedVaryBy()
+            {
+                Params = param
+            };
+
+            AssertCachedVarybyEqual(cachedVaryBy, (CachedVaryBy)DefaultResponseCacheSerializer.Deserialize(DefaultResponseCacheSerializer.Serialize(cachedVaryBy)));
+        }
 
         [Fact]
-        public void DeserializeInvalidEntriesReturnsNull()
+        public void RoundTrip_HeadersAndParams_CachedVaryBy_Succeeds()
+        {
+            var headers = new[] { "headerA", "headerB" };
+            var param = new[] { "paramA", "paramB" };
+            var cachedVaryBy = new CachedVaryBy()
+            {
+                Headers = headers,
+                Params = param
+            };
+
+            AssertCachedVarybyEqual(cachedVaryBy, (CachedVaryBy)DefaultResponseCacheSerializer.Deserialize(DefaultResponseCacheSerializer.Serialize(cachedVaryBy)));
+        }
+
+        [Fact]
+        public void Deserialize_InvalidEntries_ReturnsNull()
         {
             var headers = new[] { "headerA", "headerB" };
             var cachedVaryBy = new CachedVaryBy()
@@ -87,6 +120,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             Assert.NotNull(actual);
             Assert.NotNull(expected);
             Assert.Equal(expected.Headers, actual.Headers);
+            Assert.Equal(expected.Params, actual.Params);
         }
     }
 }

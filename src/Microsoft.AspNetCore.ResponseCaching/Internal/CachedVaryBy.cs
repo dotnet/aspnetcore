@@ -8,5 +8,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
     internal class CachedVaryBy
     {
         internal StringValues Headers { get; set; }
+        internal StringValues Params { get; set; }
     }
 }

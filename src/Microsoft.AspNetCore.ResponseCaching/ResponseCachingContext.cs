@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -19,6 +20,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
     internal class ResponseCachingContext
     {
         private static readonly CacheControlHeaderValue EmptyCacheControl = new CacheControlHeaderValue();
+        // Use the record separator for delimiting components of the cache key to avoid possible collisions
+        private static readonly char KeyDelimiter = '\x1e';
 
         private readonly HttpContext _httpContext;
         private readonly IResponseCache _cache;
@@ -150,13 +153,19 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
             try
             {
+                // Default key 
                 builder
                     .Append(request.Method.ToUpperInvariant())
-                    .Append(";")
+                    .Append(KeyDelimiter)
                     .Append(request.Path.Value.ToUpperInvariant());
 
+                // Vary by headers
                 if (varyBy?.Headers.Count > 0)
                 {
+                    // Append a group separator for the header segment of the cache key
+                    builder.Append(KeyDelimiter)
+                        .Append('H');
+
                     // TODO: resolve key format and delimiters
                     foreach (var header in varyBy.Headers)
                     {
@@ -169,19 +178,62 @@ namespace Microsoft.AspNetCore.ResponseCaching
                             value = "null";
                         }
 
-                        builder.Append(";")
+                        builder.Append(KeyDelimiter)
                             .Append(header)
                             .Append("=")
                             .Append(value);
                     }
                 }
-                // TODO: Parse querystring params
+
+                // Vary by query params
+                if (varyBy?.Params.Count > 0)
+                {
+                    // Append a group separator for the query parameter segment of the cache key
+                    builder.Append(KeyDelimiter)
+                        .Append('Q');
+
+                    if (varyBy.Params.Count == 1 && string.Equals(varyBy.Params[0], "*"))
+                    {
+                        // Vary by all available query params
+                        foreach (var query in _httpContext.Request.Query.OrderBy(q => q.Key, StringComparer.OrdinalIgnoreCase))
+                        {
+                            builder.Append(KeyDelimiter)
+                                .Append(query.Key.ToUpperInvariant())
+                                .Append("=")
+                                .Append(query.Value);
+                        }
+                    }
+                    else
+                    {
+                        // TODO: resolve key format and delimiters
+                        foreach (var param in varyBy.Params)
+                        {
+                            // TODO: Normalization of order, case?
+                            var value = _httpContext.Request.Query[param];
+
+                            // TODO: How to handle null/empty string?
+                            if (StringValues.IsNullOrEmpty(value))
+                            {
+                                value = "null";
+                            }
+
+                            builder.Append(KeyDelimiter)
+                                .Append(param)
+                                .Append("=")
+                                .Append(value);
+                        }
+                    }
+                }
 
                 // Append custom cache key segment
                 var customKey = _cacheKeySuffixProvider.CreateCustomKeySuffix(_httpContext);
                 if (!string.IsNullOrEmpty(customKey))
                 {
-                    builder.Append(";")
+                    // Append a group separator for the custom segment of the cache key
+                    builder.Append(KeyDelimiter)
+                        .Append('C');
+
+                    builder.Append(KeyDelimiter)
                         .Append(customKey);
                 }
 
@@ -451,6 +503,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 // Create the cache entry now
                 var response = _httpContext.Response;
                 var varyHeaderValue = response.Headers[HeaderNames.Vary];
+                var varyParamsValue = _httpContext.GetResponseCachingFeature().VaryByParams;
                 _cachedResponseValidFor = ResponseCacheControl.SharedMaxAge
                     ?? ResponseCacheControl.MaxAge
                     ?? (ResponseHeaders.Expires - _responseTime)
@@ -458,13 +511,18 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     ?? TimeSpan.FromSeconds(10);
 
                 // Check if any VaryBy rules exist
-                if (!StringValues.IsNullOrEmpty(varyHeaderValue))
+                if (!StringValues.IsNullOrEmpty(varyHeaderValue) || !StringValues.IsNullOrEmpty(varyParamsValue))
                 {
+                    if (varyParamsValue.Count > 1)
+                    {
+                        Array.Sort(varyParamsValue.ToArray(), StringComparer.OrdinalIgnoreCase);
+                    }
+
                     var cachedVaryBy = new CachedVaryBy
                     {
-                        // Only vary by headers for now
                         // TODO: VaryBy Encoding
-                        Headers = varyHeaderValue
+                        Headers = varyHeaderValue,
+                        Params = varyParamsValue
                     };
 
                     // TODO: Overwrite?
@@ -536,6 +594,9 @@ namespace Microsoft.AspNetCore.ResponseCaching
             {
                 _httpContext.Features.Set<IHttpSendFileFeature>(new SendFileFeatureWrapper(OriginalSendFileFeature, ResponseCacheStream));
             }
+
+            // TODO: Move this temporary interface with endpoint to HttpAbstractions
+            _httpContext.AddResponseCachingFeature();
         }
 
         internal void UnshimResponseStream()
@@ -545,6 +606,9 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
             // Unshim IHttpSendFileFeature
             _httpContext.Features.Set(OriginalSendFileFeature);
+
+            // TODO: Move this temporary interface with endpoint to HttpAbstractions
+            _httpContext.RemoveResponseCachingFeature();
         }
 
         private enum ResponseType

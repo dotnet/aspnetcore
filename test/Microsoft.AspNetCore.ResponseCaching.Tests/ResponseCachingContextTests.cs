@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 {
     public class ResponseCachingContextTests
     {
+        private static readonly char KeyDelimiter = '\x1e';
+
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
@@ -171,7 +173,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             httpContext.Request.QueryString = new QueryString("?query.Key=a&query.Value=b");
             var context = CreateTestContext(httpContext);
 
-            Assert.Equal("HEAD;/PATH/SUBPATH", context.CreateCacheKey());
+            Assert.Equal($"HEAD{KeyDelimiter}/PATH/SUBPATH", context.CreateCacheKey());
         }
 
         [Fact]
@@ -184,9 +186,74 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             httpContext.Request.Headers["HeaderB"] = "ValueB";
             var context = CreateTestContext(httpContext);
 
-            Assert.Equal("GET;/;HeaderA=ValueA;HeaderC=null", context.CreateCacheKey(new CachedVaryBy()
+            Assert.Equal($"GET{KeyDelimiter}/{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeyDelimiter}HeaderC=null", context.CreateCacheKey(new CachedVaryBy()
             {
                 Headers = new string[] { "HeaderA", "HeaderC" }
+            }));
+        }
+
+        [Fact]
+        public void CreateCacheKey_Includes_ListedVaryByParamsOnly()
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Method = "GET";
+            httpContext.Request.Path = "/";
+            httpContext.Request.QueryString = new QueryString("?ParamA=ValueA&ParamB=ValueB");
+            var context = CreateTestContext(httpContext);
+
+            Assert.Equal($"GET{KeyDelimiter}/{KeyDelimiter}Q{KeyDelimiter}ParamA=ValueA{KeyDelimiter}ParamC=null", context.CreateCacheKey(new CachedVaryBy()
+            {
+                Params = new string[] { "ParamA", "ParamC" }
+            }));
+        }
+
+        [Fact]
+        public void CreateCacheKey_Includes_VaryByParams_ParamNameCaseInsensitive_UseVaryByCasing()
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Method = "GET";
+            httpContext.Request.Path = "/";
+            httpContext.Request.QueryString = new QueryString("?parama=ValueA&paramB=ValueB");
+            var context = CreateTestContext(httpContext);
+
+            Assert.Equal($"GET{KeyDelimiter}/{KeyDelimiter}Q{KeyDelimiter}ParamA=ValueA{KeyDelimiter}ParamC=null", context.CreateCacheKey(new CachedVaryBy()
+            {
+                Params = new string[] { "ParamA", "ParamC" }
+            }));
+        }
+
+        [Fact]
+        public void CreateCacheKey_Includes_AllQueryParamsGivenAsterisk()
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Method = "GET";
+            httpContext.Request.Path = "/";
+            httpContext.Request.QueryString = new QueryString("?ParamA=ValueA&ParamB=ValueB");
+            var context = CreateTestContext(httpContext);
+
+            // To support case insensitivity, all param keys are converted to lower case.
+            // Explicit VaryBy uses the casing specified in the setting.
+            Assert.Equal($"GET{KeyDelimiter}/{KeyDelimiter}Q{KeyDelimiter}PARAMA=ValueA{KeyDelimiter}PARAMB=ValueB", context.CreateCacheKey(new CachedVaryBy()
+            {
+                Params = new string[] { "*" }
+            }));
+        }
+
+        [Fact]
+        public void CreateCacheKey_Includes_ListedVaryByHeadersAndParams()
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Method = "GET";
+            httpContext.Request.Path = "/";
+            httpContext.Request.Headers["HeaderA"] = "ValueA";
+            httpContext.Request.Headers["HeaderB"] = "ValueB";
+            httpContext.Request.QueryString = new QueryString("?ParamA=ValueA&ParamB=ValueB");
+            var context = CreateTestContext(httpContext);
+
+            Assert.Equal($"GET{KeyDelimiter}/{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeyDelimiter}HeaderC=null{KeyDelimiter}Q{KeyDelimiter}ParamA=ValueA{KeyDelimiter}ParamC=null", context.CreateCacheKey(new CachedVaryBy()
+            {
+                Headers = new string[] { "HeaderA", "HeaderC" },
+                Params = new string[] { "ParamA", "ParamC" }
             }));
         }
 
@@ -205,7 +272,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             httpContext.Request.Headers["HeaderB"] = "ValueB";
             var responseCachingContext = CreateTestContext(httpContext, new CustomizeKeySuffixProvider());
 
-            Assert.Equal("GET;/;HeaderA=ValueA;HeaderC=null;CustomizedKey", responseCachingContext.CreateCacheKey(new CachedVaryBy()
+            Assert.Equal($"GET{KeyDelimiter}/{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeyDelimiter}HeaderC=null{KeyDelimiter}C{KeyDelimiter}CustomizedKey", responseCachingContext.CreateCacheKey(new CachedVaryBy()
             {
                 Headers = new string[] { "HeaderA", "HeaderC" }
             }));

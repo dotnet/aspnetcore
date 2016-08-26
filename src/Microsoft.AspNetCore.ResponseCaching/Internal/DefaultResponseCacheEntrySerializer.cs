@@ -96,12 +96,26 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         }
 
         // Serialization Format
-        // Headers (comma separated string)
+        // Headers count 
+        // Headers if count > 0 (comma separated string)
+        // Params count 
+        // Params if count > 0 (comma separated string)
         private static CachedVaryBy ReadCachedVaryBy(BinaryReader reader)
         {
-            var headers = reader.ReadString().Split(',');
+            var headerCount = reader.ReadInt32();
+            var headers = new string[headerCount];
+            for (var index = 0; index < headerCount; index++)
+            {
+                headers[index] = reader.ReadString();
+            }
+            var paramCount = reader.ReadInt32();
+            var param = new string[paramCount];
+            for (var index = 0; index < paramCount; index++)
+            {
+                param[index] = reader.ReadString();
+            }
 
-            return new CachedVaryBy { Headers = headers };
+            return new CachedVaryBy { Headers = headers, Params = param };
         }
 
         // See serialization format above
@@ -154,7 +168,18 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         private static void WriteCachedVaryBy(BinaryWriter writer, CachedVaryBy entry)
         {
             writer.Write(nameof(CachedVaryBy));
-            writer.Write(entry.Headers);
+
+            writer.Write(entry.Headers.Count);
+            foreach (var header in entry.Headers)
+            {
+                writer.Write(header);
+            }
+
+            writer.Write(entry.Params.Count);
+            foreach (var param in entry.Params)
+            {
+                writer.Write(param);
+            }
         }
     }
 }
