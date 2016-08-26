@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var testlogger = logger as ITestLogger;
             if (testlogger != null)
             {
-                Assert.True(testlogger.LogMessages.Contains(expectedLog));
+                Assert.Contains(expectedLog, testlogger.LogMessages);
             }
             else
             {

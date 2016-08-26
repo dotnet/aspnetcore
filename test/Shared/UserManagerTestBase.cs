@@ -28,6 +28,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         where TRole : class
         where TKey : IEquatable<TKey>
     {
+        private const string NullValue = "(null)";
+
         private readonly IdentityErrorDescriber _errorDescriber = new IdentityErrorDescriber();
 
         protected virtual bool ShouldSkipDbTests()
@@ -266,7 +268,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.UserValidators.Clear();
             manager.UserValidators.Add(new AlwaysBadValidator());
             IdentityResultAssert.IsFailure(await manager.CreateAsync(user), AlwaysBadValidator.ErrorMessage);
-            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(user)} validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(user) ?? NullValue} validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
         }
 
         [Fact]
@@ -282,7 +284,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.UserValidators.Clear();
             manager.UserValidators.Add(new AlwaysBadValidator());
             IdentityResultAssert.IsFailure(await manager.UpdateAsync(user), AlwaysBadValidator.ErrorMessage);
-            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(user)} validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(user) ?? NullValue} validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
         }
 
         [Fact]
@@ -299,7 +301,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.UserValidators.Add(new AlwaysBadValidator());
             var result = await manager.CreateAsync(user);
             IdentityResultAssert.IsFailure(result, AlwaysBadValidator.ErrorMessage);
-            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(user)} validation failed: {AlwaysBadValidator.ErrorMessage.Code};{AlwaysBadValidator.ErrorMessage.Code}.");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(user) ?? NullValue} validation failed: {AlwaysBadValidator.ErrorMessage.Code};{AlwaysBadValidator.ErrorMessage.Code}.");
             Assert.Equal(2, result.Errors.Count());
         }
 
@@ -384,7 +386,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.PasswordValidators.Add(new AlwaysBadValidator());
             IdentityResultAssert.IsFailure(await manager.ChangePasswordAsync(user, "password", "new"),
                 AlwaysBadValidator.ErrorMessage);
-            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(user)} password validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(user) ?? NullValue} password validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
         }
 
         [Fact]
@@ -399,7 +401,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.PasswordValidators.Clear();
             manager.PasswordValidators.Add(new AlwaysBadValidator());
             IdentityResultAssert.IsFailure(await manager.CreateAsync(user, "password"), AlwaysBadValidator.ErrorMessage);
-            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(user)} password validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(user) ?? NullValue} password validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
         }
 
         [Fact]
@@ -1248,7 +1250,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var role = CreateTestRole("blocked");
             IdentityResultAssert.IsFailure(await manager.CreateAsync(role),
                 AlwaysBadValidator.ErrorMessage);
-            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"Role {await manager.GetRoleIdAsync(role)} validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"Role {await manager.GetRoleIdAsync(role) ?? NullValue} validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
         }
 
         [Fact]
@@ -1265,7 +1267,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var role = CreateTestRole("blocked");
             var result = await manager.CreateAsync(role);
             IdentityResultAssert.IsFailure(result, AlwaysBadValidator.ErrorMessage);
-            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"Role {await manager.GetRoleIdAsync(role)} validation failed: {AlwaysBadValidator.ErrorMessage.Code};{AlwaysBadValidator.ErrorMessage.Code}.");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"Role {await manager.GetRoleIdAsync(role) ?? NullValue} validation failed: {AlwaysBadValidator.ErrorMessage.Code};{AlwaysBadValidator.ErrorMessage.Code}.");
             Assert.Equal(2, result.Errors.Count());
         }
 
@@ -1283,7 +1285,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.RoleValidators.Clear();
             manager.RoleValidators.Add(new AlwaysBadValidator());
             IdentityResultAssert.IsFailure(await manager.UpdateAsync(role), error);
-            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"Role {await manager.GetRoleIdAsync(role)} validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"Role {await manager.GetRoleIdAsync(role) ?? NullValue} validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
         }
 
         [Fact]
