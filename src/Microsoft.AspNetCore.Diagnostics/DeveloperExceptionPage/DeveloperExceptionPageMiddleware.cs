@@ -1,12 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.RazorViews;
+using Microsoft.AspNetCore.Diagnostics.Views;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
@@ -26,7 +28,6 @@ namespace Microsoft.AspNetCore.Diagnostics
         private readonly ILogger _logger;
         private readonly IFileProvider _fileProvider;
         private readonly System.Diagnostics.DiagnosticSource _diagnosticSource;
-        private readonly ExceptionDetailsProvider _exceptionDetailsProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeveloperExceptionPageMiddleware"/> class
@@ -58,7 +59,6 @@ namespace Microsoft.AspNetCore.Diagnostics
             _logger = loggerFactory.CreateLogger<DeveloperExceptionPageMiddleware>();
             _fileProvider = _options.FileProvider ?? hostingEnvironment.ContentRootFileProvider;
             _diagnosticSource = diagnosticSource;
-            _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _options.SourceCodeLineCount);
         }
 
         /// <summary>
@@ -128,8 +128,8 @@ namespace Microsoft.AspNetCore.Diagnostics
 
             foreach (var compilationFailure in compilationException.CompilationFailures)
             {
-                var stackFrames = new List<StackFrameSourceCodeInfo>();
-                var exceptionDetails = new ExceptionDetails
+                var stackFrames = new List<StackFrame>();
+                var errorDetails = new ErrorDetails
                 {
                     StackFrames = stackFrames,
                     ErrorMessage = compilationFailure.FailureSummary,
@@ -140,20 +140,20 @@ namespace Microsoft.AspNetCore.Diagnostics
 
                 foreach (var item in compilationFailure.Messages)
                 {
-                    var frame = new StackFrameSourceCodeInfo
+                    var frame = new StackFrame
                     {
                         File = compilationFailure.SourceFilePath,
                         Line = item.StartLine,
                         Function = string.Empty
                     };
 
-                    _exceptionDetailsProvider.ReadFrameContent(frame, fileContent, item.StartLine, item.EndLine);
+                    ReadFrameContent(frame, fileContent, item.StartLine, item.EndLine);
                     frame.ErrorDetails = item.Message;
 
                     stackFrames.Add(frame);
                 }
 
-                model.ErrorDetails.Add(exceptionDetails);
+                model.ErrorDetails.Add(errorDetails);
             }
 
             var errorPage = new CompilationErrorPage
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             var model = new ErrorPageModel
             {
                 Options = _options,
-                ErrorDetails = _exceptionDetailsProvider.GetDetails(ex),
+                ErrorDetails = GetErrorDetails(ex).Reverse(),
                 Query = request.Query,
                 Cookies = request.Cookies,
                 Headers = request.Headers
@@ -179,6 +179,108 @@ namespace Microsoft.AspNetCore.Diagnostics
 
             var errorPage = new ErrorPage(model);
             return errorPage.ExecuteAsync(context);
+        }
+
+        private IEnumerable<ErrorDetails> GetErrorDetails(Exception ex)
+        {
+            for (var scan = ex; scan != null; scan = scan.InnerException)
+            {
+                var stackTrace = ex.StackTrace;
+                yield return new ErrorDetails
+                {
+                    Error = scan,
+                    StackFrames = StackTraceHelper.GetFrames(ex)
+                        .Select(frame => GetStackFrame(frame.MethodDisplayInfo.ToString(), frame.FilePath, frame.LineNumber))
+                };
+            };
+        }
+
+        // make it internal to enable unit testing
+        internal StackFrame GetStackFrame(string method, string filePath, int lineNumber)
+        {
+            var stackFrame = new StackFrame
+            {
+                Function = method,
+                File = filePath,
+                Line = lineNumber
+            };
+
+            if (string.IsNullOrEmpty(stackFrame.File))
+            {
+                return stackFrame;
+            }
+
+            IEnumerable<string> lines = null;
+            if (File.Exists(stackFrame.File))
+            {
+                lines = File.ReadLines(stackFrame.File);
+            }
+            else
+            {
+                // Handle relative paths and embedded files
+                var fileInfo = _fileProvider.GetFileInfo(stackFrame.File);
+                if (fileInfo.Exists)
+                {
+                    // ReadLines doesn't accept a stream. Use ReadLines as its more efficient
+                    // relative to reading lines via stream reader
+                    if (!string.IsNullOrEmpty(fileInfo.PhysicalPath))
+                    {
+                        lines = File.ReadLines(fileInfo.PhysicalPath);
+                    }
+                    else
+                    {
+                        lines = ReadLines(fileInfo);
+                    }
+                }
+            }
+
+            if (lines != null)
+            {
+                ReadFrameContent(stackFrame, lines, stackFrame.Line, stackFrame.Line);
+            }
+
+            return stackFrame;
+        }
+
+        // make it internal to enable unit testing
+        internal void ReadFrameContent(
+            StackFrame frame,
+            IEnumerable<string> allLines,
+            int errorStartLineNumberInFile,
+            int errorEndLineNumberInFile)
+        {
+            // Get the line boundaries in the file to be read and read all these lines at once into an array.
+            var preErrorLineNumberInFile = Math.Max(errorStartLineNumberInFile - _options.SourceCodeLineCount, 1);
+            var postErrorLineNumberInFile = errorEndLineNumberInFile + _options.SourceCodeLineCount;
+            var codeBlock = allLines
+                .Skip(preErrorLineNumberInFile - 1)
+                .Take(postErrorLineNumberInFile - preErrorLineNumberInFile + 1)
+                .ToArray();
+
+            var numOfErrorLines = (errorEndLineNumberInFile - errorStartLineNumberInFile) + 1;
+            var errorStartLineNumberInArray = errorStartLineNumberInFile - preErrorLineNumberInFile;
+
+            frame.PreContextLine = preErrorLineNumberInFile;
+            frame.PreContextCode = codeBlock.Take(errorStartLineNumberInArray).ToArray();
+            frame.ContextCode = codeBlock
+                .Skip(errorStartLineNumberInArray)
+                .Take(numOfErrorLines)
+                .ToArray();
+            frame.PostContextCode = codeBlock
+                .Skip(errorStartLineNumberInArray + numOfErrorLines)
+                .ToArray();
+        }
+
+        private static IEnumerable<string> ReadLines(IFileInfo fileInfo)
+        {
+            using (var reader = new StreamReader(fileInfo.CreateReadStream()))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    yield return line;
+                }
+            }
         }
     }
 }

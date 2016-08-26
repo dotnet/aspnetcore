@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.Helpers;
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.RazorViews;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             Assert.Contains("Something bad happened", content);
             Assert.Contains("Because something more badder happened", content);
         }
-
+        
         [Fact]
         public async Task MigrationsEndPointPath_is_respected()
         {

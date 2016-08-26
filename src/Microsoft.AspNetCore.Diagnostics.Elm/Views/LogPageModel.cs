@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Diagnostics.Elm.RazorViews
+namespace Microsoft.AspNetCore.Diagnostics.Elm.Views
 {
     public class LogPageModel
     {

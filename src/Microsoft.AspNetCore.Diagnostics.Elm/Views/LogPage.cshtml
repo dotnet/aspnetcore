@@ -3,8 +3,8 @@
 @using System.Globalization
 @using System.Linq
 @using Microsoft.AspNetCore.Diagnostics.Elm
-@using Microsoft.AspNetCore.Diagnostics.Elm.RazorViews
-@using Microsoft.Extensions.RazorViews
+@using Microsoft.AspNetCore.Diagnostics.Elm.Views
+@using Microsoft.AspNetCore.DiagnosticsViewPage.Views
 @using Microsoft.Extensions.Logging
 
 @functions
@@ -111,8 +111,8 @@
         });
     }
 }
-@{
-    Response.ContentType = "text/html; charset=utf-8";
+@{ 
+    Response.ContentType = "text/html";
 }
 
 <!DOCTYPE html>
@@ -205,7 +205,7 @@
                                 var counts = new Dictionary<string, int>();
                                 counts["Critical"] = 0;
                                 counts["Error"] = 0;
-                                counts["Warning"] = 0;
+                                counts["Warning"] = 0;                                
                                 counts["Information"] = 0;
                                 counts["Debug"] = 0;
                             }

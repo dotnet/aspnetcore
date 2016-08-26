@@ -9,7 +9,6 @@ namespace Microsoft.AspNetCore.Diagnostics.Views
     /// <summary>
     /// Contains details for individual exception messages.
     /// </summary>
-    [Obsolete("This type is for internal use only and will be removed in a future version.")]
     public class ErrorDetails
     {
         /// <summary>

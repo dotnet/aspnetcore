@@ -1,13 +1,12 @@
 {
   "buildOptions": {
+    "warningsAsErrors": true,
     "compile": {
       "include": [
         "../Shared/ApiConsistencyTestBase.cs",
         "../Shared/TestHelpers.cs"
       ]
-    },
-    "keyFile": "../../tools/Key.snk",
-    "warningsAsErrors": true
+    }
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",

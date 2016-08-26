@@ -24,16 +24,9 @@
       "type": "build",
       "version": "1.1.0-*"
     },
-    "Microsoft.Extensions.RazorViews.Sources": {
-      "type": "build",
-      "version": "1.1.0-*"
-    },
     "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.Options": "1.1.0-*"
-  },
-  "tools": {
-    "RazorPageGenerator": "1.1.0-*"
   },
   "frameworks": {
     "net451": {

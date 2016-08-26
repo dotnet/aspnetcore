@@ -1,7 +1,17 @@
 {
   "buildOptions": {
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "embed": {
+      "include": [
+        "Resources/**"
+      ]
+    },
+    "copyToOutput": {
+      "include": [
+        "TestFiles/**/*"
+      ]
+    }
   },
   "dependencies": {
     "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-*",

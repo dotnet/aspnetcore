@@ -3,14 +3,13 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.StackTrace.Sources;
 
-namespace Microsoft.AspNetCore.Diagnostics.RazorViews
+namespace Microsoft.AspNetCore.Diagnostics.Views
 {
     /// <summary>
     /// Holds data to be displayed on the compilation error page.
     /// </summary>
-    internal class CompilationErrorPageModel
+    public class CompilationErrorPageModel
     {
         /// <summary>
         /// Options for what output to display.
@@ -20,6 +19,6 @@ namespace Microsoft.AspNetCore.Diagnostics.RazorViews
         /// <summary>
         /// Detailed information about each parse or compilation error.
         /// </summary>
-        public IList<ExceptionDetails> ErrorDetails { get; } = new List<ExceptionDetails>();
+        public IList<ErrorDetails> ErrorDetails { get; } = new List<ErrorDetails>();
     }
 }
