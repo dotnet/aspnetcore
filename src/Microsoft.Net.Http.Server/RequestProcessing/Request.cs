@@ -64,6 +64,10 @@ namespace Microsoft.Net.Http.Server
             SslStatus = memoryBlob.RequestBlob->pSslInfo == null ? SslStatus.Insecure :
                 memoryBlob.RequestBlob->pSslInfo->SslClientCertNegotiated == 0 ? SslStatus.NoClientCert :
                 SslStatus.ClientCert;
+
+            KnownMethod = memoryBlob.RequestBlob->Verb;
+            Method = HttpApi.GetVerb(memoryBlob.RequestBlob);
+
             if (memoryBlob.RequestBlob->pRawUrl != null && memoryBlob.RequestBlob->RawUrlLength > 0)
             {
                 RawUrl = Marshal.PtrToStringAnsi((IntPtr)memoryBlob.RequestBlob->pRawUrl, memoryBlob.RequestBlob->RawUrlLength);
@@ -89,8 +93,14 @@ namespace Microsoft.Net.Http.Server
             var prefix = requestContext.Server.Settings.UrlPrefixes.GetPrefix((int)memoryBlob.RequestBlob->UrlContext);
             var originalPath = RequestUriBuilder.GetRequestPath(RawUrl, cookedUrlPath, RequestContext.Logger);
 
+            // 'OPTIONS * HTTP/1.1'
+            if (KnownMethod == HttpApi.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawUrl, "*", StringComparison.Ordinal))
+            {
+                PathBase = string.Empty;
+                Path = string.Empty;
+            }
             // These paths are both unescaped already.
-            if (originalPath.Length == prefix.Path.Length - 1)
+            else if (originalPath.Length == prefix.Path.Length - 1)
             {
                 // They matched exactly except for the trailing slash.
                 PathBase = originalPath;
@@ -119,8 +129,6 @@ namespace Microsoft.Net.Http.Server
                 ProtocolVersion = new Version(major, minor);
             }
 
-            KnownMethod = memoryBlob.RequestBlob->Verb;
-            Method = HttpApi.GetVerb(memoryBlob.RequestBlob);
             Headers = new HeaderCollection(new RequestHeaders(_nativeRequestContext));
 
             var requestV2 = (HttpApi.HTTP_REQUEST_V2*)memoryBlob.RequestBlob;

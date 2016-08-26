@@ -111,6 +111,21 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
+        [Fact]
+        public async Task Request_OptionsStar_EmptyPath()
+        {
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root))
+            {
+                var responseTask = SendSocketRequestAsync(root, "*", "OPTIONS");
+                var context = await server.AcceptAsync();
+                Assert.Equal("", context.Request.PathBase);
+                Assert.Equal("", context.Request.Path);
+                Assert.Equal("*", context.Request.RawUrl);
+                context.Dispose();
+            }
+        }
+
         [Theory]
         // The test server defines these prefixes: "/", "/11", "/2/3", "/2", "/11/2"
         [InlineData("/", "", "/")]
@@ -163,11 +178,11 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        private async Task<string> SendSocketRequestAsync(string address, string path)
+        private async Task<string> SendSocketRequestAsync(string address, string path, string method = "GET")
         {
             var uri = new Uri(address);
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine("GET " + path + " HTTP/1.1");
+            builder.AppendLine($"{method} {path} HTTP/1.1");
             builder.AppendLine("Connection: close");
             builder.Append("HOST: ");
             builder.AppendLine(uri.Authority);
