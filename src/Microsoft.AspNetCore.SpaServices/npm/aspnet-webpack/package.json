@@ -14,12 +14,14 @@
     "connect": "^3.4.1",
     "memory-fs": "^0.3.0",
     "require-from-string": "^1.1.0",
-    "webpack": "^1.12.14",
-    "webpack-dev-middleware": "^1.5.1",
+    "webpack-dev-middleware": "^1.6.1",
     "webpack-externals-plugin": "^1.0.0"
   },
   "devDependencies": {
     "rimraf": "^2.5.4",
     "typescript": "^1.8.10"
+  },
+  "peerDependencies": {
+    "webpack": "^1.13.2"
   }
 }
