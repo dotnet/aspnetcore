@@ -18,6 +18,7 @@
     "webpack-externals-plugin": "^1.0.0"
   },
   "devDependencies": {
+    "tsd": "0.6.5",
     "rimraf": "^2.5.4",
     "typescript": "^1.8.10"
   },
