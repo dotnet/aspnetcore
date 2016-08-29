@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [Fact]
         public async Task Invoke_RedirectPathToPathAndQuery()
         {
-            var options = new RewriteOptions().ImportFromUrlRewrite(new StringReader(@"<rewrite>
+            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Rewrite to article.aspx"">
                 <match url = ""^article/([0-9]+)/([_0-9a-z-]+)"" />
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [Fact]
         public async Task Invoke_RewritePathToPathAndQuery()
         {
-            var options = new RewriteOptions().ImportFromUrlRewrite(new StringReader(@"<rewrite>
+            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Rewrite to article.aspx"">
                 <match url = ""^article/([0-9]+)/([_0-9a-z-]+)"" />
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [Fact]
         public async Task Invoke_RewriteBasedOnQueryStringParameters()
         {
-            var options = new RewriteOptions().ImportFromUrlRewrite(new StringReader(@"<rewrite>
+            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Query String Rewrite"">  
                 <match url=""page\.asp$"" />  
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [Fact]
         public async Task Invoke_RedirectToLowerCase()
         {
-            var options = new RewriteOptions().ImportFromUrlRewrite(new StringReader(@"<rewrite>
+            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Convert to lower case"" stopProcessing=""true"">  
                 <match url="".*[A-Z].*"" ignoreCase=""false"" />  
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [Fact]
         public async Task Invoke_RedirectRemoveTrailingSlash()
         {
-            var options = new RewriteOptions().ImportFromUrlRewrite(new StringReader(@"<rewrite>
+            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Remove trailing slash"" stopProcessing=""true"">  
                 <match url=""(.*)/$"" />  
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [Fact]
         public async Task Invoke_RedirectAddTrailingSlash()
         {
-            var options = new RewriteOptions().ImportFromUrlRewrite(new StringReader(@"<rewrite>
+            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Add trailing slash"" stopProcessing=""true"">  
                 <match url=""(.*[^/])$"" />  
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [Fact]
         public async Task Invoke_RedirectToHttps()
         {
-            var options = new RewriteOptions().ImportFromUrlRewrite(new StringReader(@"<rewrite>
+            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Redirect to HTTPS"" stopProcessing=""true"">  
                 <match url=""(.*)"" />  
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [Fact]
         public async Task Invoke_RewriteToHttps()
         {
-            var options = new RewriteOptions().ImportFromUrlRewrite(new StringReader(@"<rewrite>
+            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Rewrite to HTTPS"" stopProcessing=""true"">  
                 <match url=""(.*)"" />  
@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [Fact]
         public async Task Invoke_ReverseProxyToAnotherSite()
         {
-            var options = new RewriteOptions().ImportFromUrlRewrite(new StringReader(@"<rewrite>
+            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Proxy"">  
                 <match url=""(.*)"" />  

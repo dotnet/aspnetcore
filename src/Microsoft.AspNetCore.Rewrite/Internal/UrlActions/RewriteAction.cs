@@ -46,6 +46,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
         {
             var pattern = Url.Evaluate(context, ruleMatch, condMatch);
             var request = context.HttpContext.Request;
+
             if (EscapeBackReferences)
             {
                 // because escapebackreferences will be encapsulated by the pattern, just escape the pattern

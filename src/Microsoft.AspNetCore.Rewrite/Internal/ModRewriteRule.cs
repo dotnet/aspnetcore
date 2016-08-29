@@ -10,15 +10,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
     {
         public UrlMatch InitialMatch { get; }
         public IList<Condition> Conditions { get; }
-        public UrlAction Action { get; }
-        public IList<PreAction> PreActions { get; }
+        public IList<UrlAction> Actions { get; }
 
-        public ModRewriteRule(UrlMatch initialMatch, IList<Condition> conditions, UrlAction urlAction, IList<PreAction> preActions)
+        public ModRewriteRule(UrlMatch initialMatch, IList<Condition> conditions, IList<UrlAction> urlActions)
         {
             Conditions = conditions;
             InitialMatch = initialMatch;
-            Action = urlAction;
-            PreActions = preActions;
+            Actions = urlActions;
         }
 
         public override void ApplyRule(RewriteContext context)
@@ -46,12 +44,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
             // At this point, we know our rule passed, first apply pre conditions,
             // which can modify things like the cookie or env, and then apply the action
             context.Logger?.ModRewriteMatchedRule();
-            foreach (var preAction in PreActions)
-            {
-                preAction.ApplyAction(context.HttpContext, initMatchRes, condMatchRes);
-            }
 
-            Action.ApplyAction(context, initMatchRes, condMatchRes);
+            foreach (var action in Actions)
+            {
+                action.ApplyAction(context, initMatchRes, condMatchRes);
+            }
         }
     }
 }

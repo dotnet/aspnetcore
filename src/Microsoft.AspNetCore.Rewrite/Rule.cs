@@ -3,10 +3,17 @@
 
 namespace Microsoft.AspNetCore.Rewrite
 {
-    // make this public and doc comements
-    // caller must set the context.Results field appropriately in rule.
+    /// <summary>
+    /// Represents an abstract rule.
+    /// </summary>
     public abstract class Rule
     {
+        /// <summary>
+        /// Applies the rule.
+        /// Implementations of ApplyRule should set the value for RewriteContext.Results 
+        /// (defaults to RuleTermination.Continue)
+        /// </summary>
+        /// <param name="context"></param>
         public abstract void ApplyRule(RewriteContext context);
     }
 }

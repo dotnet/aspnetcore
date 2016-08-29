@@ -11,25 +11,16 @@ namespace RewriteSample
 {
     public class Startup
     {
-        public void Configure(IApplicationBuilder app, IHostingEnvironment hostingEnv)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment hostingEnvironment)
         {
-            // Four main use cases for Rewrite Options. 
-            // 1. Importing from a UrlRewrite file, which are IIS Rewrite rules. 
-            // This file is in xml format, starting with the <rewrite> tag. 
-            // 2. Importing from a mod_rewrite file, which are mod_rewrite rules.
-            // This file is in standard mod_rewrite format which only contains rewrite information.
-            // 3. Inline rules in code, where you can specify rules such as rewrites and redirects
-            // based on certain conditions. Ex: RedirectToHttps will check if the request is https,
-            // else it will redirect the request with https.
-            // 4. Functional rules. If a user has a very specific function they would like to implement
-            // (ex StringReplace) that are easy to implement in code, they can do so by calling 
-            // AddFunctionalRule(Func);
-            // TODO make this startup do something useful.
+            var options = new RewriteOptions()
+                .AddRedirect("(.*)/$", "$1")
+                .AddRewrite(@"app/(\d+)", "app?id=$1")
+                .AddRedirectToHttps(302)
+                .AddIISUrlRewrite(hostingEnvironment, "UrlRewrite.xml")
+                .AddApacheModRewrite(hostingEnvironment, "Rewrite.txt");
 
-            app.UseRewriter(new RewriteOptions()
-                .Rewrite(@"foo/(\d+)", "foo?id=$1") 
-                .ImportFromUrlRewrite(hostingEnv, "UrlRewrite.xml")
-                .ImportFromModRewrite(hostingEnv, "Rewrite.txt"));
+            app.UseRewriter(options);
 
             app.Run(context => context.Response.WriteAsync($"Rewritten Url: {context.Request.Path + context.Request.QueryString}"));
         }

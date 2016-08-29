@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         [Fact]
         public async Task CheckRewritePath()
         {
-            var options = new RewriteOptions().Rewrite("(.*)", "http://example.com/$1");
+            var options = new RewriteOptions().AddRewrite("(.*)", "http://example.com/$1");
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         [Fact]
         public async Task CheckRedirectPath()
         {
-            var options = new RewriteOptions().Redirect("(.*)","http://example.com/$1", statusCode: 301);
+            var options = new RewriteOptions().AddRedirect("(.*)","http://example.com/$1", statusCode: 301);
             var builder = new WebHostBuilder()
             .Configure(app =>
             {
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         [Fact]
         public async Task CheckRedirectToHttps()
         {
-            var options = new RewriteOptions().RedirectToHttps(statusCode: 301);
+            var options = new RewriteOptions().AddRedirectToHttps(statusCode: 301);
             var builder = new WebHostBuilder()
             .Configure(app =>
             {

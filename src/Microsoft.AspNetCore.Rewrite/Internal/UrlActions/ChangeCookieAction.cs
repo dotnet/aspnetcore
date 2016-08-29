@@ -4,17 +4,17 @@
 using System;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Rewrite.Internal.PreActions
+namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
 {
-    public class ChangeCookiePreAction : PreAction
+    public class ChangeCookieAction : UrlAction
     {
-        public ChangeCookiePreAction(string cookie)
+        public ChangeCookieAction(string cookie)
         {
             // TODO
             throw new NotImplementedException(cookie);
         }
 
-        public override void ApplyAction(HttpContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
             // modify the cookies
 

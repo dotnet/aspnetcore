@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
             {
                 var result = initMatchResults.Result(Replacement);
                 var request = context.HttpContext.Request;
-
                 if (result.IndexOf("://", StringComparison.Ordinal) >= 0)
                 {
                     string scheme;

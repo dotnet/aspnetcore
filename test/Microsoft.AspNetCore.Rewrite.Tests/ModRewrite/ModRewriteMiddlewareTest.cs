@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public async Task Invoke_RewritePathWhenMatching()
         {   
-            var options = new RewriteOptions().ImportFromModRewrite(new StringReader("RewriteRule /hey/(.*) /$1 "));
+            var options = new RewriteOptions().AddApacheModRewrite(new StringReader("RewriteRule /hey/(.*) /$1 "));
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -34,8 +34,8 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public async Task Invoke_RewritePathTerminatesOnFirstSuccessOfRule()
         {
-            var options = new RewriteOptions().ImportFromModRewrite(new StringReader("RewriteRule /hey/(.*) /$1 [L]"))
-                            .ImportFromModRewrite(new StringReader("RewriteRule /hello /what"));
+            var options = new RewriteOptions().AddApacheModRewrite(new StringReader("RewriteRule /hey/(.*) /$1 [L]"))
+                            .AddApacheModRewrite(new StringReader("RewriteRule /hello /what"));
             var builder = new WebHostBuilder()
                  .Configure(app =>
                  {
@@ -52,8 +52,8 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public async Task Invoke_RewritePathDoesNotTerminateOnFirstSuccessOfRule()
         {
-            var options = new RewriteOptions().ImportFromModRewrite(new StringReader("RewriteRule /hey/(.*) /$1"))
-                                       .ImportFromModRewrite(new StringReader("RewriteRule /hello /what"));
+            var options = new RewriteOptions().AddApacheModRewrite(new StringReader("RewriteRule /hey/(.*) /$1"))
+                                       .AddApacheModRewrite(new StringReader("RewriteRule /hello /what"));
             var builder = new WebHostBuilder()
                  .Configure(app =>
                  {
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public async Task Invoke_ShouldIgnoreComments()
         {
-            var options = new RewriteOptions().ImportFromModRewrite(new StringReader("#RewriteRule ^/hey/(.*) /$1 "));
+            var options = new RewriteOptions().AddApacheModRewrite(new StringReader("#RewriteRule ^/hey/(.*) /$1 "));
             var builder = new WebHostBuilder()
                  .Configure(app =>
                  {
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public async Task Invoke_ShouldRewriteHomepage()
         {
-            var options = new RewriteOptions().ImportFromModRewrite(new StringReader(@"RewriteRule ^/$ /homepage.html"));
+            var options = new RewriteOptions().AddApacheModRewrite(new StringReader(@"RewriteRule ^/$ /homepage.html"));
             var builder = new WebHostBuilder()
                  .Configure(app =>
                  {
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public async Task Invoke_ShouldIgnorePorts()
         {
-            var options = new RewriteOptions().ImportFromModRewrite(new StringReader(@"RewriteRule ^/$ /homepage.html"));
+            var options = new RewriteOptions().AddApacheModRewrite(new StringReader(@"RewriteRule ^/$ /homepage.html"));
             var builder = new WebHostBuilder()
               .Configure(app =>
               {
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public async Task Invoke_HandleNegatedRewriteRules()
         {
-            var options = new RewriteOptions().ImportFromModRewrite(new StringReader(@"RewriteRule !^/$ /homepage.html"));
+            var options = new RewriteOptions().AddApacheModRewrite(new StringReader(@"RewriteRule !^/$ /homepage.html"));
             var builder = new WebHostBuilder()
               .Configure(app =>
               {
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public async Task Invoke_BackReferencesShouldBeApplied()
         {
-            var options = new RewriteOptions().ImportFromModRewrite(new StringReader(@"RewriteRule (.*)\.aspx $1.php"));
+            var options = new RewriteOptions().AddApacheModRewrite(new StringReader(@"RewriteRule (.*)\.aspx $1.php"));
             var builder = new WebHostBuilder()
              .Configure(app =>
                  {
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [InlineData("http://www.foo.org/homepage.ASPX", @"RewriteRule (.*)\.aspx $1.php [nocase]", "/homepage.php")]
         public async Task Invoke_ShouldHandleFlagNoCase(string url, string rule, string expected)
         {
-            var options = new RewriteOptions().ImportFromModRewrite(new StringReader(rule));
+            var options = new RewriteOptions().AddApacheModRewrite(new StringReader(rule));
             var builder = new WebHostBuilder()
              .Configure(app =>
              {
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         public async Task Invoke_CheckFullUrlWithOnlyPath()
         {
             var options = new RewriteOptions()
-                .ImportFromModRewrite(new StringReader(@"RewriteRule (.+) http://www.example.com$1/"));
+                .AddApacheModRewrite(new StringReader(@"RewriteRule (.+) http://www.example.com$1/"));
             var builder = new WebHostBuilder()
               .Configure(app =>
               {
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         public async Task Invoke_CheckFullUrlWithUFlag()
         {
             var options = new RewriteOptions()
-                .ImportFromModRewrite(new StringReader(@"RewriteRule (.+) http://www.example.com$1/"));
+                .AddApacheModRewrite(new StringReader(@"RewriteRule (.+) http://www.example.com$1/"));
             var builder = new WebHostBuilder()
               .Configure(app =>
               {
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         public async Task Invoke_CheckModFileConditions()
         {
             var options = new RewriteOptions()
-                .ImportFromModRewrite(new StringReader(@"RewriteRule (.+) http://www.example.com$1/"));
+                .AddApacheModRewrite(new StringReader(@"RewriteRule (.+) http://www.example.com$1/"));
             var builder = new WebHostBuilder()
               .Configure(app =>
               {
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         public async Task Invoke_EnsureHttps(string input)
         {
             var options = new RewriteOptions()
-                .ImportFromModRewrite(new StringReader("RewriteCond %{REQUEST_URI} /foo/  \nRewriteCond %{HTTPS} !on   \nRewriteRule ^(.*)$ https://www.example.com$1 [R=301,L]"));
+                .AddApacheModRewrite(new StringReader("RewriteCond %{REQUEST_URI} /foo/  \nRewriteCond %{HTTPS} !on   \nRewriteRule ^(.*)$ https://www.example.com$1 [R=301,L]"));
             var builder = new WebHostBuilder()
               .Configure(app =>
               {

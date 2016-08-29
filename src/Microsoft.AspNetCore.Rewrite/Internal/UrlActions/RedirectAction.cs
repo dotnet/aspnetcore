@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
                 queryStringDelete: true,
                 escapeBackReferences: false)
         {
-
         }
 
         public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
@@ -58,7 +57,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
             {
                 pattern = '/' + pattern;
             }
-
             response.StatusCode = StatusCode;
 
             // url can either contain the full url or the path and query

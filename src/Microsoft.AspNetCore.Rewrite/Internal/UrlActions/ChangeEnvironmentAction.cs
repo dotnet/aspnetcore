@@ -4,17 +4,17 @@
 using System;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Rewrite.Internal.PreActions
+namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
 {
-    public class ChangeEnvironmentPreAction : PreAction
+    public class ChangeEnvironmentAction : UrlAction
     {
-        public ChangeEnvironmentPreAction(string env)
+        public ChangeEnvironmentAction(string env)
         {
             // TODO
             throw new NotImplementedException();
         }
 
-        public override void ApplyAction(HttpContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
             // Do stuff to modify the env
             throw new NotImplementedException();

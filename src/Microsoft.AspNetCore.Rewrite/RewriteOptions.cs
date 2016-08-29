@@ -11,8 +11,14 @@ namespace Microsoft.AspNetCore.Rewrite
     /// </summary>
     public class RewriteOptions
     {
-        // TODO doc comments
+        /// <summary>
+        /// A list of <see cref="Rule"/> that will be applied in order upon a request.
+        /// </summary>
         public IList<Rule> Rules { get; } = new List<Rule>();
+
+        /// <summary>
+        /// Gets and sets the File Provider for file and directory checks.
+        /// </summary>
         public IFileProvider StaticFileProvider { get; set; }
     }
 }

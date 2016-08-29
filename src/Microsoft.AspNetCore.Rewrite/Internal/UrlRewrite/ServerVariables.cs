@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                 case "HTTP_URL":
                     return new UrlSegment();
                 case "HTTPS":
-                    return new IsHttpsSegment();
+                    return new IsHttpsUrlSegment();
                 case "LOCAL_ADDR":
                     return new LocalAddressSegment();
                 case "HTTP_PROXY_CONNECTION":

@@ -35,6 +35,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             { "noescape", FlagType.NoEscape },
             { "ns", FlagType.NoSubReq },
             { "nosubreq", FlagType.NoSubReq },
+            { "or", FlagType.Or },
+            { "ornext", FlagType.Or },
             { "p", FlagType.Proxy },
             { "proxy", FlagType.Proxy },
             { "pt", FlagType.PassThrough },

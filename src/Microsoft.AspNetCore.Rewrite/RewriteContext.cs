@@ -9,15 +9,31 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Rewrite
 {
     /// <summary>
-    /// The UrlRewrite Context contains the HttpContext of the request, the file provider, and the logger.
-    /// There is also a shared string builder across the application of rules.
+    /// A context object for <see cref="RewriteMiddleware"/>
     /// </summary>
     public class RewriteContext
     {
+        /// <summary>
+        /// Gets and sets the <see cref="HttpContext"/>
+        /// </summary>
         public HttpContext HttpContext { get; set; }
+
+        /// <summary>
+        /// Gets and sets the File Provider for file and directory checks.
+        /// </summary>
         public IFileProvider StaticFileProvider { get; set; }
+
+        /// <summary>
+        /// Gets and sets the logger 
+        /// </summary>
         public ILogger Logger { get; set; }
+
+        /// <summary>
+        /// A shared result that is set appropriately by each rule for the next action that
+        /// should be take. See <see cref="RuleTermination"/>
+        /// </summary>
         public RuleTermination Result { get; set; }
+
         // PERF: share the same string builder per request
         internal StringBuilder Builder { get; set; } = new StringBuilder(64);
     }

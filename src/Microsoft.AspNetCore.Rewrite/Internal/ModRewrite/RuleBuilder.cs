@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Rewrite.Internal.PreActions;
 using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
 using Microsoft.AspNetCore.Rewrite.Internal.UrlMatches;
 
@@ -13,19 +12,18 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
     public class RuleBuilder
     {
         private IList<Condition> _conditions;
-        private UrlAction _action;
+        private IList<UrlAction> _actions = new List<UrlAction>();
         private UrlMatch _match;
-        private List<PreAction> _preActions;
 
         private readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(1);
 
         public ModRewriteRule Build()
         {
-            if (_action == null || _match == null)
+            if (_actions.Count == 0 || _match == null)
             {
                 throw new InvalidOperationException("Cannot create ModRewriteRule without action and match");
             }
-            return new ModRewriteRule(_match, _conditions, _action, _preActions);
+            return new ModRewriteRule(_match, _conditions, _actions);
         }
 
         public void AddRule(string rule)
@@ -169,31 +167,26 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             Flags flags)
         {
             // first create pre conditions
-            if (_preActions == null)
-            {
-                _preActions = new List<PreAction>();
-            }
-
             string flag;
             if (flags.GetValue(FlagType.Cookie, out flag))
             {
                 // parse cookie
-                _preActions.Add(new ChangeCookiePreAction(flag));
+                _actions.Add(new ChangeCookieAction(flag));
             }
 
             if (flags.GetValue(FlagType.Env, out flag))
             {
                 // parse env
-                _preActions.Add(new ChangeEnvironmentPreAction(flag));
+                _actions.Add(new ChangeEnvironmentAction(flag));
             }
 
             if (flags.HasFlag(FlagType.Forbidden))
             {
-                _action = new ForbiddenAction();
+                _actions.Add(new ForbiddenAction());
             }
             else if (flags.HasFlag(FlagType.Gone))
             {
-                _action = new GoneAction();
+                _actions.Add(new GoneAction());
             }
             else
             {
@@ -210,13 +203,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                     {
                         throw new FormatException(Resources.FormatError_InputParserInvalidInteger(statusCode, -1));
                     }
-                    _action = new RedirectAction(res, pattern, queryStringAppend, queryStringDelete, escapeBackReference);
+                    _actions.Add(new RedirectAction(res, pattern, queryStringAppend, queryStringDelete, escapeBackReference));
                 }
                 else
                 {
                     var last = flags.HasFlag(FlagType.End) || flags.HasFlag(FlagType.Last);
                     var termination = last ? RuleTermination.StopRules : RuleTermination.Continue;
-                    _action = new RewriteAction(termination, pattern, queryStringAppend, queryStringDelete, escapeBackReference);
+                    _actions.Add(new RewriteAction(termination, pattern, queryStringAppend, queryStringDelete, escapeBackReference));
                 }
             }
         }
