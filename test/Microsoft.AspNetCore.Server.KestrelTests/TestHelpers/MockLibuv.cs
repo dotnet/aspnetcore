@@ -12,8 +12,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
     {
         private UvAsyncHandle _postHandle;
         private uv_async_cb _onPost;
-        private TaskCompletionSource<object> _onPostTcs;
-        private object _postLock = new object();
+
+        private readonly object _postLock = new object();
+        private TaskCompletionSource<object> _onPostTcs = new TaskCompletionSource<object>();
+        private bool _completedOnPostTcs;
 
         private bool _stopLoop;
         private readonly ManualResetEventSlim _loopWh = new ManualResetEventSlim();
@@ -37,9 +39,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
             {
                 lock (_postLock)
                 {
-                    if (_onPostTcs == null || _onPostTcs.Task.IsCompleted)
+                    if (_completedOnPostTcs)
                     {
                         _onPostTcs = new TaskCompletionSource<object>();
+                        _completedOnPostTcs = false;
                     }
 
                     PostCount++;
@@ -64,13 +67,23 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
                 {
                     _loopWh.Wait();
                     KestrelThreadBlocker.Wait();
+                    TaskCompletionSource<object> onPostTcs;
 
                     lock (_postLock)
                     {
                         _loopWh.Reset();
                         _onPost(_postHandle.InternalGetHandle());
-                        _onPostTcs.TrySetResult(null);
+
+                        // Ensure any subsequent calls to uv_async_send
+                        // create a new _onPostTcs to be completed.
+                        onPostTcs = _onPostTcs;
+                        _completedOnPostTcs = true;
                     }
+
+                    // Calling TrySetResult outside the lock to avoid deadlock
+                    // when the code attempts to call uv_async_send after awaiting
+                    // OnPostTask.
+                    onPostTcs.TrySetResult(null);
                 }
 
                 return 0;
